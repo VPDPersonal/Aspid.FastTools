@@ -6,7 +6,7 @@ namespace Aspid.UnityFastTools
 {
     public static class HelpBoxExtensions
     {
-        public static T SetFontSize<T>(this T helpBox, StyleLength value)
+        public static T SetHelpBoxFontSize<T>(this T helpBox, StyleLength value)
             where T : HelpBox
         {
             helpBox.Q<Label>().SetFontSize(value);
