@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.UnityFastTools
+namespace Aspid.UnityFastTools.Editors
 {
     // TODO Aspid.UnityFastTools - Refactor
     // TODO Aspid.UnityFastTools - Write summary

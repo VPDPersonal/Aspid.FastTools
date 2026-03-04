@@ -9,7 +9,7 @@ namespace Aspid.UnityFastTools
 {
     // TODO Aspid.UnityFastTools – Write summary
     [Serializable]
-    public sealed class EnumValues<TValue> : EnumValues, IEnumerable<KeyValuePair<Enum, TValue>>
+    public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
     {
         [TypeSelector(typeof(Enum))]
         [SerializeField] private string _enumType;
@@ -22,9 +22,8 @@ namespace Aspid.UnityFastTools
         private void Initialize()
         {
             if (_isInitialized) return;
-
-            // TODO Aspid.UnityFastTools – Add Define for Marker
-            using (InitializeMarker.Auto())
+            
+            using (EnumValues.InitializeMarker.Auto())
             {
                 var type = Type.GetType(_enumType, throwOnError: true);
             
@@ -38,8 +37,7 @@ namespace Aspid.UnityFastTools
         
         public TValue GetValue(Enum enumValue)
         {
-            // TODO Aspid.UnityFastTools – Add Define for Marker
-            using (GetValueMarker.Auto())
+            using (EnumValues.GetValueMarker.Auto())
             {
                 Initialize();
             
@@ -55,15 +53,13 @@ namespace Aspid.UnityFastTools
 
         public bool Equals(Enum enumValue1, Enum enumValue2)
         {
-            // TODO Aspid.UnityFastTools – Add Define for Marker
-            using (EqualsMarker.Auto())
+            using (EnumValues.EqualsMarker.Auto())
             {
                 Initialize();
                 
                 if (_isFlag)
                 {
-                    // TODO Aspid.UnityFastTools – Add Define for Marker
-                    using (HasFlagMarker.Auto())
+                    using (EnumValues.HasFlagMarker.Auto())
                     {
                         if (!enumValue1.HasFlag(enumValue2)) return false;
                 
@@ -91,12 +87,11 @@ namespace Aspid.UnityFastTools
             GetEnumerator();
     }
     
-    public abstract class EnumValues
+    internal static class EnumValues
     {
-        // TODO Aspid.UnityFastTools – Add Define for Marker
-        protected static readonly ProfilerMarker EqualsMarker = new($"{nameof(EnumValues)}.Equals");
-        protected static readonly ProfilerMarker HasFlagMarker = new($"{nameof(EnumValues)}.HasFlag");
-        protected static readonly ProfilerMarker GetValueMarker = new($"{nameof(EnumValues)}.GetValue");
-        protected static readonly ProfilerMarker InitializeMarker = new($"{nameof(EnumValues)}.Initialize");
+        public static readonly ProfilerMarker EqualsMarker = new($"{nameof(EnumValues)}.Equals");
+        public static readonly ProfilerMarker HasFlagMarker = new($"{nameof(EnumValues)}.HasFlag");
+        public static readonly ProfilerMarker GetValueMarker = new($"{nameof(EnumValues)}.GetValue");
+        public static readonly ProfilerMarker InitializeMarker = new($"{nameof(EnumValues)}.Initialize");
     }
 }

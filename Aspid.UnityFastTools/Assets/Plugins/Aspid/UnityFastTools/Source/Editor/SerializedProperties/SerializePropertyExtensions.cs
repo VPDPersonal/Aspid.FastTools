@@ -1,7 +1,7 @@
 using UnityEditor;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.UnityFastTools
+namespace Aspid.UnityFastTools.Editors
 {
     public static partial class SerializePropertyExtensions
     {

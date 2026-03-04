@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.UnityFastTools
+namespace Aspid.UnityFastTools.Editors
 {
     [CustomPropertyDrawer(typeof(TypeSelectorAttribute))]
     internal sealed class TypeSelectorPropertyDrawer : PropertyDrawer

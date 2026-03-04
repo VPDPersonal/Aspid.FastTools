@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.UnityFastTools
+namespace Aspid.UnityFastTools.Editors
 {
     internal static class SerializableTypeUtility
     {

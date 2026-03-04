@@ -3,10 +3,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.UnityFastTools
+namespace Aspid.UnityFastTools.Editors
 {
     internal static class SerializableTypeDrawer
     {
@@ -130,57 +129,10 @@ namespace Aspid.UnityFastTools
         
         private static void OpenScript(Type type)
         {
-            var (monoScript, lineNumber) = GetMonoScriptFromType(type);
+            var (monoScript, lineNumber) = type.GetMonoScriptFromType();
             
             if (monoScript is not null)
                 AssetDatabase.OpenAsset(monoScript, lineNumber);
-        }
-        
-        private static (MonoScript script, int lineNumber) GetMonoScriptFromType(Type type)
-        {
-            var isEnum = type.IsEnum;
-            var typeName = type.Name;
-            var typeNamespace = type.Namespace;
-            var scripts = Resources.FindObjectsOfTypeAll<MonoScript>();
-
-            var regex = new Regex(GetPattern(isEnum, typeName));
-            
-            foreach (var script in scripts)
-            {
-                if (script.GetClass() != type) continue;
-                
-                var line = FindTypeLineNumber(script.text, typeName, isEnum);
-                return (script, line);
-            }
-            
-            foreach (var script in scripts)
-            {
-                var text = script.text;
-                if (string.IsNullOrWhiteSpace(text)) continue;
-                if (!string.IsNullOrWhiteSpace(typeNamespace) && !text.Contains($"namespace {typeNamespace}")) continue;
-                if (!regex.IsMatch(text)) continue;
-
-                var line = FindTypeLineNumber(text, typeName, isEnum);
-                return (script, line);
-            }
-            
-            return (script: null, lineNumber: 1);
-        }
-        
-        private static int FindTypeLineNumber(string text, string typeName, bool isEnum)
-        {
-            if (string.IsNullOrEmpty(text)) return 1;
-            
-            var regex = new Regex(GetPattern(isEnum, typeName));
-            var lines = text.Split('\n');
-            
-            for (var i = 0; i < lines.Length; i++)
-            {
-                if (regex.IsMatch(lines[i]))
-                    return i + 1;
-            }
-            
-            return 1;
         }
 
         private static SerializedProperty GetProperty(SerializedObject serializedObject, string propertyPath) =>
@@ -200,10 +152,6 @@ namespace Aspid.UnityFastTools
             var type = GetType(assemblyQualifiedName);
             return type is null ? MissingOption : type.Name;
         }
-        
-        private static string GetPattern(bool isEnum, string typeName) => isEnum 
-            ? $@"\benum\s+{Regex.Escape(typeName)}\b"
-            : $@"\b(class|struct|record)\s+{Regex.Escape(typeName)}\b";
         
         private static Type GetType(string assemblyQualifiedName) =>
             Type.GetType(assemblyQualifiedName, throwOnError: false);

@@ -4,7 +4,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.UnityFastTools
+namespace Aspid.UnityFastTools.Editors
 {
     // TODO Aspid.UnityFastTools – Refactor
     [CustomPropertyDrawer(typeof(EnumValues<>))]

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.UnityFastTools
+namespace Aspid.UnityFastTools.Editors
 {
     [CustomPropertyDrawer(typeof(SerializableType))]
     [CustomPropertyDrawer(typeof(SerializableType<>))]

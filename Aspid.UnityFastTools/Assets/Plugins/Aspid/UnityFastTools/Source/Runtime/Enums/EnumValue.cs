@@ -7,7 +7,7 @@ using Unity.Collections.LowLevel.Unsafe;
 namespace Aspid.UnityFastTools
 {
     [Serializable]
-    public sealed class EnumValue<TValue> : EnumValue
+    public sealed class EnumValue<TValue>
     {
         [SerializeField] private string _key;
         [SerializeField] private TValue _value;
@@ -25,7 +25,7 @@ namespace Aspid.UnityFastTools
         internal void Initialize(Type type)
         {
             // TODO Aspid.UnityFastTools – Add Define for Marker
-            using (InitializeMarker.Auto())
+            using (EnumValue.InitializeMarker.Auto())
             {
                 if (Enum.TryParse(type, _key, out var parsedEnum))
                 {
@@ -42,9 +42,8 @@ namespace Aspid.UnityFastTools
         }
     }
     
-    public abstract class EnumValue
+    internal static class EnumValue
     {
-        // TODO Aspid.UnityFastTools – Add Define for Marker
-        protected static readonly ProfilerMarker InitializeMarker = new($"{nameof(EnumValue)}.Initialize");
+        public static readonly ProfilerMarker InitializeMarker = new($"{nameof(EnumValue)}.Initialize");
     }
 }
