@@ -1,6 +1,6 @@
-# Unity Fast Tools
+# Aspid.FastTools
 
-**Unity Fast Tools** is a set of tools designed to minimize routine code writing in Unity.
+**Aspid.FastTools** is a set of tools designed to minimize routine code writing in Unity.
 
 ## Source Code
 
