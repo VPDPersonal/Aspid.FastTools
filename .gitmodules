@@ -1,3 +1,3 @@
-[submodule "Aspid.UnityFastTools/Assets/Plugins/Aspid/Internal/Unity"]
-	path = Aspid.UnityFastTools/Assets/Plugins/Aspid/Internal/Unity
+[submodule "Aspid.FastTools/Assets/Plugins/Aspid/Internal/Unity"]
+	path = Aspid.FastTools/Assets/Plugins/Aspid/Internal/Unity
 	url = git@github.com:VPDPersonal/Aspid.Internal.Unity.git

@@ -1,8 +1,8 @@
 # Unity Fast Tools
 
 [![Unity 2022.3+](https://img.shields.io/badge/2022.3%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d)](https://unity.com/)
-[![Releases](https://img.shields.io/github/v/release/VPDPersonal/Aspid.UnityFastTools?label=Release&labelColor=254d2c&color=4fa35d)](https://github.com/VPDPersonal/Aspid.UnityFastTools/releases)
-[![License](https://img.shields.io/github/license/VPDPersonal/Aspid.UnityFastTools?label=License&labelColor=254d2c&color=4fa35d)](LICENSE)
+[![Releases](https://img.shields.io/github/v/release/VPDPersonal/Aspid.FastTools?label=Release&labelColor=254d2c&color=4fa35d)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+[![License](https://img.shields.io/github/license/VPDPersonal/Aspid.FastTools?label=License&labelColor=254d2c&color=4fa35d)](LICENSE)
 
 **Unity Fast Tools** is a set of tools designed to minimize routine code writing in Unity.
 
@@ -10,12 +10,12 @@
 
 ## Integration
 
-Install Aspid.UnityFastTools using one of the following methods:
+Install Aspid.FastTools using one of the following methods:
 
-- **Download .unitypackage** — Visit the [Release page on GitHub](https://github.com/VPDPersonal/Aspid.UnityFastTools/releases) and download the latest version, `Aspid.UnityFastTools.X.X.X.unitypackage`. Import it into your project.
+- **Download .unitypackage** — Visit the [Release page on GitHub](https://github.com/VPDPersonal/Aspid.FastTools/releases) and download the latest version, `Aspid.FastTools.X.X.X.unitypackage`. Import it into your project.
 - **Via UPM** (Unity Package Manager) integrate the following packages:
   - `https://github.com/VPDPersonal/Aspid.Internal.Unity.git`
-  - `https://github.com/VPDPersonal/Aspid.UnityFastTools.git?path=Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools`
+  - `https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools`
 
 ---
 
@@ -23,8 +23,8 @@ Install Aspid.UnityFastTools using one of the following methods:
 
 | Namespace | Description |
 |-----------|-------------|
-| `Aspid.UnityFastTools` | Runtime API — types, VisualElement extensions |
-| `Aspid.UnityFastTools.Editors` | Editor-only API — property drawers, IMGUI scopes, editor extensions |
+| `Aspid.FastTools` | Runtime API — types, VisualElement extensions |
+| `Aspid.FastTools.Editors` | Editor-only API — property drawers, IMGUI scopes, editor extensions |
 
 ---
 
@@ -34,7 +34,7 @@ Provides source-generated `ProfilerMarker` registration. The generator creates a
 
 ```csharp
 using UnityEngine;
-using Aspid.UnityFastTools;
+using Aspid.FastTools;
 
 public class MyBehaviour : MonoBehaviour
 {
@@ -88,7 +88,7 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
 ### Result
 
-![Aspid.UnityFastTools.ProfilerMarkers.png](Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools/Documentation/Images/Aspid.UnityFastTools.ProfilerMarkers.png)
+![Aspid.FastTools.ProfilerMarkers.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.ProfilerMarkers.png)
 
 ---
 
@@ -107,7 +107,7 @@ Both support implicit conversion to `System.Type`.
 
 ```csharp
 using UnityEngine;
-using Aspid.UnityFastTools;
+using Aspid.FastTools;
 
 public class MyBehaviour : MonoBehaviour
 {
@@ -123,7 +123,7 @@ public class MyBehaviour : MonoBehaviour
     }
 }
 ```
-![Aspid.UnityFastTools.SerializableType.png](Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools/Documentation/Images/Aspid.UnityFastTools.SerializableType.png)
+![Aspid.FastTools.SerializableType.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.SerializableType.png)
 ### TypeSelectorAttribute
 
 An editor-only `PropertyAttribute` that restricts the type selection popup to specific base types. Applied to `string` fields that store assembly-qualified type names.
@@ -141,8 +141,8 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
 ```
 
 ```csharp
-using Aspid.UnityFastTools;
 using UnityEngine;
+using Aspid.FastTools;
 
 public class MyBehaviour : MonoBehaviour
 {
@@ -161,7 +161,7 @@ The Inspector shows a button that opens a searchable popup window with:
 - Navigation history (back button)
 - Assembly disambiguation for types with identical names
 
-![Aspid.UnityFastTools.TypeSelectorWindow.png](Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools/Documentation/Images/Aspid.UnityFastTools.TypeSelectorWindow.png)
+![Aspid.FastTools.TypeSelectorWindow.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.TypeSelectorWindow.png)
 ---
 
 ## Enum System
@@ -185,8 +185,8 @@ public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
 Supports `[Flags]` enums: `Equals` uses `HasFlag` and treats `0`-valued members correctly.
 
 ```csharp
-using Aspid.UnityFastTools;
 using UnityEngine;
+using Aspid.FastTools;
 
 public enum Direction { Left, Right, Up, Down }
 
@@ -211,7 +211,7 @@ In the Inspector, select the enum type in the `EnumValues` header, then assign a
 Chainable extension methods on `SerializedProperty` for setting values and applying changes.
 
 ```csharp
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools.Editors;
 ```
 
 ### Update and Apply
@@ -278,7 +278,7 @@ property.SetVector3(Vector3.up).SetBool(true).ApplyModifiedProperties();
 ## IMGUI Layout Scopes
 
 ```csharp
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools.Editors;
 ```
 
 Three scope types are available: `VerticalScope`, `HorizontalScope`, `ScrollViewScope`. Each exposes a `Rect` property and calls the matching `EditorGUILayout.End*` method on `Dispose`.
@@ -322,8 +322,8 @@ All `Begin` overloads match the corresponding `EditorGUILayout.Begin*` signature
 Fluent extension methods for building UIToolkit trees in code. All methods return `T` (the element itself) for chaining.
 
 ```csharp
-using Aspid.UnityFastTools;         // runtime extensions
-using Aspid.UnityFastTools.Editors; // editor-only extensions
+using Aspid.FastTools;         // runtime extensions
+using Aspid.FastTools.Editors; // editor-only extensions
 ```
 
 ### Core element operations
@@ -539,7 +539,7 @@ image.SetImageFromResource("Editor/MyIcon"); // loads via Resources.Load
 ### Editor commands (editor-only)
 
 ```csharp
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools.Editors;
 
 image.AddOpenScriptCommand(target);
 // Double-clicking the element opens the script for 'target' in the IDE
@@ -550,8 +550,8 @@ image.AddOpenScriptCommand(target);
 ```csharp
 using UnityEditor;
 using UnityEngine;
-using Aspid.UnityFastTools;
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools;
+using Aspid.FastTools.Editors;
 using UnityEngine.UIElements;
 
 [CustomEditor(typeof(MyBehaviour))]
@@ -593,7 +593,7 @@ public class MyBehaviourEditor : Editor
 
 ### Result
 
-![Aspid.UnityFastTools.VisualElement.png](Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools/Documentation/Images/Aspid.UnityFastTools.VisualElement.png)
+![Aspid.FastTools.VisualElement.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.VisualElement.png)
 
 ---
 
@@ -602,7 +602,7 @@ public class MyBehaviourEditor : Editor
 Utility methods for getting display names of Unity objects in custom editors.
 
 ```csharp
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools.Editors;
 ```
 
 ```csharp

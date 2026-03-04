@@ -6,12 +6,12 @@
 
 ## Интеграция
 
-Установите Aspid.UnityFastTools одним из следующих способов:
+Установите Aspid.FastTools одним из следующих способов:
 
-- **Скачать .unitypackage** — Перейдите на [страницу релизов GitHub](https://github.com/VPDPersonal/Aspid.UnityFastTools/releases) и скачайте последнюю версию `Aspid.UnityFastTools.X.X.X.unitypackage`. Импортируйте его в проект.
+- **Скачать .unitypackage** — Перейдите на [страницу релизов GitHub](https://github.com/VPDPersonal/Aspid.FastTools/releases) и скачайте последнюю версию `Aspid.FastTools.X.X.X.unitypackage`. Импортируйте его в проект.
 - **Через UPM** (Unity Package Manager) подключите следующие пакеты:
   - `https://github.com/VPDPersonal/Aspid.Internal.Unity.git`
-  - `https://github.com/VPDPersonal/Aspid.UnityFastTools.git?path=Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools`
+  - `https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools`
 
 ---
 
@@ -19,8 +19,8 @@
 
 | Пространство имён | Описание |
 |-------------------|----------|
-| `Aspid.UnityFastTools` | Runtime API — типы, расширения VisualElement |
-| `Aspid.UnityFastTools.Editors` | Editor-only API — property drawers, IMGUI-области, расширения редактора |
+| `Aspid.FastTools` | Runtime API — типы, расширения VisualElement |
+| `Aspid.FastTools.Editors` | Editor-only API — property drawers, IMGUI-области, расширения редактора |
 
 ---
 
@@ -30,7 +30,7 @@
 
 ```csharp
 using UnityEngine;
-using Aspid.UnityFastTools;
+using Aspid.FastTools;
 
 public class MyBehaviour : MonoBehaviour
 {
@@ -84,7 +84,7 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
 ### Результат
 
-![Aspid.UnityFastTools.ProfilerMarkers.png](Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools/Documentation/Images/Aspid.UnityFastTools.ProfilerMarkers.png)
+![Aspid.FastTools.ProfilerMarkers.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.ProfilerMarkers.png)
 
 ---
 
@@ -103,7 +103,7 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
 ```csharp
 using UnityEngine;
-using Aspid.UnityFastTools;
+using Aspid.FastTools;
 
 public class MyBehaviour : MonoBehaviour
 {
@@ -119,7 +119,7 @@ public class MyBehaviour : MonoBehaviour
     }
 }
 ```
-![Aspid.UnityFastTools.SerializableType.png](Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools/Documentation/Images/Aspid.UnityFastTools.SerializableType.png)
+![Aspid.FastTools.SerializableType.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.SerializableType.png)
 ### TypeSelectorAttribute
 
 Атрибут `PropertyAttribute`, доступный только в редакторе, ограничивающий всплывающее окно выбора типа конкретными базовыми типами. Применяется к полям `string`, хранящим assembly-qualified имена типов.
@@ -137,8 +137,8 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
 ```
 
 ```csharp
-using Aspid.UnityFastTools;
 using UnityEngine;
+using Aspid.FastTools;
 
 public class MyBehaviour : MonoBehaviour
 {
@@ -157,7 +157,7 @@ public class MyBehaviour : MonoBehaviour
 - Историю навигации (кнопка «назад»)
 - Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
 
-![Aspid.UnityFastTools.TypeSelectorWindow.png](Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools/Documentation/Images/Aspid.UnityFastTools.TypeSelectorWindow.png)
+![Aspid.FastTools.TypeSelectorWindow.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.TypeSelectorWindow.png)
 ---
 
 ## Система перечислений
@@ -181,8 +181,8 @@ public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
 Поддерживает `[Flags]`-перечисления: `Equals` использует `HasFlag` и корректно обрабатывает члены со значением `0`.
 
 ```csharp
-using Aspid.UnityFastTools;
 using UnityEngine;
+using Aspid.FastTools;
 
 public enum Direction { Left, Right, Up, Down }
 
@@ -207,7 +207,7 @@ public class MyBehaviour : MonoBehaviour
 Цепочечные методы расширения для `SerializedProperty`, позволяющие задавать значения и применять изменения.
 
 ```csharp
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools.Editors;
 ```
 
 ### Update и Apply
@@ -274,7 +274,7 @@ property.SetVector3(Vector3.up).SetBool(true).ApplyModifiedProperties();
 ## IMGUI-области разметки
 
 ```csharp
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools.Editors;
 ```
 
 Доступны три типа областей: `VerticalScope`, `HorizontalScope`, `ScrollViewScope`. Каждая предоставляет свойство `Rect` и вызывает соответствующий метод `EditorGUILayout.End*` в `Dispose`.
@@ -318,8 +318,8 @@ using (ScrollViewScope.Begin(ref scrollPos)) { /* ... */ }
 Fluent-методы расширения для построения UIToolkit-деревьев в коде. Все методы возвращают `T` (сам элемент) для цепочки вызовов.
 
 ```csharp
-using Aspid.UnityFastTools;         // runtime-расширения
-using Aspid.UnityFastTools.Editors; // editor-only расширения
+using Aspid.FastTools;         // runtime-расширения
+using Aspid.FastTools.Editors; // editor-only расширения
 ```
 
 ### Основные операции с элементами
@@ -535,7 +535,7 @@ image.SetImageFromResource("Editor/MyIcon"); // загрузка через Reso
 ### Команды редактора (только для редактора)
 
 ```csharp
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools.Editors;
 
 image.AddOpenScriptCommand(target);
 // Двойной клик на элемент открывает скрипт 'target' в IDE
@@ -546,8 +546,8 @@ image.AddOpenScriptCommand(target);
 ```csharp
 using UnityEditor;
 using UnityEngine;
-using Aspid.UnityFastTools;
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools;
+using Aspid.FastTools.Editors;
 using UnityEngine.UIElements;
 
 [CustomEditor(typeof(MyBehaviour))]
@@ -589,7 +589,7 @@ public class MyBehaviourEditor : Editor
 
 ### Результат
 
-![Aspid.UnityFastTools.VisualElement.png](Aspid.UnityFastTools/Assets/Plugins/Aspid/UnityFastTools/Documentation/Images/Aspid.UnityFastTools.VisualElement.png)
+![Aspid.FastTools.VisualElement.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.VisualElement.png)
 
 ---
 
@@ -598,7 +598,7 @@ public class MyBehaviourEditor : Editor
 Утилитарные методы для получения отображаемых имён объектов Unity в пользовательских редакторах.
 
 ```csharp
-using Aspid.UnityFastTools.Editors;
+using Aspid.FastTools.Editors;
 ```
 
 ```csharp
