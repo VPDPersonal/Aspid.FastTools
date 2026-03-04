@@ -8,5 +8,12 @@
   {
     "name": "Vladislav Panin",
     "email": "vpd.aspid@gmail.com"
-  }
+  },
+  "samples": 
+  [
+    {
+      "displayName": "Samples",
+      "path": "Samples"
+    }
+  ]
 }
