@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using Aspid.Internal;
 using UnityEngine.UIElements;
 using Aspid.UnityFastTools.Editors;
 
@@ -11,7 +12,7 @@ namespace Aspid.UnityFastTools.Samples.VisualElements
     {
         public override VisualElement CreateInspectorGUI()
         {
-            const string iconPath = "Aspid.UnityFastTools Icon";
+            const string iconPath = EditorConstants.AspidIconGreen;
             
             var scriptName = target.GetScriptName();
             var darkColor = new Color(0.15f, 0.15f, 0.15f);
