@@ -12,8 +12,16 @@
   "samples": 
   [
     {
-      "displayName": "Samples~",
-      "path": "Samples"
+      "displayName": "ProfilerMarkers",
+      "path": "Samples~/ProfilerMarkers"
+    },
+    {
+      "displayName": "Types",
+      "path": "Samples~/Types"
+    },
+    {
+      "displayName": "VisualElements",
+      "path": "Samples~/VisualElements"
     }
   ]
 }
