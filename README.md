@@ -1,5 +1,9 @@
 # Unity Fast Tools
 
+[![Unity 2022.3+](https://img.shields.io/badge/2022.3%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d)](https://unity.com/)
+[![Releases](https://img.shields.io/github/v/release/VPDPersonal/Aspid.UnityFastTools?label=Release&labelColor=254d2c&color=4fa35d)](https://github.com/VPDPersonal/Aspid.UnityFastTools/releases)
+[![License](https://img.shields.io/github/license/VPDPersonal/Aspid.UnityFastTools?label=License&labelColor=254d2c&color=4fa35d)](LICENSE)
+
 **Unity Fast Tools** is a set of tools designed to minimize routine code writing in Unity.
 
 ---
