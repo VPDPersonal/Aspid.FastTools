@@ -4,9 +4,9 @@ using System.Collections.Immutable;
 namespace Aspid.FastTools.Generators.ProfilerMarkers.Data;
 
 public readonly struct MarkerCallType(
-    ISymbol symbol,
+    INamedTypeSymbol symbol,
     ImmutableArray<MarkerCall> markerCalls)
 {
-    public readonly ISymbol Symbol = symbol;
+    public readonly INamedTypeSymbol Symbol = symbol;
     public readonly ImmutableArray<MarkerCall> MarkerCalls = markerCalls;
 }
