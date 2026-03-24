@@ -258,10 +258,10 @@ namespace Aspid.FastTools
         }
         
         public static T SetBorderColor<T>(this T style, 
-            StyleColor? top,
-            StyleColor? bottom,
-            StyleColor? left,
-            StyleColor? right)
+            StyleColor? top = null,
+            StyleColor? bottom = null,
+            StyleColor? left = null,
+            StyleColor? right = null)
             where T : IStyle
         {
             if (top.HasValue) style.borderTopColor = top.Value;
