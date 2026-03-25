@@ -129,7 +129,7 @@ namespace Aspid.FastTools.Editors
         
         private static void OpenScript(Type type)
         {
-            var (monoScript, lineNumber) = type.GetMonoScriptFromType();
+            var (monoScript, lineNumber) = type.FindMonoScriptWithLine();
             
             if (monoScript is not null)
                 AssetDatabase.OpenAsset(monoScript, lineNumber);
