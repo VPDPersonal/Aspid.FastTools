@@ -200,26 +200,38 @@ namespace Aspid.FastTools.Editors
             var structType  = GetStructType();
             var idFieldName = structType != null ? GetIdFieldName(structType) : null;
             if (idFieldName == null) return 0;
-            return FindUsages(idFieldName, id).Count;
+
+            try
+            {
+                return FindUsages(idFieldName, id, showProgress: true).Count;
+            }
+            finally
+            {
+                EditorUtility.ClearProgressBar();
+            }
         }
 
-        private List<(UnityEngine.Object asset, string path)> FindUsages(string idFieldName, string id)
+        private List<(UnityEngine.Object asset, string path)> FindUsages(
+            string idFieldName, string id, bool showProgress = false)
         {
             var results = new List<(UnityEngine.Object, string)>();
-
-            ScanAssets("t:ScriptableObject", idFieldName, id, results);
-            ScanPrefabs(idFieldName, id, results);
-
+            ScanAssets("t:ScriptableObject", idFieldName, id, results, showProgress, "Scanning ScriptableObjects");
+            ScanPrefabs(idFieldName, id, results, showProgress);
             return results;
         }
 
         private static void ScanAssets(string filter, string idFieldName, string id,
-            List<(UnityEngine.Object, string)> results)
+            List<(UnityEngine.Object, string)> results, bool showProgress, string progressTitle)
         {
-            foreach (var guid in AssetDatabase.FindAssets(filter))
+            var guids = AssetDatabase.FindAssets(filter, new[] { "Assets" });
+            for (int i = 0; i < guids.Length; i++)
             {
-                var path  = AssetDatabase.GUIDToAssetPath(guid);
-                var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+                var assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
+
+                if (showProgress)
+                    EditorUtility.DisplayProgressBar(progressTitle, assetPath, (float)i / guids.Length);
+
+                var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
                 if (asset == null) continue;
 
                 ScanObject(asset, idFieldName, id, results);
@@ -227,18 +239,22 @@ namespace Aspid.FastTools.Editors
         }
 
         private static void ScanPrefabs(string idFieldName, string id,
-            List<(UnityEngine.Object, string)> results)
+            List<(UnityEngine.Object, string)> results, bool showProgress)
         {
-            foreach (var guid in AssetDatabase.FindAssets("t:Prefab"))
+            var guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets" });
+            for (int i = 0; i < guids.Length; i++)
             {
-                var path   = AssetDatabase.GUIDToAssetPath(guid);
-                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+                var assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
+                if (showProgress)
+                    EditorUtility.DisplayProgressBar("Scanning Prefabs", assetPath, (float)i / guids.Length);
+
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
                 if (prefab == null) continue;
 
                 foreach (var component in prefab.GetComponentsInChildren<Component>(includeInactive: true))
                 {
-                    if (component == null) continue;
-                    ScanObject(component, idFieldName, id, results);
+                    if (component != null)
+                        ScanObject(component, idFieldName, id, results);
                 }
             }
         }
@@ -264,36 +280,48 @@ namespace Aspid.FastTools.Editors
         {
             var replaced = 0;
 
-            void Replace(string filter, Func<string, UnityEngine.Object?> loader)
+            try
             {
-                foreach (var guid in AssetDatabase.FindAssets(filter))
-                {
-                    var path  = AssetDatabase.GUIDToAssetPath(guid);
-                    var asset = loader(path);
-                    if (asset == null) continue;
+                AssetDatabase.StartAssetEditing();
+                replaced += ReplaceInFilter("t:ScriptableObject", idFieldName, oldId, newId, "Replacing in ScriptableObjects");
+                replaced += ReplaceInFilter("t:Prefab",           idFieldName, oldId, newId, "Replacing in Prefabs");
+            }
+            finally
+            {
+                AssetDatabase.StopAssetEditing();
+                EditorUtility.ClearProgressBar();
+                AssetDatabase.SaveAssets();
+            }
 
-                    if (ReplaceInObject(asset, idFieldName, oldId, newId))
-                    {
-                        EditorUtility.SetDirty(asset);
-                        replaced++;
-                    }
+            return replaced;
+        }
+
+        private static int ReplaceInFilter(string filter, string idFieldName,
+            string oldId, string newId, string progressTitle)
+        {
+            var replaced = 0;
+            var guids    = AssetDatabase.FindAssets(filter, new[] { "Assets" });
+
+            for (int i = 0; i < guids.Length; i++)
+            {
+                var assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
+                EditorUtility.DisplayProgressBar(progressTitle, assetPath, (float)i / guids.Length);
+
+                var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
+                if (asset == null) continue;
+
+                if (ReplaceInObject(asset, idFieldName, oldId, newId))
+                {
+                    EditorUtility.SetDirty(asset);
+                    replaced++;
                 }
             }
 
-            Replace("t:ScriptableObject", p => AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(p));
-            Replace("t:Prefab", p =>
-            {
-                var go = AssetDatabase.LoadAssetAtPath<GameObject>(p);
-                return go;  // components handled inside ReplaceInObject
-            });
-
-            AssetDatabase.SaveAssets();
             return replaced;
         }
 
         private static bool ReplaceInObject(UnityEngine.Object obj, string idFieldName, string oldId, string newId)
         {
-            // For prefabs, iterate all components
             if (obj is GameObject go)
             {
                 var changed = false;
@@ -308,7 +336,8 @@ namespace Aspid.FastTools.Editors
             return ReplaceInSerializedObject(new SerializedObject(obj), idFieldName, oldId, newId);
         }
 
-        private static bool ReplaceInSerializedObject(SerializedObject so, string idFieldName, string oldId, string newId)
+        private static bool ReplaceInSerializedObject(SerializedObject so, string idFieldName,
+            string oldId, string newId)
         {
             var iterator = so.GetIterator();
             var changed  = false;
