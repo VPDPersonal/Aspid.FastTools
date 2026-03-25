@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -217,6 +219,7 @@ namespace Aspid.FastTools.Editors
             var results = new List<(UnityEngine.Object, string)>();
             ScanAssets("t:ScriptableObject", idFieldName, id, results, showProgress, "Scanning ScriptableObjects");
             ScanPrefabs(idFieldName, id, results, showProgress);
+            ScanScenes(idFieldName, id, results, showProgress);
             return results;
         }
 
@@ -276,6 +279,50 @@ namespace Aspid.FastTools.Editors
             }
         }
 
+        private static void ScanScenes(string idFieldName, string id,
+            List<(UnityEngine.Object asset, string path)> results, bool showProgress)
+        {
+            var guids = AssetDatabase.FindAssets("t:Scene", new[] { "Assets" });
+            for (int i = 0; i < guids.Length; i++)
+            {
+                var scenePath = AssetDatabase.GUIDToAssetPath(guids[i]);
+                if (showProgress)
+                    EditorUtility.DisplayProgressBar("Scanning Scenes", scenePath, (float)i / guids.Length);
+
+                var alreadyOpen = false;
+                for (int s = 0; s < SceneManager.sceneCount; s++)
+                {
+                    if (SceneManager.GetSceneAt(s).path == scenePath)
+                    {
+                        alreadyOpen = true;
+                        break;
+                    }
+                }
+
+                var scene = alreadyOpen
+                    ? SceneManager.GetSceneByPath(scenePath)
+                    : EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
+
+                if (!scene.IsValid())
+                {
+                    if (!alreadyOpen) EditorSceneManager.CloseScene(scene, true);
+                    continue;
+                }
+
+                foreach (var root in scene.GetRootGameObjects())
+                {
+                    foreach (var component in root.GetComponentsInChildren<Component>(includeInactive: true))
+                    {
+                        if (component != null)
+                            ScanObject(component, idFieldName, id, results);
+                    }
+                }
+
+                if (!alreadyOpen)
+                    EditorSceneManager.CloseScene(scene, true);
+            }
+        }
+
         private static int ReplaceInAssets(string idFieldName, string oldId, string newId)
         {
             var replaced = 0;
@@ -292,6 +339,9 @@ namespace Aspid.FastTools.Editors
                 EditorUtility.ClearProgressBar();
                 AssetDatabase.SaveAssets();
             }
+
+            // Scenes are handled separately (require open/save/close cycle)
+            replaced += ReplaceInScenes(idFieldName, oldId, newId);
 
             return replaced;
         }
@@ -317,6 +367,60 @@ namespace Aspid.FastTools.Editors
                 }
             }
 
+            return replaced;
+        }
+
+        private static int ReplaceInScenes(string idFieldName, string oldId, string newId)
+        {
+            var replaced = 0;
+            var guids = AssetDatabase.FindAssets("t:Scene", new[] { "Assets" });
+
+            for (int i = 0; i < guids.Length; i++)
+            {
+                var scenePath = AssetDatabase.GUIDToAssetPath(guids[i]);
+                EditorUtility.DisplayProgressBar("Replacing in Scenes", scenePath, (float)i / guids.Length);
+
+                var alreadyOpen = false;
+                for (int s = 0; s < SceneManager.sceneCount; s++)
+                {
+                    if (SceneManager.GetSceneAt(s).path == scenePath)
+                    {
+                        alreadyOpen = true;
+                        break;
+                    }
+                }
+
+                var scene = alreadyOpen
+                    ? SceneManager.GetSceneByPath(scenePath)
+                    : EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Additive);
+
+                if (!scene.IsValid())
+                {
+                    if (!alreadyOpen) EditorSceneManager.CloseScene(scene, true);
+                    continue;
+                }
+
+                var sceneChanged = false;
+                foreach (var root in scene.GetRootGameObjects())
+                {
+                    foreach (var component in root.GetComponentsInChildren<Component>(includeInactive: true))
+                    {
+                        if (component != null && ReplaceInSerializedObject(new SerializedObject(component), idFieldName, oldId, newId))
+                            sceneChanged = true;
+                    }
+                }
+
+                if (sceneChanged)
+                {
+                    EditorSceneManager.SaveScene(scene);
+                    replaced++;
+                }
+
+                if (!alreadyOpen)
+                    EditorSceneManager.CloseScene(scene, true);
+            }
+
+            EditorUtility.ClearProgressBar();
             return replaced;
         }
 
