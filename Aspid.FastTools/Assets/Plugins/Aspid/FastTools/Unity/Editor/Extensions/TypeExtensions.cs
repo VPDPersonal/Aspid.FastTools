@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEditor;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -8,6 +9,8 @@ namespace Aspid.FastTools.Editors
 {
     public static class TypeExtensions
     {
+        private static readonly Dictionary<string, Regex> _regexCache = new();
+        
         public static MonoScript FindMonoScript(this Type type)
         {
             var isEnum = type.IsEnum;
@@ -20,7 +23,7 @@ namespace Aspid.FastTools.Editors
                 .Where(script => script is not null)
                 .ToArray();
             
-            var regex = new Regex(GetPattern(isEnum, typeName));
+            var regex = GetRegex(isEnum, typeName);
 
             foreach (var script in scripts)
             {
@@ -54,7 +57,7 @@ namespace Aspid.FastTools.Editors
         {
             if (string.IsNullOrEmpty(text)) return 1;
             
-            var regex = new Regex(GetPattern(isEnum, typeName));
+            var regex = GetRegex(isEnum, typeName);
             var lines = text.Split('\n');
             
             for (var i = 0; i < lines.Length; i++)
@@ -66,8 +69,19 @@ namespace Aspid.FastTools.Editors
             return 1;
         }
         
-        private static string GetPattern(bool isEnum, string typeName) => isEnum 
+        private static string GetPattern(bool isEnum, string typeName) => isEnum
             ? $@"\benum\s+{Regex.Escape(typeName)}\b"
             : $@"\b(class|struct|record)\s+{Regex.Escape(typeName)}\b";
+
+        private static Regex GetRegex(bool isEnum, string typeName)
+        {
+            var key = $"{isEnum}:{typeName}";
+            if (_regexCache.TryGetValue(key, out var cached))
+                return cached;
+
+            var regex = new Regex(GetPattern(isEnum, typeName), RegexOptions.Compiled);
+            _regexCache[key] = regex;
+            return regex;
+        }
     }
 }

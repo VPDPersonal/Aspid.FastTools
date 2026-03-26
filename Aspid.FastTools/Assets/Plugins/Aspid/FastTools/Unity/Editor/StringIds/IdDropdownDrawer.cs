@@ -46,7 +46,7 @@ namespace Aspid.FastTools.Editors
 
             if (EditorGUI.DropdownButton(dropRect, new GUIContent(Caption(property.stringValue)), FocusType.Passive))
             {
-                var reg = FindRegistry(declaringType);
+                var reg = StringIdRegistryHelper.FindRegistry(declaringType);
                 var sp  = GUIUtility.GUIToScreenPoint(new Vector2(dropRect.x, dropRect.y));
                 var sr  = new Rect(sp.x, sp.y, dropRect.width, dropRect.height);
                 StringIdSelectorWindow.Show(reg?.Ids ?? Array.Empty<string>(), sr, property.stringValue,
@@ -79,7 +79,7 @@ namespace Aspid.FastTools.Editors
                 _imguiState[key] = state;
             }
 
-            var reg2    = FindRegistry(declaringType);
+            var reg2    = StringIdRegistryHelper.FindRegistry(declaringType);
             var trimmed = state.input?.Trim() ?? string.Empty;
             var canAdd  = !string.IsNullOrEmpty(trimmed) && (reg2 == null || !reg2.Contains(trimmed));
 
@@ -87,14 +87,11 @@ namespace Aspid.FastTools.Editors
             {
                 if (GUI.Button(addRect, "Add"))
                 {
-                    var registry = reg2 ?? CreateRegistryForType(declaringType);
-                    if (registry != null)
-                    {
-                        registry.Add(trimmed);
-                        EditorUtility.SetDirty(registry);
-                        AssetDatabase.SaveAssetIfDirty(registry);
-                        property.SetStringAndApply(trimmed);
-                    }
+                    var registry = reg2 ?? StringIdRegistryHelper.CreateRegistry(declaringType);
+                    registry.Add(trimmed);
+                    EditorUtility.SetDirty(registry);
+                    AssetDatabase.SaveAssetIfDirty(registry);
+                    property.SetStringAndApply(trimmed);
                     _imguiState[key] = (false, string.Empty);
                 }
             }
@@ -162,7 +159,7 @@ namespace Aspid.FastTools.Editors
             inputField.RegisterValueChangedCallback(e =>
             {
                 var val = e.newValue?.Trim() ?? string.Empty;
-                var reg = FindRegistry(declaringType);
+                var reg = StringIdRegistryHelper.FindRegistry(declaringType);
 
                 if (string.IsNullOrEmpty(val))
                 {
@@ -202,9 +199,7 @@ namespace Aspid.FastTools.Editors
                 var id = inputField.value?.Trim();
                 if (string.IsNullOrEmpty(id)) return;
 
-                var reg = FindRegistry(declaringType) ?? CreateRegistryForType(declaringType);
-                if (reg == null) return;
-
+                var reg = StringIdRegistryHelper.FindRegistry(declaringType) ?? StringIdRegistryHelper.CreateRegistry(declaringType);
                 reg.Add(id);
                 EditorUtility.SetDirty(reg);
                 AssetDatabase.SaveAssetIfDirty(reg);
@@ -229,7 +224,7 @@ namespace Aspid.FastTools.Editors
             // Open selector dropdown
             dropdownButton.clicked += () =>
             {
-                var reg    = FindRegistry(declaringType);
+                var reg    = StringIdRegistryHelper.FindRegistry(declaringType);
                 var window = EditorWindow.focusedWindow;
                 var wb     = dropdownButton.worldBound;
                 var sr     = new Rect(window.position.x + wb.xMin, window.position.y + wb.yMin, wb.width, wb.height);
@@ -271,42 +266,7 @@ namespace Aspid.FastTools.Editors
 
         #region Registry
 
-        internal static StringIdRegistry? GetRegistry(Type? declaringType) => FindRegistry(declaringType);
-
-        private static StringIdRegistry? FindRegistry(Type? declaringType)
-        {
-            if (declaringType == null) return null;
-
-            var aqn   = declaringType.AssemblyQualifiedName ?? string.Empty;
-            var guids = AssetDatabase.FindAssets("t:StringIdRegistry");
-
-            foreach (var guid in guids)
-            {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var reg  = AssetDatabase.LoadAssetAtPath<StringIdRegistry>(path);
-                if (reg != null && reg.TargetStructType == aqn)
-                    return reg;
-            }
-
-            return null;
-        }
-
-        private static StringIdRegistry? CreateRegistryForType(Type? declaringType)
-        {
-            if (declaringType == null) return null;
-
-            var path = AssetDatabase.GenerateUniqueAssetPath($"Assets/StringIdRegistry_{declaringType.Name}.asset");
-            var reg  = ScriptableObject.CreateInstance<StringIdRegistry>();
-            AssetDatabase.CreateAsset(reg, path);
-
-            var so = new SerializedObject(reg);
-            so.FindProperty("_targetStructType").stringValue = declaringType.AssemblyQualifiedName ?? string.Empty;
-            so.ApplyModifiedPropertiesWithoutUndo();
-
-            AssetDatabase.SaveAssets();
-            return reg;
-        }
-
+        internal static StringIdRegistry? GetRegistry(Type? declaringType) => StringIdRegistryHelper.FindRegistry(declaringType);
         #endregion
 
         #region Helpers

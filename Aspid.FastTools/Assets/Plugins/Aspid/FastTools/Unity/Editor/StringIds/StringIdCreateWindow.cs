@@ -93,9 +93,7 @@ namespace Aspid.FastTools.Editors
             if (string.IsNullOrEmpty(id)) return;
 
             if (_registry == null)
-                _registry = CreateRegistry();
-
-            if (_registry == null) return;
+                _registry = StringIdRegistryHelper.CreateRegistry(_structType);
 
             _registry.Add(id);
             EditorUtility.SetDirty(_registry);
@@ -103,22 +101,6 @@ namespace Aspid.FastTools.Editors
 
             _onCreated?.Invoke(id);
             Close();
-        }
-
-        private StringIdRegistry? CreateRegistry()
-        {
-            var typeName = _structType?.Name ?? "Unknown";
-            var path = AssetDatabase.GenerateUniqueAssetPath($"Assets/StringIdRegistry_{typeName}.asset");
-
-            var registry = CreateInstance<StringIdRegistry>();
-            AssetDatabase.CreateAsset(registry, path);
-
-            var so = new SerializedObject(registry);
-            so.FindProperty("_targetStructType").stringValue = _structType?.AssemblyQualifiedName ?? string.Empty;
-            so.ApplyModifiedPropertiesWithoutUndo();
-
-            AssetDatabase.SaveAssets();
-            return registry;
         }
     }
 }
