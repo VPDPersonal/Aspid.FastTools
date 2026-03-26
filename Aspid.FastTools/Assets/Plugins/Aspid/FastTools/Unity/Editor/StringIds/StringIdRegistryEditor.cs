@@ -177,20 +177,38 @@ namespace Aspid.FastTools.Editors
 
         private void ConfirmRename(int index, string oldId, string newId)
         {
+            var structType  = GetStructType();
+            var idFieldName = structType != null ? GetIdFieldName(structType) : null;
+
+            // 0 = Rename everywhere, 1 = Cancel, 2 = Rename (registry only)
+            var message = idFieldName != null
+                ? $"Rename '{oldId}' → '{newId}'?\n\n" +
+                  "'Rename Everywhere' will replace all references in ScriptableObjects, Prefabs, and Scenes. " +
+                  "This operation can be time-consuming depending on project size."
+                : $"Rename '{oldId}' → '{newId}'?";
+
+            var choice = EditorUtility.DisplayDialogComplex(
+                "Rename ID",
+                message,
+                "Rename Everywhere",
+                "Cancel",
+                "Rename");
+
+            // choice: 0 = Переименовать везде, 1 = Отмена, 2 = Переименовать (только реестр)
+            if (choice == 1) return;
+
             _idsProp.GetArrayElementAtIndex(index).stringValue = newId;
             serializedObject.ApplyModifiedProperties();
 
             _renamingIndex = -1;
             _renameInput   = string.Empty;
 
-            var structType  = GetStructType();
-            var idFieldName = structType != null ? GetIdFieldName(structType) : null;
-
-            if (idFieldName == null) return;
-
-            int replaced = ReplaceInAssets(idFieldName, oldId, newId);
-            if (replaced > 0)
-                Debug.Log($"[StringIdRegistry] Renamed '{oldId}' → '{newId}' in {replaced} asset(s).");
+            if (choice == 0 && idFieldName != null)
+            {
+                int replaced = ReplaceInAssets(idFieldName, oldId, newId);
+                if (replaced > 0)
+                    Debug.Log($"[StringIdRegistry] Renamed '{oldId}' → '{newId}' in {replaced} asset(s).");
+            }
         }
 
         // ─────────────────────────────────────────────
