@@ -14,7 +14,7 @@ namespace Aspid.FastTools.Editors
     internal sealed class StringIdRegistryEditor : Editor
     {
         private SerializedProperty _targetTypeProp = null!;
-        private SerializedProperty _idsProp = null!;
+        private SerializedProperty _entriesProp = null!;
 
         private string _addInput = string.Empty;
         private int _renamingIndex = -1;
@@ -23,7 +23,7 @@ namespace Aspid.FastTools.Editors
         private void OnEnable()
         {
             _targetTypeProp = serializedObject.FindProperty("_targetStructType");
-            _idsProp        = serializedObject.FindProperty("_ids");
+            _entriesProp    = serializedObject.FindProperty("_entries");
         }
 
         private void OnDisable()
@@ -36,7 +36,6 @@ namespace Aspid.FastTools.Editors
         {
             serializedObject.Update();
 
-            // Target struct type (uses existing TypeSelector drawer)
             EditorGUILayout.PropertyField(_targetTypeProp, new GUIContent("Target Struct Type"));
             EditorGUILayout.Space(8);
 
@@ -46,25 +45,26 @@ namespace Aspid.FastTools.Editors
             var duplicates = GetDuplicates();
             int indexToDelete = -1;
 
-            for (int i = 0; i < _idsProp.arraySize; i++)
+            for (int i = 0; i < _entriesProp.arraySize; i++)
             {
-                var element   = _idsProp.GetArrayElementAtIndex(i);
-                var value     = element.stringValue;
-                var isDuplicate = duplicates.Contains(value);
+                var element     = _entriesProp.GetArrayElementAtIndex(i);
+                var nameProp    = element.FindPropertyRelative("Name");
+                var idProp      = element.FindPropertyRelative("Id");
+                var name        = nameProp.stringValue;
+                var id          = idProp.intValue;
+                var isDuplicate = duplicates.Contains(name);
 
                 if (_renamingIndex == i)
-                {
-                    DrawRenameRow(i, value, duplicates);
-                }
+                    DrawRenameRow(i, name, duplicates);
                 else
                 {
-                    if (DrawIdRow(value, isDuplicate, out bool deleteRequested))
+                    if (DrawIdRow(name, id, isDuplicate, out bool deleteRequested))
                         indexToDelete = i;
                 }
             }
 
             if (indexToDelete >= 0)
-                TryDeleteId(indexToDelete);
+                TryDeleteEntry(indexToDelete);
 
             DrawAddRow();
 
@@ -75,7 +75,7 @@ namespace Aspid.FastTools.Editors
         // Row renderers
         // ─────────────────────────────────────────────
 
-        private bool DrawIdRow(string value, bool isDuplicate, out bool deleteRequested)
+        private bool DrawIdRow(string name, int id, bool isDuplicate, out bool deleteRequested)
         {
             deleteRequested = false;
 
@@ -85,19 +85,23 @@ namespace Aspid.FastTools.Editors
             {
                 var prev = GUI.color;
                 GUI.color = new Color(1f, 0.4f, 0.4f);
-                EditorGUILayout.LabelField(value);
+                EditorGUILayout.LabelField(name);
                 GUI.color = prev;
                 EditorGUILayout.LabelField("(duplicate)", GUILayout.Width(72));
             }
             else
             {
-                EditorGUILayout.LabelField(value);
+                EditorGUILayout.LabelField(name);
             }
+
+            // Read-only int ID
+            using (new EditorGUI.DisabledScope(true))
+                EditorGUILayout.IntField(id, GUILayout.Width(40));
 
             if (GUILayout.Button("Rename", GUILayout.Width(58)) && _renamingIndex < 0)
             {
-                _renamingIndex = Array.IndexOf(GetAllValues(), value);
-                _renameInput   = value;
+                _renamingIndex = Array.IndexOf(GetAllNames(), name);
+                _renameInput   = name;
             }
 
             if (GUILayout.Button("×", GUILayout.Width(20)))
@@ -106,7 +110,7 @@ namespace Aspid.FastTools.Editors
             return deleteRequested;
         }
 
-        private void DrawRenameRow(int index, string oldValue, HashSet<string> duplicates)
+        private void DrawRenameRow(int index, string oldName, HashSet<string> duplicates)
         {
             using var h = new EditorGUILayout.HorizontalScope();
 
@@ -114,13 +118,13 @@ namespace Aspid.FastTools.Editors
 
             var trimmed    = _renameInput?.Trim() ?? string.Empty;
             var canConfirm = !string.IsNullOrEmpty(trimmed)
-                          && trimmed != oldValue
+                          && trimmed != oldName
                           && !duplicates.Contains(trimmed);
 
             using (new EditorGUI.DisabledScope(!canConfirm))
             {
                 if (GUILayout.Button("✓", GUILayout.Width(24)))
-                    ConfirmRename(index, oldValue, trimmed);
+                    ConfirmRename(index, oldName, trimmed);
             }
 
             if (GUILayout.Button("✗", GUILayout.Width(24)))
@@ -145,10 +149,10 @@ namespace Aspid.FastTools.Editors
             {
                 if (GUILayout.Button("Add", GUILayout.Width(40)))
                 {
-                    var size = _idsProp.arraySize;
-                    _idsProp.InsertArrayElementAtIndex(size);
-                    _idsProp.GetArrayElementAtIndex(size).stringValue = trimmed;
                     serializedObject.ApplyModifiedProperties();
+                    registry.Add(trimmed);
+                    EditorUtility.SetDirty(registry);
+                    serializedObject.Update();
                     _addInput = string.Empty;
                 }
             }
@@ -158,72 +162,62 @@ namespace Aspid.FastTools.Editors
         // Delete
         // ─────────────────────────────────────────────
 
-        private void TryDeleteId(int index)
+        private void TryDeleteEntry(int index)
         {
-            var idToDelete  = _idsProp.GetArrayElementAtIndex(index).stringValue;
-            var usageCount  = CountUsages(idToDelete);
+            var nameProp   = _entriesProp.GetArrayElementAtIndex(index).FindPropertyRelative("Name");
+            var nameToDelete = nameProp.stringValue;
+            var usageCount   = CountUsages(nameToDelete);
 
             var message = usageCount == 0
-                ? $"Delete '{idToDelete}'?"
-                : $"'{idToDelete}' is used in {usageCount} asset(s).\n\nFields referencing this ID will show <Missing> after deletion.\n\nDelete anyway?";
+                ? $"Delete '{nameToDelete}'?"
+                : $"'{nameToDelete}' is used in {usageCount} asset(s).\n\nFields referencing this ID will show <Missing> after deletion.\n\nDelete anyway?";
 
             if (EditorUtility.DisplayDialog("Delete ID", message, "Delete", "Cancel"))
-                _idsProp.DeleteArrayElementAtIndex(index);
+                _entriesProp.DeleteArrayElementAtIndex(index);
         }
 
         // ─────────────────────────────────────────────
         // Rename
         // ─────────────────────────────────────────────
 
-        private void ConfirmRename(int index, string oldId, string newId)
+        private void ConfirmRename(int index, string oldName, string newName)
         {
             var structType  = GetStructType();
-            var idFieldName = structType != null ? GetIdFieldName(structType) : null;
+            var idFieldName = structType != null ? GetStringIdFieldName(structType) : null;
 
-            // 0 = Rename everywhere, 1 = Cancel, 2 = Rename (registry only)
-            var message = idFieldName != null
-                ? $"Rename '{oldId}' → '{newId}'?\n\n" +
-                  "'Rename Everywhere' will replace all references in ScriptableObjects, Prefabs, and Scenes. " +
-                  "This operation can be time-consuming depending on project size."
-                : $"Rename '{oldId}' → '{newId}'?";
-
-            var choice = EditorUtility.DisplayDialogComplex(
-                "Rename ID",
-                message,
-                "Rename Everywhere",
-                "Cancel",
-                "Rename");
-
-            // choice: 0 = Переименовать везде, 1 = Отмена, 2 = Переименовать (только реестр)
-            if (choice == 1) return;
-
-            _idsProp.GetArrayElementAtIndex(index).stringValue = newId;
-            serializedObject.ApplyModifiedProperties();
-
-            _renamingIndex = -1;
-            _renameInput   = string.Empty;
-
-            if (choice == 0 && idFieldName != null)
+            StringIdRenameDialog.Show(oldName, newName, idFieldName != null, choice =>
             {
-                int replaced = ReplaceInAssets(idFieldName, oldId, newId);
-                if (replaced > 0)
-                    Debug.Log($"[StringIdRegistry] Renamed '{oldId}' → '{newId}' in {replaced} asset(s).");
-            }
+                if (choice == StringIdRenameDialog.RenameChoice.Cancel) return;
+
+                var nameProp = _entriesProp.GetArrayElementAtIndex(index).FindPropertyRelative("Name");
+                nameProp.stringValue = newName;
+                serializedObject.ApplyModifiedProperties();
+
+                _renamingIndex = -1;
+                _renameInput   = string.Empty;
+
+                if (choice == StringIdRenameDialog.RenameChoice.RenameEverywhere && idFieldName != null)
+                {
+                    int replaced = ReplaceInAssets(idFieldName, oldName, newName);
+                    if (replaced > 0)
+                        Debug.Log($"[StringIdRegistry] Renamed '{oldName}' → '{newName}' in {replaced} asset(s).");
+                }
+            });
         }
 
         // ─────────────────────────────────────────────
         // Usage scanning
         // ─────────────────────────────────────────────
 
-        private int CountUsages(string id)
+        private int CountUsages(string name)
         {
             var structType  = GetStructType();
-            var idFieldName = structType != null ? GetIdFieldName(structType) : null;
+            var idFieldName = structType != null ? GetStringIdFieldName(structType) : null;
             if (idFieldName == null) return 0;
 
             try
             {
-                return FindUsages(idFieldName, id, showProgress: true).Count;
+                return FindUsages(idFieldName, name, showProgress: true).Count;
             }
             finally
             {
@@ -232,16 +226,16 @@ namespace Aspid.FastTools.Editors
         }
 
         private List<(UnityEngine.Object asset, string path)> FindUsages(
-            string idFieldName, string id, bool showProgress = false)
+            string idFieldName, string name, bool showProgress = false)
         {
             var results = new List<(UnityEngine.Object, string)>();
-            ScanAssets("t:ScriptableObject", idFieldName, id, results, showProgress, "Scanning ScriptableObjects");
-            ScanPrefabs(idFieldName, id, results, showProgress);
-            ScanScenes(idFieldName, id, results, showProgress);
+            ScanAssets("t:ScriptableObject", idFieldName, name, results, showProgress, "Scanning ScriptableObjects");
+            ScanPrefabs(idFieldName, name, results, showProgress);
+            ScanScenes(idFieldName, name, results, showProgress);
             return results;
         }
 
-        private static void ScanAssets(string filter, string idFieldName, string id,
+        private static void ScanAssets(string filter, string idFieldName, string name,
             List<(UnityEngine.Object, string)> results, bool showProgress, string progressTitle)
         {
             var guids = AssetDatabase.FindAssets(filter, new[] { "Assets" });
@@ -255,11 +249,11 @@ namespace Aspid.FastTools.Editors
                 var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
                 if (asset == null) continue;
 
-                ScanObject(asset, idFieldName, id, results);
+                ScanObject(asset, idFieldName, name, results);
             }
         }
 
-        private static void ScanPrefabs(string idFieldName, string id,
+        private static void ScanPrefabs(string idFieldName, string name,
             List<(UnityEngine.Object, string)> results, bool showProgress)
         {
             var guids = AssetDatabase.FindAssets("t:Prefab", new[] { "Assets" });
@@ -275,12 +269,12 @@ namespace Aspid.FastTools.Editors
                 foreach (var component in prefab.GetComponentsInChildren<Component>(includeInactive: true))
                 {
                     if (component != null)
-                        ScanObject(component, idFieldName, id, results);
+                        ScanObject(component, idFieldName, name, results);
                 }
             }
         }
 
-        private static void ScanObject(UnityEngine.Object obj, string idFieldName, string id,
+        private static void ScanObject(UnityEngine.Object obj, string idFieldName, string name,
             List<(UnityEngine.Object, string)> results)
         {
             var so       = new SerializedObject(obj);
@@ -290,14 +284,14 @@ namespace Aspid.FastTools.Editors
             {
                 if (iterator.propertyType == SerializedPropertyType.String
                     && iterator.name == idFieldName
-                    && iterator.stringValue == id)
+                    && iterator.stringValue == name)
                 {
                     results.Add((obj, iterator.propertyPath));
                 }
             }
         }
 
-        private static void ScanScenes(string idFieldName, string id,
+        private static void ScanScenes(string idFieldName, string name,
             List<(UnityEngine.Object asset, string path)> results, bool showProgress)
         {
             var guids = AssetDatabase.FindAssets("t:Scene", new[] { "Assets" });
@@ -332,7 +326,7 @@ namespace Aspid.FastTools.Editors
                     foreach (var component in root.GetComponentsInChildren<Component>(includeInactive: true))
                     {
                         if (component != null)
-                            ScanObject(component, idFieldName, id, results);
+                            ScanObject(component, idFieldName, name, results);
                     }
                 }
 
@@ -341,15 +335,15 @@ namespace Aspid.FastTools.Editors
             }
         }
 
-        private static int ReplaceInAssets(string idFieldName, string oldId, string newId)
+        private static int ReplaceInAssets(string idFieldName, string oldName, string newName)
         {
             var replaced = 0;
 
             try
             {
                 AssetDatabase.StartAssetEditing();
-                replaced += ReplaceInFilter("t:ScriptableObject", idFieldName, oldId, newId, "Replacing in ScriptableObjects");
-                replaced += ReplaceInFilter("t:Prefab",           idFieldName, oldId, newId, "Replacing in Prefabs");
+                replaced += ReplaceInFilter("t:ScriptableObject", idFieldName, oldName, newName, "Replacing in ScriptableObjects");
+                replaced += ReplaceInFilter("t:Prefab",           idFieldName, oldName, newName, "Replacing in Prefabs");
             }
             finally
             {
@@ -358,14 +352,13 @@ namespace Aspid.FastTools.Editors
                 AssetDatabase.SaveAssets();
             }
 
-            // Scenes are handled separately (require open/save/close cycle)
-            replaced += ReplaceInScenes(idFieldName, oldId, newId);
+            replaced += ReplaceInScenes(idFieldName, oldName, newName);
 
             return replaced;
         }
 
         private static int ReplaceInFilter(string filter, string idFieldName,
-            string oldId, string newId, string progressTitle)
+            string oldName, string newName, string progressTitle)
         {
             var replaced = 0;
             var guids    = AssetDatabase.FindAssets(filter, new[] { "Assets" });
@@ -378,7 +371,7 @@ namespace Aspid.FastTools.Editors
                 var asset = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(assetPath);
                 if (asset == null) continue;
 
-                if (ReplaceInObject(asset, idFieldName, oldId, newId))
+                if (ReplaceInObject(asset, idFieldName, oldName, newName))
                 {
                     EditorUtility.SetDirty(asset);
                     replaced++;
@@ -388,7 +381,7 @@ namespace Aspid.FastTools.Editors
             return replaced;
         }
 
-        private static int ReplaceInScenes(string idFieldName, string oldId, string newId)
+        private static int ReplaceInScenes(string idFieldName, string oldName, string newName)
         {
             var replaced = 0;
             var guids = AssetDatabase.FindAssets("t:Scene", new[] { "Assets" });
@@ -423,7 +416,7 @@ namespace Aspid.FastTools.Editors
                 {
                     foreach (var component in root.GetComponentsInChildren<Component>(includeInactive: true))
                     {
-                        if (component != null && ReplaceInSerializedObject(new SerializedObject(component), idFieldName, oldId, newId))
+                        if (component != null && ReplaceInSerializedObject(new SerializedObject(component), idFieldName, oldName, newName))
                             sceneChanged = true;
                     }
                 }
@@ -442,7 +435,7 @@ namespace Aspid.FastTools.Editors
             return replaced;
         }
 
-        private static bool ReplaceInObject(UnityEngine.Object obj, string idFieldName, string oldId, string newId)
+        private static bool ReplaceInObject(UnityEngine.Object obj, string idFieldName, string oldName, string newName)
         {
             if (obj is GameObject go)
             {
@@ -450,16 +443,16 @@ namespace Aspid.FastTools.Editors
                 foreach (var c in go.GetComponentsInChildren<Component>(includeInactive: true))
                 {
                     if (c != null)
-                        changed |= ReplaceInSerializedObject(new SerializedObject(c), idFieldName, oldId, newId);
+                        changed |= ReplaceInSerializedObject(new SerializedObject(c), idFieldName, oldName, newName);
                 }
                 return changed;
             }
 
-            return ReplaceInSerializedObject(new SerializedObject(obj), idFieldName, oldId, newId);
+            return ReplaceInSerializedObject(new SerializedObject(obj), idFieldName, oldName, newName);
         }
 
         private static bool ReplaceInSerializedObject(SerializedObject so, string idFieldName,
-            string oldId, string newId)
+            string oldName, string newName)
         {
             var iterator = so.GetIterator();
             var changed  = false;
@@ -468,9 +461,9 @@ namespace Aspid.FastTools.Editors
             {
                 if (iterator.propertyType == SerializedPropertyType.String
                     && iterator.name == idFieldName
-                    && iterator.stringValue == oldId)
+                    && iterator.stringValue == oldName)
                 {
-                    iterator.stringValue = newId;
+                    iterator.stringValue = newName;
                     changed = true;
                 }
             }
@@ -487,20 +480,20 @@ namespace Aspid.FastTools.Editors
 
         private void CleanUpInvalid()
         {
-            var so   = new SerializedObject(target);
-            var ids  = so.FindProperty("_ids");
-            var seen = new HashSet<string>();
+            var so      = new SerializedObject(target);
+            var entries = so.FindProperty("_entries");
+            var seen    = new HashSet<string>();
             var toRemove = new List<int>();
 
-            for (int i = 0; i < ids.arraySize; i++)
+            for (int i = 0; i < entries.arraySize; i++)
             {
-                var val = ids.GetArrayElementAtIndex(i).stringValue;
+                var val = entries.GetArrayElementAtIndex(i).FindPropertyRelative("Name").stringValue;
                 if (string.IsNullOrEmpty(val) || !seen.Add(val))
                     toRemove.Add(i);
             }
 
             for (int i = toRemove.Count - 1; i >= 0; i--)
-                ids.DeleteArrayElementAtIndex(toRemove[i]);
+                entries.DeleteArrayElementAtIndex(toRemove[i]);
 
             if (toRemove.Count > 0)
                 so.ApplyModifiedPropertiesWithoutUndo();
@@ -512,13 +505,20 @@ namespace Aspid.FastTools.Editors
             return string.IsNullOrEmpty(aqn) ? null : Type.GetType(aqn, throwOnError: false);
         }
 
-        private static string? GetIdFieldName(Type structType)
+        /// <summary>Returns the serialized field name used for string display — __stringId (IId structs) or [IdDropdown] field.</summary>
+        private static string? GetStringIdFieldName(Type structType)
         {
+            // IId-generated structs use __stringId
+            if (typeof(IId).IsAssignableFrom(structType))
+                return "__stringId";
+
+            // Legacy: [IdDropdown] attribute
             foreach (var field in structType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
                 if (field.GetCustomAttribute<IdDropdownAttribute>() != null)
                     return field.Name;
             }
+
             return null;
         }
 
@@ -526,20 +526,20 @@ namespace Aspid.FastTools.Editors
         {
             var seen  = new HashSet<string>();
             var dupes = new HashSet<string>();
-            for (int i = 0; i < _idsProp.arraySize; i++)
+            for (int i = 0; i < _entriesProp.arraySize; i++)
             {
-                var val = _idsProp.GetArrayElementAtIndex(i).stringValue;
+                var val = _entriesProp.GetArrayElementAtIndex(i).FindPropertyRelative("Name").stringValue;
                 if (!string.IsNullOrEmpty(val) && !seen.Add(val))
                     dupes.Add(val);
             }
             return dupes;
         }
 
-        private string[] GetAllValues()
+        private string[] GetAllNames()
         {
-            var vals = new string[_idsProp.arraySize];
-            for (int i = 0; i < _idsProp.arraySize; i++)
-                vals[i] = _idsProp.GetArrayElementAtIndex(i).stringValue;
+            var vals = new string[_entriesProp.arraySize];
+            for (int i = 0; i < _entriesProp.arraySize; i++)
+                vals[i] = _entriesProp.GetArrayElementAtIndex(i).FindPropertyRelative("Name").stringValue;
             return vals;
         }
     }

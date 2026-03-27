@@ -1,27 +1,14 @@
 using System;
 using UnityEngine;
-using Aspid.FastTools;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.IdDropdown
 {
     [Serializable]
-    public struct ItemId
-    {
-        [IdDropdown]
-        public string _id;
-
-        public override string ToString() => _id ?? string.Empty;
-    }
+    public partial struct ItemId : IId { }
 
     [Serializable]
-    public struct EnemyId
-    {
-        [IdDropdown]
-        public string _id;
-
-        public override string ToString() => _id ?? string.Empty;
-    }
+    public partial struct EnemyId : IId { }
 
     /// <summary>
     /// ScriptableObject where the ItemId must be unique among all ItemDefinition assets.
