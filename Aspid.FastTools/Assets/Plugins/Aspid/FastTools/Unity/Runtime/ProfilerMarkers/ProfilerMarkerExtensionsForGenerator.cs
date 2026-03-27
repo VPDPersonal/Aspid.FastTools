@@ -1,5 +1,6 @@
 using Unity.Profiling;
 
+// ReSharper disable once CheckNamespace
 // The namespace is intentionally omitted, as this block serves only as a marker for the Source Generator.
 public static class ProfilerMarkerExtensionsForGenerator
 {
