@@ -34,8 +34,8 @@ namespace Aspid.FastTools
 
         public int Add(string name)
         {
-            if (Contains(name))
-                return GetId(name);
+            foreach (var e in _entries)
+                if (e.Name == name) return e.Id;
 
             var id = _nextId++;
             _entries.Add(new IdEntry { Name = name, Id = id });

@@ -39,7 +39,6 @@ namespace Aspid.FastTools.Editors
             var key = PropertyKey(property);
             _imguiState.TryGetValue(key, out var state);
 
-            // Main row
             var mainRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
             var dropRect = new Rect(mainRect.x, mainRect.y, mainRect.width - CreateButtonWidth - 2f, mainRect.height);
             var btnRect  = new Rect(dropRect.xMax + 2f, mainRect.y, CreateButtonWidth, mainRect.height);
@@ -61,7 +60,6 @@ namespace Aspid.FastTools.Editors
 
             if (!state.creating) return;
 
-            // Inline create row
             var gap     = 2f;
             var addW    = 40f;
             var cancelW = 22f;
@@ -127,7 +125,6 @@ namespace Aspid.FastTools.Editors
                 .SetText("Create")
                 .SetMargin(left: 4);
 
-            // Inline create row (hidden by default)
             var createRow = new VisualElement()
                 .SetFlexDirection(FlexDirection.Row)
                 .SetDisplay(DisplayStyle.None)
@@ -155,7 +152,6 @@ namespace Aspid.FastTools.Editors
             var propertyPath     = property.propertyPath;
             var serializedObject = property.serializedObject;
 
-            // Input validation
             inputField.RegisterValueChangedCallback(e =>
             {
                 var val = e.newValue?.Trim() ?? string.Empty;
@@ -180,7 +176,6 @@ namespace Aspid.FastTools.Editors
                 addButton.SetEnabled(true);
             });
 
-            // Toggle create row
             createToggleButton.clicked += () =>
             {
                 var isVisible = createRow.style.display == DisplayStyle.Flex;
@@ -193,7 +188,6 @@ namespace Aspid.FastTools.Editors
                 }
             };
 
-            // Confirm: add to registry and set value
             addButton.clicked += () =>
             {
                 var id = inputField.value?.Trim();
@@ -204,7 +198,7 @@ namespace Aspid.FastTools.Editors
                 EditorUtility.SetDirty(reg);
                 AssetDatabase.SaveAssetIfDirty(reg);
 
-                var p = GetProperty(serializedObject, propertyPath);
+                var p = serializedObject.FindProperty(propertyPath);
                 p.SetStringAndApply(id);
                 dropdownButton.SetText(Caption(id));
 
@@ -213,7 +207,6 @@ namespace Aspid.FastTools.Editors
                 errorLabel.SetDisplay(DisplayStyle.None);
             };
 
-            // Cancel
             cancelRowButton.clicked += () =>
             {
                 inputField.value = string.Empty;
@@ -221,7 +214,6 @@ namespace Aspid.FastTools.Editors
                 errorLabel.SetDisplay(DisplayStyle.None);
             };
 
-            // Open selector dropdown
             dropdownButton.clicked += () =>
             {
                 var reg    = StringIdRegistryHelper.FindRegistry(declaringType);
@@ -229,10 +221,10 @@ namespace Aspid.FastTools.Editors
                 var wb     = dropdownButton.worldBound;
                 var sr     = new Rect(window.position.x + wb.xMin, window.position.y + wb.yMin, wb.width, wb.height);
 
-                var current = GetProperty(serializedObject, propertyPath).stringValue ?? string.Empty;
+                var current = serializedObject.FindProperty(propertyPath).stringValue ?? string.Empty;
                 StringIdSelectorWindow.Show(reg?.Ids ?? Array.Empty<string>(), sr, current, id =>
                 {
-                    var p = GetProperty(serializedObject, propertyPath);
+                    var p = serializedObject.FindProperty(propertyPath);
                     p.SetStringAndApply(id ?? string.Empty);
                     dropdownButton.SetText(Caption(p.stringValue));
                 });
@@ -264,15 +256,7 @@ namespace Aspid.FastTools.Editors
 
         #endregion
 
-        #region Registry
-
-        internal static StringIdRegistry? GetRegistry(Type? declaringType) => StringIdRegistryHelper.FindRegistry(declaringType);
-        #endregion
-
         #region Helpers
-
-        private static SerializedProperty GetProperty(SerializedObject so, string path) =>
-            so.FindProperty(path);
 
         private static string Caption(string? id) =>
             string.IsNullOrEmpty(id) ? NoneOption : id!;
