@@ -124,6 +124,27 @@ public class MyBehaviour : MonoBehaviour
 }
 ```
 ![Aspid.FastTools.SerializableType.png](Images/Aspid.FastTools.SerializableType.png)
+### ComponentTypeSelector
+
+Сериализуемая структура, добавляющая в Inspector выпадающий список для смены типа объекта. Добавьте её как поле в базовый класс — при выборе подтипа редактор перезаписывает `m_Script` на `SerializedObject`, фактически превращая компонент или ScriptableObject в выбранный подтип.
+
+Список автоматически ограничивается подтипами класса, в котором объявлено поле. Дополнительная настройка не требуется.
+
+```csharp
+using UnityEngine;
+using Aspid.FastTools;
+
+public abstract class BaseEnemy : MonoBehaviour
+{
+    [SerializeField] private ComponentTypeSelector _typeSelector;
+}
+
+public class FastEnemy : BaseEnemy { }
+public class TankEnemy : BaseEnemy { }
+```
+
+---
+
 ### TypeSelectorAttribute
 
 Атрибут `PropertyAttribute`, доступный только в редакторе, ограничивающий всплывающее окно выбора типа конкретными базовыми типами. Применяется к полям `string`, хранящим assembly-qualified имена типов.
@@ -137,8 +158,16 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
     public TypeSelectorAttribute(params Type[] types)
     public TypeSelectorAttribute(string assemblyQualifiedName)
     public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
+
+    public bool AllowAbstractTypes { get; set; } // по умолчанию: false
+    public bool AllowInterfaces    { get; set; } // по умолчанию: false
 }
 ```
+
+| Свойство | Описание |
+|----------|----------|
+| `AllowAbstractTypes` | Включает абстрактные классы в список выбора. По умолчанию: `false` |
+| `AllowInterfaces` | Включает интерфейсы в список выбора. По умолчанию: `false` |
 
 ```csharp
 using UnityEngine;
@@ -148,6 +177,10 @@ public class MyBehaviour : MonoBehaviour
 {
     [TypeSelector(typeof(IMyInterface))]
     [SerializeField] private string _typeName;
+
+    // Включить абстрактные типы и интерфейсы в список выбора
+    [TypeSelector(typeof(object), AllowAbstractTypes = true, AllowInterfaces = true)]
+    [SerializeField] private string _anyType;
 }
 ```
 
@@ -203,6 +236,83 @@ public class MyBehaviour : MonoBehaviour
 ```
 
 В Inspector выберите тип перечисления в заголовке `EnumValues`, затем назначьте значение для каждого члена перечисления.
+
+---
+
+## Система строковых ID
+
+Отображает строковые имена в стабильные целочисленные ID. Предназначена для data-driven проектов, где ассетам нужен надёжный, назначаемый из редактора идентификатор, безопасный для использования в `switch` и `Dictionary`.
+
+### Использование
+
+**1.** Объявите `partial struct`, реализующий `IId`. Генератор исходников автоматически добавит необходимые поля и свойство:
+
+```csharp
+using Aspid.FastTools;
+
+public partial struct EnemyId : IId { }
+```
+
+Сгенерированный код:
+
+```csharp
+public partial struct EnemyId
+{
+    [SerializeField] private string __stringId;
+    [SerializeField] private int _id;
+
+    public int Id => _id;
+}
+```
+
+**2.** Создайте ассет `IdRegistry` через меню *Assets → Create → Aspid → FastTools → String Id Registry* и привяжите его к вашему типу структуры в Inspector.
+
+**3.** Используйте структуру как сериализуемое поле. В Inspector отображается выпадающий список зарегистрированных имён с кнопкой **Create** для добавления новых записей прямо там:
+
+```csharp
+using UnityEngine;
+using Aspid.FastTools;
+
+[CreateAssetMenu]
+public class EnemyDefinition : ScriptableObject
+{
+    [UniqueId] [SerializeField] private EnemyId _id;
+}
+```
+
+```csharp
+public class EnemySpawner : MonoBehaviour
+{
+    [SerializeField] private EnemyId _targetEnemy;
+
+    private void Spawn()
+    {
+        int id = _targetEnemy.Id; // стабильный integer, безопасен для switch / Dictionary
+    }
+}
+```
+
+### UniqueIdAttribute
+
+Помечает поле как требующее уникального значения среди всех ассетов объявляющего типа. Inspector показывает предупреждение, если два ассета используют одинаковый ID.
+
+```csharp
+[Conditional("UNITY_EDITOR")]
+public sealed class UniqueIdAttribute : PropertyAttribute { }
+```
+
+### IdRegistry
+
+`ScriptableObject`, хранящий пары имя ↔ целое число. Каждому имени назначается стабильный, автоинкрементный ID, который не изменяется даже при добавлении или удалении других записей.
+
+| Член | Описание |
+|------|----------|
+| `bool Contains(string name)` | Возвращает, зарегистрировано ли имя |
+| `int Add(string name)` | Регистрирует имя и возвращает ID; если имя уже есть — возвращает существующий ID |
+| `void Remove(string name)` | Удаляет запись по имени |
+| `void Rename(string oldName, string newName)` | Переименовывает запись |
+| `int GetId(string name)` | Возвращает ID для имени или `0`, если не найдено |
+| `string? GetName(int id)` | Возвращает имя для ID или `null`, если не найдено |
 
 ---
 

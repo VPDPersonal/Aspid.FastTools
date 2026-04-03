@@ -6,56 +6,93 @@ namespace Aspid.FastTools
 {
     public static partial class VisualElementExtensions
     {
+        #region Class
         /// <summary>
-        /// Adds a USS class to the element.
-        /// </summary>
-        /// <returns>The element for method chaining.</returns>
-        public static T AddClass<T>(this T element, string className)
-            where T : VisualElement
-        {
-            element.AddToClassList(className);
-            return element;
-        }
-
-        /// <summary>
-        /// Removes a USS class from the element.
-        /// </summary>
-        /// <returns>The element for method chaining.</returns>
-        public static T RemoveClass<T>(this T element, string className)
-            where T : VisualElement
-        {
-            element.RemoveFromClassList(className);
-            return element;
-        }
-
-        /// <summary>
-        /// Toggles a USS class on the element.
-        /// </summary>
-        /// <returns>The element for method chaining.</returns>
-        public static T ToggleClass<T>(this T element, string className)
-            where T : VisualElement
-        {
-            element.ToggleInClassList(className);
-            return element;
-        }
-
-        /// <summary>
-        /// Adds a style sheet to the element.
-        /// </summary>
-        /// <returns>The element for method chaining.</returns>
-        public static T AddStyleSheets<T>(this T element, StyleSheet styleSheet)
-            where T : VisualElement
-        {
-            element.styleSheets.Add(styleSheet);
-            return element;
-        }
-
-        /// <summary>
-        /// Adds a style sheet to the element by loading it from <c>Resources</c> at the given path.
+        /// Removes all classes from the class list of this element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="path">The resource path passed to <see cref="Resources.Load{T}(string)"/>.</param>
-        /// <returns>The element for method chaining.</returns>
+        /// <returns>The element, for chaining.</returns>
+        public static T ClearClasses<T>(this T element)
+            where T : VisualElement
+        {
+            element.ClearClassList();
+            return element;
+        }
+
+        /// <summary>
+        /// Adds a class to the class list of the element in order to assign styles from USS. Note the class name is case-sensitive.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The USS class name to add.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddClass<T>(this T element, string value)
+            where T : VisualElement
+        {
+            element.AddToClassList(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Removes a class from the class list of the element.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The USS class name to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveClass<T>(this T element, string value)
+            where T : VisualElement
+        {
+            element.RemoveFromClassList(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Toggles between adding and removing the given class name from the class list.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The USS class name to toggle.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T ToggleInClass<T>(this T element, string value)
+            where T : VisualElement
+        {
+            element.ToggleInClassList(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Enables or disables the class with the given name.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="className">The USS class name to enable or disable.</param>
+        /// <param name="enable">Whether to enable or disable the class.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T EnableInClass<T>(this T element, string className, bool enable)
+            where T : VisualElement
+        {
+            element.EnableInClassList(className, enable);
+            return element;
+        }
+        #endregion
+
+        #region StyleSheets
+        /// <summary>
+        /// Adds a USS style sheet to the element's style sheet list.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The style sheet to add.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddStyleSheets<T>(this T element, StyleSheet value)
+            where T : VisualElement
+        {
+            element.styleSheets.Add(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Loads and adds a USS style sheet from a Resources path.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="path">The Resources-relative path to the style sheet asset.</param>
+        /// <returns>The element, for chaining.</returns>
         public static T AddStyleSheetsFromResource<T>(this T element, string path)
             where T : VisualElement
         {
@@ -64,27 +101,30 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Removes a style sheet from the element.
+        /// Removes a style sheet for the owner element.
         /// </summary>
-        /// <returns>The element for method chaining.</returns>
-        public static T RemoveStyleSheets<T>(this T element, StyleSheet styleSheet)
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The style sheet to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveStyleSheets<T>(this T element, StyleSheet value)
             where T : VisualElement
         {
-            element.styleSheets.Remove(styleSheet);
+            element.styleSheets.Remove(value);
             return element;
         }
 
         /// <summary>
-        /// Removes a style sheet from the element by loading it from <c>Resources</c> at the given path.
+        /// Loads and removes a USS style sheet identified by its Resources path.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="path">The resource path passed to <see cref="Resources.Load{T}(string)"/>.</param>
-        /// <returns>The element for method chaining.</returns>
+        /// <param name="path">The Resources-relative path to the style sheet asset.</param>
+        /// <returns>The element, for chaining.</returns>
         public static T RemoveStyleSheetsFromResource<T>(this T element, string path)
             where T : VisualElement
         {
             element.styleSheets.Remove(styleSheet: Resources.Load<StyleSheet>(path));
             return element;
         }
+        #endregion
     }
 }

@@ -124,6 +124,27 @@ public class MyBehaviour : MonoBehaviour
 }
 ```
 ![Aspid.FastTools.SerializableType.png](Images/Aspid.FastTools.SerializableType.png)
+### ComponentTypeSelector
+
+A serializable struct that renders a type-switching dropdown in the Inspector. Add it as a field to a base class — picking a subtype rewrites `m_Script` on the `SerializedObject`, effectively changing the component or ScriptableObject to the chosen subtype.
+
+The dropdown is automatically constrained to subtypes of the class that declares the field. No additional configuration is required.
+
+```csharp
+using UnityEngine;
+using Aspid.FastTools;
+
+public abstract class BaseEnemy : MonoBehaviour
+{
+    [SerializeField] private ComponentTypeSelector _typeSelector;
+}
+
+public class FastEnemy : BaseEnemy { }
+public class TankEnemy : BaseEnemy { }
+```
+
+---
+
 ### TypeSelectorAttribute
 
 An editor-only `PropertyAttribute` that restricts the type selection popup to specific base types. Applied to `string` fields that store assembly-qualified type names.
@@ -137,8 +158,16 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
     public TypeSelectorAttribute(params Type[] types)
     public TypeSelectorAttribute(string assemblyQualifiedName)
     public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
+
+    public bool AllowAbstractTypes { get; set; } // default: false
+    public bool AllowInterfaces    { get; set; } // default: false
 }
 ```
+
+| Property | Description |
+|----------|-------------|
+| `AllowAbstractTypes` | Includes abstract classes in the picker. Default: `false` |
+| `AllowInterfaces` | Includes interface types in the picker. Default: `false` |
 
 ```csharp
 using UnityEngine;
@@ -148,6 +177,10 @@ public class MyBehaviour : MonoBehaviour
 {
     [TypeSelector(typeof(IMyInterface))]
     [SerializeField] private string _typeName;
+
+    // Include abstract types and interfaces in the picker
+    [TypeSelector(typeof(object), AllowAbstractTypes = true, AllowInterfaces = true)]
+    [SerializeField] private string _anyType;
 }
 ```
 
@@ -203,6 +236,83 @@ public class MyBehaviour : MonoBehaviour
 ```
 
 In the Inspector, select the enum type in the `EnumValues` header, then assign a value for each enum member.
+
+---
+
+## String ID System
+
+Maps string names to stable integer IDs. Designed for data-driven setups where assets need a reliable, editor-assignable identifier that can be safely used in switch statements and dictionaries.
+
+### Setup
+
+**1.** Declare a `partial struct` implementing `IId`. The source generator adds the required fields and property automatically:
+
+```csharp
+using Aspid.FastTools;
+
+public partial struct EnemyId : IId { }
+```
+
+Generated code:
+
+```csharp
+public partial struct EnemyId
+{
+    [SerializeField] private string __stringId;
+    [SerializeField] private int _id;
+
+    public int Id => _id;
+}
+```
+
+**2.** Create an `IdRegistry` asset via *Assets → Create → Aspid → FastTools → String Id Registry* and bind it to the struct type in the Inspector.
+
+**3.** Use the struct as a serialized field. The Inspector shows a dropdown of registered names with a **Create** button to add new entries inline:
+
+```csharp
+using UnityEngine;
+using Aspid.FastTools;
+
+[CreateAssetMenu]
+public class EnemyDefinition : ScriptableObject
+{
+    [UniqueId] [SerializeField] private EnemyId _id;
+}
+```
+
+```csharp
+public class EnemySpawner : MonoBehaviour
+{
+    [SerializeField] private EnemyId _targetEnemy;
+
+    private void Spawn()
+    {
+        int id = _targetEnemy.Id; // stable integer, safe for switch / Dictionary
+    }
+}
+```
+
+### UniqueIdAttribute
+
+Marks a field as requiring a unique value across all assets of the declaring type. The Inspector shows a warning if two assets share the same ID.
+
+```csharp
+[Conditional("UNITY_EDITOR")]
+public sealed class UniqueIdAttribute : PropertyAttribute { }
+```
+
+### IdRegistry
+
+A `ScriptableObject` that stores name ↔ integer pairs. Each name is assigned a stable, auto-incrementing ID that never changes even when other entries are added or removed.
+
+| Member | Description |
+|--------|-------------|
+| `bool Contains(string name)` | Returns whether a name is registered |
+| `int Add(string name)` | Registers a name and returns its ID; returns the existing ID if already registered |
+| `void Remove(string name)` | Removes an entry by name |
+| `void Rename(string oldName, string newName)` | Renames an entry |
+| `int GetId(string name)` | Returns the ID for a name, or `0` if not found |
+| `string? GetName(int id)` | Returns the name for an ID, or `null` if not found |
 
 ---
 

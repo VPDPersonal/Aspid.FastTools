@@ -18,19 +18,19 @@ namespace Aspid.FastTools
     /// Constrain to a single base type:
     /// <code>
     /// [TypeSelector(typeof(MonoBehaviour))]
-    /// [SerializeField] private SerializableType _behaviourType;
+    /// [SerializeField] private string _behaviourType;
     /// </code>
     ///
     /// Accept any type (unconstrained):
     /// <code>
     /// [TypeSelector]
-    /// [SerializeField] private SerializableType _anyType;
+    /// [SerializeField] private string _anyType;
     /// </code>
     ///
     /// Allow multiple independent base types:
     /// <code>
     /// [TypeSelector(typeof(IDisposable), typeof(ScriptableObject))]
-    /// [SerializeField] private SerializableType _type;
+    /// [SerializeField] private string _type;
     /// </code>
     /// </example>
     [Conditional(conditionString: "UNITY_EDITOR")]
@@ -40,6 +40,16 @@ namespace Aspid.FastTools
         /// The assembly-qualified names of the base types that constrain the selection.
         /// </summary>
         public readonly string[] AssemblyQualifiedNames;
+        
+        /// <summary>
+        /// Whether abstract types are included in the picker. Defaults to <c>false</c>.
+        /// </summary>
+        public bool AllowAbstractTypes { get; set; } = false;
+
+        /// <summary>
+        /// Whether interface types are included in the picker. Defaults to <c>false</c>.
+        /// </summary>
+        public bool AllowInterfaces { get; set; } = false;
 
         /// <summary>
         /// Creates an unconstrained attribute (base type is <see cref="object"/>).

@@ -1,0 +1,38 @@
+VisualElement > Label
+{
+    width: 40%;
+    flex-grow: 1;
+    max-width: 40%;
+    min-width: 40%;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.aspid-fasttools-serializable-type 
+{
+    margin: 1px -2px 1px 3px;
+    flex-direction: row;
+}
+
+.aspid-fasttools-serializable-type-buttons
+{
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+Button
+{
+    margin: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -unity-text-align: middle-left;
+}
+
+.aspid-fasttools-serializable-type-open-button
+{
+    flex-grow: 0;
+    margin-left: 1px;
+}

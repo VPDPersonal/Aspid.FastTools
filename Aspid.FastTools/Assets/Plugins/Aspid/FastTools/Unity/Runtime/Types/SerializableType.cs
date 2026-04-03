@@ -47,8 +47,12 @@ namespace Aspid.FastTools
         {
             get
             {
+#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
                 using (this.Marker())
+#endif
+                {
                     return _type ??= Type.GetType(_assemblyQualifiedName, throwOnError: false);
+                }
             }
         }
 
@@ -88,7 +92,9 @@ namespace Aspid.FastTools
 
         private Type? _type;
 
-        /// <summary>The base constraint type. Always <typeparamref name="T"/>.</summary>
+        /// <summary>
+        /// The base constraint type. Always <typeparamref name="T"/>.
+        /// </summary>
         public Type BaseType => typeof(T);
 
         /// <summary>
@@ -99,8 +105,12 @@ namespace Aspid.FastTools
         {
             get
             {
+#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
                 using (this.Marker())
+#endif
+                {
                     return _type ??= Type.GetType(_assemblyQualifiedName, throwOnError: false);
+                }
             }
         }
 

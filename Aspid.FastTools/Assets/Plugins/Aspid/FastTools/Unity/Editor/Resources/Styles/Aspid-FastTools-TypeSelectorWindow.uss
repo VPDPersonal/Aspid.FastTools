@@ -1,0 +1,62 @@
+.aspid-fasttools-type-selector-container 
+{
+    padding: 4px;
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+.aspid-fasttools-type-selector-header 
+{
+    height: 20px;
+    min-height: 20px;
+    align-items: center;
+    flex-direction: row;
+    margin: -3px -3px 4px;
+    background-color: rgb(38, 38, 38);
+}
+
+/* BackButton */
+VisualElement > VisualElement > Button
+{
+    width: 26px;
+    height: 20px;
+    margin-right: 4px;
+    border-top-width: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* Title*/
+VisualElement > VisualElement > Label 
+{
+    flex-grow: 1;
+    -unity-font-style: bold;
+}
+
+ToolbarSearchField
+{
+    width: auto;
+    margin-bottom: 4px;
+    padding-right: 4px;
+}
+
+.aspid-fasttools-type-selector-item 
+{
+    height: 20px;
+    padding-left: 6px;
+    padding-right: 6px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.aspid-fasttools-type-selector-item-title
+{
+    flex-grow: 1;
+}
+
+.aspid-fasttools-type-selector-item-arrow 
+{
+    opacity: 0.6;
+}

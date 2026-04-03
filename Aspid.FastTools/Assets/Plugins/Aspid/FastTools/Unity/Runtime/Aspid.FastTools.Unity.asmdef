@@ -1,7 +1,10 @@
 {
     "name": "Aspid.FastTools.Unity",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "Unity.Collections",
+        "Unity.Mathematics"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

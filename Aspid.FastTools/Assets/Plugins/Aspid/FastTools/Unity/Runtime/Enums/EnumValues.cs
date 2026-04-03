@@ -41,6 +41,7 @@ namespace Aspid.FastTools
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         [TypeSelector(typeof(Enum))]
         [SerializeField] private string _enumType;
+        
         [SerializeField] private TValue _defaultValue;
         [SerializeField] private EnumValue<TValue>[] _values;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -126,10 +127,7 @@ namespace Aspid.FastTools
                 return enumValue1.Equals(enumValue2);
             }
         }
-
-        /// <summary>
-        /// Returns an enumerator over all key-value pairs in the collection.
-        /// </summary>
+        
         public IEnumerator<KeyValuePair<Enum, TValue>> GetEnumerator()
         {
             Initialize();
