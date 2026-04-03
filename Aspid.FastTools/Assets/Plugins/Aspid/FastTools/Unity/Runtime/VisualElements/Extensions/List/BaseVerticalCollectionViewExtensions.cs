@@ -403,7 +403,7 @@ namespace Aspid.FastTools
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The items source to set.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetHandleDrop<T>(this T element, IList value)
+        public static T SetItemsSource<T>(this T element, IList value)
             where T : BaseVerticalCollectionView
         {
             element.itemsSource = value;

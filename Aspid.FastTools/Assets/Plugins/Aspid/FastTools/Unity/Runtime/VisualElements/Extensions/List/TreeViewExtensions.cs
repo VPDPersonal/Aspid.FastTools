@@ -131,7 +131,7 @@ namespace Aspid.FastTools
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
         public static T RemoveMakeItem<T>(this T element, Func<VisualElement> value)
-            where T : ListView
+            where T : TreeView
         {
             element.makeItem -= value;
             return element;
