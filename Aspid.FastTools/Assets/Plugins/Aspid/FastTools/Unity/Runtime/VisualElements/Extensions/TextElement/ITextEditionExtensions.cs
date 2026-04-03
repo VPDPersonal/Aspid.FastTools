@@ -134,6 +134,7 @@ namespace Aspid.FastTools
             return element;
         }
 
+#if UNITY_6000_4_OR_NEWER
         /// <summary>
         /// Sets <see cref="ITextEdition.hideSoftKeyboard"/> and returns the element for chaining.
         /// </summary>
@@ -149,6 +150,7 @@ namespace Aspid.FastTools
             element.hideSoftKeyboard = value;
             return element;
         }
+#endif
 
         /// <summary>
         /// Sets <see cref="ITextEdition.hidePlaceholderOnFocus"/> and returns the element for chaining.
