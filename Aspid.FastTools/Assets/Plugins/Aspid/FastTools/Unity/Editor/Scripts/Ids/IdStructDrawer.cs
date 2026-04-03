@@ -300,6 +300,6 @@ namespace Aspid.FastTools.Editors
             string.IsNullOrEmpty(name) ? NoneOption : name;
 
         private static string PropertyKey(SerializedProperty p) =>
-            $"{p.serializedObject.targetObject.GetEntityId()}:{p.propertyPath}";
+            $"{p.serializedObject.targetObject.GetInstanceID()}:{p.propertyPath}";
     }
 }

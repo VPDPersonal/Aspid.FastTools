@@ -85,7 +85,7 @@ namespace Aspid.FastTools.Editors
             var idProp = structProp.FindPropertyRelative("__stringId");
             if (idProp == null) return true;
 
-            var key = $"{structProp.serializedObject.targetObject.GetEntityId()}:{structProp.propertyPath}:{idProp.stringValue}";
+            var key = $"{structProp.serializedObject.targetObject.GetInstanceID()}:{structProp.propertyPath}:{idProp.stringValue}";
             var now = EditorApplication.timeSinceStartup;
 
             if (_cache.TryGetValue(key, out var cached) && now - cached.time < CacheLifetime)
