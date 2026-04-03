@@ -535,6 +535,7 @@ namespace Aspid.FastTools
         #endregion
 
         #region Aspect
+#if UNITY_6000_3_OR_NEWER
         /// <summary>
         /// Sets the <c>style.aspectRatio</c> CSS property.
         /// </summary>
@@ -547,9 +548,11 @@ namespace Aspid.FastTools
             element.style.SetAspectRation(value);
             return element;
         }
+#endif
         #endregion
 
         #region Filter
+#if UNITY_6000_3_OR_NEWER
         /// <summary>
         /// Sets the <c>style.filter</c> CSS property applying graphical effects such as blur or color shift.
         /// </summary>
@@ -562,6 +565,7 @@ namespace Aspid.FastTools
             element.style.SetFilter(value);
             return element;
         }
+#endif
         #endregion
 
         #region Border
@@ -1325,6 +1329,7 @@ namespace Aspid.FastTools
         #endregion
 
         #region Material
+#if UNITY_6000_3_OR_NEWER
         /// <summary>
         /// Sets the <c>style.unityMaterial</c> CSS property.
         /// </summary>
@@ -1337,6 +1342,7 @@ namespace Aspid.FastTools
             element.style.SetUnityMaterial(value);
             return element;
         }
+#endif
         #endregion
 
         #region Transform

@@ -500,6 +500,7 @@ namespace Aspid.FastTools
         #endregion
 
         #region Aspect
+#if UNITY_6000_3_OR_NEWER
         /// <summary>
         /// Sets a preferred aspect ratio for the box, which will be used in the calculation of auto sizes and some other layout functions.
         /// </summary>
@@ -511,9 +512,11 @@ namespace Aspid.FastTools
             style.aspectRatio = value;
             return style;
         }
+#endif
         #endregion
 
         #region Filter
+#if UNITY_6000_3_OR_NEWER
         /// <summary>
         /// Filter effects to apply to the element.
         /// </summary>
@@ -525,6 +528,7 @@ namespace Aspid.FastTools
             style.filter = value;
             return style;
         }
+#endif
         #endregion
 
         #region Border
@@ -1276,6 +1280,7 @@ namespace Aspid.FastTools
         #endregion
 
         #region Material
+#if UNITY_6000_3_OR_NEWER
         /// <summary>
         /// Custom material to use on the element.
         /// </summary>
@@ -1287,6 +1292,7 @@ namespace Aspid.FastTools
             style.unityMaterial = value;
             return style;
         }
+#endif
         #endregion
 
         #region Transform
