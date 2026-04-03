@@ -232,6 +232,7 @@ namespace Aspid.FastTools
         #endregion
         
         #region Guid
+#if UNITY_6000_4_OR_NEWER
         /// <summary>
         /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
         /// </summary>
@@ -247,6 +248,7 @@ namespace Aspid.FastTools
             
             return element;
         }
+#endif
         #endregion
         
         #region Color

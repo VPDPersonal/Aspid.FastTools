@@ -362,6 +362,7 @@ namespace Aspid.FastTools
         #endregion
         
         #region Guid
+#if UNITY_6000_4_OR_NEWER
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -387,6 +388,7 @@ namespace Aspid.FastTools
             element.UnregisterValueChangedCallback(value);
             return element;
         }
+#endif
         #endregion
         
         #region Color
