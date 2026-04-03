@@ -7,6 +7,7 @@ namespace Aspid.FastTools
     public static class ITextSelectionExtensions
     {
         #region OnCursorIndexChange
+#if UNITY_6000_3_OR_NEWER
         /// <summary>
         /// Subscribes to the <see cref="ITextSelection.OnCursorIndexChange"/> event.
         /// </summary>
@@ -32,9 +33,11 @@ namespace Aspid.FastTools
             element.OnCursorIndexChange -= value;
             return element;
         }
+#endif
         #endregion
 
         #region OnSelectIndexChange
+#if UNITY_6000_3_OR_NEWER
         /// <summary>
         /// Subscribes to the <see cref="ITextSelection.OnSelectIndexChange"/> event.
         /// </summary>
@@ -60,6 +63,7 @@ namespace Aspid.FastTools
             element.OnSelectIndexChange -= value;
             return element;
         }
+#endif
         #endregion
 
         /// <summary>
