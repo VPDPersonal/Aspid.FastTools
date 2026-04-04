@@ -8,7 +8,7 @@ namespace Aspid.FastTools
     public static partial class VisualElementExtensions
     {
         /// <summary>
-        /// Adds a child element to this element's visual hierarchy.
+        /// Adds an element to the <see cref="VisualElement.contentContainer"/> of this element and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="child">The child element to add.</param>
@@ -21,7 +21,7 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Adds a span of child elements to this element's visual hierarchy.
+        /// Adds a span of child elements to the <see cref="VisualElement.contentContainer"/> of this element and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="children">The children to add.</param>
@@ -36,7 +36,7 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Adds a list of child elements to this element's visual hierarchy.
+        /// Adds a list of child elements to the <see cref="VisualElement.contentContainer"/> of this element and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="children">The children to add.</param>
@@ -53,7 +53,7 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Adds an array of child elements to this element's visual hierarchy.
+        /// Adds an array of child elements to the <see cref="VisualElement.contentContainer"/> of this element and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="children">The children to add.</param>
@@ -70,7 +70,7 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Adds an enumerable of child elements to this element's visual hierarchy.
+        /// Adds an enumerable of child elements to the <see cref="VisualElement.contentContainer"/> of this element and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="children">The children to add.</param>
@@ -87,7 +87,7 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Adds a read-only span of child elements to this element's visual hierarchy.
+        /// Adds a read-only span of child elements to the <see cref="VisualElement.contentContainer"/> of this element and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="children">The children to add.</param>

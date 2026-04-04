@@ -8,8 +8,14 @@ namespace Aspid.FastTools
     {
         #region Flex
         /// <summary>
-        /// Initial main size of a flex item, on the main flex axis. The final layout might be smaller or larger, according to the flex shrinking and growing determined by the other flex properties.
+        /// Sets <see cref="IStyle.flexBasis"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Initial main size of a flex item, on the main flex axis. The final layout might be smaller or larger, according to the flex shrinking and growing determined by the other flex properties.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The flex basis to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetFlexBasis<T>(
             this T style,
             StyleLength value)
@@ -20,8 +26,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Specifies how the item will grow relative to the rest of the flexible items inside the same container.
+        /// Sets <see cref="IStyle.flexGrow"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Specifies how the item will grow relative to the rest of the flexible items inside the same container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The flex grow factor to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetFlexGrow<T>(
             this T style,
             StyleFloat value)
@@ -32,8 +44,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Specifies how the item will shrink relative to the rest of the flexible items inside the same container.
+        /// Sets <see cref="IStyle.flexShrink"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Specifies how the item will shrink relative to the rest of the flexible items inside the same container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The flex shrink factor to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetFlexShrink<T>(
             this T style,
             StyleFloat value)
@@ -44,8 +62,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Placement of children over multiple lines if not enough space is available in this container.
+        /// Sets <see cref="IStyle.flexWrap"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Placement of children over multiple lines if not enough space is available in this container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The flex wrap mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetFlexWrap<T>(
             this T style,
             StyleEnum<Wrap> value)
@@ -56,8 +80,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Direction of the main axis to layout children in a container.
+        /// Sets <see cref="IStyle.flexDirection"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Direction of the main axis to layout children in a container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The flex direction to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetFlexDirection<T>(
             this T style,
             FlexDirection value)
@@ -70,9 +100,17 @@ namespace Aspid.FastTools
 
         #region Size
         /// <summary>
-        /// Sets both the <c>width</c> and <c>height</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.width"/>, <see cref="IStyle.height"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>width</c> –– Fixed width of an element for the layout.
+        /// </para>
+        /// <c>height</c> –– Fixed height of an element for the layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The size to apply to both width and height.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetSize<T>(
             this T style,
             StyleLength value)
@@ -84,10 +122,18 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>width</c> and/or <c>height</c> CSS properties.
+        /// Sets <see cref="IStyle.width"/>, <see cref="IStyle.height"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>width</c> –– Fixed width of an element for the layout.
+        /// </para>
+        /// <c>height</c> –– Fixed height of an element for the layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="width">The width to set, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="height">The height to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetSize<T>(
             this T style,
             StyleLength? width = null,
@@ -101,71 +147,108 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets both the <c>min-width</c> and <c>min-height</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.minWidth"/>, <see cref="IStyle.minHeight"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>minWidth</c> –– Minimum width for an element, when it is flexible or measures its own size.
+        /// </para>
+        /// <c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The minimum size to apply to both width and height.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMinSize<T>(
             this T style,
             StyleLength value)
             where T : IStyle
         {
             return style.SetMinSize(
-                width: value,
-                height: value);
+                minWidth: value,
+                minHeight: value);
         }
 
         /// <summary>
-        /// Sets the <c>min-width</c> and/or <c>min-height</c> CSS properties.
+        /// Sets <see cref="IStyle.minWidth"/>, <see cref="IStyle.minHeight"/> and returns the style for chaining.
         /// </summary>
-        /// <param name="width">The minimum width to set, or <see langword="null"/> to leave unchanged.</param>
-        /// <param name="height">The minimum height to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <remarks>
+        /// <para>
+        /// <c>minWidth</c> –– Minimum width for an element, when it is flexible or measures its own size.
+        /// </para>
+        /// <c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="minWidth">The minimum width to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <param name="minHeight">The minimum height to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMinSize<T>(
             this T style,
-            StyleLength? width = null,
-            StyleLength? height = null)
+            StyleLength? minWidth = null,
+            StyleLength? minHeight = null)
             where T : IStyle
         {
-            if (width.HasValue) style.minWidth = width.Value;
-            if (height.HasValue) style.minHeight = height.Value;
+            if (minWidth.HasValue) style.minWidth = minWidth.Value;
+            if (minHeight.HasValue) style.minHeight = minHeight.Value;
 
             return style;
         }
-
+        
         /// <summary>
-        /// Sets both the <c>max-width</c> and <c>max-height</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.maxWidth"/>, <see cref="IStyle.maxHeight"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>maxWidth</c> –– Maximum width for an element, when it is flexible or measures its own size.
+        /// </para>
+        /// <c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The maximum size to apply to both width and height.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMaxSize<T>(
             this T style,
             StyleLength value)
             where T : IStyle
         {
             return style.SetMaxSize(
-                width: value,
-                height: value);
+                maxWidth: value,
+                maxHeight: value);
         }
 
         /// <summary>
-        /// Sets the <c>max-width</c> and/or <c>max-height</c> CSS properties.
+        /// Sets <see cref="IStyle.maxWidth"/>, <see cref="IStyle.maxHeight"/> and returns the style for chaining.
         /// </summary>
-        /// <param name="width">The maximum width to set, or <see langword="null"/> to leave unchanged.</param>
-        /// <param name="height">The maximum height to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <remarks>
+        /// <para>
+        /// <c>maxWidth</c> –– Maximum width for an element, when it is flexible or measures its own size.
+        /// </para>
+        /// <c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="maxWidth">The maximum width to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <param name="maxHeight">The maximum height to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMaxSize<T>(
             this T style,
-            StyleLength? width = null,
-            StyleLength? height = null)
+            StyleLength? maxWidth = null,
+            StyleLength? maxHeight = null)
             where T : IStyle
         {
-            if (width.HasValue) style.maxWidth = width.Value;
-            if (height.HasValue) style.maxHeight = height.Value;
+            if (maxWidth.HasValue) style.maxWidth = maxWidth.Value;
+            if (maxHeight.HasValue) style.maxHeight = maxHeight.Value;
 
             return style;
         }
 
         /// <summary>
-        /// Sets the <c>width</c> CSS property.
+        /// Sets <see cref="IStyle.width"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>width</c> –– Fixed width of an element for the layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetWidth<T>(
             this T style,
             StyleLength value)
@@ -175,33 +258,48 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>min-width</c> CSS property.
+        /// Sets <see cref="IStyle.minWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>minWidth</c> –– Minimum width for an element, when it is flexible or measures its own size.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The minimum width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMinWidth<T>(
             this T style,
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMinSize(width: value);
+            return style.SetMinSize(minWidth: value);
         }
 
         /// <summary>
-        /// Sets the <c>max-width</c> CSS property.
+        /// Sets <see cref="IStyle.maxWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>maxWidth</c> –– Maximum width for an element, when it is flexible or measures its own size.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The maximum width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMaxWidth<T>(
             this T style,
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMaxSize(width: value);
+            return style.SetMaxSize(maxWidth: value);
         }
 
         /// <summary>
-        /// Sets the <c>height</c> CSS property.
+        /// Sets <see cref="IStyle.height"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>height</c> –– Fixed height of an element for the layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The height to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetHeight<T>(
             this T style,
             StyleLength value)
@@ -211,34 +309,50 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>min-height</c> CSS property.
+        /// Sets <see cref="IStyle.minHeight"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The minimum height to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMinHeight<T>(
             this T style,
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMinSize(height: value);
+            return style.SetMinSize(minHeight: value);
         }
 
         /// <summary>
-        /// Sets the <c>max-height</c> CSS property.
+        /// Sets <see cref="IStyle.maxHeight"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The maximum height to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMaxHeight<T>(
             this T style,
             StyleLength value)
             where T : IStyle
         {
-            return style.SetMaxSize(height: value);
+            return style.SetMaxSize(maxHeight: value);
         }
         #endregion
 
         #region Font
         /// <summary>
-        /// Font to draw the element's text, defined as a Font object.
+        /// Sets <see cref="IStyle.unityFont"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Font to draw the element's text, defined as a Font object.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The font to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityFont<T>(
             this T style,
             StyleFont value)
@@ -249,8 +363,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Font size to draw the element's text, specified in point size.
+        /// Sets <see cref="IStyle.fontSize"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Font size to draw the element's text, specified in point size.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The font size to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetFontSize<T>(
             this T style,
             StyleLength value)
@@ -261,8 +381,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Font to draw the element's text, defined as a FontDefinition structure. It takes precedence over -unity-font.
+        /// Sets <see cref="IStyle.unityFontDefinition"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Font to draw the element's text, defined as a FontDefinition structure. It takes precedence over -unity-font.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The font definition to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityFontDefinition<T>(
             this T style,
             StyleFontDefinition value)
@@ -273,8 +399,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Font style and weight (normal, bold, italic) to draw the element's text.
+        /// Sets <see cref="IStyle.unityFontStyleAndWeight"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Font style and weight (normal, bold, italic) to draw the element's text.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The font style and weight to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityFontStyleAndWeight<T>(
             this T style,
             StyleEnum<FontStyle> value)
@@ -287,8 +419,14 @@ namespace Aspid.FastTools
 
         #region Text
         /// <summary>
-        /// Increases or decreases the space between words.
+        /// Sets <see cref="IStyle.wordSpacing"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Increases or decreases the space between words.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The word spacing to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetWorldSpacing<T>(
             this T style,
             StyleLength value)
@@ -299,8 +437,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Increases or decreases the space between characters.
+        /// Sets <see cref="IStyle.letterSpacing"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Increases or decreases the space between characters.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The letter spacing to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetLetterSpacing<T>(
             this T style,
             StyleLength value)
@@ -311,8 +455,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Horizontal and vertical text alignment in the element's box.
+        /// Sets <see cref="IStyle.unityTextAlign"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Horizontal and vertical text alignment in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text alignment to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityTextAlign<T>(
             this T style,
             TextAnchor value)
@@ -323,8 +473,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Drop shadow of the text.
+        /// Sets <see cref="IStyle.textShadow"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Drop shadow of the text.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text shadow to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetTextShadow<T>(
             this T style,
             StyleTextShadow value)
@@ -335,8 +491,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Outline color of the text.
+        /// Sets <see cref="IStyle.unityTextOutlineColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Outline color of the text.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text outline color to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityTextOutlineColor<T>(
             this T style,
             StyleColor value)
@@ -347,8 +509,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Outline width of the text.
+        /// Sets <see cref="IStyle.unityTextOutlineWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Outline width of the text.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text outline width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityTextOutlineWidth<T>(
             this T style,
             StyleFloat value)
@@ -359,8 +527,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Increases or decreases the space between paragraphs.
+        /// Sets <see cref="IStyle.unityParagraphSpacing"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Increases or decreases the space between paragraphs.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The paragraph spacing to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityParagraphSpacing<T>(
             this T style,
             StyleLength value)
@@ -372,8 +546,14 @@ namespace Aspid.FastTools
 
 #if UNITY_6000_2_OR_NEWER
         /// <summary>
-        /// Overrides any explicit font-size to scale text within the defined minimum and maximum bounds, recalculating as needed to fit its container.
+        /// Sets <see cref="IStyle.unityTextAutoSize"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Overrides any explicit font-size to scale text within the defined minimum and maximum bounds, recalculating as needed to fit its container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text auto size settings to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityTextAutoSize<T>(
             this T style,
             StyleTextAutoSize value)
@@ -386,8 +566,14 @@ namespace Aspid.FastTools
 
 #if UNITY_6000_0_OR_NEWER
         /// <summary>
-        /// Switches between Unity's standard and advanced text generator.
+        /// Sets <see cref="IStyle.unityTextGenerator"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Switches between Unity's standard and advanced text generator.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text generator type to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityTextGenerator<T>(
             this T style,
             TextGeneratorType value)
@@ -398,8 +584,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// TextElement editor rendering mode.
+        /// Sets <see cref="IStyle.unityEditorTextRenderingMode"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// TextElement editor rendering mode.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The editor text rendering mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityEditorTextRenderingMode<T>(
             this T style,
             EditorTextRenderingMode value)
@@ -411,8 +603,14 @@ namespace Aspid.FastTools
 #endif
 
         /// <summary>
-        /// The element's text overflow mode.
+        /// Sets <see cref="IStyle.textOverflow"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// The element's text overflow mode.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text overflow mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetTextOverflow<T>(
             this T style,
             StyleEnum<TextOverflow> value)
@@ -423,8 +621,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// The element's text overflow position.
+        /// Sets <see cref="IStyle.unityTextOverflowPosition"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// The element's text overflow position.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text overflow position to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityTextOverflowPosition<T>(
             this T style,
             TextOverflowPosition value)
@@ -437,8 +641,14 @@ namespace Aspid.FastTools
 
         #region Color
         /// <summary>
-        /// Color to use when drawing the text of an element.
+        /// Sets <see cref="IStyle.color"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Color to use when drawing the text of an element.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text color to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetColor<T>(
             this T style,
             StyleColor value)
@@ -449,8 +659,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Specifies the transparency of an element and of its children.
+        /// Sets <see cref="IStyle.opacity"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Specifies the transparency of an element and of its children.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The opacity to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetOpacity<T>(
             this T style,
             StyleFloat value)
@@ -463,8 +679,14 @@ namespace Aspid.FastTools
 
         #region Align
         /// <summary>
-        /// Similar to align-items, but only for this specific element.
+        /// Sets <see cref="IStyle.alignSelf"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Similar to align-items, but only for this specific element.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The alignment to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetAlignSelf<T>(
             this T style,
             StyleEnum<Align> value)
@@ -475,8 +697,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Alignment of children on the cross axis of this container.
+        /// Sets <see cref="IStyle.alignItems"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Alignment of children on the cross axis of this container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The children alignment to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetAlignItems<T>(
             this T style,
             StyleEnum<Align> value)
@@ -487,8 +715,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Alignment of the whole area of children on the cross axis if they span over multiple lines in this container.
+        /// Sets <see cref="IStyle.alignContent"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Alignment of the whole area of children on the cross axis if they span over multiple lines in this container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The content alignment to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetAlignContent<T>(
             this T style,
             StyleEnum<Align> value)
@@ -502,8 +736,14 @@ namespace Aspid.FastTools
         #region Aspect
 #if UNITY_6000_3_OR_NEWER
         /// <summary>
-        /// Sets a preferred aspect ratio for the box, which will be used in the calculation of auto sizes and some other layout functions.
+        /// Sets <see cref="IStyle.aspectRatio"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Sets a preferred aspect ratio for the box, which will be used in the calculation of auto sizes and some other layout functions.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The aspect ratio to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetAspectRation<T>(
             this T style,
             StyleRatio value)
@@ -518,8 +758,14 @@ namespace Aspid.FastTools
         #region Filter
 #if UNITY_6000_3_OR_NEWER
         /// <summary>
-        /// Filter effects to apply to the element.
+        /// Sets <see cref="IStyle.filter"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Filter effects to apply to the element.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The filter effects to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetFilter<T>(
             this T style,
             StyleList<FilterFunction> value)
@@ -533,9 +779,22 @@ namespace Aspid.FastTools
 
         #region Border
         /// <summary>
-        /// Sets all four border color CSS properties (<c>border-top-color</c>, <c>border-right-color</c>, <c>border-bottom-color</c>, <c>border-left-color</c>) to the same value.
+        /// Sets <see cref="IStyle.borderTopColor"/>, <see cref="IStyle.borderRightColor"/>,
+        /// <see cref="IStyle.borderBottomColor"/>, <see cref="IStyle.borderLeftColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderTopColor</c> –– Color of the element's top border.
+        /// </para>
+        /// <c>borderRightColor</c> –– Color of the element's right border.
+        /// <para>
+        /// <c>borderBottomColor</c> –– Color of the element's bottom border.
+        /// </para>
+        /// <c>borderLeftColor</c> –– Color of the element's left border.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The border color to apply to all sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderColor<T>(
             this T style,
             StyleColor value)
@@ -549,12 +808,25 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the border color CSS properties for individual sides.
+        /// Sets <see cref="IStyle.borderTopColor"/>, <see cref="IStyle.borderRightColor"/>,
+        /// <see cref="IStyle.borderBottomColor"/>, <see cref="IStyle.borderLeftColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderTopColor</c> –– Color of the element's top border.
+        /// </para>
+        /// <c>borderRightColor</c> –– Color of the element's right border.
+        /// <para>
+        /// <c>borderBottomColor</c> –– Color of the element's bottom border.
+        /// </para>
+        /// <c>borderLeftColor</c> –– Color of the element's left border.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="top">The top border color, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="right">The right border color, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="bottom">The bottom border color, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="left">The left border color, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderColor<T>(
             this T style,
             StyleColor? top = null,
@@ -572,23 +844,39 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-left-color</c> and <c>border-right-color</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.borderRightColor"/>, <see cref="IStyle.borderLeftColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderRightColor</c> –– Color of the element's right border.
+        /// </para>
+        /// <c>borderLeftColor</c> –– Color of the element's left border.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The border color to apply to the left and right sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderColorX<T>(
             this T style,
             StyleColor value)
             where T : IStyle
         {
             return style.SetBorderColor(
-                left: value,
-                right: value);
+                right: value,
+                left: value);
         }
 
         /// <summary>
-        /// Sets the <c>border-top-color</c> and <c>border-bottom-color</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.borderTopColor"/> and <see cref="IStyle.borderBottomColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderTopColor</c> –– Color of the element's top border.
+        /// </para>
+        /// <c>borderBottomColor</c> –– Color of the element's bottom border.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The border color to apply to the top and bottom sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderColorY<T>(
             this T style,
             StyleColor value)
@@ -600,9 +888,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-top-color</c> CSS property.
+        /// Sets <see cref="IStyle.borderTopColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderTopColor</c> –– Color of the element's top border.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The top border color to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderColorTop<T>(
             this T style,
             StyleColor value)
@@ -612,9 +905,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-right-color</c> CSS property.
+        /// Sets <see cref="IStyle.borderRightColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderRightColor</c> –– Color of the element's right border.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The right border color to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderColorRight<T>(
             this T style,
             StyleColor value)
@@ -624,9 +922,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-bottom-color</c> CSS property.
+        /// Sets <see cref="IStyle.borderBottomColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderBottomColor</c> –– Color of the element's bottom border.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The bottom border color to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderColorBottom<T>(
             this T style,
             StyleColor value)
@@ -636,9 +939,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-left-color</c> CSS property.
+        /// Sets <see cref="IStyle.borderLeftColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderLeftColor</c> –– Color of the element's left border.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The left border color to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderColorLeft<T>(
             this T style,
             StyleColor value)
@@ -648,9 +956,22 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets all four border radius CSS properties to the same value.
+        /// Sets <see cref="IStyle.borderTopLeftRadius"/>, <see cref="IStyle.borderTopRightRadius"/>,
+        /// <see cref="IStyle.borderBottomRightRadius"/>, <see cref="IStyle.borderBottomLeftRadius"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.
+        /// </para>
+        /// <c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.
+        /// <para>
+        /// <c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.
+        /// </para>
+        /// <c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The border radius to apply to all corners.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderRadius<T>(
             this T style,
             StyleLength value)
@@ -664,12 +985,25 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the border radius CSS properties for individual corners.
+        /// Sets <see cref="IStyle.borderTopLeftRadius"/>, <see cref="IStyle.borderTopRightRadius"/>,
+        /// <see cref="IStyle.borderBottomRightRadius"/>, <see cref="IStyle.borderBottomLeftRadius"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.
+        /// </para>
+        /// <c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.
+        /// <para>
+        /// <c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.
+        /// </para>
+        /// <c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="topLeft">The top-left radius, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="topRight">The top-right radius, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="bottomRight">The bottom-right radius, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="bottomLeft">The bottom-left radius, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderRadius<T>(
             this T style,
             StyleLength? topLeft = null,
@@ -687,9 +1021,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-top-left-radius</c> and <c>border-top-right-radius</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.borderTopLeftRadius"/>, <see cref="IStyle.borderTopRightRadius"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.
+        /// </para>
+        /// <c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The radius to apply to both top corners.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderRadiusTop<T>(
             this T style,
             StyleLength value)
@@ -701,9 +1043,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-bottom-right-radius</c> and <c>border-bottom-left-radius</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.borderBottomRightRadius"/>, <see cref="IStyle.borderBottomLeftRadius"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.
+        /// </para>
+        /// <c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The radius to apply to both bottom corners.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderRadiusBottom<T>(
             this T style,
             StyleLength value)
@@ -715,9 +1065,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-top-left-radius</c> CSS property.
+        /// Sets <see cref="IStyle.borderTopLeftRadius"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The top-left corner radius to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderRadiusTopLeft<T>(
             this T style,
             StyleLength value)
@@ -727,9 +1082,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-top-right-radius</c> CSS property.
+        /// Sets <see cref="IStyle.borderTopRightRadius"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The top-right corner radius to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderRadiusTopRight<T>(
             this T style,
             StyleLength value)
@@ -739,9 +1099,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-bottom-right-radius</c> CSS property.
+        /// Sets <see cref="IStyle.borderBottomRightRadius"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The bottom-right corner radius to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderRadiusBottomRight<T>(
             this T style,
             StyleLength value)
@@ -751,9 +1116,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-bottom-left-radius</c> CSS property.
+        /// Sets <see cref="IStyle.borderBottomLeftRadius"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The bottom-left corner radius to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderRadiusBottomLeft<T>(
             this T style,
             StyleLength value)
@@ -763,9 +1133,22 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets all four border width CSS properties to the same value.
+        /// Sets <see cref="IStyle.borderTopWidth"/>, <see cref="IStyle.borderRightWidth"/>,
+        /// <see cref="IStyle.borderBottomWidth"/>, <see cref="IStyle.borderLeftWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.
+        /// </para>
+        /// <c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.
+        /// <para>
+        /// <c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.
+        /// </para>
+        /// <c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The border width to apply to all sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderWidth<T>(
             this T style,
             StyleFloat value)
@@ -779,12 +1162,25 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the border width CSS properties for individual sides.
+        /// Sets <see cref="IStyle.borderTopWidth"/>, <see cref="IStyle.borderRightWidth"/>,
+        /// <see cref="IStyle.borderBottomWidth"/>, <see cref="IStyle.borderLeftWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.
+        /// </para>
+        /// <c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.
+        /// <para>
+        /// <c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.
+        /// </para>
+        /// <c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="top">The top border width, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="right">The right border width, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="bottom">The bottom border width, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="left">The left border width, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderWidth<T>(
             this T style,
             StyleFloat? top = null,
@@ -802,9 +1198,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-left-width</c> and <c>border-right-width</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.borderLeftWidth"/> and <see cref="IStyle.borderRightWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.
+        /// </para>
+        /// <c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The border width to apply to the left and right sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderWidthX<T>(
             this T style,
             StyleFloat value)
@@ -814,9 +1218,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-top-width</c> and <c>border-bottom-width</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.borderTopWidth"/> and <see cref="IStyle.borderBottomWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.
+        /// </para>
+        /// <c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The border width to apply to the top and bottom sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderWidthY<T>(
             this T style,
             StyleFloat value)
@@ -826,9 +1238,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-top-width</c> CSS property.
+        /// Sets <see cref="IStyle.borderTopWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The top border width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderWidthTop<T>(
             this T style,
             StyleFloat value)
@@ -838,9 +1255,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-right-width</c> CSS property.
+        /// Sets <see cref="IStyle.borderRightWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The right border width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderWidthRight<T>(
             this T style,
             StyleFloat value)
@@ -850,9 +1272,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-bottom-width</c> CSS property.
+        /// Sets <see cref="IStyle.borderBottomWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The bottom border width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderWidthBottom<T>(
             this T style,
             StyleFloat value)
@@ -862,9 +1289,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>border-left-width</c> CSS property.
+        /// Sets <see cref="IStyle.borderLeftWidth"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The left border width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBorderWidthLeft<T>(
             this T style,
             StyleFloat value)
@@ -876,8 +1308,14 @@ namespace Aspid.FastTools
 
         #region Cursor
         /// <summary>
-        /// Mouse cursor to display when the mouse pointer is over an element.
+        /// Sets <see cref="IStyle.cursor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Mouse cursor to display when the mouse pointer is over an element.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The cursor style to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetCursor<T>(
             this T style,
             StyleCursor value)
@@ -890,9 +1328,22 @@ namespace Aspid.FastTools
 
         #region Margin
         /// <summary>
-        /// Sets all four margin CSS properties to the same value.
+        /// Sets <see cref="IStyle.marginTop"/>, <see cref="IStyle.marginRight"/>,
+        /// <see cref="IStyle.marginBottom"/>, <see cref="IStyle.marginLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.
+        /// </para>
+        /// <c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.
+        /// <para>
+        /// <c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.
+        /// </para>
+        /// <c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The margin to apply to all sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMargin<T>(
             this T style,
             StyleLength value)
@@ -906,12 +1357,25 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the margin CSS properties for individual sides.
+        /// Sets <see cref="IStyle.marginTop"/>, <see cref="IStyle.marginRight"/>,
+        /// <see cref="IStyle.marginBottom"/>, <see cref="IStyle.marginLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.
+        /// </para>
+        /// <c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.
+        /// <para>
+        /// <c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.
+        /// </para>
+        /// <c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="top">The top margin, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="right">The right margin, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="bottom">The bottom margin, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="left">The left margin, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMargin<T>(
             this T style,
             StyleLength? top = null,
@@ -929,9 +1393,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>margin-left</c> and <c>margin-right</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.marginRight"/>, <see cref="IStyle.marginLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.
+        /// </para>
+        /// <c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The horizontal margin to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMarginX<T>(
             this T style,
             StyleLength value)
@@ -943,9 +1415,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>margin-top</c> and <c>margin-bottom</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.marginTop"/>, <see cref="IStyle.marginBottom"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.
+        /// </para>
+        /// <c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The vertical margin to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMarginY<T>(
             this T style,
             StyleLength value)
@@ -957,9 +1437,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>margin-top</c> CSS property.
+        /// Sets <see cref="IStyle.marginTop"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The top margin to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMarginTop<T>(
             this T style,
             StyleLength value)
@@ -969,9 +1454,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>margin-right</c> CSS property.
+        /// Sets <see cref="IStyle.marginRight"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The right margin to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMarginRight<T>(
             this T style,
             StyleLength value)
@@ -981,9 +1471,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>margin-bottom</c> CSS property.
+        /// Sets <see cref="IStyle.marginBottom"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The bottom margin to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMarginBottom<T>(
             this T style,
             StyleLength value)
@@ -993,9 +1488,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>margin-left</c> CSS property.
+        /// Sets <see cref="IStyle.marginLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The left margin to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetMarginLeft<T>(
             this T style,
             StyleLength value)
@@ -1007,9 +1507,22 @@ namespace Aspid.FastTools
 
         #region Padding
         /// <summary>
-        /// Sets all four padding CSS properties to the same value.
+        /// Sets <see cref="IStyle.paddingTop"/>, <see cref="IStyle.paddingRight"/>,
+        /// <see cref="IStyle.paddingBottom"/>, <see cref="IStyle.paddingLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.
+        /// </para>
+        /// <c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.
+        /// <para>
+        /// <c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.
+        /// </para>
+        /// <c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The padding to apply to all sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetPadding<T>(
             this T style,
             StyleLength value)
@@ -1023,12 +1536,25 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the padding CSS properties for individual sides.
+        /// Sets <see cref="IStyle.paddingTop"/>, <see cref="IStyle.paddingRight"/>,
+        /// <see cref="IStyle.paddingBottom"/>, <see cref="IStyle.paddingLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.
+        /// </para>
+        /// <c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.
+        /// <para>
+        /// <c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.
+        /// </para>
+        /// <c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="top">The top padding, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="right">The right padding, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="bottom">The bottom padding, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="left">The left padding, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetPadding<T>(
             this T style,
             StyleLength? top = null,
@@ -1046,9 +1572,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>padding-left</c> and <c>padding-right</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.paddingRight"/>, <see cref="IStyle.paddingLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.
+        /// </para>
+        /// <c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The horizontal padding to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetPaddingX<T>(
             this T style,
             StyleLength value)
@@ -1060,9 +1594,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>padding-top</c> and <c>padding-bottom</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.paddingTop"/>, <see cref="IStyle.paddingBottom"/>  and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.
+        /// </para>
+        /// <c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The vertical padding to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetPaddingY<T>(
             this T style,
             StyleLength value)
@@ -1074,9 +1616,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>padding-top</c> CSS property.
+        /// Sets <see cref="IStyle.paddingTop"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The top padding to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetPaddingTop<T>(
             this T style,
             StyleLength value)
@@ -1086,9 +1633,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>padding-right</c> CSS property.
+        /// Sets <see cref="IStyle.paddingRight"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The right padding to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetPaddingRight<T>(
             this T style,
             StyleLength value)
@@ -1098,9 +1650,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>padding-bottom</c> CSS property.
+        /// Sets <see cref="IStyle.paddingBottom"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The bottom padding to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetPaddingBottom<T>(
             this T style,
             StyleLength value)
@@ -1110,9 +1667,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>padding-left</c> CSS property.
+        /// Sets <see cref="IStyle.paddingLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The left padding to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetPaddingLeft<T>(
             this T style,
             StyleLength value)
@@ -1124,8 +1686,14 @@ namespace Aspid.FastTools
 
         #region Display
         /// <summary>
-        /// Defines how an element is displayed in the layout.
+        /// Sets <see cref="IStyle.display"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Defines how an element is displayed in the layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The display mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetDisplay<T>(
             this T style,
             DisplayStyle value)
@@ -1138,8 +1706,14 @@ namespace Aspid.FastTools
 
         #region Overflow
         /// <summary>
-        /// How a container behaves if its content overflows its own box.
+        /// Sets <see cref="IStyle.overflow"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// How a container behaves if its content overflows its own box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The overflow behavior to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetOverflow<T>(
             this T style,
             StyleEnum<Overflow> value)
@@ -1150,8 +1724,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Specifies which box the element content is clipped against.
+        /// Sets <see cref="IStyle.unityOverflowClipBox"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Specifies which box the element content is clipped against.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The overflow clip box to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityOverflowClipBox<T>(
             this T style,
             StyleEnum<OverflowClipBox> value)
@@ -1164,9 +1744,22 @@ namespace Aspid.FastTools
 
         #region Distance
         /// <summary>
-        /// Sets the <c>top</c>, <c>right</c>, <c>bottom</c>, and <c>left</c> CSS properties to the same value for absolute/relative positioning.
+        /// Sets <see cref="IStyle.top"/>, <see cref="IStyle.right"/>,
+        /// <see cref="IStyle.bottom"/>, <see cref="IStyle.left"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>top</c> –– Top distance from the element's box during layout.
+        /// </para>
+        /// <c>right</c> –– Right distance from the element's box during layout.
+        /// <para>
+        /// <c>bottom</c> –– Bottom distance from the element's box during layout.
+        /// </para>
+        /// <c>left</c> –– Left distance from the element's box during layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The distance to apply to all sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetDistance<T>(
             this T style,
             StyleLength value)
@@ -1180,12 +1773,25 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the positional offset CSS properties for individual sides.
+        /// Sets <see cref="IStyle.top"/>, <see cref="IStyle.right"/>,
+        /// <see cref="IStyle.bottom"/>, <see cref="IStyle.left"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>top</c> –– Top distance from the element's box during layout.
+        /// </para>
+        /// <c>right</c> –– Right distance from the element's box during layout.
+        /// <para>
+        /// <c>bottom</c> –– Bottom distance from the element's box during layout.
+        /// </para>
+        /// <c>left</c> –– Left distance from the element's box during layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="top">The top offset, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="right">The right offset, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="bottom">The bottom offset, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="left">The left offset, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetDistance<T>(
             this T style,
             StyleLength? top = null,
@@ -1203,9 +1809,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>left</c> and <c>right</c> CSS positional properties to the same value.
+        /// Sets <see cref="IStyle.right"/>, <see cref="IStyle.left"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>right</c> –– Right distance from the element's box during layout.
+        /// </para>
+        /// <c>left</c> –– Left distance from the element's box during layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The horizontal offset to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetDistanceX<T>(
             this T style,
             StyleLength value)
@@ -1217,9 +1831,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>top</c> and <c>bottom</c> CSS positional properties to the same value.
+        /// Sets <see cref="IStyle.top"/>, <see cref="IStyle.bottom"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>top</c> –– Top distance from the element's box during layout.
+        /// </para>
+        /// <c>bottom</c> –– Bottom distance from the element's box during layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The vertical offset to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetDistanceY<T>(
             this T style,
             StyleLength value)
@@ -1231,9 +1853,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>top</c> CSS property.
+        /// Sets <see cref="IStyle.top"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>top</c> –– Top distance from the element's box during layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The top offset to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetTop<T>(
             this T style,
             StyleLength value)
@@ -1243,9 +1870,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>right</c> CSS property.
+        /// Sets <see cref="IStyle.right"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>right</c> –– Right distance from the element's box during layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The right offset to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetRight<T>(
             this T style,
             StyleLength value)
@@ -1255,9 +1887,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>bottom</c> CSS property.
+        /// Sets <see cref="IStyle.bottom"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>bottom</c> –– Bottom distance from the element's box during layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The bottom offset to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBottom<T>(
             this T style,
             StyleLength value)
@@ -1267,9 +1904,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>left</c> CSS property.
+        /// Sets <see cref="IStyle.left"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>left</c> –– Left distance from the element's box during layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The left offset to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetLeft<T>(
             this T style,
             StyleLength value)
@@ -1282,8 +1924,14 @@ namespace Aspid.FastTools
         #region Material
 #if UNITY_6000_3_OR_NEWER
         /// <summary>
-        /// Custom material to use on the element.
+        /// Sets <see cref="IStyle.unityMaterial"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Custom material to use on the element.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The material to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityMaterial<T>(
             this T style,
             StyleMaterialDefinition value)
@@ -1297,8 +1945,14 @@ namespace Aspid.FastTools
 
         #region Transform
         /// <summary>
-        /// A scaling transformation.
+        /// Sets <see cref="IStyle.scale"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// A scaling transformation.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The scale transformation to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetScale<T>(
             this T style,
             StyleScale value)
@@ -1309,8 +1963,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// A rotation transformation.
+        /// Sets <see cref="IStyle.rotate"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// A rotation transformation.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The rotation to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetRotate<T>(
             this T style,
             StyleRotate value)
@@ -1321,8 +1981,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// A translate transformation.
+        /// Sets <see cref="IStyle.translate"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// A translate transformation.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The translation to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetTranslate<T>(
             this T style,
             StyleTranslate value)
@@ -1333,8 +1999,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Element's positioning in its parent container.
+        /// Sets <see cref="IStyle.position"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Element's positioning in its parent container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The position type to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetPosition<T>(
             this T style,
             StyleEnum<Position> value)
@@ -1345,8 +2017,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// The transformation origin is the point around which a transformation is applied.
+        /// Sets <see cref="IStyle.transformOrigin"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// The transformation origin is the point around which a transformation is applied.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The transform origin to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetTransformOrigin<T>(
             this T style,
             StyleTransformOrigin value)
@@ -1359,8 +2037,14 @@ namespace Aspid.FastTools
 
         #region Background
         /// <summary>
-        /// Background color to paint in the element's box.
+        /// Sets <see cref="IStyle.backgroundColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Background color to paint in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The background color to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBackgroundColor<T>(
             this T style,
             StyleColor value)
@@ -1371,8 +2055,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Background image to paint in the element's box.
+        /// Sets <see cref="IStyle.backgroundImage"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Background image to paint in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The background image to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBackgroundImage<T>(
             this T style,
             StyleBackground value)
@@ -1383,8 +2073,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Background image size value. Transitions are fully supported only when using size in pixels or percentages, such as pixel-to-pixel or percentage-to-percentage transitions.
+        /// Sets <see cref="IStyle.backgroundSize"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Background image size value. Transitions are fully supported only when using size in pixels or percentages, such as pixel-to-pixel or percentage-to-percentage transitions.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The background size to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBackgroundSize<T>(
             this T style,
             StyleBackgroundSize value)
@@ -1395,8 +2091,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Background image repeat value.
+        /// Sets <see cref="IStyle.backgroundRepeat"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Background image repeat value.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The background repeat mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBackgroundRepeat<T>(
             this T style,
             StyleBackgroundRepeat value)
@@ -1407,8 +2109,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Tinting color for the element's backgroundImage.
+        /// Sets <see cref="IStyle.unityBackgroundImageTintColor"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Tinting color for the element's backgroundImage.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The background image tint color to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnityBackgroundImageTintColor<T>(
             this T style,
             StyleColor value)
@@ -1419,9 +2127,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets both the <c>background-position-x</c> and <c>background-position-y</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.backgroundPositionX"/>, <see cref="IStyle.backgroundPositionY"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>backgroundPositionX</c> –– Background image x position value.
+        /// </para>
+        /// <c>backgroundPositionY</c> –– Background image y position value.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The background position to apply to both axes.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBackgroundPosition<T>(
             this T style,
             StyleBackgroundPosition value)
@@ -1433,10 +2149,18 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>background-position-x</c> and/or <c>background-position-y</c> CSS properties.
+        /// Sets <see cref="IStyle.backgroundPositionX"/>, <see cref="IStyle.backgroundPositionY"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>backgroundPositionX</c> –– Background image x position value.
+        /// </para>
+        /// <c>backgroundPositionY</c> –– Background image y position value.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="x">The horizontal background position, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="y">The vertical background position, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBackgroundPosition<T>(
             this T style,
             StyleBackgroundPosition? x = null,
@@ -1450,9 +2174,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>background-position-x</c> CSS property.
+        /// Sets <see cref="IStyle.backgroundPositionX"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>backgroundPositionX</c> –– Background image x position value.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The horizontal background position to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBackgroundPositionX<T>(
             this T style,
             StyleBackgroundPosition value)
@@ -1462,9 +2191,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>background-position-y</c> CSS property.
+        /// Sets <see cref="IStyle.backgroundPositionY"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>backgroundPositionY</c> –– Background image y position value.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The vertical background position to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetBackgroundPositionY<T>(
             this T style,
             StyleBackgroundPosition value)
@@ -1476,8 +2210,14 @@ namespace Aspid.FastTools
 
         #region Transition
         /// <summary>
-        /// Duration to wait before starting a property's transition effect when its value changes.
+        /// Sets <see cref="IStyle.transitionDelay"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Duration to wait before starting a property's transition effect when its value changes.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The transition delays to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetTransitionDelay<T>(
             this T style,
             StyleList<TimeValue> value)
@@ -1488,8 +2228,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Time a transition animation should take to complete.
+        /// Sets <see cref="IStyle.transitionDuration"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Time a transition animation should take to complete.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The transition durations to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetTransitionDuration<T>(
             this T style,
             StyleList<TimeValue> value)
@@ -1500,8 +2246,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Properties to which a transition effect should be applied.
+        /// Sets <see cref="IStyle.transitionProperty"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Properties to which a transition effect should be applied.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The transition properties to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetTransitionProperty<T>(
             this T style,
             StyleList<StylePropertyName> value)
@@ -1512,8 +2264,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Determines how intermediate values are calculated for properties modified by a transition effect.
+        /// Sets <see cref="IStyle.transitionTimingFunction"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Determines how intermediate values are calculated for properties modified by a transition effect.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The transition timing functions to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetTransitionTimingFunction<T>(
             this T style,
             StyleList<EasingFunction> value)
@@ -1526,9 +2284,14 @@ namespace Aspid.FastTools
 
         #region UnitySlice
         /// <summary>
-        /// Sets the <c>-unity-slice-scale</c> CSS property controlling the scale of sliced borders.
+        /// Sets <see cref="IStyle.unitySliceScale"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Scale applied to an element's slices.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The slice scale to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySliceScale<T>(
             this T style,
             StyleFloat value)
@@ -1539,9 +2302,22 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets all four <c>-unity-slice-*</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.unitySliceTop"/>, <see cref="IStyle.unitySliceRight"/>,
+        /// <see cref="IStyle.unitySliceBottom"/>, <see cref="IStyle.unitySliceLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.
+        /// </para>
+        /// <c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.
+        /// <para>
+        /// <c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.
+        /// </para>
+        /// <c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The slice width to apply to all sides.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySlice<T>(
             this T style,
             StyleInt value)
@@ -1555,12 +2331,25 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>-unity-slice-*</c> CSS properties for individual sides.
+        /// Sets <see cref="IStyle.unitySliceTop"/>, <see cref="IStyle.unitySliceRight"/>,
+        /// <see cref="IStyle.unitySliceBottom"/>, <see cref="IStyle.unitySliceLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.
+        /// </para>
+        /// <c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.
+        /// <para>
+        /// <c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.
+        /// </para>
+        /// <c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="top">The top slice width, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="right">The right slice width, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="bottom">The bottom slice width, or <see langword="null"/> to leave unchanged.</param>
         /// <param name="left">The left slice width, or <see langword="null"/> to leave unchanged.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySlice<T>(
             this T style,
             StyleInt? top = null,
@@ -1578,9 +2367,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>-unity-slice-left</c> and <c>-unity-slice-right</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.unitySliceRight"/>, <see cref="IStyle.unitySliceLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.
+        /// </para>
+        /// <c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The horizontal slice width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySliceX<T>(
             this T style,
             StyleInt value)
@@ -1592,9 +2389,17 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>-unity-slice-top</c> and <c>-unity-slice-bottom</c> CSS properties to the same value.
+        /// Sets <see cref="IStyle.unitySliceTop"/>, <see cref="IStyle.unitySliceBottom"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// <c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.
+        /// </para>
+        /// <c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The vertical slice width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySliceY<T>(
             this T style,
             StyleInt value)
@@ -1606,9 +2411,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>-unity-slice-top</c> CSS property.
+        /// Sets <see cref="IStyle.unitySliceTop"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The top slice width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySliceTop<T>(
             this T style,
             StyleInt value)
@@ -1618,9 +2428,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>-unity-slice-right</c> CSS property.
+        /// Sets <see cref="IStyle.unitySliceRight"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The right slice width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySliceRight<T>(
             this T style,
             StyleInt value)
@@ -1630,9 +2445,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>-unity-slice-bottom</c> CSS property.
+        /// <see cref="IStyle.unitySliceBottom"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The bottom slice width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySliceBottom<T>(
             this T style,
             StyleInt value)
@@ -1642,9 +2462,14 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Sets the <c>-unity-slice-left</c> CSS property.
+        /// Sets <see cref="IStyle.unitySliceLeft"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// <c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
         /// <param name="value">The left slice width to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySliceLeft<T>(
             this T style,
             StyleInt value)
@@ -1655,8 +2480,14 @@ namespace Aspid.FastTools
 
 #if UNITY_6000_0_OR_NEWER
         /// <summary>
-        /// Specifies the type of sclicing.
+        /// Sets <see cref="IStyle.unitySliceType"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Specifies the type of sclicing.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The slice type to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetUnitySliceType<T>(
             this T style,
             StyleEnum<SliceType> value)
@@ -1670,8 +2501,14 @@ namespace Aspid.FastTools
 
         #region Visibility
         /// <summary>
-        /// Specifies whether an element is visible.
+        /// Sets <see cref="IStyle.visibility"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Specifies whether an element is visible.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The visibility to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetVisibility<T>(
             this T style,
             StyleEnum<Visibility> value)
@@ -1684,8 +2521,14 @@ namespace Aspid.FastTools
 
         #region WhiteSpace
         /// <summary>
-        /// Word wrap over multiple lines if not enough space is available to draw the text of an element.
+        /// Sets <see cref="IStyle.whiteSpace"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Word wrap over multiple lines if not enough space is available to draw the text of an element.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The white-space mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetWhiteSpace<T>(
             this T style,
             StyleEnum<WhiteSpace> value)
@@ -1698,8 +2541,14 @@ namespace Aspid.FastTools
 
         #region JustifyContent
         /// <summary>
-        /// Justification of children on the main axis of this container.
+        /// Sets <see cref="IStyle.justifyContent"/> and returns the style for chaining.
         /// </summary>
+        /// <remarks>
+        /// Justification of children on the main axis of this container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The justify content mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
         public static T SetJustifyContent<T>(
             this T style,
             StyleEnum<Justify> value)

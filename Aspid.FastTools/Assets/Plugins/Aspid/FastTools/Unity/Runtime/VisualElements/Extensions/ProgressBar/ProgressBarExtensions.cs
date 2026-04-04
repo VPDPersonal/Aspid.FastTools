@@ -8,6 +8,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Sets the title of the ProgressBar that displays in the center of the control and returns the element for chaining.
         /// </summary>
+        /// <remarks>
+        /// Sets the title of the ProgressBar that displays in the center of the control.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The title text to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -21,6 +24,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Sets the minimum value of the ProgressBar and returns the element for chaining.
         /// </summary>
+        /// <remarks>
+        /// Sets the minimum value of the ProgressBar.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The minimum value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -34,6 +40,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Sets the maximum value of the ProgressBar and returns the element for chaining.
         /// </summary>
+        /// <remarks>
+        /// Sets the maximum value of the ProgressBar.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The maximum value to set.</param>
         /// <returns>The element, for chaining.</returns>

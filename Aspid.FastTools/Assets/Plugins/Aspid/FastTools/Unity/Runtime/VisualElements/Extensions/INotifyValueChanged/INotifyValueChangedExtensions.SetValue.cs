@@ -1,8 +1,10 @@
 using System;
 using UnityEngine;
-using Unity.Mathematics;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
+using Unity.Mathematics;
+#endif
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools
@@ -640,6 +642,7 @@ namespace Aspid.FastTools
         #endregion
         
         #region Unity.Mathematics.Int
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
         /// <summary>
         /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
         /// </summary>
@@ -831,9 +834,11 @@ namespace Aspid.FastTools
             
             return element;
         }
+#endif
         #endregion
         
         #region Unity.Mathematics.Bool
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
         /// <summary>
         /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
         /// </summary>
@@ -1025,9 +1030,11 @@ namespace Aspid.FastTools
             
             return element;
         }
+#endif
         #endregion
         
         #region Unity.Mathematics.Float
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
         /// <summary>
         /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
         /// </summary>
@@ -1219,9 +1226,11 @@ namespace Aspid.FastTools
             
             return element;
         }
+#endif
         #endregion
         
         #region Unity.Mathematics.Quaternion
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
         /// <summary>
         /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
         /// </summary>
@@ -1237,6 +1246,7 @@ namespace Aspid.FastTools
             
             return element;
         }
+#endif
         #endregion
         
         /// <summary>

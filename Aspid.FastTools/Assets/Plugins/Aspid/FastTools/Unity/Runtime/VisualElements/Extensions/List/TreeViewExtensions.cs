@@ -26,6 +26,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Subscribes to the <see cref="TreeView.bindItem"/> callback.
         /// </summary>
+        /// <remarks>
+        /// Callback for binding a data item to the visual element.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -39,6 +42,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Unsubscribes from the <see cref="TreeView.bindItem"/> callback.
         /// </summary>
+        /// <remarks>
+        /// Callback for binding a data item to the visual element.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -70,6 +76,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Subscribes to the <see cref="TreeView.unbindItem"/> callback.
         /// </summary>
+        /// <remarks>
+        /// Callback for unbinding a data item from the VisualElement.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback invoked to release bindings from a tree item element.</param>
         /// <returns>The element, for chaining.</returns>
@@ -83,6 +92,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Unsubscribes from the <see cref="TreeView.unbindItem"/> callback.
         /// </summary>
+        /// <remarks>
+        /// Callback for unbinding a data item from the VisualElement.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -114,6 +126,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Subscribes to the <see cref="TreeView.makeItem"/> callback.
         /// </summary>
+        /// <remarks>
+        /// Callback for constructing the VisualElement that is the template for each recycled and re-bound element in the list.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -127,6 +142,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Unsubscribes from the <see cref="TreeView.makeItem"/> callback.
         /// </summary>
+        /// <remarks>
+        /// Callback for constructing the VisualElement that is the template for each recycled and re-bound element in the list.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -158,6 +176,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Subscribes to the <see cref="TreeView.destroyItem"/> callback.
         /// </summary>
+        /// <remarks>
+        /// Callback invoked when a VisualElement created via makeItem is no longer needed and will be destroyed.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -171,6 +192,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Unsubscribes from the <see cref="TreeView.destroyItem"/> callback.
         /// </summary>
+        /// <remarks>
+        /// Callback invoked when a VisualElement created via makeItem is no longer needed and will be destroyed.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>

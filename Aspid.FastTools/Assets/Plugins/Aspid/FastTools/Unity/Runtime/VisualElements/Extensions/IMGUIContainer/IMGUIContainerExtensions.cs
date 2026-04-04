@@ -10,6 +10,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Sets the <see cref="IMGUIContainer.onGUIHandler"/> callback, replacing any existing handler.
         /// </summary>
+        /// <remarks>
+        /// The function that's called to render and handle IMGUI events.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The handler to set.</param>
         /// <returns>The element, for chaining.</returns>

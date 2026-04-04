@@ -281,6 +281,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Subscribes to the <see cref="BaseListView.makeFooter"/> callback.
         /// </summary>
+        /// <remarks>
+        /// This callback allows the user to make their own footer for this control.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -294,6 +297,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Unsubscribes from the <see cref="BaseListView.makeFooter"/> callback.
         /// </summary>
+        /// <remarks>
+        /// This callback allows the user to make their own footer for this control.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -325,6 +331,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Subscribes to the <see cref="BaseListView.makeHeader"/> callback.
         /// </summary>
+        /// <remarks>
+        /// This callback allows the user to make their own header for this control.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -338,6 +347,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Unsubscribes from the <see cref="BaseListView.makeHeader"/> callback.
         /// </summary>
+        /// <remarks>
+        /// This callback allows the user to make their own header for this control.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -369,6 +381,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Subscribes to the <see cref="BaseListView.makeNoneElement"/> callback.
         /// </summary>
+        /// <remarks>
+        /// This callback allows the user to set a Visual Element to replace the "List is empty" Label shown when the ListView is empty.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -382,6 +397,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Unsubscribes from the <see cref="BaseListView.makeNoneElement"/> callback.
         /// </summary>
+        /// <remarks>
+        /// This callback allows the user to set a Visual Element to replace the "List is empty" Label shown when the ListView is empty.
+        /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>

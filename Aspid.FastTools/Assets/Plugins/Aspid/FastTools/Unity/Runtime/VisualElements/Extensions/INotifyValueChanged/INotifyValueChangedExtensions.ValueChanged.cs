@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
-using Unity.Mathematics;
 using UnityEngine.UIElements;
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
+using Unity.Mathematics;
+#endif
 using Object = UnityEngine.Object;
 
 // ReSharper disable CheckNamespace
@@ -1000,6 +1002,7 @@ namespace Aspid.FastTools
         #endregion
 
         #region Unity.Mathematics.Int
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -1305,9 +1308,11 @@ namespace Aspid.FastTools
             element.UnregisterValueChangedCallback(value);
             return element;
         }
+#endif
         #endregion
         
         #region Unity.Mathematics.Bool
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -1619,9 +1624,11 @@ namespace Aspid.FastTools
             element.UnregisterValueChangedCallback(value);
             return element;
         }
+#endif
         #endregion
         
         #region Unity.Mathematics.Float
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -1933,9 +1940,11 @@ namespace Aspid.FastTools
             element.UnregisterValueChangedCallback(value);
             return element;
         }
+#endif
         #endregion
         
         #region Unity.Mathematics.Quaternion
+#if ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
@@ -1961,11 +1970,15 @@ namespace Aspid.FastTools
             element.UnregisterValueChangedCallback(value);
             return element;
         }
+#endif
         #endregion
         
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
         public static TField AddValueChanged<TField, TValue>(this TField element, EventCallback<ChangeEvent<TValue>> value)
             where TField : INotifyValueChanged<TValue>
         {
@@ -1976,6 +1989,9 @@ namespace Aspid.FastTools
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
         public static TField RemoveValueChanged<TField, TValue>(this TField element, EventCallback<ChangeEvent<TValue>> value)
             where TField : INotifyValueChanged<TValue>
         {

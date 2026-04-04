@@ -36,46 +36,5 @@ namespace Aspid.FastTools
             element.toggleOnLabelClick = value;
             return element;
         }
-
-        #region ValueChanged
-        /// <summary>
-        /// Subscribes to the value-changed event of the element.
-        /// </summary>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<bool>> value)
-            where T : Foldout
-        {
-            element.RegisterValueChangedCallback(value);
-            return element;
-        }
-
-        /// <summary>
-        /// Subscribes to the value-changed event of the element for a single invocation.
-        /// </summary>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe once.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddValueChangedOnce<T>(this T element, EventCallback<ChangeEvent<bool>> value)
-            where T : Foldout
-        {
-            element.RegisterCallbackOnce(value);
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the value-changed event of the element.
-        /// </summary>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<bool>> value)
-            where T : Foldout
-        {
-            element.UnregisterValueChangedCallback(value);
-            return element;
-        }
-        #endregion
     }
 }

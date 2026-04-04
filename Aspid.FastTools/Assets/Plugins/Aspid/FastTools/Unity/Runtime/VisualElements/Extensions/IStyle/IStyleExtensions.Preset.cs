@@ -7,8 +7,11 @@ namespace Aspid.FastTools
     public static partial class IStyleExtensions
     {
         /// <summary>
-        /// Sets the <c>unityFontStyleAndWeight</c> CSS property to <see cref="FontStyle.Normal"/>, removing bold and italic.
+        /// Sets <see cref="IStyle.unityFontStyleAndWeight"/> to <see cref="FontStyle.Normal"/>, removing bold and italic.
         /// </summary>
+        /// <remarks>
+        /// Sets the value unconditionally, regardless of any current bold or italic style.
+        /// </remarks>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T SetNormalUnityFontStyleAndWeight<T>(this T style)
@@ -18,8 +21,13 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Adds bold to the <c>unityFontStyleAndWeight</c> CSS property, preserving any existing italic style.
+        /// Adds bold to <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any existing italic style.
         /// </summary>
+        /// <remarks>
+        /// Transitions: <see cref="FontStyle.Normal"/> → <see cref="FontStyle.Bold"/>,
+        /// <see cref="FontStyle.Italic"/> → <see cref="FontStyle.BoldAndItalic"/>.
+        /// Other values are left unchanged.
+        /// </remarks>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T AddBoldUnityFontStyleAndWeight<T>(this T style)
@@ -34,8 +42,13 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Removes bold from the <c>unityFontStyleAndWeight</c> CSS property, preserving any existing italic style.
+        /// Removes bold from <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any existing italic style.
         /// </summary>
+        /// <remarks>
+        /// Transitions: <see cref="FontStyle.Bold"/> → <see cref="FontStyle.Normal"/>,
+        /// <see cref="FontStyle.BoldAndItalic"/> → <see cref="FontStyle.Italic"/>.
+        /// Other values are left unchanged.
+        /// </remarks>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T RemoveBoldUnityFontStyleAndWeight<T>(this T style)
@@ -50,8 +63,13 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Adds italic to the <c>unityFontStyleAndWeight</c> CSS property, preserving any existing bold style.
+        /// Adds italic to <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any existing bold style.
         /// </summary>
+        /// <remarks>
+        /// Transitions: <see cref="FontStyle.Normal"/> → <see cref="FontStyle.Italic"/>,
+        /// <see cref="FontStyle.Bold"/> → <see cref="FontStyle.BoldAndItalic"/>.
+        /// Other values are left unchanged.
+        /// </remarks>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T AddItalicUnityFontStyleAndWeight<T>(this T style)
@@ -66,8 +84,13 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Removes italic from the <c>unityFontStyleAndWeight</c> CSS property, preserving any existing bold style.
+        /// Removes italic from <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any existing bold style.
         /// </summary>
+        /// <remarks>
+        /// Transitions: <see cref="FontStyle.Italic"/> → <see cref="FontStyle.Normal"/>,
+        /// <see cref="FontStyle.BoldAndItalic"/> → <see cref="FontStyle.Bold"/>.
+        /// Other values are left unchanged.
+        /// </remarks>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T RemoveItalicUnityFontStyleAndWeight<T>(this T style)
