@@ -72,7 +72,8 @@ namespace Aspid.FastTools.Types
 				return;
 			}
 
-			property.serializedObject.FindProperty("m_Script").SetObjectReferenceAndApply(script);
+			EditorApplication.delayCall += () =>
+				property.serializedObject.FindProperty("m_Script").SetObjectReferenceAndApply(script);
 		}
 	}
 }
