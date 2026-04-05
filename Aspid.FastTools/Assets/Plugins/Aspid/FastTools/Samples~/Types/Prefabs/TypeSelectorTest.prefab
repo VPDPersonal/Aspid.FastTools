@@ -43,13 +43,13 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 16ae92dcd533401a91fe53810fd25d08, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp-firstpass::Aspid.UnityFastTools.Samples.Types.TypeSelectorTest
-  _typeSelector: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089
-  _typeSelectorWithFilterEnum: UnityEngine.Space, UnityEngine.CoreModule, Version=0.0.0.0,
-    Culture=neutral, PublicKeyToken=null
-  _serializableType:
-    _assemblyQualifiedName: System.Int32, mscorlib, Version=4.0.0.0, Culture=neutral,
+  m_EditorClassIdentifier: Assembly-CSharp-firstpass::Aspid.FastTools.Samples.Types.TypeSelectorTest
+  _componentType:
+    _assemblyQualifiedName: Aspid.FastTools.Samples.Types.FastEnemy, Assembly-CSharp-firstpass,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  _behaviourType:
+    _assemblyQualifiedName: Aspid.FastTools.Samples.Types.TankEnemy, Assembly-CSharp-firstpass,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  _enumType:
+    _assemblyQualifiedName: System.DayOfWeek, mscorlib, Version=4.0.0.0, Culture=neutral,
       PublicKeyToken=b77a5c561934e089
-  _serializableTypeWithEnumFilter:
-    _assemblyQualifiedName: UnityEngine.ForceMode, UnityEngine.PhysicsModule, Version=0.0.0.0,
-      Culture=neutral, PublicKeyToken=null
