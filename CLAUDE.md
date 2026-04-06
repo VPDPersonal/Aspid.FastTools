@@ -12,12 +12,29 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Unity Package
 Compilation is handled automatically by Unity's build system when the project is open. There are no CLI build scripts.
 
+### Building & Deploying Generators
+
+`Directory.Build.targets` auto-copies the compiled DLL into the Unity package on build:
+
+```bash
+# From Aspid.FastTools.Generators/
+dotnet build -c Release
+# Outputs DLL to: Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Aspid.FastTools.Generators.dll
+```
+
+Run tests with:
+```bash
+dotnet test
+```
+
 ## Architecture
 
 ### Two-Project Separation
 
 **Generators project** (`Aspid.FastTools.Generators/Aspid.FastTools.Generators/`):
 - Contains Roslyn `IIncrementalGenerator` implementations
+- `Aspid.FastTools.Generators.Tests/` — unit tests for generators
+- `Aspid.FastTools.Generators.Sample/` — sample project for manual testing
 - Two generators:
   - `ProfilerMarkersGenerator` — generates per-call-site `ProfilerMarker` registrations based on method name and line number
   - `IdStructGenerator` — generates boilerplate for ID struct types

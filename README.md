@@ -444,23 +444,57 @@ element
     .SetVisible(true)
     .SetTooltip("Tooltip text")
     .AddChild(new Label("Hello"))
-    .AddChildIfNotNull(optionalChild)
     .AddChildren(child1, child2, child3);
 ```
 
 | Method | Description |
 |--------|-------------|
 | `SetName(string)` | Sets `element.name` |
-| `SetVisible(bool)` | Sets `display` style to `Flex` or `None` |
+| `SetVisible(bool)` | Sets `element.visible` |
 | `SetTooltip(string)` | Sets `element.tooltip` |
+| `SetUserData(object)` | Sets `element.userData` |
+| `SetEnabledSelf(bool)` | Sets `element.enabledSelf` |
+| `SetPickingMode(PickingMode)` | Sets `element.pickingMode` |
+| `SetUsageHints(UsageHints)` | Sets `element.usageHints` |
+| `SetViewDataKey(string)` | Sets `element.viewDataKey` |
+| `SetLanguageDirection(LanguageDirection)` | Sets `element.languageDirection` |
+| `SetDisablePlayModeTint(bool)` | Sets `element.disablePlayModeTint` |
+| `SetDataSource(object)` | Sets `element.dataSource` |
+| `SetDataSourceType(Type)` | Sets `element.dataSourceType` |
+| `SetDataSourcePath(PropertyPath)` | Sets `element.dataSourcePath` |
 | `AddChild(VisualElement)` | Appends a child, returns the parent |
-| `AddChildIfNotNull(VisualElement)` | Appends only if not null |
 | `AddChildren(params VisualElement[])` | Appends multiple children |
 | `AddChildren(IEnumerable<VisualElement>)` | Appends from a sequence |
-| `SetFocus()` | Focuses the element |
-| `IsFocus()` | Returns whether the element is focused |
+| `AddChildren(List<VisualElement>)` | Appends from a list |
+| `AddChildren(Span<VisualElement>)` | Appends from a span |
+| `AddChildren(ReadOnlySpan<VisualElement>)` | Appends from a read-only span |
 
-> `RegisterCallbackOnce<TEventType>` and `RegisterCallbackOnce<TEventType, TUserArgsType>` are available on Unity 2023.1+.
+> `RegisterCallbackOnce<TEventType>` and `RegisterCallbackOnce<TEventType, TUserArgsType>` are available on all Unity versions (polyfill included for versions prior to 2023.1).
+
+### Focusable
+
+| Method | Description |
+|--------|-------------|
+| `SetFocus()` | Attempts to give focus to the element |
+| `SetBlur()` | Tells the element to release focus |
+| `IsFocus()` | Returns whether the element currently has keyboard focus |
+| `SetTabIndex(int)` | Sets `element.tabIndex` |
+| `SetFocusable(bool)` | Sets `element.focusable` |
+| `SetDelegatesFocus(bool)` | Sets `element.delegatesFocus` |
+
+### USS & class operations
+
+| Method | Description |
+|--------|-------------|
+| `AddClass(string)` | Adds a USS class |
+| `RemoveClass(string)` | Removes a USS class |
+| `ClearClasses()` | Removes all USS classes |
+| `ToggleInClass(string)` | Toggles a USS class on/off |
+| `EnableInClass(string, bool)` | Adds or removes a USS class based on a condition |
+| `AddStyleSheets(StyleSheet)` | Adds a `StyleSheet` |
+| `RemoveStyleSheets(StyleSheet)` | Removes a `StyleSheet` |
+| `AddStyleSheetsFromResource(string)` | Adds a stylesheet loaded via `Resources.Load` |
+| `RemoveStyleSheetsFromResource(string)` | Removes a stylesheet loaded via `Resources.Load` |
 
 ### Style extensions — by category
 
@@ -510,6 +544,18 @@ All spacing methods have a uniform-value overload and a per-side overload (`top`
 | `SetFontSize(StyleLength)` | `fontSize` |
 | `SetUnityFontDefinition(StyleFontDefinition)` | `unityFontDefinition` |
 | `SetUnityFontStyleAndWeight(StyleEnum<FontStyle>)` | `unityFontStyleAndWeight` |
+
+#### Font style presets
+
+Convenience methods for toggling bold / italic without overwriting the other flag:
+
+| Method | Description |
+|--------|-------------|
+| `SetNormalUnityFontStyleAndWeight()` | Resets to `FontStyle.Normal` |
+| `AddBoldUnityFontStyleAndWeight()` | Adds bold, preserving italic |
+| `RemoveBoldUnityFontStyleAndWeight()` | Removes bold, preserving italic |
+| `AddItalicUnityFontStyleAndWeight()` | Adds italic, preserving bold |
+| `RemoveItalicUnityFontStyleAndWeight()` | Removes italic, preserving bold |
 
 #### Text
 
@@ -615,6 +661,69 @@ field.SetLabel("My Field");
 field.SetValue(42);
 ```
 
+#### INotifyValueChanged\<T\>
+
+```csharp
+field.SetValue(42, notify: false); // sets value without raising ChangeEvent
+field.AddValueChanged(evt => Debug.Log(evt.newValue));
+field.RemoveValueChanged(myCallback);
+```
+
+Typed overloads are provided for `int`, `uint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `string`, `bool`, `Color`, `Vector2/3/4`, `Vector2Int/3Int`, `Rect/RectInt`, `Bounds/BoundsInt`, `Hash128`, `Enum`, `Object`, and more.
+
+#### IMixedValueSupport
+
+```csharp
+field.SetShowMixedValue(true); // shows the mixed-value indicator
+```
+
+#### Button
+
+```csharp
+button
+    .AddClicked(() => Debug.Log("Clicked"))
+    .SetClickable(new Clickable(() => { }))
+    .SetIconImage(myBackground);
+```
+
+| Method | Description |
+|--------|-------------|
+| `AddClicked(Action)` | Subscribes to `Button.clicked` |
+| `RemoveClicked(Action)` | Unsubscribes from `Button.clicked` |
+| `SetClickable(Clickable)` | Sets `Button.clickable` |
+| `SetIconImage(Background)` | Sets `Button.iconImage` |
+
+#### Slider / BaseSlider\<TValue\>
+
+```csharp
+slider
+    .SetLowValue(0f)
+    .SetHighValue(100f)
+    .SetShowInputField<SliderFloat, float>(true);
+```
+
+| Method | Description |
+|--------|-------------|
+| `SetLowValue(TValue)` | Sets the minimum slider value |
+| `SetHighValue(TValue)` | Sets the maximum slider value |
+| `SetFill(bool)` | Whether the track is filled up to the current value |
+| `SetInverted(bool)` | Reverses the slider direction |
+| `SetPageSize(float)` | Controls how much the value changes per page step |
+| `SetShowInputField(bool)` | Shows a numeric input field alongside the slider |
+| `SetDirection(SliderDirection)` | Sets the slider orientation |
+
+#### ProgressBar
+
+```csharp
+progressBar.SetTitle("Loading...").SetLowValue(0f).SetHighValue(100f);
+```
+
+| Method | Description |
+|--------|-------------|
+| `SetTitle(string)` | Sets the title displayed in the center |
+| `SetLowValue(float)` | Sets the minimum value |
+| `SetHighValue(float)` | Sets the maximum value |
+
 #### HelpBox
 
 ```csharp
@@ -635,6 +744,22 @@ foldout.SetValue(true);
 image.SetImage(myTexture);
 image.SetImageFromResource("Editor/MyIcon"); // loads via Resources.Load
 ```
+
+#### IMGUIContainer
+
+```csharp
+container
+    .SetOnGUIHandler(() => GUILayout.Label("IMGUI"))
+    .SetCullingEnabled(true);
+```
+
+| Method | Description |
+|--------|-------------|
+| `SetOnGUIHandler(Action)` | Replaces the `onGUIHandler` callback |
+| `AddOnGUIHandler(Action)` | Subscribes to `onGUIHandler` |
+| `RemoveOnGUIHandler(Action)` | Unsubscribes from `onGUIHandler` |
+| `SetCullingEnabled(bool)` | Skips `onGUIHandler` when the element is offscreen |
+| `SetContextType(ContextType)` | Sets the IMGUI context type |
 
 #### ListView / CollectionView
 

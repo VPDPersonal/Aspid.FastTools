@@ -440,23 +440,57 @@ element
     .SetVisible(true)
     .SetTooltip("Текст подсказки")
     .AddChild(new Label("Hello"))
-    .AddChildIfNotNull(optionalChild)
     .AddChildren(child1, child2, child3);
 ```
 
 | Метод | Описание |
 |-------|----------|
 | `SetName(string)` | Устанавливает `element.name` |
-| `SetVisible(bool)` | Устанавливает стиль `display` в `Flex` или `None` |
+| `SetVisible(bool)` | Устанавливает `element.visible` |
 | `SetTooltip(string)` | Устанавливает `element.tooltip` |
+| `SetUserData(object)` | Устанавливает `element.userData` |
+| `SetEnabledSelf(bool)` | Устанавливает `element.enabledSelf` |
+| `SetPickingMode(PickingMode)` | Устанавливает `element.pickingMode` |
+| `SetUsageHints(UsageHints)` | Устанавливает `element.usageHints` |
+| `SetViewDataKey(string)` | Устанавливает `element.viewDataKey` |
+| `SetLanguageDirection(LanguageDirection)` | Устанавливает `element.languageDirection` |
+| `SetDisablePlayModeTint(bool)` | Устанавливает `element.disablePlayModeTint` |
+| `SetDataSource(object)` | Устанавливает `element.dataSource` |
+| `SetDataSourceType(Type)` | Устанавливает `element.dataSourceType` |
+| `SetDataSourcePath(PropertyPath)` | Устанавливает `element.dataSourcePath` |
 | `AddChild(VisualElement)` | Добавляет дочерний элемент, возвращает родителя |
-| `AddChildIfNotNull(VisualElement)` | Добавляет только если не null |
 | `AddChildren(params VisualElement[])` | Добавляет несколько дочерних элементов |
 | `AddChildren(IEnumerable<VisualElement>)` | Добавляет из последовательности |
-| `SetFocus()` | Устанавливает фокус на элемент |
-| `IsFocus()` | Возвращает, находится ли элемент в фокусе |
+| `AddChildren(List<VisualElement>)` | Добавляет из списка |
+| `AddChildren(Span<VisualElement>)` | Добавляет из span |
+| `AddChildren(ReadOnlySpan<VisualElement>)` | Добавляет из read-only span |
 
-> `RegisterCallbackOnce<TEventType>` и `RegisterCallbackOnce<TEventType, TUserArgsType>` доступны начиная с Unity 2023.1+.
+> `RegisterCallbackOnce<TEventType>` и `RegisterCallbackOnce<TEventType, TUserArgsType>` доступны на всех версиях Unity (пакет содержит polyfill для версий до 2023.1).
+
+### Focusable
+
+| Метод | Описание |
+|-------|----------|
+| `SetFocus()` | Устанавливает фокус на элемент |
+| `SetBlur()` | Снимает фокус с элемента |
+| `IsFocus()` | Возвращает, находится ли элемент в фокусе |
+| `SetTabIndex(int)` | Устанавливает `element.tabIndex` |
+| `SetFocusable(bool)` | Устанавливает `element.focusable` |
+| `SetDelegatesFocus(bool)` | Устанавливает `element.delegatesFocus` |
+
+### USS и операции с классами
+
+| Метод | Описание |
+|-------|----------|
+| `AddClass(string)` | Добавляет USS-класс |
+| `RemoveClass(string)` | Удаляет USS-класс |
+| `ClearClasses()` | Удаляет все USS-классы |
+| `ToggleInClass(string)` | Переключает USS-класс вкл/выкл |
+| `EnableInClass(string, bool)` | Добавляет или удаляет USS-класс по условию |
+| `AddStyleSheets(StyleSheet)` | Добавляет `StyleSheet` |
+| `RemoveStyleSheets(StyleSheet)` | Удаляет `StyleSheet` |
+| `AddStyleSheetsFromResource(string)` | Добавляет таблицу стилей через `Resources.Load` |
+| `RemoveStyleSheetsFromResource(string)` | Удаляет таблицу стилей, загруженную через `Resources.Load` |
 
 ### Расширения стилей — по категориям
 
@@ -506,6 +540,18 @@ element
 | `SetFontSize(StyleLength)` | `fontSize` |
 | `SetUnityFontDefinition(StyleFontDefinition)` | `unityFontDefinition` |
 | `SetUnityFontStyleAndWeight(StyleEnum<FontStyle>)` | `unityFontStyleAndWeight` |
+
+#### Пресеты стиля шрифта
+
+Удобные методы для переключения bold / italic без перезаписи другого флага:
+
+| Метод | Описание |
+|-------|----------|
+| `SetNormalUnityFontStyleAndWeight()` | Сбрасывает в `FontStyle.Normal` |
+| `AddBoldUnityFontStyleAndWeight()` | Добавляет bold, сохраняя italic |
+| `RemoveBoldUnityFontStyleAndWeight()` | Убирает bold, сохраняя italic |
+| `AddItalicUnityFontStyleAndWeight()` | Добавляет italic, сохраняя bold |
+| `RemoveItalicUnityFontStyleAndWeight()` | Убирает italic, сохраняя bold |
 
 #### Текст
 
@@ -611,6 +657,69 @@ field.SetLabel("My Field");
 field.SetValue(42);
 ```
 
+#### INotifyValueChanged\<T\>
+
+```csharp
+field.SetValue(42, notify: false); // устанавливает значение без генерации ChangeEvent
+field.AddValueChanged(evt => Debug.Log(evt.newValue));
+field.RemoveValueChanged(myCallback);
+```
+
+Типизированные перегрузки доступны для `int`, `uint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `string`, `bool`, `Color`, `Vector2/3/4`, `Vector2Int/3Int`, `Rect/RectInt`, `Bounds/BoundsInt`, `Hash128`, `Enum`, `Object` и других типов.
+
+#### IMixedValueSupport
+
+```csharp
+field.SetShowMixedValue(true); // показывает индикатор смешанного значения
+```
+
+#### Button
+
+```csharp
+button
+    .AddClicked(() => Debug.Log("Clicked"))
+    .SetClickable(new Clickable(() => { }))
+    .SetIconImage(myBackground);
+```
+
+| Метод | Описание |
+|-------|----------|
+| `AddClicked(Action)` | Подписка на `Button.clicked` |
+| `RemoveClicked(Action)` | Отписка от `Button.clicked` |
+| `SetClickable(Clickable)` | Устанавливает `Button.clickable` |
+| `SetIconImage(Background)` | Устанавливает `Button.iconImage` |
+
+#### Slider / BaseSlider\<TValue\>
+
+```csharp
+slider
+    .SetLowValue(0f)
+    .SetHighValue(100f)
+    .SetShowInputField<SliderFloat, float>(true);
+```
+
+| Метод | Описание |
+|-------|----------|
+| `SetLowValue(TValue)` | Устанавливает минимальное значение слайдера |
+| `SetHighValue(TValue)` | Устанавливает максимальное значение слайдера |
+| `SetFill(bool)` | Заполнение трека до текущего значения |
+| `SetInverted(bool)` | Инвертирует направление слайдера |
+| `SetPageSize(float)` | Шаг изменения значения при постраничной навигации |
+| `SetShowInputField(bool)` | Показывает числовое поле ввода рядом со слайдером |
+| `SetDirection(SliderDirection)` | Устанавливает ориентацию слайдера |
+
+#### ProgressBar
+
+```csharp
+progressBar.SetTitle("Загрузка...").SetLowValue(0f).SetHighValue(100f);
+```
+
+| Метод | Описание |
+|-------|----------|
+| `SetTitle(string)` | Устанавливает заголовок, отображаемый в центре |
+| `SetLowValue(float)` | Устанавливает минимальное значение |
+| `SetHighValue(float)` | Устанавливает максимальное значение |
+
 #### HelpBox
 
 ```csharp
@@ -631,6 +740,22 @@ foldout.SetValue(true);
 image.SetImage(myTexture);
 image.SetImageFromResource("Editor/MyIcon"); // загрузка через Resources.Load
 ```
+
+#### IMGUIContainer
+
+```csharp
+container
+    .SetOnGUIHandler(() => GUILayout.Label("IMGUI"))
+    .SetCullingEnabled(true);
+```
+
+| Метод | Описание |
+|-------|----------|
+| `SetOnGUIHandler(Action)` | Заменяет коллбэк `onGUIHandler` |
+| `AddOnGUIHandler(Action)` | Подписка на `onGUIHandler` |
+| `RemoveOnGUIHandler(Action)` | Отписка от `onGUIHandler` |
+| `SetCullingEnabled(bool)` | Пропускает `onGUIHandler`, когда элемент за пределами экрана |
+| `SetContextType(ContextType)` | Устанавливает тип контекста IMGUI |
 
 #### ListView / CollectionView
 
