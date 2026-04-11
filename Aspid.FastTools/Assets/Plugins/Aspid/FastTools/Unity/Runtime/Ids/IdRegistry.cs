@@ -76,34 +76,5 @@ namespace Aspid.FastTools
             
             return false;
         }
-        
-        // // 
-        // public int Add(string nameId)
-        // {
-        //     foreach (var e in _entries)
-        //         if (e.Name == nameId) return e.Id;
-        //
-        //     var id = _nextId++;
-        //     var newEntries = new IdEntry[_entries.Length + 1];
-        //     Array.Copy(_entries, newEntries, _entries.Length);
-        //     newEntries[_entries.Length] = new IdEntry { Name = nameId, Id = id };
-        //     _entries = newEntries;
-        //     _idNames = null;
-        //     return id;
-        // }
-
-        // public void Rename(string oldName, string newName)
-        // {
-        //     for (var i = 0; i < _entries.Length; i++)
-        //     {
-        //         if (_entries[i].Name != oldName) continue;
-        //
-        //         var entry = _entries[i];
-        //         entry.Name = newName;
-        //         _entries[i] = entry;
-        //         _idNames = null;
-        //         return;
-        //     }
-        // }
     }
 }
