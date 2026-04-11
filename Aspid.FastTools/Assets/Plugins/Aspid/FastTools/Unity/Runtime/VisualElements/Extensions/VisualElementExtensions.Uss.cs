@@ -96,8 +96,7 @@ namespace Aspid.FastTools
         public static T AddStyleSheetsFromResource<T>(this T element, string path)
             where T : VisualElement
         {
-            element.styleSheets.Add(styleSheet: Resources.Load<StyleSheet>(path));
-            return element;
+            return element.AddStyleSheets(Resources.Load<StyleSheet>(path));
         }
 
         /// <summary>
@@ -122,8 +121,7 @@ namespace Aspid.FastTools
         public static T RemoveStyleSheetsFromResource<T>(this T element, string path)
             where T : VisualElement
         {
-            element.styleSheets.Remove(styleSheet: Resources.Load<StyleSheet>(path));
-            return element;
+            return element.RemoveStyleSheets(Resources.Load<StyleSheet>(path));
         }
         #endregion
     }

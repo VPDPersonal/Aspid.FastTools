@@ -665,6 +665,24 @@ namespace Aspid.FastTools
             element.style.SetColor(value);
             return element;
         }
+        
+        /// <summary>
+        /// Parses an HTML color string and sets <see cref="IStyle.color"/>, returning the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Color to use when drawing the text of an element.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The HTML color string to parse (e.g. "#RRGGBB" or a named color).</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetColor<T>(
+            this T element,
+            string value)
+            where T : VisualElement
+        {
+            element.style.SetColor(value);
+            return element;
+        }
 
         /// <summary>
         /// Sets <see cref="IStyle.opacity"/> and returns the element for chaining.
@@ -2050,7 +2068,6 @@ namespace Aspid.FastTools
         #endregion
 
         #region Background
-
         /// <summary>
         /// Sets <see cref="IStyle.backgroundColor"/> and returns the element for chaining.
         /// </summary>
@@ -2063,6 +2080,24 @@ namespace Aspid.FastTools
         public static T SetBackgroundColor<T>(
             this T element,
             StyleColor value)
+            where T : VisualElement
+        {
+            element.style.SetBackgroundColor(value);
+            return element;
+        }
+        
+        /// <summary>
+        /// Parses an HTML color string and sets <see cref="IStyle.backgroundColor"/>, returning the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Background color to paint in the element's box.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The HTML color string to parse (e.g. "#RRGGBB" or a named color).</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBackgroundColor<T>(
+            this T element,
+            string value)
             where T : VisualElement
         {
             element.style.SetBackgroundColor(value);

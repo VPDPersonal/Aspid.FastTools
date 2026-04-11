@@ -659,6 +659,26 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
+        /// Parses an HTML color string and sets <see cref="IStyle.color"/>, returning the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Color to use when drawing the text of an element.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The HTML color string to parse (e.g. "#RRGGBB" or a named color).</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetColor<T>(
+            this T style,
+            string value)
+            where T : IStyle
+        {
+            ColorUtility.TryParseHtmlString(value, out var color);
+            style.SetColor(color);
+
+            return style;
+        }
+
+        /// <summary>
         /// Sets <see cref="IStyle.opacity"/> and returns the style for chaining.
         /// </summary>
         /// <remarks>
@@ -2051,6 +2071,26 @@ namespace Aspid.FastTools
             where T : IStyle
         {
             style.backgroundColor = value;
+            return style;
+        }
+        
+        /// <summary>
+        /// Parses an HTML color string and sets <see cref="IStyle.backgroundColor"/>, returning the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Background color to paint in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The HTML color string to parse (e.g. "#RRGGBB" or a named color).</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetBackgroundColor<T>(
+            this T style,
+            string value)
+            where T : IStyle
+        {
+            ColorUtility.TryParseHtmlString(value, out var color);
+            style.SetBackgroundColor(color);
+
             return style;
         }
 

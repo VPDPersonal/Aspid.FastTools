@@ -11,12 +11,12 @@ namespace Aspid.FastTools
         /// Sets <see cref="Image.image"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// The texture to display in this image. If you assign a Texture or Texture2D, the Image element will resize and show the assigned texture.
+        /// The texture to display in this image. If you assign a Texture, the Image element will resize and show the assigned texture.
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The texture to set.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetImage<T>(this T element, Texture2D value)
+        public static T SetImage<T>(this T element, Texture value)
             where T : Image
         {
             element.image = value;
@@ -24,7 +24,7 @@ namespace Aspid.FastTools
         }
 
         /// <summary>
-        /// Loads a <see cref="Texture2D"/> from Resources and sets the <see cref="Image.image"/> property.
+        /// Loads a <see cref="Texture"/> from Resources and sets the <see cref="Image.image"/> property.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="path">The Resources path of the texture to load.</param>
@@ -32,7 +32,7 @@ namespace Aspid.FastTools
         public static T SetImageFromResource<T>(this T element, string path)
             where T : Image
         {
-            return element.SetImage(Resources.Load<Texture2D>(path));
+            return element.SetImage(Resources.Load<Texture>(path));
         }
         #endregion
 
