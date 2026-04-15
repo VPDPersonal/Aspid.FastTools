@@ -2121,6 +2121,21 @@ namespace Aspid.FastTools
             element.style.SetBackgroundImage(value);
             return element;
         }
+        
+        /// <summary>
+        /// Loads a <see cref="Texture2D"/> from Resources and sets the <see cref="IStyle.backgroundImage"/> property.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="path">The Resources path of the texture to load.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetBackgroundImageFromResource<T>(
+            this T element,
+            string path)
+            where T : VisualElement
+        {
+            element.style.SetBackgroundImageFromResource(path);
+            return element;
+        }
 
         /// <summary>
         /// Sets <see cref="IStyle.backgroundSize"/> and returns the element for chaining.
