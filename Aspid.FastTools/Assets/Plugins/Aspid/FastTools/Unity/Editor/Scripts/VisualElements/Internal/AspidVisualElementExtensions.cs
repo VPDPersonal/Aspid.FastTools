@@ -2,7 +2,7 @@ using System;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Internal
+namespace Aspid.FastTools.Editors.Internal
 {
     /// <summary>
     /// Internal extension methods for UIToolkit types used by Aspid visual elements.

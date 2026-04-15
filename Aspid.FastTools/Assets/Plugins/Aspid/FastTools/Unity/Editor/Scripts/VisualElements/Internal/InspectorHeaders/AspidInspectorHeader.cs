@@ -1,9 +1,8 @@
 using UnityEngine;
 using UnityEngine.UIElements;
-using Aspid.FastTools.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Internal
+namespace Aspid.FastTools.Editors.Internal
 {
     /// <summary>
     /// A <see cref="VisualElement"/> that renders an Inspector section header consisting of a

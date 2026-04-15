@@ -1,5 +1,5 @@
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Internal
+namespace Aspid.FastTools.Editors.Internal
 {
     /// <summary>
     /// Configuration preset for an <see cref="AspidDividingLine"/>.

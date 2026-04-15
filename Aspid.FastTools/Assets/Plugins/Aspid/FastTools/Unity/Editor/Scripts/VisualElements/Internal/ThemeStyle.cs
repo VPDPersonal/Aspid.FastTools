@@ -1,5 +1,5 @@
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Internal
+namespace Aspid.FastTools.Editors.Internal
 {
     /// <summary>
     /// Defines the visual theme (background brightness) of an Aspid UI element.

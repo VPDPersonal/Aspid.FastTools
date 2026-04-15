@@ -1,5 +1,5 @@
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Internal
+namespace Aspid.FastTools.Editors.Internal
 {
     /// <summary>
     /// Defines the visual status of an Aspid UI element, controlling its color accent.
@@ -10,12 +10,12 @@ namespace Aspid.FastTools.Internal
         /// No status applied.
         /// </summary>
         None,
-
+        
         /// <summary>
-        /// Indicates a successful or positive state.
+        /// Indicates an informational state.
         /// </summary>
-        Success,
-
+        Info,
+        
         /// <summary>
         /// Indicates a warning or cautionary state.
         /// </summary>
@@ -25,10 +25,10 @@ namespace Aspid.FastTools.Internal
         /// Indicates an error or critical state.
         /// </summary>
         Error,
-
+        
         /// <summary>
-        /// Indicates an informational state.
+        /// Indicates a successful or positive state.
         /// </summary>
-        Info,
+        Success,
     }
 }
