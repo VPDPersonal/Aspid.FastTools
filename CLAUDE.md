@@ -45,7 +45,7 @@ dotnet test
 - `Unity/Editor/Scripts/` — editor-only code, excluded from builds
 - `Unity/Editor/Resources/Styles/` — editor USS stylesheets, named `Aspid-FastTools-{Feature}.uss`
 - `Source/` — pure C# extensions with no Unity dependency
-- `Samples/` — optional samples (UPM convention, imported via Package Manager)
+- `Samples~/` — optional samples (UPM convention, tilde hides from Unity importer, imported via Package Manager)
 
 **Assembly boundary rule:** `Unity/Runtime/` code must NOT reference `UnityEditor` — it ships with player builds.
 
@@ -71,7 +71,9 @@ dotnet test
 
 **SerializedProperty Extensions** (`Unity/Editor/Scripts/SerializedProperties/`): Fluent chainable extensions (`.SetValue()`, `.Apply()`, reflection helpers). Split across multiple partial files.
 
-**VisualElement Extensions** (`Unity/Runtime/VisualElements/Extensions/`): Extensive fluent API for UIToolkit — layout, sizing, style, borders, colors, transitions, callbacks, USS, etc. Split into many partial files by category (`IStyleExtensions.cs`, `VisualElementExtensions.Style.cs`, `VisualElementExtensions.RegisterCallback.cs`, `VisualElementExtensions.Uss.cs`, plus element-specific files for `Field`, `Foldout`, `HelpBox`, `Image`, `ListView`, `TextElement`). Editor-side command extensions in `Unity/Editor/Scripts/VisualElements/`.
+**VisualElement Extensions** (`Unity/Runtime/VisualElements/Extensions/`): Extensive fluent API for UIToolkit — layout, sizing, style, borders, colors, transitions, callbacks, USS, child management, etc. Organized into subdirectories by element type (`Button/`, `CallbackEventHandler/`, `Field/`, `Focusable/`, `Foldout/`, `HelpBox/`, `IStyle/`, `Image/`, `List/`, `ProgressBar/`, `Slider/`, `TextElement/`) plus top-level partial files (`VisualElementExtensions.cs`, `.Style.cs`, `.Style.Preset.cs`, `.Uss.cs`, `.Child.cs`). Editor-side command extensions in `Unity/Editor/Scripts/VisualElements/Extensions/`.
+
+**Internal Editor VisualElement Components** (`Unity/Editor/Scripts/VisualElements/Internal/`): Custom UIToolkit elements for editor UI — `AspidBox` (styled container), `AspidInspectorHeader` (section header). Style helpers: `StyleClasses`, `StatusStyle`, `StyleOverride`, `ThemeStyle`. These use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet and follow the same `.AddClass()` pattern.
 
 **IMGUI Scopes** (`Unity/Editor/Scripts/IMGUI/`): Disposable `VerticalScope`, `HorizontalScope`, `ScrollViewScope` wrappers with `Rect` properties.
 
@@ -81,7 +83,7 @@ dotnet test
 
 **PropertyDrawers:** Always `internal sealed class`. Complex drawers split into a static helper `{Feature}Drawer` with `DrawIMGUI()` and `DrawUIToolkit()` methods — see `SerializableTypeDrawer.cs` as reference.
 
-**USS stylesheets:** Loaded via `.AddStyleSheetsFromResource("Styles/Aspid-FastTools-{Feature}")`. Classes named `aspid-fasttools-{feature}-{element}` (kebab-case). Styling goes in USS; code only applies `.AddClass()`.
+**USS stylesheets:** Loaded via `.AddStyleSheetsFromResource("Styles/Aspid-FastTools-{Feature}")`. Classes named `aspid-fasttools-{feature}-{element}` (kebab-case). Styling goes in USS; code only applies `.AddClass()`. `Aspid-FastTools-Default-Dark.uss` serves as a shared base stylesheet for internal editor components — add it first when creating new editor components.
 
 ### Submodule
 
