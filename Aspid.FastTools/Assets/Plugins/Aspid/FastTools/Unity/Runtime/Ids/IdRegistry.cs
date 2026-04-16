@@ -73,8 +73,8 @@ namespace Aspid.FastTools
         public bool Contains(string nameId)
         {
             foreach (var e in _entries)
-                if (e.Name == name) return true;
-            
+                if (e.Name == nameId) return true;
+
             return false;
         }
     }

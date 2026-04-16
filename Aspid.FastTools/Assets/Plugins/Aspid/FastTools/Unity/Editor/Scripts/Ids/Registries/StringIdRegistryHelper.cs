@@ -5,17 +5,8 @@ using UnityEngine;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.Ids.Editors
 {
-    internal class StringIdRegistryCacheInvalidator : AssetPostprocessor
-    {
-        private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
-        {
-            if (imported.Length > 0 || deleted.Length > 0 || moved.Length > 0)
-                StringIdRegistryHelper.ClearCache();
-        }
-    }
-
     internal static class StringIdRegistryHelper
     {
         private static readonly Dictionary<string, IdRegistry?> _cache = new();

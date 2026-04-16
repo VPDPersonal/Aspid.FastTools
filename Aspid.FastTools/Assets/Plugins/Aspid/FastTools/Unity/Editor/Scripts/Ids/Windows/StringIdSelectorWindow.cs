@@ -9,15 +9,10 @@ using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.Ids.Editors
 {
     internal sealed class StringIdSelectorWindow : EditorWindow
     {
-        private const string NoneOption = "<None>";
-        private const string StyleSheetPath = "Styles/Aspid-FastTools-Id";
-        private const string ContainerClass = "aspid-fasttools-id-selector-container";
-        private const string ItemClass = "aspid-fasttools-id-selector-item";
-
         private ToolbarSearchField _searchField = null!;
         private ListView _listView = null!;
         private Action<string>? _onSelected;
@@ -68,8 +63,8 @@ namespace Aspid.FastTools.Editors
             _listView.itemsChosen += items => SelectItem(items.OfType<string>().FirstOrDefault());
 
             var container = new VisualElement()
-                .AddStyleSheetsFromResource(StyleSheetPath)
-                .AddClass(ContainerClass)
+                .AddStyleSheetsFromResource(Constants.StyleSheetPath)
+                .AddClass(Constants.Selector.Container)
                 .AddChild(_searchField)
                 .AddChild(_listView);
 
@@ -79,7 +74,7 @@ namespace Aspid.FastTools.Editors
 
         private VisualElement CreateItem()
         {
-            return new Label().AddClass(ItemClass);
+            return new Label().AddClass(Constants.Selector.Item);
         }
 
         private void BindItem(VisualElement element, int index)
@@ -94,7 +89,7 @@ namespace Aspid.FastTools.Editors
         private void RefreshList(string search)
         {
             _filteredIds.Clear();
-            _filteredIds.Add(NoneOption);
+            _filteredIds.Add(Constants.NoneOption);
 
             foreach (var id in _allIds)
             {
@@ -108,7 +103,7 @@ namespace Aspid.FastTools.Editors
         private void SelectItem(string? item)
         {
             if (item == null) return;
-            _onSelected?.Invoke(item == NoneOption ? string.Empty : item);
+            _onSelected?.Invoke(item == Constants.NoneOption ? string.Empty : item);
             Close();
         }
 

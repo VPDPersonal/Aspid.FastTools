@@ -1,7 +1,8 @@
 using UnityEditor;
+using Aspid.FastTools.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.Ids.Editors
 {
     internal static class IdRegisterEditorExtensions
     {

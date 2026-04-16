@@ -7,12 +7,11 @@ using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.Ids.Editors
 {
     [CustomPropertyDrawer(typeof(IId), useForChildren: true)]
     internal sealed class IdStructPropertyDrawer : PropertyDrawer
     {
-        // Cache uniqueness per (objectId:propertyPath:value) → avoids AssetDatabase calls every frame
         private static readonly System.Collections.Generic.Dictionary<string, (double time, bool isUnique)> _cache = new();
         private const double CacheLifetime = 2.0;
 
@@ -23,7 +22,7 @@ namespace Aspid.FastTools.Editors
         {
             var h = IdStructDrawer.GetIMGUIHeight(property);
 
-            if (IsUnique && !string.IsNullOrEmpty(property.FindPropertyRelative("__stringId")?.stringValue) && !GetIsUnique(property))
+            if (IsUnique && !string.IsNullOrEmpty(property.FindPropertyRelative(Constants.StringIdFieldName)?.stringValue) && !GetIsUnique(property))
                 h += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
             return h;
@@ -37,7 +36,7 @@ namespace Aspid.FastTools.Editors
 
             if (!IsUnique) return;
 
-            var stringId = property.FindPropertyRelative("__stringId")?.stringValue;
+            var stringId = property.FindPropertyRelative(Constants.StringIdFieldName)?.stringValue;
             if (string.IsNullOrEmpty(stringId) || GetIsUnique(property)) return;
 
             var warnY    = position.y + drawH + EditorGUIUtility.standardVerticalSpacing;
@@ -65,12 +64,12 @@ namespace Aspid.FastTools.Editors
             void Refresh()
             {
                 var p        = so.FindProperty(propPath);
-                var stringId = p?.FindPropertyRelative("__stringId")?.stringValue;
+                var stringId = p?.FindPropertyRelative(Constants.StringIdFieldName)?.stringValue;
                 var isUnique = string.IsNullOrEmpty(stringId) || CheckIsUnique(p!, stringId!, declaringType);
                 warningLabel.SetDisplay(isUnique ? DisplayStyle.None : DisplayStyle.Flex);
             }
 
-            var idProp = property.FindPropertyRelative("__stringId");
+            var idProp = property.FindPropertyRelative(Constants.StringIdFieldName);
             if (idProp != null)
                 warningLabel.TrackPropertyValue(idProp, _ => Refresh());
             warningLabel.schedule.Execute(Refresh).StartingIn(0);
@@ -83,7 +82,7 @@ namespace Aspid.FastTools.Editors
 
         private bool GetIsUnique(SerializedProperty structProp)
         {
-            var idProp = structProp.FindPropertyRelative("__stringId");
+            var idProp = structProp.FindPropertyRelative(Constants.StringIdFieldName);
             if (idProp == null) return true;
 
             var key = $"{structProp.serializedObject.targetObject.GetInstanceID()}:{structProp.propertyPath}:{idProp.stringValue}";
@@ -102,7 +101,7 @@ namespace Aspid.FastTools.Editors
             if (assetType == null || string.IsNullOrEmpty(idValue)) return true;
 
             var currentObject = structProp.serializedObject.targetObject;
-            var fullPath      = $"{structProp.propertyPath}.__stringId";
+            var fullPath      = $"{structProp.propertyPath}.{Constants.StringIdFieldName}";
             var guids         = AssetDatabase.FindAssets($"t:{assetType.Name}");
 
             foreach (var guid in guids)
