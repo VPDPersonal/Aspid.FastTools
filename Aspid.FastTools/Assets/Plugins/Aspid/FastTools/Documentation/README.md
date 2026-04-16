@@ -1,10 +1,11 @@
 # Aspid.FastTools
 
-[![Unity 2022.3+](https://img.shields.io/badge/2022.3%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d)](https://unity.com/)
-[![Releases](https://img.shields.io/github/v/release/VPDPersonal/Aspid.FastTools?label=Release&labelColor=254d2c&color=4fa35d)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
-[![License](https://img.shields.io/github/license/VPDPersonal/Aspid.FastTools?label=License&labelColor=254d2c&color=4fa35d)](LICENSE)
-
 **Aspid.FastTools** is a set of tools designed to minimize routine code writing in Unity.
+
+## Source Code
+
+[[Aspid.FastTools](https://github.com/VPDPersonal/Aspid.FastTools)]
+
 
 ---
 
@@ -88,7 +89,7 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
 ### Result
 
-![Aspid.FastTools.ProfilerMarkers.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.ProfilerMarkers.png)
+![Aspid.FastTools.ProfilerMarkers.png](Images/Aspid.FastTools.ProfilerMarkers.png)
 
 ---
 
@@ -123,7 +124,7 @@ public class MyBehaviour : MonoBehaviour
     }
 }
 ```
-![Aspid.FastTools.SerializableType.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.SerializableType.png)
+![Aspid.FastTools.SerializableType.png](Images/Aspid.FastTools.SerializableType.png)
 ### ComponentTypeSelector
 
 A serializable struct that renders a type-switching dropdown in the Inspector. Add it as a field to a base class — picking a subtype rewrites `m_Script` on the `SerializedObject`, effectively changing the component or ScriptableObject to the chosen subtype.
@@ -194,7 +195,7 @@ The Inspector shows a button that opens a searchable popup window with:
 - Navigation history (back button)
 - Assembly disambiguation for types with identical names
 
-![Aspid.FastTools.TypeSelectorWindow.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.TypeSelectorWindow.png)
+![Aspid.FastTools.TypeSelectorWindow.png](Images/Aspid.FastTools.TypeSelectorWindow.png)
 ---
 
 ## Enum System
@@ -828,7 +829,7 @@ public class MyBehaviourEditor : Editor
 
 ### Result
 
-![Aspid.FastTools.VisualElement.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.VisualElement.png)
+![Aspid.FastTools.VisualElement.png](Images/Aspid.FastTools.VisualElement.png)
 
 ---
 
