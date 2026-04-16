@@ -24,6 +24,7 @@ dotnet build -c Release
 
 Run tests with:
 ```bash
+# From Aspid.FastTools.Generators/
 dotnet test
 ```
 
@@ -49,13 +50,15 @@ dotnet test
 
 **Assembly boundary rule:** `Unity/Runtime/` code must NOT reference `UnityEditor` — it ships with player builds.
 
+**Optional integration define:** `Aspid.FastTools.Unity.asmdef` declares a `versionDefines` entry that activates `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION` when `com.unity.mathematics` is installed. Gate Mathematics-dependent runtime code with this symbol.
+
 ### Assembly Definitions
 
 | Assembly | Location | Purpose |
 |---|---|---|
 | `Aspid.FastTools` | `Source/` | Pure C# type extensions |
-| `Aspid.FastTools.Unity` | `Unity/Runtime/` | Runtime: Types, Enums, ProfilerMarkers, VisualElements |
-| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/` | Editor: SerializedProperties, IMGUI, TypeSelector, Enums |
+| `Aspid.FastTools.Unity` | `Unity/Runtime/` | Runtime: Types, Enums, Ids, ProfilerMarkers, VisualElements |
+| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/` | Editor: Enums, Extensions, IMGUI, Ids, SerializedProperties, Types, VisualElements |
 
 ### Key Features and Their Locations
 
@@ -71,9 +74,9 @@ dotnet test
 
 **SerializedProperty Extensions** (`Unity/Editor/Scripts/SerializedProperties/`): Fluent chainable extensions (`.SetValue()`, `.Apply()`, reflection helpers). Split across multiple partial files.
 
-**VisualElement Extensions** (`Unity/Runtime/VisualElements/Extensions/`): Extensive fluent API for UIToolkit — layout, sizing, style, borders, colors, transitions, callbacks, USS, child management, etc. Organized into subdirectories by element type (`Button/`, `CallbackEventHandler/`, `Field/`, `Focusable/`, `Foldout/`, `HelpBox/`, `IStyle/`, `Image/`, `List/`, `ProgressBar/`, `Slider/`, `TextElement/`) plus top-level partial files (`VisualElementExtensions.cs`, `.Style.cs`, `.Style.Preset.cs`, `.Uss.cs`, `.Child.cs`). Editor-side command extensions in `Unity/Editor/Scripts/VisualElements/Extensions/`.
+**VisualElement Extensions** (`Unity/Runtime/VisualElements/Extensions/`): Extensive fluent API for UIToolkit — layout, sizing, style, borders, colors, transitions, callbacks, USS, child management, etc. Organized into subdirectories by element type (`Button/`, `CallbackEventHandler/`, `Field/`, `Focusable/`, `Foldout/`, `HelpBox/`, `IMGUIContainer/`, `IMixedValueSupport/`, `INotifyValueChanged/`, `IStyle/`, `Image/`, `List/`, `ProgressBar/`, `Slider/`, `TextElement/`) plus top-level partial files (`VisualElementExtensions.cs`, `.Style.cs`, `.Style.Preset.cs`, `.Uss.cs`, `.Child.cs`). Editor-side command extensions in `Unity/Editor/Scripts/VisualElements/Extensions/`.
 
-**Internal Editor VisualElement Components** (`Unity/Editor/Scripts/VisualElements/Internal/`): Custom UIToolkit elements for editor UI — `AspidBox` (styled container), `AspidInspectorHeader` (section header). Style helpers: `StyleClasses`, `StatusStyle`, `StyleOverride`, `ThemeStyle`. These use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet and follow the same `.AddClass()` pattern.
+**Internal Editor VisualElement Components** (`Unity/Editor/Scripts/VisualElements/Internal/`): Custom UIToolkit elements for editor UI, organized by kind: `Containers/` (e.g. `AspidBox`), `DividingLines/`, `HelpBoxes/`, `InspectorHeaders/` (e.g. `AspidInspectorHeader`), `Labels/`. Shared helpers at root: `AspidVisualElementExtensions.cs`, `StyleClasses`, `StatusStyle`, `StyleOverride`, `ThemeStyle`. These use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet and follow the same `.AddClass()` pattern.
 
 **IMGUI Scopes** (`Unity/Editor/Scripts/IMGUI/`): Disposable `VerticalScope`, `HorizontalScope`, `ScrollViewScope` wrappers with `Rect` properties.
 
