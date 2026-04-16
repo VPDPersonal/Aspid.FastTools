@@ -235,7 +235,7 @@ public class MyBehaviour : MonoBehaviour
 }
 ```
 
-In the Inspector, select the enum type in the `EnumValues` header, then assign a value for each enum member.
+In the Inspector, select the enum type in the `EnumValues` header, then assign a value for each enum member. Right-click the property to open a context menu with **Populate Missing Enum Members** — it appends an entry for every enum member not yet in the list, seeded with the current Default Value.
 
 ---
 
