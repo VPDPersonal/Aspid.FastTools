@@ -17,24 +17,30 @@ namespace Aspid.FastTools.Enums.Editors
         private const string ContainerClass = "aspid-fasttools-enum-values-container";
         private const string ValuesClass = "aspid-fasttools-enum-values-values";
         private const string DefaultValueClass = "aspid-fasttools-enum-values-default-value";
-        
+
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
+            var serializedObject = property.serializedObject;
+            var valuesPath = property.FindPropertyRelative("_values").propertyPath;
+            var enumTypePath = property.FindPropertyRelative("_enumType").propertyPath;
+            var defaultValuePath = property.FindPropertyRelative("_defaultValue").propertyPath;
+
             var root = new VisualElement().SetName($"enum-values-{property.displayName}")
                 .AddStyleSheetsFromResource(StylesheetPath)
                 .AddClass(RootClass);
 
-            var values = property.FindPropertyRelative("_values");
-            var enumType = property.FindPropertyRelative("_enumType");
-            var defaultValueProperty = property.FindPropertyRelative("_defaultValue");
-            
-            var enumTypeField = new PropertyField(enumType, label: string.Empty)
+            root.AddManipulator(EnumValuesDrawer.CreatePopulateMenuManipulator(
+                serializedObject.FindProperty(valuesPath),
+                serializedObject.FindProperty(enumTypePath),
+                serializedObject.FindProperty(defaultValuePath)));
+
+            var enumTypeField = new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty)
                 .AddValueChanged(_ => UpdateValues());
-            
-            var valuesField = new PropertyField(values)
+
+            var valuesField = new PropertyField(serializedObject.FindProperty(valuesPath))
                 .AddClass(ValuesClass)
                 .AddValueChanged(_ => UpdateValues());
-            
+
             return root
                 .AddChild(new VisualElement()
                     .AddClass(HeaderClass)
@@ -44,17 +50,20 @@ namespace Aspid.FastTools.Enums.Editors
                 .AddChild(new VisualElement()
                     .AddClass(ContainerClass)
                     .AddChild(valuesField)
-                    .AddChild(new PropertyField(defaultValueProperty)
+                    .AddChild(new PropertyField(serializedObject.FindProperty(defaultValuePath))
                         .AddClass(DefaultValueClass)
                     )
                 );
 
             void UpdateValues()
             {
+                var values = serializedObject.FindProperty(valuesPath);
+                var enumTypeValue = serializedObject.FindProperty(enumTypePath).stringValue;
+
                 for (var i = 0; i < values.arraySize; i++)
                 {
                     var element = values.GetArrayElementAtIndex(i);
-                    element.FindPropertyRelative("_enumType").SetStringAndApply(enumType.stringValue);
+                    element.FindPropertyRelative("_enumType").SetStringAndApply(enumTypeValue);
                 }
             }
         }
