@@ -2,9 +2,12 @@ using System;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
+using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.Enums.Editors
 {
     [CustomPropertyDrawer(typeof(EnumValue<>))]
     internal sealed class EnumValuePropertyDrawer : PropertyDrawer
@@ -22,17 +25,14 @@ namespace Aspid.FastTools.Editors
             var keyEnumField = new EnumField(label: string.Empty).SetDisplay(DisplayStyle.None); 
             var keyEnumFlagField = new EnumFlagsField(label: string.Empty).SetDisplay(DisplayStyle.None); 
             
-            enumTypeField.RegisterValueChangeCallback(e =>
-            {
-                UpdateValue();
-            });
-
-            keyEnumField.RegisterValueChangedCallback(e =>
+            enumTypeField.AddValueChanged(_ => UpdateValue());
+            
+            keyEnumField.AddValueChanged(e =>
             {
                 keyProperty.SetStringAndApply(e.newValue.ToString());
             });
             
-            keyEnumFlagField.RegisterValueChangedCallback(e =>
+            keyEnumFlagField.AddValueChanged(e =>
             {
                 keyProperty.SetStringAndApply(e.newValue.ToString());
             });
@@ -81,15 +81,16 @@ namespace Aspid.FastTools.Editors
                     
                     if (enumType.IsDefined(typeof(FlagsAttribute), false))
                     {
-                        keyEnumFlagField.SetDisplay(DisplayStyle.Flex);
-
-                        keyEnumFlagField.value = null;
-                        keyEnumFlagField.Init(enumValue);
+                        keyEnumFlagField
+                            .SetValue(null)
+                            .Initialize(enumValue)
+                            .SetDisplay(DisplayStyle.Flex);
                     }
                     else
                     {                   
-                        keyEnumField.SetDisplay(DisplayStyle.Flex);
-                        keyEnumField.Init(enumValue);
+                        keyEnumField
+                            .Initialize(enumValue)
+                            .SetDisplay(DisplayStyle.Flex);
                     }
                 }
             }

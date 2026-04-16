@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
     /// Editor-side extension methods for <see cref="Type"/> that locate the

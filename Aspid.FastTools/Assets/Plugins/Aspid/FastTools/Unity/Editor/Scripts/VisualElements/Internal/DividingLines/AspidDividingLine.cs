@@ -1,7 +1,7 @@
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors.Internal
+namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     /// <summary>
     /// A <see cref="VisualElement"/> that renders a styled dividing line.

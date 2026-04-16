@@ -2,10 +2,11 @@
 using System;
 using UnityEngine;
 using System.Collections;
+using Aspid.FastTools.Types;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.Enums
 {
     /// <summary>
     /// A serializable dictionary that maps each member of a chosen enum to a value of type

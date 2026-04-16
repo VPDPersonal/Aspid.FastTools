@@ -1,11 +1,13 @@
 using System;
-using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.SceneManagement;
-using UnityEditor.UIElements;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
+using Aspid.FastTools.UIElements;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
@@ -15,6 +17,9 @@ namespace Aspid.FastTools.Editors
     {
         private SerializedProperty _targetTypeProp;
         private SerializedProperty _entriesProp;
+
+        private Label _countBadge;
+        private Label _emptyLabel;
 
         private void OnEnable()
         {
@@ -34,35 +39,75 @@ namespace Aspid.FastTools.Editors
         {
             var root = new VisualElement()
                 .AddStyleSheetsFromResource(StyleSheetPath)
-                .AddClass("aspid-fasttools-id-registry");
-
-            root.Add(new PropertyField(_targetTypeProp, label: string.Empty));
-
-            var spacer = new VisualElement();
-            spacer.style.height = 8;
-            root.Add(spacer);
-
-            var idsLabel = new Label("IDs");
-            idsLabel.style.unityFontStyleAndWeight = FontStyle.Bold;
-            idsLabel.style.marginBottom = 2;
-            root.Add(idsLabel);
+                .AddStyleSheetsFromResource(StyleClasses.DefaultStyleSheet)
+                .AddClass("aspid-fasttools-id-registry")
+                .AddClass("aspid-fasttools-inspector-container");
+            
+            root.Add(new AspidInspectorHeader("None", target) { Subtext = "None"});
+            
+            var typeContainer = new VisualElement()
+                .SetMarginTop(5)
+                .AddClass("aspid-fasttools-dark")
+                .AddClass("aspid-fasttools-background");
+            
+            var container = new VisualElement()
+                .SetMarginTop(5)
+                .AddClass("aspid-fasttools-dark")
+                .AddClass("aspid-fasttools-background");
+            
+            typeContainer.Add(new AspidLabel("Type")
+                .SetMarginBottom(5));
+            typeContainer.Add(new PropertyField(_targetTypeProp, label: string.Empty));
+            container.Add(BuildSectionTitle("IDs"));
 
             var entriesContainer = new VisualElement();
-            root.Add(entriesContainer);
-            root.Add(BuildRegistryAddRow());
+            container.Add(entriesContainer);
 
-            root.TrackSerializedObjectValue(serializedObject, _ => RebuildEntries(entriesContainer));
+            _emptyLabel = new Label("No IDs yet. Add one below.")
+                .AddClass("aspid-fasttools-id-registry-empty");
+            container.Add(_emptyLabel);
+            container.Add(BuildRegistryAddRow());
+
+            container.TrackSerializedObjectValue(serializedObject, _ => RebuildEntries(entriesContainer));
             RebuildEntries(entriesContainer);
 
-            return root;
+            return root
+                .AddChild(typeContainer)
+                .AddChild(container);
+        }
+
+        private VisualElement BuildSectionTitle(string text)
+        {
+            _countBadge = new Label("0").AddClass("aspid-fasttools-id-registry-count-badge");
+
+            var header = new VisualElement()
+                .AddClass("aspid-fasttools-id-registry-section-title-header")
+                .AddChild(new Label(text)
+                    .AddClass("aspid-fasttools-id-registry-section-title-text"))
+                .AddChild(_countBadge);
+
+            return new VisualElement()
+                .AddClass("aspid-fasttools-id-registry-section-title")
+                .AddChild(header)
+                .AddChild(new VisualElement()
+                    .AddClass("aspid-fasttools-id-registry-section-title-line"));
         }
 
         private void RebuildEntries(VisualElement container)
         {
             container.Clear();
             var duplicates = GetDuplicates();
+            var count      = _entriesProp.arraySize;
 
-            for (int i = 0; i < _entriesProp.arraySize; i++)
+            if (_countBadge != null)
+                _countBadge.text = count.ToString();
+
+            if (_emptyLabel != null)
+            {
+                _emptyLabel.EnableInClassList("aspid-fasttools-id-registry-empty--visible", count == 0);
+            }
+
+            for (int i = 0; i < count; i++)
             {
                 var element     = _entriesProp.GetArrayElementAtIndex(i);
                 var name        = element.FindPropertyRelative("Name").stringValue;
@@ -75,25 +120,16 @@ namespace Aspid.FastTools.Editors
         private VisualElement BuildRegistryEntryRow(int index, string name, int id, bool isDuplicate)
         {
             var container = new VisualElement().AddClass("aspid-fasttools-id-registry-entry");
-            var row       = new VisualElement().AddClass("aspid-fasttools-id-registry-row");
+            container.EnableInClassList("aspid-fasttools-id-registry-entry--duplicate", isDuplicate);
+
+            var row = new VisualElement().AddClass("aspid-fasttools-id-registry-row");
 
             var nameField = new TextField { value = name };
             nameField.AddClass("aspid-fasttools-id-registry-name");
-            if (isDuplicate)
-            {
-                nameField.AddClass("aspid-fasttools-id-registry-name--duplicate");
-                row.Add(nameField);
-                row.Add(new Label("(duplicate)").AddClass("aspid-fasttools-id-registry-duplicate-label"));
-            }
-            else
-            {
-                row.Add(nameField);
-            }
+            row.Add(nameField);
 
-            var idField = new IntegerField(string.Empty) { value = id };
-            idField.SetEnabled(false);
-            idField.AddClass("aspid-fasttools-id-registry-id");
-            row.Add(idField);
+            var idBadge = new Label(id.ToString()).AddClass("aspid-fasttools-id-registry-id-badge");
+            row.Add(idBadge);
 
             var deleteButton = new Button { text = "×" };
             deleteButton.AddClass("aspid-fasttools-id-registry-delete");
@@ -182,7 +218,7 @@ namespace Aspid.FastTools.Editors
             var inputField = new TextField();
             inputField.AddClass("aspid-fasttools-id-registry-add-input");
 
-            var addButton = new Button { text = "+" };
+            var addButton = new Button { text = "Add" };
             addButton.AddClass("aspid-fasttools-id-registry-add-button");
             addButton.SetEnabled(false);
 

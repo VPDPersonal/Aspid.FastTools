@@ -1,5 +1,5 @@
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors.Internal
+namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     /// <summary>
     /// Defines the visual status of an Aspid UI element, controlling its color accent.

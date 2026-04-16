@@ -1,9 +1,12 @@
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
+using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.Enums.Editors
 {
     [CustomPropertyDrawer(typeof(EnumValues<>))]
     internal sealed class EnumValuesPropertyDrawer : PropertyDrawer
@@ -17,7 +20,7 @@ namespace Aspid.FastTools.Editors
         
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var root = new VisualElement()
+            var root = new VisualElement().SetName($"enum-values-{property.displayName}")
                 .AddStyleSheetsFromResource(StylesheetPath)
                 .AddClass(RootClass);
 
@@ -25,14 +28,12 @@ namespace Aspid.FastTools.Editors
             var enumType = property.FindPropertyRelative("_enumType");
             var defaultValueProperty = property.FindPropertyRelative("_defaultValue");
             
-            var enumTypeField = new PropertyField(enumType, label: string.Empty);
-            enumTypeField.RegisterValueChangeCallback(_ =>
-            {
-                UpdateValues();
-            });
+            var enumTypeField = new PropertyField(enumType, label: string.Empty)
+                .AddValueChanged(_ => UpdateValues());
             
-            var valuesField = new PropertyField(values).AddClass(ValuesClass);
-            valuesField.RegisterValueChangeCallback(_ => UpdateValues());
+            var valuesField = new PropertyField(values)
+                .AddClass(ValuesClass)
+                .AddValueChanged(_ => UpdateValues());
             
             return root
                 .AddChild(new VisualElement()
@@ -44,7 +45,7 @@ namespace Aspid.FastTools.Editors
                     .AddClass(ContainerClass)
                     .AddChild(valuesField)
                     .AddChild(new PropertyField(defaultValueProperty)
-                            .AddClass(DefaultValueClass)
+                        .AddClass(DefaultValueClass)
                     )
                 );
 

@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors.Internal
+namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     /// <summary>
     /// A <see cref="VisualElement"/> label with Aspid theming, status accents, font size control,

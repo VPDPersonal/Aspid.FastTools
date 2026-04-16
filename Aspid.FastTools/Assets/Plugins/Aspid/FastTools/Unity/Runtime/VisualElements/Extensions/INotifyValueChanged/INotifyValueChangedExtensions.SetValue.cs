@@ -7,7 +7,7 @@ using Unity.Mathematics;
 #endif
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.UIElements
 {
     public static partial class INotifyValueChangedExtensions
     {

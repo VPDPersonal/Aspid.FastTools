@@ -7,42 +7,56 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.Types.Editors
 {
     [CustomPropertyDrawer(typeof(TypeSelectorAttribute))]
     internal sealed class TypeSelectorPropertyDrawer : PropertyDrawer
     {
-        private const BindingFlags BindingAttr = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly;
-        
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
-            var types = GetTypesFromAttribute(typeSelectorAttribute, property);
-            
+            ThrowExceptionIfInvalidProperty(property);
+            var allow = GetTypeAllow();
+            var types = GetTypesFromAttribute(property);
+
             SerializableTypeDrawer.DrawIMGUI(
-                position,
-                property,
-                label,
-                types,
-                typeSelectorAttribute.AllowAbstractTypes,
-                typeSelectorAttribute.AllowInterfaces);
+                position: position,
+                property: property,
+                label: label,
+                types: types,
+                allow: allow);
         }
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
-            var types = GetTypesFromAttribute(typeSelectorAttribute, property);
-            
+            ThrowExceptionIfInvalidProperty(property);
+            var allow = GetTypeAllow();
+            var types = GetTypesFromAttribute(property);
+
             return SerializableTypeDrawer.DrawUIToolkit(
-                property,
-                preferredLabel,
-                types,
-                typeSelectorAttribute.AllowAbstractTypes,
-                typeSelectorAttribute.AllowInterfaces);
+                property: property,
+                label: preferredLabel,
+                types: types,
+                allow: allow);
         }
 
-        private static Type[] GetTypesFromAttribute(TypeSelectorAttribute typeSelectorAttribute, SerializedProperty property)
+        private TypeAllow GetTypeAllow()
         {
+            var allow = TypeAllow.None;
+            var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
+            
+            if (typeSelectorAttribute.AllowAbstractTypes) 
+                allow |= TypeAllow.Abstract;
+            
+            if (typeSelectorAttribute.AllowInterfaces)
+                allow |= TypeAllow.Interface;
+            
+            return allow;
+        }
+
+        private Type[] GetTypesFromAttribute(SerializedProperty property)
+        {
+            var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
+            
             var assemblyQualifiedNames = typeSelectorAttribute.AssemblyQualifiedNames
                 .Where(assemblyQualifiedName => !string.IsNullOrWhiteSpace(assemblyQualifiedName))
                 .ToArray();
@@ -76,10 +90,11 @@ namespace Aspid.FastTools.Editors
 
         private static MemberInfo GetMemberFromHierarchy(Type type, string memberName)
         {
+            const BindingFlags bindingAttr = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly;
             var currentType = type;
             while (currentType is not null)
             {
-                var members = currentType.GetMember(memberName, BindingAttr);
+                var members = currentType.GetMember(memberName, bindingAttr);
                 if (members.Length > 0)
                     return members[0];
                 
@@ -130,6 +145,12 @@ namespace Aspid.FastTools.Editors
                     return;
                 }
             }
+        }
+        
+        private static void ThrowExceptionIfInvalidProperty(SerializedProperty property)
+        {
+            if (property.propertyType != SerializedPropertyType.String)
+                throw new ArgumentException("Property must be of type String", nameof(property));
         }
     }
 }

@@ -3,7 +3,7 @@ using Unity.Properties;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.UIElements
 {
     public static partial class VisualElementExtensions
     {

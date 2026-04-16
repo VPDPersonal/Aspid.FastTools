@@ -3,31 +3,29 @@ using UnityEditor;
 using UnityEngine;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
+using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.Types.Editors
 {
     internal static class SerializableTypeDrawer
     {
-        private const string NoneOption = "<None>";
-        private const string MissingOption = "<Missing>";
-        
-        private const string OpenButtonText = "Open";
-
+        private const string OpenButtonIconPath = "open_button_icon";
         private const string StyleSheetPath = "Styles/Aspid-FastTools-SerializableType";
-        private const string RootClass = "aspid-fasttools-serializable-type";
         private const string ButtonsClass = "aspid-fasttools-serializable-type-buttons";
         private const string OpenButtonClass = "aspid-fasttools-serializable-type-open-button";
+        private const string OnlyButtonsClass = "aspid-fasttools-serializable-type-only-buttons";
         
         internal static void DrawIMGUI(
             Rect position,
             SerializedProperty property,
             GUIContent label,
             Type[] types,
-            bool allowAbstract,
-            bool allowInterfaces)
+            TypeAllow allow)
         {
-            const float openButtonWidth = 50f;
+            var openButtonWidth = position.height;
             
             if (!string.IsNullOrWhiteSpace(label.text))
             {
@@ -54,8 +52,7 @@ namespace Aspid.FastTools.Editors
                     screenRect: screenRect,
                     types: types,
                     currentAqn: current,
-                    allowAbstract: allowAbstract,
-                    allowInterface: allowInterfaces,
+                    allow: allow,
                     onSelected: assemblyQualifiedName =>
                     {
                         property.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
@@ -65,7 +62,7 @@ namespace Aspid.FastTools.Editors
             if (!hasValidType) return;
             
             var openButtonRect = new Rect(dropdownRect.xMax + 2f, position.y, openButtonWidth, position.height);
-            if (GUI.Button(openButtonRect, OpenButtonText))
+            if (GUI.Button(openButtonRect, new GUIContent(Resources.Load<Texture2D>(OpenButtonIconPath))))
                 OpenScript(currentType);
         }
         
@@ -73,13 +70,14 @@ namespace Aspid.FastTools.Editors
             SerializedProperty property,
             string label,
             Type[] types,
-            bool allowAbstract,
-            bool allowInterfaces)
+            TypeAllow allow)
         {
             var typeSelector = new VisualElement()
-                .AddClass(RootClass)
+                .AddClass(StyleClasses.Adapter)
+                .AddClass(StyleClasses.AdapterMargin)
                 .AddStyleSheetsFromResource(StyleSheetPath)
-                .AddChild(new PropertyField(property).SetDisplay(DisplayStyle.None));
+                .AddChild(new PropertyField(property)
+                    .SetDisplay(DisplayStyle.None));
 
             var button = new Button()
                 .SetText(GetCaption(property.stringValue))
@@ -89,13 +87,27 @@ namespace Aspid.FastTools.Editors
             var serializedObject = property.serializedObject;
 
             var openButton = new Button()
-                .SetText(OpenButtonText)
                 .SetDisplay(DisplayStyle.None)
-                .AddClass(OpenButtonClass);
+                .AddClass(OpenButtonClass)
+                .AddChild(new VisualElement())
+                .AddClicked(() =>
+                {
+                    if (serializedObject?.targetObject is null) return;
 
-            button.clicked += () =>
+                    var currentProperty = serializedObject.FindProperty(propertyPath);
+                    var currentType = GetType(currentProperty.stringValue);
+
+                    if (currentType is not null)
+                        OpenScript(currentType);
+                });;
+
+            button.AddClicked(() =>
             {
+                if (serializedObject?.targetObject is null) return;
+
                 var window = EditorWindow.focusedWindow;
+                if (window is null) return;
+
                 var worldBound = button.worldBound;
                 var screenRect = new Rect(window.position.x + worldBound.xMin, window.position.y + worldBound.yMin, worldBound.width, worldBound.height);
 
@@ -105,48 +117,38 @@ namespace Aspid.FastTools.Editors
                     screenRect: screenRect,
                     types: types,
                     currentAqn: current,
-                    allowAbstract: allowAbstract,
-                    allowInterface: allowInterfaces,
+                    allow: allow,
                     onSelected: assemblyQualifiedName =>
                     {
+                        if (serializedObject?.targetObject is null) return;
+
                         var currentProperty = serializedObject.FindProperty(propertyPath);
                         currentProperty.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
 
-                        button
-                            .SetText(GetCaption(currentProperty.stringValue))
+                        button.SetText(GetCaption(currentProperty.stringValue))
                             .SetTooltip(GetTooltip(currentProperty.stringValue));
 
-                        UpdateOpenButtonVisibility(openButton, currentProperty.stringValue);
+                        UpdateOpenButtonVisibility(currentProperty.stringValue);
                     });
-            };
+            });
             
-            openButton.clicked += () =>
-            {
-                var currentProperty = serializedObject.FindProperty(propertyPath);
-                var currentType = GetType(currentProperty.stringValue);
-                
-                if (currentType is not null)
-                    OpenScript(currentType);
-            };
-
-            if (!string.IsNullOrEmpty(label))
-            {
-                typeSelector.AddChild(new Label(label));
-            }
-
             var buttons = new VisualElement()
                 .AddChild(button)
                 .AddChild(openButton)
                 .AddClass(ButtonsClass);
+
+            if (!string.IsNullOrEmpty(label))
+                typeSelector.AddChild(new Label(label));
+            else buttons.AddClass(OnlyButtonsClass);
             
-            UpdateOpenButtonVisibility(openButton, property.stringValue);
+            UpdateOpenButtonVisibility(property.stringValue);
             return typeSelector.AddChild(buttons);
-        }
-        
-        private static void UpdateOpenButtonVisibility(Button openButton, string assemblyQualifiedName)
-        {
-            var hasValidType = !string.IsNullOrWhiteSpace(assemblyQualifiedName) && GetType(assemblyQualifiedName) is not null;
-            openButton.SetDisplay(hasValidType ? DisplayStyle.Flex : DisplayStyle.None);
+            
+            void UpdateOpenButtonVisibility(string assemblyQualifiedName)
+            {
+                var hasValidType = !string.IsNullOrWhiteSpace(assemblyQualifiedName) && GetType(assemblyQualifiedName) is not null;
+                openButton.SetDisplay(hasValidType ? DisplayStyle.Flex : DisplayStyle.None);
+            }
         }
         
         private static void OpenScript(Type type)
@@ -159,17 +161,18 @@ namespace Aspid.FastTools.Editors
 
         private static string GetTooltip(string assemblyQualifiedName)
         {
-            // TODO Aspid.FastTools – Add Tooltip for missing types
+            // TODO Aspid.FastTools – Add Tooltip for missing types\
             var type = GetType(assemblyQualifiedName);
             return type is null ? string.Empty : type.FullName;
         }
         
         private static string GetCaption(string assemblyQualifiedName)
         {
-            if (string.IsNullOrEmpty(assemblyQualifiedName)) return NoneOption;
+            if (string.IsNullOrEmpty(assemblyQualifiedName)) 
+                return Constants.NoneOption;
             
             var type = GetType(assemblyQualifiedName);
-            return type is null ? MissingOption : type.Name;
+            return type is null ? Constants.MissingOption : type.Name;
         }
         
         private static Type GetType(string assemblyQualifiedName) =>

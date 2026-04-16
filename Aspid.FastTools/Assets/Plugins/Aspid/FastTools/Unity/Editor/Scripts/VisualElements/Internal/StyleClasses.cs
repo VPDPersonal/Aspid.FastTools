@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors.Internal
+namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     /// <summary>
     /// Centralised registry of USS class names and <see cref="CustomStyleProperty{T}"/> definitions
@@ -15,6 +15,9 @@ namespace Aspid.FastTools.Editors.Internal
         /// </summary>
         public const string DefaultStyleSheet = "Styles/Aspid-FastTools-Default-Dark";
 
+        public const string Adapter = "aspid-fasttools-draw-adapter";
+        public const string AdapterMargin = "aspid-fasttools-draw-adapter-margin";
+        
         /// <summary>
         /// USS class applied to elements that use the Aspid background style.
         /// </summary>
@@ -30,7 +33,7 @@ namespace Aspid.FastTools.Editors.Internal
             /// </summary>
             public static readonly CustomStyleProperty<string> Property = new("--aspid-fasttools-theme");
 
-            /// <summary>
+            /// <summary>x
             /// USS class for the <see cref="ThemeStyle.Darkness"/> variant.
             /// </summary>
             public const string Darkness = "aspid-fasttools-darkness";

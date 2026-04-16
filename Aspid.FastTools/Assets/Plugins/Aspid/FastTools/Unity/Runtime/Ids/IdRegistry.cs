@@ -1,7 +1,8 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
 using UnityEngine;
+using Aspid.FastTools.Types;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools

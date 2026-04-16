@@ -4,7 +4,7 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.UIElements
 {
     public static class BaseVerticalCollectionViewExtensions
     {

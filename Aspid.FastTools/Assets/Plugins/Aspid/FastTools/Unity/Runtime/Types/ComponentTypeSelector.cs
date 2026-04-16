@@ -1,7 +1,7 @@
 using System;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.Types
 {
     /// <summary>
     /// Adds an Inspector dropdown that lets you swap the object's script

@@ -1,7 +1,7 @@
 using System;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors.Internal
+namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     /// <summary>
     /// Manages a style value that can be either inherited from USS custom properties or explicitly

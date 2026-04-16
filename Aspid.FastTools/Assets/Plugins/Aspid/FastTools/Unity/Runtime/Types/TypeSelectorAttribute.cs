@@ -5,7 +5,7 @@ using System.Linq;
 using System.Diagnostics;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.Types
 {
     /// <summary>
     /// Instructs the Unity Editor to use the type-selector window.

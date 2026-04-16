@@ -3,7 +3,7 @@ using UnityEngine;
 using Unity.Collections.LowLevel.Unsafe;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.Enums
 {
     /// <summary>
     /// A single serializable entry in an <see cref="EnumValues{TValue}"/> collection,

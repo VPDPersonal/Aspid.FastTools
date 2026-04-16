@@ -53,6 +53,10 @@
     margin-left: -10px;
 }
 
+.aspid-fasttools-draw-adapter.aspid-fasttools-draw-adapter-margin {
+    margin: 0;
+}
+
 /*––––––––––––––––––––––––––––––––– Background –––––––––––––––––––––––––––––––––*/
 .aspid-fasttools-background {
     padding: 10px;

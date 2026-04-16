@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.Types
 {
     /// <summary>
     /// A wrapper around <see cref="System.Type"/> that supports Unity Inspector serialization.

@@ -2,7 +2,7 @@ using System;
 using UnityEditor.UIElements;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Editors
+namespace Aspid.FastTools.UIElements.Editors
 {
     public static class EnumFlagsFieldExtensions
     {
