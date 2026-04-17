@@ -161,9 +161,11 @@ namespace Aspid.FastTools.Types.Editors
 
         private static string GetTooltip(string assemblyQualifiedName)
         {
-            // TODO Aspid.FastTools – Add Tooltip for missing types\
+            if (string.IsNullOrEmpty(assemblyQualifiedName))
+                return string.Empty;
+
             var type = GetType(assemblyQualifiedName);
-            return type is null ? string.Empty : type.FullName;
+            return type is null ? $"Missing type: {assemblyQualifiedName}" : type.FullName;
         }
         
         private static string GetCaption(string assemblyQualifiedName)
