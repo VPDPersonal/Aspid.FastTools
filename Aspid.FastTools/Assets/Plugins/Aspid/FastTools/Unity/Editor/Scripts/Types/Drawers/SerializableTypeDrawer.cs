@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.UIElements;
@@ -84,7 +85,7 @@ namespace Aspid.FastTools.Types.Editors
                 .SetTooltip(GetTooltip(property.stringValue));
 
             var propertyPath = property.propertyPath;
-            var serializedObject = property.serializedObject;
+            var targets = property.serializedObject.targetObjects;
 
             var openButton = new Button()
                 .SetDisplay(DisplayStyle.None)
@@ -92,26 +93,22 @@ namespace Aspid.FastTools.Types.Editors
                 .AddChild(new VisualElement())
                 .AddClicked(() =>
                 {
-                    if (serializedObject?.targetObject is null) return;
+                    if (!TryReadValue(targets, propertyPath, out var currentValue)) return;
 
-                    var currentProperty = serializedObject.FindProperty(propertyPath);
-                    var currentType = GetType(currentProperty.stringValue);
-
+                    var currentType = GetType(currentValue);
                     if (currentType is not null)
                         OpenScript(currentType);
-                });;
+                });
 
             button.AddClicked(() =>
             {
-                if (serializedObject?.targetObject is null) return;
+                if (!TryReadValue(targets, propertyPath, out var current)) return;
 
                 var window = EditorWindow.focusedWindow;
                 if (window is null) return;
 
                 var worldBound = button.worldBound;
                 var screenRect = new Rect(window.position.x + worldBound.xMin, window.position.y + worldBound.yMin, worldBound.width, worldBound.height);
-
-                var current = serializedObject.FindProperty(propertyPath).stringValue ?? string.Empty;
 
                 TypeSelectorWindow.Show(
                     screenRect: screenRect,
@@ -120,15 +117,13 @@ namespace Aspid.FastTools.Types.Editors
                     allow: allow,
                     onSelected: assemblyQualifiedName =>
                     {
-                        if (serializedObject?.targetObject is null) return;
+                        var value = assemblyQualifiedName ?? string.Empty;
+                        if (!TryWriteValue(targets, propertyPath, value)) return;
 
-                        var currentProperty = serializedObject.FindProperty(propertyPath);
-                        currentProperty.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
+                        button.SetText(GetCaption(value))
+                            .SetTooltip(GetTooltip(value));
 
-                        button.SetText(GetCaption(currentProperty.stringValue))
-                            .SetTooltip(GetTooltip(currentProperty.stringValue));
-
-                        UpdateOpenButtonVisibility(currentProperty.stringValue);
+                        UpdateOpenButtonVisibility(value);
                     });
             });
             
@@ -179,5 +174,37 @@ namespace Aspid.FastTools.Types.Editors
         
         private static Type GetType(string assemblyQualifiedName) =>
             Type.GetType(assemblyQualifiedName, throwOnError: false);
+
+        private static bool TryReadValue(UnityEngine.Object[] targets, string propertyPath, out string value)
+        {
+            value = string.Empty;
+
+            var alive = GetAliveTargets(targets);
+            if (alive.Length == 0) return false;
+
+            using var so = new SerializedObject(alive);
+            var prop = so.FindProperty(propertyPath);
+            if (prop is null) return false;
+
+            value = prop.stringValue ?? string.Empty;
+            return true;
+        }
+
+        private static bool TryWriteValue(UnityEngine.Object[] targets, string propertyPath, string value)
+        {
+            var alive = GetAliveTargets(targets);
+            if (alive.Length == 0) return false;
+
+            using var so = new SerializedObject(alive);
+            var prop = so.FindProperty(propertyPath);
+            if (prop is null) return false;
+
+            prop.stringValue = value;
+            so.ApplyModifiedProperties();
+            return true;
+        }
+
+        private static UnityEngine.Object[] GetAliveTargets(UnityEngine.Object[] targets) =>
+            targets is null ? Array.Empty<UnityEngine.Object>() : targets.Where(t => t != null).ToArray();
     }
 }
