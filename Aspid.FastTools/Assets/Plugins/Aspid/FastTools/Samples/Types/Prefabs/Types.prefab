@@ -47,4 +47,10 @@ MonoBehaviour:
   _abilityType:
     _assemblyQualifiedName: Aspid.FastTools.Samples.Types.Heal, Aspid.FastTools.Samples.Types,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-  _modifierTypes: []
+  _modifierTypes:
+  - Aspid.FastTools.Samples.Types.CooldownReductionModifier, Aspid.FastTools.Samples.Types,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - Aspid.FastTools.Samples.Types.DoubleDamageModifier, Aspid.FastTools.Samples.Types,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - Aspid.FastTools.Samples.Types.RangeBoostModifier, Aspid.FastTools.Samples.Types,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

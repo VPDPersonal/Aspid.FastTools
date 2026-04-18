@@ -8,4 +8,9 @@ Look at:
 - `Scripts/AbilitySelector.cs:26` — `[TypeSelector(typeof(AbilityModifier), AllowAbstractTypes = false)]` on a `string[]` field.
 - `Scripts/Enemies/EnemyBase.cs:18` — `ComponentTypeSelector` declaration that swaps the attached script in place.
 
-To run: open `Scenes/Types.unity` (will be created in Unity) and press Play.
+## How to run
+
+Open `Scenes/Types.unity` — it contains two prefab instances:
+
+- **Types** (`Prefabs/Types.prefab`) — an `AbilitySelector` with `Heal` pre-picked and all three modifiers filled in. Enter Play Mode to see the Console log the activated ability and each applied modifier.
+- **Enemy** (`Prefabs/Enemy.prefab`) — a `FastEnemy` wired up through `ComponentTypeSelector`. Select it in the Hierarchy and use the type dropdown at the top of the Inspector to swap between `FastEnemy` and `TankEnemy` in place; the `Health` field persists across the swap.
