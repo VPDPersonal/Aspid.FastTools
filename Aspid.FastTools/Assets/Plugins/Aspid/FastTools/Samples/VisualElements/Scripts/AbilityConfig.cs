@@ -1,5 +1,6 @@
 using UnityEngine;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.VisualElements
 {
     [CreateAssetMenu(fileName = "New Ability Config", menuName = "Aspid/Samples/FastTools/Ability Config")]
