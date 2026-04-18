@@ -1,6 +1,5 @@
 {
     "name": "Aspid.FastTools.Unity",
-    "rootNamespace": "",
     "references": [
         "Unity.Mathematics"
     ],
