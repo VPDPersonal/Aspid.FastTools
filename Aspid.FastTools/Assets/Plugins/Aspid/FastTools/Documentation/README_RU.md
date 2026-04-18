@@ -7,6 +7,10 @@
 [[Aspid.FastTools](https://github.com/VPDPersonal/Aspid.FastTools)]
 
 
+---
+
+## Интеграция
+
 Установите Aspid.FastTools одним из следующих способов:
 
 - **Скачать .unitypackage** — Перейдите на [страницу релизов GitHub](https://github.com/VPDPersonal/Aspid.FastTools/releases) и скачайте последнюю версию `Aspid.FastTools.X.X.X.unitypackage`. Импортируйте его в проект.
