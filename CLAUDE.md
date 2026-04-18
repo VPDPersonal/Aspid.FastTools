@@ -58,7 +58,7 @@ dotnet test
 |---|---|---|
 | `Aspid.FastTools` | `Source/` | Pure C# type extensions |
 | `Aspid.FastTools.Unity` | `Unity/Runtime/` | Runtime: Types, Enums, Ids, ProfilerMarkers, VisualElements |
-| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/` | Editor: Enums, Extensions, IMGUI, Ids, SerializedProperties, Types, VisualElements |
+| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Editor: Enums, Extensions, IMGUI, Ids, SerializedProperties, Types, VisualElements |
 
 ### Key Features and Their Locations
 
