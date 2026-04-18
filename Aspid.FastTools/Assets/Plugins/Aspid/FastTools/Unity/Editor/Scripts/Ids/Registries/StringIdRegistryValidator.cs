@@ -42,7 +42,7 @@ namespace Aspid.FastTools.Ids.Editors
                     toRemove.Add(i);
             }
 
-            for (int i = toRemove.Count - 1; i >= 0; i--)
+            for (var i = toRemove.Count - 1; i >= 0; i--)
                 entries.DeleteArrayElementAtIndex(toRemove[i]);
 
             if (toRemove.Count > 0)

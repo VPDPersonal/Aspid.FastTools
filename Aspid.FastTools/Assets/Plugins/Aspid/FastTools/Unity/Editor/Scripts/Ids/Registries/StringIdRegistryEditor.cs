@@ -38,7 +38,7 @@ namespace Aspid.FastTools.Ids.Editors
                 .AddClass("aspid-fasttools-inspector-container");
 
             root.Add(new AspidInspectorHeader("None", target) { Subtext = "None" });
-
+            
             var typeContainer = new VisualElement()
                 .SetMarginTop(5)
                 .AddClass("aspid-fasttools-dark")
