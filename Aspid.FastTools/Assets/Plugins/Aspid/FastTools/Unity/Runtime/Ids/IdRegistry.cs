@@ -24,12 +24,10 @@ namespace Aspid.FastTools
             public string Name;
         }
 
-#if UNITY_EDITOR
         [TypeSelector(typeof(IId))]
         [SerializeField] private string _targetStructType = string.Empty;
-        
+
         [SerializeField] private int _nextId = 1;
-#endif
 
         [SerializeField] private IdEntry[] _entries = Array.Empty<IdEntry>();
 
