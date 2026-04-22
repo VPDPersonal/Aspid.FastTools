@@ -23,8 +23,17 @@ namespace Aspid.FastTools.Ids.Editors
             return dupes;
         }
 
-        public static bool HasDuplicate(StringIdRegistry registry, string entryName) =>
-            registry.IdNames.Count(e => e == entryName) > 1;
+        public static bool HasDuplicate(StringIdRegistry registry, string entryName)
+        {
+            var seen = false;
+            foreach (var name in registry.IdNames)
+            {
+                if (name != entryName) continue;
+                if (seen) return true;
+                seen = true;
+            }
+            return false;
+        }
 
         public static void CleanUpInvalid(Object target)
         {

@@ -3,51 +3,6 @@
     margin: 2px 0;
 }
 
-.aspid-fasttools-id-registry-header
-{
-    flex-direction: row;
-    background-color: #262626;
-    border-radius: 8px;
-    padding: 8px 10px;
-    margin-top: 2px;
-    margin-bottom: 8px;
-    overflow: hidden;
-}
-
-.aspid-fasttools-id-registry-header-icon
-{
-    width: 40px;
-    height: 40px;
-    flex-shrink: 0;
-}
-
-.aspid-fasttools-id-registry-header-label
-{
-    flex-grow: 1;
-    flex-shrink: 1;
-    font-size: 16px;
-    color: #c0c0c0;
-    margin-left: 10px;
-    -unity-font-style: bold;
-    align-self: center;
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.aspid-fasttools-id-registry-count-badge
-{
-    background-color: #3c788c;
-    border-radius: 8px;
-    padding: 1px 7px;
-    color: #40d4ff;
-    font-size: 11px;
-    align-self: center;
-    margin-left: 6px;
-    flex-shrink: 0;
-    min-width: 50px;
-}
-
 .aspid-fasttools-id-registry-entry
 {
     flex-direction: column;

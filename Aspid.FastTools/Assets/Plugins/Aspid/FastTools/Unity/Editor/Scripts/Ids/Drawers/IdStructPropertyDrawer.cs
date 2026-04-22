@@ -13,7 +13,8 @@ namespace Aspid.FastTools.Ids.Editors
     internal sealed class IdStructPropertyDrawer : PropertyDrawer
     {
         private static readonly System.Collections.Generic.Dictionary<string, (double time, bool isUnique)> _cache = new();
-        private const double CacheLifetime = 2.0;
+        // Bumped to 10s pending a full rework of CheckIsUnique (see spec §4 row 11).
+        private const double CacheLifetime = 10.0;
 
         private bool? _isUnique;
         private bool IsUnique => _isUnique ??= fieldInfo.GetCustomAttributes(typeof(UniqueIdAttribute), false).Length > 0;
