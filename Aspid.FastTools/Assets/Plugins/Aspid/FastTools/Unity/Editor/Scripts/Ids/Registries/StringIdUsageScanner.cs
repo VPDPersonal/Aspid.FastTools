@@ -127,7 +127,7 @@ namespace Aspid.FastTools.Ids.Editors
         private static void ScanObject(UnityEngine.Object obj, string idFieldName, string name,
             List<(UnityEngine.Object, string)> results)
         {
-            var so       = new SerializedObject(obj);
+            var so = new SerializedObject(obj);
             var iterator = so.GetIterator();
 
             while (iterator.Next(enterChildren: true))

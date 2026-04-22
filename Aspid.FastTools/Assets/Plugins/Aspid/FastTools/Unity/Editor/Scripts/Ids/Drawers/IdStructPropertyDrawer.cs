@@ -20,12 +20,12 @@ namespace Aspid.FastTools.Ids.Editors
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            var h = IdStructDrawer.GetIMGUIHeight(property);
+            var height = IdStructDrawer.GetIMGUIHeight(property);
 
             if (IsUnique && !string.IsNullOrEmpty(property.FindPropertyRelative(Constants.StringIdFieldName)?.stringValue) && !GetIsUnique(property))
-                h += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
+                height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
-            return h;
+            return height;
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)

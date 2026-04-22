@@ -1,18 +1,18 @@
 using System;
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
-    [CustomEditor(typeof(IdRegistry))]
+    [CustomEditor(typeof(StringIdRegistry))]
     internal sealed class StringIdRegistryEditor : Editor
     {
-        private readonly List<EntryItem> _filteredEntries = new();
+        private readonly List<StringIdRegistryEntryData> _filteredEntries = new();
 
         private SerializedProperty _targetTypeProp;
         private SerializedProperty _entriesProp;
@@ -36,12 +36,12 @@ namespace Aspid.FastTools.Ids.Editors
         public override VisualElement CreateInspectorGUI()
         {
             var root = new VisualElement()
-                .AddStyleSheetsFromResource(Constants.StyleSheetPath)
+                .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
                 .AddStyleSheetsFromResource(StyleClasses.DefaultStyleSheet)
                 .AddClass(Constants.Registry.Root)
                 .AddClass("aspid-fasttools-inspector-container");
 
-            root.Add(new AspidInspectorHeader("None", target) { Subtext = "None" });
+            root.Add(new AspidInspectorHeader(target.name, target) { Subtext = target.GetType().Name });
 
             var typeContainer = new VisualElement()
                 .SetMarginTop(5)
@@ -58,7 +58,6 @@ namespace Aspid.FastTools.Ids.Editors
             container.Add(BuildSectionTitle("IDs"));
 
             var searchField = new ToolbarSearchField();
-            searchField.AddClass(Constants.Registry.Search);
             searchField.RegisterValueChangedCallback(e =>
             {
                 _searchQuery = e.newValue ?? string.Empty;
@@ -95,16 +94,12 @@ namespace Aspid.FastTools.Ids.Editors
                 .AddChild(container);
         }
 
-        private VisualElement BuildSectionTitle(string text)
+        private static VisualElement BuildSectionTitle(string text)
         {
-            var header = new VisualElement()
-                .AddClass(Constants.Registry.SectionTitleHeader)
-                .AddChild(new Label(text).AddClass(Constants.Registry.SectionTitleText));
-
-            return new VisualElement()
-                .AddClass(Constants.Registry.SectionTitle)
-                .AddChild(header)
-                .AddChild(new VisualElement().AddClass(Constants.Registry.SectionTitleLine));
+            return new AspidLabel(text, new LabelPreset()
+                .SetTheme(ThemeStyle.Light)
+                .SetLabelSize(AspidLabelSizeStyle.H2)
+                .SetLineSize(DividingLineSize.Medium));
         }
 
         private void RebuildEntries()
@@ -125,7 +120,7 @@ namespace Aspid.FastTools.Ids.Editors
 
                 if (!MatchesQuery(name, id, query)) continue;
 
-                _filteredEntries.Add(new EntryItem(i, name, id, duplicates.Contains(name)));
+                _filteredEntries.Add(new StringIdRegistryEntryData(i, name, id, duplicates.Contains(name)));
             }
 
             _listView?.Rebuild();
@@ -160,128 +155,73 @@ namespace Aspid.FastTools.Ids.Editors
 
         private VisualElement CreateEntryRow()
         {
-            var container = new VisualElement().AddClass(Constants.Registry.Entry);
-            var row = new VisualElement().AddClass(Constants.Registry.Row);
-
-            var idBadge = new Label().AddClass(Constants.Registry.IdBadge);
-            row.Add(idBadge);
-
-            var nameField = new TextField();
-            nameField.AddClass(Constants.Registry.Name);
-            row.Add(nameField);
-
-            var deleteButton = new Button { text = "×" };
-            deleteButton.AddClass(Constants.Registry.Delete);
-            row.Add(deleteButton);
-
-            container.Add(row);
-
-            var errorLabel = new Label().AddClass(Constants.Drawer.Error);
-            container.Add(errorLabel);
-
-            var state = new EntryRowState
-            {
-                NameField = nameField,
-                IdBadge = idBadge,
-                ErrorLabel = errorLabel,
-            };
-            container.userData = state;
-
-            nameField.RegisterCallback<FocusInEvent>(_ =>
-            {
-                if (!state.Item.HasValue) return;
-                if (StringIdRegistryValidator.HasDuplicate((IdRegistry)target, state.Item.Value.Name))
-                {
-                    errorLabel.text = "Name already exists.";
-                    errorLabel.SetDisplay(DisplayStyle.Flex);
-                }
-            });
-
-            nameField.RegisterValueChangedCallback(e =>
-            {
-                if (!state.Item.HasValue) return;
-                var item = state.Item.Value;
-                var t = e.newValue?.Trim() ?? string.Empty;
-                var registry = (IdRegistry)target;
-                if (string.IsNullOrEmpty(t))
-                {
-                    errorLabel.text = "Name cannot be empty.";
-                    errorLabel.SetDisplay(DisplayStyle.Flex);
-                }
-                else if (StringIdRegistryValidator.HasDuplicate(registry, t) || (t != item.Name && registry.Contains(t)))
-                {
-                    errorLabel.text = $"'{t}' already exists.";
-                    state.IdBadge.AddClass(StyleClasses.Status.Error);
-                    errorLabel.SetDisplay(DisplayStyle.Flex);
-                }
-                else
-                {
-                    state.IdBadge.RemoveClass(StyleClasses.Status.Error);
-                    errorLabel.SetDisplay(DisplayStyle.None);
-                }
-            });
-
-            nameField.RegisterCallback<FocusOutEvent>(_ =>
-            {
-                if (!state.Item.HasValue) return;
-                var item = state.Item.Value;
-                var t = nameField.value?.Trim() ?? string.Empty;
-                var registry = (IdRegistry)target;
-                if (!string.IsNullOrEmpty(t) && t != item.Name && !registry.Contains(t))
-                {
-                    serializedObject.ApplyModifiedProperties();
-                    registry.Rename(item.Name, t);
-                    EditorUtility.SetDirty(registry);
-                    serializedObject.Update();
-                    errorLabel.SetDisplay(DisplayStyle.None);
-                }
-                else
-                {
-                    nameField.SetValueWithoutNotify(item.Name);
-                    if (StringIdRegistryValidator.HasDuplicate(registry, item.Name))
-                    {
-                        errorLabel.text = "Name already exists.";
-                        errorLabel.SetDisplay(DisplayStyle.Flex);
-                    }
-                    else
-                    {
-                        errorLabel.SetDisplay(DisplayStyle.None);
-                    }
-                }
-            });
-
-            deleteButton.clicked += () =>
-            {
-                if (!state.Item.HasValue) return;
-                TryDeleteEntry(state.Item.Value.OriginalIndex);
-                serializedObject.ApplyModifiedProperties();
-                serializedObject.Update();
-            };
-
-            return container;
+            var row = new StringIdRegistryEntryVisualElement();
+            row.NameFocusIn += OnRowNameFocusIn;
+            row.NameChanging += OnRowNameChanging;
+            row.NameCommitRequested += OnRowNameCommitRequested;
+            row.DeleteRequested += OnRowDeleteRequested;
+            return row;
         }
 
         private void BindEntryRow(VisualElement element, int visibleIndex)
         {
             if (visibleIndex < 0 || visibleIndex >= _filteredEntries.Count) return;
-            if (element.userData is not EntryRowState state) return;
+            ((StringIdRegistryEntryVisualElement)element).Bind(_filteredEntries[visibleIndex]);
+        }
 
-            var item = _filteredEntries[visibleIndex];
-            state.Item = item;
+        private void OnRowNameFocusIn(StringIdRegistryEntryVisualElement row, StringIdRegistryEntryData data)
+        {
+            if (StringIdRegistryValidator.HasDuplicate((StringIdRegistry)target, data.Name))
+                row.SetError("Name already exists.");
+        }
 
-            element.EnableInClassList(Constants.Registry.EntryDuplicate, item.IsDuplicate);
-            state.NameField.SetValueWithoutNotify(item.Name);
-            state.IdBadge.text = item.Id.ToString();
+        private void OnRowNameChanging(StringIdRegistryEntryVisualElement row, StringIdRegistryEntryData data, string newValue)
+        {
+            var trimmed = newValue?.Trim() ?? string.Empty;
+            var registry = (StringIdRegistry)target;
 
-            if (item.IsDuplicate)
+            if (trimmed == data.Name)
             {
-                state.ErrorLabel.text = "Name already exists.";
-                state.ErrorLabel.SetDisplay(DisplayStyle.Flex);
+                row.SetEditMode(false);
+                row.ClearError();
+            }
+            else if (string.IsNullOrEmpty(trimmed))
+            {
+                row.SetEditMode(true, canConfirm: false);
+                row.SetError("Name cannot be empty.");
+            }
+            else if (StringIdRegistryValidator.HasDuplicate(registry, trimmed) || registry.Contains(trimmed))
+            {
+                row.SetEditMode(true, canConfirm: false);
+                row.SetError($"'{trimmed}' already exists.");
             }
             else
             {
-                state.ErrorLabel.SetDisplay(DisplayStyle.None);
+                row.SetEditMode(true, canConfirm: true);
+                row.ClearError();
             }
+        }
+
+        private void OnRowNameCommitRequested(StringIdRegistryEntryVisualElement row, StringIdRegistryEntryData data, string rawValue)
+        {
+            var trimmed = rawValue?.Trim() ?? string.Empty;
+            var registry = (StringIdRegistry)target;
+
+            if (string.IsNullOrEmpty(trimmed) || trimmed == data.Name || registry.Contains(trimmed)) return;
+
+            serializedObject.ApplyModifiedProperties();
+            registry.Rename(data.Name, trimmed);
+            EditorUtility.SetDirty(registry);
+            serializedObject.Update();
+            row.SetEditMode(false);
+            row.ClearError();
+        }
+
+        private void OnRowDeleteRequested(StringIdRegistryEntryVisualElement row, StringIdRegistryEntryData data)
+        {
+            TryDeleteEntry(data.OriginalIndex);
+            serializedObject.ApplyModifiedProperties();
+            serializedObject.Update();
         }
 
         private VisualElement BuildRegistryAddRow()
@@ -291,14 +231,14 @@ namespace Aspid.FastTools.Ids.Editors
             var inputField = new TextField();
             inputField.AddClass(Constants.Registry.AddInput);
 
-            var addButton = new Button { text = "Add" };
+            var addButton = new Button { text = "+" };
             addButton.AddClass(Constants.Registry.AddButton);
             addButton.SetEnabled(false);
 
             inputField.RegisterValueChangedCallback(e =>
             {
                 var val = e.newValue?.Trim() ?? string.Empty;
-                var registry = (IdRegistry)target;
+                var registry = (StringIdRegistry)target;
                 addButton.SetEnabled(!string.IsNullOrEmpty(val) && !registry.Contains(val));
             });
 
@@ -306,7 +246,7 @@ namespace Aspid.FastTools.Ids.Editors
             {
                 var val = inputField.value?.Trim();
                 if (string.IsNullOrEmpty(val)) return;
-                var registry = (IdRegistry)target;
+                var registry = (StringIdRegistry)target;
                 serializedObject.ApplyModifiedProperties();
                 registry.Add(val);
                 EditorUtility.SetDirty(registry);
@@ -322,7 +262,9 @@ namespace Aspid.FastTools.Ids.Editors
 
         private void TryDeleteEntry(int index)
         {
-            var nameProp = _entriesProp.GetArrayElementAtIndex(index).FindPropertyRelative("Name");
+            var nameProp = _entriesProp.GetArrayElementAtIndex(index)
+                .FindPropertyRelative("Name");
+            
             var nameToDelete = nameProp.stringValue;
             var usageCount = StringIdUsageScanner.CountUsages(GetStructType(), nameToDelete);
 
@@ -339,30 +281,5 @@ namespace Aspid.FastTools.Ids.Editors
             var aqn = _targetTypeProp.stringValue;
             return string.IsNullOrEmpty(aqn) ? null : Type.GetType(aqn, throwOnError: false);
         }
-
-        private readonly struct EntryItem
-        {
-            public readonly int OriginalIndex;
-            public readonly string Name;
-            public readonly int Id;
-            public readonly bool IsDuplicate;
-
-            public EntryItem(int originalIndex, string name, int id, bool isDuplicate)
-            {
-                OriginalIndex = originalIndex;
-                Name = name;
-                Id = id;
-                IsDuplicate = isDuplicate;
-            }
-        }
-
-        private sealed class EntryRowState
-        {
-            public EntryItem? Item;
-            public TextField NameField;
-            public Label IdBadge;
-            public Label ErrorLabel;
-        }
     }
-
 }

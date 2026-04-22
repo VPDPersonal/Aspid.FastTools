@@ -34,7 +34,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public bool Selectable
         {
             get => _label.selection.isSelectable;
-            set => _label.selection.isSelectable = value;
+            set => _label.SetIsSelectable(value);
         }
 
         /// <summary>

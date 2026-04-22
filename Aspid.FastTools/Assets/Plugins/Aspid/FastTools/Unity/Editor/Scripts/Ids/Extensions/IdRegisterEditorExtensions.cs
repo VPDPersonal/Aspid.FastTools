@@ -6,9 +6,9 @@ namespace Aspid.FastTools.Ids.Editors
 {
     internal static class IdRegisterEditorExtensions
     {
-        internal static int Add(this IdRegistry idRegistry, string nameId)
+        internal static int Add(this StringIdRegistry stringIdRegistry, string nameId)
         {
-            var registry = new Registry(idRegistry);
+            var registry = new Registry(stringIdRegistry);
             var entries = registry.Entries;
 
             for (var i = 0; i < entries.Size; i++)
@@ -29,9 +29,9 @@ namespace Aspid.FastTools.Ids.Editors
             return id;
         }
 
-        internal static void Rename(this IdRegistry idRegistry, string oldName, string newName)
+        internal static void Rename(this StringIdRegistry stringIdRegistry, string oldName, string newName)
         {
-            var registry = new Registry(idRegistry);
+            var registry = new Registry(stringIdRegistry);
             var entries = registry.Entries;
             
             for (var i = 0; i < entries.Size; i++)
@@ -55,7 +55,7 @@ namespace Aspid.FastTools.Ids.Editors
             
             public Entries Entries { get; }
 
-            public Registry(IdRegistry registry)
+            public Registry(StringIdRegistry registry)
             {
                 var serializedObject = new SerializedObject(registry);
                 

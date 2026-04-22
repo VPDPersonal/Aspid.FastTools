@@ -9,11 +9,11 @@ namespace Aspid.FastTools.Ids.Editors
 {
     internal static class StringIdRegistryHelper
     {
-        private static readonly Dictionary<string, IdRegistry?> _cache = new();
+        private static readonly Dictionary<string, StringIdRegistry?> _cache = new();
 
         internal static void ClearCache() => _cache.Clear();
 
-        public static IdRegistry? FindRegistry(Type? declaringType)
+        public static StringIdRegistry? FindRegistry(Type? declaringType)
         {
             if (declaringType == null) return null;
 
@@ -25,7 +25,7 @@ namespace Aspid.FastTools.Ids.Editors
             foreach (var guid in guids)
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
-                var reg = AssetDatabase.LoadAssetAtPath<IdRegistry>(path);
+                var reg = AssetDatabase.LoadAssetAtPath<StringIdRegistry>(path);
                 
                 var targetStructType = reg
                     ?.GetType()
@@ -45,13 +45,13 @@ namespace Aspid.FastTools.Ids.Editors
             return null;
         }
 
-        public static IdRegistry CreateRegistry(Type? declaringType)
+        public static StringIdRegistry CreateRegistry(Type? declaringType)
         {
             if (declaringType is null)
                 throw new ArgumentNullException(nameof(declaringType));
 
             var path = AssetDatabase.GenerateUniqueAssetPath($"Assets/StringIdRegistry_{declaringType.Name}.asset");
-            var reg = ScriptableObject.CreateInstance<IdRegistry>();
+            var reg = ScriptableObject.CreateInstance<StringIdRegistry>();
             AssetDatabase.CreateAsset(reg, path);
 
             var so = new SerializedObject(reg);

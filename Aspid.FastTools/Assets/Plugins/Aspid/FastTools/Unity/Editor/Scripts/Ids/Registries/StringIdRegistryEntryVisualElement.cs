@@ -1,9 +1,112 @@
+using System;
 using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
-    public class StringIdRegistryEntryVisualElement : VisualElement
+    public readonly struct StringIdRegistryEntryData
     {
-        
+        public readonly int Id;
+        public readonly string Name;
+        public readonly int OriginalIndex;
+        public readonly bool IsDuplicate;
+
+        public StringIdRegistryEntryData(int originalIndex, string name, int id, bool isDuplicate)
+        {
+            OriginalIndex = originalIndex;
+            Name = name;
+            Id = id;
+            IsDuplicate = isDuplicate;
+        }
+    }
+
+    public sealed class StringIdRegistryEntryVisualElement : VisualElement
+    {
+        private readonly TextField _nameField;
+        private readonly Label _idBadge;
+        private readonly Label _errorLabel;
+        private readonly Button _deleteButton;
+        private readonly Button _confirmButton;
+
+        public StringIdRegistryEntryData Data { get; private set; }
+
+        public event Action<StringIdRegistryEntryVisualElement, StringIdRegistryEntryData> NameFocusIn;
+        public event Action<StringIdRegistryEntryVisualElement, StringIdRegistryEntryData, string> NameChanging;
+        public event Action<StringIdRegistryEntryVisualElement, StringIdRegistryEntryData, string> NameCommitRequested;
+        public event Action<StringIdRegistryEntryVisualElement, StringIdRegistryEntryData> DeleteRequested;
+
+        public StringIdRegistryEntryVisualElement()
+        {
+            this.AddClass(Constants.Registry.Entry);
+
+            _idBadge = new Label()
+                .AddClass(Constants.Registry.IdBadge)
+                .SetIsSelectable(true);
+            
+            _nameField = new TextField()
+                .AddClass(Constants.Registry.Name);
+            
+            _deleteButton = new Button { text = "×" }.AddClass(Constants.Registry.Delete);
+            _confirmButton = new Button { text = "✓" }
+                .AddClass(Constants.Registry.Confirm)
+                .SetDisplay(DisplayStyle.None);
+
+            var row = new VisualElement()
+                .AddClass(Constants.Registry.Row)
+                .AddChild(_idBadge)
+                .AddChild(_nameField)
+                .AddChild(_deleteButton)
+                .AddChild(_confirmButton);
+
+            _errorLabel = new Label()
+                .AddClass(Constants.Registry.Error)
+                .SetDisplay(DisplayStyle.None);
+
+            this.AddChild(row).AddChild(_errorLabel);
+
+            _nameField.RegisterCallback<FocusInEvent>(_ => NameFocusIn?.Invoke(this, Data));
+            _nameField.RegisterValueChangedCallback(e => NameChanging?.Invoke(this, Data, e.newValue));
+            _deleteButton.clicked += () => DeleteRequested?.Invoke(this, Data);
+            _confirmButton.clicked += () => NameCommitRequested?.Invoke(this, Data, _nameField.value);
+        }
+
+        public void SetEditMode(bool editing, bool canConfirm = true)
+        {
+            _deleteButton.SetDisplay(editing ? DisplayStyle.None : DisplayStyle.Flex);
+            _confirmButton.SetDisplay(editing ? DisplayStyle.Flex : DisplayStyle.None);
+            _confirmButton.SetEnabled(canConfirm);
+        }
+
+        public void Bind(in StringIdRegistryEntryData data)
+        {
+            Data = data;
+
+            EnableInClassList(Constants.Registry.EntryDuplicate, data.IsDuplicate);
+
+            _nameField.SetValueWithoutNotify(data.Name);
+            _idBadge.text = data.Id.ToString();
+            SetEditMode(false);
+
+            if (data.IsDuplicate) SetError("Name already exists.");
+            else ClearError();
+        }
+
+        public void SetError(string message)
+        {
+            _errorLabel.text = message;
+            _errorLabel.SetDisplay(DisplayStyle.Flex);
+            _idBadge.AddClass(StyleClasses.Status.Error);
+        }
+
+        public void ClearError()
+        {
+            _errorLabel.SetDisplay(DisplayStyle.None);
+            _idBadge.RemoveClass(StyleClasses.Status.Error);
+        }
+
+        public void SetNameWithoutNotify(string name) =>
+            _nameField.SetValueWithoutNotify(name);
     }
 }
