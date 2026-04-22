@@ -1,5 +1,6 @@
 using UnityEditor;
 using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -11,22 +12,19 @@ namespace Aspid.FastTools.Ids.Editors
         {
             var seen  = new HashSet<string>();
             var dupes = new HashSet<string>();
-            for (int i = 0; i < entriesProp.arraySize; i++)
+            
+            for (var i = 0; i < entriesProp.arraySize; i++)
             {
                 var val = entriesProp.GetArrayElementAtIndex(i).FindPropertyRelative("Name").stringValue;
                 if (!string.IsNullOrEmpty(val) && !seen.Add(val))
                     dupes.Add(val);
             }
+            
             return dupes;
         }
 
-        public static bool HasDuplicate(IdRegistry registry, string entryName)
-        {
-            var count = 0;
-            foreach (var e in registry.Entries)
-                if (e.Name == entryName) count++;
-            return count > 1;
-        }
+        public static bool HasDuplicate(IdRegistry registry, string entryName) =>
+            registry.IdNames.Count(e => e == entryName) > 1;
 
         public static void CleanUpInvalid(Object target)
         {

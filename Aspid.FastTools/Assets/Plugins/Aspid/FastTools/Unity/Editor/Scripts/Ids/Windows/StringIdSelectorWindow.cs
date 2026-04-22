@@ -20,17 +20,17 @@ namespace Aspid.FastTools.Ids.Editors
         private readonly List<string> _filteredIds = new();
         private string _current = string.Empty;
 
-        public static void Show(IReadOnlyList<string> ids, Rect screenRect, string current, Action<string> onSelected)
+        public static void Show(IEnumerable<string> ids, Rect screenRect, string current, Action<string> onSelected)
         {
             var window = CreateInstance<StringIdSelectorWindow>();
             window.Initialize(ids, screenRect, current, onSelected);
         }
 
-        private void Initialize(IReadOnlyList<string> ids, Rect screenRect, string current, Action<string> onSelected)
+        private void Initialize(IEnumerable<string> ids, Rect screenRect, string? current, Action<string> onSelected)
         {
             _onSelected = onSelected;
-            _current    = current ?? string.Empty;
-            _allIds     = ids.ToArray();
+            _current = current ?? string.Empty;
+            _allIds = ids.ToArray();
 
             BuildUI();
             RefreshList(string.Empty);
@@ -53,9 +53,9 @@ namespace Aspid.FastTools.Ids.Editors
 
             _listView = new ListView
             {
-                selectionType        = SelectionType.Single,
+                selectionType = SelectionType.Single,
                 virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
-                itemsSource          = _filteredIds,
+                itemsSource = _filteredIds,
             };
 
             _listView.SetMakeItem(CreateItem);
@@ -72,7 +72,7 @@ namespace Aspid.FastTools.Ids.Editors
             rootVisualElement.RegisterCallback<KeyDownEvent>(OnKeyDown, TrickleDown.TrickleDown);
         }
 
-        private VisualElement CreateItem()
+        private static VisualElement CreateItem()
         {
             return new Label().AddClass(Constants.Selector.Item);
         }
@@ -81,7 +81,7 @@ namespace Aspid.FastTools.Ids.Editors
         {
             if (index < 0 || index >= _filteredIds.Count) return;
             var label = (Label)element;
-            var id    = _filteredIds[index];
+            var id = _filteredIds[index];
             label.text = id;
             label.style.unityFontStyleAndWeight = id == _current ? FontStyle.Bold : FontStyle.Normal;
         }

@@ -61,7 +61,7 @@ namespace Aspid.FastTools.Ids.Editors
                 var reg = StringIdRegistryHelper.FindRegistry(fieldType);
                 var sp  = GUIUtility.GUIToScreenPoint(new Vector2(dropRect.x, dropRect.y));
                 var sr  = new Rect(sp.x, sp.y, dropRect.width, dropRect.height);
-                StringIdSelectorWindow.Show(reg?.Ids ?? Array.Empty<string>(), sr, currentName,
+                StringIdSelectorWindow.Show(reg?.IdNames ?? Array.Empty<string>(), sr, currentName,
                     selected => ApplySelection(property, stringIdProp, intIdProp, fieldType, selected));
             }
 
@@ -217,7 +217,7 @@ namespace Aspid.FastTools.Ids.Editors
                 var strProp = p.FindPropertyRelative(Constants.StringIdFieldName);
                 var current = strProp?.stringValue ?? string.Empty;
 
-                StringIdSelectorWindow.Show(reg?.Ids ?? Array.Empty<string>(), sr, current, selected =>
+                StringIdSelectorWindow.Show(reg?.IdNames ?? Array.Empty<string>(), sr, current, selected =>
                 {
                     var p2       = serializedObject.FindProperty(propertyPath);
                     var strProp2 = p2.FindPropertyRelative(Constants.StringIdFieldName);

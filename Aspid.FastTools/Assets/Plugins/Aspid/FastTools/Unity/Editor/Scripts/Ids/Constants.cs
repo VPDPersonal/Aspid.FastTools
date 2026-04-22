@@ -27,7 +27,6 @@ namespace Aspid.FastTools.Ids.Editors
         public static class Registry
         {
             public const string Root = "aspid-fasttools-id-registry";
-            public const string CountBadge = "aspid-fasttools-id-registry-count-badge";
             public const string Empty = "aspid-fasttools-id-registry-empty";
             public const string EmptyVisible = "aspid-fasttools-id-registry-empty--visible";
             public const string SectionTitle = "aspid-fasttools-id-registry-section-title";
@@ -43,6 +42,12 @@ namespace Aspid.FastTools.Ids.Editors
             public const string AddRow = "aspid-fasttools-id-registry-add-row";
             public const string AddInput = "aspid-fasttools-id-registry-add-input";
             public const string AddButton = "aspid-fasttools-id-registry-add-button";
+            public const string Search = "aspid-fasttools-id-registry-search";
+            public const string List = "aspid-fasttools-id-registry-list";
+            public const string ListScrollable = "aspid-fasttools-id-registry-list--scrollable";
+            public const int ScrollThreshold = 21;
+            public const int MaxVisibleRows = 10;
+            public const float RowHeight = 32.5f;
         }
 
         public static class Selector

@@ -26,7 +26,15 @@ namespace Aspid.FastTools.Ids.Editors
             {
                 var path = AssetDatabase.GUIDToAssetPath(guid);
                 var reg = AssetDatabase.LoadAssetAtPath<IdRegistry>(path);
-                if (reg != null && reg.TargetStructType == aqn)
+                
+                var targetStructType = reg
+                    ?.GetType()
+                    .GetField(
+                        name: "_targetStructType", 
+                        bindingAttr: System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                    ?.GetValue(reg) as string;
+                
+                if (targetStructType == aqn)
                 {
                     _cache[aqn] = reg;
                     return reg;

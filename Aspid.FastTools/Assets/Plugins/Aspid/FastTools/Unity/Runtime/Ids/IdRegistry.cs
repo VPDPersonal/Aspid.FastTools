@@ -1,7 +1,8 @@
 #nullable enable
 using System;
 using UnityEngine;
-using Aspid.FastTools.Types;
+using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -12,45 +13,15 @@ namespace Aspid.FastTools
     /// Used by the <c>IdStruct</c> system to persist and resolve string/int ID pairs.
     /// </summary>
     [CreateAssetMenu(fileName = "StringIdRegistry", menuName = "Aspid/FastTools/String Id Registry")]
-    public sealed class IdRegistry : ScriptableObject
+    public sealed partial class IdRegistry : ScriptableObject, IEnumerable<KeyValuePair<int, string>>
     {
-        /// <summary>
-        /// A single name-to-id mapping entry.
-        /// </summary>
-        [Serializable]
-        public struct IdEntry
-        {
-            public int Id;
-            public string Name;
-        }
-
-        [TypeSelector(typeof(IId))]
-        [SerializeField] private string _targetStructType = string.Empty;
-
-        [SerializeField] private int _nextId = 1;
-
         [SerializeField] private IdEntry[] _entries = Array.Empty<IdEntry>();
-
-        private string[]? _idNames;
-
-        /// <summary>Assembly-qualified name of the struct type this registry is bound to.</summary>
-        public string TargetStructType => _targetStructType;
-
-        /// <summary>All registered entries.</summary>
-        public IReadOnlyList<IdEntry> Entries => _entries;
-
-        /// <summary>All registered names in registration order.</summary>
-        public IReadOnlyList<string> Ids => _idNames ??= BuildIdNames();
-
-        private string[] BuildIdNames()
-        {
-            var names = new string[_entries.Length];
-            for (int i = 0; i < _entries.Length; i++)
-                names[i] = _entries[i].Name;
-            return names;
-        }
-
-        private void OnValidate() => _idNames = null;
+        
+        public IEnumerable<int> Ids  =>
+            this.Select(entry => entry.Key);
+            
+        public IEnumerable<string> IdNames =>
+            this.Select(entry => entry.Value);
         
         public int GetId(string nameId)
         {
@@ -74,6 +45,22 @@ namespace Aspid.FastTools
                 if (e.Name == nameId) return true;
 
             return false;
+        }
+        
+        public IEnumerator<KeyValuePair<int, string>> GetEnumerator() =>
+            _entries.Select(entry => new KeyValuePair<int, string>(entry.Id, entry.Name)).GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() =>
+            GetEnumerator();
+        
+        /// <summary>
+        /// A single name-to-id mapping entry.
+        /// </summary>
+        [Serializable]
+        private struct IdEntry
+        {
+            public int Id;
+            public string Name;
         }
     }
 }

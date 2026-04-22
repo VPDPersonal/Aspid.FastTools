@@ -130,14 +130,16 @@
 
 .aspid-fasttools-id-registry-count-badge
 {
-    background-color: #2A2A2A;
+    background-color: #3c788c;
     border-radius: 8px;
     padding: 1px 7px;
-    color: #606060;
+    color: #40d4ff;
     font-size: 11px;
     align-self: center;
     margin-left: 6px;
     flex-shrink: 0;
+    min-width: 50px;
+    max-width: 50px;
 }
 
 .aspid-fasttools-id-registry-section-title-line
@@ -151,12 +153,6 @@
 {
     flex-direction: column;
     margin-bottom: 0;
-    padding: 3px 6px 3px 9px;
-    border-left-width: 3px;
-    border-left-color: #3D7FD4;
-    border-top-width: 0;
-    border-right-width: 0;
-    border-bottom-width: 0;
 }
 
 .aspid-fasttools-id-registry-entry:hover
@@ -174,6 +170,12 @@
     flex-direction: row;
     align-items: center;
     min-height: 22px;
+    background-color: #3c3c3c;
+    padding: 5;
+    /*margin: 5;*/
+    margin-right: 5;
+    margin-bottom: 3;
+    border-radius: 10px;
 }
 
 .aspid-fasttools-id-registry-name
@@ -193,37 +195,56 @@
 
 .aspid-fasttools-id-registry-id-badge
 {
-    background-color: #2A2A2A;
+    background-color: #2E2E2E;
     border-radius: 8px;
     padding: 2px 8px;
-    color: #505050;
+    color: #C0C0C0;
     font-size: 11px;
     align-self: center;
+    border-width: 1px;
+    border-color: #1A1A1A;
     flex-shrink: 0;
-    margin: 0 4px;
+    margin: 0;
+    margin-right: 5;
     -unity-text-align: middle-center;
-    min-width: 28px;
+    min-width: 50px;
+    max-width: 50px;
 }
+
+.aspid-fasttools-id-registry-id-badge.aspid-fasttools-status-error {
+    color: #ff4040;
+    background-color: #4f1e1e;
+}
+
+/*.aspid-fasttools-id-registry-id-badge:hover {*/
+/*    background-color: #3c783c;*/
+/*    color: #7fff7f;*/
+/*}*/
 
 .aspid-fasttools-id-registry-delete
 {
+    padding: 0;
     width: 22px;
     height: 18px;
-    flex-shrink: 0;
     margin: 0;
-    padding: 0;
-    background-color: rgba(0, 0, 0, 0);
-    border-color: rgba(0, 0, 0, 0);
-    border-radius: 3px;
-    color: #505050;
+    margin-left: 5px;
+    flex-shrink: 0;
+    padding-bottom: 2px;
+    color: #D2D2D2;
     font-size: 13px;
+    border-radius: 3px;
+    border-color: #1A1A1A;
+    background-color: #2E2E2E;
 }
 
 .aspid-fasttools-id-registry-delete:hover
 {
-    background-color: rgba(192, 88, 64, 0.2);
-    border-color: rgba(0, 0, 0, 0);
-    color: #C05840;
+    background-color: #4f1e1e;
+    border-color: #ff4040;
+    font-size: 14px;
+    /*background-color: rgba(192, 88, 64, 0.2);*/
+    /*border-color: rgba(0, 0, 0, 0);*/
+    color: #ff4040;
 }
 
 .aspid-fasttools-id-registry-empty
@@ -239,6 +260,42 @@
 .aspid-fasttools-id-registry-empty--visible
 {
     display: flex;
+}
+
+.aspid-fasttools-id-registry-search
+{
+    margin: 0 0 4px 0;
+}
+
+.aspid-fasttools-id-registry-list
+{
+    flex-grow: 0;
+    flex-shrink: 0;
+    min-height: 30px;
+}
+
+.aspid-fasttools-id-registry-list .unity-scroll-view
+{
+    flex-grow: 1;
+}
+
+.aspid-fasttools-id-registry-list--scrollable
+{
+    overflow: hidden;
+}
+
+.aspid-fasttools-id-registry-list .unity-list-view__item
+{
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.aspid-fasttools-id-registry-list .unity-list-view__item:hover,
+.aspid-fasttools-id-registry-list .unity-list-view__item:selected,
+.aspid-fasttools-id-registry-list .unity-list-view__item:checked,
+.aspid-fasttools-id-registry-list .unity-collection-view__item--selected
+{
+    background-color: rgba(0, 0, 0, 0);
 }
 
 .aspid-fasttools-id-registry-add-row
