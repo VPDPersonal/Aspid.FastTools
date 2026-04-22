@@ -264,22 +264,12 @@ namespace Aspid.FastTools.Ids.Editors
         {
             var nameProp = _entriesProp.GetArrayElementAtIndex(index)
                 .FindPropertyRelative("Name");
-            
-            var nameToDelete = nameProp.stringValue;
-            var usageCount = StringIdUsageScanner.CountUsages(GetStructType(), nameToDelete);
 
-            var message = usageCount == 0
-                ? $"Delete '{nameToDelete}'?"
-                : $"'{nameToDelete}' is used in {usageCount} asset(s).\n\nFields referencing this ID will show <Missing> after deletion.\n\nDelete anyway?";
+            var nameToDelete = nameProp.stringValue;
+            var message = $"Delete '{nameToDelete}'?\n\nAssets referencing this ID will display <Missing> until reassigned.";
 
             if (EditorUtility.DisplayDialog("Delete ID", message, "Delete", "Cancel"))
                 _entriesProp.DeleteArrayElementAtIndex(index);
-        }
-
-        private Type GetStructType()
-        {
-            var aqn = _targetTypeProp.stringValue;
-            return string.IsNullOrEmpty(aqn) ? null : Type.GetType(aqn, throwOnError: false);
         }
     }
 }
