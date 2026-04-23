@@ -13,46 +13,66 @@ namespace Aspid.FastTools
     /// Used by the <c>IdStruct</c> system to persist and resolve string/int ID pairs.
     /// </summary>
     [CreateAssetMenu(fileName = "StringIdRegistry", menuName = "Aspid/FastTools/String Id Registry")]
-    public partial class StringIdRegistry : ScriptableObject, IEnumerable<KeyValuePair<int, string>>
+    public sealed partial class StringIdRegistry : ScriptableObject, IEnumerable<KeyValuePair<int, string>>
     {
         [SerializeField] private IdEntry[] _entries = Array.Empty<IdEntry>();
-        
-        public IEnumerable<int> Ids  =>
+
+        [NonSerialized] private Dictionary<string, int>? _idByName;
+        [NonSerialized] private Dictionary<int, string>? _nameById;
+        [NonSerialized] private bool _cacheDirty = true;
+
+        public IEnumerable<int> Ids =>
             this.Select(entry => entry.Key);
-            
+
         public IEnumerable<string> IdNames =>
             this.Select(entry => entry.Value);
-        
+
         public int GetId(string nameId)
         {
-            foreach (var e in _entries)
-                if (e.Name == nameId) return e.Id;
-
-            return -1;
+            EnsureCache();
+            return _idByName!.TryGetValue(nameId, out var id) ? id : -1;
         }
 
         public string? GetNameId(int id)
         {
-            foreach (var e in _entries)
-                if (e.Id == id) return e.Name;
-
-            return null;
+            EnsureCache();
+            return _nameById!.TryGetValue(id, out var name) ? name : null;
         }
 
         public bool Contains(string nameId)
         {
-            foreach (var e in _entries)
-                if (e.Name == nameId) return true;
-
-            return false;
+            EnsureCache();
+            return _idByName!.ContainsKey(nameId);
         }
-        
+
         public IEnumerator<KeyValuePair<int, string>> GetEnumerator() =>
             _entries.Select(entry => new KeyValuePair<int, string>(entry.Id, entry.Name)).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
-        
+
+        private void EnsureCache()
+        {
+            if (!_cacheDirty && _idByName != null && _nameById != null) return;
+
+            _idByName = new Dictionary<string, int>(_entries.Length);
+            _nameById = new Dictionary<int, string>(_entries.Length);
+            foreach (var entry in _entries)
+            {
+                if (!string.IsNullOrEmpty(entry.Name))
+                    _idByName[entry.Name] = entry.Id;
+                _nameById[entry.Id] = entry.Name ?? string.Empty;
+            }
+
+            _cacheDirty = false;
+        }
+
+        internal void InvalidateCache() => _cacheDirty = true;
+
+#if UNITY_EDITOR
+        private void OnValidate() => _cacheDirty = true;
+#endif
+
         /// <summary>
         /// A single name-to-id mapping entry.
         /// </summary>
