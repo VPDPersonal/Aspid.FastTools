@@ -70,7 +70,16 @@ dotnet test
 
 **EnumValues<TValue>** (`Unity/Runtime/Enums/`): Serializable dictionary mapping enum values to arbitrary values. Handles `[Flags]` enums.
 
-**StringIds** (`Unity/Runtime/Ids/`, `Unity/Editor/Scripts/Ids/`): String-based ID system with `StringIdRegistry` (ScriptableObject), `[UniqueId]` attribute, and the `IId` interface. Editor side includes selector window, create/rename dialogs, registry editor, and property drawers. The `IdStructGenerator` generates boilerplate for ID struct types.
+**Id Registries** (`Unity/Runtime/Ids/`, `Unity/Editor/Scripts/Ids/`): Two ScriptableObject types with different runtime contracts:
+
+- `StringIdRegistry` — full `int ↔ string` mapping at runtime; `GetId(name)`, `GetNameId(id)`, `Contains(name)`.
+- `IdRegistry` — int-only at runtime; names are stored in an editor-only partial and stripped from player builds.
+
+Each struct type decorated with `[UniqueId]` / implementing `IId` should be bound to exactly **one** registry of either kind — uniqueness is enforced at lookup time by `IdRegistryResolver`, which searches both types.
+
+Editor UI is shared through `RegistryEditorCore` + `IRegistryAccessor` (two implementations). Features: C#-identifier name validation, full Undo, explicit Clean-up flow for invalid entries, Sort/Group toolbar, manual Next ID with backward-step warning, Open-Registry shortcut on the `IdStruct` drawer.
+
+The `IdStructGenerator` generates boilerplate for the struct side; the registry picks for that struct are made via `Assets → Create → Aspid/FastTools/Id Registry` (int-only) or `.../String Id Registry`.
 
 **SerializedProperty Extensions** (`Unity/Editor/Scripts/SerializedProperties/`): Fluent chainable extensions (`.SetValue()`, `.Apply()`, reflection helpers). Split across multiple partial files.
 
