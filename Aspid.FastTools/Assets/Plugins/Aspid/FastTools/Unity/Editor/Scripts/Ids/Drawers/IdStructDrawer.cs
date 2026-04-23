@@ -102,8 +102,10 @@ namespace Aspid.FastTools.Ids.Editors
                 if (GUI.Button(addRect, "+"))
                 {
                     var registry = reg2 ?? IdRegistryResolver.CreateStringMapped(fieldType);
-                    var assignedId = registry.Add(trimmed);
-                    EditorUtility.SetDirty(registry);
+                    var accessor = new StringIdRegistryAccessor(registry);
+                    accessor.Record("Add string id");
+                    var assignedId = accessor.Add(trimmed);
+                    accessor.Commit();
                     AssetDatabase.SaveAssetIfDirty(registry);
                     SetFields(property, stringIdProp, intIdProp, trimmed, assignedId);
                     _imguiState[key] = (false, string.Empty);
@@ -187,8 +189,10 @@ namespace Aspid.FastTools.Ids.Editors
                 if (string.IsNullOrEmpty(name)) return;
 
                 var reg = IdRegistryResolver.FindStringMapped(fieldType) ?? IdRegistryResolver.CreateStringMapped(fieldType);
-                var assignedId = reg.Add(name);
-                EditorUtility.SetDirty(reg);
+                var accessor = new StringIdRegistryAccessor(reg);
+                accessor.Record("Add string id");
+                var assignedId = accessor.Add(name);
+                accessor.Commit();
                 AssetDatabase.SaveAssetIfDirty(reg);
 
                 var p = serializedObject.FindProperty(propertyPath);
