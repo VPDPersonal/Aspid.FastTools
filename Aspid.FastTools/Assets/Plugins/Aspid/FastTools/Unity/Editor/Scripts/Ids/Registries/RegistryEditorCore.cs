@@ -25,6 +25,9 @@ namespace Aspid.FastTools.Ids.Editors
         private VisualElement? _listContainer;
         private VisualElement? _warningRow;
         private Label? _warningLabel;
+        private TextField? _addInput;
+        private Button? _addButton;
+        private Label? _addErrorLabel;
         private string _searchQuery = string.Empty;
 
         private SortMode _sortMode = SortMode.RegistryOrder;
@@ -68,7 +71,6 @@ namespace Aspid.FastTools.Ids.Editors
 
             typeContainer.Add(new AspidLabel("Type").SetMarginBottom(5));
             typeContainer.Add(new PropertyField(_accessor.TargetStructTypeProperty, label: string.Empty));
-            typeContainer.Add(BuildNextIdRow());
 
             var container = new VisualElement()
                 .SetMarginTop(5)
@@ -93,6 +95,7 @@ namespace Aspid.FastTools.Ids.Editors
             _emptyLabel = new Label("No IDs yet. Add one below.")
                 .AddClass(Constants.Registry.Empty);
             container.Add(_emptyLabel);
+            container.Add(BuildNextIdRow());
             container.Add(BuildAddRow());
 
             container.TrackSerializedObjectValue(_accessor.SerializedObject, _ => RebuildEntries());
@@ -156,6 +159,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             UpdateListScrollState();
             RefreshWarningRow();
+            RevalidateAddRow();
         }
 
         private ListView BuildListView()
@@ -245,26 +249,50 @@ namespace Aspid.FastTools.Ids.Editors
             foreach (var kv in buckets)
             {
                 var groupName = kv.Key;
+                var items = kv.Value;
+
                 var foldout = new Foldout
                 {
-                    text = $"{groupName} ({kv.Value.Count})",
+                    text = $"{groupName} ({items.Count})",
                     value = SessionState.GetBool(GroupExpandedKey(groupName), defaultValue: true),
                 }.AddClass(Constants.Registry.GroupFoldout);
 
                 foldout.RegisterValueChangedCallback(e =>
                     SessionState.SetBool(GroupExpandedKey(groupName), e.newValue));
 
-                foreach (var view in kv.Value)
+                var groupList = new ListView
                 {
-                    var row = (IdRegistryEntryVisualElement)CreateEntryRow();
-                    row.Bind(new IdRegistryEntryData(
+                    selectionType = SelectionType.None,
+                    virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
+                    itemsSource = items,
+                    reorderable = false,
+                    showBorder = false,
+                    showFoldoutHeader = false,
+                    showBoundCollectionSize = false,
+                    showAddRemoveFooter = false,
+                };
+                groupList.AddClass(Constants.Registry.List);
+                groupList.SetMakeItem(CreateEntryRow);
+                groupList.SetBindItem((element, visibleIndex) =>
+                {
+                    if (visibleIndex < 0 || visibleIndex >= items.Count) return;
+                    var view = items[visibleIndex];
+                    ((IdRegistryEntryVisualElement)element).Bind(new IdRegistryEntryData(
                         originalIndex: view.OriginalIndex,
                         name: view.Name,
                         id: view.Id,
                         isDuplicate: view.IsDuplicate));
-                    foldout.Add(row);
+                });
+
+                if (items.Count >= Constants.Registry.ScrollThreshold)
+                {
+                    const float height = Constants.Registry.MaxVisibleRows * Constants.Registry.RowHeight;
+                    groupList.AddToClassList(Constants.Registry.ListScrollable);
+                    groupList.style.height = height;
+                    groupList.style.maxHeight = height;
                 }
 
+                foldout.Add(groupList);
                 _listContainer.Add(foldout);
             }
         }
@@ -272,7 +300,11 @@ namespace Aspid.FastTools.Ids.Editors
         private static string PrefixOf(string name)
         {
             if (string.IsNullOrEmpty(name)) return "<ungrouped>";
-            var idx = name.IndexOf('_');
+            var underscore = name.IndexOf('_');
+            var dash = name.IndexOf('-');
+            var idx = underscore < 0 ? dash
+                   : dash < 0 ? underscore
+                   : Math.Min(underscore, dash);
             return idx <= 0 ? "<ungrouped>" : name.Substring(0, idx);
         }
 
@@ -412,6 +444,14 @@ namespace Aspid.FastTools.Ids.Editors
                 _accessor.Record("Set Next ID");
                 _accessor.NextIdProperty.intValue = newValue;
                 _accessor.Commit();
+                RevalidateAddRow();
+            });
+
+            field.TrackPropertyValue(_accessor.NextIdProperty, prop =>
+            {
+                if (field.value != prop.intValue) field.SetValueWithoutNotify(prop.intValue);
+                UpdateNextIdWarning(warning, prop.intValue);
+                RevalidateAddRow();
             });
 
             UpdateNextIdWarning(warning, _accessor.NextIdProperty.intValue);
@@ -432,6 +472,58 @@ namespace Aspid.FastTools.Ids.Editors
                 : value < 1
                     ? "Next ID must be ≥ 1."
                     : string.Empty;
+        }
+
+        private bool NextIdCollides(int nextId)
+        {
+            if (nextId < 1) return false;
+            var count = _accessor.Count;
+            for (var i = 0; i < count; i++)
+                if (_accessor.GetId(i) == nextId) return true;
+            return false;
+        }
+
+        private void RevalidateAddRow()
+        {
+            if (_addInput == null || _addButton == null || _addErrorLabel == null) return;
+
+            var val = _addInput.value?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(val))
+            {
+                _addButton.SetEnabled(false);
+                _addErrorLabel.SetDisplay(DisplayStyle.None);
+                return;
+            }
+
+            var existing = CollectExistingNames(exceptIndex: -1);
+            if (!IdRegistryValidator.IsValidName(val, existing, out var err))
+            {
+                _addButton.SetEnabled(false);
+                _addErrorLabel.text = err ?? string.Empty;
+                _addErrorLabel.SetDisplay(DisplayStyle.Flex);
+                return;
+            }
+
+            var nextId = _accessor.NextIdProperty.intValue;
+            if (nextId < 1)
+            {
+                _addButton.SetEnabled(false);
+                _addErrorLabel.text = "Next ID must be ≥ 1.";
+                _addErrorLabel.SetDisplay(DisplayStyle.Flex);
+                return;
+            }
+
+            if (NextIdCollides(nextId))
+            {
+                _addButton.SetEnabled(false);
+                _addErrorLabel.text = $"Next ID {nextId} is already used — change it before adding.";
+                _addErrorLabel.SetDisplay(DisplayStyle.Flex);
+                return;
+            }
+
+            _addErrorLabel.SetDisplay(DisplayStyle.None);
+            _addButton.SetEnabled(true);
         }
 
         private VisualElement BuildWarningRow()
@@ -490,43 +582,45 @@ namespace Aspid.FastTools.Ids.Editors
 
         private VisualElement BuildAddRow()
         {
+            var wrapper = new VisualElement();
+
             var row = new VisualElement().AddClass(Constants.Registry.AddRow);
-            var inputField = new TextField();
-            inputField.AddClass(Constants.Registry.AddInput);
+            _addInput = new TextField();
+            _addInput.AddClass(Constants.Registry.AddInput);
 
-            var addButton = new Button { text = "+" };
-            addButton.AddClass(Constants.Registry.AddButton);
-            addButton.SetEnabled(false);
+            _addButton = new Button { text = "+" };
+            _addButton.AddClass(Constants.Registry.AddButton);
+            _addButton.SetEnabled(false);
 
-            inputField.RegisterValueChangedCallback(e =>
+            _addErrorLabel = new Label()
+                .AddClass(Constants.Registry.Error)
+                .SetDisplay(DisplayStyle.None);
+
+            _addInput.RegisterValueChangedCallback(_ => RevalidateAddRow());
+
+            _addButton.clicked += () =>
             {
-                var val = e.newValue?.Trim() ?? string.Empty;
-                var existing = CollectExistingNames(exceptIndex: -1);
-                var ok = IdRegistryValidator.IsValidName(val, existing, out _);
-                addButton.SetEnabled(ok);
-            });
-
-            addButton.clicked += () =>
-            {
-                var val = inputField.value?.Trim();
+                var val = _addInput.value?.Trim();
                 if (string.IsNullOrEmpty(val)) return;
 
                 _accessor.Record($"Add ID '{val}'");
                 _accessor.Add(val);
                 _accessor.Commit();
 
-                inputField.SetValueWithoutNotify(string.Empty);
-                addButton.SetEnabled(false);
+                _addInput.SetValueWithoutNotify(string.Empty);
+                RevalidateAddRow();
 
                 RebuildEntries();
                 var newIndex = _viewModel.FindIndex(v => v.Name == val);
-                if (newIndex < 0 || _listView == null) return;
+                if (newIndex < 0 || _listView == null || _groupMode != GroupMode.None) return;
                 _listView.schedule.Execute(() => _listView.ScrollToItem(newIndex)).StartingIn(0);
             };
 
-            row.Add(inputField);
-            row.Add(addButton);
-            return row;
+            row.Add(_addInput);
+            row.Add(_addButton);
+            wrapper.Add(row);
+            wrapper.Add(_addErrorLabel);
+            return wrapper;
         }
 
         private HashSet<string> CollectExistingNames(int exceptIndex)

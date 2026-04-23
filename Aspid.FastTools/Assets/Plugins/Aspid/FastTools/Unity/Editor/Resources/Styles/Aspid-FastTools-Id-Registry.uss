@@ -281,13 +281,15 @@ ToolbarSearchField {
 
 .aspid-fasttools-id-registry-sort
 {
+    flex-grow: 1;
+    flex-basis: 0;
     margin-right: 8px;
-    min-width: 120px;
 }
 
 .aspid-fasttools-id-registry-group
 {
-    min-width: 120px;
+    flex-grow: 1;
+    flex-basis: 0;
 }
 
 .aspid-fasttools-id-registry-group-foldout
@@ -299,4 +301,16 @@ ToolbarSearchField {
 {
     -unity-font-style: bold;
     color: #b0b0b0;
+}
+
+.aspid-fasttools-id-registry-group-foldout > .unity-foldout__content
+{
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.aspid-fasttools-id-registry-group-foldout > .unity-foldout__content > .aspid-fasttools-id-registry-list
+{
+    margin-left: 15px;
+    margin-right: 4px;
 }

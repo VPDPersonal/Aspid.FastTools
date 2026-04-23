@@ -10,27 +10,13 @@ namespace Aspid.FastTools.Ids.Editors
         private const int MaxNameLength = 255;
 
         private static readonly Regex IdentifierPattern =
-            new(@"^[A-Za-z_][A-Za-z0-9_]*$", RegexOptions.Compiled);
-
-        private static readonly HashSet<string> ReservedKeywords = new()
-        {
-            "abstract", "as", "base", "bool", "break", "byte", "case", "catch",
-            "char", "checked", "class", "const", "continue", "decimal", "default",
-            "delegate", "do", "double", "else", "enum", "event", "explicit",
-            "extern", "false", "finally", "fixed", "float", "for", "foreach",
-            "goto", "if", "implicit", "in", "int", "interface", "internal", "is",
-            "lock", "long", "namespace", "new", "null", "object", "operator",
-            "out", "override", "params", "private", "protected", "public",
-            "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof",
-            "stackalloc", "static", "string", "struct", "switch", "this", "throw",
-            "true", "try", "typeof", "uint", "ulong", "unchecked", "unsafe",
-            "ushort", "using", "virtual", "void", "volatile", "while"
-        };
+            new(@"^[A-Za-z_][A-Za-z0-9_\-]*$", RegexOptions.Compiled);
 
         /// <summary>
         /// Validates a candidate id name. Rules, in order: not whitespace,
-        /// valid C# identifier, not a reserved keyword, length ≤ 255,
-        /// not in the optional <paramref name="existing"/> set.
+        /// starts with a letter/underscore and contains only letters, digits,
+        /// underscore or hyphen, length ≤ 255, not in the optional
+        /// <paramref name="existing"/> set.
         /// </summary>
         public static bool IsValidName(string? input, HashSet<string>? existing, out string? error)
         {
@@ -42,13 +28,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             if (!IdentifierPattern.IsMatch(input))
             {
-                error = "Name must be a valid C# identifier (letters, digits, underscore; cannot start with a digit).";
-                return false;
-            }
-
-            if (ReservedKeywords.Contains(input))
-            {
-                error = $"'{input}' is a reserved C# keyword.";
+                error = "Name must start with a letter or underscore and contain only letters, digits, underscore or hyphen.";
                 return false;
             }
 
