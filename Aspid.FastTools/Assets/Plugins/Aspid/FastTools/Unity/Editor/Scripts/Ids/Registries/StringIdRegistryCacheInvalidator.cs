@@ -8,7 +8,7 @@ namespace Aspid.FastTools.Ids.Editors
         private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
         {
             if (HasAssetPath(imported) || HasAssetPath(deleted) || HasAssetPath(moved))
-                StringIdRegistryHelper.ClearCache();
+                IdRegistryResolver.ClearCache();
         }
 
         private static bool HasAssetPath(string[] paths)

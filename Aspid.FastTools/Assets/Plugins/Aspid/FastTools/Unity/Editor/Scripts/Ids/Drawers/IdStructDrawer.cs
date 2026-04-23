@@ -34,7 +34,7 @@ namespace Aspid.FastTools.Ids.Editors
             var currentId = intIdProp?.intValue ?? 0;
             if (currentId > 0 && stringIdProp != null)
             {
-                var reg = StringIdRegistryHelper.FindRegistry(fieldType);
+                var reg = IdRegistryResolver.FindStringMapped(fieldType);
                 var registryName = reg?.GetNameId(currentId);
                 if (registryName != null && registryName != stringIdProp.stringValue)
                 {
@@ -61,7 +61,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             if (EditorGUI.DropdownButton(dropRect, new GUIContent(Caption(currentName)), FocusType.Passive))
             {
-                var reg = StringIdRegistryHelper.FindRegistry(fieldType);
+                var reg = IdRegistryResolver.FindStringMapped(fieldType);
                 var sp = GUIUtility.GUIToScreenPoint(new Vector2(dropRect.x, dropRect.y));
                 var sr = new Rect(sp.x, sp.y, dropRect.width, dropRect.height);
                 StringIdSelectorWindow.Show(reg, sr, currentName,
@@ -93,7 +93,7 @@ namespace Aspid.FastTools.Ids.Editors
                 _imguiState[key] = state;
             }
 
-            var reg2 = StringIdRegistryHelper.FindRegistry(fieldType);
+            var reg2 = IdRegistryResolver.FindStringMapped(fieldType);
             var trimmed = state.input?.Trim() ?? string.Empty;
             var canAdd = !string.IsNullOrEmpty(trimmed) && (reg2 == null || !reg2.Contains(trimmed));
 
@@ -101,7 +101,7 @@ namespace Aspid.FastTools.Ids.Editors
             {
                 if (GUI.Button(addRect, "+"))
                 {
-                    var registry = reg2 ?? StringIdRegistryHelper.CreateRegistry(fieldType);
+                    var registry = reg2 ?? IdRegistryResolver.CreateStringMapped(fieldType);
                     var assignedId = registry.Add(trimmed);
                     EditorUtility.SetDirty(registry);
                     AssetDatabase.SaveAssetIfDirty(registry);
@@ -148,7 +148,7 @@ namespace Aspid.FastTools.Ids.Editors
             inputField.RegisterValueChangedCallback(e =>
             {
                 var val = e.newValue?.Trim() ?? string.Empty;
-                var reg = StringIdRegistryHelper.FindRegistry(fieldType);
+                var reg = IdRegistryResolver.FindStringMapped(fieldType);
 
                 if (string.IsNullOrEmpty(val))
                 {
@@ -186,7 +186,7 @@ namespace Aspid.FastTools.Ids.Editors
                 var name = inputField.value?.Trim();
                 if (string.IsNullOrEmpty(name)) return;
 
-                var reg = StringIdRegistryHelper.FindRegistry(fieldType) ?? StringIdRegistryHelper.CreateRegistry(fieldType);
+                var reg = IdRegistryResolver.FindStringMapped(fieldType) ?? IdRegistryResolver.CreateStringMapped(fieldType);
                 var assignedId = reg.Add(name);
                 EditorUtility.SetDirty(reg);
                 AssetDatabase.SaveAssetIfDirty(reg);
@@ -211,7 +211,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             dropdownButton.clicked += () =>
             {
-                var reg = StringIdRegistryHelper.FindRegistry(fieldType);
+                var reg = IdRegistryResolver.FindStringMapped(fieldType);
                 var window = EditorWindow.focusedWindow;
                 var wb = dropdownButton.worldBound;
                 var sr = new Rect(window.position.x + wb.xMin, window.position.y + wb.yMin, wb.width, wb.height);
@@ -245,7 +245,7 @@ namespace Aspid.FastTools.Ids.Editors
                 var intProp = p?.FindPropertyRelative(Constants.IntIdFieldName);
                 if (intProp == null || strProp == null || intProp.intValue <= 0) return;
 
-                var reg = StringIdRegistryHelper.FindRegistry(fieldType);
+                var reg = IdRegistryResolver.FindStringMapped(fieldType);
                 var registryName = reg?.GetNameId(intProp.intValue);
                 if (registryName == null || registryName == strProp.stringValue) return;
 
@@ -266,7 +266,7 @@ namespace Aspid.FastTools.Ids.Editors
             var id = 0;
             if (!string.IsNullOrEmpty(name))
             {
-                var reg = StringIdRegistryHelper.FindRegistry(fieldType);
+                var reg = IdRegistryResolver.FindStringMapped(fieldType);
                 id = reg?.GetId(name) ?? 0;
             }
             SetFields(property, stringIdProp, intIdProp, name, id);
