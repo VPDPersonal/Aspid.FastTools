@@ -67,7 +67,7 @@ namespace Aspid.FastTools
             _cacheDirty = false;
         }
 
-        internal void InvalidateCache() => _cacheDirty = true;
+        public void InvalidateCache() => _cacheDirty = true;
 
 #if UNITY_EDITOR
         private void OnValidate() => _cacheDirty = true;
