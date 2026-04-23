@@ -30,7 +30,7 @@ namespace Aspid.FastTools.Ids.Editors
         private void OnDisable()
         {
             if (target == null) return;
-            StringIdRegistryValidator.CleanUpInvalid(target);
+            IdRegistryValidator.CleanUpInvalid(target);
         }
 
         public override VisualElement CreateInspectorGUI()
@@ -105,7 +105,7 @@ namespace Aspid.FastTools.Ids.Editors
         private void RebuildEntries()
         {
             _filteredEntries.Clear();
-            var duplicates = StringIdRegistryValidator.GetDuplicates(_entriesProp);
+            var duplicates = IdRegistryValidator.GetDuplicates(_entriesProp);
             var count = _entriesProp.arraySize;
 
             if (_emptyLabel != null)
@@ -171,7 +171,7 @@ namespace Aspid.FastTools.Ids.Editors
 
         private void OnRowNameFocusIn(StringIdRegistryEntryVisualElement row, StringIdRegistryEntryData data)
         {
-            if (StringIdRegistryValidator.HasDuplicate((StringIdRegistry)target, data.Name))
+            if (IdRegistryValidator.HasDuplicate((StringIdRegistry)target, data.Name))
                 row.SetError("Name already exists.");
         }
 
@@ -190,7 +190,7 @@ namespace Aspid.FastTools.Ids.Editors
                 row.SetEditMode(true, canConfirm: false);
                 row.SetError("Name cannot be empty.");
             }
-            else if (StringIdRegistryValidator.HasDuplicate(registry, trimmed) || registry.Contains(trimmed))
+            else if (IdRegistryValidator.HasDuplicate(registry, trimmed) || registry.Contains(trimmed))
             {
                 row.SetEditMode(true, canConfirm: false);
                 row.SetError($"'{trimmed}' already exists.");
