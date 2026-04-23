@@ -6,14 +6,14 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
-    public readonly struct StringIdRegistryEntryData
+    public readonly struct IdRegistryEntryData
     {
         public readonly int Id;
         public readonly string Name;
         public readonly int OriginalIndex;
         public readonly bool IsDuplicate;
 
-        public StringIdRegistryEntryData(int originalIndex, string name, int id, bool isDuplicate)
+        public IdRegistryEntryData(int originalIndex, string name, int id, bool isDuplicate)
         {
             OriginalIndex = originalIndex;
             Name = name;
@@ -22,7 +22,7 @@ namespace Aspid.FastTools.Ids.Editors
         }
     }
 
-    public sealed class StringIdRegistryEntryVisualElement : VisualElement
+    public sealed class IdRegistryEntryVisualElement : VisualElement
     {
         private readonly TextField _nameField;
         private readonly Label _idBadge;
@@ -30,14 +30,14 @@ namespace Aspid.FastTools.Ids.Editors
         private readonly Button _deleteButton;
         private readonly Button _confirmButton;
 
-        public StringIdRegistryEntryData Data { get; private set; }
+        public IdRegistryEntryData Data { get; private set; }
 
-        public event Action<StringIdRegistryEntryVisualElement, StringIdRegistryEntryData> NameFocusIn;
-        public event Action<StringIdRegistryEntryVisualElement, StringIdRegistryEntryData, string> NameChanging;
-        public event Action<StringIdRegistryEntryVisualElement, StringIdRegistryEntryData, string> NameCommitRequested;
-        public event Action<StringIdRegistryEntryVisualElement, StringIdRegistryEntryData> DeleteRequested;
+        public event Action<IdRegistryEntryVisualElement, IdRegistryEntryData> NameFocusIn;
+        public event Action<IdRegistryEntryVisualElement, IdRegistryEntryData, string> NameChanging;
+        public event Action<IdRegistryEntryVisualElement, IdRegistryEntryData, string> NameCommitRequested;
+        public event Action<IdRegistryEntryVisualElement, IdRegistryEntryData> DeleteRequested;
 
-        public StringIdRegistryEntryVisualElement()
+        public IdRegistryEntryVisualElement()
         {
             this.AddClass(Constants.Registry.Entry);
 
@@ -79,7 +79,7 @@ namespace Aspid.FastTools.Ids.Editors
             _confirmButton.SetEnabled(canConfirm);
         }
 
-        public void Bind(in StringIdRegistryEntryData data)
+        public void Bind(in IdRegistryEntryData data)
         {
             Data = data;
 

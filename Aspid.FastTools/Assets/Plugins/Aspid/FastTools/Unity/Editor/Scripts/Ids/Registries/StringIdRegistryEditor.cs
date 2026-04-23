@@ -12,7 +12,7 @@ namespace Aspid.FastTools.Ids.Editors
     [CustomEditor(typeof(StringIdRegistry))]
     internal sealed class StringIdRegistryEditor : Editor
     {
-        private readonly List<StringIdRegistryEntryData> _filteredEntries = new();
+        private readonly List<IdRegistryEntryData> _filteredEntries = new();
 
         private SerializedProperty _targetTypeProp;
         private SerializedProperty _entriesProp;
@@ -120,7 +120,7 @@ namespace Aspid.FastTools.Ids.Editors
 
                 if (!MatchesQuery(name, id, query)) continue;
 
-                _filteredEntries.Add(new StringIdRegistryEntryData(i, name, id, duplicates.Contains(name)));
+                _filteredEntries.Add(new IdRegistryEntryData(i, name, id, duplicates.Contains(name)));
             }
 
             _listView?.Rebuild();
@@ -155,7 +155,7 @@ namespace Aspid.FastTools.Ids.Editors
 
         private VisualElement CreateEntryRow()
         {
-            var row = new StringIdRegistryEntryVisualElement();
+            var row = new IdRegistryEntryVisualElement();
             row.NameFocusIn += OnRowNameFocusIn;
             row.NameChanging += OnRowNameChanging;
             row.NameCommitRequested += OnRowNameCommitRequested;
@@ -166,16 +166,16 @@ namespace Aspid.FastTools.Ids.Editors
         private void BindEntryRow(VisualElement element, int visibleIndex)
         {
             if (visibleIndex < 0 || visibleIndex >= _filteredEntries.Count) return;
-            ((StringIdRegistryEntryVisualElement)element).Bind(_filteredEntries[visibleIndex]);
+            ((IdRegistryEntryVisualElement)element).Bind(_filteredEntries[visibleIndex]);
         }
 
-        private void OnRowNameFocusIn(StringIdRegistryEntryVisualElement row, StringIdRegistryEntryData data)
+        private void OnRowNameFocusIn(IdRegistryEntryVisualElement row, IdRegistryEntryData data)
         {
             if (IdRegistryValidator.HasDuplicate((StringIdRegistry)target, data.Name))
                 row.SetError("Name already exists.");
         }
 
-        private void OnRowNameChanging(StringIdRegistryEntryVisualElement row, StringIdRegistryEntryData data, string newValue)
+        private void OnRowNameChanging(IdRegistryEntryVisualElement row, IdRegistryEntryData data, string newValue)
         {
             var trimmed = newValue?.Trim() ?? string.Empty;
             var registry = (StringIdRegistry)target;
@@ -202,7 +202,7 @@ namespace Aspid.FastTools.Ids.Editors
             }
         }
 
-        private void OnRowNameCommitRequested(StringIdRegistryEntryVisualElement row, StringIdRegistryEntryData data, string rawValue)
+        private void OnRowNameCommitRequested(IdRegistryEntryVisualElement row, IdRegistryEntryData data, string rawValue)
         {
             var trimmed = rawValue?.Trim() ?? string.Empty;
             var registry = (StringIdRegistry)target;
@@ -217,7 +217,7 @@ namespace Aspid.FastTools.Ids.Editors
             row.ClearError();
         }
 
-        private void OnRowDeleteRequested(StringIdRegistryEntryVisualElement row, StringIdRegistryEntryData data)
+        private void OnRowDeleteRequested(IdRegistryEntryVisualElement row, IdRegistryEntryData data)
         {
             TryDeleteEntry(data.OriginalIndex);
             serializedObject.ApplyModifiedProperties();
