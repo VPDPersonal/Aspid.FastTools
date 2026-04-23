@@ -1,6 +1,4 @@
 #nullable enable
-using UnityEditor;
-using UnityEngine;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
@@ -70,55 +68,46 @@ namespace Aspid.FastTools.Ids.Editors
             return true;
         }
 
-        public static HashSet<string> GetDuplicates(SerializedProperty entriesProp)
+        public static CleanUpSummary Summarize(IRegistryAccessor accessor)
         {
-            var seen  = new HashSet<string>();
-            var dupes = new HashSet<string>();
+            var empty = 0;
+            var duplicates = 0;
+            var structural = accessor.HasStructuralDamage(out _) ? 1 : 0;
 
-            for (var i = 0; i < entriesProp.arraySize; i++)
+            var seen = new HashSet<string>();
+            for (var i = 0; i < accessor.Count; i++)
             {
-                var val = entriesProp.GetArrayElementAtIndex(i).FindPropertyRelative("Name").stringValue;
-                if (!string.IsNullOrEmpty(val) && !seen.Add(val))
-                    dupes.Add(val);
+                var name = accessor.GetName(i);
+                if (string.IsNullOrEmpty(name)) empty++;
+                else if (!seen.Add(name)) duplicates++;
             }
 
-            return dupes;
+            return new CleanUpSummary(empty, duplicates, structural);
+        }
+    }
+
+    internal readonly struct CleanUpSummary
+    {
+        public readonly int EmptyCount;
+        public readonly int DuplicateCount;
+        public readonly int StructuralIssues;
+
+        public CleanUpSummary(int emptyCount, int duplicateCount, int structuralIssues)
+        {
+            EmptyCount = emptyCount;
+            DuplicateCount = duplicateCount;
+            StructuralIssues = structuralIssues;
         }
 
-        public static bool HasDuplicate(StringIdRegistry registry, string entryName)
+        public int Total => EmptyCount + DuplicateCount + StructuralIssues;
+
+        public string ToShortLabel()
         {
-            var seen = false;
-            foreach (var name in registry.IdNames)
-            {
-                if (name != entryName) continue;
-                if (seen) return true;
-                seen = true;
-            }
-            return false;
-        }
-
-        // CleanUpInvalid stays for now — removed in Task 16 when the explicit clean-up row replaces it.
-        public static void CleanUpInvalid(Object target)
-        {
-            var so       = new SerializedObject(target);
-            var entries  = so.FindProperty("_entries");
-            if (entries == null) return;
-
-            var seen     = new HashSet<string>();
-            var toRemove = new List<int>();
-
-            for (int i = 0; i < entries.arraySize; i++)
-            {
-                var val = entries.GetArrayElementAtIndex(i).FindPropertyRelative("Name").stringValue;
-                if (string.IsNullOrEmpty(val) || !seen.Add(val))
-                    toRemove.Add(i);
-            }
-
-            for (var i = toRemove.Count - 1; i >= 0; i--)
-                entries.DeleteArrayElementAtIndex(toRemove[i]);
-
-            if (toRemove.Count > 0)
-                so.ApplyModifiedPropertiesWithoutUndo();
+            var parts = new List<string>();
+            if (DuplicateCount > 0) parts.Add($"{DuplicateCount} duplicates");
+            if (EmptyCount > 0) parts.Add($"{EmptyCount} empty name" + (EmptyCount == 1 ? string.Empty : "s"));
+            if (StructuralIssues > 0) parts.Add("structural issues");
+            return $"⚠ {Total} invalid entr{(Total == 1 ? "y" : "ies")} ({string.Join(", ", parts)})";
         }
     }
 }

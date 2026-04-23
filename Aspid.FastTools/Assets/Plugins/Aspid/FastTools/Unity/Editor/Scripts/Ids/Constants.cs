@@ -44,6 +44,10 @@ namespace Aspid.FastTools.Ids.Editors
             public const string AddButton = "aspid-fasttools-id-registry-add-button";
             public const string List = "aspid-fasttools-id-registry-list";
             public const string ListScrollable = "aspid-fasttools-id-registry-list--scrollable";
+            public const string Warning = "aspid-fasttools-id-registry-warning";
+            public const string WarningVisible = "aspid-fasttools-id-registry-warning--visible";
+            public const string WarningLabel = "aspid-fasttools-id-registry-warning-label";
+            public const string WarningButton = "aspid-fasttools-id-registry-warning-button";
             public const int ScrollThreshold = 21;
             public const int MaxVisibleRows = 10;
             public const float RowHeight = 32.5f;

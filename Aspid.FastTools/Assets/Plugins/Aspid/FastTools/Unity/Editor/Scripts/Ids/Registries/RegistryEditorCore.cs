@@ -22,6 +22,8 @@ namespace Aspid.FastTools.Ids.Editors
         private readonly List<EntryView> _viewModel = new();
         private Label? _emptyLabel;
         private ListView? _listView;
+        private VisualElement? _warningRow;
+        private Label? _warningLabel;
         private string _searchQuery = string.Empty;
 
         public RegistryEditorCore(IRegistryAccessor accessor)
@@ -56,6 +58,7 @@ namespace Aspid.FastTools.Ids.Editors
                 .AddClass("aspid-fasttools-background");
 
             container.Add(BuildSectionTitle("IDs"));
+            container.Add(BuildWarningRow());
 
             var searchField = new ToolbarSearchField();
             searchField.RegisterValueChangedCallback(e =>
@@ -129,6 +132,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             _listView?.Rebuild();
             UpdateListScrollState();
+            RefreshWarningRow();
         }
 
         private void UpdateListScrollState()
@@ -235,6 +239,60 @@ namespace Aspid.FastTools.Ids.Editors
 
             _accessor.Record($"Delete ID '{name}'");
             _accessor.RemoveAt(data.OriginalIndex);
+            _accessor.Commit();
+        }
+
+        private VisualElement BuildWarningRow()
+        {
+            var row = new VisualElement().AddClass(Constants.Registry.Warning);
+            _warningRow = row;
+
+            _warningLabel = new Label().AddClass(Constants.Registry.WarningLabel);
+            var reviewButton = new Button { text = "Review" }.AddClass(Constants.Registry.WarningButton);
+            reviewButton.clicked += ShowCleanUpDialog;
+
+            row.Add(_warningLabel);
+            row.Add(reviewButton);
+            return row;
+        }
+
+        private void RefreshWarningRow()
+        {
+            if (_warningRow == null || _warningLabel == null) return;
+            var summary = IdRegistryValidator.Summarize(_accessor);
+            var visible = summary.Total > 0;
+            _warningRow.EnableInClassList(Constants.Registry.WarningVisible, visible);
+            if (visible) _warningLabel.text = summary.ToShortLabel();
+        }
+
+        private void ShowCleanUpDialog()
+        {
+            var summary = IdRegistryValidator.Summarize(_accessor);
+            if (summary.Total == 0) return;
+
+            var message = $"This will remove {summary.Total} invalid entr{(summary.Total == 1 ? "y" : "ies")}:\n"
+                        + (summary.DuplicateCount > 0 ? $"  • {summary.DuplicateCount} duplicate name(s)\n" : string.Empty)
+                        + (summary.EmptyCount > 0 ? $"  • {summary.EmptyCount} empty name(s)\n" : string.Empty)
+                        + (summary.StructuralIssues > 0 ? "  • structural inconsistencies\n" : string.Empty)
+                        + "\nProceed?";
+
+            if (!EditorUtility.DisplayDialog("Clean up invalid entries", message, "Clean up", "Cancel"))
+                return;
+
+            _accessor.Record("Clean Up Invalid IDs");
+
+            var seen = new HashSet<string>();
+            var toRemove = new List<int>();
+            for (var i = 0; i < _accessor.Count; i++)
+            {
+                var name = _accessor.GetName(i);
+                if (string.IsNullOrEmpty(name) || !seen.Add(name))
+                    toRemove.Add(i);
+            }
+
+            for (var i = toRemove.Count - 1; i >= 0; i--)
+                _accessor.RemoveAt(toRemove[i]);
+
             _accessor.Commit();
         }
 
