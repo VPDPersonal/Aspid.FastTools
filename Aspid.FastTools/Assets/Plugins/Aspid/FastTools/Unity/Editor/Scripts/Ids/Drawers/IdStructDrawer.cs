@@ -53,9 +53,14 @@ namespace Aspid.FastTools.Ids.Editors
             var key = PropertyKey(property);
             _imguiState.TryGetValue(key, out var state);
 
+            const float OpenButtonWidth = 22f;
+            const float Gap = 2f;
+
             var mainRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
-            var dropRect = new Rect(mainRect.x, mainRect.y, mainRect.width - CreateButtonWidth - 2f, mainRect.height);
-            var btnRect = new Rect(dropRect.xMax + 2f, mainRect.y, CreateButtonWidth, mainRect.height);
+            var dropRect = new Rect(mainRect.x, mainRect.y,
+                mainRect.width - CreateButtonWidth - OpenButtonWidth - Gap * 2f, mainRect.height);
+            var openRect = new Rect(dropRect.xMax + Gap, mainRect.y, OpenButtonWidth, mainRect.height);
+            var btnRect  = new Rect(openRect.xMax + Gap, mainRect.y, CreateButtonWidth, mainRect.height);
 
             var currentName = stringIdProp?.stringValue ?? string.Empty;
 
@@ -66,6 +71,19 @@ namespace Aspid.FastTools.Ids.Editors
                 var sr = new Rect(sp.x, sp.y, dropRect.width, dropRect.height);
                 StringIdSelectorWindow.Show(reg, sr, currentName,
                     selected => ApplySelection(property, stringIdProp, intIdProp, fieldType, selected));
+            }
+
+            using (new EditorGUI.DisabledScope(IdRegistryResolver.Find(fieldType) == null))
+            {
+                if (GUI.Button(openRect, EditorGUIUtility.IconContent("d_ScriptableObject Icon")))
+                {
+                    var reg = IdRegistryResolver.Find(fieldType);
+                    if (reg != null)
+                    {
+                        EditorGUIUtility.PingObject(reg);
+                        Selection.activeObject = reg;
+                    }
+                }
             }
 
             if (GUI.Button(btnRect, state.creating ? "Cancel" : "Create"))
@@ -133,6 +151,22 @@ namespace Aspid.FastTools.Ids.Editors
             var dropdownButton = new Button().AddClass(Constants.Drawer.Dropdown).SetText(Caption(currentName));
             var createToggleButton = new Button().AddClass(Constants.Drawer.CreateButton).SetText("Create");
 
+            var openButton = new Button().AddClass(Constants.Drawer.OpenButton);
+            var openIcon = new Image { image = EditorGUIUtility.IconContent("d_ScriptableObject Icon").image };
+            openButton.Add(openIcon);
+            openButton.tooltip = "Open the registry asset in Inspector";
+            openButton.clicked += () =>
+            {
+                var reg = IdRegistryResolver.Find(fieldType);
+                if (reg == null) return;
+                EditorGUIUtility.PingObject(reg);
+                Selection.activeObject = reg;
+            };
+
+            var intOnlyHint = new Label("Bound to an int-only IdRegistry — names unavailable")
+                .AddClass(Constants.Drawer.IntOnlyHint)
+                .SetDisplay(DisplayStyle.None);
+
             var createRow = new VisualElement().AddClass(Constants.Drawer.CreateRow);
             var inputField = new TextField().AddClass(Constants.Drawer.Input);
             var addButton = new Button().AddClass(Constants.Drawer.AddButton).SetText("+");
@@ -145,7 +179,23 @@ namespace Aspid.FastTools.Ids.Editors
             var serializedObject = property.serializedObject;
 
             dropdownButton.schedule.Execute(SyncStringFromInt).StartingIn(0);
-            dropdownButton.TrackPropertyValue(intIdProp, _ => SyncStringFromInt());
+            openButton.SetEnabled(IdRegistryResolver.Find(fieldType) != null);
+            dropdownButton.TrackPropertyValue(intIdProp, _ =>
+            {
+                SyncStringFromInt();
+                openButton.SetEnabled(IdRegistryResolver.Find(fieldType) != null);
+            });
+
+            void RefreshIntOnlyHint()
+            {
+                var found = IdRegistryResolver.Find(fieldType);
+                var isIntOnly = found is IdRegistry;
+                intOnlyHint.SetDisplay(isIntOnly ? DisplayStyle.Flex : DisplayStyle.None);
+                dropdownButton.SetEnabled(!isIntOnly);
+                createToggleButton.SetEnabled(!isIntOnly);
+            }
+
+            root.schedule.Execute(RefreshIntOnlyHint).StartingIn(0);
 
             inputField.RegisterValueChangedCallback(e =>
             {
@@ -237,10 +287,10 @@ namespace Aspid.FastTools.Ids.Editors
             if (!string.IsNullOrEmpty(label))
                 mainRow.AddChild(new Label(label).AddClass(Constants.Drawer.Label));
 
-            mainRow.AddChild(dropdownButton).AddChild(createToggleButton);
+            mainRow.AddChild(dropdownButton).AddChild(openButton).AddChild(createToggleButton);
             createRow.AddChild(inputField).AddChild(addButton).AddChild(cancelRowButton);
 
-            return root.AddChild(mainRow).AddChild(createRow).AddChild(errorLabel);
+            return root.AddChild(mainRow).AddChild(createRow).AddChild(errorLabel).AddChild(intOnlyHint);
 
             void SyncStringFromInt()
             {

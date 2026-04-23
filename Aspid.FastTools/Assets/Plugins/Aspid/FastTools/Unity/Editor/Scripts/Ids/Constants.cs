@@ -22,6 +22,8 @@ namespace Aspid.FastTools.Ids.Editors
             public const string AddButton = "aspid-fasttools-id-drawer-add-button";
             public const string CancelButton = "aspid-fasttools-id-drawer-cancel-button";
             public const string Error = "aspid-fasttools-id-drawer-error";
+            public const string OpenButton = "aspid-fasttools-id-drawer-open-button";
+            public const string IntOnlyHint = "aspid-fasttools-id-drawer-int-only-hint";
         }
 
         public static class Registry
