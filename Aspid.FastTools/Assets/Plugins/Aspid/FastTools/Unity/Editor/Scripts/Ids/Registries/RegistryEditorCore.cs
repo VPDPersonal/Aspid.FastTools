@@ -22,9 +22,19 @@ namespace Aspid.FastTools.Ids.Editors
         private readonly List<EntryView> _viewModel = new();
         private Label? _emptyLabel;
         private ListView? _listView;
+        private VisualElement? _listContainer;
         private VisualElement? _warningRow;
         private Label? _warningLabel;
         private string _searchQuery = string.Empty;
+
+        private SortMode _sortMode = SortMode.RegistryOrder;
+        private GroupMode _groupMode = GroupMode.None;
+        private string _assetGuid = string.Empty;
+
+        private string SortKey => $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Sort";
+        private string GroupKey => $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Group";
+        private string GroupExpandedKey(string group) =>
+            $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Group:{group}:Expanded";
 
         public RegistryEditorCore(IRegistryAccessor accessor)
         {
@@ -33,6 +43,13 @@ namespace Aspid.FastTools.Ids.Editors
 
         public VisualElement Build()
         {
+            var assetPath = AssetDatabase.GetAssetPath(_accessor.Target);
+            _assetGuid = string.IsNullOrEmpty(assetPath)
+                ? _accessor.Target.GetInstanceID().ToString()
+                : AssetDatabase.AssetPathToGUID(assetPath);
+            _sortMode = (SortMode)SessionState.GetInt(SortKey, (int)SortMode.RegistryOrder);
+            _groupMode = (GroupMode)SessionState.GetInt(GroupKey, (int)GroupMode.None);
+
             var root = new VisualElement()
                 .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
                 .AddStyleSheetsFromResource(StyleClasses.DefaultStyleSheet)
@@ -68,22 +85,10 @@ namespace Aspid.FastTools.Ids.Editors
                 RebuildEntries();
             });
             container.Add(searchField);
+            container.Add(BuildSortGroupToolbar());
 
-            _listView = new ListView
-            {
-                selectionType = SelectionType.None,
-                virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
-                itemsSource = _viewModel,
-                reorderable = false,
-                showBorder = false,
-                showFoldoutHeader = false,
-                showBoundCollectionSize = false,
-                showAddRemoveFooter = false,
-            };
-            _listView.AddClass(Constants.Registry.List);
-            _listView.SetMakeItem(CreateEntryRow);
-            _listView.SetBindItem(BindEntryRow);
-            container.Add(_listView);
+            _listContainer = new VisualElement();
+            container.Add(_listContainer);
 
             _emptyLabel = new Label("No IDs yet. Add one below.")
                 .AddClass(Constants.Registry.Empty);
@@ -131,14 +136,149 @@ namespace Aspid.FastTools.Ids.Editors
                 _viewModel.Add(new EntryView(i, name, id, duplicates.Contains(name)));
             }
 
-            _listView?.Rebuild();
+            ApplySort(_viewModel);
+
+            if (_listContainer != null)
+            {
+                _listContainer.Clear();
+                if (_groupMode == GroupMode.None)
+                {
+                    _listView ??= BuildListView();
+                    _listView.itemsSource = _viewModel;
+                    _listContainer.Add(_listView);
+                    _listView.Rebuild();
+                }
+                else
+                {
+                    RenderGroupedView();
+                }
+            }
+
             UpdateListScrollState();
             RefreshWarningRow();
         }
 
+        private ListView BuildListView()
+        {
+            var list = new ListView
+            {
+                selectionType = SelectionType.None,
+                virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
+                itemsSource = _viewModel,
+                reorderable = false,
+                showBorder = false,
+                showFoldoutHeader = false,
+                showBoundCollectionSize = false,
+                showAddRemoveFooter = false,
+            };
+            list.AddClass(Constants.Registry.List);
+            list.SetMakeItem(CreateEntryRow);
+            list.SetBindItem(BindEntryRow);
+            return list;
+        }
+
+        private VisualElement BuildSortGroupToolbar()
+        {
+            var row = new VisualElement().AddClass(Constants.Registry.Toolbar);
+
+            var sort = new EnumField(_sortMode).AddClass(Constants.Registry.Sort);
+            sort.tooltip = "Sort order";
+            sort.RegisterValueChangedCallback(e =>
+            {
+                _sortMode = (SortMode)e.newValue;
+                SessionState.SetInt(SortKey, (int)_sortMode);
+                RebuildEntries();
+            });
+
+            var group = new EnumField(_groupMode).AddClass(Constants.Registry.Group);
+            group.tooltip = "Group entries by";
+            group.RegisterValueChangedCallback(e =>
+            {
+                _groupMode = (GroupMode)e.newValue;
+                SessionState.SetInt(GroupKey, (int)_groupMode);
+                RebuildEntries();
+            });
+
+            row.Add(sort);
+            row.Add(group);
+            return row;
+        }
+
+        private void ApplySort(List<EntryView> list)
+        {
+            switch (_sortMode)
+            {
+                case SortMode.NameAZ:
+                    list.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name));
+                    break;
+                case SortMode.NameZA:
+                    list.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(b.Name, a.Name));
+                    break;
+                case SortMode.IdAsc:
+                    list.Sort((a, b) => a.Id.CompareTo(b.Id));
+                    break;
+                case SortMode.IdDesc:
+                    list.Sort((a, b) => b.Id.CompareTo(a.Id));
+                    break;
+                case SortMode.RegistryOrder:
+                default:
+                    break;
+            }
+        }
+
+        private void RenderGroupedView()
+        {
+            if (_listContainer == null) return;
+
+            var buckets = new Dictionary<string, List<EntryView>>();
+            foreach (var view in _viewModel)
+            {
+                var prefix = PrefixOf(view.Name);
+                if (!buckets.TryGetValue(prefix, out var list))
+                {
+                    list = new List<EntryView>();
+                    buckets[prefix] = list;
+                }
+                list.Add(view);
+            }
+
+            foreach (var kv in buckets)
+            {
+                var groupName = kv.Key;
+                var foldout = new Foldout
+                {
+                    text = $"{groupName} ({kv.Value.Count})",
+                    value = SessionState.GetBool(GroupExpandedKey(groupName), defaultValue: true),
+                }.AddClass(Constants.Registry.GroupFoldout);
+
+                foldout.RegisterValueChangedCallback(e =>
+                    SessionState.SetBool(GroupExpandedKey(groupName), e.newValue));
+
+                foreach (var view in kv.Value)
+                {
+                    var row = (IdRegistryEntryVisualElement)CreateEntryRow();
+                    row.Bind(new IdRegistryEntryData(
+                        originalIndex: view.OriginalIndex,
+                        name: view.Name,
+                        id: view.Id,
+                        isDuplicate: view.IsDuplicate));
+                    foldout.Add(row);
+                }
+
+                _listContainer.Add(foldout);
+            }
+        }
+
+        private static string PrefixOf(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return "<ungrouped>";
+            var idx = name.IndexOf('_');
+            return idx <= 0 ? "<ungrouped>" : name.Substring(0, idx);
+        }
+
         private void UpdateListScrollState()
         {
-            if (_listView == null) return;
+            if (_listView == null || _groupMode != GroupMode.None) return;
 
             if (_viewModel.Count >= Constants.Registry.ScrollThreshold)
             {
@@ -154,6 +294,9 @@ namespace Aspid.FastTools.Ids.Editors
                 _listView.style.maxHeight = StyleKeyword.Null;
             }
         }
+
+        private enum SortMode { RegistryOrder, NameAZ, NameZA, IdAsc, IdDesc }
+        private enum GroupMode { None, ByPrefix }
 
         private static bool MatchesQuery(string name, int id, string query)
         {

@@ -271,3 +271,32 @@ ToolbarSearchField {
 {
     display: flex;
 }
+
+.aspid-fasttools-id-registry-toolbar
+{
+    flex-direction: row;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.aspid-fasttools-id-registry-sort
+{
+    margin-right: 8px;
+    min-width: 120px;
+}
+
+.aspid-fasttools-id-registry-group
+{
+    min-width: 120px;
+}
+
+.aspid-fasttools-id-registry-group-foldout
+{
+    margin-top: 4px;
+}
+
+.aspid-fasttools-id-registry-group-foldout > .unity-foldout__toggle > .unity-toggle__input > .unity-label
+{
+    -unity-font-style: bold;
+    color: #b0b0b0;
+}

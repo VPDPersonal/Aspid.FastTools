@@ -53,6 +53,10 @@ namespace Aspid.FastTools.Ids.Editors
             public const string NextIdField = "aspid-fasttools-id-registry-next-id-field";
             public const string NextIdWarning = "aspid-fasttools-id-registry-next-id-warning";
             public const string NextIdWarningVisible = "aspid-fasttools-id-registry-next-id-warning--visible";
+            public const string Toolbar = "aspid-fasttools-id-registry-toolbar";
+            public const string Sort = "aspid-fasttools-id-registry-sort";
+            public const string Group = "aspid-fasttools-id-registry-group";
+            public const string GroupFoldout = "aspid-fasttools-id-registry-group-foldout";
             public const int ScrollThreshold = 21;
             public const int MaxVisibleRows = 10;
             public const float RowHeight = 32.5f;
