@@ -51,6 +51,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             typeContainer.Add(new AspidLabel("Type").SetMarginBottom(5));
             typeContainer.Add(new PropertyField(_accessor.TargetStructTypeProperty, label: string.Empty));
+            typeContainer.Add(BuildNextIdRow());
 
             var container = new VisualElement()
                 .SetMarginTop(5)
@@ -240,6 +241,54 @@ namespace Aspid.FastTools.Ids.Editors
             _accessor.Record($"Delete ID '{name}'");
             _accessor.RemoveAt(data.OriginalIndex);
             _accessor.Commit();
+        }
+
+        private VisualElement BuildNextIdRow()
+        {
+            var row = new VisualElement().AddClass(Constants.Registry.NextIdRow);
+
+            var label = new Label("Next ID").AddClass(Constants.Registry.NextIdLabel);
+
+            var field = new IntegerField
+            {
+                value = _accessor.NextIdProperty.intValue,
+                tooltip = "Id that will be assigned to the next Add operation. Manual override is allowed.",
+            }.AddClass(Constants.Registry.NextIdField);
+
+            var warning = new Image
+            {
+                image = EditorGUIUtility.IconContent("console.warnicon.sml").image,
+                tooltip = string.Empty,
+            }.AddClass(Constants.Registry.NextIdWarning);
+
+            field.RegisterValueChangedCallback(e =>
+            {
+                var newValue = e.newValue;
+                UpdateNextIdWarning(warning, newValue);
+
+                _accessor.Record("Set Next ID");
+                _accessor.NextIdProperty.intValue = newValue;
+                _accessor.Commit();
+            });
+
+            UpdateNextIdWarning(warning, _accessor.NextIdProperty.intValue);
+
+            row.Add(label);
+            row.Add(field);
+            row.Add(warning);
+            return row;
+        }
+
+        private void UpdateNextIdWarning(Image warning, int value)
+        {
+            var maxAssigned = _accessor.MaxAssignedId;
+            var show = value <= maxAssigned && value >= 1;
+            warning.EnableInClassList(Constants.Registry.NextIdWarningVisible, show);
+            warning.tooltip = show
+                ? $"Reusing ID {value} may silently remap references: assets that previously pointed to this ID will appear bound to the next name you create. Proceed only if you know these IDs are unused."
+                : value < 1
+                    ? "Next ID must be ≥ 1."
+                    : string.Empty;
         }
 
         private VisualElement BuildWarningRow()

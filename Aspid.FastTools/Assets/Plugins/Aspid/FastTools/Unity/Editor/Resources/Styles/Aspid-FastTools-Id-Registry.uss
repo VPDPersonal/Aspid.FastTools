@@ -238,3 +238,36 @@ ToolbarSearchField {
     margin-left: 8px;
     padding: 2px 8px;
 }
+
+.aspid-fasttools-id-registry-next-id-row
+{
+    flex-direction: row;
+    align-items: center;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.aspid-fasttools-id-registry-next-id-label
+{
+    min-width: 60px;
+    -unity-font-style: bold;
+}
+
+.aspid-fasttools-id-registry-next-id-field
+{
+    min-width: 80px;
+    flex-grow: 0;
+}
+
+.aspid-fasttools-id-registry-next-id-warning
+{
+    display: none;
+    margin-left: 6px;
+    width: 16px;
+    height: 16px;
+}
+
+.aspid-fasttools-id-registry-next-id-warning--visible
+{
+    display: flex;
+}
