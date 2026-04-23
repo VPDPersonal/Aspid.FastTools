@@ -86,6 +86,7 @@ namespace Aspid.FastTools.Ids.Editors
         public void Commit()
         {
             SerializedObject.ApplyModifiedProperties();
+            _registry.InvalidateCache();
             EditorUtility.SetDirty(_registry);
         }
 

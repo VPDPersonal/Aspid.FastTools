@@ -8,18 +8,25 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools
 {
+    public class StringIdRegistry<T> : StringIdRegistry
+        where T : struct, IId
+    {
+        public bool Contains(T id) =>
+            base.Contains(id.Id);
+    }
+    
     /// <summary>
     /// A ScriptableObject that maps string names to stable integer IDs for a given struct type.
     /// Used by the <c>IdStruct</c> system to persist and resolve string/int ID pairs.
     /// </summary>
     [CreateAssetMenu(fileName = "StringIdRegistry", menuName = "Aspid/FastTools/String Id Registry")]
-    public sealed partial class StringIdRegistry : ScriptableObject, IEnumerable<KeyValuePair<int, string>>
+    public partial class StringIdRegistry : ScriptableObject, IEnumerable<KeyValuePair<int, string>>
     {
         [SerializeField] private IdEntry[] _entries = Array.Empty<IdEntry>();
 
+        [NonSerialized] private bool _cacheDirty = true;
         [NonSerialized] private Dictionary<string, int>? _idByName;
         [NonSerialized] private Dictionary<int, string>? _nameById;
-        [NonSerialized] private bool _cacheDirty = true;
 
         public IEnumerable<int> Ids =>
             this.Select(entry => entry.Key);
@@ -37,6 +44,12 @@ namespace Aspid.FastTools
         {
             EnsureCache();
             return _nameById!.TryGetValue(id, out var name) ? name : null;
+        }
+        
+        public bool Contains(int id)
+        {
+            EnsureCache();
+            return _nameById!.ContainsKey(id);
         }
 
         public bool Contains(string nameId)
@@ -57,6 +70,7 @@ namespace Aspid.FastTools
 
             _idByName = new Dictionary<string, int>(_entries.Length);
             _nameById = new Dictionary<int, string>(_entries.Length);
+            
             foreach (var entry in _entries)
             {
                 if (!string.IsNullOrEmpty(entry.Name))
