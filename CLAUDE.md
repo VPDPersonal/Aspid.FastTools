@@ -95,7 +95,55 @@ The `IdStructGenerator` generates boilerplate for the struct side; the registry 
 
 **PropertyDrawers:** Always `internal sealed class`. Complex drawers split into a static helper `{Feature}Drawer` with `DrawIMGUI()` and `DrawUIToolkit()` methods — see `SerializableTypeDrawer.cs` as reference.
 
-**USS stylesheets:** Loaded via `.AddStyleSheetsFromResource("Styles/Aspid-FastTools-{Feature}")`. Classes named `aspid-fasttools-{feature}-{element}` (kebab-case). Styling goes in USS; code only applies `.AddClass()`. `Aspid-FastTools-Default-Dark.uss` serves as a shared base stylesheet for internal editor components — add it first when creating new editor components.
+**USS stylesheets:** Loaded via `.AddStyleSheetsFromResource("Styles/Aspid-FastTools-{Feature}")`. Styling goes in USS; code only applies `.AddClass()`. `Aspid-FastTools-Default-Dark.uss` serves as a shared base stylesheet for internal editor components — add it first when creating new editor components.
+
+**USS class naming (BEM):** Follow Unity's recommended Block-Element-Modifier convention (see [UIE-USS-WritingStyleSheets](https://docs.unity3d.com/6000.4/Documentation/Manual/UIE-USS-WritingStyleSheets.html)).
+
+Format: `aspid-fasttools-{block}[__{element}][--{modifier}]`
+
+- **Prefix** `aspid-fasttools-` is mandatory and joined to the block with a single `-` (matches Unity's own `unity-foldout__toggle` style — the prefix is a namespace, not a BEM block).
+- **Block** — feature/component name in kebab-case: `id-registry`, `id-drawer`, `enum-values`, `serializable-type`.
+- **Element** — part of a block, joined with `__`: `aspid-fasttools-id-drawer__add-button`, `aspid-fasttools-id-registry__delete`.
+- **Modifier** — state or variant, joined with `--`: `aspid-fasttools-id-registry__warning--visible`, `aspid-fasttools-status--error`.
+- **kebab-case inside any segment** (`add-button`, never `addButton` or `add_button`).
+- **Utility/state classes** (status, theme) are blocks of their own: `aspid-fasttools-status--error`, `aspid-fasttools-theme--dark`.
+- **Selectors** — use class selectors only. Avoid type selectors (`Button`, `Label`), ID selectors (`#foo`), and long descendant chains. When overriding a Unity built-in class, scope it under your own class: `.aspid-fasttools-id-registry .unity-foldout__toggle { … }`.
+
+Pre-existing classes that use `-` instead of `__` between block and element (e.g. `aspid-fasttools-id-drawer-add-button`) are legacy. Migrate to BEM when touching the surrounding code; new classes must follow the rule from the start.
+
+**USS variable naming:** USS custom properties are design tokens with a positional grammar — not BEM (variables have no block/element/modifier). Follow Unity's separator convention from built-in `--unity-*` variables: `-` between slots, `_` for compound words inside a single slot. See [UIE-USS-UnityVariables](https://docs.unity3d.com/6000.4/Documentation/Manual/UIE-USS-UnityVariables.html).
+
+Format: `--{prefix}-{group}-{role}[-{state}][-{tone}]`
+
+| Slot | Values | Required |
+|---|---|---|
+| `prefix` | `aspid` (palette shared between Aspid packages) / `aspid-fasttools` (product-specific) | yes |
+| `group` | `colors` · `icons` · `metrics` · `prop` | yes |
+| `role` | `bg`, `shade`, `text`, `border`, `icon`, `status`, `gradient`, `label_size`, `line_size`, `theme`, … | yes |
+| `state` | `success`, `warning`, `error`, `info`, `hover`, `pressed`, … | optional |
+| `tone` | `darkness`, `dark`, `light`, `lightness` | optional |
+
+Rules:
+- One word per slot, or one compound joined by `_` (`label_size`) — never two independent concepts in one slot.
+- Order is `state` → `tone` (`success-darkness`, not `darkness-success`): "what is it" first, then "how bright".
+- Color roles: `bg` is the surface palette; `shade` is the generic content palette (used when the role isn't specialised — text, border or icon-tint share the same shade swatch). `text`/`border`/`icon` are specialised roles for component-local variables that need their own swatch (see `Aspid-FastTools-Id-Registry-Entry-Field` style sheet for examples). `status` covers `success`/`warning`/`error`/`info` semantics.
+- `prop` group is for inline component parameters (e.g. `--aspid-fasttools-prop-theme`), not palette tokens.
+- Palette variables declared on `:root`; component-scoped variables on the component selector.
+
+Examples:
+```
+--aspid-colors-bg-darkness                  /* surface, very dark */
+--aspid-colors-shade-lightness              /* generic content, very light */
+--aspid-colors-text-light                   /* component-specific text colour */
+--aspid-colors-border-darkness              /* component-specific border colour */
+--aspid-colors-status-success               /* status base */
+--aspid-colors-status-success-darkness      /* status, very dark variant */
+--aspid-icons-status-error                  /* status icon resource */
+--aspid-fasttools-metrics-label_size        /* compound role */
+--aspid-fasttools-prop-status               /* inline component param */
+```
+
+All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this grammar; new variables in any other stylesheet must follow it from the start.
 
 **README files:** 4 files to keep in sync: root `README.md`/`README_RU.md` and `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/README.md`/`README_RU.md`. Image paths differ between them.
 

@@ -31,7 +31,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             /// <summary>
             /// Custom USS property used to propagate the theme to child elements.
             /// </summary>
-            public static readonly CustomStyleProperty<string> Property = new("--aspid-fasttools-theme");
+            public static readonly CustomStyleProperty<string> Property = new("--aspid-fasttools-prop-theme");
 
             /// <summary>x
             /// USS class for the <see cref="ThemeStyle.Darkness"/> variant.
@@ -62,7 +62,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             /// <summary>
             /// Custom USS property used to propagate the status to child elements.
             /// </summary>
-            public static readonly CustomStyleProperty<string> Property = new("--aspid-fasttools-status");
+            public static readonly CustomStyleProperty<string> Property = new("--aspid-fasttools-prop-status");
 
             /// <summary>
             /// USS class for the <see cref="StatusStyle.Success"/> status.
@@ -93,12 +93,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             /// <summary>
             /// Custom USS property for overriding the label font size via USS.
             /// </summary>
-            public static readonly CustomStyleProperty<string> SizeProperty = new("--aspid-fasttools-label-size");
+            public static readonly CustomStyleProperty<string> SizeProperty = new("--aspid-fasttools-metrics-label_size");
 
             /// <summary>
             /// Custom USS property for overriding the label font style via USS.
             /// </summary>
-            public static readonly CustomStyleProperty<string> FontStyleProperty = new("--aspid-fasttools-label-font-style");
+            public static readonly CustomStyleProperty<string> FontStyleProperty = new("--aspid-fasttools-metrics-label_font_style");
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             /// <summary>
             /// Custom USS property for overriding the line size via USS.
             /// </summary>
-            public static readonly CustomStyleProperty<string> SizeProperty = new("--aspid-fasttools-line-size");
+            public static readonly CustomStyleProperty<string> SizeProperty = new("--aspid-fasttools-metrics-line_size");
 
             /// <summary>
             /// USS class for the <see cref="DividingLineSize.Thin"/> variant.
@@ -151,7 +151,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             /// <summary>
             /// Custom USS property for the hover gradient accent color.
             /// </summary>
-            public static readonly CustomStyleProperty<Color> GradientColorProperty = new("--aspid-gradient-color");
+            public static readonly CustomStyleProperty<Color> GradientColorProperty = new("--aspid-fasttools-colors-gradient");
         }
     }
 }
