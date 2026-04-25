@@ -43,7 +43,7 @@ namespace Aspid.FastTools
         public string? GetNameId(int id)
         {
             EnsureCache();
-            return _nameById!.TryGetValue(id, out var name) ? name : null;
+            return _nameById.GetValueOrDefault(id);
         }
         
         public bool Contains(int id)

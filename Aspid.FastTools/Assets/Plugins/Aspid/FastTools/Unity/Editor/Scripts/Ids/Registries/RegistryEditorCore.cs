@@ -47,6 +47,7 @@ namespace Aspid.FastTools.Ids.Editors
         public VisualElement Build()
         {
             var assetPath = AssetDatabase.GetAssetPath(_accessor.Target);
+            
             _assetGuid = string.IsNullOrEmpty(assetPath)
                 ? _accessor.Target.GetInstanceID().ToString()
                 : AssetDatabase.AssetPathToGUID(assetPath);
@@ -54,9 +55,9 @@ namespace Aspid.FastTools.Ids.Editors
             _groupMode = (GroupMode)SessionState.GetInt(GroupKey, (int)GroupMode.None);
 
             var root = new VisualElement()
-                .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
                 .AddStyleSheetsFromResource(StyleClasses.DefaultStyleSheet)
-                .AddClass(Constants.Registry.Root)
+                .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
+                // .AddClass(Constants.Registry.Root)
                 .AddClass("aspid-fasttools-inspector-container");
 
             root.Add(new AspidInspectorHeader(_accessor.Target.name, _accessor.Target)
@@ -91,10 +92,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             _listContainer = new VisualElement();
             container.Add(_listContainer);
-
-            _emptyLabel = new Label("No IDs yet. Add one below.")
-                .AddClass(Constants.Registry.Empty);
-            container.Add(_emptyLabel);
+            
             container.Add(BuildNextIdRow());
             container.Add(BuildAddRow());
 
@@ -116,10 +114,7 @@ namespace Aspid.FastTools.Ids.Editors
         {
             _viewModel.Clear();
             var count = _accessor.Count;
-
-            if (_emptyLabel != null)
-                _emptyLabel.EnableInClassList(Constants.Registry.EmptyVisible, count == 0);
-
+            
             var duplicates = new HashSet<string>();
             var seen = new HashSet<string>();
             for (var i = 0; i < count; i++)
@@ -175,7 +170,6 @@ namespace Aspid.FastTools.Ids.Editors
                 showBoundCollectionSize = false,
                 showAddRemoveFooter = false,
             };
-            list.AddClass(Constants.Registry.List);
             list.SetMakeItem(CreateEntryRow);
             list.SetBindItem(BindEntryRow);
             return list;
@@ -185,7 +179,7 @@ namespace Aspid.FastTools.Ids.Editors
         {
             var row = new VisualElement().AddClass(Constants.Registry.Toolbar);
 
-            var sort = new EnumField(_sortMode).AddClass(Constants.Registry.Sort);
+            var sort = new EnumField(_sortMode);
             sort.tooltip = "Sort order";
             sort.RegisterValueChangedCallback(e =>
             {
@@ -194,7 +188,7 @@ namespace Aspid.FastTools.Ids.Editors
                 RebuildEntries();
             });
 
-            var group = new EnumField(_groupMode).AddClass(Constants.Registry.Group);
+            var group = new EnumField(_groupMode);
             group.tooltip = "Group entries by";
             group.RegisterValueChangedCallback(e =>
             {
@@ -271,7 +265,6 @@ namespace Aspid.FastTools.Ids.Editors
                     showBoundCollectionSize = false,
                     showAddRemoveFooter = false,
                 };
-                groupList.AddClass(Constants.Registry.List);
                 groupList.SetMakeItem(CreateEntryRow);
                 groupList.SetBindItem((element, visibleIndex) =>
                 {
@@ -287,7 +280,6 @@ namespace Aspid.FastTools.Ids.Editors
                 if (items.Count >= Constants.Registry.ScrollThreshold)
                 {
                     const float height = Constants.Registry.MaxVisibleRows * Constants.Registry.RowHeight;
-                    groupList.AddToClassList(Constants.Registry.ListScrollable);
                     groupList.style.height = height;
                     groupList.style.maxHeight = height;
                 }
@@ -315,13 +307,11 @@ namespace Aspid.FastTools.Ids.Editors
             if (_viewModel.Count >= Constants.Registry.ScrollThreshold)
             {
                 const float height = Constants.Registry.MaxVisibleRows * Constants.Registry.RowHeight;
-                _listView.AddToClassList(Constants.Registry.ListScrollable);
                 _listView.style.height = height;
                 _listView.style.maxHeight = height;
             }
             else
             {
-                _listView.RemoveFromClassList(Constants.Registry.ListScrollable);
                 _listView.style.height = StyleKeyword.Null;
                 _listView.style.maxHeight = StyleKeyword.Null;
             }
@@ -420,53 +410,43 @@ namespace Aspid.FastTools.Ids.Editors
 
         private VisualElement BuildNextIdRow()
         {
-            var row = new VisualElement().AddClass(Constants.Registry.NextIdRow);
+            var nextIdElement = new VisualElement()
+                .AddClass(Constants.Registry.NextId);
+            
+            var row = new VisualElement();
 
-            var label = new Label("Next ID").AddClass(Constants.Registry.NextIdLabel);
-
-            var field = new IntegerField
-            {
-                value = _accessor.NextIdProperty.intValue,
-                tooltip = "Id that will be assigned to the next Add operation. Manual override is allowed.",
-            }.AddClass(Constants.Registry.NextIdField);
+            var fieldNextId = new PropertyField(_accessor.NextIdProperty)
+                .SetTooltip("Id that will be assigned to the next Add operation. Manual override is allowed.");
 
             var warning = new Image
             {
                 image = EditorGUIUtility.IconContent("console.warnicon.sml").image,
                 tooltip = string.Empty,
-            }.AddClass(Constants.Registry.NextIdWarning);
+            };
 
-            field.RegisterValueChangedCallback(e =>
+            fieldNextId.RegisterValueChangeCallback(e =>
             {
-                var newValue = e.newValue;
+                var newValue = e.changedProperty.intValue;
                 UpdateNextIdWarning(warning, newValue);
 
                 _accessor.Record("Set Next ID");
-                _accessor.NextIdProperty.intValue = newValue;
                 _accessor.Commit();
                 RevalidateAddRow();
             });
 
-            field.TrackPropertyValue(_accessor.NextIdProperty, prop =>
-            {
-                if (field.value != prop.intValue) field.SetValueWithoutNotify(prop.intValue);
-                UpdateNextIdWarning(warning, prop.intValue);
-                RevalidateAddRow();
-            });
-
             UpdateNextIdWarning(warning, _accessor.NextIdProperty.intValue);
-
-            row.Add(label);
-            row.Add(field);
+            
+            row.Add(fieldNextId);
             row.Add(warning);
-            return row;
+            
+            return nextIdElement.AddChild(row);
         }
 
         private void UpdateNextIdWarning(Image warning, int value)
         {
             var maxAssigned = _accessor.MaxAssignedId;
             var show = value <= maxAssigned && value >= 1;
-            warning.EnableInClassList(Constants.Registry.NextIdWarningVisible, show);
+            warning.SetEnabled(show);
             warning.tooltip = show
                 ? $"Reusing ID {value} may silently remap references: assets that previously pointed to this ID will appear bound to the next name you create. Proceed only if you know these IDs are unused."
                 : value < 1
@@ -582,18 +562,16 @@ namespace Aspid.FastTools.Ids.Editors
 
         private VisualElement BuildAddRow()
         {
-            var wrapper = new VisualElement();
+            var wrapper = new VisualElement()
+                .AddClass(Constants.Registry.Add);;
 
-            var row = new VisualElement().AddClass(Constants.Registry.AddRow);
+            var row = new VisualElement();
             _addInput = new TextField();
-            _addInput.AddClass(Constants.Registry.AddInput);
 
             _addButton = new Button { text = "+" };
-            _addButton.AddClass(Constants.Registry.AddButton);
             _addButton.SetEnabled(false);
 
             _addErrorLabel = new Label()
-                .AddClass(Constants.Registry.Error)
                 .SetDisplay(DisplayStyle.None);
 
             _addInput.RegisterValueChangedCallback(_ => RevalidateAddRow());

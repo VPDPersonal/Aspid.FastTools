@@ -1,430 +1,333 @@
 :root {
-    --aspid-icons-status-success: resource("aspid_icon_medium_green_1020x1008");
-    --aspid-icons-status-warning: resource("aspid_icon_medium_yellow_1020x1008");
-    --aspid-icons-status-error: resource("aspid_icon_medium_red_1020x1008");
-    --aspid-colors-bg-darkness: rgb(26, 26, 26);
-    --aspid-colors-bg-dark: rgb(38, 38, 38);
-    --aspid-colors-bg-light: rgb(46, 46, 46);
-    --aspid-colors-bg-lightness: rgb(210, 210, 210);
-    --aspid-colors-status-success: rgb(12, 88, 48);
-    --aspid-colors-status-warning: rgb(120, 88, 12);
-    --aspid-colors-status-error: rgb(88, 12, 12);
-    --aspid-colors-status-info: rgb(12, 88, 120);
-    --aspid-colors-shade-darkness: rgb(60, 60, 60);
-    --aspid-colors-shade-dark: rgb(120, 120, 120);
-    --aspid-colors-shade-light: rgb(192, 192, 192);
-    --aspid-colors-shade-lightness: rgb(255, 255, 255);
-    --aspid-colors-status-success-darkness: rgb(30, 60, 30);
-    --aspid-colors-status-success-dark: rgb(60, 120, 60);
-    --aspid-colors-status-success-light: rgb(96, 192, 96);
-    --aspid-colors-status-success-lightness: rgb(127, 255, 127);
-    --aspid-colors-status-warning-darkness: rgb(70, 60, 30);
-    --aspid-colors-status-warning-dark: rgb(140, 120, 60);
-    --aspid-colors-status-warning-light: rgb(192, 160, 48);
-    --aspid-colors-status-warning-lightness: rgb(255, 212, 64);
-    --aspid-colors-status-error-darkness: rgb(79, 30, 30);
-    --aspid-colors-status-error-dark: rgb(158, 60, 60);
-    --aspid-colors-status-error-light: rgb(192, 48, 48);
-    --aspid-colors-status-error-lightness: rgb(255, 64, 64);
-    --aspid-colors-status-info-darkness: rgb(30, 60, 70);
-    --aspid-colors-status-info-dark: rgb(60, 120, 140);
-    --aspid-colors-status-info-light: rgb(48, 160, 192);
-    --aspid-colors-status-info-lightness: rgb(64, 212, 255);
+    /* ---------------------------------- ICONS ----------------------------------- */
+    --aspid-icons-status-success: resource("aspid_icon_medium_green_1020x1008");  /**/
+    --aspid-icons-status-warning: resource("aspid_icon_medium_yellow_1020x1008"); /**/
+    --aspid-icons-status-error:   resource("aspid_icon_medium_red_1020x1008");    /**/
+                                                                                  /**/
+    /* ------------------------------- BACKGROUNDS -------------------------------- */
+    --aspid-colors-bg-darkness:                    rgb(26, 26, 26);      /* #1A1A1A */
+    --aspid-colors-bg-dark:                        rgb(36, 36, 36);      /* #242424 */
+    --aspid-colors-bg-light:                       rgb(46, 46, 46);      /* #2E2E2E */
+    --aspid-colors-bg-lightness:                   rgb(56, 56, 56);      /* #383838 */
+                                                                                  /**/
+    /* ---------------------- TEXT: GENERAL (High Contrast) ----------------------- */
+    --aspid-colors-text-lightness:                 rgb(220, 220, 220);   /* #DCDCDC */
+    --aspid-colors-text-light:                     rgb(190, 190, 190);   /* #BEBEBE */
+    --aspid-colors-text-dark:                      rgb(150, 150, 150);   /* #969696 */
+    --aspid-colors-text-darkness:                  rgb(110, 110, 110);   /* #6E6E6E */
+                                                                                  /**/
+    /* -------------------- SHADES: GENERAL (Lines & Borders) --------------------- */
+    --aspid-colors-shade-darkness:                 rgb(45, 45, 45);      /* #2D2D2D */
+    --aspid-colors-shade-dark:                     rgb(60, 60, 60);      /* #3C3C3C */
+    --aspid-colors-shade-light:                    rgb(80, 80, 80);      /* #505050 */
+    --aspid-colors-shade-lightness:                rgb(100, 100, 100);   /* #646464 */
+                                                                                  /**/
+    /* ---------------- STATUS: BACKGROUNDS (Deep Gemstone Bases) ----------------- */
+    --aspid-colors-status-success-darkness:        rgb(8, 40, 20);       /* #082814 */
+    --aspid-colors-status-success-dark:            rgb(12, 65, 30);      /* #0C411E */
+    --aspid-colors-status-success-light:           rgb(20, 90, 45);      /* #145A2D */
+    --aspid-colors-status-success-lightness:       rgb(30, 120, 60);     /* #1E783C */
+                                                                                  /**/
+    --aspid-colors-status-warning-darkness:        rgb(45, 30, 5);       /* #2D1E05 */
+    --aspid-colors-status-warning-dark:            rgb(85, 55, 10);      /* #55370A */
+    --aspid-colors-status-warning-light:           rgb(125, 85, 20);     /* #7D5514 */
+    --aspid-colors-status-warning-lightness:       rgb(165, 115, 30);    /* #A5731E */
+                                                                                  /**/
+    --aspid-colors-status-error-darkness:          rgb(50, 10, 10);      /* #320A0A */
+    --aspid-colors-status-error-dark:              rgb(85, 20, 20);      /* #551414 */
+    --aspid-colors-status-error-light:             rgb(125, 35, 35);     /* #7D2323 */
+    --aspid-colors-status-error-lightness:         rgb(165, 50, 50);     /* #A53232 */
+                                                                                  /**/
+    --aspid-colors-status-info-darkness:           rgb(8, 25, 50);       /* #081932 */
+    --aspid-colors-status-info-dark:               rgb(15, 45, 85);      /* #0F2D55 */
+    --aspid-colors-status-info-light:              rgb(25, 75, 130);     /* #194B82 */
+    --aspid-colors-status-info-lightness:          rgb(35, 105, 180);    /* #2369B4 */
+                                                                                  /**/
+    /* ---------------- STATUS ACCENTS: TEXT (Gemstone Brilliance) ---------------- */
+    --aspid-colors-status-success-text-darkness:   rgb(55, 110, 65);     /* #376E41 */
+    --aspid-colors-status-success-text-dark:       rgb(85, 175, 100);    /* #55AF64 */
+    --aspid-colors-status-success-text-light:      rgb(120, 235, 145);   /* #78EB91 */
+    --aspid-colors-status-success-text-lightness:  rgb(180, 255, 200);   /* #B4FFC8 */
+                                                                                  /**/                                          
+    --aspid-colors-status-warning-text-darkness:   rgb(120, 85, 35);     /* #785523 */
+    --aspid-colors-status-warning-text-dark:       rgb(185, 135, 60);    /* #B9873C */
+    --aspid-colors-status-warning-text-light:      rgb(245, 185, 85);    /* #F5B955 */
+    --aspid-colors-status-warning-text-lightness:  rgb(255, 235, 175);   /* #FFEB64 */
+                                                                                  /**/
+    --aspid-colors-status-error-text-darkness:     rgb(125, 45, 45);     /* #7D2D2D */
+    --aspid-colors-status-error-text-dark:         rgb(185, 65, 65);     /* #B94141 */
+    --aspid-colors-status-error-text-light:        rgb(235, 95, 95);     /* #EB5F5F */
+    --aspid-colors-status-error-text-lightness:    rgb(255, 175, 175);   /* #FFAFAF */
+                                                                                  /**/
+    --aspid-colors-status-info-text-darkness:      rgb(40, 80, 125);     /* #28507D */
+    --aspid-colors-status-info-text-dark:          rgb(65, 130, 185);    /* #4182B9 */
+    --aspid-colors-status-info-text-light:         rgb(90, 185, 240);    /* #5AB9F0 */
+    --aspid-colors-status-info-text-lightness:     rgb(190, 240, 255);   /* #BEF0FF */
+                                                                                  /**/
+    /* ----------------- STATUS ACCENTS: SHADES (Muted Gemstones) ----------------- */
+    --aspid-colors-status-success-shade-darkness:  rgb(25, 55, 30);      /* #19371E */
+    --aspid-colors-status-success-shade-dark:      rgb(40, 85, 50);      /* #285532 */
+    --aspid-colors-status-success-shade-light:     rgb(65, 130, 80);     /* #418250 */
+    --aspid-colors-status-success-shade-lightness: rgb(95, 190, 115);    /* #5FBE73 */
+                                                                                  /**/
+    --aspid-colors-status-warning-shade-darkness:  rgb(55, 40, 20);      /* #372814 */
+    --aspid-colors-status-warning-shade-dark:      rgb(90, 65, 30);      /* #5A411E */
+    --aspid-colors-status-warning-shade-light:     rgb(135, 100, 50);    /* #876432 */
+    --aspid-colors-status-warning-shade-lightness: rgb(185, 140, 75);    /* #B98C4B */
+                                                                                  /**/
+    --aspid-colors-status-error-shade-darkness:    rgb(55, 25, 25);      /* #371919 */
+    --aspid-colors-status-error-shade-dark:        rgb(90, 45, 45);      /* #5A2D2D */
+    --aspid-colors-status-error-shade-light:       rgb(135, 65, 65);     /* #874141 */
+    --aspid-colors-status-error-shade-lightness:   rgb(190, 95, 95);     /* #BE5F5F */
+                                                                                  /**/
+    --aspid-colors-status-info-shade-darkness:     rgb(20, 35, 55);      /* #142337 */
+    --aspid-colors-status-info-shade-dark:         rgb(35, 65, 95);      /* #23415F */
+    --aspid-colors-status-info-shade-light:        rgb(55, 100, 145);    /* #376491 */
+    --aspid-colors-status-info-shade-lightness:    rgb(85, 145, 200);    /* #5591C8 */
 }
 
 .aspid-fasttools-inspector-container {
-    margin-left: -10px;
+    margin-left: -10px; 
 }
 
 .aspid-fasttools-draw-adapter.aspid-fasttools-draw-adapter-margin {
     margin: 0;
 }
 
-.aspid-fasttools-background {
-    padding: 10px;
-    border-radius: 10px;
-}
+/* -------------------------------------------------- BACKGROUNDS --------------------------------------------------- */
+.aspid-fasttools-background {                                                           /**/
+    padding:       10px;                                                                /**/
+    border-radius: 10px;                                                                /**/
+}                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-darkness {                                  /**/
+    background-color: var(--aspid-colors-bg-darkness);                                  /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-dark {                                      /**/
+    background-color: var(--aspid-colors-bg-dark);                                      /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-light {                                     /**/
+    background-color: var(--aspid-colors-bg-light);                                     /**/
+}                                                                                       /**/
+                                                                                        /**/                                                                                     /**/
+.aspid-fasttools-background.aspid-fasttools-lightness {                                 /**/
+    background-color: var(--aspid-colors-bg-lightness);                                 /**/
+}                                                                                       /**/
+                                                                                        /**/
+/* -------------------------------- SUCCESS: BACKGROUNDS -------------------------------- */
+.aspid-fasttools-background.aspid-fasttools-darkness.aspid-fasttools-status-success {   /**/
+    background-color: var(--aspid-colors-status-success-darkness);                      /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-warning-success {      /**/
+    background-color: var(--aspid-colors-status-success-dark);                          /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-warning-success {     /**/
+    background-color: var(--aspid-colors-status-success-light);                         /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-warning-success { /**/
+    background-color: var(--aspid-colors-status-success-lightness);                     /**/
+}                                                                                       /**/
+                                                                                        /**/
+/* -------------------------------- WARNING: BACKGROUNDS -------------------------------- */
+.aspid-fasttools-background.aspid-fasttools-darkness.aspid-fasttools-status-warning {   /**/
+    background-color: var(--aspid-colors-status-warning-darkness);                      /**/     
+}                                                                                       /**/
+                                                                                        /**/                        
+.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-warning-warning {      /**/
+    background-color: var(--aspid-colors-status-warning-dark);                          /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-warning-warning {     /**/
+    background-color: var(--aspid-colors-status-warning-light);                         /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-warning-warning { /**/
+    background-color: var(--aspid-colors-status-warning-lightness);                     /**/
+}                                                                                       /**/
+                                                                                        /**/
+/* --------------------------------- ERROR: BACKGROUNDS --------------------------------- */
+.aspid-fasttools-background.aspid-fasttools-darkness.aspid-fasttools-status-error {     /**/
+    background-color: var(--aspid-colors-status-error-darkness);                        /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-warning-error {        /**/
+    background-color: var(--aspid-colors-status-error-dark);                            /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-warning-error {       /**/
+    background-color: var(--aspid-colors-status-error-light);                           /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-warning-error {   /**/
+    background-color: var(--aspid-colors-status-error-lightness);                       /**/
+}                                                                                       /**/
+                                                                                        /**/
+/* --------------------------------- INFO: BACKGROUNDS ---------------------------------- */
+.aspid-fasttools-background.aspid-fasttools-darkness.aspid-fasttools-status-info {      /**/
+    background-color: var(--aspid-colors-status-info-darkness);                         /**/
+}                                                                                       /**/
+                                                                                        /**/                      
+.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-warning-info {         /**/
+    background-color: var(--aspid-colors-status-info-dark);                             /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-warning-info {        /**/
+    background-color: var(--aspid-colors-status-info-light);                            /**/
+}                                                                                       /**/
+                                                                                        /**/
+.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-warning-info {    /**/
+    background-color: var(--aspid-colors-status-info-lightness);                        /**/
+}                                                                                       /**/
+/*--------------------------------------------------------------------------------------------------------------------*/
 
-.aspid-fasttools-background.aspid-fasttools-darkness {
-    background-color: var(--aspid-colors-bg-darkness);
-}
-
-.aspid-fasttools-background.aspid-fasttools-dark {
-    background-color: var(--aspid-colors-bg-dark);
-}
-
-.aspid-fasttools-background.aspid-fasttools-light {
-    background-color: var(--aspid-colors-bg-light);
-}
-
-.aspid-fasttools-background.aspid-fasttools-lightness {
-    background-color: var(--aspid-colors-bg-lightness);
-}
-
-.aspid-fasttools-background.aspid-fasttools-status-success {
-    background-color: var(--aspid-colors-status-success);
-}
-
-.aspid-fasttools-background.aspid-fasttools-status-warning {
-    background-color: var(--aspid-colors-status-warning);
-}
-
-.aspid-fasttools-background.aspid-fasttools-status-error {
-    background-color: var(--aspid-colors-status-error);
-}
-
-AspidBox {
+AspidBox { 
     flex-grow: 1;
 }
 
+/* --- DIVIDING LINES (Using SHADES) --- */
 AspidDividingLine {
-    flex-grow: 1;
-    display: none;
+    flex-grow: 1; 
+    display: none; 
 }
 
-AspidDividingLine.aspid-fasttools-thin-line.aspid-fasttools-horizontal-line {
-    height: 1px;
+.AspidDividingLine.aspid-fasttools-thin-line {
     display: flex;
 }
 
-AspidDividingLine.aspid-fasttools-medium-line.aspid-fasttools-horizontal-line {
-    height: 2px;
+.AspidDividingLine.aspid-fasttools-medium-line {
     display: flex;
 }
 
-AspidDividingLine.aspid-fasttools-bold-line.aspid-fasttools-horizontal-line {
-    height: 3px;
+.AspidDividingLine.aspid-fasttools-bold-line {
     display: flex;
 }
 
-AspidDividingLine.aspid-fasttools-thin-line.aspid-fasttools-vertical-line {
-    width: 1px;
-    display: flex;
-}
+AspidDividingLine.aspid-fasttools-thin-line.aspid-fasttools-vertical-line   { width: 1px; }
+AspidDividingLine.aspid-fasttools-medium-line.aspid-fasttools-vertical-line { width: 2px; }
+AspidDividingLine.aspid-fasttools-bold-line.aspid-fasttools-vertical-line   { width: 3px; }
 
-AspidDividingLine.aspid-fasttools-medium-line.aspid-fasttools-vertical-line {
-    width: 2px;
-    display: flex;
-}
+AspidDividingLine.aspid-fasttools-thin-line.aspid-fasttools-horizontal-line   { height: 1px; }
+AspidDividingLine.aspid-fasttools-medium-line.aspid-fasttools-horizontal-line { height: 2px; }
+AspidDividingLine.aspid-fasttools-bold-line.aspid-fasttools-horizontal-line   { height: 3px; }
 
-AspidDividingLine.aspid-fasttools-bold-line.aspid-fasttools-vertical-line {
-    width: 3px;
-    display: flex;
-}
 
-AspidDividingLine.aspid-fasttools-low-dpi.aspid-fasttools-thin-line.aspid-fasttools-horizontal-line {
-    height: 2px;
-}
 
-AspidDividingLine.aspid-fasttools-low-dpi.aspid-fasttools-medium-line.aspid-fasttools-horizontal-line {
-    height: 3px;
-}
+/* General Shades */
+AspidDividingLine.aspid-fasttools-darkness { background-color: var(--aspid-colors-shade-darkness); }
+AspidDividingLine.aspid-fasttools-dark     { background-color: var(--aspid-colors-shade-dark); }
+AspidDividingLine.aspid-fasttools-light    { background-color: var(--aspid-colors-shade-light); }
+AspidDividingLine.aspid-fasttools-lightness { background-color: var(--aspid-colors-shade-lightness); }
 
-AspidDividingLine.aspid-fasttools-low-dpi.aspid-fasttools-bold-line.aspid-fasttools-horizontal-line {
-    height: 4px;
-}
+/* Status Shades */
+AspidDividingLine.aspid-fasttools-status-success.aspid-fasttools-darkness { background-color: var(--aspid-colors-status-success-shade-darkness); }
+AspidDividingLine.aspid-fasttools-status-success.aspid-fasttools-dark     { background-color: var(--aspid-colors-status-success-shade-dark); }
+AspidDividingLine.aspid-fasttools-status-success.aspid-fasttools-light    { background-color: var(--aspid-colors-status-success-shade-light); }
+AspidDividingLine.aspid-fasttools-status-success.aspid-fasttools-lightness { background-color: var(--aspid-colors-status-success-shade-lightness); }
 
-AspidDividingLine.aspid-fasttools-low-dpi.aspid-fasttools-thin-line.aspid-fasttools-vertical-line {
-    width: 2px;
-}
+AspidDividingLine.aspid-fasttools-status-warning.aspid-fasttools-darkness { background-color: var(--aspid-colors-status-warning-shade-darkness); }
+AspidDividingLine.aspid-fasttools-status-warning.aspid-fasttools-dark     { background-color: var(--aspid-colors-status-warning-shade-dark); }
+AspidDividingLine.aspid-fasttools-status-warning.aspid-fasttools-light    { background-color: var(--aspid-colors-status-warning-shade-light); }
+AspidDividingLine.aspid-fasttools-status-warning.aspid-fasttools-lightness { background-color: var(--aspid-colors-status-warning-shade-lightness); }
 
-AspidDividingLine.aspid-fasttools-low-dpi.aspid-fasttools-medium-line.aspid-fasttools-vertical-line {
-    width: 3px;
-}
+AspidDividingLine.aspid-fasttools-status-error.aspid-fasttools-darkness { background-color: var(--aspid-colors-status-error-shade-darkness); }
+AspidDividingLine.aspid-fasttools-status-error.aspid-fasttools-dark     { background-color: var(--aspid-colors-status-error-shade-dark); }
+AspidDividingLine.aspid-fasttools-status-error.aspid-fasttools-light    { background-color: var(--aspid-colors-status-error-shade-light); }
+AspidDividingLine.aspid-fasttools-status-error.aspid-fasttools-lightness { background-color: var(--aspid-colors-status-error-shade-lightness); }
 
-AspidDividingLine.aspid-fasttools-low-dpi.aspid-fasttools-bold-line.aspid-fasttools-vertical-line {
-    width: 4px;
-}
+AspidDividingLine.aspid-fasttools-status-info.aspid-fasttools-darkness {
+    background-color: var(--aspid-colors-status-info-shade-darkness); }
 
-AspidDividingLine.aspid-fasttools-darkness {
-    background-color: var(--aspid-colors-shade-darkness);
-}
+AspidDividingLine.aspid-fasttools-status-info.aspid-fasttools-dark     {
+    background-color: var(--aspid-colors-status-info-shade-dark); }
 
-AspidDividingLine.aspid-fasttools-dark {
-    background-color: var(--aspid-colors-shade-dark);
-}
+AspidDividingLine.aspid-fasttools-status-info.aspid-fasttools-light    {
+    background-color: var(--aspid-colors-status-info-shade-light); }
 
-AspidDividingLine.aspid-fasttools-light {
-    background-color: var(--aspid-colors-shade-light);
-}
+AspidDividingLine.aspid-fasttools-status-info.aspid-fasttools-lightness {
+    background-color: var(--aspid-colors-status-info-shade-lightness); }
 
-AspidDividingLine.aspid-fasttools-lightness {
-    background-color: var(--aspid-colors-shade-lightness);
-}
+/* --- LABELS (Using TEXT) --- */
+AspidLabel { flex-direction: column; }
+AspidLabel > Label { padding: 0; flex-grow: 1; white-space: normal; color: var(--aspid-colors-text-light); }
 
-AspidDividingLine.aspid-fasttools-darkness.aspid-fasttools-status-success {
-    background-color: var(--aspid-colors-status-success-darkness);
-}
+/* General Text */
+AspidLabel.aspid-fasttools-darkness > Label { color: var(--aspid-colors-text-darkness); }
+AspidLabel.aspid-fasttools-dark > Label     { color: var(--aspid-colors-text-dark); }
+AspidLabel.aspid-fasttools-light > Label    { color: var(--aspid-colors-text-light); }
+AspidLabel.aspid-fasttools-lightness > Label { color: var(--aspid-colors-text-lightness); }
 
-AspidDividingLine.aspid-fasttools-dark.aspid-fasttools-status-success {
-    background-color: var(--aspid-colors-status-success-dark);
-}
+/* Status Text */
+AspidLabel.aspid-fasttools-status-success.aspid-fasttools-darkness > Label { color: var(--aspid-colors-status-success-text-darkness); }
+AspidLabel.aspid-fasttools-status-success.aspid-fasttools-dark     > Label { color: var(--aspid-colors-status-success-text-dark); }
+AspidLabel.aspid-fasttools-status-success.aspid-fasttools-light    > Label { color: var(--aspid-colors-status-success-text-light); }
+AspidLabel.aspid-fasttools-status-success.aspid-fasttools-lightness > Label { color: var(--aspid-colors-status-success-text-lightness); }
 
-AspidDividingLine.aspid-fasttools-light.aspid-fasttools-status-success {
-    background-color: var(--aspid-colors-status-success-light);
-}
+AspidLabel.aspid-fasttools-status-warning.aspid-fasttools-darkness > Label { color: var(--aspid-colors-status-warning-text-darkness); }
+AspidLabel.aspid-fasttools-status-warning.aspid-fasttools-dark     > Label { color: var(--aspid-colors-status-warning-text-dark); }
+AspidLabel.aspid-fasttools-status-warning.aspid-fasttools-light    > Label { color: var(--aspid-colors-status-warning-text-light); }
+AspidLabel.aspid-fasttools-status-warning.aspid-fasttools-lightness > Label { color: var(--aspid-colors-status-warning-text-lightness); }
 
-AspidDividingLine.aspid-fasttools-lightness.aspid-fasttools-status-success {
-    background-color: var(--aspid-colors-status-success-lightness);
-}
+AspidLabel.aspid-fasttools-status-error.aspid-fasttools-darkness > Label { color: var(--aspid-colors-status-error-text-darkness); }
+AspidLabel.aspid-fasttools-status-error.aspid-fasttools-dark     > Label { color: var(--aspid-colors-status-error-text-dark); }
+AspidLabel.aspid-fasttools-status-error.aspid-fasttools-light    > Label { color: var(--aspid-colors-status-error-text-light); }
+AspidLabel.aspid-fasttools-status-error.aspid-fasttools-lightness > Label { color: var(--aspid-colors-status-error-text-lightness); }
 
-AspidDividingLine.aspid-fasttools-darkness.aspid-fasttools-status-warning {
-    background-color: var(--aspid-colors-status-warning-darkness);
-}
+AspidLabel.aspid-fasttools-status-info.aspid-fasttools-darkness > Label { color: var(--aspid-colors-status-info-text-darkness); }
+AspidLabel.aspid-fasttools-status-info.aspid-fasttools-dark     > Label { color: var(--aspid-colors-status-info-text-dark); }
+AspidLabel.aspid-fasttools-status-info.aspid-fasttools-light    > Label { color: var(--aspid-colors-status-info-text-light); }
+AspidLabel.aspid-fasttools-status-info.aspid-fasttools-lightness > Label { color: var(--aspid-colors-status-info-text-lightness); }
 
-AspidDividingLine.aspid-fasttools-dark.aspid-fasttools-status-warning {
-    background-color: var(--aspid-colors-status-warning-dark);
-}
+AspidLabel > AspidDividingLine { margin: 5px 0 0 0; }
 
-AspidDividingLine.aspid-fasttools-light.aspid-fasttools-status-warning {
-    background-color: var(--aspid-colors-status-warning-light);
-}
+/* --- INSPECTOR HEADER --- */
+AspidInspectorHeader > AspidBox.aspid-fasttools-background { padding: 6px 12px; flex-direction: row; overflow: hidden; }
+AspidInspectorHeader.aspid-fasttools-status-success { --aspid-fasttools-colors-gradient: var(--aspid-colors-status-success-dark); }
+AspidInspectorHeader.aspid-fasttools-status-warning { --aspid-fasttools-colors-gradient: var(--aspid-colors-status-warning-dark); }
+AspidInspectorHeader.aspid-fasttools-status-error   { --aspid-fasttools-colors-gradient: var(--aspid-colors-status-error-dark); }
 
-AspidDividingLine.aspid-fasttools-lightness.aspid-fasttools-status-warning {
-    background-color: var(--aspid-colors-status-warning-lightness);
-}
+AspidInspectorHeader > AspidBox > Image { width: 40px; height: 40px; display: none; flex-shrink: 0; margin: 0 10px 0 0; }
+AspidInspectorHeader > AspidBox > Image { display: flex; background-image: var(--aspid-icons-status-success); }
+AspidInspectorHeader.aspid-fasttools-status-warning > AspidBox > Image { display: flex; background-image: var(--aspid-icons-status-warning); }
+AspidInspectorHeader.aspid-fasttools-status-error > AspidBox > Image { display: flex; background-image: var(--aspid-icons-status-error); }
 
-AspidDividingLine.aspid-fasttools-darkness.aspid-fasttools-status-error {
-    background-color: var(--aspid-colors-status-error-darkness);
-}
+AspidInspectorHeader #text-container { flex-grow: 1; flex-shrink: 1; align-self: center; overflow: hidden; }
 
-AspidDividingLine.aspid-fasttools-dark.aspid-fasttools-status-error {
-    background-color: var(--aspid-colors-status-error-dark);
-}
-
-AspidDividingLine.aspid-fasttools-light.aspid-fasttools-status-error {
-    background-color: var(--aspid-colors-status-error-light);
-}
-
-AspidDividingLine.aspid-fasttools-lightness.aspid-fasttools-status-error {
-    background-color: var(--aspid-colors-status-error-lightness);
-}
-
-AspidDividingLine.aspid-fasttools-darkness.aspid-fasttools-status-info {
-    background-color: var(--aspid-colors-status-info-darkness);
-}
-
-AspidDividingLine.aspid-fasttools-dark.aspid-fasttools-status-info {
-    background-color: var(--aspid-colors-status-info-dark);
-}
-
-AspidDividingLine.aspid-fasttools-light.aspid-fasttools-status-info {
-    background-color: var(--aspid-colors-status-info-light);
-}
-
-AspidDividingLine.aspid-fasttools-lightness.aspid-fasttools-status-info {
-    background-color: var(--aspid-colors-status-info-lightness);
-}
-
-AspidLabel {
-    flex-direction: column;
-}
-
-AspidLabel > Label {
-    padding: 0;
-    flex-grow: 1;
-    white-space: normal;
-}
-
-AspidLabel.aspid-fasttools-darkness {
-    color: var(--aspid-colors-shade-darkness);
-}
-
-AspidLabel.aspid-fasttools-dark {
-    color: var(--aspid-colors-shade-dark);
-}
-
-AspidLabel.aspid-fasttools-light {
-    color: var(--aspid-colors-shade-light);
-}
-
-AspidLabel.aspid-fasttools-lightness {
-    color: var(--aspid-colors-shade-lightness);
-}
-
-AspidLabel.aspid-fasttools-darkness.aspid-fasttools-status-success {
-    color: var(--aspid-colors-status-success-darkness);
-}
-
-AspidLabel.aspid-fasttools-dark.aspid-fasttools-status-success {
-    color: var(--aspid-colors-status-success-dark);
-}
-
-AspidLabel.aspid-fasttools-light.aspid-fasttools-status-success {
-    color: var(--aspid-colors-status-success-light);
-}
-
-AspidLabel.aspid-fasttools-lightness.aspid-fasttools-status-success {
-    color: var(--aspid-colors-status-success-lightness);
-}
-
-AspidLabel.aspid-fasttools-darkness.aspid-fasttools-status-warning {
-    color: var(--aspid-colors-status-warning-darkness);
-}
-
-AspidLabel.aspid-fasttools-dark.aspid-fasttools-status-warning {
-    color: var(--aspid-colors-status-warning-dark);
-}
-
-AspidLabel.aspid-fasttools-light.aspid-fasttools-status-warning {
-    color: var(--aspid-colors-status-warning-light);
-}
-
-AspidLabel.aspid-fasttools-lightness.aspid-fasttools-status-warning {
-    color: var(--aspid-colors-status-warning-lightness);
-}
-
-AspidLabel.aspid-fasttools-darkness.aspid-fasttools-status-error {
-    color: var(--aspid-colors-status-error-darkness);
-}
-
-AspidLabel.aspid-fasttools-dark.aspid-fasttools-status-error {
-    color: var(--aspid-colors-status-error-dark);
-}
-
-AspidLabel.aspid-fasttools-light.aspid-fasttools-status-error {
-    color: var(--aspid-colors-status-error-light);
-}
-
-AspidLabel.aspid-fasttools-lightness.aspid-fasttools-status-error {
-    color: var(--aspid-colors-status-error-lightness);
-}
-
-AspidLabel.aspid-fasttools-darkness.aspid-fasttools-status-info {
-    color: var(--aspid-colors-status-info-darkness);
-}
-
-AspidLabel.aspid-fasttools-dark.aspid-fasttools-status-info {
-    color: var(--aspid-colors-status-info-dark);
-}
-
-AspidLabel.aspid-fasttools-light.aspid-fasttools-status-info {
-    color: var(--aspid-colors-status-info-light);
-}
-
-AspidLabel.aspid-fasttools-lightness.aspid-fasttools-status-info {
-    color: var(--aspid-colors-status-info-lightness);
-}
-
-AspidLabel > AspidDividingLine {
-    margin: 5px 0 0 0;
-}
-
-AspidInspectorHeader > AspidBox.aspid-fasttools-background {
-    overflow: hidden;
-    padding: 5px 10px;
-    flex-direction: row;
-}
-
-AspidInspectorHeader.aspid-fasttools-status-success {
-    --aspid-fasttools-colors-gradient: var(--aspid-colors-status-success);
-}
-
-AspidInspectorHeader.aspid-fasttools-status-warning {
-    --aspid-fasttools-colors-gradient: var(--aspid-colors-status-warning);
-}
-
-AspidInspectorHeader.aspid-fasttools-status-error {
-    --aspid-fasttools-colors-gradient: var(--aspid-colors-status-error);
-}
-
-AspidInspectorHeader > AspidBox > Image {
-    width: 40px;
-    height: 40px;
-    display: none;
-    flex-shrink: 0;
-    margin: 0 10px 0 0;
-}
-
-AspidInspectorHeader > AspidBox > Image {
-    display: flex;
-    background-image: var(--aspid-icons-status-success);
-}
-
-AspidInspectorHeader.aspid-fasttools-status-warning > AspidBox > Image {
-    display: flex;
-    background-image: var(--aspid-icons-status-warning);
-}
-
-AspidInspectorHeader.aspid-fasttools-status-error > AspidBox > Image {
-    display: flex;
-    background-image: var(--aspid-icons-status-error);
-}
-
-AspidInspectorHeader #text-container {
-    flex-grow: 1;
-    flex-shrink: 1;
-    overflow: hidden;
-    align-self: center;
+AspidInspectorHeader {
+    --aspid-fasttools-prop-status: error;
 }
 
 AspidInspectorHeader AspidLabel {
-    overflow: hidden;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    --aspid-fasttools-metrics-label_size: H1;
-}
+    --aspid-fasttools-prop-theme: light;
+    --aspid-fasttools-metrics-label_size: H1;  }
 
-AspidInspectorHeader {
-    --aspid-fasttools-prop-status: success;
+AspidLabel#subtext {
+    --aspid-fasttools-prop-theme: dark;
+    --aspid-fasttools-metrics-label_size: H3;
 }
 
 AspidInspectorHeader AspidLabel AspidDividingLine {
     --aspid-fasttools-metrics-line_size: none;
 }
 
-AspidLabel#subtext {
-    --aspid-fasttools-prop-theme: Dark;
-    --aspid-fasttools-metrics-label_size: H3;
-}
+/* --- HELP BOX --- */
+AspidHelpBox { padding: 8px 12px; border-width: 1px; border-radius: 8px; flex-direction: row; align-items: center; background-color: var(--aspid-colors-bg-darkness); border-color: var(--aspid-colors-shade-dark); }
 
-AspidHelpBox {
-    padding: 5px 10px;
-    border-width: 1px;
-    border-radius: 10px;
-    flex-direction: row;
-    align-items: center;
-    border-color: var(--aspid-colors-bg-lightness);
-    background-color: var(--aspid-colors-bg-darkness);
-}
+AspidHelpBox.aspid-fasttools-status-success { background-color: var(--aspid-colors-status-success-dark); border-color: var(--aspid-colors-status-success-shade-dark); }
+AspidHelpBox.aspid-fasttools-status-warning { background-color: var(--aspid-colors-status-warning-dark); border-color: var(--aspid-colors-status-warning-shade-dark); }
+AspidHelpBox.aspid-fasttools-status-error   { background-color: var(--aspid-colors-status-error-dark);   border-color: var(--aspid-colors-status-error-shade-dark); }
+AspidHelpBox.aspid-fasttools-status-info    { background-color: var(--aspid-colors-status-info-dark);    border-color: var(--aspid-colors-status-info-shade-dark); }
 
-AspidHelpBox.aspid-fasttools-status-success {
-    background-color: var(--aspid-colors-status-success);
-    border-color: var(--aspid-colors-status-success-lightness);
-}
+/* Content inside HelpBox using Brightest Status Text */
+AspidHelpBox.aspid-fasttools-status-success AspidLabel > Label { color: var(--aspid-colors-status-success-text-lightness); }
+AspidHelpBox.aspid-fasttools-status-warning AspidLabel > Label { color: var(--aspid-colors-status-warning-text-lightness); }
+AspidHelpBox.aspid-fasttools-status-error   AspidLabel > Label { color: var(--aspid-colors-status-error-text-lightness); }
+AspidHelpBox.aspid-fasttools-status-info    AspidLabel > Label { color: var(--aspid-colors-status-info-text-lightness); }
 
-AspidHelpBox.aspid-fasttools-status-warning {
-    background-color: var(--aspid-colors-status-warning);
-    border-color: var(--aspid-colors-status-warning-lightness);
-}
-
-AspidHelpBox.aspid-fasttools-status-error {
-    background-color: var(--aspid-colors-status-error);
-    border-color: var(--aspid-colors-status-error-lightness);
-}
-
-AspidHelpBox.aspid-fasttools-status-info {
-    background-color: var(--aspid-colors-status-info);
-    border-color: var(--aspid-colors-status-info-lightness);
-}
-
-AspidHelpBox > #icon {
-    min-width: 34px;
-    max-width: 34px;
-    min-height: 32px;
-    max-height: 32px;
-    margin-right: 9px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position-x: center;
-    background-position-y: center;
-}
-
-AspidHelpBox > #text-container {
-    flex-grow: 1;
-}
-
-AspidHelpBox AspidLabel > Label {
-    cursor: text;
-    overflow: hidden;
-}
+AspidHelpBox > #icon { min-width: 34px; max-width: 34px; min-height: 32px; max-height: 32px; margin-right: 9px; background-size: contain; background-repeat: no-repeat; background-position: center; }
+AspidHelpBox > #text-container { flex-grow: 1; }
+AspidHelpBox AspidLabel > Label { cursor: text; overflow: hidden; }

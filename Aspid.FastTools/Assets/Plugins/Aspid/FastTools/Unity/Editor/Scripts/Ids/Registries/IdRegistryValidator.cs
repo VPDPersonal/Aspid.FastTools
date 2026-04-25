@@ -9,7 +9,7 @@ namespace Aspid.FastTools.Ids.Editors
     {
         private const int MaxNameLength = 255;
 
-        private static readonly Regex IdentifierPattern =
+        private static readonly Regex _identifierPattern =
             new(@"^[A-Za-z_][A-Za-z0-9_\-]*$", RegexOptions.Compiled);
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Aspid.FastTools.Ids.Editors
                 return false;
             }
 
-            if (!IdentifierPattern.IsMatch(input))
+            if (!_identifierPattern.IsMatch(input))
             {
                 error = "Name must start with a letter or underscore and contain only letters, digits, underscore or hyphen.";
                 return false;

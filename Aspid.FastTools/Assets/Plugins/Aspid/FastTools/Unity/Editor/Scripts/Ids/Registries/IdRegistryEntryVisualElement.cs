@@ -25,8 +25,10 @@ namespace Aspid.FastTools.Ids.Editors
     public sealed class IdRegistryEntryVisualElement : VisualElement
     {
         private readonly TextField _nameField;
+        
         private readonly Label _idBadge;
         private readonly Label _errorLabel;
+        
         private readonly Button _deleteButton;
         private readonly Button _confirmButton;
 
@@ -39,32 +41,27 @@ namespace Aspid.FastTools.Ids.Editors
 
         public IdRegistryEntryVisualElement()
         {
-            this.AddClass(Constants.Registry.Entry);
-
-            _idBadge = new Label()
-                .AddClass(Constants.Registry.IdBadge)
-                .SetIsSelectable(true);
+            _idBadge = new Label().SetIsSelectable(true);
+            _nameField = new TextField();
             
-            _nameField = new TextField()
-                .AddClass(Constants.Registry.Name);
+            _deleteButton = new Button()
+                .SetText("×")
+                .AddClass(Constants.Registry.Delete);
             
-            _deleteButton = new Button { text = "×" }.AddClass(Constants.Registry.Delete);
-            _confirmButton = new Button { text = "✓" }
+            _confirmButton = new Button()
+                .SetText("✓")
                 .AddClass(Constants.Registry.Confirm)
                 .SetDisplay(DisplayStyle.None);
 
-            var row = new VisualElement()
-                .AddClass(Constants.Registry.Row)
-                .AddChild(_idBadge)
-                .AddChild(_nameField)
-                .AddChild(_deleteButton)
-                .AddChild(_confirmButton);
-
             _errorLabel = new Label()
-                .AddClass(Constants.Registry.Error)
                 .SetDisplay(DisplayStyle.None);
 
-            this.AddChild(row).AddChild(_errorLabel);
+            this.AddChild(new VisualElement()
+                    .AddChild(_idBadge)
+                    .AddChild(_nameField)
+                    .AddChild(_deleteButton)
+                    .AddChild(_confirmButton))
+                .AddChild(_errorLabel);
 
             _nameField.RegisterCallback<FocusInEvent>(_ => NameFocusIn?.Invoke(this, Data));
             _nameField.RegisterValueChangedCallback(e => NameChanging?.Invoke(this, Data, e.newValue));
@@ -82,9 +79,7 @@ namespace Aspid.FastTools.Ids.Editors
         public void Bind(in IdRegistryEntryData data)
         {
             Data = data;
-
-            EnableInClassList(Constants.Registry.EntryDuplicate, data.IsDuplicate);
-
+            
             _nameField.SetValueWithoutNotify(data.Name);
             _idBadge.text = data.Id.ToString();
             SetEditMode(false);

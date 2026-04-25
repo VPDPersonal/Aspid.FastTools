@@ -1,316 +1,215 @@
-.aspid-fasttools-id-registry
-{
-    margin: 2px 0;
-}
-
-.aspid-fasttools-id-registry-entry
-{
-    flex-direction: column;
-    margin-bottom: 0;
-}
-
-.aspid-fasttools-id-registry-entry:hover
-{
-    background-color: rgba(255, 255, 255, 0.03);
-}
-
-.aspid-fasttools-id-registry-entry--duplicate
-{
-    border-left-color: #C05840;
-}
-
-.aspid-fasttools-id-registry-row
-{
-    flex-direction: row;
-    align-items: center;
-    min-height: 22px;
-    background-color: #3c3c3c;
-    padding: 5;
-    margin-right: 5;
-    margin-bottom: 3;
-    border-radius: 10px;
-}
-
-.aspid-fasttools-id-registry-name
-{
-    flex-grow: 1;
-    flex-shrink: 1;
-    margin: 0;
-    background-color: rgba(0, 0, 0, 0);
-    border-color: rgba(0, 0, 0, 0);
-}
-
-.aspid-fasttools-id-registry-name:focus
-{
-    border-color: #555555;
-    background-color: #1E1E1E;
-}
-
-.aspid-fasttools-id-registry-id-badge
-{
-    background-color: #2E2E2E;
-    border-radius: 8px;
-    padding: 2px 8px;
-    color: #C0C0C0;
-    font-size: 11px;
-    align-self: center;
-    border-width: 1px;
-    border-color: #1A1A1A;
-    flex-shrink: 0;
-    margin: 0;
-    margin-right: 5;
-    -unity-text-align: middle-center;
-    min-width: 50px;
-    max-width: 50px;
-}
-
-.aspid-fasttools-id-registry-id-badge.aspid-fasttools-status-error {
-    color: #ff4040;
-    background-color: #4f1e1e;
-}
-
-.aspid-fasttools-id-registry-delete
-{
-    padding: 0;
-    min-width: 20px;
-    max-width: 20px;
-    min-height: 18px;
-    max-height: 18px;
-    margin: 0;
-    flex-shrink: 0;
-    color: #D2D2D2;
-    margin-left: 5px;
-    font-size: 14px;
-    border-radius: 3px;
-    padding-bottom: 2px;
-    border-color: #1A1A1A;
-    background-color: #2E2E2E;
-}
-
-.aspid-fasttools-id-registry-delete:hover {
-    color: #ff4040;
-    border-color: #ff4040;
-    background-color: #4f1e1e;
-}
-
-.aspid-fasttools-id-registry-confirm
-{
-    padding: 0;
-    min-width: 20px;
-    max-width: 20px;
-    min-height: 18px;
-    max-height: 18px;
-    margin: 0;
-    flex-shrink: 0;
-    color: #D2D2D2;
-    margin-left: 5px;
-    font-size: 14px;
-    border-radius: 3px;
-    padding-bottom: 2px;
-    border-color: #1A1A1A;
-    background-color: #2E2E2E;
-}
-
-.aspid-fasttools-id-registry-confirm:enabled:hover {
-    color: #7fff7f;
-    border-color: #7fff7f;
-    background-color: #1e3c1e;
-}
-
-.aspid-fasttools-id-registry-empty
-{
-    display: none;
-    color: #484848;
-    font-size: 12px;
-    -unity-text-align: middle-center;
-    padding: 16px 12px;
-    -unity-font-style: italic;
-}
-
-.aspid-fasttools-id-registry-empty--visible
-{
-    display: flex;
-}
-
-.aspid-fasttools-id-registry-list
-{
-    flex-grow: 0;
-    flex-shrink: 0;
-    min-height: 30px;
-}
-
-.aspid-fasttools-id-registry-list .unity-scroll-view
-{
-    flex-grow: 1;
-}
-
-.aspid-fasttools-id-registry-list--scrollable
-{
-    overflow: hidden;
-}
-
-.aspid-fasttools-id-registry-list .unity-list-view__item {
-    padding: 0;
-    background-color: rgba(0, 0, 0, 0);
-}
-
-.aspid-fasttools-id-registry-add-row
-{
-    flex-direction: row;
-    margin-top: 8px;
-    padding-top: 6px;
-    border-top-width: 1px;
-    border-top-color: #383838;
-    border-left-width: 0;
-    border-right-width: 0;
-    border-bottom-width: 0;
-}
-
-.aspid-fasttools-id-registry-add-input
-{
-    flex-grow: 1;
-    flex-shrink: 1;
-    margin: 0;
-}
-
-.aspid-fasttools-id-registry-add-button {
-    flex-shrink: 0;
-    font-size: 14px;
-
-    min-width: 20px;
-    max-width: 20px;
-    min-height: 18px;
-    max-height: 18px;
-
-    margin: 0;
-    margin-left: 5px;
-
-    padding: 0;
-    padding-bottom: 2px;
-}
-
-.aspid-fasttools-id-registry-add-button:enabled:hover {
-    color: #7fff7f;
-    border-color: #7fff7f;
-    background-color: #1e3c1e;
-}
-
-.aspid-fasttools-id-registry-error
-{
-    display: none;
+AspidInspectorHeader {
     margin-top: 2px;
-    color: rgb(255, 102, 102);
-    font-size: 10px;
 }
 
 ToolbarSearchField {
     width: auto;
-    margin: 5px 0;
     padding-right: 4px;
+    margin: 5px -1px 0 -1px;
 }
 
-.aspid-fasttools-id-registry-warning
-{
+.aspid-fasttools-id-registry-toolbar {
+    margin: 5px -1;
+    padding-bottom: 5px;
+    flex-direction: row;
+    border-width: 0;
+    border-bottom-width: 1px;
+    border-bottom-color: rgb(56, 56, 56);
+}
+
+.aspid-fasttools-id-registry-toolbar > EnumField {
+    margin: 0;
+    flex-grow: 1;
+    flex-basis: 0;
+}
+
+.aspid-fasttools-id-registry-group-foldout {
+    margin-top: 5px;
+}
+
+.aspid-fasttools-id-registry-group-foldout > Toggle {
+    margin-left: 0;
+}
+
+IdRegistryEntryVisualElement {
+    margin-bottom: 0;
+    flex-direction: column;
+}
+
+IdRegistryEntryVisualElement > VisualElement {
+    padding: 5;
+    margin-right: 5;
+    margin-bottom: 3;
+    min-height: 22px;
+    flex-direction: row;
+    align-items: center;
+    border-radius: 10px;
+    background-color: rgb(60, 60, 60);
+}
+
+IdRegistryEntryVisualElement > VisualElement > Label {
+    margin: 0;
+    flex-shrink: 0;
+    font-size: 11px;
+    min-width: 50px;
+    padding: 2px 8px;
+    border-width: 1px;
+    border-radius: 10px;
+    border-color: rgb(26, 26, 26);
+    -unity-text-align: middle-center;
+    
+    color: rgb(192, 192, 192);
+    background-color: rgb(46, 46, 46);
+}
+
+IdRegistryEntryVisualElement > VisualElement > Label.aspid-fasttools-status-error {
+    color: rgb(255, 64, 64);
+    background-color: rgb(79, 30, 30);
+}
+
+IdRegistryEntryVisualElement TextField {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0 0 0 5px;
+}
+
+IdRegistryEntryVisualElement Button {
+    margin: 0;
+    padding: 0;
+    color: rgb(210, 210, 210);
+    flex-shrink: 0;
+    min-width: 20px;
+    max-width: 20px;
+    min-height: 18px;
+    max-height: 18px;
+    margin-left: 5px;
+    font-size: 14px;
+    border-radius: 3px;
+    padding-bottom: 2px;
+    border-color: rgb(26, 26, 26);
+    background-color: rgb(46, 46, 46);
+}
+
+IdRegistryEntryVisualElement .aspid-fasttools-id-registry-delete:hover {
+    color: rgb(255, 64, 64);
+    border-color: rgb(255, 64, 64);
+    background-color: rgb(79, 30, 30);
+}
+
+IdRegistryEntryVisualElement .aspid-fasttools-id-registry-confirm:enabled:hover {
+    color: rgb(127, 255, 127);
+    border-color: rgb(127, 255, 127);
+    background-color: rgb(30, 60, 30);
+}
+
+IdRegistryEntryVisualElement > Label {
+    color: rgb(255, 102, 102);
+    font-size: 11px;
+    margin: 0 0 3px 0;
+}
+
+.aspid-fasttools-id-registry-next-id {
+    border-width: 0;
+    margin: 5px 0 0 0;
+    border-top-width: 1px;
+    border-top-color: rgb(56, 56, 56);
+}
+
+.aspid-fasttools-id-registry-next-id > VisualElement {
+    padding: 5px;
+    margin: 5px 0 0 0;
+    align-items: center;
+    flex-direction: row;
+    border-radius: 10px;
+    background-color: rgb(60, 60, 60);
+}
+
+.aspid-fasttools-id-registry-next-id PropertyField {
+    flex-grow: 1;
+    margin-right: 2px;
+    margin-left: -3px;
+}
+
+.aspid-fasttools-id-registry-next-id Image {
+    width: 16px;
+    height: 16px;
+    display: none;
+    margin-left: 5px;
+}
+
+.aspid-fasttools-id-registry-next-id Image:enabled {
+    display: flex;
+}
+
+.aspid-fasttools-id-registry-add {
+    padding: 5;
+    margin: 5px 0 0 0;
+    border-radius: 10px;
+    background-color: rgb(60, 60, 60);
+}
+
+.aspid-fasttools-id-registry-add > VisualElement {
+    border-width: 0;
+    flex-direction: row;
+}
+
+.aspid-fasttools-id-registry-add TextField {
+    margin: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.aspid-fasttools-id-registry-add Button {
+    margin: 0;
+    padding: 0;
+    color: rgb(210, 210, 210);
+    flex-shrink: 0;
+    min-width: 20px;
+    max-width: 20px;
+    min-height: 18px;
+    max-height: 18px;
+    margin-left: 5px;
+    font-size: 14px;
+    border-radius: 3px;
+    padding-bottom: 2px;
+    border-color: rgb(26, 26, 26);
+    background-color: rgb(46, 46, 46);
+}
+
+.aspid-fasttools-id-registry-add Button:enabled:hover {
+    color: rgb(127, 255, 127);
+    border-color: rgb(127, 255, 127);
+    background-color: rgb(30, 60, 30);
+}
+
+.aspid-fasttools-id-registry-add > Label {
+    color: rgb(255, 102, 102);
+    font-size: 11px;
+    margin: 3px 0 0 0;
+}
+
+.aspid-fasttools-id-registry-warning {
     display: none;
     flex-direction: row;
     align-items: center;
     padding: 5px 8px;
     margin-bottom: 4px;
-    background-color: #4f1e1e;
+    background-color: rgb(79, 30, 30);
     border-radius: 6px;
 }
 
-.aspid-fasttools-id-registry-warning--visible
-{
+.aspid-fasttools-id-registry-warning--visible {
     display: flex;
 }
 
-.aspid-fasttools-id-registry-warning-label
-{
+.aspid-fasttools-id-registry-warning-label {
     flex-grow: 1;
-    color: #ff9999;
+    color: rgb(255, 153, 153);
     font-size: 11px;
 }
 
-.aspid-fasttools-id-registry-warning-button
-{
+.aspid-fasttools-id-registry-warning-button {
     flex-shrink: 0;
     margin-left: 8px;
     padding: 2px 8px;
-}
-
-.aspid-fasttools-id-registry-next-id-row
-{
-    flex-direction: row;
-    align-items: center;
-    margin-top: 4px;
-    margin-bottom: 4px;
-}
-
-.aspid-fasttools-id-registry-next-id-label
-{
-    min-width: 60px;
-    -unity-font-style: bold;
-}
-
-.aspid-fasttools-id-registry-next-id-field
-{
-    min-width: 80px;
-    flex-grow: 0;
-}
-
-.aspid-fasttools-id-registry-next-id-warning
-{
-    display: none;
-    margin-left: 6px;
-    width: 16px;
-    height: 16px;
-}
-
-.aspid-fasttools-id-registry-next-id-warning--visible
-{
-    display: flex;
-}
-
-.aspid-fasttools-id-registry-toolbar
-{
-    flex-direction: row;
-    margin-top: 4px;
-    margin-bottom: 4px;
-}
-
-.aspid-fasttools-id-registry-sort
-{
-    flex-grow: 1;
-    flex-basis: 0;
-    margin-right: 8px;
-}
-
-.aspid-fasttools-id-registry-group
-{
-    flex-grow: 1;
-    flex-basis: 0;
-}
-
-.aspid-fasttools-id-registry-group-foldout
-{
-    margin-top: 4px;
-}
-
-.aspid-fasttools-id-registry-group-foldout > .unity-foldout__toggle > .unity-toggle__input > .unity-label
-{
-    -unity-font-style: bold;
-    color: #b0b0b0;
-}
-
-.aspid-fasttools-id-registry-group-foldout > .unity-foldout__content
-{
-    margin-left: 0;
-    padding-left: 0;
-}
-
-.aspid-fasttools-id-registry-group-foldout > .unity-foldout__content > .aspid-fasttools-id-registry-list
-{
-    margin-left: 15px;
-    margin-right: 4px;
 }
