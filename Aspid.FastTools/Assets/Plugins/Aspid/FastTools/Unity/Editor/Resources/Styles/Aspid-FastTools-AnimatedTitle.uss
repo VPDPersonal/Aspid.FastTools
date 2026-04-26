@@ -1,0 +1,13 @@
+:root {
+    flex-direction:                                             row;
+    flex-wrap:                                                  wrap;
+}
+
+.aspid-fasttools-animated-title__word {
+    margin-right:                                               14px;
+    flex-direction:                                             row;
+}
+
+.aspid-fasttools-animated-title__word > Label {
+    padding:                                                    0;
+}
