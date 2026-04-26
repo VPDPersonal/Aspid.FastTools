@@ -11,7 +11,7 @@ namespace Aspid.FastTools.Samples.VisualElements.Editors
     [CustomEditor(typeof(AbilityConfig))]
     internal sealed class AbilityConfigEditor : Editor
     {
-        private const string StyleSheetPath = "Styles/Aspid-FastTools-Default-Dark";
+        private const string StyleSheetPath = "UI/Aspid-FastTools-Default-Dark";
         
         public override VisualElement CreateInspectorGUI()
         {

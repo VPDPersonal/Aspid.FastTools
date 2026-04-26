@@ -7,8 +7,8 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    [UxmlElement(nameof(AnimatedTitle), libraryPath = "Aspid/FastTools")]
-    public sealed partial class AnimatedTitle : VisualElement
+    [UxmlElement(nameof(AspidAnimatedTitle), libraryPath = "Aspid/FastTools")]
+    public sealed partial class AspidAnimatedTitle : VisualElement
     {
         private const string WordClass = "aspid-fasttools-animated-title__word";
 
@@ -84,15 +84,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         [UxmlAttribute(name: "color-3")]
         public Color Color3 { get; set; } = _defaultColor3;
 
-        public AnimatedTitle()
+        public AspidAnimatedTitle()
         {
-            this.AddStyleSheetsFromResource("Styles/Aspid-FastTools-AnimatedTitle");
+            this.AddStyleSheetsFromResource("UI/Components/Aspid-FastTools-AspidAnimatedTitle");
 
             RegisterCallback<CustomStyleResolvedEvent>(OnCustomStyleResolved);
             schedule.Execute(UpdateAnimation).Every(33);
         }
 
-        public AnimatedTitle(string text) 
+        public AspidAnimatedTitle(string text) 
             : this()
         {
             Text = text;

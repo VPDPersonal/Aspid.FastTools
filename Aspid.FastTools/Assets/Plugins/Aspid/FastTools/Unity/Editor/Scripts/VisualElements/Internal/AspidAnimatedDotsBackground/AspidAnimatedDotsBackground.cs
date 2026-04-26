@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    [UxmlElement(nameof(AnimatedDotsBackground), libraryPath = "Aspid/FastTools")]
-    public sealed partial class AnimatedDotsBackground : VisualElement
+    [UxmlElement(nameof(AspidAnimatedDotsBackground), libraryPath = "Aspid/FastTools")]
+    public sealed partial class AspidAnimatedDotsBackground : VisualElement
     {
         private const int BlobCount = 3;
 
@@ -51,9 +51,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _blobColors[2] = value;
         }
 
-        public AnimatedDotsBackground()
+        public AspidAnimatedDotsBackground()
         {
-            this.AddStyleSheetsFromResource("Styles/Aspid-FastTools-AnimatedDotsBackground");
+            this.AddStyleSheetsFromResource("UI/Components/Aspid-FastTools-AspidAnimatedDotsBackground");
             generateVisualContent += OnGenerateVisualContent;
             
             schedule.Execute(MarkDirtyRepaint).Every(33);

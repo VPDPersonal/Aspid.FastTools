@@ -13,7 +13,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Resource path of the default dark USS stylesheet.
         /// </summary>
-        public const string DefaultStyleSheet = "Styles/Aspid-FastTools-Default-Dark";
+        public const string DefaultStyleSheet = "UI/Aspid-FastTools-Default-Dark";
 
         public const string Adapter = "aspid-fasttools-draw-adapter";
         public const string AdapterMargin = "aspid-fasttools-draw-adapter-margin";

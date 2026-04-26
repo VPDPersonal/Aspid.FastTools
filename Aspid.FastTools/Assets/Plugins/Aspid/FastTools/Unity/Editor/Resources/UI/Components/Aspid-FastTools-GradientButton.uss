@@ -1,0 +1,16 @@
+.aspid-fasttools-gradient-button {
+    color:                                              var(--aspid-colors-text-light);
+    height:                                             30px;
+    margin:                                             0 0 5px 0;
+    padding:                                            0 10px;
+    overflow:                                           hidden;
+    font-size:                                          14px;
+    border-width:                                       0;
+    border-radius:                                      10px;
+    flex-direction:                                     row;
+    -unity-font-style:                                  bold;
+    -unity-text-align:                                  middle-left;
+
+    --aspid-fasttools-colors-gradient_button-bg:        rgb(26, 26, 26);
+    --aspid-fasttools-colors-gradient_button-accent:    var(--aspid-colors-status-success-text-dark);
+}
