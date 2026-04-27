@@ -52,7 +52,7 @@
     --aspid-colors-status-warning-text-darkness:   rgb(120, 85, 35);     /* #785523 */
     --aspid-colors-status-warning-text-dark:       rgb(185, 135, 60);    /* #B9873C */
     --aspid-colors-status-warning-text-light:      rgb(245, 185, 85);    /* #F5B955 */
-    --aspid-colors-status-warning-text-lightness:  rgb(255, 235, 175);   /* #FFEB64 */
+    --aspid-colors-status-warning-text-lightness:  rgb(255, 235, 175);   /* #FFEBAF */
                                                                                   /**/
     --aspid-colors-status-error-text-darkness:     rgb(125, 45, 45);     /* #7D2D2D */
     --aspid-colors-status-error-text-dark:         rgb(185, 65, 65);     /* #B94141 */
@@ -122,15 +122,15 @@
     background-color: var(--aspid-colors-status-success-darkness);                      
 }                                                                                       
                                                                                         
-.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-warning-success {      
+.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-status-success {      
     background-color: var(--aspid-colors-status-success-dark);                          
 }                                                                                       
                                                                                         
-.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-warning-success {     
+.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-status-success {     
     background-color: var(--aspid-colors-status-success-light);                         
 }                                                                                       
                                                                                         
-.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-warning-success { 
+.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-status-success { 
     background-color: var(--aspid-colors-status-success-lightness);                     
 }                                                                                       
                                                                                         
@@ -139,15 +139,15 @@
     background-color: var(--aspid-colors-status-warning-darkness);                           
 }                                                                                       
                                                                                                                 
-.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-warning-warning {      
+.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-status-warning {      
     background-color: var(--aspid-colors-status-warning-dark);                          
 }                                                                                       
                                                                                         
-.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-warning-warning {     
+.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-status-warning {     
     background-color: var(--aspid-colors-status-warning-light);                         
 }                                                                                       
                                                                                         
-.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-warning-warning { 
+.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-status-warning { 
     background-color: var(--aspid-colors-status-warning-lightness);                     
 }                                                                                       
                                                                                         
@@ -156,15 +156,15 @@
     background-color: var(--aspid-colors-status-error-darkness);                        
 }                                                                                       
                                                                                         
-.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-warning-error {        
+.aspid-fasttools-background.aspid-fasttools-dark.aspid-fasttools-status-error {        
     background-color: var(--aspid-colors-status-error-dark);                            
 }                                                                                       
                                                                                         
-.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-warning-error {       
+.aspid-fasttools-background.aspid-fasttools-light.aspid-fasttools-status-error {       
     background-color: var(--aspid-colors-status-error-light);                           
 }                                                                                       
                                                                                         
-.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-warning-error {   
+.aspid-fasttools-background.aspid-fasttools-lightness.aspid-fasttools-status-error {   
     background-color: var(--aspid-colors-status-error-lightness);                       
 }                                                                                       
                                                                                         
@@ -276,68 +276,6 @@ AspidBox {
     flex-grow: 1;
 }
 
-/* --- DIVIDING LINES (Using SHADES) --- */
-AspidDividingLine {
-    flex-grow: 1; 
-    display: none; 
-}
-
-.AspidDividingLine.aspid-fasttools-thin-line {
-    display: flex;
-}
-
-.AspidDividingLine.aspid-fasttools-medium-line {
-    display: flex;
-}
-
-.AspidDividingLine.aspid-fasttools-bold-line {
-    display: flex;
-}
-
-AspidDividingLine.aspid-fasttools-thin-line.aspid-fasttools-vertical-line   { width: 1px; }
-AspidDividingLine.aspid-fasttools-medium-line.aspid-fasttools-vertical-line { width: 2px; }
-AspidDividingLine.aspid-fasttools-bold-line.aspid-fasttools-vertical-line   { width: 3px; }
-
-AspidDividingLine.aspid-fasttools-thin-line.aspid-fasttools-horizontal-line   { height: 1px; }
-AspidDividingLine.aspid-fasttools-medium-line.aspid-fasttools-horizontal-line { height: 2px; }
-AspidDividingLine.aspid-fasttools-bold-line.aspid-fasttools-horizontal-line   { height: 3px; }
-
-
-
-/* General Shades */
-AspidDividingLine.aspid-fasttools-darkness { background-color: var(--aspid-colors-shade-darkness); }
-AspidDividingLine.aspid-fasttools-dark     { background-color: var(--aspid-colors-shade-dark); }
-AspidDividingLine.aspid-fasttools-light    { background-color: var(--aspid-colors-shade-light); }
-AspidDividingLine.aspid-fasttools-lightness { background-color: var(--aspid-colors-shade-lightness); }
-
-/* Status Shades */
-AspidDividingLine.aspid-fasttools-status-success.aspid-fasttools-darkness { background-color: var(--aspid-colors-status-success-shade-darkness); }
-AspidDividingLine.aspid-fasttools-status-success.aspid-fasttools-dark     { background-color: var(--aspid-colors-status-success-shade-dark); }
-AspidDividingLine.aspid-fasttools-status-success.aspid-fasttools-light    { background-color: var(--aspid-colors-status-success-shade-light); }
-AspidDividingLine.aspid-fasttools-status-success.aspid-fasttools-lightness { background-color: var(--aspid-colors-status-success-shade-lightness); }
-
-AspidDividingLine.aspid-fasttools-status-warning.aspid-fasttools-darkness { background-color: var(--aspid-colors-status-warning-shade-darkness); }
-AspidDividingLine.aspid-fasttools-status-warning.aspid-fasttools-dark     { background-color: var(--aspid-colors-status-warning-shade-dark); }
-AspidDividingLine.aspid-fasttools-status-warning.aspid-fasttools-light    { background-color: var(--aspid-colors-status-warning-shade-light); }
-AspidDividingLine.aspid-fasttools-status-warning.aspid-fasttools-lightness { background-color: var(--aspid-colors-status-warning-shade-lightness); }
-
-AspidDividingLine.aspid-fasttools-status-error.aspid-fasttools-darkness { background-color: var(--aspid-colors-status-error-shade-darkness); }
-AspidDividingLine.aspid-fasttools-status-error.aspid-fasttools-dark     { background-color: var(--aspid-colors-status-error-shade-dark); }
-AspidDividingLine.aspid-fasttools-status-error.aspid-fasttools-light    { background-color: var(--aspid-colors-status-error-shade-light); }
-AspidDividingLine.aspid-fasttools-status-error.aspid-fasttools-lightness { background-color: var(--aspid-colors-status-error-shade-lightness); }
-
-AspidDividingLine.aspid-fasttools-status-info.aspid-fasttools-darkness {
-    background-color: var(--aspid-colors-status-info-shade-darkness); }
-
-AspidDividingLine.aspid-fasttools-status-info.aspid-fasttools-dark     {
-    background-color: var(--aspid-colors-status-info-shade-dark); }
-
-AspidDividingLine.aspid-fasttools-status-info.aspid-fasttools-light    {
-    background-color: var(--aspid-colors-status-info-shade-light); }
-
-AspidDividingLine.aspid-fasttools-status-info.aspid-fasttools-lightness {
-    background-color: var(--aspid-colors-status-info-shade-lightness); }
-
 /* --- LABELS (Using TEXT) --- */
 AspidLabel { flex-direction: column; }
 AspidLabel > Label { padding: 0; flex-grow: 1; white-space: normal; color: var(--aspid-colors-text-light); }
@@ -351,8 +289,6 @@ AspidLabel.aspid-fasttools-lightness > Label { color: var(--aspid-colors-text-li
 Label.aspid-fasttools-darkness {
     color: var(--aspid-colors-text-darkness);
 }
-
-
 
 /* Status Text */
 AspidLabel.aspid-fasttools-status-success.aspid-fasttools-darkness > Label {

@@ -36,7 +36,7 @@ colors:
   success-bg: ["#082814", "#0C411E", "#145A2D", "#1E783C"]
 
   # Warning (Topaz) scale
-  warning-text: ["#785523", "#B9873C", "#F5B955", "#FFEB64"]
+  warning-text: ["#785523", "#B9873C", "#F5B955", "#FFEBAF"]
   warning-shade: ["#372814", "#5A411E", "#876432", "#B98C4B"]
   warning-bg: ["#2D1E05", "#55370A", "#7D5514", "#A5731E"]
 
