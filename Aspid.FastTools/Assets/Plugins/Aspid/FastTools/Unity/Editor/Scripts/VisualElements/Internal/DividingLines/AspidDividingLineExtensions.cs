@@ -45,9 +45,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public static string ToUss(this DividingLineSize size) => size switch
         {
             DividingLineSize.None => null,
-            DividingLineSize.Thin => StyleClasses.DividingLine.Thin,
-            DividingLineSize.Medium => StyleClasses.DividingLine.Medium,
-            DividingLineSize.Bold => StyleClasses.DividingLine.Bold,
+            DividingLineSize.Thin => AspidDividingLine.ThinClass,
+            DividingLineSize.Medium => AspidDividingLine.MediumClass,
+            DividingLineSize.Bold => AspidDividingLine.BoldClass,
             _ => throw new ArgumentOutOfRangeException(nameof(size), size, null)
         };
 
@@ -56,8 +56,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// </summary>
         public static string ToUss(this DividingLineDirection direction) => direction switch
         {
-            DividingLineDirection.Vertical => StyleClasses.DividingLine.Vertical,
-            DividingLineDirection.Horizontal => StyleClasses.DividingLine.Horizontal,
+            DividingLineDirection.Vertical => AspidDividingLine.VerticalClass,
+            DividingLineDirection.Horizontal => AspidDividingLine.HorizontalClass,
             _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
         };
         #endregion

@@ -1,0 +1,114 @@
+:root {
+    flex-grow: 1;
+    display: none;
+}
+
+.aspid-fasttools-thin-line.aspid-fasttools-vertical-line { 
+    width: 1px;
+    display: flex;
+}
+
+.aspid-fasttools-medium-line.aspid-fasttools-vertical-line { 
+    width: 2px;
+    display: flex;
+}
+
+.aspid-fasttools-bold-line.aspid-fasttools-vertical-line { 
+    width: 3px;
+    display: flex;
+}
+
+.aspid-fasttools-thin-line.aspid-fasttools-horizontal-line {
+    height: 1px;
+    display: flex;
+}
+
+.aspid-fasttools-medium-line.aspid-fasttools-horizontal-line {
+    height: 2px;
+    display: flex;
+}
+
+.aspid-fasttools-bold-line.aspid-fasttools-horizontal-line {
+    height: 3px;
+    display: flex;
+}
+
+.aspid-fasttools-darkness { 
+    background-color: var(--aspid-colors-shade-darkness);
+}
+
+.aspid-fasttools-dark {
+    background-color: var(--aspid-colors-shade-dark); 
+}
+
+.aspid-fasttools-light { 
+    background-color: var(--aspid-colors-shade-light);
+}
+
+.aspid-fasttools-lightness { 
+    background-color: var(--aspid-colors-shade-lightness); 
+}
+
+.aspid-fasttools-status-success.aspid-fasttools-darkness {
+    background-color: var(--aspid-colors-status-success-shade-darkness);
+}
+
+.aspid-fasttools-status-success.aspid-fasttools-dark { 
+    background-color: var(--aspid-colors-status-success-shade-dark); 
+}
+
+.aspid-fasttools-status-success.aspid-fasttools-light { 
+    background-color: var(--aspid-colors-status-success-shade-light);
+}
+
+.aspid-fasttools-status-success.aspid-fasttools-lightness {
+    background-color: var(--aspid-colors-status-success-shade-lightness); 
+}
+
+.aspid-fasttools-status-warning.aspid-fasttools-darkness {
+    background-color: var(--aspid-colors-status-warning-shade-darkness); 
+}
+
+.aspid-fasttools-status-warning.aspid-fasttools-dark {
+    background-color: var(--aspid-colors-status-warning-shade-dark); 
+}
+
+.aspid-fasttools-status-warning.aspid-fasttools-light {
+    background-color: var(--aspid-colors-status-warning-shade-light);
+}
+
+.aspid-fasttools-status-warning.aspid-fasttools-lightness { 
+    background-color: var(--aspid-colors-status-warning-shade-lightness); 
+}
+
+.aspid-fasttools-status-error.aspid-fasttools-darkness {
+    background-color: var(--aspid-colors-status-error-shade-darkness);
+}
+
+.aspid-fasttools-status-error.aspid-fasttools-dark {
+    background-color: var(--aspid-colors-status-error-shade-dark); 
+}
+
+.aspid-fasttools-status-error.aspid-fasttools-light {
+    background-color: var(--aspid-colors-status-error-shade-light); 
+}
+
+.aspid-fasttools-status-error.aspid-fasttools-lightness {
+    background-color: var(--aspid-colors-status-error-shade-lightness); 
+}
+
+.aspid-fasttools-status-info.aspid-fasttools-darkness {
+    background-color: var(--aspid-colors-status-info-shade-darkness); 
+}
+
+.aspid-fasttools-status-info.aspid-fasttools-dark {
+    background-color: var(--aspid-colors-status-info-shade-dark); 
+}
+
+.aspid-fasttools-status-info.aspid-fasttools-light {
+    background-color: var(--aspid-colors-status-info-shade-light); 
+}
+
+.aspid-fasttools-status-info.aspid-fasttools-lightness {
+    background-color: var(--aspid-colors-status-info-shade-lightness); 
+}

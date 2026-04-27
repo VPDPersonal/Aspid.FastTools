@@ -102,48 +102,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         }
 
         /// <summary>
-        /// USS class names and custom property for <see cref="AspidDividingLine"/> styling.
-        /// </summary>
-        public static class DividingLine
-        {
-            /// <summary>
-            /// Custom USS property for overriding the line size via USS.
-            /// </summary>
-            public static readonly CustomStyleProperty<string> SizeProperty = new("--aspid-fasttools-metrics-line_size");
-
-            /// <summary>
-            /// USS class for the <see cref="DividingLineSize.Thin"/> variant.
-            /// </summary>
-            public const string Thin = "aspid-fasttools-thin-line";
-
-            /// <summary>
-            /// USS class for the <see cref="DividingLineSize.Medium"/> variant.
-            /// </summary>
-            public const string Medium = "aspid-fasttools-medium-line";
-
-            /// <summary>
-            /// USS class for the <see cref="DividingLineSize.Bold"/> variant.
-            /// </summary>
-            public const string Bold = "aspid-fasttools-bold-line";
-
-            /// <summary>
-            /// USS class for the <see cref="DividingLineDirection.Horizontal"/> orientation.
-            /// </summary>
-            public const string Horizontal = "aspid-fasttools-horizontal-line";
-
-            /// <summary>
-            /// USS class for the <see cref="DividingLineDirection.Vertical"/> orientation.
-            /// </summary>
-            public const string Vertical = "aspid-fasttools-vertical-line";
-
-            /// <summary>
-            /// USS class applied when the editor runs at low DPI (<c>pixelsPerPoint &lt; 2</c>),
-            /// so thin strokes stay visible.
-            /// </summary>
-            public const string LowDpi = "aspid-fasttools-low-dpi";
-        }
-
-        /// <summary>
         /// USS class names and custom properties for <see cref="AspidInspectorHeader"/> styling.
         /// </summary>
         public static class InspectorHeader

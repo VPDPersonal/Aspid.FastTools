@@ -9,15 +9,61 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Supports theme, status, and size customisation, all of which can be driven by USS
     /// custom properties or set explicitly in code.
     /// </summary>
-    public sealed class AspidDividingLine : VisualElement
+    [UxmlElement(nameof(AspidDividingLine), libraryPath = "Aspid/FastTools")]
+    public sealed partial class AspidDividingLine : VisualElement
     {
+        /// <summary>
+        /// USS class for the <see cref="DividingLineSize.Thin"/> variant.
+        /// </summary>
+        public const string ThinClass = "aspid-fasttools-thin-line";
+
+        /// <summary>
+        /// USS class for the <see cref="DividingLineSize.Medium"/> variant.
+        /// </summary>
+        public const string MediumClass = "aspid-fasttools-medium-line";
+
+        /// <summary>
+        /// USS class for the <see cref="DividingLineSize.Bold"/> variant.
+        /// </summary>
+        public const string BoldClass = "aspid-fasttools-bold-line";
+
+        /// <summary>
+        /// USS class for the <see cref="DividingLineDirection.Horizontal"/> orientation.
+        /// </summary>
+        public const string HorizontalClass = "aspid-fasttools-horizontal-line";
+
+        /// <summary>
+        /// USS class for the <see cref="DividingLineDirection.Vertical"/> orientation.
+        /// </summary>
+        public const string VerticalClass = "aspid-fasttools-vertical-line";
+
+        /// <summary>
+        /// USS class applied when the editor runs at low DPI (<c>pixelsPerPoint &lt; 2</c>),
+        /// so thin strokes stay visible.
+        /// </summary>
+        public const string LowDpiClass = "aspid-fasttools-low-dpi";
+        
+        /// <summary>
+        /// Custom USS property for overriding the line size via USS.
+        /// </summary>
+        public static readonly CustomStyleProperty<string> SizeStyleProperty = new("--aspid-fasttools-metrics-line_size");
+
+        /// <summary>
+        /// Custom USS property for overriding the line orientation via USS.
+        /// </summary>
+        public static readonly CustomStyleProperty<string> DirectionStyleProperty = new("--aspid-fasttools-prop-line_direction");
+
+        private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidDividingLine";
+        
         private StyleOverride<ThemeStyle> _theme;
         private StyleOverride<StatusStyle> _status;
         private StyleOverride<DividingLineSize> _size;
+        private StyleOverride<DividingLineDirection> _direction;
 
         /// <summary>
         /// Gets or sets the visual theme of the line.
         /// </summary>
+        [UxmlAttribute(name: "theme")]
         public ThemeStyle Theme
         {
             get => _theme;
@@ -27,6 +73,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Gets or sets the status color accent of the line.
         /// </summary>
+        [UxmlAttribute(name: "status")]
         public StatusStyle Status
         {
             get => _status;
@@ -36,10 +83,21 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Gets or sets the thickness of the line.
         /// </summary>
+        [UxmlAttribute(name: "size")]
         public DividingLineSize Size
         {
             get => _size;
             set => _size.Set(value);
+        }
+
+        /// <summary>
+        /// Gets or sets the orientation of the line.
+        /// </summary>
+        [UxmlAttribute(name: "direction")]
+        public DividingLineDirection Direction
+        {
+            get => _direction;
+            set => _direction.Set(value);
         }
 
         /// <summary>
@@ -54,10 +112,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <param name="preset">The configuration preset to apply.</param>
         public AspidDividingLine(DividingLinePreset preset)
         {
-            this.AddClass(preset.Direction.ToUss());
-
+            this.AddStyleSheetsFromResource(StyleSheetPath);
+            
             if (EditorGUIUtility.pixelsPerPoint < 2f)
-                this.AddClass(StyleClasses.DividingLine.LowDpi);
+                this.AddClass(LowDpiClass);
 
             _theme = new StyleOverride<ThemeStyle>(preset.Theme, (oldValue, newValue) =>
             {
@@ -76,7 +134,13 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 this.RemoveClass(oldValue.ToUss())
                     .AddClass(newValue.ToUss());
             });
-            
+
+            _direction = new StyleOverride<DividingLineDirection>(preset.Direction, (oldValue, newValue) =>
+            {
+                this.RemoveClass(oldValue.ToUss())
+                    .AddClass(newValue.ToUss());
+            });
+
             RegisterCallback<CustomStyleResolvedEvent>(OnCustomStyleResolved);
         }
 
@@ -88,8 +152,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             if (evt.customStyle.TryGetByEnum<StatusStyle>(StyleClasses.Status.Property, out var statusValue))
                 _status.SetDefault(statusValue);
 
-            if (evt.customStyle.TryGetByEnum<DividingLineSize>(StyleClasses.DividingLine.SizeProperty, out var sizeValue))
+            if (evt.customStyle.TryGetByEnum<DividingLineSize>(SizeStyleProperty, out var sizeValue))
                 _size.SetDefault(sizeValue);
+
+            if (evt.customStyle.TryGetByEnum<DividingLineDirection>(DirectionStyleProperty, out var directionValue))
+                _direction.SetDefault(directionValue);
         }
     }
 } 
