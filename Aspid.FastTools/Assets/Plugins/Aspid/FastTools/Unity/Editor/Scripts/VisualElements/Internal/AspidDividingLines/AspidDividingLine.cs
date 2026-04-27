@@ -9,7 +9,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Supports theme, status, and size customisation, all of which can be driven by USS
     /// custom properties or set explicitly in code.
     /// </summary>
-    [UxmlElement(nameof(AspidDividingLine), libraryPath = "Aspid/FastTools")]
+    [UxmlElement(libraryPath = "Aspid/FastTools")]
     public sealed partial class AspidDividingLine : VisualElement
     {
         /// <summary>
@@ -63,7 +63,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Gets or sets the visual theme of the line.
         /// </summary>
-        [UxmlAttribute(name: "theme")]
+        [UxmlAttribute]
         public ThemeStyle Theme
         {
             get => _theme;
@@ -73,7 +73,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Gets or sets the status color accent of the line.
         /// </summary>
-        [UxmlAttribute(name: "status")]
+        [UxmlAttribute]
         public StatusStyle Status
         {
             get => _status;
@@ -83,7 +83,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Gets or sets the thickness of the line.
         /// </summary>
-        [UxmlAttribute(name: "size")]
+        [UxmlAttribute]
         public DividingLineSize Size
         {
             get => _size;
@@ -93,7 +93,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Gets or sets the orientation of the line.
         /// </summary>
-        [UxmlAttribute(name: "direction")]
+        [UxmlAttribute]
         public DividingLineDirection Direction
         {
             get => _direction;
