@@ -1,9 +1,9 @@
 :root {
     /* ---------------------------------- ICONS ----------------------------------- */
-    --aspid-icons-status-success: resource("aspid_icon_medium_green_1020x1008");  /**/
-    --aspid-icons-status-warning: resource("aspid_icon_medium_yellow_1020x1008"); /**/
-    --aspid-icons-status-error:   resource("aspid_icon_medium_red_1020x1008");    /**/
-    --aspid-icons-status-info:    resource("aspid_icon_medium_blue_1020x1008");   /**/
+    --aspid-icons-status-success: resource("Icons/aspid_icon_medium_green_1020x1008");  /**/
+    --aspid-icons-status-warning: resource("Icons/aspid_icon_medium_yellow_1020x1008"); /**/
+    --aspid-icons-status-error:   resource("Icons/aspid_icon_medium_red_1020x1008");    /**/
+    --aspid-icons-status-info:    resource("Icons/aspid_icon_medium_blue_1020x1008");   /**/
                                                                                   /**/
     /* ------------------------------- BACKGROUNDS -------------------------------- */
     --aspid-colors-bg-darkness:                    rgb(26, 26, 26);      /* #1A1A1A */

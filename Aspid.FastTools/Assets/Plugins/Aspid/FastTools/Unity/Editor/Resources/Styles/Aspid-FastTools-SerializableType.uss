@@ -2,7 +2,7 @@
     --aspid-colors-shade-light: #C0C0C0;
     --aspid-colors-shade-hover-light: #e1e1e1;
 
-    --aspid-fasttools-icons-open_button: resource("open_button_icon");
+    --aspid-fasttools-icons-open_button: resource("Icons/open_button_icon");
 
     align-items: center;
     flex-direction: row;

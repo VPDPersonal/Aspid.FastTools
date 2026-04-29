@@ -349,70 +349,30 @@ Both registries expose a generic counterpart (`StringIdRegistry<T>` / `IdRegistr
 
 ## SerializedProperty Extensions
 
-Chainable extension methods on `SerializedProperty` for setting values and applying changes.
+Chainable extensions on `SerializedProperty` for synchronizing the owning `SerializedObject`, writing typed values, and reflecting on the underlying field.
 
 ```csharp
 using Aspid.FastTools.Editors;
 ```
 
-### Update and Apply
-
 ```csharp
-property.Update();
-property.UpdateIfRequiredOrScript();
-property.ApplyModifiedProperties();
+property
+    .Update()
+    .SetVector3(Vector3.up)
+    .SetBool(true)
+    .ApplyModifiedProperties();
 ```
 
-All methods return `SerializedProperty`, enabling chaining.
+The package covers:
 
-### SetValue / SetXxx
+- **Update / Apply** — `Update`, `UpdateIfRequiredOrScript`, `ApplyModifiedProperties`.
+- **Typed setters** — `SetValue` (generic dispatch) and `SetXxx` for `int`/`uint`/`long`/`ulong`/`float`/`double`/`bool`/`string`/`Color`/`Gradient`/`Hash128`/`Rect`/`RectInt`/`Bounds`/`BoundsInt`/`Vector2..4` (and `Vector2/3Int`)/`Quaternion`/`AnimationCurve`/`EntityId` (Unity 6.2+). Each comes with a paired `SetXxxAndApply` variant.
+- **Enum setters** — `SetEnumFlag` and `SetEnumIndex` (each + `AndApply`).
+- **Arrays** — `SetArraySize`, `AddArraySize`, `RemoveArraySize` (each + `AndApply`).
+- **References** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, and `SetBoxed` (Unity 6+).
+- **Reflection helpers** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` for resolving the C# member and runtime instance behind a property.
 
-For each supported type there are two methods:
-
-- `SetXxx(value)` — sets the value, returns `property` for chaining
-- `SetXxxAndApply(value)` — sets the value and immediately calls `ApplyModifiedProperties()`
-
-`SetValue(value)` dispatches to the appropriate typed setter automatically.
-
-| Method family | Unity type |
-|---------------|-----------|
-| `SetInt` / `SetUint` / `SetLong` / `SetUlong` | Integer types |
-| `SetFloat` / `SetDouble` | Float types |
-| `SetBool` | `bool` |
-| `SetString` | `string` |
-| `SetColor` | `Color` |
-| `SetRect` / `SetRectInt` | `Rect` / `RectInt` |
-| `SetBounds` / `SetBoundsInt` | `Bounds` / `BoundsInt` |
-| `SetVector2` / `SetVector2Int` | `Vector2` / `Vector2Int` |
-| `SetVector3` / `SetVector3Int` | `Vector3` / `Vector3Int` |
-| `SetVector4` | `Vector4` |
-| `SetQuaternion` | `Quaternion` |
-| `SetGradient` | `Gradient` |
-| `SetHash128` | `Hash128` |
-| `SetAnimationCurveValue` | `AnimationCurve` |
-| `SetEnumFlag` / `SetEnumIndex` | Enum flag/index |
-| `SetArraySize` | Array size |
-| `SetManagedReference` | Managed reference |
-| `SetObjectReference` | `UnityEngine.Object` |
-| `SetExposedReference` | Exposed reference |
-| `SetBoxed` | Boxed value *(Unity 6+)* |
-| `SetEntityId` | Entity ID *(Unity 6.2+)* |
-
-```csharp
-SerializedProperty property = GetProperty();
-
-// Simple apply
-property.ApplyModifiedProperties();
-
-// Set and apply — equivalent forms
-property.SetValue(10).ApplyModifiedProperties();
-property.SetValueAndApply(10);
-property.SetInt(10).ApplyModifiedProperties();
-property.SetIntAndApply(10);
-
-// Chain multiple setters
-property.SetVector3(Vector3.up).SetBool(true).ApplyModifiedProperties();
-```
+> Full method-by-method reference: [SerializedPropertyExtensions.md](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/SerializedPropertyExtensions.md)
 
 ---
 
@@ -467,349 +427,19 @@ using Aspid.FastTools.UIElements;         // runtime extensions
 using Aspid.FastTools.UIElements.Editors; // editor-only extensions (e.g. AddOpenScriptCommand)
 ```
 
-### Core element operations
-
-```csharp
-element
-    .SetName("MyElement")
-    .SetVisible(true)
-    .SetTooltip("Tooltip text")
-    .AddChild(new Label("Hello"))
-    .AddChildren(child1, child2, child3);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetName(string)` | Sets `element.name` |
-| `SetVisible(bool)` | Sets `element.visible` |
-| `SetTooltip(string)` | Sets `element.tooltip` |
-| `SetUserData(object)` | Sets `element.userData` |
-| `SetEnabledSelf(bool)` | Sets `element.enabledSelf` |
-| `SetPickingMode(PickingMode)` | Sets `element.pickingMode` |
-| `SetUsageHints(UsageHints)` | Sets `element.usageHints` |
-| `SetViewDataKey(string)` | Sets `element.viewDataKey` |
-| `SetLanguageDirection(LanguageDirection)` | Sets `element.languageDirection` |
-| `SetDisablePlayModeTint(bool)` | Sets `element.disablePlayModeTint` |
-| `SetDataSource(object)` | Sets `element.dataSource` |
-| `SetDataSourceType(Type)` | Sets `element.dataSourceType` |
-| `SetDataSourcePath(PropertyPath)` | Sets `element.dataSourcePath` |
-| `AddChild(VisualElement)` | Appends a child, returns the parent |
-| `AddChildren(params VisualElement[])` | Appends multiple children |
-| `AddChildren(IEnumerable<VisualElement>)` | Appends from a sequence |
-| `AddChildren(List<VisualElement>)` | Appends from a list |
-| `AddChildren(Span<VisualElement>)` | Appends from a span |
-| `AddChildren(ReadOnlySpan<VisualElement>)` | Appends from a read-only span |
-
-> `RegisterCallbackOnce<TEventType>` and `RegisterCallbackOnce<TEventType, TUserArgsType>` are available on all Unity versions (polyfill included for versions prior to 2023.1).
-
-### Focusable
-
-| Method | Description |
-|--------|-------------|
-| `SetFocus()` | Attempts to give focus to the element |
-| `SetBlur()` | Tells the element to release focus |
-| `IsFocus()` | Returns whether the element currently has keyboard focus |
-| `SetTabIndex(int)` | Sets `element.tabIndex` |
-| `SetFocusable(bool)` | Sets `element.focusable` |
-| `SetDelegatesFocus(bool)` | Sets `element.delegatesFocus` |
-
-### USS & class operations
-
-| Method | Description |
-|--------|-------------|
-| `AddClass(string)` | Adds a USS class |
-| `RemoveClass(string)` | Removes a USS class |
-| `ClearClasses()` | Removes all USS classes |
-| `ToggleInClass(string)` | Toggles a USS class on/off |
-| `EnableInClass(string, bool)` | Adds or removes a USS class based on a condition |
-| `AddStyleSheets(StyleSheet)` | Adds a `StyleSheet` |
-| `RemoveStyleSheets(StyleSheet)` | Removes a `StyleSheet` |
-| `AddStyleSheetsFromResource(string)` | Adds a stylesheet loaded via `Resources.Load` |
-| `RemoveStyleSheetsFromResource(string)` | Removes a stylesheet loaded via `Resources.Load` |
-
-### Style extensions — by category
-
-All style methods are also available on `IStyle` directly (same method names, operate on the style object).
-
-#### Layout
-
-| Method | Style property |
-|--------|---------------|
-| `SetFlexBasis(StyleLength)` | `flexBasis` |
-| `SetFlexGrow(StyleFloat)` | `flexGrow` |
-| `SetFlexShrink(StyleFloat)` | `flexShrink` |
-| `SetFlexWrap(StyleEnum<Wrap>)` | `flexWrap` |
-| `SetFlexDirection(FlexDirection)` | `flexDirection` |
-| `SetAlignSelf(StyleEnum<Align>)` | `alignSelf` |
-| `SetAlignItems(StyleEnum<Align>)` | `alignItems` |
-| `SetAlignContent(StyleEnum<Align>)` | `alignContent` |
-| `SetJustifyContent(StyleEnum<Justify>)` | `justifyContent` |
-| `SetPosition(StyleEnum<Position>)` | `position` |
-
-#### Size
-
-| Method | Description |
-|--------|-------------|
-| `SetSize(StyleLength)` | Sets both width and height |
-| `SetSize(width?, height?)` | Sets width and/or height independently |
-| `SetMinSize(StyleLength)` | Sets both minWidth and minHeight |
-| `SetMinSize(width?, height?)` | |
-| `SetMaxSize(StyleLength)` | Sets both maxWidth and maxHeight |
-| `SetMaxSize(width?, height?)` | |
-
-#### Spacing
-
-All spacing methods have a uniform-value overload and a per-side overload (`top`, `bottom`, `left`, `right`).
-
-| Method | Style properties                                   |
-|--------|----------------------------------------------------|
-| `SetMargin(…)` | `Top/Bottom/Left/Right`                            |
-| `SetPadding(…)` | `Top/Bottom/Left/Right`                            |
-| `SetDistance(…)` | `Top/Bottom/Left/Right` (absolute position offset) |
-
-#### Font
-
-| Method | Style property |
-|--------|---------------|
-| `SetUnityFont(StyleFont)` | `unityFont` |
-| `SetFontSize(StyleLength)` | `fontSize` |
-| `SetUnityFontDefinition(StyleFontDefinition)` | `unityFontDefinition` |
-| `SetUnityFontStyleAndWeight(StyleEnum<FontStyle>)` | `unityFontStyleAndWeight` |
-
-#### Font style presets
-
-Convenience methods for toggling bold / italic without overwriting the other flag:
-
-| Method | Description |
-|--------|-------------|
-| `SetNormalUnityFontStyleAndWeight()` | Resets to `FontStyle.Normal` |
-| `AddBoldUnityFontStyleAndWeight()` | Adds bold, preserving italic |
-| `RemoveBoldUnityFontStyleAndWeight()` | Removes bold, preserving italic |
-| `AddItalicUnityFontStyleAndWeight()` | Adds italic, preserving bold |
-| `RemoveItalicUnityFontStyleAndWeight()` | Removes italic, preserving bold |
-
-#### Text
-
-| Method | Style property | Notes |
-|--------|---------------|-------|
-| `SetWorldSpacing(StyleLength)` | `wordSpacing` | |
-| `SetLetterSpacing(StyleLength)` | `letterSpacing` | |
-| `SetUnityTextAlign(TextAnchor)` | `unityTextAlign` | |
-| `SetTextShadow(StyleTextShadow)` | `textShadow` | |
-| `SetUnityTextOutlineColor(StyleColor)` | `unityTextOutlineColor` | |
-| `SetUnityTextOutlineWidth(StyleFloat)` | `unityTextOutlineWidth` | |
-| `SetUnityParagraphSpacing(StyleLength)` | `unityParagraphSpacing` | |
-| `SetTextOverflow(StyleEnum<TextOverflow>)` | `textOverflow` | |
-| `SetUnityTextOverflowPosition(TextOverflowPosition)` | `unityTextOverflowPosition` | |
-| `SetUnityTextGenerator(TextGeneratorType)` | `unityTextGenerator` | Unity 6+ |
-| `SetUnityEditorTextRenderingMode(EditorTextRenderingMode)` | `unityEditorTextRenderingMode` | Unity 6+ |
-| `SetUnityTextAutoSize(StyleTextAutoSize)` | `unityTextAutoSize` | Unity 6.2+ |
-| `SetWhiteSpace(StyleEnum<WhiteSpace>)` | `whiteSpace` | |
-
-#### Color & Opacity
-
-| Method | Style property |
-|--------|---------------|
-| `SetColor(StyleColor)` | `color` |
-| `SetOpacity(StyleFloat)` | `opacity` |
-
-#### Border
-
-| Method | Description |
-|--------|-------------|
-| `SetBorderColor(StyleColor)` | All sides |
-| `SetBorderColor(top?, bottom?, left?, right?)` | Per side |
-| `SetBorderRadius(StyleLength)` | All corners |
-| `SetBorderRadius(topLeft?, topRight?, bottomLeft?, bottomRight?)` | Per corner |
-| `SetBorderWidth(StyleFloat)` | All sides |
-| `SetBorderWidth(top?, bottom?, left?, right?)` | Per side |
-
-#### Background
-
-| Method | Style property |
-|--------|---------------|
-| `SetBackgroundColor(StyleColor)` | `backgroundColor` |
-| `SetBackgroundImage(StyleBackground)` | `backgroundImage` |
-| `SetBackgroundSize(StyleBackgroundSize)` | `backgroundSize` |
-| `SetBackgroundRepeat(StyleBackgroundRepeat)` | `backgroundRepeat` |
-| `SetBackgroundPosition(StyleBackgroundPosition)` | Both X and Y |
-| `SetBackgroundPosition(x?, y?)` | Independently |
-| `SetUnityBackgroundImageTintColor(StyleColor)` | `unityBackgroundImageTintColor` |
-
-#### Transform
-
-| Method | Style property |
-|--------|---------------|
-| `SetScale(StyleScale)` | `scale` |
-| `SetRotate(StyleRotate)` | `rotate` |
-| `SetTranslate(StyleTranslate)` | `translate` |
-| `SetTransformOrigin(StyleTransformOrigin)` | `transformOrigin` |
-
-#### Transition
-
-| Method | Style property |
-|--------|---------------|
-| `SetTransitionDelay(StyleList<TimeValue>)` | `transitionDelay` |
-| `SetTransitionDuration(StyleList<TimeValue>)` | `transitionDuration` |
-| `SetTransitionProperty(StyleList<StylePropertyName>)` | `transitionProperty` |
-| `SetTransitionTimingFunction(StyleList<EasingFunction>)` | `transitionTimingFunction` |
-
-#### Overflow & Visibility
-
-| Method | Style property |
-|--------|---------------|
-| `SetOverflow(StyleEnum<Overflow>)` | `overflow` |
-| `SetUnityOverflowClipBox(StyleEnum<OverflowClipBox>)` | `unityOverflowClipBox` |
-| `SetVisibility(StyleEnum<Visibility>)` | `visibility` |
-| `SetDisplay(DisplayStyle)` | `display` |
-
-#### Unity Slice
-
-| Method | Description |
-|--------|-------------|
-| `SetUnitySlice(StyleInt)` | All sides |
-| `SetUnitySlice(top?, bottom?, left?, right?)` | Per side |
-| `SetUnitySliceType(StyleEnum<SliceType>)` | Unity 6+ |
-
-#### Cursor
-
-| Method | Style property |
-|--------|---------------|
-| `SetCursor(StyleCursor)` | `cursor` |
-
-### Specialized element extensions
-
-#### TextElement
-
-```csharp
-label.SetText("Hello World");
-```
-
-#### BaseField\<TValueType\>
-
-```csharp
-field.SetLabel("My Field");
-field.SetValue(42);
-```
-
-#### INotifyValueChanged\<T\>
-
-```csharp
-field.SetValue(42, notify: false); // sets value without raising ChangeEvent
-field.AddValueChanged(evt => Debug.Log(evt.newValue));
-field.RemoveValueChanged(myCallback);
-```
-
-Typed overloads are provided for `int`, `uint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `string`, `bool`, `Color`, `Vector2/3/4`, `Vector2Int/3Int`, `Rect/RectInt`, `Bounds/BoundsInt`, `Hash128`, `Enum`, `Object`, and more.
-
-#### IMixedValueSupport
-
-```csharp
-field.SetShowMixedValue(true); // shows the mixed-value indicator
-```
-
-#### Button
-
-```csharp
-button
-    .AddClicked(() => Debug.Log("Clicked"))
-    .SetClickable(new Clickable(() => { }))
-    .SetIconImage(myBackground);
-```
-
-| Method | Description |
-|--------|-------------|
-| `AddClicked(Action)` | Subscribes to `Button.clicked` |
-| `RemoveClicked(Action)` | Unsubscribes from `Button.clicked` |
-| `SetClickable(Clickable)` | Sets `Button.clickable` |
-| `SetIconImage(Background)` | Sets `Button.iconImage` |
-
-#### Slider / BaseSlider\<TValue\>
-
-```csharp
-slider
-    .SetLowValue(0f)
-    .SetHighValue(100f)
-    .SetShowInputField<SliderFloat, float>(true);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetLowValue(TValue)` | Sets the minimum slider value |
-| `SetHighValue(TValue)` | Sets the maximum slider value |
-| `SetFill(bool)` | Whether the track is filled up to the current value |
-| `SetInverted(bool)` | Reverses the slider direction |
-| `SetPageSize(float)` | Controls how much the value changes per page step |
-| `SetShowInputField(bool)` | Shows a numeric input field alongside the slider |
-| `SetDirection(SliderDirection)` | Sets the slider orientation |
-
-#### ProgressBar
-
-```csharp
-progressBar.SetTitle("Loading...").SetLowValue(0f).SetHighValue(100f);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetTitle(string)` | Sets the title displayed in the center |
-| `SetLowValue(float)` | Sets the minimum value |
-| `SetHighValue(float)` | Sets the maximum value |
-
-#### HelpBox
-
-```csharp
-helpBox.SetHelpBoxFontSize(14);
-helpBox.SetMessageType(14, HelpBoxMessageType.Warning);
-```
-
-#### Foldout
-
-```csharp
-foldout.SetText("Section Title");
-foldout.SetValue(true);
-```
-
-#### Image
-
-```csharp
-image.SetImage(myTexture);
-image.SetImageFromResource("Editor/MyIcon"); // loads via Resources.Load
-```
-
-#### IMGUIContainer
-
-```csharp
-container
-    .SetOnGUIHandler(() => GUILayout.Label("IMGUI"))
-    .SetCullingEnabled(true);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetOnGUIHandler(Action)` | Replaces the `onGUIHandler` callback |
-| `AddOnGUIHandler(Action)` | Subscribes to `onGUIHandler` |
-| `RemoveOnGUIHandler(Action)` | Unsubscribes from `onGUIHandler` |
-| `SetCullingEnabled(bool)` | Skips `onGUIHandler` when the element is offscreen |
-| `SetContextType(ContextType)` | Sets the IMGUI context type |
-
-#### ListView / CollectionView
-
-| Method | Description | Notes |
-|--------|-------------|-------|
-| `SetBindItem(Action<VisualElement, int>)` | Item binding callback | |
-| `SetMakeItem(Func<VisualElement>)` | Item factory | |
-| `SetMakeFooter(Func<VisualElement>)` | Footer factory | Unity 6+ |
-| `SetMakeHeader(Func<VisualElement>)` | Header factory | Unity 6+ |
-| `SetMakeNoneElement(Func<VisualElement>)` | Empty state element factory | Unity 6+ |
-
-### Editor commands (editor-only)
-
-```csharp
-using Aspid.FastTools.UIElements.Editors;
-
-image.AddOpenScriptCommand(target);
-// Double-clicking the element opens the script for 'target' in the IDE
-```
+### Quick reference
+
+The package covers:
+
+- **Core element operations** — name, visibility, tooltip, user data, picking mode, data source, and `AddChild`/`InsertChild` helpers.
+- **Focus** — `SetFocus`, `SetBlur`, `SetTabIndex`, `SetFocusable`.
+- **USS** — `AddClass`/`RemoveClass`/`ToggleInClass`/`EnableInClass`, `AddStyleSheets[FromResource]`.
+- **Styles** — every `IStyle` property: layout, size, spacing, font, text, color, border, background, transform (incl. Unity 6.3+ aspect/filter/material), transition, overflow, slice, cursor.
+- **Specialized elements** — `TextElement`, `ITextEdition`, `ITextSelection`, `BaseField`, `BaseBoolField` (Toggle), `INotifyValueChanged` (with optional `Unity.Mathematics` types), `IMixedValueSupport`, `Button`, `Slider`/`BaseSlider`, `ProgressBar`, `HelpBox`, `Foldout`, `Image`, `IMGUIContainer`, plus the full `ListView`/`TreeView`/`MultiColumn*` surface.
+- **Editor-only commands** — `AddOpenScriptCommand`, `BindTo`/`BindPropertyTo`, `EnumField`/`EnumFlagsField` `Initialize`, and `PropertyField` value-change subscriptions.
+- **USS custom-style helpers** — `ICustomStyle.TryGetByEnum` for parsing string USS properties as enums.
+
+> Full method-by-method reference: [VisualElementExtensions.md](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/VisualElementExtensions.md)
 
 ### Full example
 
