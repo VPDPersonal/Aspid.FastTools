@@ -36,6 +36,7 @@ namespace Aspid.FastTools.Ids.Editors
 
         private string SortKey => $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Sort";
         private string GroupKey => $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Group";
+        
         private string GroupExpandedKey(string group) =>
             $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Group:{group}:Expanded";
 
@@ -57,7 +58,6 @@ namespace Aspid.FastTools.Ids.Editors
             var root = new VisualElement()
                 .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
                 .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
-                // .AddClass(Constants.Registry.Root)
                 .AddClass("aspid-fasttools-inspector-container");
 
             root.Add(new AspidInspectorHeader(_accessor.Target.name, _accessor.Target)
@@ -65,18 +65,14 @@ namespace Aspid.FastTools.Ids.Editors
                 Subtext = _accessor.Target.GetType().Name,
             });
 
-            var typeContainer = new VisualElement()
-                .SetMarginTop(5)
-                .AddClass(ThemeStyle.DarkClass)
-                .AddClass(AspidStyles.Background);
+            var typeContainer = new AspidBox()
+                .SetMarginTop(5);
 
             typeContainer.Add(new AspidLabel("Type").SetMarginBottom(5));
             typeContainer.Add(new PropertyField(_accessor.TargetStructTypeProperty, label: string.Empty));
 
-            var container = new VisualElement()
-                .SetMarginTop(5)
-                .AddClass(ThemeStyle.LightClass)
-                .AddClass(AspidStyles.Background);
+            var container = new AspidBox()
+                .SetMarginTop(5);
 
             container.Add(BuildSectionTitle("IDs"));
             container.Add(BuildWarningRow());
