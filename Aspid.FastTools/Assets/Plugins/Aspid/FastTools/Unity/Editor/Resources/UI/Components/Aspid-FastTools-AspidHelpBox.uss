@@ -4,28 +4,28 @@
     border-radius:                                              8px;
     flex-direction:                                             row;
     align-items:                                                center;
-    background-color:                                           var(--aspid-colors-bg-darkness);
-    border-color:                                               var(--aspid-colors-shade-dark);
+    background-color:                                           var(--aspid-colors-bg-dark);
+    border-color:                                               var(--aspid-colors-shade-light);
 }
 
 :root.aspid-fasttools-status--success {
-    background-color:                                           var(--aspid-colors-status-success-dark);
-    border-color:                                               var(--aspid-colors-status-success-shade-dark);
+    background-color:                                           var(--aspid-colors-status-success-light);
+    border-color:                                               var(--aspid-colors-status-success-shade-lightness);
 }
 
 :root.aspid-fasttools-status--warning {
-    background-color:                                           var(--aspid-colors-status-warning-dark);
-    border-color:                                               var(--aspid-colors-status-warning-shade-dark);
+    background-color:                                           var(--aspid-colors-status-warning-light);
+    border-color:                                               var(--aspid-colors-status-warning-shade-lightness);
 }
 
 :root.aspid-fasttools-status--error {
-    background-color:                                           var(--aspid-colors-status-error-dark);
-    border-color:                                               var(--aspid-colors-status-error-shade-dark);
+    background-color:                                           var(--aspid-colors-status-error-light);
+    border-color:                                               var(--aspid-colors-status-error-shade-lightness);
 }
 
 :root.aspid-fasttools-status--info {
-    background-color:                                           var(--aspid-colors-status-info-dark);
-    border-color:                                               var(--aspid-colors-status-info-shade-dark);
+    background-color:                                           var(--aspid-colors-status-info-light);
+    border-color:                                               var(--aspid-colors-status-info-shade-lightness);
 }
 
 /* --- ICON --- */
