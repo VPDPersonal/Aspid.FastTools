@@ -40,7 +40,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         /// <summary>
         /// Creates a size binding for <paramref name="element"/> with an initial value.
-        /// Adds <see cref="LowDpiClass"/> when running at low DPI and registers a
         /// <see cref="CustomStyleResolvedEvent"/> handler so that USS-driven values are
         /// applied as defaults until <see cref="SetValue"/> is called.
         /// </summary>
