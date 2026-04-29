@@ -17,7 +17,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public static AspidHelpBoxPreset Default => new AspidHelpBoxPreset()
             .SetTitle(new AspidLabelPreset()
                 .SetSelectable()
-                .SetLineTheme(ThemeStyle.Type.Dark)
+                .SetLineTheme(ThemeStyle.Type.Light)
                 .SetLabelTheme(ThemeStyle.Type.Lightness)
                 .SetLineSize(AspidDividingLineSizeStyle.Type.Thin)
                 .SetLabelSize(AspidLabelSizeStyle.Type.H5)
