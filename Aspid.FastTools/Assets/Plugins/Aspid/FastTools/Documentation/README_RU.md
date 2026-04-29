@@ -24,8 +24,13 @@
 
 | Пространство имён | Описание |
 |-------------------|----------|
-| `Aspid.FastTools` | Runtime API — типы, расширения VisualElement |
-| `Aspid.FastTools.Editors` | Editor-only API — property drawers, IMGUI-области, расширения редактора |
+| `Aspid.FastTools` | `IId`, `UniqueIdAttribute`, `StringIdRegistry` |
+| `Aspid.FastTools.Types` | `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector`, `TypeSelectorAttribute` |
+| `Aspid.FastTools.Enums` | `EnumValues<T>` |
+| `Aspid.FastTools.Ids` | `IdRegistry` (int-only во рантайме) |
+| `Aspid.FastTools.UIElements` | Runtime fluent-расширения `VisualElement` |
+| `Aspid.FastTools.Editors` | Редакторские утилиты — расширения `SerializedProperty`, IMGUI-области, `GetScriptName` |
+| `Aspid.FastTools.Types.Editors` · `.Enums.Editors` · `.Ids.Editors` · `.UIElements.Editors` | Редакторский код по фичам (property drawers, инспектор реестров, editor-only расширения `VisualElement`) |
 
 ---
 
@@ -108,7 +113,7 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
+using Aspid.FastTools.Types;
 
 public class MyBehaviour : MonoBehaviour
 {
@@ -133,7 +138,7 @@ public class MyBehaviour : MonoBehaviour
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
+using Aspid.FastTools.Types;
 
 public abstract class BaseEnemy : MonoBehaviour
 {
@@ -172,7 +177,7 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
+using Aspid.FastTools.Types;
 
 public class MyBehaviour : MonoBehaviour
 {
@@ -220,7 +225,7 @@ public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
+using Aspid.FastTools.Enums;
 
 public enum Direction { Left, Right, Up, Down }
 
@@ -240,9 +245,18 @@ public class MyBehaviour : MonoBehaviour
 
 ---
 
-## Система строковых ID
+## Система ID
 
-Отображает строковые имена в стабильные целочисленные ID. Предназначена для data-driven проектов, где ассетам нужен надёжный, назначаемый из редактора идентификатор, безопасный для использования в `switch` и `Dictionary`.
+Сопоставляет имя, назначаемое в активе, со стабильным целочисленным ID. Получившийся `int` подходит для `switch` и ключей `Dictionary` без затрат на строковые поиски в рантайме.
+
+Доступны два варианта реестра — выбирается по одному на каждый `IId`-struct:
+
+| Реестр | Контракт во рантайме | Когда использовать |
+|---|---|---|
+| `StringIdRegistry` (`Aspid.FastTools`) | Полное отображение `int ↔ string` доступно во рантайме | Нужны поиски по имени в player-сборках (логи, сейвы, дебаг) |
+| `IdRegistry` (`Aspid.FastTools.Ids`) | Во рантайме только int; имена хранятся в editor-only partial и вырезаются из player-сборок | Имена нужны только в редакторе |
+
+Каждый `IId`-struct привязан ровно к одному реестру любого вида — уникальность гарантируется во время поиска через `IdRegistryResolver`, который ищет в обоих видах реестров.
 
 ### Использование
 
@@ -259,14 +273,16 @@ public partial struct EnemyId : IId { }
 ```csharp
 public partial struct EnemyId
 {
-    [SerializeField] private string __stringId;
+    [SerializeField] private string __stringId; // editor-only поле, вырезается из player-сборок
     [SerializeField] private int _id;
 
     public int Id => _id;
 }
 ```
 
-**2.** Создайте ассет `IdRegistry` через меню *Assets → Create → Aspid → FastTools → String Id Registry* и привяжите его к вашему типу структуры в Inspector.
+**2.** Создайте ассет реестра и привяжите его к вашему типу структуры в Inspector:
+- `Assets → Create → Aspid → FastTools → String Id Registry` — для `StringIdRegistry`;
+- `Assets → Create → Aspid → FastTools → Id Registry` — для int-only `IdRegistry`.
 
 **3.** Используйте структуру как сериализуемое поле. В Inspector отображается выпадающий список зарегистрированных имён с кнопкой **Create** для добавления новых записей прямо там:
 
@@ -282,6 +298,9 @@ public class EnemyDefinition : ScriptableObject
 ```
 
 ```csharp
+using UnityEngine;
+using Aspid.FastTools;
+
 public class EnemySpawner : MonoBehaviour
 {
     [SerializeField] private EnemyId _targetEnemy;
@@ -302,18 +321,30 @@ public class EnemySpawner : MonoBehaviour
 public sealed class UniqueIdAttribute : PropertyAttribute { }
 ```
 
-### IdRegistry
+### StringIdRegistry
 
-`ScriptableObject`, хранящий пары имя ↔ целое число. Каждому имени назначается стабильный, автоинкрементный ID, который не изменяется даже при добавлении или удалении других записей.
+`ScriptableObject` из `Aspid.FastTools`, хранящий записи `(int, string)` и поддерживающий таблицы поиска доступными во рантайме. Каждому имени назначается стабильный, автоинкрементный ID, который не изменяется даже при добавлении или удалении других записей.
 
 | Член | Описание |
 |------|----------|
-| `bool Contains(string name)` | Возвращает, зарегистрировано ли имя |
-| `int Add(string name)` | Регистрирует имя и возвращает ID; если имя уже есть — возвращает существующий ID |
-| `void Remove(string name)` | Удаляет запись по имени |
-| `void Rename(string oldName, string newName)` | Переименовывает запись |
-| `int GetId(string name)` | Возвращает ID для имени или `0`, если не найдено |
-| `string? GetName(int id)` | Возвращает имя для ID или `null`, если не найдено |
+| `int GetId(string name)` | Возвращает ID для имени или `-1`, если не найдено |
+| `string? GetNameId(int id)` | Возвращает имя для ID или `null`, если не найдено |
+| `bool Contains(int id)` | Зарегистрирован ли ID |
+| `bool Contains(string name)` | Зарегистрировано ли имя |
+| `IEnumerable<int> Ids` · `IEnumerable<string> IdNames` | Перечисление зарегистрированных ID / имён |
+| `IEnumerator<KeyValuePair<int, string>> GetEnumerator()` | Итерация по парам `(id, name)` |
+
+### IdRegistry
+
+`ScriptableObject` из `Aspid.FastTools.Ids`, хранящий во рантайме только целочисленные ID — имена существуют как метаданные редактора и вырезаются из player-сборок.
+
+| Член | Описание |
+|------|----------|
+| `int Count` | Количество зарегистрированных ID |
+| `bool Contains(int id)` | Зарегистрирован ли ID |
+| `IEnumerator<int> GetEnumerator()` | Итерация по зарегистрированным ID |
+
+У обоих реестров есть генерик-аналог (`StringIdRegistry<T>` / `IdRegistry<T>` с `T : struct, IId`), добавляющий типизированную перегрузку `Contains(T)`. Редактирование — добавление, переименование, удаление записей — выполняется через инспектор реестра и `RegistryEditorCore`, а не через публичный runtime API.
 
 ---
 
@@ -392,39 +423,39 @@ property.SetVector3(Vector3.up).SetBool(true).ApplyModifiedProperties();
 using Aspid.FastTools.Editors;
 ```
 
-Доступны три типа областей: `VerticalScope`, `HorizontalScope`, `ScrollViewScope`. Каждая предоставляет свойство `Rect` и вызывает соответствующий метод `EditorGUILayout.End*` в `Dispose`.
-
-### Использование через AspidEditorGUILayout
+Три `ref struct`-области — `VerticalScope`, `HorizontalScope`, `ScrollViewScope` — оборачивают `EditorGUILayout.Begin*` / `End*`. Каждая предоставляет свойство `Rect` и вызывает соответствующий метод `End*` в `Dispose`:
 
 ```csharp
-using (AspidEditorGUILayout.BeginVertical())
+using (VerticalScope.Begin())
 {
     EditorGUILayout.LabelField("Item 1");
     EditorGUILayout.LabelField("Item 2");
 }
 
-using (AspidEditorGUILayout.BeginHorizontal())
+using (HorizontalScope.Begin())
 {
     EditorGUILayout.LabelField("Left");
     EditorGUILayout.LabelField("Right");
 }
 
 var scrollPos = Vector2.zero;
-using (AspidEditorGUILayout.BeginScrollView(ref scrollPos))
+using (ScrollViewScope.Begin(ref scrollPos))
 {
     EditorGUILayout.LabelField("Scrollable content");
 }
 ```
 
-### Использование через структуры областей напрямую
+Получить rect области через перегрузку с `out`-параметром:
 
 ```csharp
-using (VerticalScope.Begin()) { /* ... */ }
-using (HorizontalScope.Begin()) { /* ... */ }
-using (ScrollViewScope.Begin(ref scrollPos)) { /* ... */ }
+using (VerticalScope.Begin(out var rect, GUI.skin.box))
+{
+    EditorGUI.DrawRect(rect, new Color(0, 0, 0, 0.1f));
+    EditorGUILayout.LabelField("Boxed content");
+}
 ```
 
-Все перегрузки `Begin` соответствуют сигнатурам `EditorGUILayout.Begin*` (с опциональными `GUIStyle`, `GUILayoutOption[]`, параметрами scroll view и т.д.).
+Все перегрузки `Begin` соответствуют сигнатурам `EditorGUILayout.Begin*` (опциональные `GUIStyle`, `GUILayoutOption[]`, параметры scroll view и т.д.).
 
 ---
 
@@ -433,8 +464,8 @@ using (ScrollViewScope.Begin(ref scrollPos)) { /* ... */ }
 Fluent-методы расширения для построения UIToolkit-деревьев в коде. Все методы возвращают `T` (сам элемент) для цепочки вызовов.
 
 ```csharp
-using Aspid.FastTools;         // runtime-расширения
-using Aspid.FastTools.Editors; // editor-only расширения
+using Aspid.FastTools.UIElements;         // runtime-расширения
+using Aspid.FastTools.UIElements.Editors; // editor-only расширения (например, AddOpenScriptCommand)
 ```
 
 ### Основные операции с элементами
@@ -775,7 +806,7 @@ container
 ### Команды редактора (только для редактора)
 
 ```csharp
-using Aspid.FastTools.Editors;
+using Aspid.FastTools.UIElements.Editors;
 
 image.AddOpenScriptCommand(target);
 // Двойной клик на элемент открывает скрипт 'target' в IDE
@@ -786,8 +817,9 @@ image.AddOpenScriptCommand(target);
 ```csharp
 using UnityEditor;
 using UnityEngine;
-using Aspid.FastTools;
-using Aspid.FastTools.Editors;
+using Aspid.FastTools.Editors;          // GetScriptName
+using Aspid.FastTools.UIElements;       // runtime-расширения VisualElement
+using Aspid.FastTools.UIElements.Editors; // AddOpenScriptCommand
 using UnityEngine.UIElements;
 
 [CustomEditor(typeof(MyBehaviour))]

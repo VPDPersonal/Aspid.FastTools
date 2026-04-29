@@ -85,7 +85,20 @@ The `IdStructGenerator` generates boilerplate for the struct side; the registry 
 
 **VisualElement Extensions** (`Unity/Runtime/VisualElements/Extensions/`): Extensive fluent API for UIToolkit — layout, sizing, style, borders, colors, transitions, callbacks, USS, child management, etc. Organized into subdirectories by element type (`Button/`, `CallbackEventHandler/`, `Field/`, `Focusable/`, `Foldout/`, `HelpBox/`, `IMGUIContainer/`, `IMixedValueSupport/`, `INotifyValueChanged/`, `IStyle/`, `Image/`, `List/`, `ProgressBar/`, `Slider/`, `TextElement/`) plus top-level partial files (`VisualElementExtensions.cs`, `.Style.cs`, `.Style.Preset.cs`, `.Uss.cs`, `.Child.cs`). Editor-side command extensions in `Unity/Editor/Scripts/VisualElements/Extensions/`.
 
-**Internal Editor VisualElement Components** (`Unity/Editor/Scripts/VisualElements/Internal/`): Custom UIToolkit elements for editor UI, organized by kind: `Containers/` (e.g. `AspidBox`), `DividingLines/`, `HelpBoxes/`, `InspectorHeaders/` (e.g. `AspidInspectorHeader`), `Labels/`. Shared helpers at root: `AspidVisualElementExtensions.cs`, `StyleClasses`, `StatusStyle`, `StyleOverride`, `ThemeStyle`. These use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet and follow the same `.AddClass()` pattern.
+**Internal Editor VisualElement Components** (`Unity/Editor/Scripts/VisualElements/Internal/`): Custom UIToolkit elements for editor UI. Layout:
+
+- `Components/` — concrete elements, each in its own subfolder:
+  - `AspidAnimatedDotsBackground/`, `AspidAnimatedTitle/` — decorative animated elements.
+  - `AspidAnimatedLogo/` — `AspidAnimatedLogo`, `AspidAnimatedLogoPreset`, fluent extensions, plus `Styles/` with `AspidAnimatedLogoPulseSpeedStyle`, `AspidAnimatedLogoPulseHoverAmplitudeStyle` and `AspidAnimatedLogoLayerImageStyle` (USS-driven float and Texture2D bindings).
+  - `AspidDividingLines/` — `AspidDividingLine`, `AspidDividingLinePreset`, fluent extensions, plus `Styles/` with `AspidDividingLineSizeStyle` and `AspidDividingLineDirectionStyle` (USS-driven enum bindings).
+  - `AspidLabels/` — `AspidLabel`, `AspidLabelPreset`, fluent extensions, plus `Styles/` with `AspidLabelSizeStyle` and `AspidLabelFontStyle`.
+  - `Containers/` — `AspidBox`.
+  - `GradientButton/` — `GradientButton`.
+  - `HelpBoxes/` — `AspidHelpBox` and `AspidHelpBoxPreset`.
+  - `InspectorHeaders/` — `AspidInspectorHeader` and fluent extensions.
+- `Styles/` — shared helpers used across components: `AspidStyles` (USS class/property registry), `StatusStyle`, `ThemeStyle`, `InlineStyle<T>` (USS-vs-code precedence helper). The companion `ICustomStyleExtensions` (extension methods on `ICustomStyle`, including `TryGetByEnum<T>`) lives in `Unity/Runtime/VisualElements/Extensions/ICustomStyle/` since it ships with player builds and is consumed by both runtime and editor styles.
+
+All components use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet (loaded via `AspidStyles.DefaultStyleSheet`) and follow the same `.AddClass()` pattern. Theme/status/size/direction enums are exposed as nested `Type` enums on their respective `Style` structs (e.g. `ThemeStyle.Type`, `AspidLabelSizeStyle.Type`).
 
 **IMGUI Scopes** (`Unity/Editor/Scripts/IMGUI/`): Disposable `VerticalScope`, `HorizontalScope`, `ScrollViewScope` wrappers with `Rect` properties.
 
@@ -107,7 +120,6 @@ Format: `aspid-fasttools-{block}[__{element}][--{modifier}]`
 - **Modifier** — state or variant, joined with `--`: `aspid-fasttools-id-registry__warning--visible`, `aspid-fasttools-status--error`.
 - **kebab-case inside any segment** (`add-button`, never `addButton` or `add_button`).
 - **Utility/state classes** (status, theme) are blocks of their own: `aspid-fasttools-status--error`, `aspid-fasttools-theme--dark`.
-- **Selectors** — use class selectors only. Avoid type selectors (`Button`, `Label`), ID selectors (`#foo`), and long descendant chains. When overriding a Unity built-in class, scope it under your own class: `.aspid-fasttools-id-registry .unity-foldout__toggle { … }`.
 
 Pre-existing classes that use `-` instead of `__` between block and element (e.g. `aspid-fasttools-id-drawer-add-button`) are legacy. Migrate to BEM when touching the surrounding code; new classes must follow the rule from the start.
 

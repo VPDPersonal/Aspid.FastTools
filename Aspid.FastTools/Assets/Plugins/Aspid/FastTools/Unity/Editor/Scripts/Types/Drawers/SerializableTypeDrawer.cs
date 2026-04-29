@@ -74,8 +74,8 @@ namespace Aspid.FastTools.Types.Editors
             TypeAllow allow)
         {
             var typeSelector = new VisualElement()
-                .AddClass(StyleClasses.Adapter)
-                .AddClass(StyleClasses.AdapterMargin)
+                .AddClass(AspidStyles.Adapter)
+                .AddClass(AspidStyles.AdapterMargin)
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddChild(new PropertyField(property)
                     .SetDisplay(DisplayStyle.None));

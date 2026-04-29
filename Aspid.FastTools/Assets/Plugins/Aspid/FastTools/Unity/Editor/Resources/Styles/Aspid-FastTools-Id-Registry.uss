@@ -62,7 +62,7 @@ IdRegistryEntryVisualElement > VisualElement > Label {
     background-color: rgb(46, 46, 46);
 }
 
-IdRegistryEntryVisualElement > VisualElement > Label.aspid-fasttools-status-error {
+IdRegistryEntryVisualElement > VisualElement > Label.aspid-fasttools-status--error {
     color: rgb(255, 64, 64);
     background-color: rgb(79, 30, 30);
 }

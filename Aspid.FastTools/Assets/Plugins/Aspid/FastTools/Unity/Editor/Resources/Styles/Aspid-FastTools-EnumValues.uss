@@ -5,7 +5,7 @@
     margin: 2px 0 2px 0;
 }
 
-.aspid-fasttools-draw-adapter.aspid-fasttools-draw-adapter-margin {
+.aspid-fasttools-draw-adapter.aspid-fasttools-draw-adapter--margin {
     margin: 0;
 }
 

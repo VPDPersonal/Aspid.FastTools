@@ -55,7 +55,7 @@ namespace Aspid.FastTools.Ids.Editors
             _groupMode = (GroupMode)SessionState.GetInt(GroupKey, (int)GroupMode.None);
 
             var root = new VisualElement()
-                .AddStyleSheetsFromResource(StyleClasses.DefaultStyleSheet)
+                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
                 .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
                 // .AddClass(Constants.Registry.Root)
                 .AddClass("aspid-fasttools-inspector-container");
@@ -67,16 +67,16 @@ namespace Aspid.FastTools.Ids.Editors
 
             var typeContainer = new VisualElement()
                 .SetMarginTop(5)
-                .AddClass("aspid-fasttools-dark")
-                .AddClass("aspid-fasttools-background");
+                .AddClass(ThemeStyle.DarkClass)
+                .AddClass(AspidStyles.Background);
 
             typeContainer.Add(new AspidLabel("Type").SetMarginBottom(5));
             typeContainer.Add(new PropertyField(_accessor.TargetStructTypeProperty, label: string.Empty));
 
             var container = new VisualElement()
                 .SetMarginTop(5)
-                .AddClass("aspid-fasttools-light")
-                .AddClass("aspid-fasttools-background");
+                .AddClass(ThemeStyle.LightClass)
+                .AddClass(AspidStyles.Background);
 
             container.Add(BuildSectionTitle("IDs"));
             container.Add(BuildWarningRow());
@@ -105,10 +105,10 @@ namespace Aspid.FastTools.Ids.Editors
         }
 
         private static VisualElement BuildSectionTitle(string text) =>
-            new AspidLabel(text, new LabelPreset()
-                .SetTheme(ThemeStyle.Light)
-                .SetLabelSize(AspidLabelSizeStyle.H2)
-                .SetLineSize(DividingLineSize.Medium));
+            new AspidLabel(text, new AspidLabelPreset()
+                .SetTheme(ThemeStyle.Type.Light)
+                .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                .SetLineSize(AspidDividingLineSizeStyle.Type.Medium));
 
         private void RebuildEntries()
         {

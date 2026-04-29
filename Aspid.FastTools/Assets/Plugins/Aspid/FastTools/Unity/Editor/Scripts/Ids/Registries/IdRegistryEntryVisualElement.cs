@@ -92,13 +92,13 @@ namespace Aspid.FastTools.Ids.Editors
         {
             _errorLabel.text = message;
             _errorLabel.SetDisplay(DisplayStyle.Flex);
-            _idBadge.AddClass(StyleClasses.Status.Error);
+            _idBadge.AddClass(StatusStyle.ErrorClass);
         }
 
         public void ClearError()
         {
             _errorLabel.SetDisplay(DisplayStyle.None);
-            _idBadge.RemoveClass(StyleClasses.Status.Error);
+            _idBadge.RemoveClass(StatusStyle.ErrorClass);
         }
 
         public void SetNameWithoutNotify(string name) =>
