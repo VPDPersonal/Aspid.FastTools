@@ -30,13 +30,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// USS class for the <see cref="Type.Bold"/> variant.
         /// </summary>
         public const string BoldClass = "aspid-fasttools-dividing-line--bold";
-
-        /// <summary>
-        /// USS class applied when the editor runs at low DPI (<c>pixelsPerPoint &lt; 2</c>),
-        /// so thin strokes stay visible.
-        /// </summary>
-        public const string LowDpiClass = "aspid-fasttools-dpi--low";
-
+        
         private readonly InlineStyle<Type> _value;
 
         /// <summary>
@@ -54,9 +48,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <param name="value">The initial size value.</param>
         public AspidDividingLineSizeStyle(AspidDividingLine element, Type value)
         {
-            if (EditorGUIUtility.pixelsPerPoint < 2f)
-                element.AddClass(LowDpiClass);
-
             _value = new InlineStyle<Type>(value, (oldValue, newValue) =>
             {
                 element
