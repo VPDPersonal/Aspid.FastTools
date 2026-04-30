@@ -1,5 +1,4 @@
 #nullable enable
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using Aspid.FastTools.Ids;
@@ -59,37 +58,6 @@ namespace Aspid.FastTools.Ids.Editors
                 _namesProp.DeleteArrayElementAtIndex(index);
         }
 
-        public bool Contains(string name)
-        {
-            for (var i = 0; i < Count; i++)
-                if (GetName(i) == name) return true;
-            return false;
-        }
-
-        public int MaxAssignedId
-        {
-            get
-            {
-                var max = 0;
-                for (var i = 0; i < Count; i++)
-                {
-                    var id = GetId(i);
-                    if (id > max) max = id;
-                }
-                return max;
-            }
-        }
-
-        public void Record(string operationName) =>
-            Undo.RegisterCompleteObjectUndo(_registry, operationName);
-
-        public void Commit()
-        {
-            SerializedObject.ApplyModifiedProperties();
-            _registry.InvalidateCache();
-            EditorUtility.SetDirty(_registry);
-        }
-
         public bool HasStructuralDamage(out string reason)
         {
             if (_idsProp.arraySize == _namesProp.arraySize)
@@ -99,22 +67,6 @@ namespace Aspid.FastTools.Ids.Editors
             }
             reason = $"Length mismatch: _ids has {_idsProp.arraySize} entries, _names has {_namesProp.arraySize}.";
             return true;
-        }
-
-        public IEnumerable<int> EnumerateInvalidIndices()
-        {
-            var seen = new HashSet<string>();
-            for (var i = 0; i < Count; i++)
-            {
-                var name = GetName(i);
-                if (string.IsNullOrEmpty(name))
-                {
-                    yield return i;
-                    continue;
-                }
-                if (!seen.Add(name))
-                    yield return i;
-            }
         }
     }
 }

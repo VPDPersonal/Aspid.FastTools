@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
 
@@ -15,10 +16,11 @@ namespace Aspid.FastTools.Ids.Editors
         /// <summary>
         /// Validates a candidate id name. Rules, in order: not whitespace,
         /// starts with a letter/underscore and contains only letters, digits,
-        /// underscore or hyphen, length ≤ 255, not in the optional
-        /// <paramref name="existing"/> set.
+        /// underscore or hyphen, length ≤ 255, not flagged by <paramref name="isTaken"/>.
+        /// Callers should pass a delegate over a cached lookup instead of
+        /// materialising a HashSet on every keystroke.
         /// </summary>
-        public static bool IsValidName(string? input, HashSet<string>? existing, out string? error)
+        public static bool IsValidName(string? input, Func<string, bool>? isTaken, out string? error)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -38,7 +40,7 @@ namespace Aspid.FastTools.Ids.Editors
                 return false;
             }
 
-            if (existing != null && existing.Contains(input))
+            if (isTaken != null && isTaken(input))
             {
                 error = $"'{input}' already exists.";
                 return false;

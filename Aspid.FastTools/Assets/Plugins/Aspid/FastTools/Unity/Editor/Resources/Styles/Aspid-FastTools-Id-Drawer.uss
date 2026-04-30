@@ -4,11 +4,11 @@
     margin: 1px -2px 1px 3px;
 }
 
-.aspid-fasttools-id-drawer-main-row {
+.aspid-fasttools-id-drawer__main-row {
     flex-direction: row;
 }
 
-.aspid-fasttools-id-drawer-label
+.aspid-fasttools-id-drawer__label
 {
     width: 40%;
     flex-grow: 1;
@@ -20,7 +20,7 @@
     -unity-text-align: middle-left;
 }
 
-.aspid-fasttools-id-drawer-dropdown
+.aspid-fasttools-id-drawer__dropdown
 {
     flex-grow: 1;
     flex-shrink: 1;
@@ -31,35 +31,35 @@
     text-overflow: ellipsis;
 }
 
-.aspid-fasttools-id-drawer-create-button
+.aspid-fasttools-id-drawer__create-button
 {
     margin-left: 4px;
 }
 
-.aspid-fasttools-id-drawer-create-row
+.aspid-fasttools-id-drawer__create-row
 {
     display: none;
     flex-direction: row;
     margin-top: 2px;
 }
 
-.aspid-fasttools-id-drawer-input
+.aspid-fasttools-id-drawer__input
 {
     flex-grow: 1;
     flex-shrink: 1;
 }
 
-.aspid-fasttools-id-drawer-add-button
+.aspid-fasttools-id-drawer__add-button
 {
     margin-left: 4px;
 }
 
-.aspid-fasttools-id-drawer-cancel-button
+.aspid-fasttools-id-drawer__cancel-button
 {
     margin-left: 2px;
 }
 
-.aspid-fasttools-id-drawer-error
+.aspid-fasttools-id-drawer__error
 {
     display: none;
     margin-top: 2px;
@@ -67,7 +67,7 @@
     font-size: 10px;
 }
 
-.aspid-fasttools-id-drawer-open-button
+.aspid-fasttools-id-drawer__open-button
 {
     flex-shrink: 0;
     margin: 0 2px;
@@ -78,14 +78,14 @@
     max-height: 18px;
 }
 
-.aspid-fasttools-id-drawer-open-button Image
+.aspid-fasttools-id-drawer__open-button Image
 {
     width: 14px;
     height: 14px;
     -unity-background-scale-mode: scale-to-fit;
 }
 
-.aspid-fasttools-id-drawer-int-only-hint
+.aspid-fasttools-id-drawer__int-only-hint
 {
     color: #aa8833;
     font-size: 10px;

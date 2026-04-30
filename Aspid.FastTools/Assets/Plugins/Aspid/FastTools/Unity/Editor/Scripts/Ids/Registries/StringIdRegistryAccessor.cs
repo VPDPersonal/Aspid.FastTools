@@ -1,5 +1,4 @@
 #nullable enable
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -52,57 +51,10 @@ namespace Aspid.FastTools.Ids.Editors
         public void RemoveAt(int index) =>
             _entriesProp.DeleteArrayElementAtIndex(index);
 
-        public bool Contains(string name)
-        {
-            for (var i = 0; i < Count; i++)
-                if (GetName(i) == name) return true;
-            return false;
-        }
-
-        public int MaxAssignedId
-        {
-            get
-            {
-                var max = 0;
-                for (var i = 0; i < Count; i++)
-                {
-                    var id = GetId(i);
-                    if (id > max) max = id;
-                }
-                return max;
-            }
-        }
-
-        public void Record(string operationName) =>
-            Undo.RegisterCompleteObjectUndo(_registry, operationName);
-
-        public void Commit()
-        {
-            SerializedObject.ApplyModifiedProperties();
-            _registry.InvalidateCache();
-            EditorUtility.SetDirty(_registry);
-        }
-
         public bool HasStructuralDamage(out string reason)
         {
             reason = string.Empty;
-            return false; // StringIdRegistry has a single-property storage, always consistent.
-        }
-
-        public IEnumerable<int> EnumerateInvalidIndices()
-        {
-            var seen = new HashSet<string>();
-            for (var i = 0; i < Count; i++)
-            {
-                var name = GetName(i);
-                if (string.IsNullOrEmpty(name))
-                {
-                    yield return i;
-                    continue;
-                }
-                if (!seen.Add(name))
-                    yield return i;
-            }
+            return false;
         }
     }
 }

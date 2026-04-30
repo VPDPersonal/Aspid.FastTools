@@ -13,53 +13,32 @@ namespace Aspid.FastTools.Ids.Editors
     /// Searches both <see cref="IdRegistry"/> and <see cref="StringIdRegistry"/>,
     /// enforcing one-registry-per-type at lookup time.
     /// </summary>
+    /// <remarks>
+    /// Cache strategy: lazy single-rebuild on first <see cref="Find"/> after a reset,
+    /// then point updates via <see cref="OnAssetImported"/> on subsequent imports.
+    /// Asset deletion or move triggers a full reset and the next <c>Find</c> rescans.
+    /// </remarks>
     internal static class IdRegistryResolver
     {
         private const string TargetStructTypeField = "_targetStructType";
 
-        private static readonly Dictionary<string, ScriptableObject?> _cache = new();
+        private static Dictionary<string, ScriptableObject>? _byAqn;
+        private static bool _warmedUp;
 
-        internal static void ClearCache() => _cache.Clear();
+        internal static void ClearCache()
+        {
+            _byAqn = null;
+            _warmedUp = false;
+        }
 
         public static ScriptableObject? Find(Type? declaringType)
         {
             if (declaringType == null) return null;
 
+            EnsureWarmedUp();
+
             var aqn = declaringType.AssemblyQualifiedName ?? string.Empty;
-            if (_cache.TryGetValue(aqn, out var cached))
-                return cached;
-
-            ScriptableObject? first = null;
-            List<string>? extraPaths = null;
-
-            foreach (var path in EnumerateRegistryPaths())
-            {
-                var registry = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
-                if (registry == null) continue;
-
-                var stored = ReadTargetStructType(registry);
-                if (stored != aqn) continue;
-
-                if (first == null)
-                {
-                    first = registry;
-                    continue;
-                }
-
-                extraPaths ??= new List<string> { AssetDatabase.GetAssetPath(first) };
-                extraPaths.Add(path);
-            }
-
-            if (extraPaths != null)
-            {
-                Debug.LogError(
-                    $"Multiple registries found for type {declaringType.Name}: "
-                    + string.Join(", ", extraPaths)
-                    + ". Each IdStruct type must be bound to exactly one registry.");
-            }
-
-            _cache[aqn] = first;
-            return first;
+            return _byAqn!.TryGetValue(aqn, out var registry) ? registry : null;
         }
 
         public static IdRegistry? FindIntOnly(Type? declaringType) =>
@@ -82,8 +61,87 @@ namespace Aspid.FastTools.Ids.Editors
             so.ApplyModifiedPropertiesWithoutUndo();
 
             AssetDatabase.SaveAssets();
-            _cache[declaringType.AssemblyQualifiedName ?? string.Empty] = reg;
+
+            EnsureWarmedUp();
+            _byAqn![declaringType.AssemblyQualifiedName ?? string.Empty] = reg;
             return reg;
+        }
+
+        /// <summary>
+        /// Called by <see cref="IdRegistryResolverCacheInvalidator"/> on imports of
+        /// <c>.asset</c> files. Updates the index in place when warmed up; a no-op otherwise
+        /// (the next <see cref="Find"/> will rescan from scratch).
+        /// </summary>
+        internal static void OnAssetImported(string path)
+        {
+            if (!_warmedUp || _byAqn == null) return;
+
+            var registry = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+            if (registry is not (IdRegistry or StringIdRegistry)) return;
+
+            var aqn = ReadTargetStructType(registry);
+            if (string.IsNullOrEmpty(aqn)) return;
+
+            if (_byAqn.TryGetValue(aqn, out var existing) && existing != null && existing != registry)
+            {
+                Debug.LogError(
+                    $"Multiple registries found for type AQN={aqn}: "
+                    + $"{AssetDatabase.GetAssetPath(existing)}, {path}. "
+                    + "Each IdStruct type must be bound to exactly one registry.");
+                return;
+            }
+
+            _byAqn[aqn] = registry;
+        }
+
+        /// <summary>Forces a full rescan on the next <see cref="Find"/> call.</summary>
+        internal static void ResetWarmUp() => ClearCache();
+
+        private static void EnsureWarmedUp()
+        {
+            if (_warmedUp && _byAqn != null) return;
+
+            _byAqn = new Dictionary<string, ScriptableObject>();
+            var duplicates = new Dictionary<string, List<string>>();
+
+            foreach (var path in EnumerateRegistryPaths())
+                TryRegisterAt(path, duplicates);
+
+            ReportDuplicates(duplicates);
+            _warmedUp = true;
+        }
+
+        private static void TryRegisterAt(string path, Dictionary<string, List<string>> duplicates)
+        {
+            var registry = AssetDatabase.LoadAssetAtPath<ScriptableObject>(path);
+            if (registry == null) return;
+
+            var aqn = ReadTargetStructType(registry);
+            if (string.IsNullOrEmpty(aqn)) return;
+
+            if (_byAqn!.TryGetValue(aqn, out var existing))
+            {
+                if (!duplicates.TryGetValue(aqn, out var list))
+                {
+                    list = new List<string> { AssetDatabase.GetAssetPath(existing) };
+                    duplicates[aqn] = list;
+                }
+                list.Add(path);
+                return;
+            }
+
+            _byAqn[aqn] = registry;
+        }
+
+        private static void ReportDuplicates(Dictionary<string, List<string>> duplicates)
+        {
+            foreach (var kv in duplicates)
+            {
+                Debug.LogError(
+                    $"Multiple registries found for type AQN={kv.Key}: "
+                    + string.Join(", ", kv.Value)
+                    + ". Each IdStruct type must be bound to exactly one registry.");
+            }
         }
 
         private static IEnumerable<string> EnumerateRegistryPaths()

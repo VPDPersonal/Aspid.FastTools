@@ -12,10 +12,6 @@ namespace Aspid.FastTools.Ids.Editors
     [CustomPropertyDrawer(typeof(IId), useForChildren: true)]
     internal sealed class IdStructPropertyDrawer : PropertyDrawer
     {
-        private static readonly System.Collections.Generic.Dictionary<string, (double time, bool isUnique)> _cache = new();
-        // Bumped to 10s pending a full rework of CheckIsUnique (see spec §4 row 11).
-        private const double CacheLifetime = 10.0;
-
         private bool? _isUnique;
         private bool IsUnique => _isUnique ??= fieldInfo.GetCustomAttributes(typeof(UniqueIdAttribute), false).Length > 0;
 
@@ -23,7 +19,7 @@ namespace Aspid.FastTools.Ids.Editors
         {
             var height = IdStructDrawer.GetIMGUIHeight(property);
 
-            if (IsUnique && !string.IsNullOrEmpty(property.FindPropertyRelative(Constants.StringIdFieldName)?.stringValue) && !GetIsUnique(property))
+            if (IsUnique && !string.IsNullOrEmpty(property.FindPropertyRelative(Constants.StringIdFieldName)?.stringValue) && !IsValueUnique(property))
                 height += EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
 
             return height;
@@ -38,7 +34,7 @@ namespace Aspid.FastTools.Ids.Editors
             if (!IsUnique) return;
 
             var stringId = property.FindPropertyRelative(Constants.StringIdFieldName)?.stringValue;
-            if (string.IsNullOrEmpty(stringId) || GetIsUnique(property)) return;
+            if (string.IsNullOrEmpty(stringId) || IsValueUnique(property)) return;
 
             var warnY    = position.y + drawH + EditorGUIUtility.standardVerticalSpacing;
             var warnRect = new Rect(position.x, warnY, position.width, EditorGUIUtility.singleLineHeight);
@@ -66,8 +62,9 @@ namespace Aspid.FastTools.Ids.Editors
             {
                 var p        = so.FindProperty(propPath);
                 var stringId = p?.FindPropertyRelative(Constants.StringIdFieldName)?.stringValue;
-                var isUnique = string.IsNullOrEmpty(stringId) || CheckIsUnique(p!, stringId!, declaringType);
-                warningLabel.SetDisplay(isUnique ? DisplayStyle.None : DisplayStyle.Flex);
+                var unique   = string.IsNullOrEmpty(stringId)
+                            || UniqueIdIndex.IsUnique(declaringType, stringId, GetCurrentAssetGuid(so));
+                warningLabel.SetDisplay(unique ? DisplayStyle.None : DisplayStyle.Flex);
             }
 
             var idProp = property.FindPropertyRelative(Constants.StringIdFieldName);
@@ -81,42 +78,21 @@ namespace Aspid.FastTools.Ids.Editors
                 .AddChild(warningLabel);
         }
 
-        private bool GetIsUnique(SerializedProperty structProp)
+        private bool IsValueUnique(SerializedProperty structProp)
         {
             var idProp = structProp.FindPropertyRelative(Constants.StringIdFieldName);
             if (idProp == null) return true;
 
-            var key = $"{structProp.serializedObject.targetObject.GetInstanceID()}:{structProp.propertyPath}:{idProp.stringValue}";
-            var now = EditorApplication.timeSinceStartup;
+            var stringId = idProp.stringValue;
+            if (string.IsNullOrEmpty(stringId)) return true;
 
-            if (_cache.TryGetValue(key, out var cached) && now - cached.time < CacheLifetime)
-                return cached.isUnique;
-
-            var result = CheckIsUnique(structProp, idProp.stringValue, fieldInfo.DeclaringType);
-            _cache[key] = (now, result);
-            return result;
+            return UniqueIdIndex.IsUnique(fieldInfo.DeclaringType, stringId, GetCurrentAssetGuid(structProp.serializedObject));
         }
 
-        private static bool CheckIsUnique(SerializedProperty structProp, string idValue, Type? assetType)
+        private static string GetCurrentAssetGuid(SerializedObject serializedObject)
         {
-            if (assetType == null || string.IsNullOrEmpty(idValue)) return true;
-
-            var currentObject = structProp.serializedObject.targetObject;
-            var fullPath      = $"{structProp.propertyPath}.{Constants.StringIdFieldName}";
-            var guids         = AssetDatabase.FindAssets($"t:{assetType.Name}");
-
-            foreach (var guid in guids)
-            {
-                var assetPath = AssetDatabase.GUIDToAssetPath(guid);
-                var asset     = AssetDatabase.LoadAssetAtPath(assetPath, assetType);
-                if (asset == null || asset == currentObject) continue;
-
-                var otherSo    = new SerializedObject(asset);
-                var otherValue = otherSo.FindProperty(fullPath)?.stringValue;
-                if (otherValue == idValue) return false;
-            }
-
-            return true;
+            var path = AssetDatabase.GetAssetPath(serializedObject.targetObject);
+            return string.IsNullOrEmpty(path) ? string.Empty : AssetDatabase.AssetPathToGUID(path);
         }
     }
 }

@@ -327,10 +327,11 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 
 | Член | Описание |
 |------|----------|
-| `int GetId(string name)` | Возвращает ID для имени или `-1`, если не найдено |
-| `string? GetNameId(int id)` | Возвращает имя для ID или `null`, если не найдено |
+| `bool TryGetId(string name, out int id)` | Возвращает `true` и найденный ID; иначе `false` |
+| `bool TryGetName(int id, out string name)` | Возвращает `true` и найденное имя; иначе `false` и `string.Empty` |
 | `bool Contains(int id)` | Зарегистрирован ли ID |
 | `bool Contains(string name)` | Зарегистрировано ли имя |
+| `int Count` | Количество записей |
 | `IEnumerable<int> Ids` · `IEnumerable<string> IdNames` | Перечисление зарегистрированных ID / имён |
 | `IEnumerator<KeyValuePair<int, string>> GetEnumerator()` | Итерация по парам `(id, name)` |
 
@@ -344,7 +345,7 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 | `bool Contains(int id)` | Зарегистрирован ли ID |
 | `IEnumerator<int> GetEnumerator()` | Итерация по зарегистрированным ID |
 
-У обоих реестров есть генерик-аналог (`StringIdRegistry<T>` / `IdRegistry<T>` с `T : struct, IId`), добавляющий типизированную перегрузку `Contains(T)`. Редактирование — добавление, переименование, удаление записей — выполняется через инспектор реестра и `RegistryEditorCore`, а не через публичный runtime API.
+Оба реестра наследуются от `IdRegistryBase` (в `Aspid.FastTools`) — non-generic абстрактный `ScriptableObject`, владеющий dirty-flag/cache инфраструктурой. Также у каждого есть генерик-аналог (`StringIdRegistry<T>` / `IdRegistry<T>` с `T : struct, IId`), добавляющий типизированную перегрузку `Contains(T)`. Редактирование — добавление, переименование, удаление записей — выполняется через инспектор реестра и `RegistryEditorCore`, а не через публичный runtime API.
 
 ---
 

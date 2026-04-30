@@ -1,10 +1,10 @@
-.aspid-fasttools-id-selector-container {
+.aspid-fasttools-id-selector__container {
     padding: 4px;
     flex-grow: 1;
     flex-direction: column;
 }
 
-.aspid-fasttools-id-selector-item
+.aspid-fasttools-id-selector__item
 {
     height: 22px;
     padding-left: 6px;
@@ -13,7 +13,7 @@
     align-items: center;
 }
 
-.aspid-fasttools-id-selector-item-name
+.aspid-fasttools-id-selector__item-name
 {
     flex-grow: 1;
     flex-shrink: 1;
@@ -22,7 +22,7 @@
     -unity-text-align: middle-left;
 }
 
-.aspid-fasttools-id-selector-item-id
+.aspid-fasttools-id-selector__item-id
 {
     flex-shrink: 0;
     margin-left: 8px;

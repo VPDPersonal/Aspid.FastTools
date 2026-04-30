@@ -35,8 +35,9 @@ namespace Aspid.FastTools.Ids.Editors
             if (currentId > 0 && stringIdProp != null)
             {
                 var reg = IdRegistryResolver.FindStringMapped(fieldType);
-                var registryName = reg?.GetNameId(currentId);
-                if (registryName != null && registryName != stringIdProp.stringValue)
+                if (reg != null
+                    && reg.TryGetName(currentId, out var registryName)
+                    && registryName != stringIdProp.stringValue)
                 {
                     stringIdProp.stringValue = registryName;
                     property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
@@ -120,7 +121,7 @@ namespace Aspid.FastTools.Ids.Editors
                 if (GUI.Button(addRect, "+"))
                 {
                     var registry = reg2 ?? IdRegistryResolver.CreateStringMapped(fieldType);
-                    var accessor = new StringIdRegistryAccessor(registry);
+                    IRegistryAccessor accessor = new StringIdRegistryAccessor(registry);
                     accessor.Record("Add string id");
                     var assignedId = accessor.Add(trimmed);
                     accessor.Commit();
@@ -239,7 +240,7 @@ namespace Aspid.FastTools.Ids.Editors
                 if (string.IsNullOrEmpty(name)) return;
 
                 var reg = IdRegistryResolver.FindStringMapped(fieldType) ?? IdRegistryResolver.CreateStringMapped(fieldType);
-                var accessor = new StringIdRegistryAccessor(reg);
+                IRegistryAccessor accessor = new StringIdRegistryAccessor(reg);
                 accessor.Record("Add string id");
                 var assignedId = accessor.Add(name);
                 accessor.Commit();
@@ -300,8 +301,9 @@ namespace Aspid.FastTools.Ids.Editors
                 if (intProp == null || strProp == null || intProp.intValue <= 0) return;
 
                 var reg = IdRegistryResolver.FindStringMapped(fieldType);
-                var registryName = reg?.GetNameId(intProp.intValue);
-                if (registryName == null || registryName == strProp.stringValue) return;
+                if (reg == null
+                    || !reg.TryGetName(intProp.intValue, out var registryName)
+                    || registryName == strProp.stringValue) return;
 
                 strProp.stringValue = registryName;
                 serializedObject.ApplyModifiedPropertiesWithoutUndo();
@@ -321,7 +323,8 @@ namespace Aspid.FastTools.Ids.Editors
             if (!string.IsNullOrEmpty(name))
             {
                 var reg = IdRegistryResolver.FindStringMapped(fieldType);
-                id = reg?.GetId(name) ?? 0;
+                if (reg != null && reg.TryGetId(name, out var foundId))
+                    id = foundId;
             }
             SetFields(property, stringIdProp, intIdProp, name, id);
         }

@@ -326,10 +326,11 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 
 | Member | Description |
 |--------|-------------|
-| `int GetId(string name)` | Returns the ID for a name, or `-1` if not found |
-| `string? GetNameId(int id)` | Returns the name for an ID, or `null` if not found |
+| `bool TryGetId(string name, out int id)` | Returns `true` and the ID when found; otherwise `false` |
+| `bool TryGetName(int id, out string name)` | Returns `true` and the name when found; otherwise `false` and `string.Empty` |
 | `bool Contains(int id)` | Whether an ID is registered |
 | `bool Contains(string name)` | Whether a name is registered |
+| `int Count` | Number of entries |
 | `IEnumerable<int> Ids` · `IEnumerable<string> IdNames` | Enumerate registered IDs / names |
 | `IEnumerator<KeyValuePair<int, string>> GetEnumerator()` | Iterate `(id, name)` pairs |
 
@@ -343,7 +344,7 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 | `bool Contains(int id)` | Whether an ID is registered |
 | `IEnumerator<int> GetEnumerator()` | Iterate registered IDs |
 
-Both registries expose a generic counterpart (`StringIdRegistry<T>` / `IdRegistry<T>` with `T : struct, IId`) that adds a strongly-typed `Contains(T)` overload. Edits — adding, renaming, removing entries — happen through the registry inspector and `RegistryEditorCore`, not via a public runtime API.
+Both registries derive from `IdRegistryBase` (in `Aspid.FastTools`), a non-generic abstract `ScriptableObject` that owns the dirty-flag/cache scaffolding. Each also exposes a generic counterpart (`StringIdRegistry<T>` / `IdRegistry<T>` with `T : struct, IId`) that adds a strongly-typed `Contains(T)` overload. Edits — adding, renaming, removing entries — happen through the registry inspector and `RegistryEditorCore`, not via a public runtime API.
 
 ---
 

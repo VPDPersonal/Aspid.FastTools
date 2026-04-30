@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.singularitygroup.hotreload": "git+https://gitlab.hotreload.net/root/hot-reload-releases.git#1.13.20",
     "com.unity.ai.navigation": "2.0.11",
     "com.unity.collab-proxy": "2.11.4",
     "com.unity.ide.rider": "3.0.39",
@@ -12,6 +13,7 @@
     "com.unity.timeline": "1.8.11",
     "com.unity.ugui": "2.0.0",
     "com.unity.visualscripting": "1.9.10",
+    "com.yucchiy.unicli-server": "https://github.com/yucchiy/UniCli.git?path=src/UniCli.Unity/Packages/com.yucchiy.unicli-server",
     "com.unity.modules.accessibility": "1.0.0",
     "com.unity.modules.adaptiveperformance": "1.0.0",
     "com.unity.modules.ai": "1.0.0",

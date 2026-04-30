@@ -1,5 +1,15 @@
 {
   "dependencies": {
+    "com.singularitygroup.hotreload": {
+      "version": "git+https://gitlab.hotreload.net/root/hot-reload-releases.git#1.13.20",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.ugui": "1.0.0",
+        "com.unity.modules.unitywebrequest": "1.0.0"
+      },
+      "hash": "6386a762a5f2a49b7fb0a620ed4ca1f9fd5413e4"
+    },
     "com.unity.ai.navigation": {
       "version": "2.0.11",
       "depth": 0,
@@ -214,6 +224,13 @@
         "com.unity.modules.jsonserialize": "1.0.0"
       },
       "url": "https://packages.unity.com"
+    },
+    "com.yucchiy.unicli-server": {
+      "version": "https://github.com/yucchiy/UniCli.git?path=src/UniCli.Unity/Packages/com.yucchiy.unicli-server",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "be0abbd15c319e1fd6c1843f4d57acbe90eedfce"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",

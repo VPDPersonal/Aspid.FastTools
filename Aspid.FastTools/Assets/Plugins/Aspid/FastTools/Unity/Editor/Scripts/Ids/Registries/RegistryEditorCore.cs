@@ -30,6 +30,8 @@ namespace Aspid.FastTools.Ids.Editors
         private Label? _addErrorLabel;
         private string _searchQuery = string.Empty;
 
+        private Dictionary<string, int>? _nameOccurrencesCache;
+
         private SortMode _sortMode = SortMode.RegistryOrder;
         private GroupMode _groupMode = GroupMode.None;
         private string _assetGuid = string.Empty;
@@ -109,8 +111,9 @@ namespace Aspid.FastTools.Ids.Editors
         private void RebuildEntries()
         {
             _viewModel.Clear();
+            _nameOccurrencesCache = null;
             var count = _accessor.Count;
-            
+
             var duplicates = new HashSet<string>();
             var seen = new HashSet<string>();
             for (var i = 0; i < count; i++)
@@ -361,8 +364,7 @@ namespace Aspid.FastTools.Ids.Editors
                 return;
             }
 
-            var existing = CollectExistingNames(exceptIndex: data.OriginalIndex);
-            if (IdRegistryValidator.IsValidName(trimmed, existing, out var error))
+            if (IdRegistryValidator.IsValidName(trimmed, IsTakenExcluding(data.OriginalIndex), out var error))
             {
                 row.SetEditMode(true, canConfirm: true);
                 row.ClearError();
@@ -379,8 +381,7 @@ namespace Aspid.FastTools.Ids.Editors
             var trimmed = rawValue?.Trim() ?? string.Empty;
             if (trimmed == data.Name || string.IsNullOrEmpty(trimmed)) return;
 
-            var existing = CollectExistingNames(exceptIndex: data.OriginalIndex);
-            if (!IdRegistryValidator.IsValidName(trimmed, existing, out _)) return;
+            if (!IdRegistryValidator.IsValidName(trimmed, IsTakenExcluding(data.OriginalIndex), out _)) return;
 
             _accessor.Record($"Rename ID '{data.Name}' → '{trimmed}'");
             _accessor.SetName(data.OriginalIndex, trimmed);
@@ -472,8 +473,7 @@ namespace Aspid.FastTools.Ids.Editors
                 return;
             }
 
-            var existing = CollectExistingNames(exceptIndex: -1);
-            if (!IdRegistryValidator.IsValidName(val, existing, out var err))
+            if (!IdRegistryValidator.IsValidName(val, IsTakenExcluding(-1), out var err))
             {
                 _addButton.SetEnabled(false);
                 _addErrorLabel.text = err ?? string.Empty;
@@ -597,18 +597,41 @@ namespace Aspid.FastTools.Ids.Editors
             return wrapper;
         }
 
-        private HashSet<string> CollectExistingNames(int exceptIndex)
+        private System.Func<string, bool> IsTakenExcluding(int exceptIndex)
         {
-            var set = new HashSet<string>();
+            var occurrences = EnsureNameOccurrencesCache();
+            if (exceptIndex < 0)
+                return name => occurrences.ContainsKey(name);
+
+            string? exceptName = null;
+            if (exceptIndex < _accessor.Count)
+            {
+                var n = _accessor.GetName(exceptIndex);
+                if (!string.IsNullOrEmpty(n)) exceptName = n;
+            }
+
+            return name =>
+            {
+                if (!occurrences.TryGetValue(name, out var count)) return false;
+                if (exceptName != null && exceptName == name) return count > 1;
+                return true;
+            };
+        }
+
+        private Dictionary<string, int> EnsureNameOccurrencesCache()
+        {
+            if (_nameOccurrencesCache != null) return _nameOccurrencesCache;
+
+            var cache = new Dictionary<string, int>();
             var count = _accessor.Count;
             for (var i = 0; i < count; i++)
             {
-                if (i == exceptIndex) continue;
                 var name = _accessor.GetName(i);
-                if (!string.IsNullOrEmpty(name))
-                    set.Add(name);
+                if (string.IsNullOrEmpty(name)) continue;
+                cache.TryGetValue(name, out var c);
+                cache[name] = c + 1;
             }
-            return set;
+            return _nameOccurrencesCache = cache;
         }
 
         private readonly struct EntryView

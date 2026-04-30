@@ -70,14 +70,14 @@ dotnet test
 
 **EnumValues<TValue>** (`Unity/Runtime/Enums/`): Serializable dictionary mapping enum values to arbitrary values. Handles `[Flags]` enums.
 
-**Id Registries** (`Unity/Runtime/Ids/`, `Unity/Editor/Scripts/Ids/`): Two ScriptableObject types with different runtime contracts:
+**Id Registries** (`Unity/Runtime/Ids/`, `Unity/Editor/Scripts/Ids/`): Two ScriptableObject types sharing a common `IdRegistryBase` (non-generic abstract `ScriptableObject` with the dirty-flag/cache scaffolding):
 
-- `StringIdRegistry` — full `int ↔ string` mapping at runtime; `GetId(name)`, `GetNameId(id)`, `Contains(name)`.
+- `StringIdRegistry` — full `int ↔ string` mapping at runtime; `TryGetId(name, out id)`, `TryGetName(id, out name)`, `Contains(int)`, `Contains(string)`.
 - `IdRegistry` — int-only at runtime; names are stored in an editor-only partial and stripped from player builds.
 
-Each struct type decorated with `[UniqueId]` / implementing `IId` should be bound to exactly **one** registry of either kind — uniqueness is enforced at lookup time by `IdRegistryResolver`, which searches both types.
+Each struct type decorated with `[UniqueId]` / implementing `IId` should be bound to exactly **one** registry of either kind — uniqueness is enforced at lookup time by `IdRegistryResolver`, which searches both types. The resolver lazily builds a `Type AQN → registry` index on first lookup and updates it incrementally via `AssetPostprocessor`. `UniqueIdIndex` mirrors that strategy for `[UniqueId]`-field collision checks (no `AssetDatabase.FindAssets` in the drawer hot path).
 
-Editor UI is shared through `RegistryEditorCore` + `IRegistryAccessor` (two implementations). Features: C#-identifier name validation, full Undo, explicit Clean-up flow for invalid entries, Sort/Group toolbar, manual Next ID with backward-step warning, Open-Registry shortcut on the `IdStruct` drawer.
+Editor UI is shared through `RegistryEditorCore` + `IRegistryAccessor` (two implementations). Common operations like `MaxAssignedId`, `Contains(string)`, `Record`, `Commit` and `EnumerateInvalidIndices` are default interface methods on `IRegistryAccessor`, so concrete accessors describe only storage. Features: C#-identifier name validation, full Undo, explicit Clean-up flow for invalid entries, Sort/Group toolbar, manual Next ID with backward-step warning, Open-Registry shortcut on the `IdStruct` drawer.
 
 The `IdStructGenerator` generates boilerplate for the struct side; the registry picks for that struct are made via `Assets → Create → Aspid/FastTools/Id Registry` (int-only) or `.../String Id Registry`.
 

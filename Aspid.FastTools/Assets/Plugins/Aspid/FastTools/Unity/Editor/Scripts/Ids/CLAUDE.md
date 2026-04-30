@@ -39,6 +39,8 @@ Ids/
 
 `RegistryEditorCore` **only** talks to `IRegistryAccessor` — never to `SerializedObject`/`SerializedProperty` of a concrete registry. If a new registry kind is added, implement the interface; `RegistryEditorCore` should not need to change.
 
+`Contains(string)`, `MaxAssignedId`, `EnumerateInvalidIndices`, `Record` and `Commit` are **default interface methods** on `IRegistryAccessor`. Concrete accessors only implement storage-specific members (`Count`, `GetId(int)`, `GetName(int)`, `Add`, `SetName`, `RemoveAt`, `HasStructuralDamage`). Because DIM dispatch only works through the interface, callers must hold accessors as `IRegistryAccessor` (not `IdRegistryAccessor` / `StringIdRegistryAccessor`) — see `IdStructDrawer` and the editor tests for the pattern. The default `Commit` casts `Target` to `IdRegistryBase` to invalidate its cache; both registries derive from that base, so the cast always succeeds.
+
 ### Mutation cycle — always three steps
 
 ```csharp
@@ -54,12 +56,12 @@ Skipping `Record` breaks Undo. Skipping `Commit` leaves the runtime cache stale 
 `IdRegistryResolver.Find(declaringType)` is the only sanctioned way to locate a registry asset for an `IId` struct type:
 
 - Indexes by `Type.AssemblyQualifiedName` against the registry's `_targetStructType` field.
-- Caches results in a process-wide dictionary; `IdRegistryResolverCacheInvalidator` clears it on any `.asset` import/delete/move.
+- Lazy single-rebuild on first `Find` after a reset; `IdRegistryResolverCacheInvalidator` updates the index in place via `OnAssetImported` for `.asset` imports and triggers a full reset on delete/move (next `Find` rescans).
 - Logs an error and returns the first match when **two** registries claim the same struct type (one-registry-per-type rule, enforced at lookup, not at creation).
 
 **Do not bypass this** with `AssetDatabase.FindAssets("t:IdRegistry")` — duplicate detection won't run, and the cache won't help. Use `Find` / `FindIntOnly` / `FindStringMapped` / `CreateStringMapped`. If a new code path mutates `_targetStructType`, ensure the asset is reimported (or call `ClearCache()`); silent edits via `SerializedObject` in non-asset contexts will leave the cache stale.
 
-`IdStructPropertyDrawer` resolves by `fieldInfo.FieldType` (the struct type itself), **not** `DeclaringType`. `CheckIsUnique` uses `DeclaringType` — that's the asset type containing the field, scanned for duplicate string ids.
+`IdStructPropertyDrawer` resolves by `fieldInfo.FieldType` (the struct type itself), **not** `DeclaringType`. The `[UniqueId]` collision check goes through `UniqueIdIndex.IsUnique(declaringType, stringId, currentAssetGuid)` — a project-wide index keyed by the asset type that declares the field. The index lazily scans every asset type that has at least one `[UniqueId]` field (via `TypeCache.GetFieldsWithAttribute<UniqueIdAttribute>()`), and `IdRegistryResolverCacheInvalidator` patches it incrementally on `.asset` imports.
 
 ## Field name and USS class registry — `Constants.cs`
 
@@ -70,13 +72,13 @@ All class names and serialized field names go through `Constants` — never hard
 - `Constants.Registry.*` — classes for `RegistryEditorCore` + threshold constants (`ScrollThreshold`, `MaxVisibleRows`, `RowHeight`).
 - `Constants.Selector.*` — classes for `StringIdSelectorWindow`.
 
-Class names here mostly use the legacy `aspid-fasttools-{block}-{element}` form (single dash). New classes should follow BEM (`__` between block and element) per the root `CLAUDE.md`; migrate the surrounding cluster when touching it rather than mixing styles within one component.
+All class names follow BEM (`__` between block and element) per the root `CLAUDE.md`. Add new classes through `Constants.cs` only — never hard-code a USS class string in component code.
 
 ## Validation and Clean-up
 
-`IdRegistryValidator.IsValidName(input, existing, out error)` is the **only** name check. Rules: not whitespace; matches `^[A-Za-z_][A-Za-z0-9_\-]*$`; ≤ 255 chars; not in `existing`. The Add-row, rename flow, and Clean-up summary all funnel through it — keep it that way so error messages stay consistent.
+`IdRegistryValidator.IsValidName(input, isTaken, out error)` is the **only** name check. Rules: not whitespace; matches `^[A-Za-z_][A-Za-z0-9_\-]*$`; ≤ 255 chars; not flagged by `isTaken` (pass `null` to skip the duplicate check). The Add-row, rename flow, and Clean-up summary all funnel through it — keep it that way so error messages stay consistent.
 
-`existing` must come from `CollectExistingNames(exceptIndex: data.OriginalIndex)` for renames (so the row's own name doesn't collide with itself), and `exceptIndex: -1` for adds.
+For per-keystroke validation reuse `RegistryEditorCore.IsTakenExcluding(int)`: it returns a `Func<string, bool>` backed by a name-occurrences cache built once per `RebuildEntries`, so renames don't re-scan the registry on every keystroke.
 
 `Summarize(accessor)` + `EnumerateInvalidIndices()` drive the warning row and Clean-up dialog. Definition of "invalid": empty name OR duplicate name OR `HasStructuralDamage`. Adding a new invalidity criterion requires updating both methods together, plus `CleanUpSummary.ToShortLabel` and the `ShowCleanUpDialog` message.
 
@@ -97,7 +99,7 @@ Sort mode, group mode, and per-group foldout state persist in `SessionState`, ke
 1. Declare the `partial struct` implementing `IId` (with `[UniqueId]` if it must be globally unique among assets of its declaring type). The generator emits `_id`, `Id`, and editor-only `__stringId`.
 2. In Unity: `Assets → Create → Aspid/FastTools/{Id Registry | String Id Registry}` for a registry asset.
 3. Set `_targetStructType` via the registry inspector's `Type` field — `IdRegistryResolver.Find` indexes by this AQN.
-4. Pick `IdRegistry` (int-only at runtime, names stripped from player builds) when names aren't needed at runtime; pick `StringIdRegistry` when `GetId(name)` / `GetNameId(id)` lookups must work in the player.
+4. Pick `IdRegistry` (int-only at runtime, names stripped from player builds) when names aren't needed at runtime; pick `StringIdRegistry` when `TryGetId(name, out)` / `TryGetName(id, out)` lookups must work in the player.
 
 ### Add a third registry storage type
 
