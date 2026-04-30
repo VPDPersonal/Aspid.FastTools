@@ -85,6 +85,102 @@ namespace Aspid.FastTools.Ids.EditorTests
             Assert.IsNotNull(IdRegistryResolver.Find(typeof(StubIdAlpha)));
         }
 
+        [Test]
+        public void RegistryChanged_FiresOnClearCache()
+        {
+            var fired = 0;
+            void Handler() => fired++;
+            IdRegistryResolver.RegistryChanged += Handler;
+            try
+            {
+                IdRegistryResolver.ClearCache();
+                Assert.AreEqual(1, fired);
+            }
+            finally
+            {
+                IdRegistryResolver.RegistryChanged -= Handler;
+            }
+        }
+
+        [Test]
+        public void RegistryChanged_FiresOnAssetImport()
+        {
+            // Warm up so the resolver is in the "patch index in place" path,
+            // where OnAssetImported notifies subscribers.
+            IdRegistryResolver.Find(typeof(StubIdAlpha));
+
+            var fired = 0;
+            void Handler() => fired++;
+            IdRegistryResolver.RegistryChanged += Handler;
+            try
+            {
+                CreateAt<IdRegistry>("AlphaImport.asset", typeof(StubIdAlpha));
+                Assert.GreaterOrEqual(fired, 1);
+            }
+            finally
+            {
+                IdRegistryResolver.RegistryChanged -= Handler;
+            }
+        }
+
+        [Test]
+        public void RegistryChanged_FiresOnCreateStringMapped()
+        {
+            IdRegistryResolver.Find(typeof(StubIdDelta));
+
+            var fired = 0;
+            void Handler() => fired++;
+            IdRegistryResolver.RegistryChanged += Handler;
+
+            StringIdRegistry? created = null;
+            try
+            {
+                created = IdRegistryResolver.CreateStringMapped(typeof(StubIdDelta));
+                Assert.GreaterOrEqual(fired, 1);
+            }
+            finally
+            {
+                IdRegistryResolver.RegistryChanged -= Handler;
+                DeleteIfCreated(created);
+            }
+        }
+
+        [Test]
+        public void GetOrCreateStringMapped_ReturnsExistingWhenPresent()
+        {
+            var existing = CreateAt<StringIdRegistry>("Existing.asset", typeof(StubIdAlpha));
+
+            var result = IdRegistryResolver.GetOrCreateStringMapped(typeof(StubIdAlpha));
+
+            Assert.AreSame(existing, result);
+        }
+
+        [Test]
+        public void GetOrCreateStringMapped_CreatesOnceWhenMissing()
+        {
+            StringIdRegistry? created = null;
+            try
+            {
+                var first = IdRegistryResolver.GetOrCreateStringMapped(typeof(StubIdEpsilon));
+                created = first;
+                var second = IdRegistryResolver.GetOrCreateStringMapped(typeof(StubIdEpsilon));
+
+                Assert.IsNotNull(first);
+                Assert.AreSame(first, second);
+            }
+            finally
+            {
+                DeleteIfCreated(created);
+            }
+        }
+
+        private static void DeleteIfCreated(StringIdRegistry? registry)
+        {
+            if (registry == null) return;
+            var path = AssetDatabase.GetAssetPath(registry);
+            if (!string.IsNullOrEmpty(path)) AssetDatabase.DeleteAsset(path);
+        }
+
         private static T CreateAt<T>(string fileName, System.Type targetStruct) where T : ScriptableObject
         {
             var asset = ScriptableObject.CreateInstance<T>();
@@ -102,5 +198,7 @@ namespace Aspid.FastTools.Ids.EditorTests
         private struct StubIdAlpha : IId { public int Id => 0; }
         private struct StubIdBeta : IId { public int Id => 0; }
         private struct StubIdGamma : IId { public int Id => 0; }
+        private struct StubIdDelta : IId { public int Id => 0; }
+        private struct StubIdEpsilon : IId { public int Id => 0; }
     }
 }

@@ -129,5 +129,21 @@ namespace Aspid.FastTools.Ids.EditorTests
 
             CollectionAssert.AreEquivalent(new[] { 1, 2 }, invalid);
         }
+
+        [Test]
+        public void Commit_InvalidatesRuntimeCache()
+        {
+            // Pre-condition: empty registry; warm cache so a second read uses cached state.
+            Assert.IsFalse(_registry.Contains(7));
+
+            _accessor.NextIdProperty.intValue = 7;
+            _accessor.Add("Beta");
+            _accessor.Commit();
+
+            // If Commit didn't invalidate the cache, Contains(7) would still see the
+            // pre-mutation HashSet and return false. The test passes only if the cache
+            // was rebuilt after the accessor mutation.
+            Assert.IsTrue(_registry.Contains(7));
+        }
     }
 }

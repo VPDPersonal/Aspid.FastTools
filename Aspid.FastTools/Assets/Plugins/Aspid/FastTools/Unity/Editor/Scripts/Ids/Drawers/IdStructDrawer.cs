@@ -63,8 +63,14 @@ namespace Aspid.FastTools.Ids.Editors
             var openRect = new Rect(dropRect.xMax + Gap, mainRect.y, OpenButtonWidth, mainRect.height);
             var btnRect  = new Rect(openRect.xMax + Gap, mainRect.y, CreateButtonWidth, mainRect.height);
 
-            var currentName = stringIdProp?.stringValue ?? string.Empty;
-            var isMissing = IsMissing(currentId, fieldType);
+            var storedName = stringIdProp?.stringValue ?? string.Empty;
+            var caption = IdStructCaption.Build(
+                currentId,
+                storedName,
+                IdRegistryResolver.Find(fieldType) as IdRegistryBase,
+                out _,
+                out var isMissing);
+
             var dropdownStyle = EditorStyles.miniPullDown;
             if (isMissing)
             {
@@ -75,7 +81,7 @@ namespace Aspid.FastTools.Ids.Editors
                 dropdownStyle.active.textColor = MissingTextColor;
             }
 
-            if (EditorGUI.DropdownButton(dropRect, new GUIContent(Caption(currentName, currentId, isMissing)), FocusType.Passive, dropdownStyle))
+            if (EditorGUI.DropdownButton(dropRect, new GUIContent(caption), FocusType.Passive, dropdownStyle))
             {
                 var reg = IdRegistryResolver.FindStringMapped(fieldType);
                 var sp = GUIUtility.GUIToScreenPoint(new Vector2(dropRect.x, dropRect.y));
@@ -320,27 +326,22 @@ namespace Aspid.FastTools.Ids.Editors
                 if (intProp == null || strProp == null) return;
 
                 var currentInt = intProp.intValue;
-                var currentName = strProp.stringValue ?? string.Empty;
+                var storedName = strProp.stringValue ?? string.Empty;
 
-                var found = IdRegistryResolver.Find(fieldType);
-                var isIntOnly = found is IdRegistry;
-                var stringMapped = found as StringIdRegistry;
+                var caption = IdStructCaption.Build(
+                    currentInt,
+                    storedName,
+                    IdRegistryResolver.Find(fieldType) as IdRegistryBase,
+                    out var resolvedName,
+                    out var isMissing);
 
-                string registryName = null;
-                var hasName = stringMapped != null
-                              && currentInt > 0
-                              && stringMapped.TryGetName(currentInt, out registryName);
-
-                if (hasName && registryName != currentName)
+                if (resolvedName != storedName)
                 {
-                    strProp.stringValue = registryName;
+                    strProp.stringValue = resolvedName;
                     serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                    currentName = registryName;
                 }
 
-                var isMissing = !isIntOnly && currentInt > 0 && !hasName;
-
-                dropdownButton.SetText(Caption(currentName, currentInt, isMissing));
+                dropdownButton.SetText(caption);
                 dropdownButton.EnableInClassList(Constants.Drawer.DropdownMissing, isMissing);
             }
         }
@@ -376,24 +377,6 @@ namespace Aspid.FastTools.Ids.Editors
         }
 
         private static readonly Color MissingTextColor = new Color(1f, 0.4f, 0.4f);
-
-        private static bool IsMissing(int currentId, Type fieldType)
-        {
-            if (currentId <= 0) return false;
-
-            var found = IdRegistryResolver.Find(fieldType);
-            if (found is IdRegistry) return false;
-            if (found is StringIdRegistry sm) return !sm.TryGetName(currentId, out _);
-            return true;
-        }
-
-        private static string Caption(string name, int id, bool isMissing)
-        {
-            if (isMissing)
-                return string.IsNullOrEmpty(name) ? $"<Missing id {id}>" : $"<Missing '{name}'>";
-
-            return string.IsNullOrEmpty(name) ? Constants.NoneOption : name;
-        }
 
         private static string PropertyKey(SerializedProperty p) =>
             $"{p.serializedObject.targetObject.GetInstanceID()}:{p.propertyPath}";

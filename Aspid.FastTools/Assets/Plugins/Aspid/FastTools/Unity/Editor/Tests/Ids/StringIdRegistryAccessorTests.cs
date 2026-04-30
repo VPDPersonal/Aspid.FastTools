@@ -81,5 +81,21 @@ namespace Aspid.FastTools.Ids.EditorTests
 
             CollectionAssert.AreEquivalent(new[] { 1, 2 }, invalid);
         }
+
+        [Test]
+        public void Commit_InvalidatesRuntimeCache()
+        {
+            Assert.IsFalse(_registry.Contains(7));
+
+            _accessor.NextIdProperty.intValue = 7;
+            _accessor.Add("Beta");
+            _accessor.Commit();
+
+            // Same invariant as IdRegistryAccessorTests: a stale cache would still
+            // reject id 7, so this assertion proves Commit triggered InvalidateCache.
+            Assert.IsTrue(_registry.Contains(7));
+            Assert.IsTrue(_registry.TryGetName(7, out var name));
+            Assert.AreEqual("Beta", name);
+        }
     }
 }
