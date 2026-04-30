@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace

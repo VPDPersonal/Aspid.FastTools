@@ -15,8 +15,16 @@ namespace Aspid.FastTools
     {
         [NonSerialized] private bool _cacheDirty = true;
 
+        /// <summary>
+        /// Gets the number of registered entries.
+        /// </summary>
         public abstract int Count { get; }
 
+        /// <summary>
+        /// Determines whether the registry contains the specified integer id.
+        /// </summary>
+        /// <param name="id">The integer id to look up.</param>
+        /// <returns><c>true</c> if the id is registered; otherwise <c>false</c>.</returns>
         public abstract bool Contains(int id);
 
         public void InvalidateCache() => _cacheDirty = true;
@@ -29,9 +37,7 @@ namespace Aspid.FastTools
         }
 
         protected abstract void RebuildCache();
-
-#if UNITY_EDITOR
+        
         protected virtual void OnValidate() => _cacheDirty = true;
-#endif
     }
 }

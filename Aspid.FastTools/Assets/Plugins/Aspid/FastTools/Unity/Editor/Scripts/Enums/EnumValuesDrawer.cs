@@ -1,8 +1,8 @@
 #nullable enable
 using System;
 using UnityEditor;
-using System.Collections.Generic;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Enums.Editors

@@ -1,5 +1,4 @@
 #nullable enable
-using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.UIElements;

@@ -1,7 +1,7 @@
 #nullable enable
 using System;
-using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors

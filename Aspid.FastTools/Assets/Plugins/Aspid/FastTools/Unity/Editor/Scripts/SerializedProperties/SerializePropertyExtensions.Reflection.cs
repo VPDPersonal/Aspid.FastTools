@@ -3,6 +3,7 @@ using UnityEditor;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using Aspid.FastTools.Reflection;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors

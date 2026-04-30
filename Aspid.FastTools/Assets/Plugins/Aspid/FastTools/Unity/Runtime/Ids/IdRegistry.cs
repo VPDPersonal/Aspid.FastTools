@@ -7,9 +7,18 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids
 {
+    /// <summary>
+    /// A strongly-typed wrapper around <see cref="IdRegistry"/> that exposes <see cref="IId"/>-aware membership checks.
+    /// </summary>
+    /// <typeparam name="T">The id struct type bound to this registry.</typeparam>
     public class IdRegistry<T> : IdRegistry
         where T : struct, IId
     {
+        /// <summary>
+        /// Determines whether the registry contains the integer value of the specified id struct.
+        /// </summary>
+        /// <param name="id">The id struct whose <see cref="IId.Id"/> is checked.</param>
+        /// <returns><c>true</c> if the underlying integer is registered; otherwise <c>false</c>.</returns>
         public bool Contains(T id) =>
             base.Contains(id.Id);
     }
@@ -26,8 +35,10 @@ namespace Aspid.FastTools.Ids
 
         [NonSerialized] private HashSet<int> _idSet = new();
 
+        /// <inheritdoc/>
         public override int Count => _ids.Length;
 
+        /// <inheritdoc/>
         public override bool Contains(int id)
         {
             EnsureCache();

@@ -1,23 +1,13 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
-using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using System.Reflection;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
-    /// <summary>
-    /// Project-wide index of asset GUIDs that use a given string id on a <c>[UniqueId]</c>
-    /// field, keyed by the asset type that declares the field. Replaces the per-OnGUI
-    /// <c>AssetDatabase.FindAssets</c> scan that the drawer used to perform.
-    /// </summary>
-    /// <remarks>
-    /// Lazy build on first <see cref="IsUnique"/> call after a reset; point updates from
-    /// <see cref="OnAssetChanged"/> on imports. The full reset path is reserved for
-    /// asset deletion/move where guids change.
-    /// </remarks>
     internal static class UniqueIdIndex
     {
         private static Dictionary<Type, Dictionary<string, HashSet<string>>>? _index;

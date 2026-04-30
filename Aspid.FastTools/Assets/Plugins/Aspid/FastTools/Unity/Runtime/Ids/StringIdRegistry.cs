@@ -8,9 +8,18 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools
 {
+    /// <summary>
+    /// A strongly-typed wrapper around <see cref="StringIdRegistry"/> that exposes <see cref="IId"/>-aware membership checks.
+    /// </summary>
+    /// <typeparam name="T">The id struct type bound to this registry.</typeparam>
     public class StringIdRegistry<T> : StringIdRegistry
         where T : struct, IId
     {
+        /// <summary>
+        /// Determines whether the registry contains the integer value of the specified id struct.
+        /// </summary>
+        /// <param name="id">The id struct whose <see cref="IId.Id"/> is checked.</param>
+        /// <returns><c>true</c> if the underlying integer is registered; otherwise <c>false</c>.</returns>
         public bool Contains(T id) =>
             base.Contains(id.Id);
     }
@@ -27,6 +36,7 @@ namespace Aspid.FastTools
         [NonSerialized] private Dictionary<string, int> _idByName = new();
         [NonSerialized] private Dictionary<int, string> _nameById = new();
 
+        /// <inheritdoc/>
         public override int Count => _entries.Length;
 
         public IEnumerable<int> Ids =>
@@ -35,12 +45,24 @@ namespace Aspid.FastTools
         public IEnumerable<string> IdNames =>
             this.Select(entry => entry.Value);
 
+        /// <summary>
+        /// Attempts to resolve the integer id for the given name.
+        /// </summary>
+        /// <param name="nameId">The string name to look up.</param>
+        /// <param name="id">When this method returns, contains the resolved integer id if found; otherwise zero.</param>
+        /// <returns><c>true</c> if a name-to-id mapping exists; otherwise <c>false</c>.</returns>
         public bool TryGetId(string nameId, out int id)
         {
             EnsureCache();
             return _idByName.TryGetValue(nameId, out id);
         }
 
+        /// <summary>
+        /// Attempts to resolve the string name for the given integer id.
+        /// </summary>
+        /// <param name="id">The integer id to look up.</param>
+        /// <param name="name">When this method returns, contains the resolved name if found; otherwise <see cref="string.Empty"/>.</param>
+        /// <returns><c>true</c> if an id-to-name mapping exists; otherwise <c>false</c>.</returns>
         public bool TryGetName(int id, out string name)
         {
             EnsureCache();
@@ -53,12 +75,18 @@ namespace Aspid.FastTools
             return false;
         }
 
+        /// <inheritdoc/>
         public override bool Contains(int id)
         {
             EnsureCache();
             return _nameById.ContainsKey(id);
         }
 
+        /// <summary>
+        /// Determines whether the registry contains an entry with the specified name.
+        /// </summary>
+        /// <param name="nameId">The string name to look up.</param>
+        /// <returns><c>true</c> if the name is registered; otherwise <c>false</c>.</returns>
         public bool Contains(string nameId)
         {
             EnsureCache();

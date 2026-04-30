@@ -1,12 +1,12 @@
 #nullable enable
 using System.IO;
-using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using NUnit.Framework;
 using UnityEngine.TestTools;
-using Aspid.FastTools.Ids;
 using Aspid.FastTools.Ids.Editors;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.EditorTests
 {
     [TestFixture]
