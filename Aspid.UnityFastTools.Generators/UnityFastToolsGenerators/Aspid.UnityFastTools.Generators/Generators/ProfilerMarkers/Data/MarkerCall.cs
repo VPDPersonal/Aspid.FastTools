@@ -12,7 +12,7 @@ public readonly struct MarkerCall(
     public readonly int Line = line;
     public readonly IMethodSymbol MethodSymbol = methodSymbol;
     public readonly INamedTypeSymbol NamedTypeSymbol = namedTypeSymbol;
-    
-    public readonly string MarkerName = markerName + "_line_" + line;
-    public readonly string MarkerValue = $"{namedTypeSymbol.Name}.{markerValue} ({line})";
+
+    public readonly string MarkerName = markerName + "_Marker_Line_" + line;
+    public readonly string Label = markerValue;
 }

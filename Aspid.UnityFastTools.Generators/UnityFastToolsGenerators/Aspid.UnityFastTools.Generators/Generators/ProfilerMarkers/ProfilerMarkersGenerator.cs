@@ -25,7 +25,7 @@ public class ProfilerMarkersGenerator : IIncrementalGenerator
     {
         if (node is not InvocationExpressionSyntax invocation) return false;
         if (invocation.Expression is not MemberAccessExpressionSyntax memberAccessExpression) return false;
-        
+
         return memberAccessExpression.Name is IdentifierNameSyntax
         {
             Identifier.ValueText: "Marker"
@@ -39,30 +39,42 @@ public class ProfilerMarkersGenerator : IIncrementalGenerator
         if (invocation.Expression is not MemberAccessExpressionSyntax memberAccessExpression) return null;
         if (memberAccessExpression.Name is not IdentifierNameSyntax idName || idName.Identifier.ValueText is not "Marker") return null;
         if (context.SemanticModel.GetEnclosingSymbol(invocation.SpanStart) is not IMethodSymbol enclosing) return null;
-        
+
         var namedTypeSymbol = enclosing.ContainingType;
         if (namedTypeSymbol is null) return null;
 
-        var markerName = enclosing.AssociatedSymbol is IPropertySymbol property
-            ? property.Name
-            : enclosing.MethodKind is MethodKind.Constructor
-                ? "Ctor"
-                : enclosing.Name;
-        
+        var markerName = ResolveMarkerName(enclosing);
         var markerValue = markerName;
-        
-        if (invocation.Parent is MemberAccessExpressionSyntax memberAccessExpressionWithName 
+
+        if (invocation.Parent is MemberAccessExpressionSyntax memberAccessExpressionWithName
             && memberAccessExpressionWithName.Name is IdentifierNameSyntax { Identifier.ValueText: "WithName" }
             && memberAccessExpressionWithName.Parent is InvocationExpressionSyntax invocationExpressionWithName
             && invocationExpressionWithName.ArgumentList.Arguments.FirstOrDefault()?.Expression is LiteralExpressionSyntax literalExpressionWithName)
         {
             markerValue = literalExpressionWithName.Token.ValueText;
         }
-        
+
         var lineSpan = invocation.GetLocation().GetLineSpan();
         var lineNumber = lineSpan.StartLinePosition.Line + 1;
-        
+
         return new MarkerCall(namedTypeSymbol, enclosing, lineNumber, markerName, markerValue);
+    }
+
+    private static string ResolveMarkerName(IMethodSymbol enclosing)
+    {
+        if (enclosing.AssociatedSymbol is IPropertySymbol property)
+        {
+            return property.ExplicitInterfaceImplementations.Length > 0
+                ? property.ExplicitInterfaceImplementations[0].Name
+                : property.Name;
+        }
+
+        if (enclosing.MethodKind is MethodKind.Constructor)
+            return "Ctor";
+
+        return enclosing.ExplicitInterfaceImplementations.Length > 0
+            ? enclosing.ExplicitInterfaceImplementations[0].Name
+            : enclosing.Name;
     }
 
     private static void GenerateCode(SourceProductionContext context, ImmutableArray<MarkerCall> markerCalls)
