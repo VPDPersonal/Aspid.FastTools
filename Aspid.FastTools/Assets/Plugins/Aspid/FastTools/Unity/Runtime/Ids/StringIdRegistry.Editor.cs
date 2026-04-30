@@ -4,7 +4,7 @@ using Aspid.FastTools.Types;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.Ids
 {
     public partial class StringIdRegistry
     {

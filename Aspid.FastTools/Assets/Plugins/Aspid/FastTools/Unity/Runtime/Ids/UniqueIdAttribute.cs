@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Diagnostics;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.Ids
 {
     /// <summary>
     /// Marks an integer field as a project-wide unique id. The editor drawer enforces uniqueness across all

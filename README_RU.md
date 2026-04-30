@@ -19,10 +19,9 @@
 
 | Пространство имён | Описание |
 |-------------------|----------|
-| `Aspid.FastTools` | `IId`, `UniqueIdAttribute`, `StringIdRegistry` |
 | `Aspid.FastTools.Types` | `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector`, `TypeSelectorAttribute` |
 | `Aspid.FastTools.Enums` | `EnumValues<T>` |
-| `Aspid.FastTools.Ids` | `IdRegistry` (int-only во рантайме) |
+| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` (int-only во рантайме), `StringIdRegistry` |
 | `Aspid.FastTools.UIElements` | Runtime fluent-расширения `VisualElement` |
 | `Aspid.FastTools.Editors` | Редакторские утилиты — расширения `SerializedProperty`, IMGUI-области, `GetScriptName` |
 | `Aspid.FastTools.Types.Editors` · `.Enums.Editors` · `.Ids.Editors` · `.UIElements.Editors` | Редакторский код по фичам (property drawers, инспектор реестров, editor-only расширения `VisualElement`) |

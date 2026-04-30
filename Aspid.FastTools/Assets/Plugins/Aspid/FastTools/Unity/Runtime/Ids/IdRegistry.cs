@@ -26,13 +26,12 @@ namespace Aspid.FastTools.Ids
     /// <summary>
     /// A ScriptableObject that holds a stable set of integer IDs for a given struct type.
     /// Names are stored and edited in the inspector but stripped from player builds.
-    /// Use <see cref="Aspid.FastTools.StringIdRegistry"/> when name lookups are needed at runtime.
+    /// Use <see cref="StringIdRegistry"/> when name lookups are needed at runtime.
     /// </summary>
     [CreateAssetMenu(fileName = "IdRegistry", menuName = "Aspid/FastTools/Id Registry")]
     public partial class IdRegistry : IdRegistryBase, IEnumerable<int>
     {
         [SerializeField] private int[] _ids = Array.Empty<int>();
-
         [NonSerialized] private HashSet<int> _idSet = new();
 
         /// <inheritdoc/>
@@ -45,15 +44,20 @@ namespace Aspid.FastTools.Ids
             return _idSet.Contains(id);
         }
 
+        /// <summary>
+        /// Returns an enumerator over the registered integer ids in serialized order.
+        /// </summary>
         public IEnumerator<int> GetEnumerator() =>
             ((IEnumerable<int>)_ids).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
 
+        /// <inheritdoc/>
         protected override void RebuildCache()
         {
             _idSet = new HashSet<int>(_ids.Length);
+            
             foreach (var id in _ids)
                 _idSet.Add(id);
         }

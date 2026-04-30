@@ -420,13 +420,17 @@ namespace Aspid.FastTools.Ids.Editors
                 tooltip = string.Empty,
             };
 
+            // PropertyField writes the value via SerializedObject and Unity already records the
+            // Undo step for that mutation. Calling Record here would create a duplicate Undo group
+            // on every callback (including ones triggered by Undo itself). Just invalidate the
+            // runtime cache and refresh dependent UI.
             fieldNextId.RegisterValueChangeCallback(e =>
             {
                 var newValue = e.changedProperty.intValue;
                 UpdateNextIdWarning(warning, newValue);
 
-                _accessor.Record("Set Next ID");
-                _accessor.Commit();
+                if (_accessor.Target is IdRegistryBase registry)
+                    registry.InvalidateCache();
                 RevalidateAddRow();
             });
 
@@ -540,15 +544,8 @@ namespace Aspid.FastTools.Ids.Editors
 
             _accessor.Record("Clean Up Invalid IDs");
 
-            var seen = new HashSet<string>();
-            var toRemove = new List<int>();
-            for (var i = 0; i < _accessor.Count; i++)
-            {
-                var name = _accessor.GetName(i);
-                if (string.IsNullOrEmpty(name) || !seen.Add(name))
-                    toRemove.Add(i);
-            }
-
+            // Single source of truth for invalidity criteria — see IRegistryAccessor.EnumerateInvalidIndices.
+            var toRemove = new List<int>(_accessor.EnumerateInvalidIndices());
             for (var i = toRemove.Count - 1; i >= 0; i--)
                 _accessor.RemoveAt(toRemove[i]);
 

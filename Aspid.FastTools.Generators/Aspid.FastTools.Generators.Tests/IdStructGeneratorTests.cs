@@ -9,7 +9,7 @@ namespace Aspid.FastTools.Generators.Tests
 {
     public class IdStructGeneratorTests
     {
-        private const string IIdDefinition = "namespace Aspid.FastTools { public interface IId { int Id { get; } } }";
+        private const string IIdDefinition = "namespace Aspid.FastTools.Ids { public interface IId { int Id { get; } } }";
 
         private static GeneratorDriverRunResult RunGenerator(string source)
         {
@@ -48,7 +48,7 @@ namespace Aspid.FastTools.Generators.Tests
             const string source = @"
 namespace Sample
 {
-    public partial struct Foo : global::Aspid.FastTools.IId { }
+    public partial struct Foo : global::Aspid.FastTools.Ids.IId { }
 }
 ";
             var result = RunGenerator(source);
@@ -70,7 +70,7 @@ namespace Sample
             const string source = @"
 namespace Sample
 {
-    public struct Foo : global::Aspid.FastTools.IId
+    public struct Foo : global::Aspid.FastTools.Ids.IId
     {
         public int Id => 0;
     }
@@ -104,12 +104,12 @@ namespace Sample
             const string source = @"
 namespace SampleA
 {
-    public partial struct Foo : global::Aspid.FastTools.IId { }
+    public partial struct Foo : global::Aspid.FastTools.Ids.IId { }
 }
 
 namespace SampleB
 {
-    public partial struct Foo : global::Aspid.FastTools.IId { }
+    public partial struct Foo : global::Aspid.FastTools.Ids.IId { }
 }
 ";
             var result = RunGenerator(source);
@@ -131,7 +131,7 @@ namespace Sample
 {
     public partial class Outer
     {
-        public partial struct Inner : global::Aspid.FastTools.IId { }
+        public partial struct Inner : global::Aspid.FastTools.Ids.IId { }
     }
 }
 ";

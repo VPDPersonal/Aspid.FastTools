@@ -1,4 +1,5 @@
 using System;
+using Aspid.FastTools.Ids;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Ids

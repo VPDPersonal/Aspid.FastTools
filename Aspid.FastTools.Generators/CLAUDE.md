@@ -110,7 +110,7 @@ Finds every `.Marker()` call site, extracts enclosing type + method + line numbe
 
 ### IdStructGenerator
 
-Finds `partial struct` types implementing `Aspid.FastTools.IId` and generates boilerplate: serialized `_id` field, `Id` property, editor-only `__stringId` field. Supports nested types — generated code is wrapped in matching `partial class`/`partial struct`/`partial record` containing-type declarations.
+Finds `partial struct` types implementing `Aspid.FastTools.Ids.IId` and generates boilerplate: serialized `_id` field, `Id` property, editor-only `__stringId` field. Supports nested types — generated code is wrapped in matching `partial class`/`partial struct`/`partial record` containing-type declarations.
 
 ## Conventions
 

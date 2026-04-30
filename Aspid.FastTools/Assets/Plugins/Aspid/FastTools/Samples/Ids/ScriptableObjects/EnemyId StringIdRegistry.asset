@@ -11,7 +11,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 70e390d14588e72409a6a95aca1461a7, type: 3}
   m_Name: EnemyId StringIdRegistry
-  m_EditorClassIdentifier: Aspid.FastTools.Unity::Aspid.FastTools.StringIdRegistry
+  m_EditorClassIdentifier: Aspid.FastTools.Unity::Aspid.FastTools.Ids.StringIdRegistry
   _targetStructType: Aspid.FastTools.Samples.Ids.EnemyId, Aspid.FastTools.Samples.Ids,
     Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _nextId: 5

@@ -6,7 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools
+namespace Aspid.FastTools.Ids
 {
     /// <summary>
     /// A strongly-typed wrapper around <see cref="StringIdRegistry"/> that exposes <see cref="IId"/>-aware membership checks.
@@ -15,6 +15,15 @@ namespace Aspid.FastTools
     public class StringIdRegistry<T> : StringIdRegistry
         where T : struct, IId
     {
+        /// <summary>
+        /// Attempts to resolve the string name for the specified id struct.
+        /// </summary>
+        /// <param name="id">The id struct whose <see cref="IId.Id"/> is looked up.</param>
+        /// <param name="nameId">When this method returns, contains the resolved name if found; otherwise <see cref="string.Empty"/>.</param>
+        /// <returns><c>true</c> if an id-to-name mapping exists; otherwise <c>false</c>.</returns>
+        public bool TryGetName(T id, out string nameId) =>
+            base.TryGetName(id.Id, out nameId);
+
         /// <summary>
         /// Determines whether the registry contains the integer value of the specified id struct.
         /// </summary>
@@ -39,9 +48,15 @@ namespace Aspid.FastTools
         /// <inheritdoc/>
         public override int Count => _entries.Length;
 
+        /// <summary>
+        /// Enumerates the registered integer ids in serialized order.
+        /// </summary>
         public IEnumerable<int> Ids =>
             this.Select(entry => entry.Key);
 
+        /// <summary>
+        /// Enumerates the registered string names in serialized order.
+        /// </summary>
         public IEnumerable<string> IdNames =>
             this.Select(entry => entry.Value);
 
@@ -61,18 +76,12 @@ namespace Aspid.FastTools
         /// Attempts to resolve the string name for the given integer id.
         /// </summary>
         /// <param name="id">The integer id to look up.</param>
-        /// <param name="name">When this method returns, contains the resolved name if found; otherwise <see cref="string.Empty"/>.</param>
+        /// <param name="nameId">When this method returns, contains the resolved name if found; otherwise <see cref="string.Empty"/>.</param>
         /// <returns><c>true</c> if an id-to-name mapping exists; otherwise <c>false</c>.</returns>
-        public bool TryGetName(int id, out string name)
+        public bool TryGetName(int id, out string nameId)
         {
             EnsureCache();
-            if (_nameById.TryGetValue(id, out var found))
-            {
-                name = found;
-                return true;
-            }
-            name = string.Empty;
-            return false;
+            return _nameById.TryGetValue(id, out nameId);
         }
 
         /// <inheritdoc/>
@@ -93,12 +102,16 @@ namespace Aspid.FastTools
             return _idByName.ContainsKey(nameId);
         }
 
+        /// <summary>
+        /// Returns an enumerator over the registered (id, name) pairs in serialized order.
+        /// </summary>
         public IEnumerator<KeyValuePair<int, string>> GetEnumerator() =>
             _entries.Select(entry => new KeyValuePair<int, string>(entry.Id, entry.Name)).GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
 
+        /// <inheritdoc/>
         protected override void RebuildCache()
         {
             _idByName = new Dictionary<string, int>(_entries.Length);
@@ -106,8 +119,9 @@ namespace Aspid.FastTools
 
             foreach (var entry in _entries)
             {
-                if (!string.IsNullOrEmpty(entry.Name))
+                if (!string.IsNullOrWhiteSpace(entry.Name))
                     _idByName[entry.Name] = entry.Id;
+                
                 _nameById[entry.Id] = entry.Name ?? string.Empty;
             }
         }

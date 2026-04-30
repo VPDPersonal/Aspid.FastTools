@@ -10,7 +10,7 @@ namespace Aspid.FastTools.Generators.IdStruct;
 [Generator(LanguageNames.CSharp)]
 public class IdStructGenerator : IIncrementalGenerator
 {
-    private const string IIdFullName = "Aspid.FastTools.IId";
+    private const string IIdFullName = "Aspid.FastTools.Ids.IId";
 
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {

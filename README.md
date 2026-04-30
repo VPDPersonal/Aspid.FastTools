@@ -23,10 +23,9 @@ Install Aspid.FastTools using one of the following methods:
 
 | Namespace | Description |
 |-----------|-------------|
-| `Aspid.FastTools` | `IId`, `UniqueIdAttribute`, `StringIdRegistry` |
 | `Aspid.FastTools.Types` | `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector`, `TypeSelectorAttribute` |
 | `Aspid.FastTools.Enums` | `EnumValues<T>` |
-| `Aspid.FastTools.Ids` | `IdRegistry` (int-only at runtime) |
+| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` (int-only at runtime), `StringIdRegistry` |
 | `Aspid.FastTools.UIElements` | Runtime `VisualElement` fluent extensions |
 | `Aspid.FastTools.Editors` | Editor helpers — `SerializedProperty` extensions, IMGUI scopes, `GetScriptName` |
 | `Aspid.FastTools.Types.Editors` · `.Enums.Editors` · `.Ids.Editors` · `.UIElements.Editors` | Per-feature editor code (property drawers, registry inspector, editor-only `VisualElement` extensions) |

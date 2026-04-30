@@ -79,6 +79,11 @@ namespace Aspid.FastTools.Ids.Editors
             if (registry is not (IdRegistry or StringIdRegistry)) return;
 
             var aqn = ReadTargetStructType(registry);
+
+            // The asset's target type may have just changed: drop any prior AQN entry that
+            // pointed at this registry so stale bindings don't survive the rename.
+            RemoveEntriesPointingTo(registry, exceptKey: aqn);
+
             if (string.IsNullOrEmpty(aqn)) return;
 
             if (_byAqn.TryGetValue(aqn, out var existing) && existing != null && existing != registry)
@@ -91,6 +96,24 @@ namespace Aspid.FastTools.Ids.Editors
             }
 
             _byAqn[aqn] = registry;
+        }
+
+        private static void RemoveEntriesPointingTo(ScriptableObject registry, string exceptKey)
+        {
+            if (_byAqn == null) return;
+
+            List<string>? toRemove = null;
+            foreach (var kv in _byAqn)
+            {
+                if (kv.Value != registry) continue;
+                if (kv.Key == exceptKey) continue;
+                toRemove ??= new List<string>();
+                toRemove.Add(kv.Key);
+            }
+            if (toRemove == null) return;
+
+            foreach (var key in toRemove)
+                _byAqn.Remove(key);
         }
 
         /// <summary>Forces a full rescan on the next <see cref="Find"/> call.</summary>
