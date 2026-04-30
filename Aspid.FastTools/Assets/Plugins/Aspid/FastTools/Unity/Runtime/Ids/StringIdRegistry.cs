@@ -99,7 +99,9 @@ namespace Aspid.FastTools.Ids
         public bool TryGetName(int id, out string nameId)
         {
             EnsureCache();
-            return _nameById.TryGetValue(id, out nameId);
+            if (_nameById.TryGetValue(id, out nameId!)) return true;
+            nameId = string.Empty;
+            return false;
         }
 
         /// <inheritdoc/>

@@ -11,7 +11,7 @@ namespace Aspid.FastTools.Ids.EditorTests
     {
         private StringIdRegistry _stringRegistry = null!;
         private IdRegistry _intRegistry = null!;
-        private StringIdRegistryAccessor _stringAccessor = null!;
+        private IRegistryAccessor _stringAccessor = null!;
 
         [SetUp]
         public void Setup()

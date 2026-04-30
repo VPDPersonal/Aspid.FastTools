@@ -86,7 +86,7 @@ namespace Aspid.FastTools.Ids.Editors
                 var reg = IdRegistryResolver.FindStringMapped(fieldType);
                 var sp = GUIUtility.GUIToScreenPoint(new Vector2(dropRect.x, dropRect.y));
                 var sr = new Rect(sp.x, sp.y, dropRect.width, dropRect.height);
-                StringIdSelectorWindow.Show(reg, sr, currentName,
+                StringIdSelectorWindow.Show(reg, sr, storedName,
                     selected => ApplySelection(property, stringIdProp, intIdProp, fieldType, selected));
             }
 
