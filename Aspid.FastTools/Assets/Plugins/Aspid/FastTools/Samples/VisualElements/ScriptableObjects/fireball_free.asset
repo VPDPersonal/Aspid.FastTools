@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6, type: 3}
-  m_Name: AbilityConfigAsset
+  m_Name: fireball_free
   m_EditorClassIdentifier: Aspid.FastTools.Samples.VisualElements::Aspid.FastTools.Samples.VisualElements.AbilityConfig
-  _abilityName: Fireball
+  _abilityName: Fireball - Free
   _description: Hurls a ball of fire that explodes on impact.
   _manaCost: 0
-  _cooldown: 3.5
+  _cooldown: 50
