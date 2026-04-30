@@ -44,21 +44,39 @@ namespace Aspid.FastTools.Ids
 
         [NonSerialized] private Dictionary<string, int> _idByName = new();
         [NonSerialized] private Dictionary<int, string> _nameById = new();
+        [NonSerialized] private int[] _idsCache = Array.Empty<int>();
+        [NonSerialized] private string[] _namesCache = Array.Empty<string>();
 
         /// <inheritdoc/>
         public override int Count => _entries.Length;
 
         /// <summary>
-        /// Enumerates the registered integer ids in serialized order.
+        /// Returns the registered integer ids in serialized order.
+        /// The snapshot is rebuilt by <see cref="IdRegistryBase.RebuildCache"/> and stays
+        /// stable between mutations; treat the result as read-only.
         /// </summary>
-        public IEnumerable<int> Ids =>
-            this.Select(entry => entry.Key);
+        public IReadOnlyList<int> Ids
+        {
+            get
+            {
+                EnsureCache();
+                return _idsCache;
+            }
+        }
 
         /// <summary>
-        /// Enumerates the registered string names in serialized order.
+        /// Returns the registered string names in serialized order.
+        /// The snapshot is rebuilt by <see cref="IdRegistryBase.RebuildCache"/> and stays
+        /// stable between mutations; treat the result as read-only.
         /// </summary>
-        public IEnumerable<string> IdNames =>
-            this.Select(entry => entry.Value);
+        public IReadOnlyList<string> IdNames
+        {
+            get
+            {
+                EnsureCache();
+                return _namesCache;
+            }
+        }
 
         /// <summary>
         /// Attempts to resolve the integer id for the given name.
@@ -117,13 +135,20 @@ namespace Aspid.FastTools.Ids
             using var _ = this.Marker();
             _idByName = new Dictionary<string, int>(_entries.Length);
             _nameById = new Dictionary<int, string>(_entries.Length);
+            _idsCache = new int[_entries.Length];
+            _namesCache = new string[_entries.Length];
 
-            foreach (var entry in _entries)
+            for (var i = 0; i < _entries.Length; i++)
             {
-                if (!string.IsNullOrWhiteSpace(entry.Name))
-                    _idByName[entry.Name] = entry.Id;
-                
-                _nameById[entry.Id] = entry.Name ?? string.Empty;
+                var entry = _entries[i];
+                var name = entry.Name ?? string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(name))
+                    _idByName[name] = entry.Id;
+
+                _nameById[entry.Id] = name;
+                _idsCache[i] = entry.Id;
+                _namesCache[i] = name;
             }
         }
 

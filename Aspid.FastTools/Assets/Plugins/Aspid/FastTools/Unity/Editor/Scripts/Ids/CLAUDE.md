@@ -40,7 +40,7 @@ Ids/
 
 `RegistryEditorCore` **only** talks to `IRegistryAccessor` — never to `SerializedObject`/`SerializedProperty` of a concrete registry. If a new registry kind is added, implement the interface; `RegistryEditorCore` should not need to change.
 
-`Contains(string)`, `MaxAssignedId`, `EnumerateInvalidIndices`, `Record` and `Commit` are **default interface methods** on `IRegistryAccessor`. Concrete accessors only implement storage-specific members (`Count`, `GetId(int)`, `GetName(int)`, `Add`, `SetName`, `RemoveAt`, `HasStructuralDamage`). Because DIM dispatch only works through the interface, callers must hold accessors as `IRegistryAccessor` (not `IdRegistryAccessor` / `StringIdRegistryAccessor`) — see `IdStructDrawer` and the editor tests for the pattern. The default `Commit` casts `Target` to `IdRegistryBase` to invalidate its cache; both registries derive from that base, so the cast always succeeds.
+`Contains(string)`, `MaxAssignedId`, `EnumerateInvalidIndices`, `Record` and `Commit` are **default interface methods** on `IRegistryAccessor`. Concrete accessors only implement storage-specific members (`Count`, `GetId(int)`, `GetName(int)`, `Add`, `SetName`, `RemoveAt`, `HasStructuralDamage`). Because DIM dispatch only works through the interface, callers must hold accessors as `IRegistryAccessor` (not `IdRegistryAccessor` / `StringIdRegistryAccessor`) — see `IdStructDrawer` and the editor tests for the pattern. `Target` is typed as `IdRegistryBase`, so the default `Commit` calls `Target.InvalidateCache()` directly — no runtime cast.
 
 ### Mutation cycle — always three steps
 

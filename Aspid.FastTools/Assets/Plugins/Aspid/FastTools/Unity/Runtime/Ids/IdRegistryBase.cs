@@ -11,7 +11,7 @@ namespace Aspid.FastTools.Ids
     /// Override <see cref="OnValidate"/> in derived classes only when extra logic is needed,
     /// and call <c>base.OnValidate()</c> first.
     /// </summary>
-    public abstract class IdRegistryBase : ScriptableObject
+    public abstract partial class IdRegistryBase : ScriptableObject
     {
         /// <summary>
         /// <c>true</c> when the in-memory lookup cache is out of sync with the serialized data

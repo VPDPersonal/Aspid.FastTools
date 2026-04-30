@@ -71,8 +71,17 @@ namespace Aspid.FastTools.Ids.Editors
 
             EnsureWarmedUp();
             _byAqn![declaringType.AssemblyQualifiedName ?? string.Empty] = reg;
+            RegistryChanged?.Invoke();
             return reg;
         }
+
+        /// <summary>
+        /// Returns the existing <see cref="StringIdRegistry"/> for <paramref name="declaringType"/>
+        /// or creates one when none is bound. Use from drawer code instead of the
+        /// <see cref="FindStringMapped"/> / <see cref="CreateStringMapped"/> pair.
+        /// </summary>
+        public static StringIdRegistry GetOrCreateStringMapped(Type declaringType) =>
+            FindStringMapped(declaringType) ?? CreateStringMapped(declaringType);
 
         /// <summary>
         /// Called by <see cref="IdRegistryResolverCacheInvalidator"/> on imports of

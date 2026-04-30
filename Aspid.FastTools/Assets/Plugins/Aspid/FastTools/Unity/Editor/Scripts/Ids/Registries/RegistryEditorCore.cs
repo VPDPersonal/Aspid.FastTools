@@ -448,8 +448,7 @@ namespace Aspid.FastTools.Ids.Editors
                 var newValue = e.changedProperty.intValue;
                 UpdateNextIdWarning(warning, newValue);
 
-                if (_accessor.Target is IdRegistryBase registry)
-                    registry.InvalidateCache();
+                _accessor.Target.InvalidateCache();
                 RevalidateAddRow();
             });
 

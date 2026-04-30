@@ -3,14 +3,15 @@ using UnityEngine;
 using Aspid.FastTools.Types;
 
 // ReSharper disable UnusedMember.Local
+// ReSharper disable NotAccessedField.Local
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids
 {
-    public partial class StringIdRegistry
+    public abstract partial class IdRegistryBase
     {
         [TypeSelector(typeof(IId))]
-        [SerializeField] private string _targetStructType;
-        
+        [SerializeField] private string _targetStructType = string.Empty;
+
         [SerializeField] private int _nextId = 1;
     }
 }

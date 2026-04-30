@@ -1,6 +1,5 @@
 #nullable enable
 using UnityEditor;
-using UnityEngine;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -12,7 +11,7 @@ namespace Aspid.FastTools.Ids.Editors
     /// </summary>
     internal interface IRegistryAccessor
     {
-        Object Target { get; }
+        IdRegistryBase Target { get; }
         SerializedObject SerializedObject { get; }
         SerializedProperty TargetStructTypeProperty { get; }
         SerializedProperty NextIdProperty { get; }
@@ -73,8 +72,7 @@ namespace Aspid.FastTools.Ids.Editors
         void Commit()
         {
             SerializedObject.ApplyModifiedProperties();
-            if (Target is IdRegistryBase registry)
-                registry.InvalidateCache();
+            Target.InvalidateCache();
             EditorUtility.SetDirty(Target);
         }
 

@@ -11,7 +11,7 @@ namespace Aspid.FastTools.Ids.Editors
         private readonly SerializedProperty _idsProp;
         private readonly SerializedProperty _namesProp;
 
-        public Object Target => _registry;
+        public IdRegistryBase Target => _registry;
         public SerializedObject SerializedObject { get; }
         public SerializedProperty TargetStructTypeProperty { get; }
         public SerializedProperty NextIdProperty { get; }

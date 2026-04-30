@@ -130,7 +130,7 @@ namespace Aspid.FastTools.Ids.Editors
             {
                 if (GUI.Button(addRect, "+"))
                 {
-                    var registry = reg2 ?? IdRegistryResolver.CreateStringMapped(fieldType);
+                    var registry = IdRegistryResolver.GetOrCreateStringMapped(fieldType);
                     IRegistryAccessor accessor = new StringIdRegistryAccessor(registry);
                     accessor.Record("Add string id");
                     var assignedId = accessor.Add(trimmed);
@@ -258,7 +258,7 @@ namespace Aspid.FastTools.Ids.Editors
                 var name = inputField.value?.Trim();
                 if (string.IsNullOrEmpty(name)) return;
 
-                var reg = IdRegistryResolver.FindStringMapped(fieldType) ?? IdRegistryResolver.CreateStringMapped(fieldType);
+                var reg = IdRegistryResolver.GetOrCreateStringMapped(fieldType);
                 IRegistryAccessor accessor = new StringIdRegistryAccessor(reg);
                 accessor.Record("Add string id");
                 var assignedId = accessor.Add(name);

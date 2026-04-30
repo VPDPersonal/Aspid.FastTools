@@ -1,6 +1,5 @@
 #nullable enable
 using UnityEditor;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
@@ -10,7 +9,7 @@ namespace Aspid.FastTools.Ids.Editors
         private readonly StringIdRegistry _registry;
         private readonly SerializedProperty _entriesProp;
 
-        public Object Target => _registry;
+        public IdRegistryBase Target => _registry;
         public SerializedObject SerializedObject { get; }
         public SerializedProperty TargetStructTypeProperty { get; }
         public SerializedProperty NextIdProperty { get; }
