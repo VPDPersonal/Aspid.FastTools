@@ -9,18 +9,38 @@ ToolbarSearchField {
 }
 
 .aspid-fasttools-id-registry__toolbar {
-    margin: 5px -1;
+    margin: 5px -1px;
     padding-bottom: 5px;
     flex-direction: row;
     border-width: 0;
     border-bottom-width: 1px;
-    border-bottom-color: rgb(56, 56, 56);
+    border-bottom-color: var(--aspid-colors-bg-lightness);
 }
 
-.aspid-fasttools-id-registry__toolbar > EnumField {
-    margin: 0;
+.aspid-fasttools-id-registry__toolbar-cell {
+    flex-direction: row;
+    align-items: center;
     flex-grow: 1;
     flex-basis: 0;
+}
+
+.aspid-fasttools-id-registry__toolbar-cell:nth-of-type(2) {
+    margin-left: 6px;
+}
+
+.aspid-fasttools-id-registry__toolbar-cell > Label {
+    flex-shrink: 0;
+    margin: 0 6px 0 0;
+    padding: 0;
+    font-size: 11px;
+    color: var(--aspid-colors-text-dark);
+    -unity-text-align: middle-left;
+}
+
+.aspid-fasttools-id-registry__toolbar-cell > EnumField {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0;
 }
 
 .aspid-fasttools-id-registry__group-foldout {
@@ -29,6 +49,10 @@ ToolbarSearchField {
 
 .aspid-fasttools-id-registry__group-foldout > Toggle {
     margin-left: 0;
+}
+
+.aspid-fasttools-id-registry__empty-state {
+    margin: 8px 0;
 }
 
 IdRegistryEntryVisualElement {
@@ -41,13 +65,13 @@ IdRegistryEntryVisualElement {
 }
 
 IdRegistryEntryVisualElement > VisualElement {
-    padding: 5;
-    margin-bottom: 3;
+    padding: 5px;
+    margin-bottom: 3px;
     min-height: 22px;
     flex-direction: row;
     align-items: center;
     border-radius: 10px;
-    background-color: rgb(60, 60, 60);
+    background-color: var(--aspid-colors-shade-dark);
 }
 
 IdRegistryEntryVisualElement > VisualElement > Label {
@@ -58,55 +82,61 @@ IdRegistryEntryVisualElement > VisualElement > Label {
     padding: 2px 8px;
     border-width: 1px;
     border-radius: 10px;
-    border-color: rgb(26, 26, 26);
+    border-color: var(--aspid-colors-bg-darkness);
     -unity-text-align: middle-center;
 
-    color: rgb(192, 192, 192);
-    background-color: rgb(46, 46, 46);
+    color: var(--aspid-colors-text-light);
+    background-color: var(--aspid-colors-bg-light);
+    transition: background-color 80ms ease-out, color 80ms ease-out;
 }
 
 IdRegistryEntryVisualElement > VisualElement > Label.aspid-fasttools-status--error {
-    color: rgb(255, 64, 64);
-    background-color: rgb(79, 30, 30);
+    color: var(--aspid-colors-status-error-text-light);
+    background-color: var(--aspid-colors-status-error-dark);
 }
 
 IdRegistryEntryVisualElement TextField {
     flex-grow: 1;
     flex-shrink: 1;
     margin: 0 0 0 5px;
+    border-radius: 6px;
+    transition: border-color 80ms ease-out;
+}
+
+IdRegistryEntryVisualElement TextField:focus-within {
+    border-color: var(--aspid-colors-status-info-text-dark);
 }
 
 IdRegistryEntryVisualElement Button {
-    margin: 0;
-    padding: 0;
-    color: rgb(210, 210, 210);
+    margin: 0 0 0 5px;
+    padding: 0 0 2px 0;
+    color: var(--aspid-colors-text-lightness);
     flex-shrink: 0;
     min-width: 20px;
     max-width: 20px;
     min-height: 18px;
     max-height: 18px;
-    margin-left: 5px;
     font-size: 14px;
     border-radius: 3px;
-    padding-bottom: 2px;
-    border-color: rgb(26, 26, 26);
-    background-color: rgb(46, 46, 46);
+    border-color: var(--aspid-colors-bg-darkness);
+    background-color: var(--aspid-colors-bg-light);
+    transition: background-color 80ms ease-out, color 80ms ease-out, border-color 80ms ease-out;
 }
 
 IdRegistryEntryVisualElement .aspid-fasttools-id-registry__delete:hover {
-    color: rgb(255, 64, 64);
-    border-color: rgb(255, 64, 64);
-    background-color: rgb(79, 30, 30);
+    color: var(--aspid-colors-status-error-text-light);
+    border-color: var(--aspid-colors-status-error-text-light);
+    background-color: var(--aspid-colors-status-error-dark);
 }
 
 IdRegistryEntryVisualElement .aspid-fasttools-id-registry__confirm:enabled:hover {
-    color: rgb(127, 255, 127);
-    border-color: rgb(127, 255, 127);
-    background-color: rgb(30, 60, 30);
+    color: var(--aspid-colors-status-success-text-light);
+    border-color: var(--aspid-colors-status-success-text-light);
+    background-color: var(--aspid-colors-status-success-dark);
 }
 
 IdRegistryEntryVisualElement > Label {
-    color: rgb(255, 102, 102);
+    color: var(--aspid-colors-status-error-text-light);
     font-size: 11px;
     margin: 0 0 3px 0;
 }
@@ -115,7 +145,7 @@ IdRegistryEntryVisualElement > Label {
     border-width: 0;
     margin: 5px 0 0 0;
     border-top-width: 1px;
-    border-top-color: rgb(56, 56, 56);
+    border-top-color: var(--aspid-colors-bg-lightness);
 }
 
 .aspid-fasttools-id-registry__next-id > VisualElement {
@@ -124,7 +154,7 @@ IdRegistryEntryVisualElement > Label {
     align-items: center;
     flex-direction: row;
     border-radius: 10px;
-    background-color: rgb(60, 60, 60);
+    background-color: var(--aspid-colors-shade-dark);
 }
 
 .aspid-fasttools-id-registry__next-id PropertyField {
@@ -145,10 +175,10 @@ IdRegistryEntryVisualElement > Label {
 }
 
 .aspid-fasttools-id-registry__add {
-    padding: 5;
+    padding: 5px;
     margin: 5px 0 0 0;
     border-radius: 10px;
-    background-color: rgb(60, 60, 60);
+    background-color: var(--aspid-colors-shade-dark);
 }
 
 .aspid-fasttools-id-registry__add > VisualElement {
@@ -160,33 +190,38 @@ IdRegistryEntryVisualElement > Label {
     margin: 0;
     flex-grow: 1;
     flex-shrink: 1;
+    border-radius: 6px;
+    transition: border-color 80ms ease-out;
+}
+
+.aspid-fasttools-id-registry__add TextField:focus-within {
+    border-color: var(--aspid-colors-status-info-text-dark);
 }
 
 .aspid-fasttools-id-registry__add Button {
-    margin: 0;
-    padding: 0;
-    color: rgb(210, 210, 210);
+    margin: 0 0 0 5px;
+    padding: 0 0 2px 0;
+    color: var(--aspid-colors-text-lightness);
     flex-shrink: 0;
     min-width: 20px;
     max-width: 20px;
     min-height: 18px;
     max-height: 18px;
-    margin-left: 5px;
     font-size: 14px;
     border-radius: 3px;
-    padding-bottom: 2px;
-    border-color: rgb(26, 26, 26);
-    background-color: rgb(46, 46, 46);
+    border-color: var(--aspid-colors-bg-darkness);
+    background-color: var(--aspid-colors-bg-light);
+    transition: background-color 80ms ease-out, color 80ms ease-out, border-color 80ms ease-out;
 }
 
 .aspid-fasttools-id-registry__add Button:enabled:hover {
-    color: rgb(127, 255, 127);
-    border-color: rgb(127, 255, 127);
-    background-color: rgb(30, 60, 30);
+    color: var(--aspid-colors-status-success-text-light);
+    border-color: var(--aspid-colors-status-success-text-light);
+    background-color: var(--aspid-colors-status-success-dark);
 }
 
 .aspid-fasttools-id-registry__add > Label {
-    color: rgb(255, 102, 102);
+    color: var(--aspid-colors-status-error-text-light);
     font-size: 11px;
     margin: 3px 0 0 0;
 }
@@ -197,8 +232,8 @@ IdRegistryEntryVisualElement > Label {
     align-items: center;
     padding: 5px 8px;
     margin-bottom: 4px;
-    background-color: rgb(79, 30, 30);
     border-radius: 6px;
+    background-color: var(--aspid-colors-status-error-dark);
 }
 
 .aspid-fasttools-id-registry__warning--visible {
@@ -207,7 +242,7 @@ IdRegistryEntryVisualElement > Label {
 
 .aspid-fasttools-id-registry__warning-label {
     flex-grow: 1;
-    color: rgb(255, 153, 153);
+    color: var(--aspid-colors-status-error-text-lightness);
     font-size: 11px;
 }
 

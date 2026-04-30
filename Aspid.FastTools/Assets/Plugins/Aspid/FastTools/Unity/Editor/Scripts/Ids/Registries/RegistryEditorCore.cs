@@ -19,7 +19,7 @@ namespace Aspid.FastTools.Ids.Editors
         private readonly IRegistryAccessor _accessor;
 
         private readonly List<EntryView> _viewModel = new();
-        private Label? _emptyLabel;
+        private AspidHelpBox? _emptyState;
         private ListView? _listView;
         private VisualElement? _listContainer;
         private VisualElement? _warningRow;
@@ -89,7 +89,14 @@ namespace Aspid.FastTools.Ids.Editors
 
             _listContainer = new VisualElement();
             container.Add(_listContainer);
-            
+
+            _emptyState = new AspidHelpBox(
+                "No entries yet. Use the field below to create your first ID.",
+                AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
+                .AddClass(Constants.Registry.EmptyState);
+            _emptyState.SetDisplay(DisplayStyle.None);
+            container.Add(_emptyState);
+
             container.Add(BuildNextIdRow());
             container.Add(BuildAddRow());
 
@@ -152,8 +159,12 @@ namespace Aspid.FastTools.Ids.Editors
 
             UpdateListScrollState();
             RefreshWarningRow();
+            RefreshEmptyState();
             RevalidateAddRow();
         }
+
+        private void RefreshEmptyState() =>
+            _emptyState?.SetDisplay(_accessor.Count == 0 ? DisplayStyle.Flex : DisplayStyle.None);
 
         private ListView BuildListView()
         {
@@ -196,10 +207,16 @@ namespace Aspid.FastTools.Ids.Editors
                 RebuildEntries();
             });
 
-            row.Add(sort);
-            row.Add(group);
+            row.Add(BuildToolbarCell("Sort", sort));
+            row.Add(BuildToolbarCell("Group", group));
             return row;
         }
+
+        private static VisualElement BuildToolbarCell(string label, VisualElement field) =>
+            new VisualElement()
+                .AddClass(Constants.Registry.ToolbarCell)
+                .AddChild(new Label(label))
+                .AddChild(field);
 
         private void ApplySort(List<EntryView> list)
         {

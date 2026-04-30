@@ -26,8 +26,8 @@
 {
     flex-shrink: 0;
     margin-left: 8px;
-    color: #808080;
     font-size: 11px;
+    color: var(--aspid-colors-text-dark);
     -unity-text-align: middle-right;
 }
 
