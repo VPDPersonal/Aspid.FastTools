@@ -36,9 +36,12 @@ IdRegistryEntryVisualElement {
     flex-direction: column;
 }
 
+.aspid-fasttools-id-registry__list .unity-scroller--vertical {
+    margin-left: 5px;
+}
+
 IdRegistryEntryVisualElement > VisualElement {
     padding: 5;
-    margin-right: 5;
     margin-bottom: 3;
     min-height: 22px;
     flex-direction: row;

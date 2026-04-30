@@ -168,6 +168,7 @@ namespace Aspid.FastTools.Ids.Editors
                 showBoundCollectionSize = false,
                 showAddRemoveFooter = false,
             };
+            list.AddToClassList(Constants.Registry.List);
             list.SetMakeItem(CreateEntryRow);
             list.SetBindItem(BindEntryRow);
             return list;
@@ -263,6 +264,7 @@ namespace Aspid.FastTools.Ids.Editors
                     showBoundCollectionSize = false,
                     showAddRemoveFooter = false,
                 };
+                groupList.AddToClassList(Constants.Registry.List);
                 groupList.SetMakeItem(CreateEntryRow);
                 groupList.SetBindItem((element, visibleIndex) =>
                 {

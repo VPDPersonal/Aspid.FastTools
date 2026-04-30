@@ -98,7 +98,7 @@ Sort mode, group mode, and per-group foldout state persist in `SessionState`, ke
 ### Add a new IdStruct in the codebase
 
 1. Declare the `partial struct` implementing `IId` (with `[UniqueId]` if it must be globally unique among assets of its declaring type). The generator emits `_id`, `Id`, and editor-only `__stringId`.
-2. In Unity: `Assets → Create → Aspid/FastTools/{Id Registry | String Id Registry}` for a registry asset.
+2. In Unity: `Assets → Create → Aspid/Id Registry/{Id Registry | String Id Registry}` for a registry asset.
 3. Set `_targetStructType` via the registry inspector's `Type` field — `IdRegistryResolver.Find` indexes by this AQN.
 4. Pick `IdRegistry` (int-only at runtime, names stripped from player builds) when names aren't needed at runtime; pick `StringIdRegistry` when `TryGetId(name, out)` / `TryGetName(id, out)` lookups must work in the player.
 

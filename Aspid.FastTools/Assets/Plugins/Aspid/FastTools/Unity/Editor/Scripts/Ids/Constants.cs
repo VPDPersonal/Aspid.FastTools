@@ -16,6 +16,7 @@ namespace Aspid.FastTools.Ids.Editors
             public const string MainRow = "aspid-fasttools-id-drawer__main-row";
             public const string Label = "aspid-fasttools-id-drawer__label";
             public const string Dropdown = "aspid-fasttools-id-drawer__dropdown";
+            public const string DropdownMissing = "aspid-fasttools-id-drawer__dropdown--missing";
             public const string CreateButton = "aspid-fasttools-id-drawer__create-button";
             public const string CreateRow = "aspid-fasttools-id-drawer__create-row";
             public const string Input = "aspid-fasttools-id-drawer__input";
@@ -40,6 +41,7 @@ namespace Aspid.FastTools.Ids.Editors
             public const string NextId = "aspid-fasttools-id-registry__next-id";
             public const string Toolbar = "aspid-fasttools-id-registry__toolbar";
             public const string GroupFoldout = "aspid-fasttools-id-registry__group-foldout";
+            public const string List = "aspid-fasttools-id-registry__list";
 
             public const int ScrollThreshold = 10;
             public const int MaxVisibleRows = 10;

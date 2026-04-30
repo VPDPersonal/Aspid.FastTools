@@ -79,7 +79,7 @@ Each struct type decorated with `[UniqueId]` / implementing `IId` should be boun
 
 Editor UI is shared through `RegistryEditorCore` + `IRegistryAccessor` (two implementations). Common operations like `MaxAssignedId`, `Contains(string)`, `Record`, `Commit` and `EnumerateInvalidIndices` are default interface methods on `IRegistryAccessor`, so concrete accessors describe only storage. Features: C#-identifier name validation, full Undo, explicit Clean-up flow for invalid entries, Sort/Group toolbar, manual Next ID with backward-step warning, Open-Registry shortcut on the `IdStruct` drawer.
 
-The `IdStructGenerator` generates boilerplate for the struct side; the registry picks for that struct are made via `Assets → Create → Aspid/FastTools/Id Registry` (int-only) or `.../String Id Registry`.
+The `IdStructGenerator` generates boilerplate for the struct side; the registry picks for that struct are made via `Assets → Create → Aspid/Id Registry/Id Registry` (int-only) or `.../String Id Registry`.
 
 **SerializedProperty Extensions** (`Unity/Editor/Scripts/SerializedProperties/`): Fluent chainable extensions (`.SetValue()`, `.Apply()`, reflection helpers). Split across multiple partial files.
 

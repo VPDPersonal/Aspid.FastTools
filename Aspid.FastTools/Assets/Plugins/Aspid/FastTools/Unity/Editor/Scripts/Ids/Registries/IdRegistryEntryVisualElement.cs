@@ -49,9 +49,25 @@ namespace Aspid.FastTools.Ids.Editors
 
             _nameField.RegisterCallback<FocusInEvent>(_ => NameFocusIn?.Invoke(this, Data));
             _nameField.RegisterValueChangedCallback(e => NameChanging?.Invoke(this, Data, e.newValue));
+            _nameField.RegisterCallback<FocusOutEvent>(OnNameFieldFocusOut);
             _deleteButton.clicked += () => DeleteRequested?.Invoke(this, Data);
             _confirmButton.clicked += () => NameCommitRequested?.Invoke(this, Data, _nameField.value);
         }
+
+        private void OnNameFieldFocusOut(FocusOutEvent evt)
+        {
+            if (evt.relatedTarget is VisualElement target && IsCommitTarget(target)) return;
+            if (_nameField.value == Data.Name) return;
+
+            _nameField.SetValueWithoutNotify(Data.Name);
+            SetEditMode(false);
+
+            if (Data.IsDuplicate) SetError("Name already exists.");
+            else ClearError();
+        }
+
+        private bool IsCommitTarget(VisualElement target) =>
+            target == _confirmButton || _confirmButton.Contains(target);
 
         public void SetEditMode(bool editing, bool canConfirm = true)
         {

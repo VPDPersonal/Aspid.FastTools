@@ -24,10 +24,18 @@ namespace Aspid.FastTools.Ids.Editors
         private static Dictionary<string, ScriptableObject>? _byAqn;
         private static bool _warmedUp;
 
+        /// <summary>
+        /// Raised whenever the registry index has been mutated: a registry asset was imported,
+        /// renamed, deleted, or the cache was reset. Drawers subscribe to this to refresh their
+        /// view (e.g. recompute Missing-state after a row was removed in the registry).
+        /// </summary>
+        public static event Action? RegistryChanged;
+
         internal static void ClearCache()
         {
             _byAqn = null;
             _warmedUp = false;
+            RegistryChanged?.Invoke();
         }
 
         public static ScriptableObject? Find(Type? declaringType)
@@ -96,6 +104,7 @@ namespace Aspid.FastTools.Ids.Editors
             }
 
             _byAqn[aqn] = registry;
+            RegistryChanged?.Invoke();
         }
 
         private static void RemoveEntriesPointingTo(ScriptableObject registry, string exceptKey)

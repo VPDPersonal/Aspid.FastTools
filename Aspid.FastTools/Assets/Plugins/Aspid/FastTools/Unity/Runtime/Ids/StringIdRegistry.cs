@@ -37,7 +37,7 @@ namespace Aspid.FastTools.Ids
     /// A ScriptableObject that maps string names to stable integer IDs for a given struct type.
     /// Used by the <c>IdStruct</c> system to persist and resolve string/int ID pairs.
     /// </summary>
-    [CreateAssetMenu(fileName = "StringIdRegistry", menuName = "Aspid/FastTools/String Id Registry")]
+    [CreateAssetMenu(fileName = "StringIdRegistry", menuName = "Aspid/Id Registry/String Id Registry")]
     public partial class StringIdRegistry : IdRegistryBase, IEnumerable<KeyValuePair<int, string>>
     {
         [SerializeField] private IdEntry[] _entries = Array.Empty<IdEntry>();
@@ -114,6 +114,7 @@ namespace Aspid.FastTools.Ids
         /// <inheritdoc/>
         protected override void RebuildCache()
         {
+            using var _ = this.Marker();
             _idByName = new Dictionary<string, int>(_entries.Length);
             _nameById = new Dictionary<int, string>(_entries.Length);
 

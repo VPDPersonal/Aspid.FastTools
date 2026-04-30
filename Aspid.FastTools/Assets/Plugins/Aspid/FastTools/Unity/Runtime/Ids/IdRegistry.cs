@@ -28,7 +28,7 @@ namespace Aspid.FastTools.Ids
     /// Names are stored and edited in the inspector but stripped from player builds.
     /// Use <see cref="StringIdRegistry"/> when name lookups are needed at runtime.
     /// </summary>
-    [CreateAssetMenu(fileName = "IdRegistry", menuName = "Aspid/FastTools/Id Registry")]
+    [CreateAssetMenu(fileName = "IdRegistry", menuName = "Aspid/Id Registry/Id Registry")]
     public partial class IdRegistry : IdRegistryBase, IEnumerable<int>
     {
         [SerializeField] private int[] _ids = Array.Empty<int>();

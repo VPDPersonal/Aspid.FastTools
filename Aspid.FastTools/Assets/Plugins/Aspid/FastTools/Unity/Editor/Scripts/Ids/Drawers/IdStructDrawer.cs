@@ -64,8 +64,18 @@ namespace Aspid.FastTools.Ids.Editors
             var btnRect  = new Rect(openRect.xMax + Gap, mainRect.y, CreateButtonWidth, mainRect.height);
 
             var currentName = stringIdProp?.stringValue ?? string.Empty;
+            var isMissing = IsMissing(currentId, fieldType);
+            var dropdownStyle = EditorStyles.miniPullDown;
+            if (isMissing)
+            {
+                dropdownStyle = new GUIStyle(EditorStyles.miniPullDown);
+                dropdownStyle.normal.textColor = MissingTextColor;
+                dropdownStyle.hover.textColor = MissingTextColor;
+                dropdownStyle.focused.textColor = MissingTextColor;
+                dropdownStyle.active.textColor = MissingTextColor;
+            }
 
-            if (EditorGUI.DropdownButton(dropRect, new GUIContent(Caption(currentName)), FocusType.Passive))
+            if (EditorGUI.DropdownButton(dropRect, new GUIContent(Caption(currentName, currentId, isMissing)), FocusType.Passive, dropdownStyle))
             {
                 var reg = IdRegistryResolver.FindStringMapped(fieldType);
                 var sp = GUIUtility.GUIToScreenPoint(new Vector2(dropRect.x, dropRect.y));
@@ -149,7 +159,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             var currentName = stringIdProp?.stringValue ?? string.Empty;
 
-            var dropdownButton = new Button().AddClass(Constants.Drawer.Dropdown).SetText(Caption(currentName));
+            var dropdownButton = new Button().AddClass(Constants.Drawer.Dropdown);
             var createToggleButton = new Button().AddClass(Constants.Drawer.CreateButton).SetText("Create");
 
             var openButton = new Button().AddClass(Constants.Drawer.OpenButton);
@@ -186,6 +196,15 @@ namespace Aspid.FastTools.Ids.Editors
                 SyncStringFromInt();
                 openButton.SetEnabled(IdRegistryResolver.Find(fieldType) != null);
             });
+
+            Action onRegistryChanged = () =>
+            {
+                SyncStringFromInt();
+                openButton.SetEnabled(IdRegistryResolver.Find(fieldType) != null);
+                RefreshIntOnlyHint();
+            };
+            root.RegisterCallback<AttachToPanelEvent>(_ => IdRegistryResolver.RegistryChanged += onRegistryChanged);
+            root.RegisterCallback<DetachFromPanelEvent>(_ => IdRegistryResolver.RegistryChanged -= onRegistryChanged);
 
             void RefreshIntOnlyHint()
             {
@@ -250,7 +269,7 @@ namespace Aspid.FastTools.Ids.Editors
                 var strProp = p.FindPropertyRelative(Constants.StringIdFieldName);
                 var intProp = p.FindPropertyRelative(Constants.IntIdFieldName);
                 SetFields(p, strProp, intProp, name, assignedId);
-                dropdownButton.SetText(Caption(name));
+                SyncStringFromInt();
 
                 inputField.value = string.Empty;
                 createRow.SetDisplay(DisplayStyle.None);
@@ -281,7 +300,7 @@ namespace Aspid.FastTools.Ids.Editors
                     var strProp2 = p2.FindPropertyRelative(Constants.StringIdFieldName);
                     var intProp2 = p2.FindPropertyRelative(Constants.IntIdFieldName);
                     ApplySelection(p2, strProp2, intProp2, fieldType, selected);
-                    dropdownButton.SetText(Caption(strProp2?.stringValue ?? string.Empty));
+                    SyncStringFromInt();
                 });
             };
 
@@ -298,16 +317,31 @@ namespace Aspid.FastTools.Ids.Editors
                 var p = serializedObject.FindProperty(propertyPath);
                 var strProp = p?.FindPropertyRelative(Constants.StringIdFieldName);
                 var intProp = p?.FindPropertyRelative(Constants.IntIdFieldName);
-                if (intProp == null || strProp == null || intProp.intValue <= 0) return;
+                if (intProp == null || strProp == null) return;
 
-                var reg = IdRegistryResolver.FindStringMapped(fieldType);
-                if (reg == null
-                    || !reg.TryGetName(intProp.intValue, out var registryName)
-                    || registryName == strProp.stringValue) return;
+                var currentInt = intProp.intValue;
+                var currentName = strProp.stringValue ?? string.Empty;
 
-                strProp.stringValue = registryName;
-                serializedObject.ApplyModifiedPropertiesWithoutUndo();
-                dropdownButton.SetText(Caption(registryName));
+                var found = IdRegistryResolver.Find(fieldType);
+                var isIntOnly = found is IdRegistry;
+                var stringMapped = found as StringIdRegistry;
+
+                string registryName = null;
+                var hasName = stringMapped != null
+                              && currentInt > 0
+                              && stringMapped.TryGetName(currentInt, out registryName);
+
+                if (hasName && registryName != currentName)
+                {
+                    strProp.stringValue = registryName;
+                    serializedObject.ApplyModifiedPropertiesWithoutUndo();
+                    currentName = registryName;
+                }
+
+                var isMissing = !isIntOnly && currentInt > 0 && !hasName;
+
+                dropdownButton.SetText(Caption(currentName, currentInt, isMissing));
+                dropdownButton.EnableInClassList(Constants.Drawer.DropdownMissing, isMissing);
             }
         }
 
@@ -341,8 +375,25 @@ namespace Aspid.FastTools.Ids.Editors
             property.serializedObject.ApplyModifiedProperties();
         }
 
-        private static string Caption(string name) =>
-            string.IsNullOrEmpty(name) ? Constants.NoneOption : name;
+        private static readonly Color MissingTextColor = new Color(1f, 0.4f, 0.4f);
+
+        private static bool IsMissing(int currentId, Type fieldType)
+        {
+            if (currentId <= 0) return false;
+
+            var found = IdRegistryResolver.Find(fieldType);
+            if (found is IdRegistry) return false;
+            if (found is StringIdRegistry sm) return !sm.TryGetName(currentId, out _);
+            return true;
+        }
+
+        private static string Caption(string name, int id, bool isMissing)
+        {
+            if (isMissing)
+                return string.IsNullOrEmpty(name) ? $"<Missing id {id}>" : $"<Missing '{name}'>";
+
+            return string.IsNullOrEmpty(name) ? Constants.NoneOption : name;
+        }
 
         private static string PropertyKey(SerializedProperty p) =>
             $"{p.serializedObject.targetObject.GetInstanceID()}:{p.propertyPath}";
