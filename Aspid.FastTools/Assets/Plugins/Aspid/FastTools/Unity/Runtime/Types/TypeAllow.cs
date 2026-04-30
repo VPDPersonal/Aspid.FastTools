@@ -1,7 +1,7 @@
 using System;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.Types.Editors
+namespace Aspid.FastTools.Types
 {
     /// <summary>
     /// Flags describing which special type categories the type picker should include

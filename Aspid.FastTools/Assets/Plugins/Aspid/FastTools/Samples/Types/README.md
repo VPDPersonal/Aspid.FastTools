@@ -5,7 +5,7 @@ A tiny ability system that demonstrates polymorphic type selection in the Unity 
 Look at:
 
 - `Scripts/AbilitySelector.cs:21` — `SerializableType<Ability>` field, constrained picker for a single subtype.
-- `Scripts/AbilitySelector.cs:26` — `[TypeSelector(typeof(AbilityModifier), AllowAbstractTypes = false)]` on a `string[]` field.
+- `Scripts/AbilitySelector.cs:26` — `[TypeSelector(typeof(AbilityModifier))]` on a `string[]` field.
 - `Scripts/Enemies/EnemyBase.cs:18` — `ComponentTypeSelector` declaration that swaps the attached script in place.
 
 ## How to run

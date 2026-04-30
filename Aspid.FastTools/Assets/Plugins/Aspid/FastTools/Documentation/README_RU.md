@@ -165,15 +165,22 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
     public TypeSelectorAttribute(string assemblyQualifiedName)
     public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
 
-    public bool AllowAbstractTypes { get; set; } // по умолчанию: false
-    public bool AllowInterfaces    { get; set; } // по умолчанию: false
+    public TypeAllow Allow { get; set; } // по умолчанию: TypeAllow.None
+}
+
+[Flags]
+public enum TypeAllow
+{
+    None      = 0,
+    Abstract  = 1,
+    Interface = 2,
+    All       = Abstract | Interface
 }
 ```
 
 | Свойство | Описание |
 |----------|----------|
-| `AllowAbstractTypes` | Включает абстрактные классы в список выбора. По умолчанию: `false` |
-| `AllowInterfaces` | Включает интерфейсы в список выбора. По умолчанию: `false` |
+| `Allow` | Какие специальные категории типов (абстрактные классы, интерфейсы) включаются в список выбора в дополнение к обычным конкретным классам. По умолчанию: `TypeAllow.None` |
 
 ```csharp
 using UnityEngine;
@@ -185,7 +192,7 @@ public class MyBehaviour : MonoBehaviour
     [SerializeField] private string _typeName;
 
     // Включить абстрактные типы и интерфейсы в список выбора
-    [TypeSelector(typeof(object), AllowAbstractTypes = true, AllowInterfaces = true)]
+    [TypeSelector(typeof(object), Allow = TypeAllow.All)]
     [SerializeField] private string _anyType;
 }
 ```

@@ -5,7 +5,7 @@
 Смотрите:
 
 - `Scripts/AbilitySelector.cs:21` — поле `SerializableType<Ability>`, ограниченный выбор одного подтипа.
-- `Scripts/AbilitySelector.cs:26` — `[TypeSelector(typeof(AbilityModifier), AllowAbstractTypes = false)]` на поле `string[]`.
+- `Scripts/AbilitySelector.cs:26` — `[TypeSelector(typeof(AbilityModifier))]` на поле `string[]`.
 - `Scripts/Enemies/EnemyBase.cs:18` — объявление `ComponentTypeSelector`, заменяющее прикреплённый скрипт по месту.
 
 ## Как запустить

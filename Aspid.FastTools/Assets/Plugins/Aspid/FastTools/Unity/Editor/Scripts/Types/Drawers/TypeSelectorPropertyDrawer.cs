@@ -41,16 +41,8 @@ namespace Aspid.FastTools.Types.Editors
 
         private TypeAllow GetTypeAllow()
         {
-            var allow = TypeAllow.None;
             var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
-            
-            if (typeSelectorAttribute.AllowAbstractTypes) 
-                allow |= TypeAllow.Abstract;
-            
-            if (typeSelectorAttribute.AllowInterfaces)
-                allow |= TypeAllow.Interface;
-            
-            return allow;
+            return typeSelectorAttribute.Allow;
         }
 
         private Type[] GetTypesFromAttribute(SerializedProperty property)

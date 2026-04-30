@@ -16,7 +16,7 @@ namespace Aspid.FastTools.Enums
     /// <see cref="EnumValues{TValue}"/> and is not intended for direct instantiation.
     /// </remarks>
     [Serializable]
-    public sealed class EnumValue<TValue>
+    internal sealed class EnumValue<TValue>
     {
         [SerializeField] private string _key;
         [SerializeField] private TValue _value;
@@ -25,13 +25,13 @@ namespace Aspid.FastTools.Enums
         [SerializeField] private string _enumType;
 #endif
 
-        internal TValue Value => _value;
+        public TValue Value => _value;
 
-        internal Enum Key { get; private set; }
+        public Enum Key { get; private set; }
 
-        internal Type Type { get; private set; }
+        public Type Type { get; private set; }
         
-        internal void Initialize(Type type)
+        public void Initialize(Type type)
         {
 #if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())

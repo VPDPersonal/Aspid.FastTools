@@ -16,7 +16,8 @@ Ids/
 │   ├── IdRegistryAccessor.cs             ← parallel arrays (_ids + _names)
 │   ├── StringIdRegistryAccessor.cs       ← single struct array (_entries)
 │   ├── RegistryEditorCore.cs             ← shared inspector UI (talks to IRegistryAccessor only)
-│   ├── IdRegistryEntryVisualElement.cs   ← single row + IdRegistryEntryData DTO
+│   ├── IdRegistryEntryVisualElement.cs   ← single row VisualElement
+│   ├── IdRegistryEntryData.cs            ← row DTO
 │   ├── IdRegistryResolver.cs             ← AQN → registry asset, with one-per-type enforcement
 │   ├── IdRegistryResolverCacheInvalidator.cs ← AssetPostprocessor invalidating the resolver cache
 │   ├── IdRegistryValidator.cs            ← IsValidName + Summarize for the Clean-up flow

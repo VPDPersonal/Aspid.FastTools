@@ -165,15 +165,22 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
     public TypeSelectorAttribute(string assemblyQualifiedName)
     public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
 
-    public bool AllowAbstractTypes { get; set; } // default: false
-    public bool AllowInterfaces    { get; set; } // default: false
+    public TypeAllow Allow { get; set; } // default: TypeAllow.None
+}
+
+[Flags]
+public enum TypeAllow
+{
+    None      = 0,
+    Abstract  = 1,
+    Interface = 2,
+    All       = Abstract | Interface
 }
 ```
 
 | Property | Description |
 |----------|-------------|
-| `AllowAbstractTypes` | Includes abstract classes in the picker. Default: `false` |
-| `AllowInterfaces` | Includes interface types in the picker. Default: `false` |
+| `Allow` | Which special type categories (abstract classes, interfaces) the picker includes in addition to plain concrete classes. Default: `TypeAllow.None` |
 
 ```csharp
 using UnityEngine;
@@ -185,7 +192,7 @@ public class MyBehaviour : MonoBehaviour
     [SerializeField] private string _typeName;
 
     // Include abstract types and interfaces in the picker
-    [TypeSelector(typeof(object), AllowAbstractTypes = true, AllowInterfaces = true)]
+    [TypeSelector(typeof(object), Allow = TypeAllow.All)]
     [SerializeField] private string _anyType;
 }
 ```

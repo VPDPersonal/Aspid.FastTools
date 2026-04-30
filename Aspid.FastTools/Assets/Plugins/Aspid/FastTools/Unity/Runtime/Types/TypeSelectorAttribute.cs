@@ -40,16 +40,12 @@ namespace Aspid.FastTools.Types
         /// The assembly-qualified names of the base types that constrain the selection.
         /// </summary>
         public readonly string[] AssemblyQualifiedNames;
-        
-        /// <summary>
-        /// Whether abstract types are included in the picker. Defaults to <c>false</c>.
-        /// </summary>
-        public bool AllowAbstractTypes { get; set; } = false;
 
         /// <summary>
-        /// Whether interface types are included in the picker. Defaults to <c>false</c>.
+        /// Which special type categories (abstract classes, interfaces) the picker should
+        /// include in addition to plain concrete classes. Defaults to <see cref="TypeAllow.None"/>.
         /// </summary>
-        public bool AllowInterfaces { get; set; } = false;
+        public TypeAllow Allow { get; set; } = TypeAllow.None;
 
         /// <summary>
         /// Creates an unconstrained attribute (base type is <see cref="object"/>).
