@@ -8,7 +8,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Configuration preset for an <see cref="AspidLabel"/>.
     /// Use the fluent builder methods to create a customised preset.
     /// </summary>
-    public struct AspidLabelPreset
+    internal struct AspidLabelPreset
     {
         /// <summary>
         /// The default preset: light theme, H5 size, bold font, and a default dividing line.

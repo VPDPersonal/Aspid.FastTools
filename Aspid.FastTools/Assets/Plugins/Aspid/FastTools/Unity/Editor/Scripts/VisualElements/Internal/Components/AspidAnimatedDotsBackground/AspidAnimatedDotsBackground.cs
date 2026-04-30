@@ -11,7 +11,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// be overridden via USS custom properties or via UXML attributes / fluent extensions.
     /// </summary>
     [UxmlElement(libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidAnimatedDotsBackground : VisualElement
+    internal sealed partial class AspidAnimatedDotsBackground : VisualElement
     {
         private const int BlobCount = 3;
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedDotsBackground";

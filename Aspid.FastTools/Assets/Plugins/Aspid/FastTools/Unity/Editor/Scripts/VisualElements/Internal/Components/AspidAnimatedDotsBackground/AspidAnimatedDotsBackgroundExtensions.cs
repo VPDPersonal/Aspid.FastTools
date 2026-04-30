@@ -6,7 +6,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Fluent extension methods for <see cref="AspidAnimatedDotsBackground"/>.
     /// </summary>
-    public static class AspidAnimatedDotsBackgroundExtensions
+    internal static class AspidAnimatedDotsBackgroundExtensions
     {
         /// <summary>
         /// Sets <see cref="AspidAnimatedDotsBackground.Color1"/> and returns the element for chaining.

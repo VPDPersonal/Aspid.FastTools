@@ -13,7 +13,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// and <see cref="AspidAnimatedLogoLayerImageStyle"/> bindings.
     /// </summary>
     [UxmlElement(libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidAnimatedLogo : VisualElement
+    internal sealed partial class AspidAnimatedLogo : VisualElement
     {
         private const int LayerCount = 3;
         private const long AnimationIntervalMs = 33;

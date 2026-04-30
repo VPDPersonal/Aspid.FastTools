@@ -9,7 +9,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Both stride and speed can be inherited from their USS custom properties or set explicitly
     /// in code; once set explicitly they are no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct AspidAnimatedTitleColorAnimationStyle
+    internal readonly struct AspidAnimatedTitleColorAnimationStyle
     {
         /// <summary>
         /// Custom USS property for the per-character color-palette stride.

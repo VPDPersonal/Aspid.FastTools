@@ -10,7 +10,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// from the <see cref="StyleProperty"/> USS custom property or set explicitly in code; once set
     /// explicitly it is no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct AspidHoverGradientOverlayColorStyle
+    internal readonly struct AspidHoverGradientOverlayColorStyle
     {
         /// <summary>
         /// Custom USS property for overriding the overlay color via USS.

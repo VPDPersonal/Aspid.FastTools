@@ -6,7 +6,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Fluent extension methods for <see cref="AspidInspectorHeader"/>.
     /// </summary>
-    public static class AspidInspectorHeaderExtensions
+    internal static class AspidInspectorHeaderExtensions
     {
         /// <summary>
         /// Sets <see cref="AspidInspectorHeader.Text"/> and returns the element for chaining.

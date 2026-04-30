@@ -9,7 +9,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// The value can be inherited from the <see cref="StyleProperty"/> USS custom property
     /// or set explicitly in code; once set explicitly it is no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct AspidAnimatedLogoPulseHoverAmplitudeStyle
+    internal readonly struct AspidAnimatedLogoPulseHoverAmplitudeStyle
     {
         /// <summary>
         /// Custom USS property used to drive the pulse hover amplitude.

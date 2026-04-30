@@ -13,7 +13,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// USS custom properties or set explicitly in code.
     /// </summary>
     [UxmlElement(nameof(AspidAnimatedTitle), libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidAnimatedTitle : VisualElement
+    internal sealed partial class AspidAnimatedTitle : VisualElement
     {
         private const int PaletteCount = 3;
         private const string WordClass = "aspid-fasttools-animated-title__word";

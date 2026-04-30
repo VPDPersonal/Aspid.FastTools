@@ -9,7 +9,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Configuration preset for an <see cref="AspidGradientButton"/>.
     /// Use the fluent builder methods to create a customized preset.
     /// </summary>
-    public struct AspidGradientButtonPreset
+    internal struct AspidGradientButtonPreset
     {
         /// <summary>
         /// The default preset: empty label, no click handler, zero colors (resolved from USS).

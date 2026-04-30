@@ -9,7 +9,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// and amplitude can be inherited from their USS custom properties or set explicitly in code;
     /// once set explicitly they are no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct AspidAnimatedTitleWaveAnimationStyle
+    internal readonly struct AspidAnimatedTitleWaveAnimationStyle
     {
         /// <summary>
         /// Custom USS property for the per-character wave phase offset.

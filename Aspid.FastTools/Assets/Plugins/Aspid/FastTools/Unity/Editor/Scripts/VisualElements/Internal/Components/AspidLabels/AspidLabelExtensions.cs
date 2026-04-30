@@ -6,7 +6,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Fluent extension methods for <see cref="AspidLabel"/>.
     /// </summary>
-    public static class AspidLabelExtensions
+    internal static class AspidLabelExtensions
     {
         /// <summary>
         /// Sets <see cref="AspidLabel.Text"/> and returns the element for chaining.

@@ -10,7 +10,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// and <c>aspid-fasttools-status--*</c> classes; <see cref="HelpBoxMessageType.None"/> hides the icon entirely.
     /// </summary>
     [UxmlElement(libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidHelpBox : VisualElement
+    internal sealed partial class AspidHelpBox : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidHelpBox";
 

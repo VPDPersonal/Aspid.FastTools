@@ -5,7 +5,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Configuration preset for an <see cref="AspidInspectorHeader"/>.
     /// Use the fluent builder methods to create a customized preset.
     /// </summary>
-    public struct AspidInspectorHeaderPreset
+    internal struct AspidInspectorHeaderPreset
     {
         /// <summary>
         /// The default preset: empty texts, success status.

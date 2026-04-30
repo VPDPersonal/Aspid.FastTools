@@ -9,7 +9,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// from the <see cref="StyleProperty"/> USS custom property or set explicitly in code; once set
     /// explicitly it is no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct AspidLabelFontStyle
+    internal readonly struct AspidLabelFontStyle
     {
         /// <summary>
         /// Custom USS property for overriding the label font style via USS.

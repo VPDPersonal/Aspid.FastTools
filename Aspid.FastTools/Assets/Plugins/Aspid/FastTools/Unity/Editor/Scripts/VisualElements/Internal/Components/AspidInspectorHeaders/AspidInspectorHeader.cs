@@ -12,7 +12,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// and an animated color gradient that appears on icon hover when a status is set.
     /// </summary>
     [UxmlElement(libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidInspectorHeader : VisualElement
+    internal sealed partial class AspidInspectorHeader : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidInspectorHeader";
 

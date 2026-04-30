@@ -11,7 +11,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// from USS custom properties or set via UXML attributes / fluent extensions.
     /// </summary>
     [UxmlElement(libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidGradientButton : VisualElement
+    internal sealed partial class AspidGradientButton : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidGradientButton";
 

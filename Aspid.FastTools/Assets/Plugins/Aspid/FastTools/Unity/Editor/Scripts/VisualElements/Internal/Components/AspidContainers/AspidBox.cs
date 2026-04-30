@@ -9,7 +9,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// or set explicitly in code.
     /// </summary>
     [UxmlElement(libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidBox : VisualElement
+    internal sealed partial class AspidBox : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidBox";
 

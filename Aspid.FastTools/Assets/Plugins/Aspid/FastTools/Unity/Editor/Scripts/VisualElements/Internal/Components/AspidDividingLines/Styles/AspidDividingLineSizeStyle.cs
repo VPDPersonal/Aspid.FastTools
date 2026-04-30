@@ -8,7 +8,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// the <see cref="StyleProperty"/> USS custom property or set explicitly in code; once set explicitly
     /// it is no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct AspidDividingLineSizeStyle
+    internal readonly struct AspidDividingLineSizeStyle
     {
         /// <summary>
         /// Custom USS property for overriding the line size via USS.

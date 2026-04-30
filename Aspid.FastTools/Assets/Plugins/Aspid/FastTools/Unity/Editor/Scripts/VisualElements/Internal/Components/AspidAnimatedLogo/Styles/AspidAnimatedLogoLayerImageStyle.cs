@@ -16,7 +16,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// (the event source), but applied as <c>background-image</c> to the layer
     /// (the target), so a single declaration on the logo configures all three layers.
     /// </remarks>
-    public readonly struct AspidAnimatedLogoLayerImageStyle
+    internal readonly struct AspidAnimatedLogoLayerImageStyle
     {
         /// <summary>
         /// Custom USS property for the first logo layer.

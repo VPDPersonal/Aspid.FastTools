@@ -6,7 +6,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Fluent extension methods for <see cref="AspidAnimatedTitle"/>.
     /// </summary>
-    public static class AspidAnimatedTitleExtensions
+    internal static class AspidAnimatedTitleExtensions
     {
         /// <summary>
         /// Sets <see cref="AspidAnimatedTitle.Text"/> and returns the element for chaining.

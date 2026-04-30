@@ -8,7 +8,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// the <see cref="StyleProperty"/> USS custom property or set explicitly in code; once set explicitly
     /// it is no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct StatusStyle
+    internal readonly struct StatusStyle
     {
         /// <summary>
         /// Custom USS property used to propagate the status to child elements.

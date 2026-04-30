@@ -6,7 +6,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Fluent extension methods for <see cref="AspidGradientButton"/>.
     /// </summary>
-    public static class AspidGradientButtonExtensions
+    internal static class AspidGradientButtonExtensions
     {
         /// <summary>
         /// Sets <see cref="AspidGradientButton.Text"/> and returns the element for chaining.

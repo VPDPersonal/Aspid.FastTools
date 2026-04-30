@@ -6,7 +6,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Fluent extension methods for <see cref="AspidHelpBox"/>.
     /// </summary>
-    public static class AspidHelpBoxExtensions
+    internal static class AspidHelpBoxExtensions
     {
         /// <summary>
         /// Sets <see cref="AspidHelpBox.Title"/> and returns the element for chaining.

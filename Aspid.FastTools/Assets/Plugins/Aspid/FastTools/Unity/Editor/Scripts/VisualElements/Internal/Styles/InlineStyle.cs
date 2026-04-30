@@ -8,7 +8,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Inline values take precedence over USS values, mirroring the inline-vs-stylesheet rule in UIToolkit.
     /// </summary>
     /// <typeparam name="T">The value type of the style property.</typeparam>
-    public class InlineStyle<T>
+    internal class InlineStyle<T>
     {
         private readonly Action<T, T> _onSet;
 

@@ -4,7 +4,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Fluent extension methods for <see cref="AspidDividingLine"/>.
     /// </summary>
-    public static class AspidDividingLineExtensions
+    internal static class AspidDividingLineExtensions
     {
         /// <summary>
         /// Sets <see cref="AspidDividingLine.Theme"/> and returns the element for chaining.

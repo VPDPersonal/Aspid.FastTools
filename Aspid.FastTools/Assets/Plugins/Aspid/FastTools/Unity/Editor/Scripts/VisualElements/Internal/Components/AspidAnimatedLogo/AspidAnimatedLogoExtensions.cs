@@ -6,7 +6,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Fluent extension methods for <see cref="AspidAnimatedLogo"/>.
     /// </summary>
-    public static class AspidAnimatedLogoExtensions
+    internal static class AspidAnimatedLogoExtensions
     {
         /// <summary>
         /// Sets <see cref="AspidAnimatedLogo.ColorCycleIntervalMs"/> and returns the element for chaining.

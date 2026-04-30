@@ -7,7 +7,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Configuration preset for an <see cref="AspidAnimatedLogo"/>.
     /// Use the fluent builder methods to create a customized preset.
     /// </summary>
-    public struct AspidAnimatedLogoPreset
+    internal struct AspidAnimatedLogoPreset
     {
         /// <summary>
         /// The default preset matching the values resolved from USS.

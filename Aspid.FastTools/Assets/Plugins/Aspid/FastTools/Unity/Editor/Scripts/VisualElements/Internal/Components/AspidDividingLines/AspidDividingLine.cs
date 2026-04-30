@@ -9,7 +9,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// custom properties or set explicitly in code.
     /// </summary>
     [UxmlElement(libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidDividingLine : VisualElement
+    internal sealed partial class AspidDividingLine : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidDividingLine";
 

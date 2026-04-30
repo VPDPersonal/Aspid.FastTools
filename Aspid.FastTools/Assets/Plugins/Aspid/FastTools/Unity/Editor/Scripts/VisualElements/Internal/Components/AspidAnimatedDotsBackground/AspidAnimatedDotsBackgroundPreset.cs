@@ -7,7 +7,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Configuration preset for an <see cref="AspidAnimatedDotsBackground"/>.
     /// Use the fluent builder methods to create a customized preset.
     /// </summary>
-    public struct AspidAnimatedDotsBackgroundPreset
+    internal struct AspidAnimatedDotsBackgroundPreset
     {
         /// <summary>
         /// The default preset: zero colors (resolved from USS) and the canonical dot metrics.

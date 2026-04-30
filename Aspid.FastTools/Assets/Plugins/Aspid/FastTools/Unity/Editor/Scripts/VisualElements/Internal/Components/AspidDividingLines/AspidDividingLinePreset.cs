@@ -5,7 +5,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Configuration preset for an <see cref="AspidDividingLine"/>.
     /// Use the fluent builder methods to create a customized preset.
     /// </summary>
-    public struct AspidDividingLinePreset
+    internal struct AspidDividingLinePreset
     {
         /// <summary>
         /// The default preset: light theme, no status, medium size, horizontal orientation.

@@ -10,7 +10,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// scale of the overlay. Each value can be inherited from its USS custom property or set
     /// explicitly in code; once set explicitly it is no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct AspidHoverGradientOverlayMetricsStyle
+    internal readonly struct AspidHoverGradientOverlayMetricsStyle
     {
         /// <summary>
         /// Custom USS property for overriding the strip count via USS.

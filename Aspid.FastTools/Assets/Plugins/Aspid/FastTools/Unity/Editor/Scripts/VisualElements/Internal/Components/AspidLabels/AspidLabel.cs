@@ -10,7 +10,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Theme and status can be driven by USS custom properties or set explicitly in code.
     /// </summary>
     [UxmlElement(libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidLabel : VisualElement
+    internal sealed partial class AspidLabel : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidLabel";
         

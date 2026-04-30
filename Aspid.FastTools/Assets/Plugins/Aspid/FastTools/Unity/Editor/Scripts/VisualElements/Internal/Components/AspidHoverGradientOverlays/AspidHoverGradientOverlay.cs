@@ -10,7 +10,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// fades it in or out toward a target progress between 0 and 1.
     /// </summary>
     [UxmlElement(libraryPath = "Aspid/FastTools")]
-    public sealed partial class AspidHoverGradientOverlay : VisualElement
+    internal sealed partial class AspidHoverGradientOverlay : VisualElement
     {
         private const long TickMs = 16;
         private const float DrawThreshold = 0.01f;

@@ -1,7 +1,7 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    public static class AspidStyles
+    internal static class AspidStyles
     {
         /// <summary>
         /// Resource path of the default dark USS stylesheet.

@@ -8,7 +8,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// The theme can be inherited from the <see cref="StyleProperty"/> USS custom property or set
     /// explicitly in code; once set explicitly it is no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct ThemeStyle
+    internal readonly struct ThemeStyle
     {
         /// <summary>
         /// Custom USS property used to propagate the theme to child elements.

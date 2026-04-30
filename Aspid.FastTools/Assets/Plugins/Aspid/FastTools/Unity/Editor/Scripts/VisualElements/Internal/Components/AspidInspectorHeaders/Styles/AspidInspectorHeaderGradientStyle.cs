@@ -8,7 +8,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Bridges the <c>--aspid-fasttools-colors-gradient</c> USS custom property declared on an
     /// <see cref="AspidInspectorHeader"/> to the <see cref="AspidHoverGradientOverlay.Color"/> of its overlay.
     /// </summary>
-    public readonly struct AspidInspectorHeaderGradientStyle
+    internal readonly struct AspidInspectorHeaderGradientStyle
     {
         /// <summary>
         /// Custom USS property that drives the overlay gradient color.

@@ -10,7 +10,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// be inherited from its <c>--aspid-fasttools-colors-dot-blob-color-{1..3}</c> USS custom property
     /// or set explicitly in code; once set explicitly it is no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct AspidAnimatedDotsBackgroundColorsStyle
+    internal readonly struct AspidAnimatedDotsBackgroundColorsStyle
     {
         /// <summary>
         /// Custom USS property for overriding the first blob color via USS.

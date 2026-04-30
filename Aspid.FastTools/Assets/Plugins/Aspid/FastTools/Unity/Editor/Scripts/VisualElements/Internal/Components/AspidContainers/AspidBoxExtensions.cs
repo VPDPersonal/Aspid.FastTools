@@ -4,7 +4,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Fluent extension methods for <see cref="AspidBox"/>.
     /// </summary>
-    public static class AspidBoxExtensions
+    internal static class AspidBoxExtensions
     {
         /// <summary>
         /// Sets <see cref="AspidBox.Theme"/> and returns the element for chaining.

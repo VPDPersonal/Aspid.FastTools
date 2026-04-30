@@ -8,7 +8,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// Configuration preset for an <see cref="AspidHelpBox"/>.
     /// Use the fluent builder methods to create a customized preset.
     /// </summary>
-    public struct AspidHelpBoxPreset
+    internal struct AspidHelpBoxPreset
     {
         /// <summary>
         /// The default preset: no status, no message type, with title and message label presets

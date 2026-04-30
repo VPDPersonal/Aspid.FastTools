@@ -10,7 +10,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// be inherited from its USS custom property or set explicitly in code; once set explicitly it is
     /// no longer overridden by USS resolution.
     /// </summary>
-    public readonly struct AspidGradientButtonColorsStyle
+    internal readonly struct AspidGradientButtonColorsStyle
     {
         /// <summary>
         /// Custom USS property for overriding the gradient background color via USS.
