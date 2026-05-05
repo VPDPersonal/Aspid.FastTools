@@ -44,6 +44,8 @@ namespace Aspid.FastTools.Types.Editors
             TypeAllow allow = TypeAllow.None,
             Action<string> onSelected = null)
         {
+            types ??= new[] { typeof(object) };
+            
             var window = CreateInstance<TypeSelectorWindow>();
             window.Initialize(
                 screenRect,
