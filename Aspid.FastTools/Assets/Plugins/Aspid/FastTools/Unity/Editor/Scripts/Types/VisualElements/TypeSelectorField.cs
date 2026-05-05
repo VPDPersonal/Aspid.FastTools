@@ -1,8 +1,10 @@
 using System;
+using Aspid.FastTools.Editors;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
+using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
@@ -14,7 +16,9 @@ namespace Aspid.FastTools.Types.Editors
         private readonly TextElement _textElement;
         private readonly VisualElement _visualInput;
 
-        private bool _isShowing;
+        private readonly Object _target;
+        private readonly string _propertyPath;
+        
         private string _missingAssemblyQualifiedName;
 
         public Type[] Types { get; set; }
@@ -24,6 +28,18 @@ namespace Aspid.FastTools.Types.Editors
 
         public TypeSelectorField()
             : this(label: null) { }
+
+        public TypeSelectorField(SerializedProperty property)
+            : this(property.displayName, property) { }
+        
+        public TypeSelectorField(string label, SerializedProperty property)
+            : this(label)
+        {
+            _propertyPath = property.propertyPath;
+            _target = property.serializedObject.targetObject;
+            
+            SetValueFromAssemblyQualifiedNameWithoutNotify(property.stringValue);
+        }
 
         public TypeSelectorField(string label, Type defaultValue = null)
             : this(label, visualInput: new VisualElement(), defaultValue) { }
@@ -102,7 +118,7 @@ namespace Aspid.FastTools.Types.Editors
             var window = EditorWindow.focusedWindow;
             if (!window) return;
             
-            _isShowing = true;
+
             TypeSelectorWindow.Show(
                 screenRect: GetScreenRect(),
                 types: Types,
@@ -110,10 +126,11 @@ namespace Aspid.FastTools.Types.Editors
                 allow: Allow,
                 onSelected: assemblyQualifiedName =>
                 {
-                    _isShowing = false;
                     this.SetValue(string.IsNullOrEmpty(assemblyQualifiedName)
                         ? null
                         : Type.GetType(assemblyQualifiedName, throwOnError: false));
+
+                    new SerializedObject(_target).FindProperty(_propertyPath).SetStringAndApply(assemblyQualifiedName);
                 });
 
             evt.StopPropagation();
