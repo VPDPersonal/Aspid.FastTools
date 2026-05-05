@@ -1,0 +1,56 @@
+:root {
+    margin: 1px -3px 1px 0;
+    flex-direction: column;
+}
+
+.aspid-fasttools-id-drawer__row {
+    align-items: center;
+    flex-direction: row;
+}
+
+.aspid-fasttools-id-drawer__button-group {
+    flex-grow: 1;
+    flex-shrink: 1;
+    width: 60%;
+    max-width: 60%;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.aspid-fasttools-id-drawer__label {
+    width: 40%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -unity-text-align: middle-left;
+}
+
+.aspid-fasttools-id-drawer__dropdown {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    -unity-text-align: middle-left;
+    text-overflow: ellipsis;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.aspid-fasttools-id-drawer__open-button {
+    margin: 0;
+    flex-shrink: 0;
+    padding: 1px 6px;
+    border-radius: 0;
+    align-items: center;
+    justify-content: center;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+}
+
+.aspid-fasttools-id-drawer__open-button Image {
+    width: 14px;
+    height: 14px;
+    --unity-image: resource("d_ScriptableObject Icon");
+}

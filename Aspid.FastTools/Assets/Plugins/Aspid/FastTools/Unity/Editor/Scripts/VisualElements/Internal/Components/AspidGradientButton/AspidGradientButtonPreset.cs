@@ -23,6 +23,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public string Text;
 
         /// <summary>
+        /// Optional trailing label text shown at the right edge of the button. <see langword="null"/> or empty hides it.
+        /// </summary>
+        public string TrailingText;
+
+        /// <summary>
         /// The handler invoked when the button is clicked, or <see langword="null"/> if no handler should be wired.
         /// </summary>
         public Action<EventBase> OnClick;
@@ -44,6 +49,16 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public AspidGradientButtonPreset SetText(string value)
         {
             Text = value;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets <see cref="TrailingText"/> and returns the modified preset.
+        /// </summary>
+        /// <param name="value">The new trailing label text. Pass <see langword="null"/> or empty to hide it.</param>
+        public AspidGradientButtonPreset SetTrailingText(string value)
+        {
+            TrailingText = value;
             return this;
         }
 

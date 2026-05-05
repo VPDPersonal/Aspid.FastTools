@@ -21,7 +21,7 @@
 |-------------------|----------|
 | `Aspid.FastTools.Types` | `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector`, `TypeSelectorAttribute` |
 | `Aspid.FastTools.Enums` | `EnumValues<T>` |
-| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` (int-only во рантайме), `StringIdRegistry` |
+| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` |
 | `Aspid.FastTools.UIElements` | Runtime fluent-расширения `VisualElement` |
 | `Aspid.FastTools.Editors` | Редакторские утилиты — расширения `SerializedProperty`, IMGUI-области, `GetScriptName` |
 | `Aspid.FastTools.Types.Editors` · `.Enums.Editors` · `.Ids.Editors` · `.UIElements.Editors` | Редакторский код по фичам (property drawers, инспектор реестров, editor-only расширения `VisualElement`) |
@@ -250,14 +250,7 @@ public class MyBehaviour : MonoBehaviour
 
 Сопоставляет имя, назначаемое в активе, со стабильным целочисленным ID. Получившийся `int` подходит для `switch` и ключей `Dictionary` без затрат на строковые поиски в рантайме.
 
-Доступны два варианта реестра — выбирается по одному на каждый `IId`-struct:
-
-| Реестр | Контракт во рантайме | Когда использовать |
-|---|---|---|
-| `StringIdRegistry` (`Aspid.FastTools`) | Полное отображение `int ↔ string` доступно во рантайме | Нужны поиски по имени в player-сборках (логи, сейвы, дебаг) |
-| `IdRegistry` (`Aspid.FastTools.Ids`) | Во рантайме только int; имена хранятся в editor-only partial и вырезаются из player-сборок | Имена нужны только в редакторе |
-
-Каждый `IId`-struct привязан ровно к одному реестру любого вида — уникальность гарантируется во время поиска через `IdRegistryResolver`, который ищет в обоих видах реестров.
+Единственный ScriptableObject `IdRegistry` сопоставляет строковые имена стабильным целочисленным ID и предоставляет полные `int ↔ string` поиски в рантайме.
 
 ### Использование
 
@@ -282,10 +275,9 @@ public partial struct EnemyId
 ```
 
 **2.** Создайте ассет реестра и привяжите его к вашему типу структуры в Inspector:
-- `Assets → Create → Aspid → FastTools → String Id Registry` — для `StringIdRegistry`;
-- `Assets → Create → Aspid → FastTools → Id Registry` — для int-only `IdRegistry`.
+- `Assets → Create → Aspid → FastTools → Id Registry`
 
-**3.** Используйте структуру как сериализуемое поле. В Inspector отображается выпадающий список зарегистрированных имён с кнопкой **Create** для добавления новых записей прямо там:
+**3.** Используйте структуру как сериализуемое поле. В Inspector отображается выпадающий список зарегистрированных имён; окно селектора также позволяет создавать новые записи на лету:
 
 ```csharp
 using UnityEngine;
@@ -322,9 +314,9 @@ public class EnemySpawner : MonoBehaviour
 public sealed class UniqueIdAttribute : PropertyAttribute { }
 ```
 
-### StringIdRegistry
+### IdRegistry
 
-`ScriptableObject` из `Aspid.FastTools`, хранящий записи `(int, string)` и поддерживающий таблицы поиска доступными во рантайме. Каждому имени назначается стабильный, автоинкрементный ID, который не изменяется даже при добавлении или удалении других записей.
+`ScriptableObject` из `Aspid.FastTools.Ids`, хранящий записи `(int, string)` и поддерживающий таблицы поиска доступными во рантайме. Каждому имени назначается стабильный, автоинкрементный ID, который не изменяется даже при добавлении или удалении других записей.
 
 | Член | Описание |
 |------|----------|
@@ -336,17 +328,7 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 | `IEnumerable<int> Ids` · `IEnumerable<string> IdNames` | Перечисление зарегистрированных ID / имён |
 | `IEnumerator<KeyValuePair<int, string>> GetEnumerator()` | Итерация по парам `(id, name)` |
 
-### IdRegistry
-
-`ScriptableObject` из `Aspid.FastTools.Ids`, хранящий во рантайме только целочисленные ID — имена существуют как метаданные редактора и вырезаются из player-сборок.
-
-| Член | Описание |
-|------|----------|
-| `int Count` | Количество зарегистрированных ID |
-| `bool Contains(int id)` | Зарегистрирован ли ID |
-| `IEnumerator<int> GetEnumerator()` | Итерация по зарегистрированным ID |
-
-Оба реестра наследуются от `IdRegistryBase` (в `Aspid.FastTools`) — non-generic абстрактный `ScriptableObject`, владеющий dirty-flag/cache инфраструктурой. Также у каждого есть генерик-аналог (`StringIdRegistry<T>` / `IdRegistry<T>` с `T : struct, IId`), добавляющий типизированную перегрузку `Contains(T)`. Редактирование — добавление, переименование, удаление записей — выполняется через инспектор реестра и `RegistryEditorCore`, а не через публичный runtime API.
+Реестр наследуется напрямую от `ScriptableObject` и предоставляет генерик-аналог `IdRegistry<T>` (с `T : struct, IId`), добавляющий типизированные перегрузки `Contains(T)` и `TryGetName(T, out string)`. Редактирование — добавление, переименование, удаление записей — выполняется через инспектор реестра и `RegistryEditorCore`, а не через публичный runtime API.
 
 ---
 

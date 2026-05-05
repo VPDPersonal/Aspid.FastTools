@@ -5,15 +5,15 @@ namespace Aspid.FastTools.Ids.Editors
     {
         public readonly int Id;
         public readonly string Name;
-        public readonly int OriginalIndex;
         public readonly bool IsDuplicate;
+        public readonly int OriginalIndex;
 
         public IdRegistryEntryData(int originalIndex, string name, int id, bool isDuplicate)
         {
-            OriginalIndex = originalIndex;
-            Name = name;
             Id = id;
+            Name = name;
             IsDuplicate = isDuplicate;
+            OriginalIndex = originalIndex;
         }
     }
 }

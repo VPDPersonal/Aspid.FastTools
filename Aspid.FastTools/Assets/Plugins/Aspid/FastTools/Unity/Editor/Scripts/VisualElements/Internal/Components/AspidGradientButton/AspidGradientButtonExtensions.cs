@@ -20,6 +20,17 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         }
 
         /// <summary>
+        /// Sets <see cref="AspidGradientButton.TrailingText"/> and returns the element for chaining.
+        /// </summary>
+        /// <param name="element">The element to configure.</param>
+        /// <param name="value">The new trailing label text. Pass <see langword="null"/> or empty to hide it.</param>
+        public static AspidGradientButton SetTrailingText(this AspidGradientButton element, string value)
+        {
+            element.TrailingText = value;
+            return element;
+        }
+
+        /// <summary>
         /// Sets <see cref="AspidGradientButton.Gradient"/> and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to configure.</param>

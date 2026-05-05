@@ -26,7 +26,7 @@ Install Aspid.FastTools using one of the following methods:
 |-----------|-------------|
 | `Aspid.FastTools.Types` | `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector`, `TypeSelectorAttribute` |
 | `Aspid.FastTools.Enums` | `EnumValues<T>` |
-| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` (int-only at runtime), `StringIdRegistry` |
+| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` |
 | `Aspid.FastTools.UIElements` | Runtime `VisualElement` fluent extensions |
 | `Aspid.FastTools.Editors` | Editor helpers — `SerializedProperty` extensions, IMGUI scopes, `GetScriptName` |
 | `Aspid.FastTools.Types.Editors` · `.Enums.Editors` · `.Ids.Editors` · `.UIElements.Editors` | Per-feature editor code (property drawers, registry inspector, editor-only `VisualElement` extensions) |
@@ -255,14 +255,7 @@ In the Inspector, select the enum type in the `EnumValues` header, then assign a
 
 Maps an asset-assignable name to a stable integer ID. Use the resulting `int` in `switch` statements and `Dictionary` keys without paying for string lookups at runtime.
 
-Two registry flavours are available — pick one per `IId`-struct:
-
-| Registry | Runtime contract | When to use |
-|---|---|---|
-| `StringIdRegistry` (`Aspid.FastTools`) | Full `int ↔ string` map at runtime | Name lookups are needed in player builds (logs, save files, debug) |
-| `IdRegistry` (`Aspid.FastTools.Ids`) | int-only at runtime; names live in an editor-only partial and are stripped from player builds | Names are only needed in the editor |
-
-Each `IId`-struct is bound to exactly one registry of either kind — uniqueness is enforced at lookup time by `IdRegistryResolver`, which searches both types.
+A single `IdRegistry` ScriptableObject maps string names to stable integer IDs and provides full `int ↔ string` lookups at runtime.
 
 ### Setup
 
@@ -287,10 +280,9 @@ public partial struct EnemyId
 ```
 
 **2.** Create the registry asset and bind it to the struct type in its Inspector:
-- `Assets → Create → Aspid → FastTools → String Id Registry` — for `StringIdRegistry`;
-- `Assets → Create → Aspid → FastTools → Id Registry` — for int-only `IdRegistry`.
+- `Assets → Create → Aspid → FastTools → Id Registry`
 
-**3.** Use the struct as a serialized field. The Inspector shows a dropdown of registered names with a **Create** button to add new entries inline:
+**3.** Use the struct as a serialized field. The Inspector shows a dropdown of registered names; the selector window also lets you create new entries on the fly:
 
 ```csharp
 using UnityEngine;
@@ -327,9 +319,9 @@ Marks a field as requiring a unique value across all assets of the declaring typ
 public sealed class UniqueIdAttribute : PropertyAttribute { }
 ```
 
-### StringIdRegistry
+### IdRegistry
 
-`ScriptableObject` in `Aspid.FastTools` that stores `(int, string)` entries and keeps the lookup tables available at runtime. Each name is assigned a stable, auto-incrementing ID that never changes when other entries are added or removed.
+`ScriptableObject` in `Aspid.FastTools.Ids` that stores `(int, string)` entries and keeps the lookup tables available at runtime. Each name is assigned a stable, auto-incrementing ID that never changes when other entries are added or removed.
 
 | Member | Description |
 |--------|-------------|
@@ -341,17 +333,7 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 | `IEnumerable<int> Ids` · `IEnumerable<string> IdNames` | Enumerate registered IDs / names |
 | `IEnumerator<KeyValuePair<int, string>> GetEnumerator()` | Iterate `(id, name)` pairs |
 
-### IdRegistry
-
-`ScriptableObject` in `Aspid.FastTools.Ids` that stores integer IDs only at runtime — names exist solely as editor metadata and are dropped in player builds.
-
-| Member | Description |
-|--------|-------------|
-| `int Count` | Number of registered IDs |
-| `bool Contains(int id)` | Whether an ID is registered |
-| `IEnumerator<int> GetEnumerator()` | Iterate registered IDs |
-
-Both registries derive from `IdRegistryBase` (in `Aspid.FastTools`), a non-generic abstract `ScriptableObject` that owns the dirty-flag/cache scaffolding. Each also exposes a generic counterpart (`StringIdRegistry<T>` / `IdRegistry<T>` with `T : struct, IId`) that adds a strongly-typed `Contains(T)` overload. Edits — adding, renaming, removing entries — happen through the registry inspector and `RegistryEditorCore`, not via a public runtime API.
+The registry derives from `ScriptableObject` directly and exposes a generic counterpart `IdRegistry<T>` (with `T : struct, IId`) that adds typed `Contains(T)` and `TryGetName(T, out string)` overloads. Edits — adding, renaming, removing entries — happen through the registry inspector and `RegistryEditorCore`, not via a public runtime API.
 
 ---
 

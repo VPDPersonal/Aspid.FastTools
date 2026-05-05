@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using UnityEngine;
 using System.Collections;
@@ -8,58 +7,109 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.Ids
 {
     /// <summary>
-    /// A strongly-typed wrapper around <see cref="IdRegistry"/> that exposes <see cref="IId"/>-aware membership checks.
+    /// A strongly typed wrapper around <see cref="IdRegistry"/> that exposes <see cref="IId"/>-aware membership checks.
     /// </summary>
     /// <typeparam name="T">The id struct type bound to this registry.</typeparam>
     public class IdRegistry<T> : IdRegistry
         where T : struct, IId
     {
-        /// <summary>
-        /// Determines whether the registry contains the integer value of the specified id struct.
-        /// </summary>
-        /// <param name="id">The id struct whose <see cref="IId.Id"/> is checked.</param>
-        /// <returns><c>true</c> if the underlying integer is registered; otherwise <c>false</c>.</returns>
+        public bool TryGetName(T id, out string nameId) =>
+            base.TryGetName(id.Id, out nameId);
+
         public bool Contains(T id) =>
             base.Contains(id.Id);
     }
 
     /// <summary>
-    /// A ScriptableObject that holds a stable set of integer IDs for a given struct type.
-    /// Names are stored and edited in the inspector but stripped from player builds.
-    /// Use <see cref="StringIdRegistry"/> when name lookups are needed at runtime.
+    /// A ScriptableObject that maps string names to stable integer IDs for a given struct type.
     /// </summary>
-    [CreateAssetMenu(fileName = "IdRegistry", menuName = "Aspid/Id Registry/Id Registry")]
-    public partial class IdRegistry : IdRegistryBase, IEnumerable<int>
+    [CreateAssetMenu(fileName = "IdRegistry", menuName = "Aspid/Id Registry")]
+    public partial class IdRegistry : ScriptableObject, IEnumerable<KeyValuePair<int, string>>
     {
         [SerializeField] private int[] _ids = Array.Empty<int>();
-        [NonSerialized] private HashSet<int> _idSet = new();
+        [SerializeField] private string[] _names = Array.Empty<string>();
 
-        /// <inheritdoc/>
-        public override int Count => _ids.Length;
+        [NonSerialized] private Dictionary<string, int> _idByName = new();
+        [NonSerialized] private Dictionary<int, string> _nameById = new();
 
-        /// <inheritdoc/>
-        public override bool Contains(int id)
+        [field: NonSerialized]
+        public bool IsCacheDirty { get; private set; }
+
+        public int Count => _ids.Length;
+
+        public IReadOnlyList<int> Ids => _ids;
+
+        public IReadOnlyList<string> IdNames => _names;
+
+        protected virtual void OnValidate() =>
+            IsCacheDirty = true;
+        
+        public bool TryGetId(string nameId, out int id)
         {
             EnsureCache();
-            return _idSet.Contains(id);
+            return _idByName.TryGetValue(nameId, out id);
         }
 
-        /// <summary>
-        /// Returns an enumerator over the registered integer ids in serialized order.
-        /// </summary>
-        public IEnumerator<int> GetEnumerator() =>
-            ((IEnumerable<int>)_ids).GetEnumerator();
+        public bool TryGetName(int id, out string nameId)
+        {
+            EnsureCache();
+            if (_nameById.TryGetValue(id, out nameId)) return true;
+            nameId = string.Empty;
+            return false;
+        }
+
+        public bool Contains(int id)
+        {
+            EnsureCache();
+            return _nameById.ContainsKey(id);
+        }
+
+        public bool Contains(string nameId)
+        {
+            EnsureCache();
+            return _idByName.ContainsKey(nameId);
+        }
+
+        public void EnsureCache()
+        {
+            if (!IsCacheDirty) return;
+            
+            RebuildCache();
+            IsCacheDirty = false;
+        }
+        
+        public void InvalidateCache() =>
+            IsCacheDirty = true;
+
+        public IEnumerator<KeyValuePair<int, string>> GetEnumerator()
+        {
+            var count = Math.Min(_ids.Length, _names.Length);
+            
+            for (var i = 0; i < count; i++)
+                yield return new KeyValuePair<int, string>(_ids[i], _names[i]);
+        }
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
 
-        /// <inheritdoc/>
-        protected override void RebuildCache()
+        private void RebuildCache()
         {
-            _idSet = new HashSet<int>(_ids.Length);
+            using var _ = this.Marker();
             
-            foreach (var id in _ids)
-                _idSet.Add(id);
+            var count = Math.Min(_ids.Length, _names.Length);
+            _idByName = new Dictionary<string, int>(count);
+            _nameById = new Dictionary<int, string>(count);
+
+            for (var i = 0; i < count; i++)
+            {
+                var id = _ids[i];
+                var nameId = _names[i] ?? string.Empty;
+
+                if (!string.IsNullOrWhiteSpace(nameId))
+                    _idByName[nameId] = id;
+
+                _nameById[id] = nameId;
+            }
         }
     }
 }

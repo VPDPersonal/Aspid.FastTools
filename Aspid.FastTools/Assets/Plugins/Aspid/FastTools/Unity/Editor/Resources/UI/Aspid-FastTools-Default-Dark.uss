@@ -273,3 +273,109 @@ Label.aspid-fasttools-theme--lightness.aspid-fasttools-status--info {
     color: var(--aspid-colors-status-info-text-lightness);
 }
 /*--------------------------------------------------------------------------------------------------------------------*/
+
+/* --------------------------------------------------- BUTTONS ------------------------------------------------------ */
+Button.aspid-fasttools-theme--darkness {
+    color: var(--aspid-colors-text-darkness);
+    background-color: var(--aspid-colors-bg-darkness);
+}
+
+Button.aspid-fasttools-theme--dark {
+    color: var(--aspid-colors-text-dark);
+    background-color: var(--aspid-colors-bg-dark);
+}
+
+Button.aspid-fasttools-theme--light {
+    color: var(--aspid-colors-text-light);
+    background-color: var(--aspid-colors-bg-lightness);
+}
+
+Button.aspid-fasttools-theme--lightness {
+    color: var(--aspid-colors-text-lightness);
+    background-color: var(--aspid-colors-bg-lightness);
+}
+
+/* ----------------------- SUCCESS: BUTTONS ------------------------*/
+Button.aspid-fasttools-theme--darkness.aspid-fasttools-status--success {
+    color: var(--aspid-colors-status-success-text-darkness);
+    background-color: var(--aspid-colors-status-success-darkness);
+}
+
+Button.aspid-fasttools-theme--dark.aspid-fasttools-status--success {
+    color: var(--aspid-colors-status-success-text-dark);
+    background-color: var(--aspid-colors-status-success-dark);
+}
+
+Button.aspid-fasttools-theme--light.aspid-fasttools-status--success {
+    color: var(--aspid-colors-status-success-text-light);
+    background-color: var(--aspid-colors-status-success-light);
+}
+
+Button.aspid-fasttools-theme--lightness.aspid-fasttools-status--success {
+    color: var(--aspid-colors-status-success-text-lightness);
+    background-color: var(--aspid-colors-status-success-lightness);
+}
+
+/* ----------------------- WARNING: BUTTONS ------------------------*/
+Button.aspid-fasttools-theme--darkness.aspid-fasttools-status--warning {
+    color: var(--aspid-colors-status-warning-text-darkness);
+    background-color: var(--aspid-colors-status-warning-darkness);
+}
+
+Button.aspid-fasttools-theme--dark.aspid-fasttools-status--warning {
+    color: var(--aspid-colors-status-warning-text-dark);
+    background-color: var(--aspid-colors-status-warning-dark);
+}
+
+Button.aspid-fasttools-theme--light.aspid-fasttools-status--warning {
+    color: var(--aspid-colors-status-warning-text-light);
+    background-color: var(--aspid-colors-status-warning-light);
+}
+
+Button.aspid-fasttools-theme--lightness.aspid-fasttools-status--warning {
+    color: var(--aspid-colors-status-warning-text-lightness);
+    background-color: var(--aspid-colors-status-warning-lightness);
+}
+
+/* ------------------------ ERROR: BUTTONS -------------------------*/
+Button.aspid-fasttools-theme--darkness.aspid-fasttools-status--error {
+    color: var(--aspid-colors-status-error-text-darkness);
+    background-color: var(--aspid-colors-status-error-darkness);
+}
+
+Button.aspid-fasttools-theme--dark.aspid-fasttools-status--error {
+    color: var(--aspid-colors-status-error-text-dark);
+    background-color: var(--aspid-colors-status-error-dark);
+}
+
+Button.aspid-fasttools-theme--light.aspid-fasttools-status--error {
+    color: var(--aspid-colors-status-error-text-light);
+    background-color: var(--aspid-colors-status-error-light);
+}
+
+Button.aspid-fasttools-theme--lightness.aspid-fasttools-status--error {
+    color: var(--aspid-colors-status-error-text-lightness);
+    background-color: var(--aspid-colors-status-error-lightness);
+}
+
+/* ------------------------ INFO: BUTTONS --------------------------*/
+Button.aspid-fasttools-theme--darkness.aspid-fasttools-status--info {
+    color: var(--aspid-colors-status-info-text-darkness);
+    background-color: var(--aspid-colors-status-info-darkness);
+}
+
+Button.aspid-fasttools-theme--dark.aspid-fasttools-status--info {
+    color: var(--aspid-colors-status-info-text-dark);
+    background-color: var(--aspid-colors-status-info-dark);
+}
+
+Button.aspid-fasttools-theme--light.aspid-fasttools-status--info {
+    color: var(--aspid-colors-status-info-text-light);
+    background-color: var(--aspid-colors-status-info-light);
+}
+
+Button.aspid-fasttools-theme--lightness.aspid-fasttools-status--info {
+    color: var(--aspid-colors-status-info-text-lightness);
+    background-color: var(--aspid-colors-status-info-lightness);
+}
+/*--------------------------------------------------------------------------------------------------------------------*/

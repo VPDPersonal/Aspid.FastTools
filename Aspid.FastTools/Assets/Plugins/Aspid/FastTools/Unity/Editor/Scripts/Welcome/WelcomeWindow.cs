@@ -210,7 +210,7 @@ namespace Aspid.FastTools.Editors
                 });
             }
 
-            return new AspidGradientButton($"{displayName}  ▼ Import", evt =>
+            return new AspidGradientButton($"{displayName}  ▼", "Import", evt =>
             {
                 var pointer = GetMousePosition(evt);
 

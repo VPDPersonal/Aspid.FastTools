@@ -17,8 +17,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private const string BlockClass = "aspid-fasttools-gradient-button";
         private const string LabelClass = "aspid-fasttools-gradient-button__label";
+        private const string TrailingLabelClass = "aspid-fasttools-gradient-button__trailing-label";
 
         private readonly Label _label;
+        private readonly Label _trailingLabel;
         private readonly AspidHoverGradientOverlay _overlay;
         private readonly AspidGradientButtonColorsStyle _colors;
 
@@ -32,6 +34,22 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         {
             get => _label.text;
             set => _label.text = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the trailing label text shown at the right edge. Empty hides the label.
+        /// </summary>
+        [UxmlAttribute]
+        public string TrailingText
+        {
+            get => _trailingLabel.text;
+            set
+            {
+                _trailingLabel.text = value ?? string.Empty;
+                _trailingLabel.style.display = string.IsNullOrEmpty(value)
+                    ? DisplayStyle.None
+                    : DisplayStyle.Flex;
+            }
         }
 
         /// <summary>
@@ -69,6 +87,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             : this(AspidGradientButtonPreset.Default.SetText(text).SetOnClick(onClick)) { }
 
         /// <summary>
+        /// Creates an <see cref="AspidGradientButton"/> with the given label, trailing text and click handler.
+        /// </summary>
+        /// <param name="text">The button label.</param>
+        /// <param name="trailingText">The trailing label text shown at the right edge. Pass <see langword="null"/> or empty to hide it.</param>
+        /// <param name="onClick">Optional handler invoked when the button is clicked.</param>
+        public AspidGradientButton(string text, string trailingText, Action<EventBase> onClick = null)
+            : this(AspidGradientButtonPreset.Default
+                .SetText(text)
+                .SetTrailingText(trailingText)
+                .SetOnClick(onClick)) { }
+
+        /// <summary>
         /// Creates an <see cref="AspidGradientButton"/> with the given preset.
         /// </summary>
         /// <param name="preset">The configuration preset to apply.</param>
@@ -88,6 +118,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 .SetPickingMode(PickingMode.Ignore);
             _label.AddClass(LabelClass);
             Add(_label);
+
+            _trailingLabel = new Label(preset.TrailingText ?? string.Empty)
+                .SetPickingMode(PickingMode.Ignore);
+            _trailingLabel.AddClass(LabelClass);
+            _trailingLabel.AddClass(TrailingLabelClass);
+            if (string.IsNullOrEmpty(preset.TrailingText))
+                _trailingLabel.style.display = DisplayStyle.None;
+            Add(_trailingLabel);
 
             if (preset.OnClick != null)
                 this.AddManipulator(new Clickable(preset.OnClick));
@@ -109,12 +147,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         {
             _overlay.SetTarget(1f);
             _label.style.color = _colors.Accent;
+            _trailingLabel.style.color = _colors.Accent;
         }
 
         private void OnMouseLeave(MouseLeaveEvent _)
         {
             _overlay.SetTarget(0f);
             _label.style.color = StyleKeyword.Null;
+            _trailingLabel.style.color = StyleKeyword.Null;
         }
 
         private void OnAttachToPanel(AttachToPanelEvent _)

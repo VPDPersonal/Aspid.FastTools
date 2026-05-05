@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -18,9 +17,9 @@ namespace Aspid.FastTools.Ids.Editors
         /// starts with a letter/underscore and contains only letters, digits,
         /// underscore or hyphen, length ≤ 255, not flagged by <paramref name="isTaken"/>.
         /// Callers should pass a delegate over a cached lookup instead of
-        /// materialising a HashSet on every keystroke.
+        /// materializing a HashSet on every keystroke.
         /// </summary>
-        public static bool IsValidName(string? input, Func<string, bool>? isTaken, out string? error)
+        public static bool IsValidName(string input, Func<string, bool> isTaken, out string error)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -50,46 +49,21 @@ namespace Aspid.FastTools.Ids.Editors
             return true;
         }
 
-        public static CleanUpSummary Summarize(IRegistryAccessor accessor)
+        public static CleanUpSummary Summarize(int count, Func<int, string> getName)
         {
+            if (getName is null) throw new ArgumentNullException(nameof(getName));
+
             var empty = 0;
             var duplicates = 0;
-            var structural = accessor.HasStructuralDamage(out _) ? 1 : 0;
-
             var seen = new HashSet<string>();
-            for (var i = 0; i < accessor.Count; i++)
+            for (var i = 0; i < count; i++)
             {
-                var name = accessor.GetName(i);
+                var name = getName(i);
                 if (string.IsNullOrEmpty(name)) empty++;
                 else if (!seen.Add(name)) duplicates++;
             }
 
-            return new CleanUpSummary(empty, duplicates, structural);
-        }
-    }
-
-    internal readonly struct CleanUpSummary
-    {
-        public readonly int EmptyCount;
-        public readonly int DuplicateCount;
-        public readonly int StructuralIssues;
-
-        public CleanUpSummary(int emptyCount, int duplicateCount, int structuralIssues)
-        {
-            EmptyCount = emptyCount;
-            DuplicateCount = duplicateCount;
-            StructuralIssues = structuralIssues;
-        }
-
-        public int Total => EmptyCount + DuplicateCount + StructuralIssues;
-
-        public string ToShortLabel()
-        {
-            var parts = new List<string>();
-            if (DuplicateCount > 0) parts.Add($"{DuplicateCount} duplicates");
-            if (EmptyCount > 0) parts.Add($"{EmptyCount} empty name" + (EmptyCount == 1 ? string.Empty : "s"));
-            if (StructuralIssues > 0) parts.Add("structural issues");
-            return $"⚠ {Total} invalid entr{(Total == 1 ? "y" : "ies")} ({string.Join(", ", parts)})";
+            return new CleanUpSummary(empty, duplicates);
         }
     }
 }

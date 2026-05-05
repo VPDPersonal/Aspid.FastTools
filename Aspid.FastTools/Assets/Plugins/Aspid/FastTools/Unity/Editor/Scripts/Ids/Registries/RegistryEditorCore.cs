@@ -1,9 +1,9 @@
-#nullable enable
 using System;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
@@ -11,72 +11,81 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 namespace Aspid.FastTools.Ids.Editors
 {
     /// <summary>
-    /// Builds the shared inspector UI for both Id registry types.
-    /// UI-only — all storage access goes through <see cref="IRegistryAccessor"/>.
+    /// Builds the inspector UI for <see cref="IdRegistry"/>. Acts as the sole orchestrator:
+    /// owns the <see cref="SerializedObject"/>, the view-model, and the mutation cycle
+    /// (<see cref="Record"/> → SerializedProperty edits → <see cref="Commit"/>).
+    /// UI is split into dedicated <c>IdRegistry*VisualElement</c> components that emit
+    /// events; this class wires them and performs all <see cref="IdRegistry"/> mutations.
     /// </summary>
     internal sealed class RegistryEditorCore
     {
-        private readonly IRegistryAccessor _accessor;
+        private readonly IdRegistry _registry;
+        private readonly SerializedObject _serializedObject;
+        private readonly SerializedProperty _idsProp;
+        private readonly SerializedProperty _namesProp;
+        private readonly SerializedProperty _nextIdProp;
+        private readonly SerializedProperty _targetStructTypeProp;
 
-        private readonly List<EntryView> _viewModel = new();
-        private AspidHelpBox? _emptyState;
-        private ListView? _listView;
-        private VisualElement? _listContainer;
-        private VisualElement? _warningRow;
-        private Label? _warningLabel;
-        private TextField? _addInput;
-        private Button? _addButton;
-        private Label? _addErrorLabel;
-        private string _searchQuery = string.Empty;
+        private readonly List<IdRegistryEntryData> _viewModel = new();
 
-        private Dictionary<string, int>? _nameOccurrencesCache;
+        private IdRegistryListVisualElement _list;
+        private IdRegistryToolbarVisualElement _toolbar;
+        private IdRegistryAddRowVisualElement _addRow;
+        private IdRegistryNextIdRowVisualElement _nextIdRow;
+        private IdRegistryWarningVisualElement _warning;
 
-        private SortMode _sortMode = SortMode.RegistryOrder;
-        private GroupMode _groupMode = GroupMode.None;
         private string _assetGuid = string.Empty;
+        private string _searchQuery = string.Empty;
+        private RegistryGroupMode _groupMode = RegistryGroupMode.None;
+        private RegistrySortMode _sortMode = RegistrySortMode.RegistryOrder;
 
-        private string SortKey => $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Sort";
-        private string GroupKey => $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Group";
-        
-        private string GroupExpandedKey(string group) =>
-            $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Group:{group}:Expanded";
+        // Invalidated to null inside RebuildEntries; rebuilt lazily by EnsureNameOccurrencesCache.
+        private Dictionary<string, int> _nameOccurrencesCache;
 
-        public RegistryEditorCore(IRegistryAccessor accessor)
+        public RegistryEditorCore(IdRegistry registry)
         {
-            _accessor = accessor;
+            _registry = registry;
+            _serializedObject = new SerializedObject(registry);
+            _idsProp = _serializedObject.FindProperty("_ids");
+            _namesProp = _serializedObject.FindProperty("_names");
+            _nextIdProp = _serializedObject.FindProperty("_nextId");
+            _targetStructTypeProp = _serializedObject.FindProperty("_targetStructType");
         }
 
         public VisualElement Build()
         {
-            var assetPath = AssetDatabase.GetAssetPath(_accessor.Target);
-            
+            var assetPath = AssetDatabase.GetAssetPath(_registry);
             _assetGuid = string.IsNullOrEmpty(assetPath)
-                ? _accessor.Target.GetInstanceID().ToString()
+                ? _registry.GetInstanceID().ToString()
                 : AssetDatabase.AssetPathToGUID(assetPath);
-            _sortMode = (SortMode)SessionState.GetInt(SortKey, (int)SortMode.RegistryOrder);
-            _groupMode = (GroupMode)SessionState.GetInt(GroupKey, (int)GroupMode.None);
+
+            _sortMode = (RegistrySortMode)SessionState.GetInt(SortKey, (int)RegistrySortMode.RegistryOrder);
+            _groupMode = (RegistryGroupMode)SessionState.GetInt(GroupKey, (int)RegistryGroupMode.None);
 
             var root = new VisualElement()
                 .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
                 .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
                 .AddClass("aspid-fasttools-inspector-container");
 
-            root.Add(new AspidInspectorHeader(_accessor.Target.name, _accessor.Target)
+            root.Add(new AspidInspectorHeader(_registry.name, _registry)
             {
-                Subtext = _accessor.Target.GetType().Name,
+                Subtext = _registry.GetType().Name,
             });
 
             var typeContainer = new AspidBox()
                 .SetMarginTop(5);
 
-            typeContainer.Add(new AspidLabel("Type").SetMarginBottom(5));
-            typeContainer.Add(new PropertyField(_accessor.TargetStructTypeProperty, label: string.Empty));
+            typeContainer.AddChild(new AspidLabel("Type").SetMarginBottom(5));
+            typeContainer.AddChild(new PropertyField(_targetStructTypeProp, label: string.Empty));
 
             var container = new AspidBox()
                 .SetMarginTop(5);
 
-            container.Add(BuildSectionTitle("IDs"));
-            container.Add(BuildWarningRow());
+            container.AddChild(BuildSectionTitle("IDs"));
+
+            _warning = new IdRegistryWarningVisualElement();
+            _warning.ReviewRequested += ShowCleanUpDialog;
+            container.AddChild(_warning);
 
             var searchField = new ToolbarSearchField();
             searchField.RegisterValueChangedCallback(e =>
@@ -84,23 +93,29 @@ namespace Aspid.FastTools.Ids.Editors
                 _searchQuery = e.newValue ?? string.Empty;
                 RebuildEntries();
             });
-            container.Add(searchField);
-            container.Add(BuildSortGroupToolbar());
+            container.AddChild(searchField);
 
-            _listContainer = new VisualElement();
-            container.Add(_listContainer);
+            _toolbar = new IdRegistryToolbarVisualElement(_sortMode, _groupMode);
+            _toolbar.SortChanged += OnSortChanged;
+            _toolbar.GroupChanged += OnGroupChanged;
+            container.AddChild(_toolbar);
 
-            _emptyState = new AspidHelpBox(
-                "No entries yet. Use the field below to create your first ID.",
-                AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
-                .AddClass(Constants.Registry.EmptyState);
-            _emptyState.SetDisplay(DisplayStyle.None);
-            container.Add(_emptyState);
+            _list = new IdRegistryListVisualElement();
+            _list.RowNameFocusIn += OnRowNameFocusIn;
+            _list.RowNameChanging += OnRowNameChanging;
+            _list.RowNameCommitRequested += OnRowNameCommitRequested;
+            _list.RowDeleteRequested += OnRowDeleteRequested;
+            container.AddChild(_list);
 
-            container.Add(BuildNextIdRow());
-            container.Add(BuildAddRow());
+            _nextIdRow = new IdRegistryNextIdRowVisualElement(_nextIdProp, ResolveNextIdWarning);
+            _nextIdRow.ValueChanged += OnNextIdValueChanged;
+            container.AddChild(_nextIdRow);
 
-            container.TrackSerializedObjectValue(_accessor.SerializedObject, _ => RebuildEntries());
+            _addRow = new IdRegistryAddRowVisualElement(ValidateAddRow);
+            _addRow.AddRequested += OnAddRowAddRequested;
+            container.AddChild(_addRow);
+            
+            container.TrackSerializedObjectValue(_serializedObject, _ => RebuildEntries());
             RebuildEntries();
 
             return root
@@ -114,17 +129,19 @@ namespace Aspid.FastTools.Ids.Editors
                 .SetLabelSize(AspidLabelSizeStyle.Type.H5)
                 .SetLineSize(AspidDividingLineSizeStyle.Type.Medium));
 
+        // -------- view-model --------
+
         private void RebuildEntries()
         {
             _viewModel.Clear();
             _nameOccurrencesCache = null;
-            var count = _accessor.Count;
+            var count = Count;
 
             var duplicates = new HashSet<string>();
             var seen = new HashSet<string>();
             for (var i = 0; i < count; i++)
             {
-                var name = _accessor.GetName(i);
+                var name = GetName(i);
                 if (!string.IsNullOrEmpty(name) && !seen.Add(name))
                     duplicates.Add(name);
             }
@@ -132,210 +149,41 @@ namespace Aspid.FastTools.Ids.Editors
             var query = _searchQuery?.Trim() ?? string.Empty;
             for (var i = 0; i < count; i++)
             {
-                var name = _accessor.GetName(i);
-                var id = _accessor.GetId(i);
+                var name = GetName(i);
+                var id = GetId(i);
                 if (!MatchesQuery(name, id, query)) continue;
 
-                _viewModel.Add(new EntryView(i, name, id, duplicates.Contains(name)));
+                _viewModel.Add(new IdRegistryEntryData(i, name, id, duplicates.Contains(name)));
             }
 
             ApplySort(_viewModel);
 
-            if (_listContainer != null)
-            {
-                _listContainer.Clear();
-                if (_groupMode == GroupMode.None)
-                {
-                    _listView ??= BuildListView();
-                    _listView.itemsSource = _viewModel;
-                    _listContainer.Add(_listView);
-                    _listView.Rebuild();
-                }
-                else
-                {
-                    RenderGroupedView();
-                }
-            }
-
-            UpdateListScrollState();
-            RefreshWarningRow();
-            RefreshEmptyState();
-            RevalidateAddRow();
+            _list?.Bind(_viewModel, _groupMode, GetFoldoutExpanded, SetFoldoutExpanded);
+            _warning?.Bind(IdRegistryValidator.Summarize(Count, GetName));
+            _addRow?.Revalidate();
         }
 
-        private void RefreshEmptyState() =>
-            _emptyState?.SetDisplay(_accessor.Count == 0 ? DisplayStyle.Flex : DisplayStyle.None);
-
-        private ListView BuildListView()
-        {
-            var list = new ListView
-            {
-                selectionType = SelectionType.None,
-                virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
-                itemsSource = _viewModel,
-                reorderable = false,
-                showBorder = false,
-                showFoldoutHeader = false,
-                showBoundCollectionSize = false,
-                showAddRemoveFooter = false,
-            };
-            list.AddToClassList(Constants.Registry.List);
-            list.SetMakeItem(CreateEntryRow);
-            list.SetBindItem(BindEntryRow);
-            return list;
-        }
-
-        private VisualElement BuildSortGroupToolbar()
-        {
-            var row = new VisualElement().AddClass(Constants.Registry.Toolbar);
-
-            var sort = new EnumField(_sortMode);
-            sort.tooltip = "Sort order";
-            sort.RegisterValueChangedCallback(e =>
-            {
-                _sortMode = (SortMode)e.newValue;
-                SessionState.SetInt(SortKey, (int)_sortMode);
-                RebuildEntries();
-            });
-
-            var group = new EnumField(_groupMode);
-            group.tooltip = "Group entries by";
-            group.RegisterValueChangedCallback(e =>
-            {
-                _groupMode = (GroupMode)e.newValue;
-                SessionState.SetInt(GroupKey, (int)_groupMode);
-                RebuildEntries();
-            });
-
-            row.Add(BuildToolbarCell("Sort", sort));
-            row.Add(BuildToolbarCell("Group", group));
-            return row;
-        }
-
-        private static VisualElement BuildToolbarCell(string label, VisualElement field) =>
-            new VisualElement()
-                .AddClass(Constants.Registry.ToolbarCell)
-                .AddChild(new Label(label))
-                .AddChild(field);
-
-        private void ApplySort(List<EntryView> list)
+        private void ApplySort(List<IdRegistryEntryData> list)
         {
             switch (_sortMode)
             {
-                case SortMode.NameAZ:
+                case RegistrySortMode.NameAscending:
                     list.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name));
                     break;
-                case SortMode.NameZA:
+                case RegistrySortMode.NameDescending:
                     list.Sort((a, b) => StringComparer.OrdinalIgnoreCase.Compare(b.Name, a.Name));
                     break;
-                case SortMode.IdAsc:
+                case RegistrySortMode.IdAscending:
                     list.Sort((a, b) => a.Id.CompareTo(b.Id));
                     break;
-                case SortMode.IdDesc:
+                case RegistrySortMode.IdDescending:
                     list.Sort((a, b) => b.Id.CompareTo(a.Id));
                     break;
-                case SortMode.RegistryOrder:
+                case RegistrySortMode.RegistryOrder:
                 default:
                     break;
             }
         }
-
-        private void RenderGroupedView()
-        {
-            if (_listContainer == null) return;
-
-            var buckets = new Dictionary<string, List<EntryView>>();
-            foreach (var view in _viewModel)
-            {
-                var prefix = PrefixOf(view.Name);
-                if (!buckets.TryGetValue(prefix, out var list))
-                {
-                    list = new List<EntryView>();
-                    buckets[prefix] = list;
-                }
-                list.Add(view);
-            }
-
-            foreach (var kv in buckets)
-            {
-                var groupName = kv.Key;
-                var items = kv.Value;
-
-                var foldout = new Foldout
-                {
-                    text = $"{groupName} ({items.Count})",
-                    value = SessionState.GetBool(GroupExpandedKey(groupName), defaultValue: true),
-                }.AddClass(Constants.Registry.GroupFoldout);
-
-                foldout.RegisterValueChangedCallback(e =>
-                    SessionState.SetBool(GroupExpandedKey(groupName), e.newValue));
-
-                var groupList = new ListView
-                {
-                    selectionType = SelectionType.None,
-                    virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
-                    itemsSource = items,
-                    reorderable = false,
-                    showBorder = false,
-                    showFoldoutHeader = false,
-                    showBoundCollectionSize = false,
-                    showAddRemoveFooter = false,
-                };
-                groupList.AddToClassList(Constants.Registry.List);
-                groupList.SetMakeItem(CreateEntryRow);
-                groupList.SetBindItem((element, visibleIndex) =>
-                {
-                    if (visibleIndex < 0 || visibleIndex >= items.Count) return;
-                    var view = items[visibleIndex];
-                    ((IdRegistryEntryVisualElement)element).Bind(new IdRegistryEntryData(
-                        originalIndex: view.OriginalIndex,
-                        name: view.Name,
-                        id: view.Id,
-                        isDuplicate: view.IsDuplicate));
-                });
-
-                if (items.Count >= Constants.Registry.ScrollThreshold)
-                {
-                    const float height = Constants.Registry.MaxVisibleRows * Constants.Registry.RowHeight;
-                    groupList.style.height = height;
-                    groupList.style.maxHeight = height;
-                }
-
-                foldout.Add(groupList);
-                _listContainer.Add(foldout);
-            }
-        }
-
-        private static string PrefixOf(string name)
-        {
-            if (string.IsNullOrEmpty(name)) return "<ungrouped>";
-            var underscore = name.IndexOf('_');
-            var dash = name.IndexOf('-');
-            var idx = underscore < 0 ? dash
-                   : dash < 0 ? underscore
-                   : Math.Min(underscore, dash);
-            return idx <= 0 ? "<ungrouped>" : name.Substring(0, idx);
-        }
-
-        private void UpdateListScrollState()
-        {
-            if (_listView == null || _groupMode != GroupMode.None) return;
-
-            if (_viewModel.Count >= Constants.Registry.ScrollThreshold)
-            {
-                const float height = Constants.Registry.MaxVisibleRows * Constants.Registry.RowHeight;
-                _listView.style.height = height;
-                _listView.style.maxHeight = height;
-            }
-            else
-            {
-                _listView.style.height = StyleKeyword.Null;
-                _listView.style.maxHeight = StyleKeyword.Null;
-            }
-        }
-
-        private enum SortMode { RegistryOrder, NameAZ, NameZA, IdAsc, IdDesc }
-        private enum GroupMode { None, ByPrefix }
 
         private static bool MatchesQuery(string name, int id, string query)
         {
@@ -344,25 +192,84 @@ namespace Aspid.FastTools.Ids.Editors
             return id.ToString().IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private VisualElement CreateEntryRow()
+        private Func<string, bool> IsTakenExcluding()
         {
-            var row = new IdRegistryEntryVisualElement();
-            row.NameFocusIn += OnRowNameFocusIn;
-            row.NameChanging += OnRowNameChanging;
-            row.NameCommitRequested += OnRowNameCommitRequested;
-            row.DeleteRequested += OnRowDeleteRequested;
-            return row;
+            var occurrences = EnsureNameOccurrencesCache();
+            return name => occurrences.ContainsKey(name);
         }
 
-        private void BindEntryRow(VisualElement element, int visibleIndex)
+        private Func<string, bool> IsTakenExcluding(int exceptIndex)
         {
-            if (visibleIndex < 0 || visibleIndex >= _viewModel.Count) return;
-            var view = _viewModel[visibleIndex];
-            ((IdRegistryEntryVisualElement)element).Bind(new IdRegistryEntryData(
-                originalIndex: view.OriginalIndex,
-                name: view.Name,
-                id: view.Id,
-                isDuplicate: view.IsDuplicate));
+            var occurrences = EnsureNameOccurrencesCache();
+
+            string exceptName = null;
+            if (exceptIndex >= 0 && exceptIndex < Count)
+            {
+                var n = GetName(exceptIndex);
+                if (!string.IsNullOrEmpty(n)) exceptName = n;
+            }
+
+            return name =>
+            {
+                if (!occurrences.TryGetValue(name, out var count)) return false;
+                if (exceptName != null && exceptName == name) return count > 1;
+                return true;
+            };
+        }
+
+        private Dictionary<string, int> EnsureNameOccurrencesCache()
+        {
+            if (_nameOccurrencesCache != null)
+                return _nameOccurrencesCache;
+
+            var count = Count;
+            var cache = new Dictionary<string, int>();
+
+            for (var i = 0; i < count; i++)
+            {
+                var name = GetName(i);
+                if (string.IsNullOrEmpty(name)) continue;
+
+                cache.TryGetValue(name, out var c);
+                cache[name] = c + 1;
+            }
+
+            return _nameOccurrencesCache = cache;
+        }
+
+        // -------- component handlers --------
+
+        private void OnSortChanged(RegistrySortMode mode)
+        {
+            _sortMode = mode;
+            SessionState.SetInt(SortKey, (int)mode);
+            RebuildEntries();
+        }
+
+        private void OnGroupChanged(RegistryGroupMode mode)
+        {
+            _groupMode = mode;
+            SessionState.SetInt(GroupKey, (int)mode);
+            RebuildEntries();
+        }
+
+        private void OnNextIdValueChanged(int _)
+        {
+            _registry.InvalidateCache();
+            _addRow?.Revalidate();
+        }
+
+        private void OnAddRowAddRequested(string name)
+        {
+            Record($"Add ID '{name}'");
+            Add(name);
+            Commit();
+
+            _addRow.Reset();
+            RebuildEntries();
+
+            var newIndex = _viewModel.FindIndex(v => v.Name == name);
+            if (newIndex >= 0) _list.ScrollToItem(newIndex);
         }
 
         private void OnRowNameFocusIn(IdRegistryEntryVisualElement row, IdRegistryEntryData data)
@@ -390,7 +297,7 @@ namespace Aspid.FastTools.Ids.Editors
             else
             {
                 row.SetEditMode(true, canConfirm: false);
-                row.SetError(error!);
+                row.SetError(error);
             }
         }
 
@@ -401,9 +308,9 @@ namespace Aspid.FastTools.Ids.Editors
 
             if (!IdRegistryValidator.IsValidName(trimmed, IsTakenExcluding(data.OriginalIndex), out _)) return;
 
-            _accessor.Record($"Rename ID '{data.Name}' → '{trimmed}'");
-            _accessor.SetName(data.OriginalIndex, trimmed);
-            _accessor.Commit();
+            Record($"Rename ID '{data.Name}' → '{trimmed}'");
+            SetName(data.OriginalIndex, trimmed);
+            Commit();
             row.SetEditMode(false);
             row.ClearError();
         }
@@ -418,250 +325,166 @@ namespace Aspid.FastTools.Ids.Editors
                     "Cancel"))
                 return;
 
-            _accessor.Record($"Delete ID '{name}'");
-            _accessor.RemoveAt(data.OriginalIndex);
-            _accessor.Commit();
+            Record($"Delete ID '{name}'");
+            RemoveAt(data.OriginalIndex);
+            Commit();
+        }
+        
+        private AddRowValidation ValidateAddRow(string trimmed)
+        {
+            if (!IdRegistryValidator.IsValidName(trimmed, IsTakenExcluding(), out var err))
+                return AddRowValidation.Invalid(err ?? string.Empty);
+
+            var nextId = _nextIdProp.intValue;
+            if (nextId < 1)
+                return AddRowValidation.Invalid("Next ID must be ≥ 1.");
+
+            return NextIdCollides(nextId)
+                ? AddRowValidation.Invalid($"Next ID {nextId} is already used — change it before adding.")
+                : AddRowValidation.Valid();
+
         }
 
-        private VisualElement BuildNextIdRow()
+        private NextIdWarning ResolveNextIdWarning(int value)
         {
-            var nextIdElement = new VisualElement()
-                .AddClass(Constants.Registry.NextId);
-            
-            var row = new VisualElement();
-
-            var fieldNextId = new PropertyField(_accessor.NextIdProperty)
-                .SetTooltip("Id that will be assigned to the next Add operation. Manual override is allowed.");
-
-            var warning = new Image
-            {
-                image = EditorGUIUtility.IconContent("console.warnicon.sml").image,
-                tooltip = string.Empty,
-            };
-
-            // PropertyField writes the value via SerializedObject and Unity already records the
-            // Undo step for that mutation. Calling Record here would create a duplicate Undo group
-            // on every callback (including ones triggered by Undo itself). Just invalidate the
-            // runtime cache and refresh dependent UI.
-            fieldNextId.RegisterValueChangeCallback(e =>
-            {
-                var newValue = e.changedProperty.intValue;
-                UpdateNextIdWarning(warning, newValue);
-
-                _accessor.Target.InvalidateCache();
-                RevalidateAddRow();
-            });
-
-            UpdateNextIdWarning(warning, _accessor.NextIdProperty.intValue);
-            
-            row.Add(fieldNextId);
-            row.Add(warning);
-            
-            return nextIdElement.AddChild(row);
-        }
-
-        private void UpdateNextIdWarning(Image warning, int value)
-        {
-            var maxAssigned = _accessor.MaxAssignedId;
+            var maxAssigned = MaxAssignedId;
             var show = value <= maxAssigned && value >= 1;
-            warning.SetEnabled(show);
-            warning.tooltip = show
-                ? $"Reusing ID {value} may silently remap references: assets that previously pointed to this ID will appear bound to the next name you create. Proceed only if you know these IDs are unused."
-                : value < 1
-                    ? "Next ID must be ≥ 1."
-                    : string.Empty;
+
+            if (show)
+                return NextIdWarning.Visible(
+                    $"Reusing ID {value} may silently remap references: assets that previously pointed to this ID will appear bound to the next name you create. Proceed only if you know these IDs are unused.");
+
+            return value < 1
+                ? NextIdWarning.Hidden("Next ID must be ≥ 1.")
+                : NextIdWarning.Hidden();
         }
 
         private bool NextIdCollides(int nextId)
         {
             if (nextId < 1) return false;
-            var count = _accessor.Count;
+            var count = Count;
             for (var i = 0; i < count; i++)
-                if (_accessor.GetId(i) == nextId) return true;
+                if (GetId(i) == nextId) return true;
             return false;
         }
 
-        private void RevalidateAddRow()
-        {
-            if (_addInput == null || _addButton == null || _addErrorLabel == null) return;
-
-            var val = _addInput.value?.Trim() ?? string.Empty;
-
-            if (string.IsNullOrEmpty(val))
-            {
-                _addButton.SetEnabled(false);
-                _addErrorLabel.SetDisplay(DisplayStyle.None);
-                return;
-            }
-
-            if (!IdRegistryValidator.IsValidName(val, IsTakenExcluding(-1), out var err))
-            {
-                _addButton.SetEnabled(false);
-                _addErrorLabel.text = err ?? string.Empty;
-                _addErrorLabel.SetDisplay(DisplayStyle.Flex);
-                return;
-            }
-
-            var nextId = _accessor.NextIdProperty.intValue;
-            if (nextId < 1)
-            {
-                _addButton.SetEnabled(false);
-                _addErrorLabel.text = "Next ID must be ≥ 1.";
-                _addErrorLabel.SetDisplay(DisplayStyle.Flex);
-                return;
-            }
-
-            if (NextIdCollides(nextId))
-            {
-                _addButton.SetEnabled(false);
-                _addErrorLabel.text = $"Next ID {nextId} is already used — change it before adding.";
-                _addErrorLabel.SetDisplay(DisplayStyle.Flex);
-                return;
-            }
-
-            _addErrorLabel.SetDisplay(DisplayStyle.None);
-            _addButton.SetEnabled(true);
-        }
-
-        private VisualElement BuildWarningRow()
-        {
-            var row = new VisualElement().AddClass(Constants.Registry.Warning);
-            _warningRow = row;
-
-            _warningLabel = new Label().AddClass(Constants.Registry.WarningLabel);
-            var reviewButton = new Button { text = "Review" }.AddClass(Constants.Registry.WarningButton);
-            reviewButton.clicked += ShowCleanUpDialog;
-
-            row.Add(_warningLabel);
-            row.Add(reviewButton);
-            return row;
-        }
-
-        private void RefreshWarningRow()
-        {
-            if (_warningRow == null || _warningLabel == null) return;
-            var summary = IdRegistryValidator.Summarize(_accessor);
-            var visible = summary.Total > 0;
-            _warningRow.EnableInClassList(Constants.Registry.WarningVisible, visible);
-            if (visible) _warningLabel.text = summary.ToShortLabel();
-        }
+        // -------- clean-up flow --------
 
         private void ShowCleanUpDialog()
         {
-            var summary = IdRegistryValidator.Summarize(_accessor);
+            var summary = IdRegistryValidator.Summarize(Count, GetName);
             if (summary.Total == 0) return;
 
             var message = $"This will remove {summary.Total} invalid entr{(summary.Total == 1 ? "y" : "ies")}:\n"
                         + (summary.DuplicateCount > 0 ? $"  • {summary.DuplicateCount} duplicate name(s)\n" : string.Empty)
                         + (summary.EmptyCount > 0 ? $"  • {summary.EmptyCount} empty name(s)\n" : string.Empty)
-                        + (summary.StructuralIssues > 0 ? "  • structural inconsistencies\n" : string.Empty)
                         + "\nProceed?";
 
             if (!EditorUtility.DisplayDialog("Clean up invalid entries", message, "Clean up", "Cancel"))
                 return;
 
-            _accessor.Record("Clean Up Invalid IDs");
+            Record("Clean Up Invalid IDs");
 
-            // Single source of truth for invalidity criteria — see IRegistryAccessor.EnumerateInvalidIndices.
-            var toRemove = new List<int>(_accessor.EnumerateInvalidIndices());
+            // Single source of truth for invalidity criteria — see EnumerateInvalidIndices.
+            var toRemove = new List<int>(EnumerateInvalidIndices());
             for (var i = toRemove.Count - 1; i >= 0; i--)
-                _accessor.RemoveAt(toRemove[i]);
+                RemoveAt(toRemove[i]);
 
-            _accessor.Commit();
+            Commit();
         }
 
-        private VisualElement BuildAddRow()
+        private IEnumerable<int> EnumerateInvalidIndices()
         {
-            var wrapper = new VisualElement()
-                .AddClass(Constants.Registry.Add);;
+            var count = Count;
+            var seen = new HashSet<string>();
 
-            var row = new VisualElement();
-            _addInput = new TextField();
-
-            _addButton = new Button { text = "+" };
-            _addButton.SetEnabled(false);
-
-            _addErrorLabel = new Label()
-                .SetDisplay(DisplayStyle.None);
-
-            _addInput.RegisterValueChangedCallback(_ => RevalidateAddRow());
-
-            _addButton.clicked += () =>
-            {
-                var val = _addInput.value?.Trim();
-                if (string.IsNullOrEmpty(val)) return;
-
-                _accessor.Record($"Add ID '{val}'");
-                _accessor.Add(val);
-                _accessor.Commit();
-
-                _addInput.SetValueWithoutNotify(string.Empty);
-                RevalidateAddRow();
-
-                RebuildEntries();
-                var newIndex = _viewModel.FindIndex(v => v.Name == val);
-                if (newIndex < 0 || _listView == null || _groupMode != GroupMode.None) return;
-                _listView.schedule.Execute(() => _listView.ScrollToItem(newIndex)).StartingIn(0);
-            };
-
-            row.Add(_addInput);
-            row.Add(_addButton);
-            wrapper.Add(row);
-            wrapper.Add(_addErrorLabel);
-            return wrapper;
-        }
-
-        private System.Func<string, bool> IsTakenExcluding(int exceptIndex)
-        {
-            var occurrences = EnsureNameOccurrencesCache();
-            if (exceptIndex < 0)
-                return name => occurrences.ContainsKey(name);
-
-            string? exceptName = null;
-            if (exceptIndex < _accessor.Count)
-            {
-                var n = _accessor.GetName(exceptIndex);
-                if (!string.IsNullOrEmpty(n)) exceptName = n;
-            }
-
-            return name =>
-            {
-                if (!occurrences.TryGetValue(name, out var count)) return false;
-                if (exceptName != null && exceptName == name) return count > 1;
-                return true;
-            };
-        }
-
-        private Dictionary<string, int> EnsureNameOccurrencesCache()
-        {
-            if (_nameOccurrencesCache != null) return _nameOccurrencesCache;
-
-            var cache = new Dictionary<string, int>();
-            var count = _accessor.Count;
             for (var i = 0; i < count; i++)
             {
-                var name = _accessor.GetName(i);
-                if (string.IsNullOrEmpty(name)) continue;
-                cache.TryGetValue(name, out var c);
-                cache[name] = c + 1;
+                var name = GetName(i);
+
+                if (string.IsNullOrEmpty(name))
+                {
+                    yield return i;
+                    continue;
+                }
+
+                if (!seen.Add(name))
+                    yield return i;
             }
-            return _nameOccurrencesCache = cache;
         }
 
-        private readonly struct EntryView
-        {
-            public readonly int OriginalIndex;
-            public readonly string Name;
-            public readonly int Id;
-            public readonly bool IsDuplicate;
+        // -------- SessionState keys --------
 
-            public EntryView(int originalIndex, string name, int id, bool isDuplicate)
+        private string SortKey => $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Sort";
+        private string GroupKey => $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Group";
+        private string GroupExpandedKey(string group) =>
+            $"Aspid.FastTools.Ids.Registry:{_assetGuid}:Group:{group}:Expanded";
+
+        private bool GetFoldoutExpanded(string group) =>
+            SessionState.GetBool(GroupExpandedKey(group), defaultValue: true);
+
+        private void SetFoldoutExpanded(string group, bool expanded) =>
+            SessionState.SetBool(GroupExpandedKey(group), expanded);
+
+        // -------- storage / mutation cycle --------
+        // Every mutation goes Record → SerializedProperty edits → Commit.
+        // Skipping Record breaks Undo. Skipping Commit leaves the runtime cache stale.
+
+        private int Count => _idsProp.arraySize;
+
+        private int MaxAssignedId
+        {
+            get
             {
-                OriginalIndex = originalIndex;
-                Name = name;
-                Id = id;
-                IsDuplicate = isDuplicate;
+                var max = 0;
+                var count = Count;
+                for (var i = 0; i < count; i++)
+                {
+                    var id = GetId(i);
+                    if (id > max) max = id;
+                }
+                return max;
             }
+        }
+
+        private int GetId(int index) =>
+            _idsProp.GetArrayElementAtIndex(index).intValue;
+
+        private string GetName(int index) =>
+            _namesProp.GetArrayElementAtIndex(index).stringValue;
+
+        private void Add(string name)
+        {
+            var id = _nextIdProp.intValue;
+            _nextIdProp.intValue = id + 1;
+
+            var newIndex = _idsProp.arraySize;
+
+            _idsProp.SetArraySize(newIndex + 1);
+            _namesProp.SetArraySize(newIndex + 1);
+
+            _idsProp.GetArrayElementAtIndex(newIndex).intValue = id;
+            _namesProp.GetArrayElementAtIndex(newIndex).stringValue = name;
+        }
+
+        private void SetName(int index, string name) =>
+            _namesProp.GetArrayElementAtIndex(index).stringValue = name;
+
+        private void RemoveAt(int index)
+        {
+            _idsProp.DeleteArrayElementAtIndex(index);
+            _namesProp.DeleteArrayElementAtIndex(index);
+        }
+
+        private void Record(string operationName) =>
+            Undo.RegisterCompleteObjectUndo(_registry, operationName);
+
+        private void Commit()
+        {
+            _serializedObject.ApplyModifiedProperties();
+            _registry.InvalidateCache();
+
+            EditorUtility.SetDirty(_registry);
         }
     }
 }
