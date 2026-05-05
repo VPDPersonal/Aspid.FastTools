@@ -1,55 +1,53 @@
 using System;
-using Aspid.FastTools.Editors;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
-using Object = UnityEngine.Object;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
     [UxmlElement]
-    public sealed partial class TypeSelectorField : BaseField<Type>
+    public sealed partial class TypeField : BaseField<Type>
     {
+        private const string StyleSheetPath = "UI/Types/Aspid-FastTools-SerializableType";
+        
         private readonly Button _openButton;
         private readonly TextElement _textElement;
         private readonly VisualElement _visualInput;
+        private readonly DynamicSerializeProperty _property;
 
-        private readonly Object _target;
-        private readonly string _propertyPath;
-        
         private string _missingAssemblyQualifiedName;
 
-        public Type[] Types { get; set; }
-        
         [UxmlAttribute]
-        public TypeAllow Allow { get; set; } = TypeAllow.All;
+        public TypeAllow Allow { get; set; } = TypeAllow.None;
 
-        public TypeSelectorField()
+        public Type[] Types { get; set; } = { typeof(object) };
+        
+        public TypeField()
             : this(label: null) { }
 
-        public TypeSelectorField(SerializedProperty property)
+        public TypeField(SerializedProperty property)
             : this(property.displayName, property) { }
         
-        public TypeSelectorField(string label, SerializedProperty property)
+        public TypeField(string label, SerializedProperty property)
             : this(label)
         {
-            _propertyPath = property.propertyPath;
-            _target = property.serializedObject.targetObject;
-            
+            _property = new DynamicSerializeProperty(property);
             SetValueFromAssemblyQualifiedNameWithoutNotify(property.stringValue);
         }
 
-        public TypeSelectorField(string label, Type defaultValue = null)
+        public TypeField(string label, Type defaultValue = null)
             : this(label, visualInput: new VisualElement(), defaultValue) { }
 
-        private TypeSelectorField(string label, VisualElement visualInput, Type defaultValue)
+        private TypeField(string label, VisualElement visualInput, Type defaultValue)
             : base(label, visualInput)
         {
             this.AddClass(EnumField.ussClassName)
-                .AddStyleSheetsFromResource("UI/Aspid-FastTools-Default-Dark")
-                .AddStyleSheetsFromResource("UI/Types/Aspid-FastTools-SerializableType");
+                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet);
             
             _visualInput = visualInput;
             
@@ -97,18 +95,8 @@ namespace Aspid.FastTools.Types.Editors
         
         private void UpdateDisplay()
         {
-            if (_missingAssemblyQualifiedName is not null)
-            {
-                _textElement.text = Constants.MissingOption;
-                _textElement.tooltip = $"Missing type: {_missingAssemblyQualifiedName}";
-                _openButton.SetDisplay(DisplayStyle.None);
-                return;
-            }
-
-            _textElement.text = value is null ? Constants.NoneOption : value.Name;
-            _textElement.tooltip = value?.FullName ?? string.Empty;
-            
-            _openButton.SetDisplay(value is not null ? DisplayStyle.Flex : DisplayStyle.None);
+            _textElement.SetText(TypeSelectorHelpers.GetTypeSelectorTitle(value, _missingAssemblyQualifiedName));
+            _openButton.SetDisplay(_missingAssemblyQualifiedName is null ? DisplayStyle.Flex : DisplayStyle.None);
         }
 
         private void OnDropdownClicked(PointerDownEvent evt)
@@ -118,7 +106,6 @@ namespace Aspid.FastTools.Types.Editors
             var window = EditorWindow.focusedWindow;
             if (!window) return;
             
-
             TypeSelectorWindow.Show(
                 screenRect: GetScreenRect(),
                 types: Types,
@@ -130,7 +117,7 @@ namespace Aspid.FastTools.Types.Editors
                         ? null
                         : Type.GetType(assemblyQualifiedName, throwOnError: false));
 
-                    new SerializedObject(_target).FindProperty(_propertyPath).SetStringAndApply(assemblyQualifiedName);
+                    _property?.GetProperty()?.SetStringAndApply(assemblyQualifiedName);
                 });
 
             evt.StopPropagation();

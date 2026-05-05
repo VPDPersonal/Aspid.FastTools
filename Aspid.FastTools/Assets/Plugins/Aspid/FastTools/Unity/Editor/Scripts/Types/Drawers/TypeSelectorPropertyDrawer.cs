@@ -15,28 +15,24 @@ namespace Aspid.FastTools.Types.Editors
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             ThrowExceptionIfInvalidProperty(property);
-            var allow = GetTypeAllow();
-            var types = GetTypesFromAttribute(property);
 
-            SerializableTypeDrawer.DrawIMGUI(
+            TypeIMGUIPropertyDrawer.Draw(
                 position: position,
                 property: property,
                 label: label,
-                types: types,
-                allow: allow);
+                allow: GetTypeAllow(),
+                types: GetTypesFromAttribute(property));
         }
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             ThrowExceptionIfInvalidProperty(property);
-            var allow = GetTypeAllow();
-            var types = GetTypesFromAttribute(property);
 
-            return SerializableTypeDrawer.DrawUIToolkit(
-                property: property,
+            return TypeUIToolkitPropertyDrawer.Draw(
                 label: preferredLabel,
-                types: types,
-                allow: allow);
+                property: property,
+                allow: GetTypeAllow(),
+                types: GetTypesFromAttribute(property));
         }
 
         private TypeAllow GetTypeAllow()
@@ -83,6 +79,7 @@ namespace Aspid.FastTools.Types.Editors
         private static MemberInfo GetMemberFromHierarchy(Type type, string memberName)
         {
             const BindingFlags bindingAttr = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly;
+            
             var currentType = type;
             while (currentType is not null)
             {
@@ -92,6 +89,7 @@ namespace Aspid.FastTools.Types.Editors
                 
                 currentType = currentType.BaseType;
             }
+            
             return null;
         }
 

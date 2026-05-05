@@ -8,7 +8,7 @@
 
     --aspid-colors-shade-dark: #787878;
     --aspid-colors-shade-light: #C0C0C0;
-}
+}  
 
 :root {
     padding: 5px;

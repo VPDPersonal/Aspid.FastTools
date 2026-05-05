@@ -20,7 +20,7 @@ namespace Aspid.FastTools.Types.Editors
             FullName = type.FullName;
             Assembly = type.Assembly.GetName().Name;
             AssemblyQualifiedName = type.AssemblyQualifiedName;
-            Namespace = string.IsNullOrEmpty(type.Namespace) ? Constants.GlobalNamespace : type.Namespace;
+            Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
         }
         
         public static List<TypeInfo> GetAllTypeInfos(Type[] baseTypes, TypeAllow allow)

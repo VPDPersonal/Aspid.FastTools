@@ -11,28 +11,18 @@ namespace Aspid.FastTools.Types.Editors
     [CustomPropertyDrawer(typeof(SerializableType<>))]
     internal sealed class SerializableTypePropertyDrawer : PropertyDrawer
     {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
-            var type = GetTypeFromFieldType();
-            
-            SerializableTypeDrawer.DrawIMGUI(
-                position: position,
-                property: GetProperty(property),
-                label: label,
-                types: new[] { type },
-                allow: TypeAllow.All);
-        }
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) => TypeIMGUIPropertyDrawer.Draw(
+            position: position,
+            label: label,
+            property: GetProperty(property),
+            allow: TypeAllow.All,
+            types: GetTypeFromFieldType());
         
-        public override VisualElement CreatePropertyGUI(SerializedProperty property)
-        {
-            var type = GetTypeFromFieldType();
-            
-            return SerializableTypeDrawer.DrawUIToolkit(
-                property: GetProperty(property), 
-                label: preferredLabel, 
-                types: new[] { type },
-                allow: TypeAllow.All);
-        }
+        public override VisualElement CreatePropertyGUI(SerializedProperty property) => TypeUIToolkitPropertyDrawer.Draw(
+            label: preferredLabel, 
+            property: GetProperty(property), 
+            allow: TypeAllow.All,
+            types: GetTypeFromFieldType());
 
         private static SerializedProperty GetProperty(SerializedProperty property) =>
             property.FindPropertyRelative("_assemblyQualifiedName");

@@ -12,7 +12,7 @@ namespace Aspid.FastTools.Types.Editors
             var allTypes = TypeInfo.GetAllTypeInfos(types, allow);
 
             var root = new TreeNode("/");
-            root.Children.Add(new TreeNode(Constants.NoneOption, null, Constants.NoneOption));
+            root.Children.Add(new TreeNode(TypeSelectorHelpers.NoneOption, null, TypeSelectorHelpers.NoneOption));
 
             AddGlobalNamespaceGroup(root, allTypes);
             AddNamespaceHierarchy(root, allTypes);
@@ -23,12 +23,12 @@ namespace Aspid.FastTools.Types.Editors
         private static void AddGlobalNamespaceGroup(TreeNode root, List<TypeInfo> types)
         {
             var globals = types
-                .Where(type => type.Namespace == Constants.GlobalNamespace)
+                .Where(type => type.Namespace == TypeSelectorHelpers.GlobalNamespace)
                 .OrderBy(type => type.Name)
                 .ToList();
 
             if (globals.Count is 0) return;
-            var globalGroup = new TreeNode(Constants.GlobalNamespace);
+            var globalGroup = new TreeNode(TypeSelectorHelpers.GlobalNamespace);
 
             AddTypesWithDisambiguation(globalGroup, globals, includeNamespace: false);
             root.Children.Add(globalGroup);
@@ -37,7 +37,7 @@ namespace Aspid.FastTools.Types.Editors
         private static void AddNamespaceHierarchy(TreeNode root, List<TypeInfo> types)
         {
             var namespacedTypes = types
-                .Where(type => type.Namespace != Constants.GlobalNamespace)
+                .Where(type => type.Namespace != TypeSelectorHelpers.GlobalNamespace)
                 .ToList();
 
             var trie = BuildNamespaceTrie(namespacedTypes);

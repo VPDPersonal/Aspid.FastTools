@@ -17,7 +17,7 @@ namespace Aspid.FastTools.Types.Editors
 
         public bool HasChildren => Children.Count > 0;
 
-        public bool IsSelectable => AssemblyQualifiedName is not null || DisplayName == Constants.NoneOption;
+        public bool IsSelectable => AssemblyQualifiedName is not null || DisplayName == TypeSelectorHelpers.NoneOption;
 
         public TreeNode(string displayName, string assemblyQualifiedName = null, string caption = null)
         {

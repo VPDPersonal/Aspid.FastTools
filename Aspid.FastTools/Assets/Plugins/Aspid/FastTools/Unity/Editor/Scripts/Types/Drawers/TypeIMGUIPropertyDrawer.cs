@@ -1,25 +1,21 @@
 using System;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
-using Aspid.FastTools.UIElements;
-using UnityEditor.UIElements;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    internal static class SerializableTypeDrawer
+    internal static class TypeIMGUIPropertyDrawer
     {
-        private const string OpenButtonIconPath = "Icons/open_button_icon";
-        
-        internal static void DrawIMGUI(
+        private const string OpenButtonIconPath = "d_Folder Icon";
+
+        internal static void Draw(
             Rect position,
-            SerializedProperty property,
             GUIContent label,
-            Type[] types,
-            TypeAllow allow)
+            SerializedProperty property,
+            TypeAllow allow = TypeAllow.All,
+            params Type[] types)
         {
             var openButtonWidth = position.height;
 
@@ -58,26 +54,8 @@ namespace Aspid.FastTools.Types.Editors
             if (!hasValidType) return;
             
             var openButtonRect = new Rect(dropdownRect.xMax + 2f, position.y, openButtonWidth, position.height);
-            if (GUI.Button(openButtonRect, new GUIContent(Resources.Load<Texture2D>(OpenButtonIconPath))))
+            if (GUI.Button(openButtonRect, new GUIContent(EditorGUIUtility.IconContent(OpenButtonIconPath))))
                 OpenScript(currentType);
-        }
-        
-        internal static VisualElement DrawUIToolkit(
-            SerializedProperty property,
-            string label,
-            Type[] types,
-            TypeAllow allow)
-        {
-            var field = new TypeSelectorField(string.IsNullOrEmpty(label) ? null : label, property) 
-                {
-                    Types = types,
-                    Allow = allow, 
-                }
-                .AddClass(PropertyField.ussClassName)
-                .AddClass(TypeSelectorField.alignedFieldUssClassName);
-
-            field.labelElement.AddClass(PropertyField.labelUssClassName);
-            return field;
         }
 
         private static void OpenScript(Type type)
@@ -90,11 +68,8 @@ namespace Aspid.FastTools.Types.Editors
 
         private static string GetCaption(string assemblyQualifiedName)
         {
-            if (string.IsNullOrEmpty(assemblyQualifiedName))
-                return Constants.NoneOption;
-
             var type = GetType(assemblyQualifiedName);
-            return type is null ? Constants.MissingOption : type.Name;
+            return TypeSelectorHelpers.GetTypeSelectorTitle(type, assemblyQualifiedName);
         }
 
         private static Type GetType(string assemblyQualifiedName) =>
