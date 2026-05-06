@@ -3,11 +3,11 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
-    public sealed class FastEnemy : EnemyBase
+    public sealed class IMGUITankEnemy : IMGUIEnemyBase
     {
-        [SerializeField] [Min(0)] private float _speed = 25f;
+        [SerializeField] [Min(0)] private float _armor = 50f;
         
         public override void Attack() =>
-            Debug.Log("Fast enemy strikes!");
+            Debug.Log("IMGUI tank attacks!");
     }
 }

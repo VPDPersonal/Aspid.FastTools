@@ -17,7 +17,6 @@ namespace Aspid.FastTools.Samples.Types
     public sealed class IMGUIAbilitySelector : MonoBehaviour
     {
         // Picker is constrained to Ability subtypes by the generic argument.
-        // Concrete types (Fireball, Dash, Heal) show up; the abstract base does not.
         [SerializeField] private SerializableType<Ability> _primaryAbility;
 
         // Array field + attribute: each element is its own picker constrained to AbilityModifier.

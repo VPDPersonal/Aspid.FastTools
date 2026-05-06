@@ -5,6 +5,7 @@
 }
 
 .aspid-fasttools-type-selector-header {
+    padding-left:           10;
     height:                 20px;
     min-height:             20px;
     align-items:            center;
@@ -15,16 +16,20 @@
 
 /* -------------------------------------------------- Back Button --------------------------------------------------- */
 .aspid-fasttools-type-selector-header > Button {
-    width:                  26px;
-    height:                 20px;
+    margin:                 0;
+    width:                  20px;
+    height:                 16px;
     border-width:           0;
     margin-right:           4px;
     background-color:       rgba(0, 0, 0, 0);
     color:                  var(--aspid-colors-text-lightness);
 }
 
-.aspid-fasttools-type-selector-header > Button:enabled:hover {
+.aspid-fasttools-type-selector-header > Button:enabled:hover,
+.aspid-fasttools-type-selector-header > Button:enabled:focus {
+    border-width:           1px;
     color:                  var(--aspid-colors-status-info-text-lightness);
+    border-color:           var(--aspid-colors-status-info-shade-lightness);
 }
 /* ------------------------------------------------------------------------------------------------------------------ */
 

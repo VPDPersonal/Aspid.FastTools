@@ -111,11 +111,6 @@ namespace Aspid.FastTools.Types.Editors
                 var field = new ToolbarSearchField();
 
                 field.RegisterValueChangedCallback(e => HandleSearchChanged(e.newValue ?? string.Empty));
-                field.RegisterCallback<NavigationMoveEvent>(e =>
-                {
-                    if (e.move == Vector2.down)
-                        _listView?.Focus();
-                }, TrickleDown.TrickleDown);
 
                 return field;
             }
@@ -182,10 +177,11 @@ namespace Aspid.FastTools.Types.Editors
             switch (evt.keyCode)
             {
                 case KeyCode.UpArrow:
-                    if (_listView.selectedIndex is 0)
-                        _searchField.Focus();
+                    if (HandleUpArrow()) evt.StopPropagation();
+                    break;
 
-                    evt.StopPropagation();
+                case KeyCode.DownArrow:
+                    if (HandleDownArrow()) evt.StopPropagation();
                     break;
 
                 case KeyCode.Escape:
@@ -206,6 +202,84 @@ namespace Aspid.FastTools.Types.Editors
                     }
                     break;
             }
+        }
+
+        private bool HandleUpArrow()
+        {
+            var focused = rootVisualElement.focusController.focusedElement;
+
+            if (IsSearchFocused(focused))
+            {
+                if (TryMoveSearchCursorToStart()) return true;
+                if (!_navigation.CanNavigateBack || _navigation.IsSearching) return false;
+
+                _backButton.Focus();
+                return true;
+            }
+
+            if (_listView.selectedIndex is 0)
+            {
+                _searchField.Focus();
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool HandleDownArrow()
+        {
+            var focused = rootVisualElement.focusController.focusedElement;
+
+            if (focused == _backButton)
+            {
+                _searchField.Focus();
+                return true;
+            }
+
+            if (IsSearchFocused(focused))
+            {
+                if (TryMoveSearchCursorToEnd()) return true;
+                if (_navigation?.CurrentItems is not { Count: > 0 }) return false;
+
+                _listView.Focus();
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool IsSearchFocused(Focusable focused) =>
+            focused == _searchField || IsDescendantOf(focused as VisualElement, _searchField);
+
+        private bool TryMoveSearchCursorToStart()
+        {
+            var input = _searchField.Q<TextField>();
+            if (input is null) return false;
+
+            if (input.cursorIndex == 0 && input.selectIndex == 0) return false;
+
+            input.SelectRange(0, 0);
+            return true;
+        }
+
+        private bool TryMoveSearchCursorToEnd()
+        {
+            var input = _searchField.Q<TextField>();
+            if (input is null) return false;
+
+            var length = input.value?.Length ?? 0;
+            if (input.cursorIndex == length && input.selectIndex == length) return false;
+
+            input.SelectRange(length, length);
+            return true;
+        }
+
+        private static bool IsDescendantOf(VisualElement element, VisualElement ancestor)
+        {
+            for (var current = element; current is not null; current = current.parent)
+                if (current == ancestor) return true;
+
+            return false;
         }
 
         private void HandleEscapeKey()
@@ -259,12 +333,16 @@ namespace Aspid.FastTools.Types.Editors
         {
             if (!_navigation.CanNavigateBack) return;
 
+            var backButtonWasFocused = rootVisualElement.focusController.focusedElement == _backButton;
             var previousNode = _navigation.NavigateBack();
             RefreshView();
 
             var index = _navigation.CurrentItems.IndexOf(previousNode);
             _listView.selectedIndex = index >= 0 ? index : 0;
             _listView.ScrollToItem(_listView.selectedIndex);
+
+            if (backButtonWasFocused && !_navigation.CanNavigateBack)
+                _searchField.Focus();
         }
 
         private void SelectNode(TreeNode node)
@@ -278,6 +356,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             _titleLabel.text = _navigation.GetCurrentTitle();
             _backButton.SetEnabled(_navigation.CanNavigateBack);
+            _backButton.SetDisplay(_navigation.IsSearching ? DisplayStyle.None : DisplayStyle.Flex);
 
             _listView.itemsSource = _navigation.CurrentItems;
             _listView.Rebuild();
