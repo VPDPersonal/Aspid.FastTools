@@ -6,6 +6,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
@@ -15,7 +16,7 @@ namespace Aspid.FastTools.Types.Editors
     /// </summary>
     public sealed class TypeSelectorWindow : EditorWindow
     {
-        private const string StylesheetPath = "Styles/Aspid-FastTools-TypeSelectorWindow";
+        private const string StylesheetPath = "UI/Types/Aspid-FastTools-TypeSelectorWindow";
         private const string HeaderClass = "aspid-fasttools-type-selector-header";
         private const string ItemTitleClass = "aspid-fasttools-type-selector-item-title";
         private const string ItemArrowClass = "aspid-fasttools-type-selector-item-arrow";
@@ -86,6 +87,7 @@ namespace Aspid.FastTools.Types.Editors
 
             rootVisualElement
                 .AddStyleSheetsFromResource(StylesheetPath)
+                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
                 .AddChild(CreateHeader())
                 .AddChild(_searchField)
                 .AddChild(_listView);

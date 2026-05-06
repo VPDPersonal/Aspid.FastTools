@@ -1,71 +1,62 @@
 using System;
 using UnityEngine;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
-using Aspid.FastTools.UIElements;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-	[CustomPropertyDrawer(typeof(ComponentTypeSelector))]
-	internal sealed class ComponentTypeSelectorPropertyDrawer : PropertyDrawer
-	{
-		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-		{
-			var declaringType = fieldInfo.DeclaringType;
-			var currentType = property.serializedObject.targetObject.GetType();
-			var buttonRow = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+    [CustomPropertyDrawer(typeof(ComponentTypeSelector))]
+    internal sealed class ComponentTypeSelectorPropertyDrawer : PropertyDrawer
+    {
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            var currentType = property.serializedObject.targetObject.GetType();
+            var buttonRow = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
 
-			if (GUI.Button(buttonRow, new GUIContent(currentType.Name), EditorStyles.popup))
-			{
-				TypeSelectorWindow.Show(
-					GUIUtility.GUIToScreenRect(buttonRow),
-					types: new[] { declaringType },
-					currentType.AssemblyQualifiedName,
-					onSelected: aqn => OnTypeSelected(property, Type.GetType(aqn), currentType));
-			}
-		}
+            if (GUI.Button(buttonRow, new GUIContent(currentType.Name), EditorStyles.popup))
+            {
+                TypeSelectorWindow.Show(
+                    GUIUtility.GUIToScreenRect(buttonRow),
+                    types: new[] { fieldInfo.DeclaringType },
+                    currentType.AssemblyQualifiedName,
+                    onSelected: aqn => ReplaceComponentScript(property, currentType, Type.GetType(aqn)));
+            }
+        }
 
-		public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
-			EditorGUIUtility.singleLineHeight;
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
+            EditorGUIUtility.singleLineHeight;
 
-		public override VisualElement CreatePropertyGUI(SerializedProperty property)
-		{
-			var declaringType = fieldInfo.DeclaringType;
-			var dynamicProperty = new DynamicSerializeProperty(property);
-			var currentType = property.serializedObject.targetObject.GetType();
-            
-			var field = new TypeField(null, currentType)
-				{
-					Types = new[] { declaringType },
-				}
-				.AddClass(PropertyField.ussClassName) 
-				.AddClass(TypeField.alignedFieldUssClassName);
+        public override VisualElement CreatePropertyGUI(SerializedProperty property)
+        {
+            var currentType = property.serializedObject.targetObject.GetType();
 
-			field.RegisterValueChangedCallback(evt =>
-			{
-				OnTypeSelected(dynamicProperty, currentType, evt.newValue);
-			});
-            
-			return field;
-		}
+            var field = new InspectorTypeField(label: null, defaultValue: currentType)
+            {
+                Types = new[] { fieldInfo.DeclaringType },
+            };
 
-		private static void OnTypeSelected(SerializedProperty property, Type oldType, Type newType)
-		{
-			if (newType is null || newType == oldType) return;
+            field.RegisterValueChangedCallback(evt =>
+                ReplaceComponentScript(property, currentType, evt.newValue));
 
-			var script = newType.FindMonoScript();
+            return field;
+        }
 
-			if (script is null)
-			{
-				Debug.LogWarning($"[SubclassDropdown] MonoScript not found for type: {newType.AssemblyQualifiedName}");
-				return;
-			}
+        private static void ReplaceComponentScript(SerializedProperty property, Type oldType, Type newType)
+        {
+            if (newType is null || newType == oldType) return;
 
-			EditorApplication.delayCall += () =>
-				property.serializedObject.FindProperty("m_Script").SetObjectReferenceAndApply(script);
-		}
-	}
+            var script = newType.FindMonoScript();
+
+            if (script is null)
+            {
+                Debug.LogWarning($"[ComponentTypeSelector] MonoScript not found for type: {newType.AssemblyQualifiedName}");
+                return;
+            }
+
+            EditorApplication.delayCall += () =>
+                property.serializedObject.FindProperty("m_Script").SetObjectReferenceAndApply(script);
+        }
+    }
 }

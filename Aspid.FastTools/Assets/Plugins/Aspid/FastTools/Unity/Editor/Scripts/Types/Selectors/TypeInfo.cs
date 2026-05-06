@@ -1,5 +1,7 @@
 using System;
+using UnityEngine;
 using System.Linq;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -29,22 +31,26 @@ namespace Aspid.FastTools.Types.Editors
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
+                Type[] types;
+                
                 try
                 {
-                    result
-                        .AddRange(assembly.GetTypes()
-                        .Where(t => baseTypes.All(baseType => baseType.IsAssignableFrom(t)) &&
-                            !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
-                            !t.Name.Contains("<") &&
-                            !t.Name.Contains(">") &&
-                            (allow.HasFlag(TypeAllow.Abstract) || !t.IsAbstract) &&
-                            (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface))
-                        .Select(type => new TypeInfo(type)));
+                    types = assembly.GetTypes();
                 }
-                catch
+                catch (ReflectionTypeLoadException ex)
                 {
-                    // ignored
+                    Debug.LogWarning($"[TypeSelector] Skipped assembly '{assembly.GetName().Name}': {ex.Message}");
+                    types = ex.Types.Where(t => t is not null).ToArray();
                 }
+
+                result.AddRange(types
+                    .Where(t => baseTypes.All(baseType => baseType.IsAssignableFrom(t)) &&
+                        !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
+                        !t.Name.Contains("<") &&
+                        !t.Name.Contains(">") &&
+                        (allow.HasFlag(TypeAllow.Abstract) || !t.IsAbstract) &&
+                        (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface))
+                    .Select(type => new TypeInfo(type)));
             }
 
             return result;

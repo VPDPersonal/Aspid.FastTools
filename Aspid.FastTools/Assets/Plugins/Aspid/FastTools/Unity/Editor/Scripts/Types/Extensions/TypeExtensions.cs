@@ -13,7 +13,7 @@ namespace Aspid.FastTools.Types.Editors
     /// </summary>
     public static class TypeExtensions
     {
-        private static readonly Dictionary<string, Regex> _regexCache = new();
+        private static readonly Dictionary<string, Regex> RegexCache = new();
 
         /// <summary>
         /// Searches the Asset Database for the <see cref="MonoScript"/> that defines the given type.
@@ -99,11 +99,11 @@ namespace Aspid.FastTools.Types.Editors
         private static Regex GetRegex(bool isEnum, string typeName)
         {
             var key = $"{isEnum}:{typeName}";
-            if (_regexCache.TryGetValue(key, out var cached))
+            if (RegexCache.TryGetValue(key, out var cached))
                 return cached;
 
             var regex = new Regex(GetPattern(isEnum, typeName), RegexOptions.Compiled);
-            _regexCache[key] = regex;
+            RegexCache[key] = regex;
             return regex;
         }
     }

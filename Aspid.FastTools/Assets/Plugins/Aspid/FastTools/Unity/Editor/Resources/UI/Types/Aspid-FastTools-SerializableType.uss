@@ -12,7 +12,3 @@ Button > VisualElement {
     height:                     100%;
     background-image:           resource("d_Folder Icon");
 }
-
-Button > VisualElement:hover {
-    background-image:           resource("d_FolderOpened Icon");
-}

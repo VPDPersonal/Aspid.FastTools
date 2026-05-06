@@ -9,7 +9,7 @@ namespace Aspid.FastTools.Types.Editors
     internal static class TypeIMGUIPropertyDrawer
     {
         private const string OpenButtonIconPath = "d_Folder Icon";
-
+        
         internal static void Draw(
             Rect position,
             GUIContent label,
@@ -32,10 +32,11 @@ namespace Aspid.FastTools.Types.Editors
             
             if (hasValidType)
                 dropdownRect.width -= openButtonWidth + 2f;
-                
+              
             var caption = GetCaption(property.stringValue);
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption), FocusType.Passive))
             {
+                var dynamicProperty = new DynamicSerializeProperty(property);
                 var current = property.stringValue ?? string.Empty;
                 var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(dropdownRect.x, dropdownRect.y));
                 var screenRect = new Rect(screenPosition.x, screenPosition.y, dropdownRect.width, dropdownRect.height);
@@ -47,7 +48,7 @@ namespace Aspid.FastTools.Types.Editors
                     allow: allow,
                     onSelected: assemblyQualifiedName =>
                     {
-                        property.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
+                        dynamicProperty.GetProperty().SetStringAndApply(assemblyQualifiedName ?? string.Empty);
                     });
             }
 
@@ -62,8 +63,13 @@ namespace Aspid.FastTools.Types.Editors
         {
             var (monoScript, lineNumber) = type.FindMonoScriptWithLine();
 
-            if (monoScript is not null)
-                AssetDatabase.OpenAsset(monoScript, lineNumber);
+            if (monoScript is null)
+            {
+                Debug.LogWarning($"MonoScript for type {type.AssemblyQualifiedName} not found.");
+                return;
+            }
+
+            AssetDatabase.OpenAsset(monoScript, lineNumber);
         }
 
         private static string GetCaption(string assemblyQualifiedName)
