@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2234567890123456789}
   - component: {fileID: 3234567890123456789}
+  - component: {fileID: 8597496536780267788}
   m_Layer: 0
   m_Name: Types
   m_TagString: Untagged
@@ -46,6 +47,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: Aspid.FastTools.Samples.Types::Aspid.FastTools.Samples.Types.AbilitySelector
   _abilityType:
     _assemblyQualifiedName: Aspid.FastTools.Samples.Types.Heal, Aspid.FastTools.Samples.Types,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  _modifierTypes:
+  - Aspid.FastTools.Samples.Types.CooldownReductionModifier, Aspid.FastTools.Samples.Types,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - Aspid.FastTools.Samples.Types.DoubleDamageModifier, Aspid.FastTools.Samples.Types,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  - Aspid.FastTools.Samples.Types.RangeBoostModifier, Aspid.FastTools.Samples.Types,
+    Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+--- !u!114 &8597496536780267788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1234567890123456789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a3f17c8b29d04e7eaa2d9a1c75b8e404, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Aspid.FastTools.Samples.Types::Aspid.FastTools.Samples.Types.IMGUIAbilityHolder
+  _primaryAbility:
+    _assemblyQualifiedName: Aspid.FastTools.Samples.Types.Fireball, Aspid.FastTools.Samples.Types,
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _modifierTypes:
   - Aspid.FastTools.Samples.Types.CooldownReductionModifier, Aspid.FastTools.Samples.Types,

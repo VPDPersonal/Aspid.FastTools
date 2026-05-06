@@ -8,8 +8,24 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class TypeIMGUIPropertyDrawer
     {
-        private const string OpenButtonIconPath = "d_Folder Icon";
+        private const string FolderClosedIconPath = "d_Folder Icon";
+        private const string FolderOpenedIconPath = "d_FolderOpened Icon";
         
+        public static void DrawOpenScriptButton(Rect rect, Type type)
+        {
+            var clicked = GUI.Button(rect, GUIContent.none);
+
+            if (Event.current.type == EventType.Repaint)
+            {
+                var isHover = rect.Contains(Event.current.mousePosition);
+                var icon = EditorGUIUtility.IconContent(isHover ? FolderOpenedIconPath : FolderClosedIconPath).image;
+               
+                GUI.DrawTexture(rect, icon, ScaleMode.ScaleToFit);
+            }
+
+            if (clicked) type.OpenInScriptEditor();
+        }
+
         internal static void Draw(
             Rect position,
             GUIContent label,
@@ -17,7 +33,8 @@ namespace Aspid.FastTools.Types.Editors
             TypeAllow allow = TypeAllow.All,
             params Type[] types)
         {
-            var openButtonWidth = position.height;
+            var isArray = property.propertyPath.EndsWith("]");
+            var openButtonSize = isArray ? position.height - 2 : position.height;
 
             if (!string.IsNullOrWhiteSpace(label.text))
             {
@@ -29,9 +46,9 @@ namespace Aspid.FastTools.Types.Editors
             var dropdownRect = position;
             var currentType = GetType(property.stringValue);
             var hasValidType = currentType is not null;
-            
+
             if (hasValidType)
-                dropdownRect.width -= openButtonWidth + 2f;
+                dropdownRect.width -= openButtonSize + 1f;
               
             var caption = GetCaption(property.stringValue);
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption), FocusType.Passive))
@@ -54,9 +71,8 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!hasValidType) return;
             
-            var openButtonRect = new Rect(dropdownRect.xMax + 2f, position.y, openButtonWidth, position.height);
-            if (GUI.Button(openButtonRect, new GUIContent(EditorGUIUtility.IconContent(OpenButtonIconPath))))
-                currentType.OpenInScriptEditor();
+            var openButtonRect = new Rect(dropdownRect.xMax + 1f, position.y, openButtonSize, openButtonSize);
+            DrawOpenScriptButton(openButtonRect, currentType);
         }
 
         private static string GetCaption(string assemblyQualifiedName)

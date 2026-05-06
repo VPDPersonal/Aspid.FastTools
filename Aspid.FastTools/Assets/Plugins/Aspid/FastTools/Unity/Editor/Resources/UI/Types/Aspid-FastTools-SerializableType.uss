@@ -1,5 +1,5 @@
 Button {
-    padding:                    1px;
+    padding:                    0;
     min-width:                  18px;
     max-width:                  18px;
     min-height:                 18px;

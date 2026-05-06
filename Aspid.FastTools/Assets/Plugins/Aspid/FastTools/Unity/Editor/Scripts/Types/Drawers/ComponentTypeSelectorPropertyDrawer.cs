@@ -10,8 +10,6 @@ namespace Aspid.FastTools.Types.Editors
     [CustomPropertyDrawer(typeof(ComponentTypeSelector))]
     internal sealed class ComponentTypeSelectorPropertyDrawer : PropertyDrawer
     {
-        private const string OpenButtonIconPath = "d_Folder Icon";
-
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var currentType = property.serializedObject.targetObject.GetType();
@@ -30,8 +28,7 @@ namespace Aspid.FastTools.Types.Editors
                     onSelected: aqn => ReplaceComponentScript(property, currentType, Type.GetType(aqn)));
             }
 
-            if (GUI.Button(openButtonRect, new GUIContent(EditorGUIUtility.IconContent(OpenButtonIconPath))))
-                currentType.OpenInScriptEditor();
+            TypeIMGUIPropertyDrawer.DrawOpenScriptButton(openButtonRect, currentType);
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
