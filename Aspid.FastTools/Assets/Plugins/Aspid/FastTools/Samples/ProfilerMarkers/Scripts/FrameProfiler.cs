@@ -16,13 +16,13 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         {
             // Every call site of this.Marker() becomes a unique ProfilerMarker.
             // Display name: "{TypeName}.{WithName-or-method} ({line})".
-            using (this.Marker().WithName("Physics")) // Profiler: FrameProfiler.Physics (18)
+            using (this.Marker().WithName("Physics")) // Profiler: FrameProfiler.Physics (19)
                 SimulatePhysics();
 
-            using (this.Marker().WithName("AI")) // Profiler: FrameProfiler.AI (21)
+            using (this.Marker().WithName("AI")) // Profiler: FrameProfiler.AI (22)
                 SimulateAI();
 
-            using (this.Marker().WithName("Render")) // Profiler: FrameProfiler.Render (24)
+            using (this.Marker().WithName("Render")) // Profiler: FrameProfiler.Render (25)
                 SimulateRender();
 
             SimulateInput();
@@ -41,7 +41,7 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         {
             for (var agent = 0; agent < _aiAgents; agent++)
             {
-                using (this.Marker().WithName("AI.Agent"))  // Profiler: FrameProfiler.AI.Agent (43)
+                using (this.Marker().WithName("AI.Agent"))  // Profiler: FrameProfiler.AI.Agent (44)
                     StepAgent();
             }
         }
@@ -65,7 +65,7 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         // using-declaration without .WithName(): auto-named after the method.
         private void SimulateInput()
         {
-            using var _ = this.Marker(); // Profiler: FrameProfiler.SimulateInput (67)
+            using var _ = this.Marker(); // Profiler: FrameProfiler.SimulateInput (68)
             DoInputWork();
         }
 
@@ -81,10 +81,10 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         // Both auto-named after the method; distinct because their line numbers differ.
         private void SimulateAudio()
         {
-            using var _ = this.Marker(); // Profiler: FrameProfiler.SimulateAudio (83)
+            using var _ = this.Marker(); // Profiler: FrameProfiler.SimulateAudio (84)
             PrepareAudio();
 
-            using (this.Marker()) // Profiler: FrameProfiler.SimulateAudio (86)
+            using (this.Marker()) // Profiler: FrameProfiler.SimulateAudio (87)
                 MixAudio();
         }
 

@@ -44,15 +44,15 @@ enclosing type and method.
 
 ## Where to look
 
-- `Scripts/FrameProfiler.cs:18,21,24` — three top-level markers with explicit
+- `Scripts/FrameProfiler.cs:19,22,25` — three top-level markers with explicit
   names in `Update` (`FrameProfiler.Physics`, `FrameProfiler.AI`,
   `FrameProfiler.Render`).
-- `Scripts/FrameProfiler.cs:43` — nested `FrameProfiler.AI.Agent` marker
+- `Scripts/FrameProfiler.cs:44` — nested `FrameProfiler.AI.Agent` marker
   emitted once per loop iteration in `SimulateAI`, appearing under the `AI`
   scope.
-- `Scripts/FrameProfiler.cs:67` — `using`-declaration form without `WithName`
+- `Scripts/FrameProfiler.cs:68` — `using`-declaration form without `WithName`
   in `SimulateInput`; the generator names the marker after the method.
-- `Scripts/FrameProfiler.cs:83,86` — combined form in `SimulateAudio`: an
+- `Scripts/FrameProfiler.cs:84,87` — combined form in `SimulateAudio`: an
   outer method-wide `using`-declaration plus a nested `using`-statement
   around `MixAudio()`.
 

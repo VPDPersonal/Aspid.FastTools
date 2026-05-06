@@ -44,15 +44,15 @@
 
 ## Где смотреть
 
-- `Scripts/FrameProfiler.cs:18,21,24` — три маркера верхнего уровня с явными
+- `Scripts/FrameProfiler.cs:19,22,25` — три маркера верхнего уровня с явными
   именами в `Update` (`FrameProfiler.Physics`, `FrameProfiler.AI`,
   `FrameProfiler.Render`).
-- `Scripts/FrameProfiler.cs:43` — вложенный маркер `FrameProfiler.AI.Agent`
+- `Scripts/FrameProfiler.cs:44` — вложенный маркер `FrameProfiler.AI.Agent`
   в `SimulateAI`, генерируемый раз за итерацию цикла, отображается под
   областью `AI`.
-- `Scripts/FrameProfiler.cs:67` — форма `using`-declaration без `WithName`
+- `Scripts/FrameProfiler.cs:68` — форма `using`-declaration без `WithName`
   в `SimulateInput`; генератор именует маркер по имени метода.
-- `Scripts/FrameProfiler.cs:83,86` — комбинированная форма в
+- `Scripts/FrameProfiler.cs:84,87` — комбинированная форма в
   `SimulateAudio`: внешний метод-широкий `using`-declaration плюс
   вложенный `using`-statement вокруг `MixAudio()`.
 
