@@ -6,23 +6,23 @@ namespace Aspid.FastTools.Editors
 {
     public sealed class DynamicSerializeProperty
     {
-        private readonly string _propertyName;
+        private readonly string _propertyPath;
         private readonly Object _targetObject;
         
         public DynamicSerializeProperty(SerializedProperty property)
-            : this(property.name, property.serializedObject) { }
+            : this(property.propertyPath, property.serializedObject) { }
         
-        public DynamicSerializeProperty(string propertyName, SerializedObject serializedObject)
-            : this(propertyName, serializedObject.targetObject) { }
+        public DynamicSerializeProperty(string propertyPath, SerializedObject serializedObject)
+            : this(propertyPath, serializedObject.targetObject) { }
         
-        public DynamicSerializeProperty(string propertyName, Object targetObject)
+        public DynamicSerializeProperty(string propertyPath, Object targetObject)
         {
-            _propertyName = propertyName;
+            _propertyPath = propertyPath;
             _targetObject = targetObject;
         }
         
         public SerializedProperty GetProperty() => 
-            new SerializedObject(_targetObject).FindProperty(_propertyName);
+            new SerializedObject(_targetObject).FindProperty(_propertyPath);
         
         public static implicit operator DynamicSerializeProperty(SerializedProperty property) => new(property);
         

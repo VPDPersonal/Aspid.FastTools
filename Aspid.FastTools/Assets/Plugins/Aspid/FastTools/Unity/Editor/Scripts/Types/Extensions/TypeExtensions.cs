@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -67,6 +68,25 @@ namespace Aspid.FastTools.Types.Editors
         /// A tuple of the matched <see cref="MonoScript"/> and the 1-based line number of the type declaration.
         /// If no script is found, returns <c>(null, 0)</c>.
         /// </returns>
+        /// <summary>
+        /// Opens the script that defines <paramref name="type"/> in the configured external
+        /// editor at the line of the type declaration. Logs a warning and is a no-op when
+        /// no <see cref="MonoScript"/> can be located.
+        /// </summary>
+        public static void OpenInScriptEditor(this Type type)
+        {
+            if (type is null) return;
+            var (monoScript, lineNumber) = type.FindMonoScriptWithLine();
+
+            if (monoScript is null)
+            {
+                Debug.LogWarning($"MonoScript for type {type.AssemblyQualifiedName} not found.");
+                return;
+            }
+
+            AssetDatabase.OpenAsset(monoScript, lineNumber);
+        }
+
         public static (MonoScript script, int line) FindMonoScriptWithLine(this Type type)
         {
             var script = type.FindMonoScript();

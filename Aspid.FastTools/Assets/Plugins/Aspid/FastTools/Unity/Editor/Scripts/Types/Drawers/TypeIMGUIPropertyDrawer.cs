@@ -56,20 +56,7 @@ namespace Aspid.FastTools.Types.Editors
             
             var openButtonRect = new Rect(dropdownRect.xMax + 2f, position.y, openButtonWidth, position.height);
             if (GUI.Button(openButtonRect, new GUIContent(EditorGUIUtility.IconContent(OpenButtonIconPath))))
-                OpenScript(currentType);
-        }
-
-        private static void OpenScript(Type type)
-        {
-            var (monoScript, lineNumber) = type.FindMonoScriptWithLine();
-
-            if (monoScript is null)
-            {
-                Debug.LogWarning($"MonoScript for type {type.AssemblyQualifiedName} not found.");
-                return;
-            }
-
-            AssetDatabase.OpenAsset(monoScript, lineNumber);
+                currentType.OpenInScriptEditor();
         }
 
         private static string GetCaption(string assemblyQualifiedName)

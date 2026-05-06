@@ -10,19 +10,28 @@ namespace Aspid.FastTools.Types.Editors
     [CustomPropertyDrawer(typeof(ComponentTypeSelector))]
     internal sealed class ComponentTypeSelectorPropertyDrawer : PropertyDrawer
     {
+        private const string OpenButtonIconPath = "d_Folder Icon";
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             var currentType = property.serializedObject.targetObject.GetType();
-            var buttonRow = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            var rowHeight = EditorGUIUtility.singleLineHeight;
+            var openButtonWidth = rowHeight;
 
-            if (GUI.Button(buttonRow, new GUIContent(currentType.Name), EditorStyles.popup))
+            var dropdownRect = new Rect(position.x, position.y, position.width - openButtonWidth - 2f, rowHeight);
+            var openButtonRect = new Rect(dropdownRect.xMax + 2f, position.y, openButtonWidth, rowHeight);
+
+            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(currentType.Name), FocusType.Passive))
             {
                 TypeSelectorWindow.Show(
-                    GUIUtility.GUIToScreenRect(buttonRow),
+                    GUIUtility.GUIToScreenRect(dropdownRect),
                     types: new[] { fieldInfo.DeclaringType },
                     currentType.AssemblyQualifiedName,
                     onSelected: aqn => ReplaceComponentScript(property, currentType, Type.GetType(aqn)));
             }
+
+            if (GUI.Button(openButtonRect, new GUIContent(EditorGUIUtility.IconContent(OpenButtonIconPath))))
+                currentType.OpenInScriptEditor();
         }
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>

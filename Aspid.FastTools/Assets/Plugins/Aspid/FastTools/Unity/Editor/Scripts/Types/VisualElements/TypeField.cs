@@ -83,7 +83,7 @@ namespace Aspid.FastTools.Types.Editors
             
             _openButton = new Button()
                 .AddChild(new VisualElement())
-                .AddClicked(OpenScript);
+                .AddClicked(() => value.OpenInScriptEditor());
 
             this.AddChild(_openButton);
             SetValueWithoutNotify(defaultValue);
@@ -119,14 +119,17 @@ namespace Aspid.FastTools.Types.Editors
         private void UpdateDisplay()
         {
             _textElement.SetText(TypeSelectorHelpers.GetTypeSelectorTitle(value, _missingAssemblyQualifiedName));
-            _openButton.SetDisplay(_missingAssemblyQualifiedName is null ? DisplayStyle.Flex : DisplayStyle.None);
+            _openButton.SetDisplay(value is not null ? DisplayStyle.Flex : DisplayStyle.None);
         }
 
         private void OnDropdownClicked(PointerDownEvent evt)
         {
             if (evt.button is not 0) return;
+
+            var window = EditorWindow.focusedWindow != null
+                ? EditorWindow.focusedWindow
+                : EditorWindow.mouseOverWindow;
             
-            var window = EditorWindow.focusedWindow;
             if (!window) return;
             
             TypeSelectorWindow.Show(
@@ -151,20 +154,6 @@ namespace Aspid.FastTools.Types.Editors
                 window.position.y + _visualInput.worldBound.yMin,
                 _visualInput.worldBound.width,
                 _visualInput.worldBound.height);
-        }
-
-        private void OpenScript()
-        {
-            if (value is null) return;
-            var (monoScript, lineNumber) = value.FindMonoScriptWithLine();
-
-            if (monoScript is null)
-            {
-                Debug.LogWarning($"MonoScript for type {value.AssemblyQualifiedName} not found.");
-                return;
-            }
-
-            AssetDatabase.OpenAsset(monoScript, lineNumber);
         }
     }
 }
