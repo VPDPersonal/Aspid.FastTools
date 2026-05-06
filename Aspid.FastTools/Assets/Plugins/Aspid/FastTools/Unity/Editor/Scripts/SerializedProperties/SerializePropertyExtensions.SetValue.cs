@@ -248,6 +248,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.enumValueFlag"/> and returns the property for chaining.
         /// </summary>
+        /// <remarks>
+        /// There is no <c>SetValue&lt;T&gt;(int)</c> alias for enum flags because it would conflict with
+        /// <see cref="SetInt{T}"/>. Call <see cref="SetEnumFlag{T}"/> explicitly.
+        /// </remarks>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <param name="property">Target property.</param>
         /// <param name="value">Flag value to assign.</param>
@@ -272,6 +276,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.enumValueIndex"/> and returns the property for chaining.
         /// </summary>
+        /// <remarks>
+        /// There is no <c>SetValue&lt;T&gt;(int)</c> alias for enum index because it would conflict with
+        /// <see cref="SetInt{T}"/>. Call <see cref="SetEnumIndex{T}"/> explicitly.
+        /// </remarks>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <param name="property">Target property.</param>
         /// <param name="value">Index value to assign.</param>
@@ -799,7 +807,7 @@ namespace Aspid.FastTools.Editors
         public static T SetVector2Int<T>(this T property, Vector2Int value)
             where T : SerializedProperty
         {
-            property.vector2Value = value;
+            property.vector2IntValue = value;
             return property;
         }
 
@@ -1121,11 +1129,11 @@ namespace Aspid.FastTools.Editors
             return property.SetEntityId(value);
         }
 
-        /// <inheritdoc cref="SetEntityIdApply{T}"/>
+        /// <inheritdoc cref="SetEntityIdAndApply{T}"/>
         public static T SetValueAndApply<T>(this T property, EntityId value)
             where T : SerializedProperty
         {
-            return property.SetEntityId(value);
+            return property.SetEntityIdAndApply(value);
         }
 
         /// <summary>
@@ -1146,7 +1154,7 @@ namespace Aspid.FastTools.Editors
         /// Sets <see cref="SerializedProperty.entityIdValue"/> then applies modified properties.
         /// </summary>
         /// <inheritdoc cref="SetEntityId{T}"/>
-        public static T SetEntityIdApply<T>(this T property, EntityId value)
+        public static T SetEntityIdAndApply<T>(this T property, EntityId value)
             where T : SerializedProperty
         {
             return property.SetEntityId(value).ApplyModifiedProperties();

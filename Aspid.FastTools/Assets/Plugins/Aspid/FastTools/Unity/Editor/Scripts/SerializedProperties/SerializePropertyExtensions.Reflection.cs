@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using System.Linq;
 using System.Reflection;
+using System.Collections;
 using System.Collections.Generic;
 using Aspid.FastTools.Reflection;
 
@@ -41,9 +42,10 @@ namespace Aspid.FastTools.Editors
         /// </returns>
         public static MemberInfo GetMemberInfo(this SerializedProperty serializedProperty)
         {
-            var type = serializedProperty.GetClassInstance().GetType();
+            var instance = serializedProperty.GetClassInstance();
+            if (instance is null) return null;
 
-            return type
+            return instance.GetType()
                 .GetMembersInfosIncludingBaseClasses(BindingFlags)
                 .FirstOrDefault(member => member.Name == serializedProperty.name);
         }
@@ -89,27 +91,15 @@ namespace Aspid.FastTools.Editors
 
             object FindInstance(string name, int index = -1)
             {
-                var currentType = current.GetType();
-                var field = FindField(currentType, name);
+                if (current is null) return null;
 
-                if (index > -1)
-                {
-                    if (field.FieldType.IsArray)
-                    {
-                        var type = field.FieldType.GetElementType();
-                        var classInstance = ((object[])field.GetValue(current))[index];
-                        return (type, classInstance);
-                    }
+                var field = FindField(current.GetType(), name);
+                if (field is null) return null;
 
-                    if (field.FieldType.IsGenericType && field.FieldType.GetGenericTypeDefinition() == typeof(List<>))
-                    {
-                        var type = field.FieldType.GetGenericArguments()[0];
-                        var classInstance = ((IReadOnlyList<object>)field.GetValue(current))[index];
-                        return (type, classInstance);
-                    }
-                }
-                
-                return field?.GetValue(current);
+                var value = field.GetValue(current);
+                return index > -1 && value is IList list
+                    ? list[index]
+                    : value;
             }
 
             FieldInfo FindField(Type type, string name)
