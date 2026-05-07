@@ -11,11 +11,13 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// USS class applied to elements that use the Aspid background style.
         /// </summary>
-        public const string Background = "aspid-fasttools-background";
+        public const string BackgroundStyle = "aspid-fasttools-background";
 
         /// <summary>
-        /// USS modifier applied alongside <see cref="Background"/> to give the element rounded corners and padding.
+        /// USS modifier applied alongside <see cref="BackgroundStyle"/> to give the element rounded corners and padding.
         /// </summary>
-        public const string BackgroundRoundedState = "aspid-fasttools-background--rounded";
+        public const string BackgroundRoundedState = BackgroundStyle + "-rounded";
+
+        public const string InspectorStyleClass = "aspid-fasttools-inspector-container";
     }
 }

@@ -92,7 +92,12 @@
 }
 
 .aspid-fasttools-inspector-container .unity-property-field__inspector-property .unity-base-field__inspector-field {
-    margin:                                         0;
+    margin-left:                                    0;
+    margin-right:                                   0;
+}
+
+.aspid-fasttools-inspector-container .unity-property-field__inspector-property Toggle.unity-base-field__inspector-field {
+    margin-left:                                    -1px;
 }
 
 /* -------------------------------------------------- BACKGROUNDS --------------------------------------------------- */

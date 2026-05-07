@@ -49,7 +49,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public AspidBox(AspidBoxPreset preset)
         {
             this.AddStyleSheetsFromResource(StyleSheetPath)
-                .AddClass(AspidStyles.Background)
+                .AddClass(AspidStyles.BackgroundStyle)
                 .AddClass(AspidStyles.BackgroundRoundedState);
 
             _theme = new ThemeStyle(this, preset.Theme);

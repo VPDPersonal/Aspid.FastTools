@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using Unity.Collections.LowLevel.Unsafe;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Enums
@@ -22,15 +21,27 @@ namespace Aspid.FastTools.Enums
         [SerializeField] private TValue _value;
 
 #if UNITY_EDITOR
+        // Mirrors EnumValues._enumType so per-element drawers can render the correct
+        // EnumField/EnumFlagsField without walking up the SerializedProperty hierarchy.
         [SerializeField] private string _enumType;
 #endif
 
+        /// <summary>
+        /// The value mapped to <see cref="Key"/>.
+        /// </summary>
         public TValue Value => _value;
 
+        /// <summary>
+        /// The resolved enum member. <see langword="null"/> until <see cref="Initialize"/>
+        /// has been called successfully.
+        /// </summary>
         public Enum Key { get; private set; }
 
-        public Type Type { get; private set; }
-        
+        /// <summary>
+        /// Resolves the serialized string key to an <see cref="Enum"/> instance of the supplied type.
+        /// Logs an error (without throwing) if the key cannot be parsed.
+        /// </summary>
+        /// <param name="type">The enum type to parse the key against.</param>
         public void Initialize(Type type)
         {
 #if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
@@ -39,15 +50,14 @@ namespace Aspid.FastTools.Enums
             {
                 if (Enum.TryParse(type, _key, out var parsedEnum))
                 {
-                    Type = type;
-                    Key = UnsafeUtility.As<object, Enum>(ref parsedEnum);
+                    Key = (Enum)parsedEnum;
                 }
                 else
                 {
                     // Not Exception. Because this is a visual error.
-                    Debug.LogError($"[{nameof(EnumValue<TValue>)}] [{nameof(Initialize)}]" +
-                        $"Couldn't parse key '{_key}' to Enum '{nameof(type)}'");
-                }   
+                    Debug.LogError($"[{nameof(EnumValue<TValue>)}] [{nameof(Initialize)}] " +
+                        $"Couldn't parse key '{_key}' to Enum '{type.FullName}'");
+                }
             }
         }
     }

@@ -6,6 +6,8 @@ using Aspid.FastTools.Types;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
+// ReSharper disable PossibleNullReferenceException
+// ReSharper disable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 namespace Aspid.FastTools.Enums
 {
     /// <summary>
@@ -22,6 +24,15 @@ namespace Aspid.FastTools.Enums
     /// For <c>[Flags]</c> enums <see cref="Equals(Enum,Enum)"/> uses <c>HasFlag</c> semantics
     /// with special handling for the zero (<c>None</c>) value — two values are considered equal
     /// only when both are zero or both are non-zero and one has all bits of the other set.
+    /// </para>
+    /// <para>
+    /// <see cref="GetValue"/> returns the configured default value when no entry matches the lookup key.
+    /// For <c>[Flags]</c> enums multiple entries may match a single lookup value; the first matching
+    /// entry (in serialized order) wins.
+    /// </para>
+    /// <para>
+    /// Iteration via <see cref="GetEnumerator"/> yields only the explicitly configured entries and
+    /// does <b>not</b> include the default value.
     /// </para>
     /// </remarks>
     /// <example>
@@ -47,23 +58,27 @@ namespace Aspid.FastTools.Enums
         [SerializeField] private EnumValue<TValue>[] _values;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
 
+        private Enum? _zero;
         private bool _isFlag;
         private bool _isInitialized;
-        
+
         private void Initialize()
         {
             if (_isInitialized) return;
-            
+
 #if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
             using (this.Marker())
 #endif
             {
                 var type = Type.GetType(_enumType, throwOnError: true);
-            
+                _values ??= Array.Empty<EnumValue<TValue>>();
+
                 foreach (var value in _values)
                     value.Initialize(type);
-            
+
                 _isFlag = type.IsDefined(typeof(FlagsAttribute), false);
+                _zero = (Enum)Enum.ToObject(type, 0L);
+                
                 _isInitialized = true;
             }
         }
@@ -94,9 +109,10 @@ namespace Aspid.FastTools.Enums
 
         /// <summary>
         /// Determines whether two enum values should be considered equal for lookup purposes.
+        /// The first argument is the value being looked up; the second is the entry's stored key.
         /// </summary>
-        /// <param name="enumValue1">The first enum value.</param>
-        /// <param name="enumValue2">The second enum value.</param>
+        /// <param name="enumValue1">The lookup value (must contain the entry's bits to match).</param>
+        /// <param name="enumValue2">The stored entry key.</param>
         /// <returns>
         /// For regular enums: <see langword="true"/> when both values are identical.<br/>
         /// For <c>[Flags]</c> enums: <see langword="true"/> when <paramref name="enumValue1"/>
@@ -110,7 +126,7 @@ namespace Aspid.FastTools.Enums
 #endif
             {
                 Initialize();
-                
+
                 if (_isFlag)
                 {
 #if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
@@ -118,21 +134,22 @@ namespace Aspid.FastTools.Enums
 #endif
                     {
                         if (!enumValue1.HasFlag(enumValue2)) return false;
-                
-                        var isEnum1None = Convert.ToInt32(enumValue1) is 0;
-                        var isEnum2None = Convert.ToInt32(enumValue2) is 0;
-                        return isEnum1None == isEnum2None;
+                        return enumValue1.Equals(_zero) == enumValue2.Equals(_zero);
                     }
                 }
-            
+
                 return enumValue1.Equals(enumValue2);
             }
         }
         
+        /// <summary>
+        /// Yields the explicitly configured (key, value) pairs in serialized order.
+        /// Does <b>not</b> include the default value.
+        /// </summary>
         public IEnumerator<KeyValuePair<Enum, TValue>> GetEnumerator()
         {
             Initialize();
-            
+
             foreach (var value in _values)
             {
                 yield return new KeyValuePair<Enum, TValue>(value.Key, value.Value);

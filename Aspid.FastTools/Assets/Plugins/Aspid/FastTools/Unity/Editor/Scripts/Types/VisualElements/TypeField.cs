@@ -63,7 +63,8 @@ namespace Aspid.FastTools.Types.Editors
             : base(label, visualInput)
         {
             this.AddClass(EnumField.ussClassName)
-                .AddStyleSheetsFromResource(StyleSheetPath);
+                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet);
             
             _visualInput = visualInput;
             
@@ -76,7 +77,8 @@ namespace Aspid.FastTools.Types.Editors
                 .AddChild(_textElement)
                 .AddChild(new VisualElement()
                     .AddClass(EnumField.arrowUssClassName)
-                    .SetPickingMode(PickingMode.Ignore));
+                    .SetPickingMode(PickingMode.Ignore)
+                );
             
             visualInput.RegisterCallback<PointerDownEvent>(OnDropdownClicked);
             
@@ -89,7 +91,7 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         /// <inheritdoc/>
-        public override void SetValueWithoutNotify(Type newValue)
+        public sealed override void SetValueWithoutNotify(Type newValue)
         {
             _missingAssemblyQualifiedName = null;
             base.SetValueWithoutNotify(newValue);

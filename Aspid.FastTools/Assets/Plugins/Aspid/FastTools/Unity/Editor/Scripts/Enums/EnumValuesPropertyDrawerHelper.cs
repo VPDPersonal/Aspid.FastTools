@@ -3,15 +3,30 @@ using System;
 using UnityEditor;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Enums.Editors
 {
-    internal static class EnumValuesDrawer
+    /// <summary>
+    /// Helpers shared by the <see cref="EnumValues{TValue}"/> property drawer.
+    /// </summary>
+    internal static class EnumValuesPropertyDrawerHelper
     {
         private const string PopulateMenuItem = "Populate Missing Enum Members";
 
-        internal static ContextualMenuManipulator CreatePopulateMenuManipulator(
+        /// <summary>
+        /// Builds a context-menu manipulator that adds a "Populate Missing Enum Members"
+        /// action. The action appends entries for every enum member of the configured type
+        /// that is not yet present in <paramref name="values"/>, using
+        /// <paramref name="defaultValue"/> as the seed for the new entries.
+        /// The action is disabled when nothing is missing.
+        /// </summary>
+        /// <remarks>
+        /// For <c>[Flags]</c> enums <see cref="Enum.GetNames"/> also returns named composite
+        /// values (e.g. <c>All = A | B</c>), so they will be added as separate rows.
+        /// </remarks>
+        public static ContextualMenuManipulator CreatePopulateMenuManipulator(
             SerializedProperty values,
             SerializedProperty enumType,
             SerializedProperty defaultValue)
@@ -70,11 +85,7 @@ namespace Aspid.FastTools.Enums.Editors
             if (type is null || !type.IsEnum) return false;
 
             var existing = CollectExistingKeys(values);
-            foreach (var name in Enum.GetNames(type))
-            {
-                if (!existing.Contains(name)) return true;
-            }
-            return false;
+            return Enum.GetNames(type).Any(name => !existing.Contains(name));
         }
 
         private static HashSet<string> CollectExistingKeys(SerializedProperty values)
