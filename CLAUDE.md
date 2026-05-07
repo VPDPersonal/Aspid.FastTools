@@ -44,7 +44,8 @@ dotnet test
 **Unity package** (`Aspid.FastTools/Assets/Plugins/Aspid/FastTools/`):
 - `Unity/Runtime/` — shipped with player builds
 - `Unity/Editor/Scripts/` — editor-only code, excluded from builds
-- `Unity/Editor/Resources/Styles/` — editor USS stylesheets, named `Aspid-FastTools-{Feature}.uss`
+- `Unity/Editor/Resources/UI/` — editor USS stylesheets, organized by domain (`UI/Components/`, `UI/Ids/`, `UI/Types/`, `UI/Enums/`, `UI/Windows/`); shared base palette at `UI/Aspid-FastTools-Default-Dark.uss`. Files follow `Aspid-FastTools-{Feature}.uss`.
+- `Unity/Editor/Resources/Icons/` — editor icon assets referenced by USS via `--aspid-icons-*` variables.
 - `Source/` — pure C# extensions with no Unity dependency
 - `Samples~/` — optional samples (UPM convention, tilde hides from Unity importer, imported via Package Manager)
 
@@ -58,7 +59,7 @@ dotnet test
 |---|---|---|
 | `Aspid.FastTools` | `Source/` | Pure C# type extensions |
 | `Aspid.FastTools.Unity` | `Unity/Runtime/` | Runtime: Types, Enums, Ids, ProfilerMarkers, VisualElements |
-| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Editor: Enums, Extensions, IMGUI, Ids, SerializedProperties, Types, VisualElements |
+| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Editor: Enums, Extensions, IMGUI, Ids, SerializedProperties, Types, VisualElements, Welcome |
 
 ### Key Features and Their Locations
 
@@ -89,10 +90,11 @@ The `IdStructGenerator` generates the struct-side boilerplate; the registry asse
   - `AspidAnimatedLogo/` — `AspidAnimatedLogo`, `AspidAnimatedLogoPreset`, fluent extensions, plus `Styles/` with `AspidAnimatedLogoPulseSpeedStyle`, `AspidAnimatedLogoPulseHoverAmplitudeStyle` and `AspidAnimatedLogoLayerImageStyle` (USS-driven float and Texture2D bindings).
   - `AspidDividingLines/` — `AspidDividingLine`, `AspidDividingLinePreset`, fluent extensions, plus `Styles/` with `AspidDividingLineSizeStyle` and `AspidDividingLineDirectionStyle` (USS-driven enum bindings).
   - `AspidLabels/` — `AspidLabel`, `AspidLabelPreset`, fluent extensions, plus `Styles/` with `AspidLabelSizeStyle` and `AspidLabelFontStyle`.
-  - `Containers/` — `AspidBox`.
-  - `GradientButton/` — `GradientButton`.
-  - `HelpBoxes/` — `AspidHelpBox` and `AspidHelpBoxPreset`.
-  - `InspectorHeaders/` — `AspidInspectorHeader` and fluent extensions.
+  - `AspidContainers/` — `AspidBox`, `AspidBoxPreset`, fluent extensions.
+  - `AspidGradientButton/` — `AspidGradientButton`, `AspidGradientButtonPreset`, fluent extensions, plus `Styles/`.
+  - `AspidHelpBoxes/` — `AspidHelpBox`, `AspidHelpBoxPreset`, fluent extensions.
+  - `AspidHoverGradientOverlays/` — `AspidHoverGradientOverlay` and its `Styles/` (USS-driven hover-tracking overlay shared by other components).
+  - `AspidInspectorHeaders/` — `AspidInspectorHeader`, `AspidInspectorHeaderPreset`, fluent extensions, plus `Styles/`.
 - `Styles/` — shared helpers used across components: `AspidStyles` (USS class/property registry), `StatusStyle`, `ThemeStyle`, `InlineStyle<T>` (USS-vs-code precedence helper). The companion `ICustomStyleExtensions` (extension methods on `ICustomStyle`, including `TryGetByEnum<T>`) lives in `Unity/Runtime/VisualElements/Extensions/ICustomStyle/` since it ships with player builds and is consumed by both runtime and editor styles.
 
 All components use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet (loaded via `AspidStyles.DefaultStyleSheet`) and follow the same `.AddClass()` pattern. Theme/status/size/direction enums are exposed as nested `Type` enums on their respective `Style` structs (e.g. `ThemeStyle.Type`, `AspidLabelSizeStyle.Type`).
@@ -101,11 +103,13 @@ All components use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet (lo
 
 **Editor Extensions** (`Unity/Editor/Scripts/Extensions/`): `GetScriptName()` and `GetScriptNameWithIndex()` on `MonoScript` — respects `[AddComponentMenu]` attribute and appends index suffix for duplicate components.
 
+**Welcome Window** (`Unity/Editor/Scripts/Welcome/`): `WelcomeWindow` (`EditorWindow`, menu `Tools/Aspid FastTools/Welcome`) + `WelcomeWindowStartup` (auto-show on first import). UXML/USS at `Resources/UI/Windows/Welcome/Aspid-FastTools-Welcome.{uxml,uss}`. Lists installable samples by reading `package.json`.
+
 ### Editor Code Conventions
 
 **PropertyDrawers:** Always `internal sealed class`. Complex drawers split into a static helper `{Feature}Drawer` with `DrawIMGUI()` and `DrawUIToolkit()` methods — see `SerializableTypeDrawer.cs` as reference.
 
-**USS stylesheets:** Loaded via `.AddStyleSheetsFromResource("Styles/Aspid-FastTools-{Feature}")`. Styling goes in USS; code only applies `.AddClass()`. `Aspid-FastTools-Default-Dark.uss` serves as a shared base stylesheet for internal editor components — add it first when creating new editor components.
+**USS stylesheets:** Loaded via `.AddStyleSheetsFromResource("UI/{Domain}/Aspid-FastTools-{Feature}")` (e.g. `UI/Components/Aspid-FastTools-AspidLabel`, `UI/Ids/Aspid-FastTools-Id-Registry`). Component code keeps the path in a `private const string StyleSheetPath`; ID-system code centralises paths in `Constants.cs`. Styling goes in USS; code only applies `.AddClass()`. The base palette `AspidStyles.DefaultStyleSheet` (`UI/Aspid-FastTools-Default-Dark`) must be added first on new internal editor components — `AspidStyles` is the single source of truth for shared USS class/property names.
 
 **USS class naming (BEM):** Follow Unity's recommended Block-Element-Modifier convention (see [UIE-USS-WritingStyleSheets](https://docs.unity3d.com/6000.4/Documentation/Manual/UIE-USS-WritingStyleSheets.html)).
 

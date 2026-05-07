@@ -261,7 +261,7 @@ A single `IdRegistry` ScriptableObject maps string names to stable integer IDs a
 **1.** Declare a `partial struct` implementing `IId`. The source generator adds the required fields and property automatically:
 
 ```csharp
-using Aspid.FastTools;
+using Aspid.FastTools.Ids;
 
 public partial struct EnemyId : IId { }
 ```
@@ -279,13 +279,13 @@ public partial struct EnemyId
 ```
 
 **2.** Create the registry asset and bind it to the struct type in its Inspector:
-- `Assets → Create → Aspid → FastTools → Id Registry`
+- `Assets → Create → Aspid → Id Registry`
 
 **3.** Use the struct as a serialized field. The Inspector shows a dropdown of registered names; the selector window also lets you create new entries on the fly:
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
+using Aspid.FastTools.Ids;
 
 [CreateAssetMenu]
 public class EnemyDefinition : ScriptableObject
@@ -296,7 +296,7 @@ public class EnemyDefinition : ScriptableObject
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
+using Aspid.FastTools.Ids;
 
 public class EnemySpawner : MonoBehaviour
 {
@@ -329,7 +329,7 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 | `bool Contains(int id)` | Whether an ID is registered |
 | `bool Contains(string name)` | Whether a name is registered |
 | `int Count` | Number of entries |
-| `IEnumerable<int> Ids` · `IEnumerable<string> IdNames` | Enumerate registered IDs / names |
+| `IReadOnlyList<int> Ids` · `IReadOnlyList<string> IdNames` | Registered IDs / names, in registration order |
 | `IEnumerator<KeyValuePair<int, string>> GetEnumerator()` | Iterate `(id, name)` pairs |
 
 The registry derives from `ScriptableObject` directly and exposes a generic counterpart `IdRegistry<T>` (with `T : struct, IId`) that adds typed `Contains(T)` and `TryGetName(T, out string)` overloads. Edits — adding, renaming, removing entries — happen through the registry inspector and `RegistryEditorCore`, not via a public runtime API.

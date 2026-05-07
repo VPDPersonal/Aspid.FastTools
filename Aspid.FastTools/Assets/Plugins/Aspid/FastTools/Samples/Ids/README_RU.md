@@ -15,8 +15,8 @@
 ## Где смотреть
 
 - `Scripts/EnemyId.cs` — `partial struct : IId`. `IdStructGenerator` генерирует `__stringId`, `_id` и свойство `Id`.
-- `Scripts/EnemyDefinition.cs:8` — `[UniqueId]` на сериализованном поле `EnemyId` предотвращает дублирование ID между активами.
-- `ScriptableObjects/EnemyId IdRegistry.asset` — реестр, связывающий имена (`Goblin`, `Orc`, `Dragon`, `Skeleton`) со стабильными целочисленными значениями.
-- `Scripts/EnemySpawner.cs:8` — выбранный из списка `EnemyId`, преобразуется в `int` во время выполнения через `.Id`.
+- `Scripts/EnemyDefinition.cs:10` — `[UniqueId]` на сериализованном поле `EnemyId` предотвращает дублирование ID между активами.
+- `Data/IdRegistry_EnemyId.asset` — реестр, связывающий имена (`Goblin`, `Orc`, `Dragon`, `Skeleton`) со стабильными целочисленными значениями.
+- `Scripts/EnemySpawner.cs:9` — выбранный из списка `EnemyId`, преобразуется в `int` во время выполнения через `.Id`.
 
 Прикрепите `EnemySpawner` к GameObject, заполните его каталог четырьмя активами врагов, выберите цель из списка и войдите в Play Mode.

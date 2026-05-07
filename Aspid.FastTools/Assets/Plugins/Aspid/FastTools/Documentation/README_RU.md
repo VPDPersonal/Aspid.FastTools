@@ -262,7 +262,7 @@ public class MyBehaviour : MonoBehaviour
 **1.** Объявите `partial struct`, реализующий `IId`. Генератор исходников автоматически добавит необходимые поля и свойство:
 
 ```csharp
-using Aspid.FastTools;
+using Aspid.FastTools.Ids;
 
 public partial struct EnemyId : IId { }
 ```
@@ -280,13 +280,13 @@ public partial struct EnemyId
 ```
 
 **2.** Создайте ассет реестра и привяжите его к вашему типу структуры в Inspector:
-- `Assets → Create → Aspid → FastTools → Id Registry`
+- `Assets → Create → Aspid → Id Registry`
 
 **3.** Используйте структуру как сериализуемое поле. В Inspector отображается выпадающий список зарегистрированных имён; окно селектора также позволяет создавать новые записи на лету:
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
+using Aspid.FastTools.Ids;
 
 [CreateAssetMenu]
 public class EnemyDefinition : ScriptableObject
@@ -297,7 +297,7 @@ public class EnemyDefinition : ScriptableObject
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
+using Aspid.FastTools.Ids;
 
 public class EnemySpawner : MonoBehaviour
 {
@@ -330,7 +330,7 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 | `bool Contains(int id)` | Зарегистрирован ли ID |
 | `bool Contains(string name)` | Зарегистрировано ли имя |
 | `int Count` | Количество записей |
-| `IEnumerable<int> Ids` · `IEnumerable<string> IdNames` | Перечисление зарегистрированных ID / имён |
+| `IReadOnlyList<int> Ids` · `IReadOnlyList<string> IdNames` | Зарегистрированные ID / имена в порядке регистрации |
 | `IEnumerator<KeyValuePair<int, string>> GetEnumerator()` | Итерация по парам `(id, name)` |
 
 Реестр наследуется напрямую от `ScriptableObject` и предоставляет генерик-аналог `IdRegistry<T>` (с `T : struct, IId`), добавляющий типизированные перегрузки `Contains(T)` и `TryGetName(T, out string)`. Редактирование — добавление, переименование, удаление записей — выполняется через инспектор реестра и `RegistryEditorCore`, а не через публичный runtime API.

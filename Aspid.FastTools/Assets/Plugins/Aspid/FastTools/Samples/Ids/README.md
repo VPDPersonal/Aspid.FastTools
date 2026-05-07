@@ -15,8 +15,8 @@ An enemy catalog. Each `EnemyDefinition` asset holds a unique `EnemyId` plus dis
 ## Look here
 
 - `Scripts/EnemyId.cs` — `partial struct : IId`. `IdStructGenerator` emits `__stringId`, `_id`, and the `Id` property.
-- `Scripts/EnemyDefinition.cs:8` — `[UniqueId]` on a serialized `EnemyId` field prevents duplicate IDs across assets.
-- `ScriptableObjects/EnemyId IdRegistry.asset` — the registry binding names (`Goblin`, `Orc`, `Dragon`, `Skeleton`) to stable ints.
-- `Scripts/EnemySpawner.cs:8` — dropdown-selected `EnemyId` resolved to `int` at runtime via `.Id`.
+- `Scripts/EnemyDefinition.cs:10` — `[UniqueId]` on a serialized `EnemyId` field prevents duplicate IDs across assets.
+- `Data/IdRegistry_EnemyId.asset` — the registry binding names (`Goblin`, `Orc`, `Dragon`, `Skeleton`) to stable ints.
+- `Scripts/EnemySpawner.cs:9` — dropdown-selected `EnemyId` resolved to `int` at runtime via `.Id`.
 
 Drop `EnemySpawner` on a GameObject, fill its catalog with the four enemy assets, pick a target from the dropdown, and enter Play Mode.
