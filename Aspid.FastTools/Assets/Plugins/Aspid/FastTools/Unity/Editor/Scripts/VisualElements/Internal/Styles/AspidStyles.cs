@@ -16,7 +16,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// USS modifier applied alongside <see cref="BackgroundStyle"/> to give the element rounded corners and padding.
         /// </summary>
-        public const string BackgroundRoundedState = BackgroundStyle + "-rounded";
+        public const string BackgroundRoundedState = BackgroundStyle + "--rounded";
 
         public const string InspectorStyleClass = "aspid-fasttools-inspector-container";
     }
