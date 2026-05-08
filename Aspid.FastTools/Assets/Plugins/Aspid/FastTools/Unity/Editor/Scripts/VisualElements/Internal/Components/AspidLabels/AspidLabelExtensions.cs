@@ -19,6 +19,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             return element;
         }
         
+        /// <summary>
+        /// Sets <see cref="AspidLabel.Selectable"/> and returns the element for chaining.
+        /// </summary>
+        /// <param name="element">The element to configure.</param>
+        /// <param name="value">Whether the label text can be selected by the user.</param>
         public static AspidLabel SetSelectable(this AspidLabel element, bool value)
         {
             element.Selectable = value;

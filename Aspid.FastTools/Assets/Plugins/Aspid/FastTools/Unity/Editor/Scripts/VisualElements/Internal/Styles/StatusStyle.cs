@@ -86,8 +86,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// Returns the USS class name corresponding to the given status,
         /// or <see cref="string.Empty"/> for <see cref="Type.None"/>.
         /// </summary>
-        /// <param name="theme">The status value to convert.</param>
-        public static string GetClass(Type theme) => theme switch
+        /// <param name="status">The status value to convert.</param>
+        public static string GetClass(Type status) => status switch
         {
             Type.Success => SuccessClass,
             Type.Warning => WarningClass,

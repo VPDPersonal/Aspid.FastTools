@@ -461,7 +461,7 @@ image
 ```csharp
 container
     .SetOnGUIHandler(() => GUILayout.Label("IMGUI"))
-    .SeCullingEnabled(true);
+    .SetCullingEnabled(true);
 ```
 
 | Method | Description |
@@ -469,7 +469,7 @@ container
 | `SetOnGUIHandler(Action)` | Replaces the `onGUIHandler` callback |
 | `AddOnGUIHandler(Action)` | Subscribes to `onGUIHandler` |
 | `RemoveOnGUIHandler(Action)` | Unsubscribes from `onGUIHandler` |
-| `SeCullingEnabled(bool)` | Skips `onGUIHandler` when the element is offscreen *(method name preserves the source typo: `Se`, not `Set`)* |
+| `SetCullingEnabled(bool)` | Skips `onGUIHandler` when the element is offscreen |
 | `SetContextType(ContextType)` | Sets the IMGUI context type |
 
 ### Collection views (ListView, TreeView, MultiColumn variants)

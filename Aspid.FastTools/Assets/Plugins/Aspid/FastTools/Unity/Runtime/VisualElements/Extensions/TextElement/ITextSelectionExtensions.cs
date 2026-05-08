@@ -102,7 +102,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="ITextSelection.isSelectable"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// Returns true if the field is selectable.
+        /// When set to true, the field becomes selectable.
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">Whether the field is selectable.</param>

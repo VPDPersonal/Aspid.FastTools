@@ -59,7 +59,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">Whether culling is enabled.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SeCullingEnabled<T>(this T element, bool value)
+        public static T SetCullingEnabled<T>(this T element, bool value)
             where T : IMGUIContainer
         {
             element.cullingEnabled = value;

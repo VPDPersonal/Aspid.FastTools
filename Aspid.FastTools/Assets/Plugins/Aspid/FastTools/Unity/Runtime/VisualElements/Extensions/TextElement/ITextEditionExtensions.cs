@@ -58,7 +58,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="ITextEdition.isReadOnly"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// Returns true if the element is read only.
+        /// When set to true, the element becomes read-only.
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">Whether the element is read-only.</param>
@@ -74,7 +74,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="ITextEdition.isPassword"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// Returns true if the field is used to edit a password.
+        /// When set to true, the field is used to edit a password and masks input characters.
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">Whether the field is in password mode.</param>

@@ -42,13 +42,13 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             get => _titleElement?.Text ?? string.Empty;
             set
             {
-                if (_titleElement?.Text == value && (_titleElement is null || _titleElement.parent != null)) return;
-
                 if (string.IsNullOrWhiteSpace(value))
                 {
                     _titleElement?.RemoveFromHierarchy();
                     return;
                 }
+
+                if (_titleElement is not null && _titleElement.Text == value && _titleElement.parent is not null) return;
 
                 if (_titleElement is null) _titleElement = new AspidLabel(value, _titlePreset);
                 else _titleElement.Text = value;
