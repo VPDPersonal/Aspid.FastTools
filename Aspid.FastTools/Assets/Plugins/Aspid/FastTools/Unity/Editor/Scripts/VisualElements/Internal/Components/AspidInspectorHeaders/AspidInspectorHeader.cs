@@ -1,4 +1,3 @@
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
@@ -27,10 +26,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly AspidLabel _subtextElement;
         private readonly AspidHoverGradientOverlay _overlay;
         private readonly StatusStyle _status;
-
-        private Object _obj;
-        private MonoScript _script;
-        private DoubleClickTracker _doubleClick;
 
         /// <summary>
         /// Gets or sets the primary header text.
@@ -66,20 +61,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// Gets or sets the Unity Object whose script is opened on icon double-click.
         /// Setting <see langword="null"/> or an object without a resolvable script disables the open-script command.
         /// </summary>
-        public Object Obj
-        {
-            get => _obj;
-            set
-            {
-                _obj = value;
-                _script = value switch
-                {
-                    MonoBehaviour mono => MonoScript.FromMonoBehaviour(mono),
-                    ScriptableObject scriptable => MonoScript.FromScriptableObject(scriptable),
-                    _ => null,
-                };
-            }
-        }
+        public Object Obj { get; set; }
 
         /// <summary>
         /// Creates an <see cref="AspidInspectorHeader"/> using <see cref="AspidInspectorHeaderPreset.Default"/>
@@ -132,8 +114,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
             Obj = obj;
 
-            var iconElement = new Image().AddClass(IconClass);
-            iconElement.RegisterCallback<MouseUpEvent>(OnIconMouseUp);
+            var iconElement = new Image()
+                .AddClass(IconClass)
+                .AddOpenScriptCommand(obj);
+
             iconElement.RegisterCallback<MouseEnterEvent>(OnIconMouseEnter);
             iconElement.RegisterCallback<MouseLeaveEvent>(OnIconMouseLeave);
 
@@ -154,12 +138,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _status = new StatusStyle(this, preset.Status);
 
             this.AddChild(_container);
-        }
-
-        private void OnIconMouseUp(MouseUpEvent _)
-        {
-            if (_script == null) return;
-            if (_doubleClick.Detect()) AssetDatabase.OpenAsset(_script);
         }
 
         private void OnIconMouseEnter(MouseEnterEvent _)
