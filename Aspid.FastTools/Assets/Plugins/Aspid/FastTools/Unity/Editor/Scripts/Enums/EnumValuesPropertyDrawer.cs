@@ -4,6 +4,7 @@ using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors;
+using Aspid.FastTools.UIElements.Manipulators;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -28,39 +29,33 @@ namespace Aspid.FastTools.Enums.Editors
             var enumTypePath = property.FindPropertyRelative("_enumType").propertyPath;
             var defaultValuePath = property.FindPropertyRelative("_defaultValue").propertyPath;
 
-            var root = new VisualElement()
-                .SetName($"enum-values-{property.displayName}")
-                .AddStyleSheetsFromResource(StylesheetPath)
-                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet);
-
-            root.AddManipulator(EnumValuesPropertyDrawerHelper.CreatePopulateMenuManipulator(
-                serializedObject.FindProperty(valuesPath),
-                serializedObject.FindProperty(enumTypePath),
-                serializedObject.FindProperty(defaultValuePath)));
-
-            var enumTypeField = new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty)
-                .AddValueChanged(_ => UpdateValues());
-
-            var valuesField = new PropertyField(serializedObject.FindProperty(valuesPath))
-                .AddValueChanged(_ => UpdateValues());
-
-            root
-                .AddChild(new VisualElement()
-                    .AddClass(HeaderClass)
-                    .AddChild(new Label(property.displayName))
-                    .AddChild(enumTypeField)
-                )
-                .AddChild(new VisualElement()
-                    .AddClass(ContainerClass)
-                    .AddChild(valuesField)
-                    .AddChild(new PropertyField(serializedObject.FindProperty(defaultValuePath)))
-                );
-
             // Push the parent enum type into every existing entry up-front so already-serialized
             // arrays don't render with a stale per-element _enumType until the user re-edits.
             UpdateValues();
-
-            return root;
+            
+            return new VisualElement()
+                .SetName($"enum-values-{property.displayName}")
+                .AddStyleSheetsFromResource(StylesheetPath)
+                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+                .AddManipulatorSelf(EnumValuesPropertyDrawerHelper.CreatePopulateMenuManipulator(
+                    values: serializedObject.FindProperty(valuesPath),
+                    enumType: serializedObject.FindProperty(enumTypePath),
+                    defaultValue: serializedObject.FindProperty(defaultValuePath))
+                )
+                .AddChild(new VisualElement()
+                    .AddClass(HeaderClass)
+                    .AddChild(new Label(property.displayName))
+                    .AddChild(new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty)
+                        .AddValueChanged(_ => UpdateValues())
+                    )
+                )
+                .AddChild(new VisualElement()
+                    .AddClass(ContainerClass)
+                    .AddChild(new PropertyField(serializedObject.FindProperty(valuesPath))
+                        .AddValueChanged(_ => UpdateValues())
+                    )
+                    .AddChild(new PropertyField(serializedObject.FindProperty(defaultValuePath)))
+                );
 
             void UpdateValues()
             {
