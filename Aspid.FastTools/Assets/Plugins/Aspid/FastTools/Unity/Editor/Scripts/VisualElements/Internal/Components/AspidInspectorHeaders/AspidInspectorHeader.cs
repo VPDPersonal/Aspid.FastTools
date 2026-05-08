@@ -22,8 +22,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const string TextClass = "aspid-fasttools-inspector-header__text";
         private const string SubtextClass = "aspid-fasttools-inspector-header__subtext";
 
-        private const float DoubleClickTime = 0.3f;
-
         private readonly AspidBox _container;
         private readonly AspidLabel _textElement;
         private readonly AspidLabel _subtextElement;
@@ -32,7 +30,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private Object _obj;
         private MonoScript _script;
-        private float _lastClickTime;
+        private DoubleClickTracker _doubleClick;
 
         /// <summary>
         /// Gets or sets the primary header text.
@@ -161,12 +159,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private void OnIconMouseUp(MouseUpEvent _)
         {
             if (_script == null) return;
-
-            var currentTime = (float)EditorApplication.timeSinceStartup;
-            if (currentTime - _lastClickTime < DoubleClickTime)
-                AssetDatabase.OpenAsset(_script);
-
-            _lastClickTime = currentTime;
+            if (_doubleClick.Detect()) AssetDatabase.OpenAsset(_script);
         }
 
         private void OnIconMouseEnter(MouseEnterEvent _)

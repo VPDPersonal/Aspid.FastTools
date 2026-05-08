@@ -24,6 +24,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private string _text = string.Empty;
         private Label[] _chars = Array.Empty<Label>();
+        private IVisualElementScheduledItem _animation;
 
         /// <summary>
         /// Gets or sets the title text. Words are split on spaces and laid out as wrapped rows.
@@ -153,7 +154,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _waveAnimation = new AspidAnimatedTitleWaveAnimationStyle(
                 this, preset.WaveStride, preset.WaveSpeed, preset.WaveAmplitude, onChanged: null);
 
-            schedule.Execute(UpdateAnimation).Every(33);
+            _animation = schedule.Execute(UpdateAnimation).Every(33);
+
+            RegisterCallback<AttachToPanelEvent>(_ => _animation.Resume());
+            RegisterCallback<DetachFromPanelEvent>(_ => _animation.Pause());
 
             Text = text;
         }

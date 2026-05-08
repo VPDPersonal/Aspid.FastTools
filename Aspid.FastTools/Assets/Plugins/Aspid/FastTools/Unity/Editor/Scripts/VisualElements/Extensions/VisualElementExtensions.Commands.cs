@@ -1,14 +1,13 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors
 {
     public static partial class VisualElementExtensions
     {
-        private const float DoubleClickTime = 0.3f;
-
         /// <summary>
         /// Registers a double-click handler on <paramref name="element"/> that opens the script associated with <paramref name="obj"/> in the IDE.
         /// Supports <see cref="MonoBehaviour"/> and <see cref="ScriptableObject"/> instances. Has no effect if no script can be resolved.
@@ -26,20 +25,13 @@ namespace Aspid.FastTools.UIElements.Editors
                 _ => null
             };
 
-            if (script)
-            {
-                var lastClickTime = 0f;
-                
-                element.RegisterCallback<MouseUpEvent>(_ =>
-                {
-                    var currentTime = (float)EditorApplication.timeSinceStartup;
+            if (!script) return element;
 
-                    if (currentTime - lastClickTime < DoubleClickTime)
-                        AssetDatabase.OpenAsset(script);
-                    
-                    lastClickTime = currentTime;
-                });
-            }
+            var doubleClick = new DoubleClickTracker();
+            element.RegisterCallback<MouseUpEvent>(_ =>
+            {
+                if (doubleClick.Detect()) AssetDatabase.OpenAsset(script);
+            });
 
             return element;
         }

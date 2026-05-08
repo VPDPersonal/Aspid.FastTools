@@ -34,6 +34,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private bool _hovered;
         private float _pulseAmplitude;
         private IVisualElementScheduledItem _colorCycle;
+        private IVisualElementScheduledItem _pulse;
 
         /// <summary>
         /// Gets or sets the interval (in milliseconds) between color-layer transitions while hovered.
@@ -144,7 +145,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             RegisterCallback<PointerEnterEvent>(OnPointerEnter);
             RegisterCallback<PointerLeaveEvent>(OnPointerLeave);
 
-            schedule.Execute(UpdatePulse).Every(AnimationIntervalMs);
+            _pulse = schedule.Execute(UpdatePulse).Every(AnimationIntervalMs);
+
+            RegisterCallback<AttachToPanelEvent>(_ => _pulse.Resume());
+            RegisterCallback<DetachFromPanelEvent>(_ =>
+            {
+                _pulse.Pause();
+                _colorCycle?.Pause();
+            });
         }
 
         private void OnPointerEnter(PointerEnterEvent evt)

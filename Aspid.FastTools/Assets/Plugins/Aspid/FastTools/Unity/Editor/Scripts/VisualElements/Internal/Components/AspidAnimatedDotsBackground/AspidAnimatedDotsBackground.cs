@@ -22,6 +22,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly AspidAnimatedDotsBackgroundColorsStyle _colors;
         private readonly AspidAnimatedDotsBackgroundSizeStyle _size;
 
+        private IVisualElementScheduledItem _animation;
+
         /// <summary>
         /// Gets or sets the color of the first blob.
         /// </summary>
@@ -104,7 +106,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _size = new AspidAnimatedDotsBackgroundSizeStyle(
                 this, preset.DotRadius, preset.DotSpacing, preset.ScaleReferenceSize, MarkDirtyRepaint);
 
-            schedule.Execute(MarkDirtyRepaint).Every(33);
+            _animation = schedule.Execute(MarkDirtyRepaint).Every(33);
+
+            RegisterCallback<AttachToPanelEvent>(_ => _animation.Resume());
+            RegisterCallback<DetachFromPanelEvent>(_ => _animation.Pause());
         }
 
         private void OnGenerateVisualContent(MeshGenerationContext context)

@@ -27,6 +27,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private float _progress;
         private float _targetProgress;
+        private IVisualElementScheduledItem _animation;
 
         /// <summary>
         /// Gets or sets the base color of the overlay. The painted alpha is multiplied by the
@@ -82,7 +83,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _metrics = new AspidHoverGradientOverlayMetricsStyle(this, DefaultSteps, DefaultLerpRate, DefaultAlphaScale, MarkDirtyRepaint);
 
             generateVisualContent += DrawOverlay;
-            schedule.Execute(Tick).Every(TickMs);
+            _animation = schedule.Execute(Tick).Every(TickMs);
+
+            RegisterCallback<AttachToPanelEvent>(_ => _animation.Resume());
+            RegisterCallback<DetachFromPanelEvent>(_ => _animation.Pause());
         }
 
         /// <summary>
