@@ -24,25 +24,29 @@ namespace Aspid.FastTools.Ids.Editors
         private ListView _listView;
         private ToolbarSearchField _searchField;
 
+        private Type _idType;
+        private string _currentName;
         private Action<string> _onSelected;
-        private IsStructDrawerContext _ctx;
         private readonly List<KeyValuePair<int, string>> _filteredEntries = new();
 
         public static void Show(
             Rect screenRect,
-            IsStructDrawerContext ctx,
+            Type idType,
+            string currentName,
             Action<string> onSelected)
         {
             var window = CreateInstance<IdSelectorDropdownWindow>();
-            window.Initialize(screenRect, ctx, onSelected);
+            window.Initialize(screenRect, idType, currentName, onSelected);
         }
 
         private void Initialize(
             Rect screenRect,
-            IsStructDrawerContext ctx,
+            Type idType,
+            string currentName,
             Action<string> onSelected)
         {
-            _ctx = ctx;
+            _idType = idType;
+            _currentName = currentName ?? string.Empty;
             _onSelected = onSelected;
 
             Build();
@@ -139,7 +143,7 @@ namespace Aspid.FastTools.Ids.Editors
             nameId = nameId?.Trim();
             if (string.IsNullOrEmpty(nameId)) return;
 
-            var registry = _ctx.GetOrCreate();
+            var registry = IdRegistryResolver.GetOrCreate(_idType);
             if (!IdRegistryValidator.IsValidName(nameId, registry.Contains, out _)) return;
 
             Undo.RegisterCompleteObjectUndo(registry, "Add string id");
@@ -184,7 +188,7 @@ namespace Aspid.FastTools.Ids.Editors
             }
 
             nameLabel.text = entry.Value;
-            nameLabel.style.unityFontStyleAndWeight = entry.Value == _ctx.StringIdProperty.stringValue
+            nameLabel.style.unityFontStyleAndWeight = entry.Value == _currentName
                 ? FontStyle.Bold
                 : FontStyle.Normal;
 
@@ -196,7 +200,7 @@ namespace Aspid.FastTools.Ids.Editors
         private void RefreshList(string search)
         {
             _filteredEntries.Clear();
-            var registry = _ctx.FindRegistry();
+            var registry = IdRegistryResolver.Find(_idType);
             
             var canCreate = !string.IsNullOrEmpty(search) && 
                 IdRegistryValidator.IsValidName(

@@ -50,7 +50,7 @@ namespace Aspid.FastTools.Ids.Editors
             {
                 var screen = GUIUtility.GUIToScreenPoint(new Vector2(dropRect.x, dropRect.y));
                 var screenRect = new Rect(screen.x, screen.y, dropRect.width, dropRect.height);
-                IdSelectorDropdownWindow.Show(screenRect, ctx, selected => IsStructDrawerHelper.ApplySelection(selected, ctx));
+                IdSelectorDropdownWindow.Show(screenRect, ctx.FieldType, ctx.StringIdProperty.stringValue, selected => IsStructDrawerHelper.ApplySelection(selected, ctx));
             }
 
             using (new EditorGUI.DisabledScope(ctx.FindRegistry() is null))

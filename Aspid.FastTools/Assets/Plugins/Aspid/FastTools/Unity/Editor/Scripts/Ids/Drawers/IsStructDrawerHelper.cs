@@ -5,11 +5,12 @@ namespace Aspid.FastTools.Ids.Editors
 {
     internal static class IsStructDrawerHelper
     {
-        public static string BuildCaption(IsStructDrawerContext ctx, out bool isMissing)
+        public static string BuildCaption(IsStructDrawerContext ctx, out bool isMissing) =>
+            BuildCaption(ctx.FindRegistry(), ctx.IntIdProperty.intValue, ctx.StringIdProperty.stringValue, out isMissing);
+
+        public static string BuildCaption(IdRegistry registry, int id, string fallbackName, out bool isMissing)
         {
-            var registry = ctx.FindRegistry();
-            var id = ctx.IntIdProperty.intValue;
-            var nameId = ctx.StringIdProperty.stringValue ?? string.Empty; 
+            var nameId = fallbackName ?? string.Empty;
 
             var hasName = registry is not null
                 && id > 0
@@ -18,8 +19,8 @@ namespace Aspid.FastTools.Ids.Editors
             nameId ??= string.Empty;
             var hasNotNameId = string.IsNullOrEmpty(nameId);
             isMissing = registry is not null && id > 0 && !hasName;
-            
-            return isMissing 
+
+            return isMissing
                 ? hasNotNameId ? $"<Missing id {id}>" : $"<Missing '{nameId}'>"
                 : hasNotNameId ? Constants.NoneOption : nameId;
         }
