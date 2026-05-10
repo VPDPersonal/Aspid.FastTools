@@ -165,9 +165,19 @@ All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this 
 ### Local Claude Code automation
 
 - **PostToolUse hook** (`.claude/hooks/rebuild-generators-on-change.sh`): on every `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, runs `dotnet build -c Release` for the generator project (which redeploys the DLL into the Unity package). Unity-side edits, tests, and the Sample project are explicitly skipped — keep that scope when changing the hook.
-- **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase).
+- **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase), `open-pr` (project conventions for opening pull requests — see *Pull request conventions* below).
 - **Project subagents** (`.claude/agents/`): `code-reviewer` (Unity/Editor boundary + generator + package convention review), `uss-bem-checker` (validates USS class names + `--aspid-*` variables against the BEM/positional grammars above).
 
 ### Submodule
 
 `Aspid.Internal.Unity` is a git submodule providing internal Unity helpers. It is referenced but not part of the main package distribution.
+
+## Pull request conventions
+
+When opening a PR — manually or via `@claude` — invoke the `open-pr` skill (`.claude/skills/open-pr/SKILL.md`) for the full procedure. Quick reference:
+
+- **Title** — short imperative sentence under 70 characters; no auto-generated branch-name strings.
+- **Body** — fill out `.github/PULL_REQUEST_TEMPLATE.md` (Summary / Notes for review / Linked issues). Mega-PRs like the `Develop` → `main` release cut are exempt and use feature-scoped `###` subsections instead.
+- **Labels** — exactly one `type: *`, plus matching `area: *` labels.
+- **Commit messages** — short imperative sentences, **no** `Co-Authored-By: Claude …` trailer.
+- **Scope** — one logical change per PR; flag any unrelated noise in *Notes for review*.
