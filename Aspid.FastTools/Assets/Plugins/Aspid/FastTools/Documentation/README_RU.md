@@ -39,7 +39,6 @@
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
 
 public class MyBehaviour : MonoBehaviour
 {

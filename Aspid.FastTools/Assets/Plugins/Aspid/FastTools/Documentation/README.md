@@ -39,7 +39,6 @@ Provides source-generated `ProfilerMarker` registration. The generator creates a
 
 ```csharp
 using UnityEngine;
-using Aspid.FastTools;
 
 public class MyBehaviour : MonoBehaviour
 {
