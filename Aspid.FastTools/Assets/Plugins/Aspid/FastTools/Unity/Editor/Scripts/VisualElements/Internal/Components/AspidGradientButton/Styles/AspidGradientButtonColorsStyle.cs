@@ -15,12 +15,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Custom USS property for overriding the gradient background color via USS.
         /// </summary>
-        public static readonly CustomStyleProperty<Color> GradientProperty = new("--aspid-fasttools-colors-gradient-button-bg");
+        public static readonly CustomStyleProperty<Color> GradientProperty = new("--aspid-fasttools-colors-gradient_button-bg");
 
         /// <summary>
         /// Custom USS property for overriding the accent (hover) color via USS.
         /// </summary>
-        public static readonly CustomStyleProperty<Color> AccentProperty = new("--aspid-fasttools-colors-gradient-button-accent");
+        public static readonly CustomStyleProperty<Color> AccentProperty = new("--aspid-fasttools-colors-gradient_button-accent");
 
         private readonly InlineStyle<Color> _gradient;
         private readonly InlineStyle<Color> _accent;
