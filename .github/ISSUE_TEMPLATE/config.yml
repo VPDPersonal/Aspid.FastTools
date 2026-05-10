@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and ideas
+    url: https://github.com/VPDPersonal/Aspid.FastTools/discussions
+    about: Open-ended questions, design ideas and Q&A go in Discussions, not Issues.

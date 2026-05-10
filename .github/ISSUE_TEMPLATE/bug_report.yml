@@ -1,0 +1,41 @@
+name: Bug report
+description: Report a bug or unexpected behavior in Aspid.FastTools.
+labels: ["type: fix"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What went wrong? What did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps so the bug can be reproduced locally.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: unity-version
+    attributes:
+      label: Unity version
+      placeholder: "2022.3.x"
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: Aspid.FastTools version
+      placeholder: "1.0.0"
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Logs, screenshots, related issues — anything that helps.
