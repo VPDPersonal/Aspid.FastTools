@@ -1,0 +1,27 @@
+name: Feature request
+description: Suggest a new capability or improvement for Aspid.FastTools.
+labels: ["type: feature"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this solve? Who is it for?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Sketch of the API or behavior you'd like — code examples are welcome.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Other approaches you considered, and why this one is preferred.
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context

@@ -43,7 +43,10 @@ namespace Aspid.FastTools.Ids
 
         protected virtual void OnValidate() =>
             IsCacheDirty = true;
-        
+
+        protected virtual void OnEnable() =>
+            IsCacheDirty = true;
+
         public bool TryGetId(string nameId, out int id)
         {
             EnsureCache();
