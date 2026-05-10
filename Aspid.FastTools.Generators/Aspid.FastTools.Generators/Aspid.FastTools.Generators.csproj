@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <RootNamespace>Aspid.FastTools</RootNamespace>
+        <!-- RS2008 expects analyzer release tracking files; this is a private in-tree generator, not a published analyzer package. -->
+        <NoWarn>$(NoWarn);RS2008</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Aspid.FastTools.Generators.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Aspid.Generators.Helper" Version="0.0.1-alpha.4" />
+        <PackageReference Include="Aspid.Generators.Helper.Unity" Version="0.0.1-alpha.3" />
+        <PackageReference ExcludeAssets="runtime" Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference ExcludeAssets="runtime" Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0"/>
+        <PackageReference ExcludeAssets="runtime" Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.3.0"/>
+        <PackageReference Include="SourceGenerator.Foundations" Version="2.0.13" />
+    </ItemGroup>
+
+</Project>
