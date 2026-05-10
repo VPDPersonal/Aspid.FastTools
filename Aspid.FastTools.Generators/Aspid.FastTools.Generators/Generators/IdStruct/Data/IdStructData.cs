@@ -64,7 +64,7 @@ internal readonly struct IdStructData : IEquatable<IdStructData>
             TypeKind.Class => "class",
             TypeKind.Struct => "struct",
             TypeKind.Interface => "interface",
-            _ => throw new InvalidOperationException($"Unsupported containing type kind: {symbol.TypeKind}"),
+            _ => "class",
         };
     }
 
