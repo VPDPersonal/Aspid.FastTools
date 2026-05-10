@@ -252,6 +252,8 @@ In the Inspector, select the enum type in the `EnumValues` header, then assign a
 
 ## ID System
 
+> **Beta:** the ID System is currently in beta. The public API, generated code layout and editor workflow may change in future releases.
+
 Maps an asset-assignable name to a stable integer ID. Use the resulting `int` in `switch` statements and `Dictionary` keys without paying for string lookups at runtime.
 
 A single `IdRegistry` ScriptableObject maps string names to stable integer IDs and provides full `int ↔ string` lookups at runtime.
