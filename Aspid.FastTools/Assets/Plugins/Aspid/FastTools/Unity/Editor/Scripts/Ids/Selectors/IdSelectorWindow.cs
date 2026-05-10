@@ -11,7 +11,7 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
-    internal sealed class IdSelectorDropdownWindow : EditorWindow
+    internal sealed class IdSelectorWindow : EditorWindow
     {
         private const int CreateEntryKey = -1;
         private const string StyleSheetPath = "UI/Ids/Aspid-FastTools-Id-Selector";
@@ -35,7 +35,7 @@ namespace Aspid.FastTools.Ids.Editors
             string currentName,
             Action<string> onSelected)
         {
-            var window = CreateInstance<IdSelectorDropdownWindow>();
+            var window = CreateInstance<IdSelectorWindow>();
             window.Initialize(screenRect, idType, currentName, onSelected);
         }
 
@@ -235,7 +235,7 @@ namespace Aspid.FastTools.Ids.Editors
                 return;
             }
 
-            _onSelected?.Invoke(entry.Value is Constants.NoneOption ? string.Empty : entry.Value);
+            _onSelected?.Invoke(entry.Value == Constants.NoneOption ? string.Empty : entry.Value);
             Close();
         }
         

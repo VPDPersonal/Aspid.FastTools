@@ -4,7 +4,7 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
-    internal static class IdStructIMGUIDraw
+    internal static class IdStructIMGUIPropertyDrawer
     {
         private const float ButtonGap = 2f;
         private const float OpenButtonWidth = 22f;
@@ -13,7 +13,7 @@ namespace Aspid.FastTools.Ids.Editors
         private static GUIStyle _missingDropdownStyle;
         private static readonly Color _missingTextColor = new(r: 1f, g: 0.4f, b: 0.4f);
 
-        public static float GetIMGUIHeight(IsStructDrawerContext ctx, bool isUnique, ref string lastStringId)
+        public static float GetIMGUIHeight(IdStructDrawerContext ctx, bool isUnique, ref string lastStringId)
         {
             var height = EditorGUIUtility.singleLineHeight;
             if (!isUnique) return height;
@@ -30,9 +30,9 @@ namespace Aspid.FastTools.Ids.Editors
             return height + EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing;
         }
 
-        public static void Draw(Rect position, IsStructDrawerContext ctx, bool isUnique)
+        public static void Draw(Rect position, IdStructDrawerContext ctx, bool isUnique)
         {
-            IsStructDrawerHelper.SyncStringFromInt(ctx);
+            IdStructDrawerHelper.SyncStringFromInt(ctx);
 
             if (!string.IsNullOrWhiteSpace(ctx.Label))
             {
@@ -43,14 +43,14 @@ namespace Aspid.FastTools.Ids.Editors
 
             var (dropRect, openRect) = SplitRect(position);
 
-            var caption = IsStructDrawerHelper.BuildCaption(ctx, out var isMissing);
+            var caption = IdStructDrawerHelper.BuildCaption(ctx, out var isMissing);
             var dropdownStyle = isMissing ? GetMissingDropdownStyle() : EditorStyles.miniPullDown;
             
             if (EditorGUI.DropdownButton(dropRect, new GUIContent(caption), FocusType.Passive, dropdownStyle))
             {
                 var screen = GUIUtility.GUIToScreenPoint(new Vector2(dropRect.x, dropRect.y));
                 var screenRect = new Rect(screen.x, screen.y, dropRect.width, dropRect.height);
-                IdSelectorDropdownWindow.Show(screenRect, ctx.FieldType, ctx.StringProperty.stringValue, selected => IsStructDrawerHelper.ApplySelection(selected, ctx));
+                IdSelectorWindow.Show(screenRect, ctx.FieldType, ctx.StringProperty.stringValue, selected => IdStructDrawerHelper.ApplySelection(selected, ctx));
             }
 
             using (new EditorGUI.DisabledScope(ctx.FindRegistry() is null))
@@ -68,7 +68,7 @@ namespace Aspid.FastTools.Ids.Editors
             EditorGUI.HelpBox(warningRect, "ID is not unique among assets of this type", MessageType.Warning);
         }
         
-        private static bool IsUniqueFor(IsStructDrawerContext ctx) =>
+        private static bool IsUniqueFor(IdStructDrawerContext ctx) =>
             UniqueIdIndex.IsUnique(ctx.DeclaringType, ctx.StringProperty.stringValue, ctx.GetCurrentAssetGuid());
 
         private static (Rect dropRect, Rect openRect) SplitRect(Rect position)

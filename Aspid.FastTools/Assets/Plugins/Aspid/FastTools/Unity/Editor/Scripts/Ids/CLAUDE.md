@@ -5,29 +5,41 @@ Runtime contracts live in `Unity/Runtime/Ids/`; struct-side boilerplate is gener
 
 ## Layout
 
+Mirrors the sibling `Types/` feature — `Drawers/` for IMGUI + UIToolkit drawers, `Selectors/` for the picker window, `VisualElements/` for the bound field, `Registries/` for the `IdRegistry` inspector, `Resolvers/` for the AQN → registry index.
+
 ```
 Ids/
 ├── Constants.cs                          ← USS class names + field names (single source of truth)
+├── UniqueIdIndex.cs                      ← project-wide [UniqueId] collision index
 ├── Drawers/
 │   ├── IdStructPropertyDrawer.cs         ← [CustomPropertyDrawer(typeof(IId), useForChildren:true)]
-│   └── IdStructDrawer.cs                 ← static IMGUI + UIToolkit drawer body
-├── Registries/
-│   ├── RegistryEditorCore.cs             ← orchestrator: SerializedObject, view-model, mutation cycle, event wiring
-│   ├── IdRegistryEditor.cs               ← [CustomEditor(typeof(IdRegistry))]
-│   ├── IdRegistryEntryVisualElement.cs   ← single row VisualElement
-│   ├── IdRegistryEntryData.cs            ← row DTO
-│   ├── IdRegistryToolbarVisualElement.cs ← Sort/Group enum-dropdowns, fires SortChanged/GroupChanged
-│   ├── IdRegistryAddRowVisualElement.cs  ← input + button + error label, fires AddRequested
-│   ├── IdRegistryNextIdRowVisualElement.cs ← PropertyField(_nextId) + warning icon, fires ValueChanged
-│   ├── IdRegistryWarningVisualElement.cs ← Clean-up warning row, fires ReviewRequested
-│   ├── IdRegistryListVisualElement.cs    ← flat ListView + grouped foldouts, re-emits row events
-│   ├── RegistrySortMode.cs / RegistryGroupMode.cs ← enums shared between core and toolbar element
-│   ├── AddRowValidation.cs / NextIdWarning.cs ← DTOs returned by core's validation funnels
+│   ├── IdStructIMGUIPropertyDrawer.cs    ← static IMGUI drawer body (mirrors TypeIMGUIPropertyDrawer)
+│   ├── IdStructUIToolkitPropertyDrawer.cs ← static UIToolkit drawer body (mirrors TypeUIToolkitPropertyDrawer)
+│   ├── IdStructDrawerContext.cs          ← shared drawer DTO (label + field/declaring types + child SerializedProperties)
+│   └── IdStructDrawerHelper.cs           ← caption building, int↔string sync, selection apply
+├── Selectors/
+│   └── IdSelectorWindow.cs               ← dropdown picker shown by the drawer
+├── VisualElements/
+│   ├── IdField.cs                        ← UIToolkit field; mirrors TypeField
+│   └── InspectorIdField.cs               ← Inspector-styled variant; mirrors InspectorTypeField
+├── Resolvers/
 │   ├── IdRegistryResolver.cs             ← AQN → registry asset, with one-per-type enforcement
-│   ├── IdRegistryResolverCacheInvalidator.cs ← AssetPostprocessor invalidating the resolver cache
-│   └── IdRegistryValidator.cs            ← IsValidName + Summarize for the Clean-up flow
-└── Windows/
-    └── IdSelectorWindow.cs               ← dropdown picker shown by the drawer
+│   └── IdRegistryResolverCacheInvalidator.cs ← AssetPostprocessor invalidating the resolver cache
+└── Registries/
+    ├── RegistryEditorCore.cs             ← orchestrator: SerializedObject, view-model, mutation cycle, event wiring
+    ├── IdRegistryEditor.cs               ← [CustomEditor(typeof(IdRegistry))]
+    ├── IdRegistryEntryData.cs            ← row DTO
+    ├── IdRegistryValidator.cs            ← IsValidName + Summarize for the Clean-up flow
+    ├── CleanUpSummary.cs                 ← Clean-up summary DTO
+    ├── AddRowValidation.cs / NextIdWarning.cs ← DTOs returned by core's validation funnels
+    ├── RegistrySortMode.cs / RegistryGroupMode.cs ← enums shared between core and toolbar element
+    └── VisualElements/
+        ├── IdRegistryEntryVisualElement.cs   ← single row VisualElement
+        ├── IdRegistryToolbarVisualElement.cs ← Sort/Group enum-dropdowns, fires SortChanged/GroupChanged
+        ├── IdRegistryAddRowVisualElement.cs  ← input + button + error label, fires AddRequested
+        ├── IdRegistryNextIdRowVisualElement.cs ← PropertyField(_nextId) + warning icon, fires ValueChanged
+        ├── IdRegistryWarningVisualElement.cs ← Clean-up warning row, fires ReviewRequested
+        └── IdRegistryListVisualElement.cs    ← flat ListView + grouped foldouts, re-emits row events
 ```
 
 `IdRegistryEditor` is a 5-line shell that hands its `SerializedObject` to `RegistryEditorCore`. **`IdRegistry` mutations live only in `RegistryEditorCore`** (via the `Record` → `Add`/`SetName`/`RemoveAt` → `Commit` cycle, see Storage below). UI is split into `IdRegistry*VisualElement` components that are dumb shells: they own DOM and emit events, never touch the asset's `SerializedProperty`s. Wiring (event subscriptions and `Bind` calls) happens once inside `RegistryEditorCore.Build()`. Adding new inspector behavior means: a new component if it's a UI surface, plus the wiring + handler in core. The one allowed exception is `IdRegistryNextIdRowVisualElement`, which holds a `PropertyField(_nextId)` because Unity's `PropertyField` already records its own Undo and writes through `SerializedObject` — core listens for the change to invalidate the runtime cache.
@@ -60,14 +72,13 @@ Commit();                   // 2. ApplyModifiedProperties + InvalidateCache + Se
 
 ## Field name and USS class registry — `Constants.cs`
 
-All class names and serialized field names go through `Constants` — never hard-code a USS class or property name in component code:
+Cross-component USS classes and serialized field names go through `Constants`; per-component classes (e.g. those used only inside `IdSelectorWindow` or `IdField`) stay as `private const` strings on their owning class — same convention as `Types/` (`TypeField`, `TypeSelectorWindow`).
 
-- `Constants.IntIdFieldName` / `StringIdFieldName` — fields generated by `IdStructGenerator` on the struct side.
-- `Constants.Drawer.*` — classes for the `IdStruct` drawer + its style sheet.
-- `Constants.Registry.*` — classes for `RegistryEditorCore` + threshold constants (`ScrollThreshold`, `MaxVisibleRows`, `RowHeight`).
-- `Constants.Selector.*` — classes for `IdSelectorWindow`.
+- `Constants.IntIdFieldName` / `StringIdFieldName` — fields generated by `IdStructGenerator` on the struct side; consumed by both the drawer and `UniqueIdIndex`.
+- `Constants.Registry.*` — classes for `RegistryEditorCore` (shared with its `IdRegistry*VisualElement` components) + threshold constants (`ScrollThreshold`, `MaxVisibleRows`, `RowHeight`).
+- `Constants.NoneOption` — display string for the "no id selected" option, shared between caption building and the selector window.
 
-All class names follow BEM (`__` between block and element) per the root `CLAUDE.md`. Add new classes through `Constants.cs` only — never hard-code a USS class string in component code.
+All class names follow BEM (`__` between block and element) per the root `CLAUDE.md`. Promote a local `private const` to `Constants.cs` as soon as a second class needs to read it — never hard-code the same USS class string in two places.
 
 ## Validation and Clean-up
 

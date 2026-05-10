@@ -16,8 +16,8 @@ namespace Aspid.FastTools.Ids.Editors
 
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
-            var ctx = new IsStructDrawerContext(label.text, fieldInfo, property);
-            return IdStructIMGUIDraw.GetIMGUIHeight(ctx, IsUnique, ref _lastStringId);
+            var ctx = new IdStructDrawerContext(label.text, fieldInfo, property);
+            return IdStructIMGUIPropertyDrawer.GetIMGUIHeight(ctx, IsUnique, ref _lastStringId);
         }
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
@@ -25,12 +25,12 @@ namespace Aspid.FastTools.Ids.Editors
             var height = GetPropertyHeight(property, label);
             var drawRect = new Rect(position.x, position.y, position.width, height);
 
-            var ctx = new IsStructDrawerContext(label.text, fieldInfo, property);
-            IdStructIMGUIDraw.Draw(drawRect, ctx, IsUnique);
+            var ctx = new IdStructDrawerContext(label.text, fieldInfo, property);
+            IdStructIMGUIPropertyDrawer.Draw(drawRect, ctx, IsUnique);
         }
 
-        public override VisualElement CreatePropertyGUI(SerializedProperty property) => IdStructUIToolkitDraw.Draw(
-            ctx: new IsStructDrawerContext(preferredLabel, fieldInfo, property),
+        public override VisualElement CreatePropertyGUI(SerializedProperty property) => IdStructUIToolkitPropertyDrawer.Draw(
+            ctx: new IdStructDrawerContext(preferredLabel, fieldInfo, property),
             isUnique: IsUnique);
     }
 }

@@ -29,8 +29,10 @@ namespace Aspid.FastTools.Ids.Editors
                 ApplyWarning(value);
                 ValueChanged?.Invoke(value);
             });
-            
-            this.AddChild(field);
+
+            this.AddChild(new VisualElement()
+                .AddChild(field)
+                .AddChild(warningImage));
 
             ApplyWarning(nextIdProp.intValue);
             return;

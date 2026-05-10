@@ -2,9 +2,9 @@ using System;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-using System.Collections.Generic;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -67,7 +67,7 @@ namespace Aspid.FastTools.Ids.Editors
                 .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
                 .AddClass("aspid-fasttools-inspector-container");
 
-            root.Add(new AspidInspectorHeader(_registry.name, _registry)
+            root.Add(new AspidInspectorHeader(_registry.name + " (Beta)", _registry)
             {
                 Subtext = _registry.GetType().Name,
             });

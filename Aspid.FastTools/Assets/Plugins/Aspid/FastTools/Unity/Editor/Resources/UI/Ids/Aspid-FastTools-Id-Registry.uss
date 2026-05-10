@@ -145,8 +145,7 @@ IdRegistryNextIdRowVisualElement > VisualElement {
 
 IdRegistryNextIdRowVisualElement PropertyField {
     flex-grow: 1;
-    margin-right: 2px;
-    margin-left: -3px;
+    margin: 0 2px 0 3px;
 }
 
 IdRegistryNextIdRowVisualElement Image {

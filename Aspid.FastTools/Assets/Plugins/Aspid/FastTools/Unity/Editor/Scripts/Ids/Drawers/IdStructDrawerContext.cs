@@ -6,7 +6,7 @@ using Aspid.FastTools.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
-    internal sealed class IsStructDrawerContext
+    internal sealed class IdStructDrawerContext
     {
         public readonly string Label;
         public readonly Type FieldType;
@@ -17,7 +17,7 @@ namespace Aspid.FastTools.Ids.Editors
 
         public SerializedObject SerializedObject => Property.serializedObject;
 
-        public IsStructDrawerContext(
+        public IdStructDrawerContext(
             string label,
             FieldInfo fieldInfo,
             SerializedProperty property)

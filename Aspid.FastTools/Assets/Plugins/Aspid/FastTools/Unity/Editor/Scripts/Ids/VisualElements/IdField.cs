@@ -11,7 +11,7 @@ namespace Aspid.FastTools.Ids.Editors
 {
     /// <summary>
     /// UIToolkit field that displays an <see cref="IId"/>-style integer id as an EnumField-style
-    /// dropdown backed by <see cref="IdSelectorDropdownWindow"/>. Optionally bound to an
+    /// dropdown backed by <see cref="IdSelectorWindow"/>. Optionally bound to an
     /// <see cref="IId"/> struct <see cref="SerializedProperty"/> whose generated children
     /// (<c>_id</c> and <c>__stringId</c>) are updated together; when no <see cref="IdRegistry"/>
     /// is bound to <see cref="IdType"/> or the id cannot be resolved to a name, the field renders
@@ -157,7 +157,7 @@ namespace Aspid.FastTools.Ids.Editors
         private void UpdateDisplay()
         {
             var registry = IdType is not null ? IdRegistryResolver.Find(IdType) : null;
-            var caption = IsStructDrawerHelper.BuildCaption(registry, value, _currentName, out var isMissing);
+            var caption = IdStructDrawerHelper.BuildCaption(registry, value, _currentName, out var isMissing);
 
             _textElement.SetText(caption);
             _textElement.EnableInClassList(StatusStyle.ErrorClass, isMissing);
@@ -186,7 +186,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             if (!window) return;
 
-            IdSelectorDropdownWindow.Show(
+            IdSelectorWindow.Show(
                 screenRect: GetScreenRect(),
                 idType: IdType,
                 currentName: _currentName,

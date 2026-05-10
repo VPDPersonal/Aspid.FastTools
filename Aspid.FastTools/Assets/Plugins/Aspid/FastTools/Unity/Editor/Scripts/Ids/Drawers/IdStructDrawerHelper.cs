@@ -3,9 +3,9 @@ using Aspid.FastTools.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
-    internal static class IsStructDrawerHelper
+    internal static class IdStructDrawerHelper
     {
-        public static string BuildCaption(IsStructDrawerContext ctx, out bool isMissing) =>
+        public static string BuildCaption(IdStructDrawerContext ctx, out bool isMissing) =>
             BuildCaption(ctx.FindRegistry(), ctx.IntProperty.intValue, ctx.StringProperty.stringValue, out isMissing);
 
         public static string BuildCaption(IdRegistry registry, int id, string fallbackName, out bool isMissing)
@@ -25,7 +25,7 @@ namespace Aspid.FastTools.Ids.Editors
                 : hasNotNameId ? Constants.NoneOption : nameId;
         }
         
-        public static void SyncStringFromInt(IsStructDrawerContext ctx)
+        public static void SyncStringFromInt(IdStructDrawerContext ctx)
         {
             var registry = ctx.FindRegistry();
 
@@ -41,7 +41,7 @@ namespace Aspid.FastTools.Ids.Editors
         
         public static void ApplySelection(
             string selected,
-            IsStructDrawerContext ctx)
+            IdStructDrawerContext ctx)
         {
             var id = 0;
             var nameId = selected ?? string.Empty;
@@ -59,7 +59,7 @@ namespace Aspid.FastTools.Ids.Editors
         private static void SetFields(
             int id,
             string nameId,
-            IsStructDrawerContext ctx)
+            IdStructDrawerContext ctx)
         {
             ctx.IntProperty.SetIntAndApply(id);
             ctx.StringProperty.SetStringAndApply(nameId);

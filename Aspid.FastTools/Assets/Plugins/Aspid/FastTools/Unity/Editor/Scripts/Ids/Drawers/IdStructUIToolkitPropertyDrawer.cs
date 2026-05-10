@@ -7,9 +7,9 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
-    internal static class IdStructUIToolkitDraw
+    internal static class IdStructUIToolkitPropertyDrawer
     {
-        public static VisualElement Draw(IsStructDrawerContext ctx, bool isUnique)
+        public static VisualElement Draw(IdStructDrawerContext ctx, bool isUnique)
         {
             var idField = new InspectorIdField(ctx.Label, ctx.Property)
             {
@@ -23,7 +23,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             Action refresh = () =>
             {
-                IsStructDrawerHelper.SyncStringFromInt(ctx);
+                IdStructDrawerHelper.SyncStringFromInt(ctx);
                 idField.RefreshFromBoundProperty();
             };
 
@@ -37,7 +37,7 @@ namespace Aspid.FastTools.Ids.Editors
             return root;
         }
 
-        private static Label BuildWarningLabel(IsStructDrawerContext ctx)
+        private static Label BuildWarningLabel(IdStructDrawerContext ctx)
         {
             var warningLabel = new Label(text: "⚠ ID is not unique among assets of this type")
                 .AddClass(ThemeStyle.LightClass)
