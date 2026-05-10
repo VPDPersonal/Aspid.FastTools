@@ -12,11 +12,19 @@
 
 Каталог врагов. Каждый актив `EnemyDefinition` хранит уникальный `EnemyId` плюс данные для отображения (`_displayName`, `_maxHealth`, `_moveSpeed`). `EnemySpawner` выбирает целевой `EnemyId` через выпадающий список и ищет соответствующий актив в своём каталоге в `Start()`.
 
-## Где смотреть
+Смотрите:
 
 - `Scripts/EnemyId.cs` — `partial struct : IId`. `IdStructGenerator` генерирует `__stringId`, `_id` и свойство `Id`.
 - `Scripts/EnemyDefinition.cs:10` — `[UniqueId]` на сериализованном поле `EnemyId` предотвращает дублирование ID между активами.
-- `Data/IdRegistry_EnemyId.asset` — реестр, связывающий имена (`Goblin`, `Orc`, `Dragon`, `Skeleton`) со стабильными целочисленными значениями.
+- `Data/IdRegistry_EnemyId.asset` — реестр, связывающий имена (`fly_enemy_dragon`, `walk_enemy_goblin`, `walk_enemy_orc`, `walk_enemy_skeleton`) со стабильными целочисленными значениями.
 - `Scripts/EnemySpawner.cs:9` — выбранный из списка `EnemyId`, преобразуется в `int` во время выполнения через `.Id`.
 
-Прикрепите `EnemySpawner` к GameObject, заполните его каталог четырьмя активами врагов, выберите цель из списка и войдите в Play Mode.
+## Как запустить
+
+Откройте `Scenes/Ids.unity` — в сцене лежит GameObject `EnemySpawner` (также доступен как `Prefabs/Ids.prefab`). Подключите его один раз:
+
+1. Перетащите четыре актива `Data/*_enemy_*.asset` в массив `Catalog` спавнера.
+2. Выберите цель в выпадающем списке `Spawn Target` — список берётся из `IdRegistry_EnemyId`.
+3. Войдите в Play Mode — в Console появится лог найденного `EnemyDefinition` (display name, HP, move speed). Меняйте значение в списке, чтобы увидеть другие варианты поиска.
+
+Чтобы добавить новые записи, откройте `Data/IdRegistry_EnemyId.asset` для строк реестра и `Assets > Create > Aspid > FastTools > Samples > Enemy Definition` — для соответствующих ассетов.

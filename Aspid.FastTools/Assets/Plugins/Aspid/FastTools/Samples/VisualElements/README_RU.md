@@ -13,4 +13,4 @@
 
 1. Выберите `ScriptableObjects/fireball_1.asset` (платная) или `ScriptableObjects/fireball_free.asset` в окне Project — кастомный inspector появится в панели Inspector.
 2. Отредактируйте поля. Установите `Mana Cost` в `0`, чтобы увидеть, как статус-бейдж переключится на "FREE", и появится встроенный help box с предупреждением.
-3. Или создайте свой через `Assets > Create > Aspid > Samples > FastTools > Ability Config`.
+3. Или создайте свой через `Assets > Create > Aspid > FastTools > Samples > Ability Config`.

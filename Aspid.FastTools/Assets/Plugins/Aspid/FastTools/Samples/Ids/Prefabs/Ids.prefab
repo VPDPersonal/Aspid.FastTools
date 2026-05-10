@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 2234567890123456789}
   - component: {fileID: 3234567890123456789}
   m_Layer: 0
-  m_Name: EnemySpawner
+  m_Name: Ids
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -42,5 +42,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ce0efc593ee24a5d97d8511d669c9de7, type: 3}
-  m_Name:
+  m_Name: 
   m_EditorClassIdentifier: Aspid.FastTools.Samples.Ids::Aspid.FastTools.Samples.Ids.EnemySpawner
+  _catalog:
+  - {fileID: 11400000, guid: edca3936962f4004af0272178ad75bfd, type: 2}
+  - {fileID: 11400000, guid: d92adbaedb324bff9fcbe616fbf03416, type: 2}
+  - {fileID: 11400000, guid: fc61e5b486184ad4b3ed8c54016f6d5f, type: 2}
+  - {fileID: 11400000, guid: 56ba102dc1764873b64e5f7803207cc6, type: 2}
+  _spawnTarget:
+    __stringId: walk_enemy_orc
+    _id: 3

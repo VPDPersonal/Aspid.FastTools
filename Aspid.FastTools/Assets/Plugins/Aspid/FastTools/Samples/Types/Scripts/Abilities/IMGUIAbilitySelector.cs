@@ -8,7 +8,7 @@ namespace Aspid.FastTools.Samples.Types
     //
     // The same SerializableType<T> and [TypeSelector] fields used by the UIToolkit-based
     // AbilitySelector sample are reused here, but the companion editor
-    // (IMGUIAbilityHolderEditor) overrides OnInspectorGUI without CreateInspectorGUI,
+    // (IMGUIAbilitySelectorEditor) overrides OnInspectorGUI without CreateInspectorGUI,
     // forcing Unity to render the inspector — and every nested Type picker — through
     // the IMGUI code path (TypeIMGUIPropertyDrawer).
     //
