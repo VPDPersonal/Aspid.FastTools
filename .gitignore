@@ -1,2 +1,7 @@
 .claude/settings.local.json
 .worktrees/
+
+# UPM convention: `Samples~` is hidden from Unity importer but must be tracked.
+# Override global `*~` ignore.
+!Samples~/
+!Samples~/**
