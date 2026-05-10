@@ -80,7 +80,7 @@ namespace Aspid.FastTools.UIElements
         /// Callback for unbinding a data item from the VisualElement.
         /// </remarks>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback invoked to release bindings from a element item element.</param>
+        /// <param name="value">The callback invoked to release bindings from a list item element.</param>
         /// <returns>The element, for chaining.</returns>
         public static T AddUnbindItem<T>(this T element, Action<VisualElement, int> value)
             where T : ListView
@@ -106,7 +106,7 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
-        #region RemoveMake
+        #region MakeItem
         /// <summary>
         /// Sets <see cref="ListView.makeItem"/>, replacing any existing callback, and returns the element for chaining.
         /// </summary>

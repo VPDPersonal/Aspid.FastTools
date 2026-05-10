@@ -15,7 +15,7 @@ namespace Aspid.FastTools.UIElements.Editors
         public static T AddValueChanged<T>(this T element, EventCallback<SerializedPropertyChangeEvent> value)
             where T : PropertyField
         {
-            element.RegisterValueChangeCallback(value);
+            element.RegisterCallback<SerializedPropertyChangeEvent>(value);
             return element;
         }
         

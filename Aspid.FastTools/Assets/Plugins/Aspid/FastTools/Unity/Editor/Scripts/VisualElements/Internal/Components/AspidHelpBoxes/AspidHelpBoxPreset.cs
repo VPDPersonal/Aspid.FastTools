@@ -49,8 +49,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public HelpBoxMessageType MessageType;
 
         /// <summary>
-        /// Sets <see cref="TitlePreset"/> and returns the modified preset.
+        /// Replaces the entire <see cref="TitlePreset"/> (the label preset used for the title,
+        /// not the title text itself) and returns the modified preset.
         /// </summary>
+        /// <param name="value">The new title label preset.</param>
+        /// <returns>The modified preset, for chaining.</returns>
         public AspidHelpBoxPreset SetTitle(AspidLabelPreset value)
         {
             TitlePreset = value;
@@ -58,8 +61,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         }
 
         /// <summary>
-        /// Sets <see cref="MessagePreset"/> and returns the modified preset.
+        /// Replaces the entire <see cref="MessagePreset"/> (the label preset used for the message,
+        /// not the message text itself) and returns the modified preset.
         /// </summary>
+        /// <param name="value">The new message label preset.</param>
+        /// <returns>The modified preset, for chaining.</returns>
         public AspidHelpBoxPreset SetMessage(AspidLabelPreset value)
         {
             MessagePreset = value;
@@ -70,6 +76,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// Sets <see cref="Status"/> on this preset, <see cref="TitlePreset"/>, and <see cref="MessagePreset"/>,
         /// then returns the modified preset.
         /// </summary>
+        /// <param name="value">The status accent to apply to the help box and its labels.</param>
+        /// <returns>The modified preset, for chaining.</returns>
         public AspidHelpBoxPreset SetStatus(StatusStyle.Type value)
         {
             Status = value;
@@ -83,6 +91,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// If <see cref="Status"/> has not been set explicitly, it is automatically derived
         /// from the message type (Info/Warning/Error → matching status accent).
         /// </summary>
+        /// <param name="value">The message type that determines the help-box icon.</param>
+        /// <returns>The modified preset, for chaining.</returns>
         public AspidHelpBoxPreset SetMessageType(HelpBoxMessageType value)
         {
             MessageType = value;

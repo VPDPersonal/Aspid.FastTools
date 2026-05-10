@@ -155,7 +155,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddSetupDragAndDrop<T>(this T element, Func<HandleDragAndDropArgs, DragVisualMode> value)
+        public static T AddDragAndDropUpdate<T>(this T element, Func<HandleDragAndDropArgs, DragVisualMode> value)
             where T : BaseVerticalCollectionView
         {
             element.dragAndDropUpdate += value;
@@ -168,7 +168,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveSetupDragAndDrop<T>(this T element, Func<HandleDragAndDropArgs, DragVisualMode> value)
+        public static T RemoveDragAndDropUpdate<T>(this T element, Func<HandleDragAndDropArgs, DragVisualMode> value)
             where T : BaseVerticalCollectionView
         {
             element.dragAndDropUpdate -= value;
@@ -176,7 +176,7 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
-        #region DragAndDropUpdate
+        #region HandleDrop
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.handleDrop"/> callback.
         /// </summary>

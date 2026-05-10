@@ -26,6 +26,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Initialises a new instance with a starting value and an optional change callback.
         /// </summary>
+        /// <remarks>
+        /// The callback is invoked once during construction with <c>oldValue = default(T)</c> and
+        /// <c>newValue = <paramref name="value"/></c>, so callers can apply the initial USS class
+        /// without a separate setup step.
+        /// </remarks>
         /// <param name="value">The initial value.</param>
         /// <param name="onSet">Optional callback invoked as <c>(oldValue, newValue)</c> whenever the value changes.</param>
         public InlineStyle(T value, Action<T, T> onSet = null)
@@ -51,14 +56,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         }
 
         /// <summary>
-        /// Applies a USS-derived default value. Has no effect once <see cref="IsInline"/> is <c>true</c>,
-        /// so inline code always wins over the stylesheet.
+        /// Applies a default value (typically from a stylesheet or other external source).
+        /// Has no effect once <see cref="IsInline"/> is <c>true</c>, so inline code always wins.
         /// </summary>
-        /// <param name="value">The default value supplied by USS.</param>
+        /// <param name="value">The new default value.</param>
         public void SetDefaultValue(T value)
         {
             if (IsInline)  return;
-            
+
             _onSet?.Invoke(Value, value);
             Value = value;
         }

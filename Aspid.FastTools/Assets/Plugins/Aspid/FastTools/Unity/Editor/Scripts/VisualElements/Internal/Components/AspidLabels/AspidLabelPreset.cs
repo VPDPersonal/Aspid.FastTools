@@ -6,7 +6,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     /// <summary>
     /// Configuration preset for an <see cref="AspidLabel"/>.
-    /// Use the fluent builder methods to create a customised preset.
+    /// Use the fluent builder methods to create a customized preset.
     /// </summary>
     internal struct AspidLabelPreset
     {

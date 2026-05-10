@@ -18,6 +18,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// </summary>
         public const string BackgroundRoundedState = BackgroundStyle + "--rounded";
 
+        /// <summary>
+        /// USS class applied to inspector container elements styled with Aspid editor theme.
+        /// </summary>
         public const string InspectorStyleClass = "aspid-fasttools-inspector-container";
     }
 }

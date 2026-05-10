@@ -16,19 +16,19 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// Custom USS property for the first palette color.
         /// </summary>
         public static readonly CustomStyleProperty<Color> Color1Property =
-            new("--aspid-fasttools-colors-animated-title-color-1");
+            new("--aspid-fasttools-colors-animated_title-color_1");
 
         /// <summary>
         /// Custom USS property for the second palette color.
         /// </summary>
         public static readonly CustomStyleProperty<Color> Color2Property =
-            new("--aspid-fasttools-colors-animated-title-color-2");
+            new("--aspid-fasttools-colors-animated_title-color_2");
 
         /// <summary>
         /// Custom USS property for the third palette color.
         /// </summary>
         public static readonly CustomStyleProperty<Color> Color3Property =
-            new("--aspid-fasttools-colors-animated-title-color-3");
+            new("--aspid-fasttools-colors-animated_title-color_3");
 
         private readonly InlineStyle<Color> _color1;
         private readonly InlineStyle<Color> _color2;
@@ -50,8 +50,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public Color Color3 => _color3.Value;
 
         /// <summary>
-        /// Returns the palette color at <paramref name="index"/> (0..2).
+        /// Returns the palette color at <paramref name="index"/>.
+        /// Indices 0 and 1 return <see cref="Color1"/> and <see cref="Color2"/>;
+        /// any other value returns <see cref="Color3"/>.
         /// </summary>
+        /// <param name="index">The palette index (0, 1, or any other value for the third color).</param>
         public Color this[int index] => index switch
         {
             0 => _color1.Value,

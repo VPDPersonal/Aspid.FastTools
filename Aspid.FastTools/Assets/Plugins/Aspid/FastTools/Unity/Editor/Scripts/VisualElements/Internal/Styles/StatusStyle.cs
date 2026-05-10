@@ -4,9 +4,10 @@ using UnityEngine.UIElements;
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     /// <summary>
-    /// Manages the status accent of a <see cref="VisualElement"/>. The status can be inherited from
-    /// the <see cref="StyleProperty"/> USS custom property or set explicitly in code; once set explicitly
-    /// it is no longer overridden by USS resolution.
+    /// Manages the status accent (success / warning / error / info) of a <see cref="VisualElement"/>.
+    /// The status can be inherited from the <see cref="StyleProperty"/> USS custom property or set
+    /// explicitly in code; once set explicitly it is no longer overridden by the
+    /// <see cref="CustomStyleResolvedEvent"/>.
     /// </summary>
     internal readonly struct StatusStyle
     {
@@ -44,8 +45,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         /// <summary>
         /// Creates a status binding for <paramref name="element"/> with an initial value.
-        /// Registers a <see cref="CustomStyleResolvedEvent"/> handler so that USS-driven
-        /// values are applied as defaults until <see cref="SetValue"/> is called.
+        /// Registers a <see cref="CustomStyleResolvedEvent"/> handler so that USS-driven values
+        /// apply as defaults; once <see cref="SetValue"/> is called the inline value takes precedence.
         /// </summary>
         /// <param name="element">The element whose USS classes track the status.</param>
         /// <param name="type">The initial status value.</param>
@@ -84,9 +85,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         /// <summary>
         /// Returns the USS class name corresponding to the given status,
-        /// or <see cref="string.Empty"/> for <see cref="Type.None"/>.
+        /// or <see cref="string.Empty"/> if no class is mapped (e.g. <see cref="Type.None"/>).
         /// </summary>
         /// <param name="status">The status value to convert.</param>
+        /// <returns>The USS class name, or <see cref="string.Empty"/> when no class is mapped.</returns>
         public static string GetClass(Type status) => status switch
         {
             Type.Success => SuccessClass,

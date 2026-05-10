@@ -15,13 +15,13 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// Custom USS property for the per-character color-palette stride.
         /// </summary>
         public static readonly CustomStyleProperty<float> StrideProperty =
-            new("--aspid-fasttools-prop-animated-title-color_stride");
+            new("--aspid-fasttools-prop-animated_title-color_stride");
 
         /// <summary>
         /// Custom USS property for the color-palette cycling speed.
         /// </summary>
         public static readonly CustomStyleProperty<float> SpeedProperty =
-            new("--aspid-fasttools-prop-animated-title-color_speed");
+            new("--aspid-fasttools-prop-animated_title-color_speed");
 
         private readonly InlineStyle<float> _stride;
         private readonly InlineStyle<float> _speed;

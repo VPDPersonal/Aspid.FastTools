@@ -15,19 +15,19 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// Custom USS property for the per-character wave phase offset.
         /// </summary>
         public static readonly CustomStyleProperty<float> StrideProperty =
-            new("--aspid-fasttools-prop-animated-title-wave_stride");
+            new("--aspid-fasttools-prop-animated_title-wave_stride");
 
         /// <summary>
         /// Custom USS property for the wave animation speed.
         /// </summary>
         public static readonly CustomStyleProperty<float> SpeedProperty =
-            new("--aspid-fasttools-prop-animated-title-wave_speed");
+            new("--aspid-fasttools-prop-animated_title-wave_speed");
 
         /// <summary>
         /// Custom USS property for the maximum vertical wave displacement (in pixels).
         /// </summary>
         public static readonly CustomStyleProperty<float> AmplitudeProperty =
-            new("--aspid-fasttools-prop-animated-title-wave_amplitude");
+            new("--aspid-fasttools-prop-animated_title-wave_amplitude");
 
         private readonly InlineStyle<float> _stride;
         private readonly InlineStyle<float> _speed;

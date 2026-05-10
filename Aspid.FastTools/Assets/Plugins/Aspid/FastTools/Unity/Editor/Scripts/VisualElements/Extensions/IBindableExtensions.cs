@@ -23,11 +23,11 @@ namespace Aspid.FastTools.UIElements.Editors
         }
 
         /// <summary>
-        /// Binds the element to the specified <see cref="SerializedProperty"/>.
+        /// Binds the bindable to the specified <see cref="SerializedProperty"/>.
         /// </summary>
-        /// <param name="element">The element to bind.</param>
+        /// <param name="element">The bindable to bind.</param>
         /// <param name="property">The serialized property to bind to.</param>
-        /// <returns>The element, for chaining.</returns>
+        /// <returns>The bindable, for chaining.</returns>
         public static T BindPropertyTo<T>(this T element, SerializedProperty property)
             where T : IBindable
         {

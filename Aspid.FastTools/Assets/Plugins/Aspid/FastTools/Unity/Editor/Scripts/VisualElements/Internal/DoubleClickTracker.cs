@@ -18,6 +18,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <paramref name="thresholdSeconds"/> of the previous one. The first call always returns <see langword="false"/>.
         /// </summary>
         /// <param name="thresholdSeconds">Maximum gap between two clicks for them to count as a double-click.</param>
+        /// <returns><see langword="true"/> if this click pairs with the previous one as a double-click; otherwise <see langword="false"/>.</returns>
         public bool Detect(float thresholdSeconds = DefaultThresholdSeconds)
         {
             var currentTime = (float)EditorApplication.timeSinceStartup;

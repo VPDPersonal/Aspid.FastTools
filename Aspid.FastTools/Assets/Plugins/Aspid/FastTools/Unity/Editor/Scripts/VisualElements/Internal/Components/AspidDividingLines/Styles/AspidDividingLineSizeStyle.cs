@@ -39,8 +39,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         /// <summary>
         /// Creates a size binding for <paramref name="element"/> with an initial value.
-        /// <see cref="CustomStyleResolvedEvent"/> handler so that USS-driven values are
-        /// applied as defaults until <see cref="SetValue"/> is called.
+        /// Registers a <see cref="CustomStyleResolvedEvent"/> handler so that USS-driven
+        /// values are applied as defaults until <see cref="SetValue"/> is called.
         /// </summary>
         /// <param name="element">The element whose USS classes track the line size.</param>
         /// <param name="value">The initial size value.</param>

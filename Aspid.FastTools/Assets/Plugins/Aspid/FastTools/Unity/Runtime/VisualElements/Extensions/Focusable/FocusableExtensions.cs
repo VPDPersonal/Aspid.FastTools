@@ -33,6 +33,7 @@ namespace Aspid.FastTools.UIElements
         /// Returns <see langword="true"/> if this element currently has keyboard focus.
         /// </summary>
         /// <param name="element">The element to check.</param>
+        /// <returns><see langword="true"/> if the element holds keyboard focus; otherwise <see langword="false"/>.</returns>
         public static bool IsFocus(this Focusable element) =>
             element.focusController.focusedElement == element;
 

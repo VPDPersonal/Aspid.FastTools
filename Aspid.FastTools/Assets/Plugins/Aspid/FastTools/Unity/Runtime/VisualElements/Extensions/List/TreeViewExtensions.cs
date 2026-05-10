@@ -106,7 +106,7 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
-        #region RemoveMake
+        #region MakeItem
         /// <summary>
         /// Sets <see cref="TreeView.makeItem"/>, replacing any existing callback, and returns the element for chaining.
         /// </summary>

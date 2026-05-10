@@ -2,15 +2,15 @@
     flex-direction:                                             row;
     flex-wrap:                                                  wrap;
 
-    --aspid-fasttools-prop-animated-title-color_stride:         0.12;
-    --aspid-fasttools-prop-animated-title-color_speed:          0.4;
-    --aspid-fasttools-prop-animated-title-wave_stride:          0.55;
-    --aspid-fasttools-prop-animated-title-wave_speed:           1.6;
-    --aspid-fasttools-prop-animated-title-wave_amplitude:       3;
+    --aspid-fasttools-prop-animated_title-color_stride:         0.12;
+    --aspid-fasttools-prop-animated_title-color_speed:          0.4;
+    --aspid-fasttools-prop-animated_title-wave_stride:          0.55;
+    --aspid-fasttools-prop-animated_title-wave_speed:           1.6;
+    --aspid-fasttools-prop-animated_title-wave_amplitude:       3;
 
-    --aspid-fasttools-colors-animated-title-color-1:            var(--aspid-colors-status-success-text-dark);
-    --aspid-fasttools-colors-animated-title-color-2:            var(--aspid-colors-status-warning-text-dark);
-    --aspid-fasttools-colors-animated-title-color-3:            var(--aspid-colors-status-error-text-dark);
+    --aspid-fasttools-colors-animated_title-color_1:            var(--aspid-colors-status-success-text-dark);
+    --aspid-fasttools-colors-animated_title-color_2:            var(--aspid-colors-status-warning-text-dark);
+    --aspid-fasttools-colors-animated_title-color_3:            var(--aspid-colors-status-error-text-dark);
 }
 
 .aspid-fasttools-animated-title__word {

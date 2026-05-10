@@ -103,10 +103,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.width"/>, <see cref="IStyle.height"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>width</c> –– Fixed width of an element for the layout.
-        /// </para>
-        /// <c>height</c> –– Fixed height of an element for the layout.
+        /// <para><c>width</c> –– Fixed width of an element for the layout.</para>
+        /// <para><c>height</c> –– Fixed height of an element for the layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The size to apply to both width and height.</param>
@@ -127,10 +125,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.width"/>, <see cref="IStyle.height"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>width</c> –– Fixed width of an element for the layout.
-        /// </para>
-        /// <c>height</c> –– Fixed height of an element for the layout.
+        /// <para><c>width</c> –– Fixed width of an element for the layout.</para>
+        /// <para><c>height</c> –– Fixed height of an element for the layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="width">The width to set, or <see langword="null"/> to leave unchanged.</param>
@@ -153,10 +149,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.minWidth"/>, <see cref="IStyle.minHeight"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>minWidth</c> –– Minimum width for an element, when it is flexible or measures its own size.
-        /// </para>
-        /// <c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.
+        /// <para><c>minWidth</c> –– Minimum width for an element, when it is flexible or measures its own size.</para>
+        /// <para><c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The minimum size to apply to both width and height.</param>
@@ -174,10 +168,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.minWidth"/>, <see cref="IStyle.minHeight"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>minWidth</c> –– Minimum width for an element, when it is flexible or measures its own size.
-        /// </para>
-        /// <c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.
+        /// <para><c>minWidth</c> –– Minimum width for an element, when it is flexible or measures its own size.</para>
+        /// <para><c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="width">The minimum width to set, or <see langword="null"/> to leave unchanged.</param>
@@ -200,10 +192,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.maxWidth"/>, <see cref="IStyle.maxHeight"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>maxWidth</c> –– Maximum width for an element, when it is flexible or measures its own size.
-        /// </para>
-        /// <c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.
+        /// <para><c>maxWidth</c> –– Maximum width for an element, when it is flexible or measures its own size.</para>
+        /// <para><c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The maximum size to apply to both width and height.</param>
@@ -221,10 +211,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.maxWidth"/>, <see cref="IStyle.maxHeight"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>maxWidth</c> –– Maximum width for an element, when it is flexible or measures its own size.
-        /// </para>
-        /// <c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.
+        /// <para><c>maxWidth</c> –– Maximum width for an element, when it is flexible or measures its own size.</para>
+        /// <para><c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="width">The maximum width to set, or <see langword="null"/> to leave unchanged.</param>
@@ -247,7 +235,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.width"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>width</c> –– Fixed width of an element for the layout.
+        /// <para><c>width</c> –– Fixed width of an element for the layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The width to set.</param>
@@ -265,7 +253,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.minWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>minWidth</c> –– Minimum width for an element, when it is flexible or measures its own size.
+        /// <para><c>minWidth</c> –– Minimum width for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The minimum width to set.</param>
@@ -283,7 +271,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.maxWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>maxWidth</c> –– Maximum width for an element, when it is flexible or measures its own size.
+        /// <para><c>maxWidth</c> –– Maximum width for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The maximum width to set.</param>
@@ -301,7 +289,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.height"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>height</c> –– Fixed height of an element for the layout.
+        /// <para><c>height</c> –– Fixed height of an element for the layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The height to set.</param>
@@ -319,7 +307,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.minHeight"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.
+        /// <para><c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The minimum height to set.</param>
@@ -337,7 +325,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.maxHeight"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.
+        /// <para><c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The maximum height to set.</param>
@@ -436,12 +424,12 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The word spacing to set.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetWorldSpacing<T>(
+        public static T SetWordSpacing<T>(
             this T element,
             StyleLength value)
             where T : VisualElement
         {
-            element.style.SetWorldSpacing(value);
+            element.style.SetWordSpacing(value);
             return element;
         }
 
@@ -770,12 +758,12 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The aspect ratio to set.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetAspectRation<T>(
+        public static T SetAspectRatio<T>(
             this T element,
             StyleRatio value)
             where T : VisualElement
         {
-            element.style.SetAspectRation(value);
+            element.style.SetAspectRatio(value);
             return element;
         }
 #endif
@@ -809,14 +797,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.borderBottomColor"/>, <see cref="IStyle.borderLeftColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderTopColor</c> –– Color of the element's top border.
-        /// </para>
-        /// <c>borderRightColor</c> –– Color of the element's right border.
-        /// <para>
-        /// <c>borderBottomColor</c> –– Color of the element's bottom border.
-        /// </para>
-        /// <c>borderLeftColor</c> –– Color of the element's left border.
+        /// <para><c>borderTopColor</c> –– Color of the element's top border.</para>
+        /// <para><c>borderRightColor</c> –– Color of the element's right border.</para>
+        /// <para><c>borderBottomColor</c> –– Color of the element's bottom border.</para>
+        /// <para><c>borderLeftColor</c> –– Color of the element's left border.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The border color to apply to all sides.</param>
@@ -840,14 +824,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.borderBottomColor"/>, <see cref="IStyle.borderLeftColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderTopColor</c> –– Color of the element's top border.
-        /// </para>
-        /// <c>borderRightColor</c> –– Color of the element's right border.
-        /// <para>
-        /// <c>borderBottomColor</c> –– Color of the element's bottom border.
-        /// </para>
-        /// <c>borderLeftColor</c> –– Color of the element's left border.
+        /// <para><c>borderTopColor</c> –– Color of the element's top border.</para>
+        /// <para><c>borderRightColor</c> –– Color of the element's right border.</para>
+        /// <para><c>borderBottomColor</c> –– Color of the element's bottom border.</para>
+        /// <para><c>borderLeftColor</c> –– Color of the element's left border.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="top">The top border color, or <see langword="null"/> to leave unchanged.</param>
@@ -876,10 +856,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderRightColor"/>, <see cref="IStyle.borderLeftColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderRightColor</c> –– Color of the element's right border.
-        /// </para>
-        /// <c>borderLeftColor</c> –– Color of the element's left border.
+        /// <para><c>borderRightColor</c> –– Color of the element's right border.</para>
+        /// <para><c>borderLeftColor</c> –– Color of the element's left border.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The border color to apply to the left and right sides.</param>
@@ -897,10 +875,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopColor"/> and <see cref="IStyle.borderBottomColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderTopColor</c> –– Color of the element's top border.
-        /// </para>
-        /// <c>borderBottomColor</c> –– Color of the element's bottom border.
+        /// <para><c>borderTopColor</c> –– Color of the element's top border.</para>
+        /// <para><c>borderBottomColor</c> –– Color of the element's bottom border.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The border color to apply to the top and bottom sides.</param>
@@ -918,7 +894,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderTopColor</c> –– Color of the element's top border.
+        /// <para><c>borderTopColor</c> –– Color of the element's top border.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The top border color to set.</param>
@@ -936,7 +912,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderRightColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderRightColor</c> –– Color of the element's right border.
+        /// <para><c>borderRightColor</c> –– Color of the element's right border.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The right border color to set.</param>
@@ -954,7 +930,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderBottomColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderBottomColor</c> –– Color of the element's bottom border.
+        /// <para><c>borderBottomColor</c> –– Color of the element's bottom border.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The bottom border color to set.</param>
@@ -972,7 +948,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderLeftColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderLeftColor</c> –– Color of the element's left border.
+        /// <para><c>borderLeftColor</c> –– Color of the element's left border.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The left border color to set.</param>
@@ -991,14 +967,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.borderBottomRightRadius"/>, <see cref="IStyle.borderBottomLeftRadius"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.
-        /// </para>
-        /// <c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.
-        /// <para>
-        /// <c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.
-        /// </para>
-        /// <c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.
+        /// <para><c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The border radius to apply to all corners.</param>
@@ -1017,14 +989,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.borderBottomRightRadius"/>, <see cref="IStyle.borderBottomLeftRadius"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.
-        /// </para>
-        /// <c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.
-        /// <para>
-        /// <c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.
-        /// </para>
-        /// <c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.
+        /// <para><c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="topLeft">The top-left radius, or <see langword="null"/> to leave unchanged.</param>
@@ -1053,10 +1021,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopLeftRadius"/>, <see cref="IStyle.borderTopRightRadius"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.
-        /// </para>
-        /// <c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.
+        /// <para><c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The radius to apply to both top corners.</param>
@@ -1074,10 +1040,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderBottomRightRadius"/>, <see cref="IStyle.borderBottomLeftRadius"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.
-        /// </para>
-        /// <c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.
+        /// <para><c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The radius to apply to both bottom corners.</param>
@@ -1095,7 +1059,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopLeftRadius"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.
+        /// <para><c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The top-left corner radius to set.</param>
@@ -1113,7 +1077,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopRightRadius"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.
+        /// <para><c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The top-right corner radius to set.</param>
@@ -1131,7 +1095,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderBottomRightRadius"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.
+        /// <para><c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The bottom-right corner radius to set.</param>
@@ -1149,7 +1113,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderBottomLeftRadius"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.
+        /// <para><c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The bottom-left corner radius to set.</param>
@@ -1168,14 +1132,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.borderBottomWidth"/>, <see cref="IStyle.borderLeftWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.
-        /// </para>
-        /// <c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.
-        /// <para>
-        /// <c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.
-        /// </para>
-        /// <c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.
+        /// <para><c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.</para>
+        /// <para><c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.</para>
+        /// <para><c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.</para>
+        /// <para><c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The border width to apply to all sides.</param>
@@ -1194,14 +1154,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.borderBottomWidth"/>, <see cref="IStyle.borderLeftWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.
-        /// </para>
-        /// <c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.
-        /// <para>
-        /// <c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.
-        /// </para>
-        /// <c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.
+        /// <para><c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.</para>
+        /// <para><c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.</para>
+        /// <para><c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.</para>
+        /// <para><c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="top">The top border width, or <see langword="null"/> to leave unchanged.</param>
@@ -1229,10 +1185,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderLeftWidth"/> and <see cref="IStyle.borderRightWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.
-        /// </para>
-        /// <c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.
+        /// <para><c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.</para>
+        /// <para><c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The border width to apply to the left and right sides.</param>
@@ -1250,10 +1204,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopWidth"/> and <see cref="IStyle.borderBottomWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.
-        /// </para>
-        /// <c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.
+        /// <para><c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.</para>
+        /// <para><c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The border width to apply to the top and bottom sides.</param>
@@ -1270,7 +1222,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderTopWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.
+        /// <para><c>borderTopWidth</c> –– Space reserved for the top edge of the border during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The top border width to set.</param>
@@ -1287,7 +1239,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderRightWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.
+        /// <para><c>borderRightWidth</c> –– Space reserved for the right edge of the border during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The right border width to set.</param>
@@ -1305,7 +1257,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderBottomWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.
+        /// <para><c>borderBottomWidth</c> –– Space reserved for the bottom edge of the border during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The bottom border width to set.</param>
@@ -1323,7 +1275,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.borderLeftWidth"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.
+        /// <para><c>borderLeftWidth</c> –– Space reserved for the left edge of the border during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The left border width to set.</param>
@@ -1364,14 +1316,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.marginBottom"/>, <see cref="IStyle.marginLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.
-        /// </para>
-        /// <c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.
-        /// <para>
-        /// <c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.
-        /// </para>
-        /// <c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.
+        /// <para><c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.</para>
+        /// <para><c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.</para>
+        /// <para><c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.</para>
+        /// <para><c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The margin to apply to all sides.</param>
@@ -1390,14 +1338,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.marginBottom"/>, <see cref="IStyle.marginLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.
-        /// </para>
-        /// <c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.
-        /// <para>
-        /// <c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.
-        /// </para>
-        /// <c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.
+        /// <para><c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.</para>
+        /// <para><c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.</para>
+        /// <para><c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.</para>
+        /// <para><c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="top">The top margin, or <see langword="null"/> to leave unchanged.</param>
@@ -1426,10 +1370,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.marginRight"/>, <see cref="IStyle.marginLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.
-        /// </para>
-        /// <c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.
+        /// <para><c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.</para>
+        /// <para><c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The horizontal margin to set.</param>
@@ -1447,10 +1389,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.marginTop"/>, <see cref="IStyle.marginBottom"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.
-        /// </para>
-        /// <c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.
+        /// <para><c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.</para>
+        /// <para><c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The vertical margin to set.</param>
@@ -1468,7 +1408,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.marginTop"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.
+        /// <para><c>marginTop</c> –– Space reserved for the top edge of the margin during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The top margin to set.</param>
@@ -1486,7 +1426,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.marginRight"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.
+        /// <para><c>marginRight</c> –– Space reserved for the right edge of the margin during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The right margin to set.</param>
@@ -1504,7 +1444,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.marginBottom"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.
+        /// <para><c>marginBottom</c> –– Space reserved for the bottom edge of the margin during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The bottom margin to set.</param>
@@ -1522,7 +1462,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.marginLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.
+        /// <para><c>marginLeft</c> –– Space reserved for the left edge of the margin during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The left margin to set.</param>
@@ -1543,14 +1483,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.paddingBottom"/>, <see cref="IStyle.paddingLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.
-        /// </para>
-        /// <c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.
-        /// <para>
-        /// <c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.
-        /// </para>
-        /// <c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.
+        /// <para><c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.</para>
+        /// <para><c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.</para>
+        /// <para><c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.</para>
+        /// <para><c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The padding to apply to all sides.</param>
@@ -1569,14 +1505,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.paddingBottom"/>, <see cref="IStyle.paddingLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.
-        /// </para>
-        /// <c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.
-        /// <para>
-        /// <c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.
-        /// </para>
-        /// <c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.
+        /// <para><c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.</para>
+        /// <para><c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.</para>
+        /// <para><c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.</para>
+        /// <para><c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="top">The top padding, or <see langword="null"/> to leave unchanged.</param>
@@ -1605,10 +1537,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.paddingRight"/>, <see cref="IStyle.paddingLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.
-        /// </para>
-        /// <c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.
+        /// <para><c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.</para>
+        /// <para><c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The horizontal padding to set.</param>
@@ -1626,10 +1556,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.paddingTop"/>, <see cref="IStyle.paddingBottom"/>  and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.
-        /// </para>
-        /// <c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.
+        /// <para><c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.</para>
+        /// <para><c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The vertical padding to set.</param>
@@ -1647,7 +1575,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.paddingTop"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.
+        /// <para><c>paddingTop</c> –– Space reserved for the top edge of the padding during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The top padding to set.</param>
@@ -1665,7 +1593,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.paddingRight"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.
+        /// <para><c>paddingRight</c> –– Space reserved for the right edge of the padding during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The right padding to set.</param>
@@ -1683,7 +1611,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.paddingBottom"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.
+        /// <para><c>paddingBottom</c> –– Space reserved for the bottom edge of the padding during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The bottom padding to set.</param>
@@ -1701,7 +1629,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.paddingLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.
+        /// <para><c>paddingLeft</c> –– Space reserved for the left edge of the padding during the layout phase.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The left padding to set.</param>
@@ -1780,14 +1708,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.bottom"/>, <see cref="IStyle.left"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>top</c> –– Top distance from the element's box during layout.
-        /// </para>
-        /// <c>right</c> –– Right distance from the element's box during layout.
-        /// <para>
-        /// <c>bottom</c> –– Bottom distance from the element's box during layout.
-        /// </para>
-        /// <c>left</c> –– Left distance from the element's box during layout.
+        /// <para><c>top</c> –– Top distance from the element's box during layout.</para>
+        /// <para><c>right</c> –– Right distance from the element's box during layout.</para>
+        /// <para><c>bottom</c> –– Bottom distance from the element's box during layout.</para>
+        /// <para><c>left</c> –– Left distance from the element's box during layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The distance to apply to all sides.</param>
@@ -1806,14 +1730,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.bottom"/>, <see cref="IStyle.left"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>top</c> –– Top distance from the element's box during layout.
-        /// </para>
-        /// <c>right</c> –– Right distance from the element's box during layout.
-        /// <para>
-        /// <c>bottom</c> –– Bottom distance from the element's box during layout.
-        /// </para>
-        /// <c>left</c> –– Left distance from the element's box during layout.
+        /// <para><c>top</c> –– Top distance from the element's box during layout.</para>
+        /// <para><c>right</c> –– Right distance from the element's box during layout.</para>
+        /// <para><c>bottom</c> –– Bottom distance from the element's box during layout.</para>
+        /// <para><c>left</c> –– Left distance from the element's box during layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="top">The top offset, or <see langword="null"/> to leave unchanged.</param>
@@ -1842,10 +1762,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.right"/>, <see cref="IStyle.left"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>right</c> –– Right distance from the element's box during layout.
-        /// </para>
-        /// <c>left</c> –– Left distance from the element's box during layout.
+        /// <para><c>right</c> –– Right distance from the element's box during layout.</para>
+        /// <para><c>left</c> –– Left distance from the element's box during layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The horizontal offset to set.</param>
@@ -1863,10 +1781,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.top"/>, <see cref="IStyle.bottom"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>top</c> –– Top distance from the element's box during layout.
-        /// </para>
-        /// <c>bottom</c> –– Bottom distance from the element's box during layout.
+        /// <para><c>top</c> –– Top distance from the element's box during layout.</para>
+        /// <para><c>bottom</c> –– Bottom distance from the element's box during layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The vertical offset to set.</param>
@@ -1884,7 +1800,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.top"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>top</c> –– Top distance from the element's box during layout.
+        /// <para><c>top</c> –– Top distance from the element's box during layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The top offset to set.</param>
@@ -1902,7 +1818,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.right"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>right</c> –– Right distance from the element's box during layout.
+        /// <para><c>right</c> –– Right distance from the element's box during layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The right offset to set.</param>
@@ -1920,7 +1836,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.bottom"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>bottom</c> –– Bottom distance from the element's box during layout.
+        /// <para><c>bottom</c> –– Bottom distance from the element's box during layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The bottom offset to set.</param>
@@ -1938,7 +1854,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.left"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>left</c> –– Left distance from the element's box during layout.
+        /// <para><c>left</c> –– Left distance from the element's box during layout.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The left offset to set.</param>
@@ -2195,10 +2111,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.backgroundPositionX"/>, <see cref="IStyle.backgroundPositionY"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>backgroundPositionX</c> –– Background image x position value.
-        /// </para>
-        /// <c>backgroundPositionY</c> –– Background image y position value.
+        /// <para><c>backgroundPositionX</c> –– Background image x position value.</para>
+        /// <para><c>backgroundPositionY</c> –– Background image y position value.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The background position to apply to both axes.</param>
@@ -2216,10 +2130,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.backgroundPositionX"/>, <see cref="IStyle.backgroundPositionY"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>backgroundPositionX</c> –– Background image x position value.
-        /// </para>
-        /// <c>backgroundPositionY</c> –– Background image y position value.
+        /// <para><c>backgroundPositionX</c> –– Background image x position value.</para>
+        /// <para><c>backgroundPositionY</c> –– Background image y position value.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="x">The horizontal background position, or <see langword="null"/> to leave unchanged.</param>
@@ -2239,7 +2151,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.backgroundPositionX"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>backgroundPositionX</c> –– Background image x position value.
+        /// <para><c>backgroundPositionX</c> –– Background image x position value.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The horizontal background position to set.</param>
@@ -2257,7 +2169,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.backgroundPositionY"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>backgroundPositionY</c> –– Background image y position value.
+        /// <para><c>backgroundPositionY</c> –– Background image y position value.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The vertical background position to set.</param>
@@ -2370,14 +2282,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.unitySliceBottom"/>, <see cref="IStyle.unitySliceLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.
-        /// </para>
-        /// <c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.
-        /// <para>
-        /// <c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.
-        /// </para>
-        /// <c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.
+        /// <para><c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.</para>
+        /// <para><c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.</para>
+        /// <para><c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.</para>
+        /// <para><c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The slice width to apply to all sides.</param>
@@ -2396,14 +2304,10 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="IStyle.unitySliceBottom"/>, <see cref="IStyle.unitySliceLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.
-        /// </para>
-        /// <c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.
-        /// <para>
-        /// <c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.
-        /// </para>
-        /// <c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.
+        /// <para><c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.</para>
+        /// <para><c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.</para>
+        /// <para><c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.</para>
+        /// <para><c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="top">The top slice width, or <see langword="null"/> to leave unchanged.</param>
@@ -2432,10 +2336,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.unitySliceRight"/>, <see cref="IStyle.unitySliceLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.
-        /// </para>
-        /// <c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.
+        /// <para><c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.</para>
+        /// <para><c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The horizontal slice width to set.</param>
@@ -2453,10 +2355,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.unitySliceTop"/>, <see cref="IStyle.unitySliceBottom"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <para>
-        /// <c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.
-        /// </para>
-        /// <c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.
+        /// <para><c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.</para>
+        /// <para><c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The vertical slice width to set.</param>
@@ -2474,7 +2374,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.unitySliceTop"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.
+        /// <para><c>unitySliceTop</c> –– Size of the 9-slice's top edge when painting an element's background image.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The top slice width to set.</param>
@@ -2492,7 +2392,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.unitySliceRight"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.
+        /// <para><c>unitySliceRight</c> –– Size of the 9-slice's right edge when painting an element's background image.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The right slice width to set.</param>
@@ -2507,10 +2407,10 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// <see cref="IStyle.unitySliceBottom"/> and returns the element for chaining.
+        /// Sets <see cref="IStyle.unitySliceBottom"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.
+        /// <para><c>unitySliceBottom</c> –– Size of the 9-slice's bottom edge when painting an element's background image.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The bottom slice width to set.</param>
@@ -2528,7 +2428,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.unitySliceLeft"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// <c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.
+        /// <para><c>unitySliceLeft</c> –– Size of the 9-slice's left edge when painting an element's background image.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The left slice width to set.</param>
@@ -2547,7 +2447,7 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="IStyle.unitySliceType"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
-        /// Specifies the type of sclicing.
+        /// Specifies the type of slicing.
         /// </remarks>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The slice type to set.</param>

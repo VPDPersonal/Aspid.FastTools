@@ -7,7 +7,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 {
     /// <summary>
     /// Manages the three blob colors of an <see cref="AspidAnimatedDotsBackground"/>. Each color can
-    /// be inherited from its <c>--aspid-fasttools-colors-dot-blob-color-{1..3}</c> USS custom property
+    /// be inherited from its <c>--aspid-fasttools-colors-dot_blob-color_{1..3}</c> USS custom property
     /// or set explicitly in code; once set explicitly it is no longer overridden by USS resolution.
     /// </summary>
     internal readonly struct AspidAnimatedDotsBackgroundColorsStyle
@@ -15,17 +15,17 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Custom USS property for overriding the first blob color via USS.
         /// </summary>
-        public static readonly CustomStyleProperty<Color> Color1Property = new("--aspid-fasttools-colors-dot-blob-color-1");
+        public static readonly CustomStyleProperty<Color> Color1Property = new("--aspid-fasttools-colors-dot_blob-color_1");
 
         /// <summary>
         /// Custom USS property for overriding the second blob color via USS.
         /// </summary>
-        public static readonly CustomStyleProperty<Color> Color2Property = new("--aspid-fasttools-colors-dot-blob-color-2");
+        public static readonly CustomStyleProperty<Color> Color2Property = new("--aspid-fasttools-colors-dot_blob-color_2");
 
         /// <summary>
         /// Custom USS property for overriding the third blob color via USS.
         /// </summary>
-        public static readonly CustomStyleProperty<Color> Color3Property = new("--aspid-fasttools-colors-dot-blob-color-3");
+        public static readonly CustomStyleProperty<Color> Color3Property = new("--aspid-fasttools-colors-dot_blob-color_3");
 
         private readonly InlineStyle<Color> _color1;
         private readonly InlineStyle<Color> _color2;
@@ -49,6 +49,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Returns the current blob color at <paramref name="index"/> (0..2).
         /// </summary>
+        /// <param name="index">The blob index in the inclusive range 0..2.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="index"/> is outside 0..2.</exception>
         public Color this[int index] => index switch
         {
             0 => _color1.Value,

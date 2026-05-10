@@ -6,7 +6,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// <summary>
     /// Manages the theme (background brightness variant) of a <see cref="VisualElement"/>.
     /// The theme can be inherited from the <see cref="StyleProperty"/> USS custom property or set
-    /// explicitly in code; once set explicitly it is no longer overridden by USS resolution.
+    /// explicitly in code; once set explicitly it is no longer overridden by the
+    /// <see cref="CustomStyleResolvedEvent"/>.
     /// </summary>
     internal readonly struct ThemeStyle
     {
@@ -44,8 +45,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         /// <summary>
         /// Creates a theme binding for <paramref name="element"/> with an initial value.
-        /// Registers a <see cref="CustomStyleResolvedEvent"/> handler so that USS-driven
-        /// values are applied as defaults until <see cref="SetValue"/> is called.
+        /// Registers a <see cref="CustomStyleResolvedEvent"/> handler so that USS-driven values
+        /// apply as defaults; once <see cref="SetValue"/> is called the inline value takes precedence.
         /// </summary>
         /// <param name="element">The element whose USS classes track the theme.</param>
         /// <param name="type">The initial theme value.</param>
@@ -84,9 +85,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         /// <summary>
         /// Returns the USS class name corresponding to the given theme,
-        /// or <see cref="string.Empty"/> for unknown values.
+        /// or <see cref="string.Empty"/> if no class is mapped.
         /// </summary>
         /// <param name="theme">The theme value to convert.</param>
+        /// <returns>The USS class name, or <see cref="string.Empty"/> when no class is mapped.</returns>
         public static string GetClass(Type theme) => theme switch
         {
             Type.Darkness => DarknessClass,

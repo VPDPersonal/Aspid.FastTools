@@ -7,7 +7,8 @@ namespace Aspid.FastTools.UIElements
     public static class EnumFieldExtensions
     {
         /// <summary>
-        /// Initializes the field with a default enum value.
+        /// Initializes the field with a default enum value via <see cref="EnumField.Init(Enum, bool)"/>
+        /// and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="defaultValue">The default enum value to display.</param>
