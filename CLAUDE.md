@@ -37,8 +37,9 @@ dotnet test
 - `Aspid.FastTools.Generators.Tests/` — unit tests for generators
 - `Aspid.FastTools.Generators.Sample/` — sample project for manual testing
 - Two generators:
-  - `ProfilerMarkersGenerator` — generates per-call-site `ProfilerMarker` registrations based on method name and line number
-  - `IdStructGenerator` — generates boilerplate for ID struct types
+  - `ProfilerMarkersGenerator` — generates per-call-site `ProfilerMarker` registrations keyed by enclosing type + method/field/property + line number. Semantically gated to `ProfilerMarkerExtensionsForGenerator.Marker` only (user-defined `Marker()` extensions are ignored). Walks past lambdas/local-functions; supports `.WithName(literal)` and plain `$"..."` interpolated strings; deduplicates fields when multiple call sites share a line.
+  - `IdStructGenerator` — generates boilerplate for ID struct types. Reports `AFID001` when an `IId` struct lacks `partial`, and `AFID002` when the user already declares `_id`/`Id`/`__stringId`. Supports generic target structs and generic containing types (the wrapping `partial` is emitted with `<T,U>`).
+- All pipeline data structures are value-equatable `readonly struct` with explicit `IEquatable<T>` — never store `ISymbol`/`SyntaxNode` in pipeline data (breaks Roslyn's incremental cache). `Aspid.FastTools.Generators.Tests/IncrementalCacheTests` regression-tests this.
 - Dependencies: `Aspid.Generators.Helper`, `Microsoft.CodeAnalysis.CSharp`, `SourceGenerator.Foundations`
 
 **Unity package** (`Aspid.FastTools/Assets/Plugins/Aspid/FastTools/`):
@@ -78,7 +79,7 @@ Each struct type decorated with `[UniqueId]` / implementing `IId` is bound to ex
 
 Editor UI lives in `RegistryEditorCore`, which talks directly to the registry's `SerializedObject`. Features: C#-identifier name validation, full Undo, explicit Clean-up flow for invalid entries (empty / duplicate names), Sort/Group toolbar, manual Next ID with backward-step warning, Open-Registry shortcut on the `IdStruct` drawer.
 
-The `IdStructGenerator` generates the struct-side boilerplate; the registry asset is created via `Assets → Create → Aspid/Id Registry/Id Registry`.
+The `IdStructGenerator` generates the struct-side boilerplate (and reports `AFID001`/`AFID002` when the struct isn't `partial` or already declares the boilerplate members); the registry asset is created via `Assets → Create → Aspid/Id Registry/Id Registry`.
 
 **SerializedProperty Extensions** (`Unity/Editor/Scripts/SerializedProperties/`): Fluent chainable extensions (`.SetValue()`, `.Apply()`, reflection helpers). Split across multiple partial files.
 

@@ -1,18 +1,28 @@
 using System;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 
 namespace Aspid.FastTools.Generators.IdStruct.Data;
 
-public readonly struct IdStructData : IEquatable<IdStructData>
+internal readonly struct IdStructData : IEquatable<IdStructData>
 {
     public readonly string StructName;
+    public readonly string TypeParameters;
+    public readonly int Arity;
     public readonly string? Namespace;
     public readonly ImmutableArray<ContainingTypeInfo> ContainingTypes;
 
     public IdStructData(INamedTypeSymbol symbol)
     {
         StructName = symbol.Name;
+
+        var typeParams = symbol.TypeParameters;
+        Arity = typeParams.Length;
+        TypeParameters = Arity > 0
+            ? "<" + string.Join(", ", typeParams.Select(p => p.Name)) + ">"
+            : string.Empty;
+
         Namespace = symbol.ContainingNamespace.IsGlobalNamespace
             ? null
             : symbol.ContainingNamespace.ToDisplayString();
@@ -27,12 +37,21 @@ public readonly struct IdStructData : IEquatable<IdStructData>
         var current = symbol.ContainingType;
         while (current is not null)
         {
-            builder.Add(new ContainingTypeInfo(current.Name, GetKeyword(current)));
+            builder.Add(MakeContainingInfo(current));
             current = current.ContainingType;
         }
 
         builder.Reverse();
         ContainingTypes = builder.ToImmutable();
+    }
+
+    private static ContainingTypeInfo MakeContainingInfo(INamedTypeSymbol symbol)
+    {
+        var typeParams = symbol.TypeParameters;
+        var typeParamList = typeParams.Length > 0
+            ? "<" + string.Join(", ", typeParams.Select(p => p.Name)) + ">"
+            : string.Empty;
+        return new ContainingTypeInfo(symbol.Name, GetKeyword(symbol), typeParamList, typeParams.Length);
     }
 
     private static string GetKeyword(INamedTypeSymbol symbol)
@@ -52,6 +71,8 @@ public readonly struct IdStructData : IEquatable<IdStructData>
     public bool Equals(IdStructData other)
     {
         if (StructName != other.StructName) return false;
+        if (TypeParameters != other.TypeParameters) return false;
+        if (Arity != other.Arity) return false;
         if (Namespace != other.Namespace) return false;
         if (ContainingTypes.Length != other.ContainingTypes.Length) return false;
 
@@ -63,7 +84,7 @@ public readonly struct IdStructData : IEquatable<IdStructData>
         return true;
     }
 
-    public override bool Equals(object? obj) => 
+    public override bool Equals(object? obj) =>
         obj is IdStructData other && Equals(other);
 
     public override int GetHashCode()
@@ -71,6 +92,8 @@ public readonly struct IdStructData : IEquatable<IdStructData>
         unchecked
         {
             var hash = StructName.GetHashCode();
+            hash = (hash * 397) ^ TypeParameters.GetHashCode();
+            hash = (hash * 397) ^ Arity;
             hash = (hash * 397) ^ (Namespace?.GetHashCode() ?? 0);
 
             foreach (var ct in ContainingTypes)

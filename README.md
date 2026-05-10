@@ -74,15 +74,15 @@ using System.Runtime.CompilerServices;
 
 internal static class __MyBehaviourProfilerMarkerExtensions
 {
-    private static readonly ProfilerMarker DoSomething1_line_13 = new("MyBehaviour.DoSomething1 (13)");
-    private static readonly ProfilerMarker DoSomething2_line_19 = new("MyBehaviour.DoSomething2 (19)");
-    private static readonly ProfilerMarker DoSomething2_line_22 = new("MyBehaviour.Calculate (22)");
+    private static readonly ProfilerMarker DoSomething1_Marker_Line_13 = new("MyBehaviour.DoSomething1 (13)");
+    private static readonly ProfilerMarker DoSomething2_Marker_Line_19 = new("MyBehaviour.DoSomething2 (19)");
+    private static readonly ProfilerMarker DoSomething2_Marker_Line_22 = new("MyBehaviour.Calculate (22)");
 
     public static ProfilerMarker.AutoScope Marker(this MyBehaviour _, [CallerLineNumberAttribute] int line = -1)
     {
-        if (line is 13) return DoSomething1_line_13.Auto();
-        if (line is 19) return DoSomething2_line_19.Auto();
-        if (line is 22) return DoSomething2_line_22.Auto();
+        if (line is 13) return DoSomething1_Marker_Line_13.Auto();
+        if (line is 19) return DoSomething2_Marker_Line_19.Auto();
+        if (line is 22) return DoSomething2_Marker_Line_22.Auto();
 
         throw new Exception();
     }
@@ -278,6 +278,8 @@ public partial struct EnemyId
     public int Id => _id;
 }
 ```
+
+The generator reports `AFID001` if the struct is missing `partial`, and `AFID002` if your code already declares `_id`, `Id`, or `__stringId` (the generator skips emission so you get a clear error pointing at the struct rather than a CS compile error inside generated source). Generic targets (`EnemyId<T>`) and generic containing types are supported.
 
 **2.** Create the registry asset and bind it to the struct type in its Inspector:
 - `Assets → Create → Aspid → Id Registry`

@@ -6,7 +6,13 @@
         <LangVersion>latest</LangVersion>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <RootNamespace>Aspid.FastTools</RootNamespace>
+        <!-- RS2008 expects analyzer release tracking files; this is a private in-tree generator, not a published analyzer package. -->
+        <NoWarn>$(NoWarn);RS2008</NoWarn>
     </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Aspid.FastTools.Generators.Tests" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Aspid.Generators.Helper" Version="0.0.1-alpha.4" />

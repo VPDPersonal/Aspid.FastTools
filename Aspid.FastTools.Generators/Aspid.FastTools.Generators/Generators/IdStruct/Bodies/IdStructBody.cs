@@ -2,10 +2,11 @@ using System.Text;
 using Microsoft.CodeAnalysis;
 using Aspid.Generators.Helper;
 using Aspid.FastTools.Generators.IdStruct.Data;
+using static Aspid.FastTools.Descriptions.General;
 
 namespace Aspid.FastTools.Generators.IdStruct.Bodies;
 
-public static class IdStructBody
+internal static class IdStructBody
 {
     public static void GenerateCode(in SourceProductionContext context, in IdStructData data)
     {
@@ -21,18 +22,24 @@ public static class IdStructBody
         var nestedNames = new StringBuilder();
         foreach (var containing in data.ContainingTypes)
         {
-            code.AppendLine($"partial {containing.Keyword} {containing.Name}")
+            code.AppendLine($"partial {containing.Keyword} {containing.Name}{containing.TypeParameters}")
                 .BeginBlock();
-            nestedNames.Append(containing.Name).Append('.');
+
+            nestedNames.Append(containing.Name);
+            if (containing.Arity > 0) nestedNames.Append('_').Append(containing.Arity);
+            nestedNames.Append('.');
         }
 
-        code.AppendLine($"partial struct {data.StructName}")
+        code.AppendLine($"partial struct {data.StructName}{data.TypeParameters}")
             .BeginBlock()
             .AppendLine("#if UNITY_EDITOR")
+            .AppendLine($"[{IdStructGeneratedCode}]")
             .AppendLine("[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]")
             .AppendLine("[global::UnityEngine.SerializeField] private string __stringId;")
             .AppendLine("#endif")
+            .AppendLine($"[{IdStructGeneratedCode}]")
             .AppendLine("[global::UnityEngine.SerializeField] private int _id;")
+            .AppendLine($"[{IdStructGeneratedCode}]")
             .AppendLine("public int Id => _id;")
             .EndBlock();
 
@@ -41,9 +48,10 @@ public static class IdStructBody
 
         code.EndBlockIf(hasNamespace);
 
+        var aritySuffix = data.Arity > 0 ? "_" + data.Arity : string.Empty;
         var hintName = hasNamespace
-            ? $"{data.Namespace}.{nestedNames}{data.StructName}.IId.g.cs"
-            : $"{nestedNames}{data.StructName}.IId.g.cs";
+            ? $"{data.Namespace}.{nestedNames}{data.StructName}{aritySuffix}.IId.g.cs"
+            : $"{nestedNames}{data.StructName}{aritySuffix}.IId.g.cs";
 
         context.AddSource(hintName, code.GetSourceText());
     }
