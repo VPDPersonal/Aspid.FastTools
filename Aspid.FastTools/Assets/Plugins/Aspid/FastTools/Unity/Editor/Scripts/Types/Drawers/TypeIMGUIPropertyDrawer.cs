@@ -53,11 +53,11 @@ namespace Aspid.FastTools.Types.Editors
             var caption = GetCaption(property.stringValue);
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption), FocusType.Passive))
             {
-                var dynamicProperty = new DynamicSerializeProperty(property);
+                var persistent = property.Persistent();
                 var current = property.stringValue ?? string.Empty;
                 var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(dropdownRect.x, dropdownRect.y));
                 var screenRect = new Rect(screenPosition.x, screenPosition.y, dropdownRect.width, dropdownRect.height);
-                
+
                 TypeSelectorWindow.Show(
                     screenRect: screenRect,
                     types: types,
@@ -65,7 +65,7 @@ namespace Aspid.FastTools.Types.Editors
                     allow: allow,
                     onSelected: assemblyQualifiedName =>
                     {
-                        dynamicProperty.GetProperty().SetStringAndApply(assemblyQualifiedName ?? string.Empty);
+                        persistent.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
                     });
             }
 

@@ -30,8 +30,8 @@ namespace Aspid.FastTools.Ids.Editors
         private readonly Button _openButton;
         private readonly TextElement _textElement;
         private readonly VisualElement _visualInput;
-        private readonly DynamicSerializeProperty _intProperty;
-        private readonly DynamicSerializeProperty _stringProperty;
+        private readonly SerializedProperty _intProperty;
+        private readonly SerializedProperty _stringProperty;
 
         private string _currentName = string.Empty;
         private Type _idType;
@@ -47,6 +47,7 @@ namespace Aspid.FastTools.Ids.Editors
             set
             {
                 if (_idType == value) return;
+                
                 _idType = value;
                 UpdateDisplay();
             }
@@ -61,14 +62,12 @@ namespace Aspid.FastTools.Ids.Editors
         public IdField(string label, SerializedProperty property)
             : this(label)
         {
-            var intProp = property.FindPropertyRelative(Constants.IntIdFieldName);
-            var stringProp = property.FindPropertyRelative(Constants.StringIdFieldName);
+            var persistent = property.Persistent();
+            _intProperty = persistent.FindPropertyRelative(Constants.IntIdFieldName);
+            _stringProperty = persistent.FindPropertyRelative(Constants.StringIdFieldName);
 
-            _intProperty = new DynamicSerializeProperty(intProp);
-            _stringProperty = new DynamicSerializeProperty(stringProp);
-
-            _currentName = stringProp.stringValue ?? string.Empty;
-            base.SetValueWithoutNotify(intProp.intValue);
+            _currentName = _stringProperty.stringValue ?? string.Empty;
+            base.SetValueWithoutNotify(_intProperty.intValue);
             UpdateDisplay();
         }
 
@@ -147,11 +146,11 @@ namespace Aspid.FastTools.Ids.Editors
         /// </summary>
         public void RefreshFromBoundProperty()
         {
-            var intProp = _intProperty?.GetProperty();
-            if (intProp is null) return;
+            if (_intProperty is null) return;
 
-            _currentName = _stringProperty?.GetProperty()?.stringValue ?? string.Empty;
-            base.SetValueWithoutNotify(intProp.intValue);
+            _intProperty.Update();
+            _currentName = _stringProperty?.stringValue ?? string.Empty;
+            base.SetValueWithoutNotify(_intProperty.intValue);
             UpdateDisplay();
         }
 
@@ -206,8 +205,8 @@ namespace Aspid.FastTools.Ids.Editors
                     _currentName = resolvedName;
                     this.SetValue(resolvedId);
 
-                    _intProperty?.GetProperty()?.SetIntAndApply(resolvedId);
-                    _stringProperty?.GetProperty()?.SetStringAndApply(resolvedName);
+                    _intProperty?.SetIntAndApply(resolvedId);
+                    _stringProperty?.SetStringAndApply(resolvedName);
                 });
 
             evt.StopPropagation();

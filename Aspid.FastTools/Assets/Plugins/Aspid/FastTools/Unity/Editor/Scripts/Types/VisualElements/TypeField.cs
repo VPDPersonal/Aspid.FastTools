@@ -28,7 +28,7 @@ namespace Aspid.FastTools.Types.Editors
         private readonly Button _openButton;
         private readonly TextElement _textElement;
         private readonly VisualElement _visualInput;
-        private readonly DynamicSerializeProperty _property;
+        private readonly SerializedProperty _property;
 
         private string _missingAssemblyQualifiedName;
 
@@ -52,8 +52,8 @@ namespace Aspid.FastTools.Types.Editors
         public TypeField(string label, SerializedProperty property)
             : this(label)
         {
-            _property = new DynamicSerializeProperty(property);
-            SetValueFromAssemblyQualifiedNameWithoutNotify(property.stringValue);
+            _property = property.Persistent();
+            SetValueFromAssemblyQualifiedNameWithoutNotify(_property.stringValue);
         }
 
         public TypeField(string label, Type defaultValue = null)
@@ -144,7 +144,7 @@ namespace Aspid.FastTools.Types.Editors
                         ? null
                         : Type.GetType(assemblyQualifiedName, throwOnError: false));
 
-                    _property?.GetProperty()?.SetStringAndApply(assemblyQualifiedName);
+                    _property?.SetStringAndApply(assemblyQualifiedName);
                 });
 
             evt.StopPropagation();

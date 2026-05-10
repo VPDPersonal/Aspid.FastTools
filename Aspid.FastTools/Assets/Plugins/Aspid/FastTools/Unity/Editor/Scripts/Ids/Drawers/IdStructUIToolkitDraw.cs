@@ -27,7 +27,6 @@ namespace Aspid.FastTools.Ids.Editors
                 idField.RefreshFromBoundProperty();
             };
 
-            idField.TrackPropertyValue(ctx.IntIdProperty, _ => refresh());
             root.RegisterCallback<AttachToPanelEvent>(_ => IdRegistryResolver.RegistryChanged += refresh);
             root.RegisterCallback<DetachFromPanelEvent>(_ => IdRegistryResolver.RegistryChanged -= refresh);
             idField.schedule.Execute(() => refresh()).StartingIn(0);
@@ -44,7 +43,7 @@ namespace Aspid.FastTools.Ids.Editors
                 .AddClass(ThemeStyle.LightClass)
                 .AddClass(StatusStyle.WarningClass);
 
-            warningLabel.TrackPropertyValue(ctx.StringIdProperty, prop =>
+            warningLabel.TrackPropertyValue(ctx.StringProperty, prop =>
             {
                 UniqueIdIndex.RefreshAsset(prop.serializedObject.targetObject);
                 Refresh();
@@ -59,7 +58,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             void Refresh()
             {
-                var unique = UniqueIdIndex.IsUnique(ctx.DeclaringType, ctx.StringIdProperty.stringValue, ctx.GetCurrentAssetGuid());
+                var unique = UniqueIdIndex.IsUnique(ctx.DeclaringType, ctx.StringProperty.stringValue, ctx.GetCurrentAssetGuid());
                 warningLabel.SetDisplay(unique ? DisplayStyle.None : DisplayStyle.Flex);
             }
         }

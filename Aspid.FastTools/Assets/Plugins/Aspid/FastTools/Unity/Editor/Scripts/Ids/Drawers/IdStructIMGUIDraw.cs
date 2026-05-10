@@ -18,7 +18,7 @@ namespace Aspid.FastTools.Ids.Editors
             var height = EditorGUIUtility.singleLineHeight;
             if (!isUnique) return height;
 
-            var stringId = ctx.StringIdProperty.stringValue;
+            var stringId = ctx.StringProperty.stringValue;
 
             if (stringId != lastStringId)
             {
@@ -50,7 +50,7 @@ namespace Aspid.FastTools.Ids.Editors
             {
                 var screen = GUIUtility.GUIToScreenPoint(new Vector2(dropRect.x, dropRect.y));
                 var screenRect = new Rect(screen.x, screen.y, dropRect.width, dropRect.height);
-                IdSelectorDropdownWindow.Show(screenRect, ctx.FieldType, ctx.StringIdProperty.stringValue, selected => IsStructDrawerHelper.ApplySelection(selected, ctx));
+                IdSelectorDropdownWindow.Show(screenRect, ctx.FieldType, ctx.StringProperty.stringValue, selected => IsStructDrawerHelper.ApplySelection(selected, ctx));
             }
 
             using (new EditorGUI.DisabledScope(ctx.FindRegistry() is null))
@@ -69,7 +69,7 @@ namespace Aspid.FastTools.Ids.Editors
         }
         
         private static bool IsUniqueFor(IsStructDrawerContext ctx) =>
-            UniqueIdIndex.IsUnique(ctx.DeclaringType, ctx.StringIdProperty.stringValue, ctx.GetCurrentAssetGuid());
+            UniqueIdIndex.IsUnique(ctx.DeclaringType, ctx.StringProperty.stringValue, ctx.GetCurrentAssetGuid());
 
         private static (Rect dropRect, Rect openRect) SplitRect(Rect position)
         {

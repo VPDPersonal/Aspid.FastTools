@@ -1,38 +1,34 @@
 using System;
 using UnityEditor;
 using System.Reflection;
+using Aspid.FastTools.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Ids.Editors
 {
     internal sealed class IsStructDrawerContext
     {
-        private readonly string _propertyPath;
-            
-        public string Label { get; }
-        
-        public Type FieldType { get; }   
-        
-        public Type DeclaringType { get; }
-        
-        public SerializedObject SerializedObject { get; }
-            
-        public SerializedProperty Property => SerializedObject.FindProperty(_propertyPath);
-            
-        public SerializedProperty IntIdProperty => Property.FindPropertyRelative(Constants.IntIdFieldName);
-            
-        public SerializedProperty StringIdProperty => Property.FindPropertyRelative(Constants.StringIdFieldName);
+        public readonly string Label;
+        public readonly Type FieldType;
+        public readonly Type DeclaringType;
+        public readonly SerializedProperty Property;
+        public readonly SerializedProperty IntProperty;
+        public readonly SerializedProperty StringProperty;
+
+        public SerializedObject SerializedObject => Property.serializedObject;
 
         public IsStructDrawerContext(
-            string label, 
+            string label,
             FieldInfo fieldInfo,
             SerializedProperty property)
         {
             Label = label;
             FieldType = fieldInfo.FieldType;
-            _propertyPath = property.propertyPath;
             DeclaringType = fieldInfo.DeclaringType;
-            SerializedObject = property.serializedObject;
+
+            Property = property.Persistent();
+            IntProperty = Property.FindPropertyRelative(Constants.IntIdFieldName);
+            StringProperty = Property.FindPropertyRelative(Constants.StringIdFieldName);
         }
 
         public void OpenRegistryAsset()

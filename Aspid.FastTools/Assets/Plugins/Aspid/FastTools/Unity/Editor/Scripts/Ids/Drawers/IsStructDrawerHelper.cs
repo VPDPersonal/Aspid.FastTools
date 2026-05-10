@@ -6,7 +6,7 @@ namespace Aspid.FastTools.Ids.Editors
     internal static class IsStructDrawerHelper
     {
         public static string BuildCaption(IsStructDrawerContext ctx, out bool isMissing) =>
-            BuildCaption(ctx.FindRegistry(), ctx.IntIdProperty.intValue, ctx.StringIdProperty.stringValue, out isMissing);
+            BuildCaption(ctx.FindRegistry(), ctx.IntProperty.intValue, ctx.StringProperty.stringValue, out isMissing);
 
         public static string BuildCaption(IdRegistry registry, int id, string fallbackName, out bool isMissing)
         {
@@ -28,14 +28,14 @@ namespace Aspid.FastTools.Ids.Editors
         public static void SyncStringFromInt(IsStructDrawerContext ctx)
         {
             var registry = ctx.FindRegistry();
-            
-            var currentId = ctx.IntIdProperty.intValue;
+
+            var currentId = ctx.IntProperty.intValue;
             if (currentId <= 0 || registry is null) return;
 
             if (!registry.TryGetName(currentId, out var registryName)) return;
-            if (registryName == ctx.StringIdProperty.stringValue) return;
+            if (registryName == ctx.StringProperty.stringValue) return;
 
-            ctx.StringIdProperty.SetString(registryName);
+            ctx.StringProperty.SetStringAndApply(registryName);
             ctx.Property.ApplyModifiedProperties();
         }
         
@@ -61,9 +61,9 @@ namespace Aspid.FastTools.Ids.Editors
             string nameId,
             IsStructDrawerContext ctx)
         {
-            ctx.IntIdProperty.SetInt(id);
-            ctx.StringIdProperty.SetString(nameId);
-            ctx.Property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+            ctx.IntProperty.SetIntAndApply(id);
+            ctx.StringProperty.SetStringAndApply(nameId);
+            ctx.Property.ApplyModifiedPropertiesWithoutUndo();
         }
     }
 }
