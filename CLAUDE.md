@@ -51,7 +51,7 @@ dotnet test
 
 **Assembly boundary rule:** `Unity/Runtime/` code must NOT reference `UnityEditor` — it ships with player builds.
 
-**Optional integration define:** `Aspid.FastTools.Unity.asmdef` declares a `versionDefines` entry that activates `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION` when `com.unity.mathematics` is installed. Gate Mathematics-dependent runtime code with this symbol.
+**Optional Mathematics integration:** Mathematics-dependent extensions live in the satellite `Aspid.FastTools.Unity.VisualElements.Math` assembly, which references `Unity.Mathematics` directly and is gated by a `versionDefines` entry that compiles it only when `com.unity.mathematics` is installed. New Mathematics-dependent code goes there. The same `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION` symbol is also declared on the main runtime asmdef for the rare case when a single file in `Aspid.FastTools.Unity` needs to gate Mathematics-aware behavior.
 
 ### Assembly Definitions
 
@@ -59,6 +59,7 @@ dotnet test
 |---|---|---|
 | `Aspid.FastTools` | `Source/` | Pure C# type extensions |
 | `Aspid.FastTools.Unity` | `Unity/Runtime/` | Runtime: Types, Enums, Ids, ProfilerMarkers, VisualElements |
+| `Aspid.FastTools.Unity.VisualElements.Math` | `Unity/Runtime/VisualElements/Extensions/INotifyValueChanged/Math/` | Satellite assembly compiled only when `com.unity.mathematics` is installed; hosts `INotifyValueChanged` extensions for `float2/3/4`, `int2/3/4`, etc. |
 | `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Editor: Enums, Extensions, IMGUI, Ids, SerializedProperties, Types, VisualElements, Welcome |
 
 ### Key Features and Their Locations
@@ -159,6 +160,12 @@ Examples:
 All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this grammar; new variables in any other stylesheet must follow it from the start.
 
 **README files:** 4 files to keep in sync: root `README.md`/`README_RU.md` and `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/README.md`/`README_RU.md`. Image paths differ between them.
+
+### Local Claude Code automation
+
+- **PostToolUse hook** (`.claude/hooks/rebuild-generators-on-change.sh`): on every `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, runs `dotnet build -c Release` for the generator project (which redeploys the DLL into the Unity package). Unity-side edits, tests, and the Sample project are explicitly skipped — keep that scope when changing the hook.
+- **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase).
+- **Project subagents** (`.claude/agents/`): `code-reviewer` (Unity/Editor boundary + generator + package convention review), `uss-bem-checker` (validates USS class names + `--aspid-*` variables against the BEM/positional grammars above).
 
 ### Submodule
 
