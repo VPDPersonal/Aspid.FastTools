@@ -202,7 +202,7 @@ namespace Aspid.FastTools.Editors
 
             if (sample.isImported)
             {
-                return new AspidGradientButton(displayName, evt =>
+                return new AspidGradientButton(displayName, "Select  ▼", evt =>
                 {
                     var assetPath = ToProjectRelativePath(captured.importPath);
                     PingAsset(assetPath);
@@ -210,7 +210,7 @@ namespace Aspid.FastTools.Editors
                 });
             }
 
-            return new AspidGradientButton($"{displayName}  ▼", "Import", evt =>
+            return new AspidGradientButton(displayName, "Import  ▼", evt =>
             {
                 var pointer = GetMousePosition(evt);
 
