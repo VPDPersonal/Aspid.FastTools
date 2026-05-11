@@ -1,6 +1,6 @@
 # Aspid.FastTools
 
-[![Unity 2022.3+](https://img.shields.io/badge/2022.3%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d)](https://unity.com/)
+[![Unity 6](https://img.shields.io/badge/Unity_6-000000?style=flat&logo=unity&logoColor=white&color=4fa35d)](https://unity.com/)
 [![Releases](https://img.shields.io/github/v/release/VPDPersonal/Aspid.FastTools?label=Release&labelColor=254d2c&color=4fa35d)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 [![License](https://img.shields.io/github/license/VPDPersonal/Aspid.FastTools?label=License&labelColor=254d2c&color=4fa35d)](LICENSE)
 
@@ -13,8 +13,7 @@
 Install Aspid.FastTools using one of the following methods:
 
 - **Download .unitypackage** — Visit the [Release page on GitHub](https://github.com/VPDPersonal/Aspid.FastTools/releases) and download the latest version, `Aspid.FastTools.X.X.X.unitypackage`. Import it into your project.
-- **Via UPM** (Unity Package Manager) integrate the following packages:
-  - `https://github.com/VPDPersonal/Aspid.Internal.Unity.git`
+- **Via UPM** (Unity Package Manager) integrate the following package:
   - `https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools`
 
 ---
