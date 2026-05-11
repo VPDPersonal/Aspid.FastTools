@@ -418,4 +418,28 @@ public class ProfilerMarkersGeneratorTests
         Assert.Empty(run.RunResult.Results[0].GeneratedSources);
         GeneratorTestHost.AssertNoErrors(run);
     }
+
+    [Fact]
+    public void Dispatcher_IsGatedByEnableProfiler_AndFallsBackToDefault()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public void Run() { this.Marker(); }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        Assert.Contains("#if ENABLE_PROFILER", text);
+        Assert.Contains("#endif", text);
+        Assert.Contains("return default;", text);
+        Assert.DoesNotContain("throw new", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+    }
 }

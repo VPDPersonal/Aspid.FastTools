@@ -119,7 +119,8 @@ internal static class ExtensionClassBody
     {
         code.AppendLine($"[{ProfilerMarkerGeneratedCode}]")
             .AppendLine($"public static {ProfilerMarker}.AutoScope Marker{type.TypeParamList}(this {type.FullyQualifiedDisplay} _, [{CallerLineNumberAttribute}] int line = -1){type.ConstraintsClause}")
-            .BeginBlock();
+            .BeginBlock()
+            .AppendLine("#if ENABLE_PROFILER");
 
         var prefix = isGeneric ? $"Markers{type.TypeParamList}." : string.Empty;
         foreach (var member in members)
@@ -128,8 +129,8 @@ internal static class ExtensionClassBody
                 code.AppendLine($"if (line is {renamed.Call.Line}) return {prefix}{renamed.FieldName}.Auto();");
         }
 
-        code.AppendLine()
-            .AppendLine($"throw new {Exception}();")
+        code.AppendLine("#endif")
+            .AppendLine("return default;")
             .EndBlock();
 
         return code;
