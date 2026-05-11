@@ -2,7 +2,7 @@
   "name": "com.aspid.fasttools",
   "version": "1.0.0",
   "displayName": "Aspid.FastTools",
-  "description": "Aspid.FastTools is a set of tools designed to minimize routine code writing in Unity",
+  "description": "Unity tools to cut boilerplate — source-generated ProfilerMarkers, serializable type/enum/ID systems, and a fluent UIToolkit API.",
   "unity": "2022.3",
   "author":
   {
