@@ -364,7 +364,7 @@ The package covers:
 - **References** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, and `SetBoxed` (Unity 6+).
 - **Reflection helpers** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` for resolving the C# member and runtime instance behind a property.
 
-> Full method-by-method reference: [SerializedPropertyExtensions.md](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/SerializedPropertyExtensions.md)
+> Full method-by-method reference: [SerializedPropertyExtensions.md](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/EN/SerializedPropertyExtensions.md)
 
 ---
 
@@ -431,7 +431,7 @@ The package covers:
 - **Editor-only commands** — `AddOpenScriptCommand`, `BindTo`/`BindPropertyTo`, `EnumField`/`EnumFlagsField` `Initialize`, and `PropertyField` value-change subscriptions.
 - **USS custom-style helpers** — `ICustomStyle.TryGetByEnum` for parsing string USS properties as enums.
 
-> Full method-by-method reference: [VisualElementExtensions.md](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/VisualElementExtensions.md)
+> Full method-by-method reference: [VisualElementExtensions.md](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/EN/VisualElementExtensions.md)
 
 ### Full example
 
