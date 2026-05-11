@@ -1,5 +1,9 @@
 # Aspid.FastTools
 
+[![Unity 6.0+](https://img.shields.io/badge/Unity_6.0%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d)](https://unity.com/)
+[![Releases](https://img.shields.io/github/v/release/VPDPersonal/Aspid.FastTools?label=Release&labelColor=254d2c&color=4fa35d)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+[![License](https://img.shields.io/github/license/VPDPersonal/Aspid.FastTools?label=License&labelColor=254d2c&color=4fa35d)](LICENSE)
+
 **Aspid.FastTools** — набор инструментов, предназначенных для минимизации рутинного написания кода в Unity.
 
 ---
