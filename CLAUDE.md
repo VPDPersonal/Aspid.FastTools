@@ -168,10 +168,6 @@ All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this 
 - **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase), `open-pr` (project conventions for opening pull requests — see *Pull request conventions* below).
 - **Project subagents** (`.claude/agents/`): `code-reviewer` (Unity/Editor boundary + generator + package convention review), `uss-bem-checker` (validates USS class names + `--aspid-*` variables against the BEM/positional grammars above).
 
-### Submodule
-
-`Aspid.Internal.Unity` is a git submodule providing internal Unity helpers. It is referenced but not part of the main package distribution.
-
 ## Pull request conventions
 
 When opening a PR — manually or via `@claude` — invoke the `open-pr` skill (`.claude/skills/open-pr/SKILL.md`) for the full procedure. Quick reference:
