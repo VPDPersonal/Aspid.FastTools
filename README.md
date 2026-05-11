@@ -68,7 +68,6 @@ public class MyBehaviour : MonoBehaviour
 ### Generated code
 
 ```csharp
-using System;
 using Unity.Profiling;
 using System.Runtime.CompilerServices;
 
@@ -80,11 +79,12 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
     public static ProfilerMarker.AutoScope Marker(this MyBehaviour _, [CallerLineNumberAttribute] int line = -1)
     {
+#if ENABLE_PROFILER
         if (line is 13) return DoSomething1_Marker_Line_13.Auto();
         if (line is 19) return DoSomething2_Marker_Line_19.Auto();
         if (line is 22) return DoSomething2_Marker_Line_22.Auto();
-
-        throw new Exception();
+#endif
+        return default;
     }
 }
 ```

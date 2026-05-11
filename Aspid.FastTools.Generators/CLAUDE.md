@@ -176,6 +176,7 @@ Finds every `.Marker()` call site, semantically verifies it resolves to `Profile
 - **Marker display value:** `"{TypeName}.{member} ({line})"`. For generic enclosing types the marker value is interpolated with `typeof(T).Name` so each closed instantiation gets its own runtime label.
 - **`.WithName(string)` override:** accepts string literals, plain interpolated strings without holes (`$"X"`), and survives a `(this.Marker()).WithName(...)` parenthesised receiver. Interpolated strings with substitutions are silently ignored — the generator falls back to the method name.
 - **Enclosing resolution:** walks past lambdas, anonymous functions, and local functions to the nearest declared `IMethodSymbol`/`IFieldSymbol`/`IPropertySymbol`. Field initializers use the field name as the marker.
+- **Release-build gating:** the dispatcher body (the `if (line is N) return …` chain) is wrapped in `#if ENABLE_PROFILER`. When the symbol is undefined (non-development player builds) the method falls through to `return default;`, so player builds pay no per-call lookup cost. The static `ProfilerMarker` field declarations are emitted unconditionally — their `Begin`/`End` calls already strip via Unity's `[Conditional("ENABLE_PROFILER")]`.
 
 ### IdStructGenerator
 
