@@ -92,7 +92,7 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
 ### Result
 
-![Aspid.FastTools.ProfilerMarkers.png](Images/Aspid.FastTools.ProfilerMarkers.png)
+![Aspid.FastTools.ProfilerMarkers.png](../Images/Aspid.FastTools.ProfilerMarkers.png)
 
 ---
 
@@ -127,7 +127,7 @@ public class MyBehaviour : MonoBehaviour
     }
 }
 ```
-![Aspid.FastTools.SerializableType.png](Images/Aspid.FastTools.SerializableType.png)
+![Aspid.FastTools.SerializableType.png](../Images/Aspid.FastTools.SerializableType.png)
 ### ComponentTypeSelector
 
 A serializable struct that renders a type-switching dropdown in the Inspector. Add it as a field to a base class — picking a subtype rewrites `m_Script` on the `SerializedObject`, effectively changing the component or ScriptableObject to the chosen subtype.
@@ -205,7 +205,7 @@ The Inspector shows a button that opens a searchable popup window with:
 - Navigation history (back button)
 - Assembly disambiguation for types with identical names
 
-![Aspid.FastTools.TypeSelectorWindow.png](Images/Aspid.FastTools.TypeSelectorWindow.png)
+![Aspid.FastTools.TypeSelectorWindow.png](../Images/Aspid.FastTools.TypeSelectorWindow.png)
 ---
 
 ## Enum System
@@ -483,7 +483,7 @@ public class MyBehaviourEditor : Editor
 
 ### Result
 
-![Aspid.FastTools.VisualElement.png](Images/Aspid.FastTools.VisualElement.png)
+![Aspid.FastTools.VisualElement.png](../Images/Aspid.FastTools.VisualElement.png)
 
 ---
 

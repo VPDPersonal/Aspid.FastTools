@@ -160,7 +160,7 @@ Examples:
 
 All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this grammar; new variables in any other stylesheet must follow it from the start.
 
-**README files:** 4 files to keep in sync: root `README.md`/`README_RU.md` and `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/README.md`/`README_RU.md`. Image paths differ between them.
+**README files:** 4 files to keep in sync: root `README.md`/`README_RU.md` and `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/EN/README.md`/`RU/README.md`. Image paths differ between them — root files use `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/...`, the inner READMEs use `../Images/...`. Per-feature references (`SerializedPropertyExtensions.md`, `VisualElementExtensions.md`) live alongside each README inside `EN/`/`RU/`.
 
 ### Local Claude Code automation
 
