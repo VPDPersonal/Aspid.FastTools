@@ -18,6 +18,15 @@ Install Aspid.FastTools using one of the following methods:
 
 ---
 
+## Donate
+
+This project is developed on a voluntary basis. If you find it useful, you can support its development financially. This helps allocate more time to improving and maintaining **Aspid.FastTools**.
+
+You can donate via the following platforms:
+* \[[Unity Asset Store](https://assetstore.unity.com/packages/slug/365584)\]
+
+---
+
 ## Namespaces
 
 | Namespace | Description |
