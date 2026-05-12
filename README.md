@@ -90,7 +90,7 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
 ### Result
 
-![Aspid.FastTools.ProfilerMarkers.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.ProfilerMarkers.png)
+![aspid_fasttools_profiler_markers.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_profiler_markers.png)
 
 ---
 
