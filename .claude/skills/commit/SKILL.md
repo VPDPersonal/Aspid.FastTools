@@ -40,8 +40,6 @@ Files under `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Samples~/` routinely
 - Do **not** stage anything under `Samples~/` unless the user explicitly said the commit is about samples.
 - Even if a `Samples~/*` file is in `IN_CONTEXT` because the agent touched it as part of an unrelated experiment, treat it as out-of-context for the commit and mention it in the skipped list.
 
-(At the time of writing, the working tree on `docs/profiler-markers-screenshot` carries dozens of deleted `Samples~/EnumValues/...` and `Samples~/Ids/...` entries that must stay out of commits on this branch.)
-
 ## Generators DLL
 
 Editing `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/` triggers `.claude/hooks/rebuild-generators-on-change.sh`, which rebuilds the Roslyn generator and redeploys the DLL to `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Aspid.FastTools.Generators.dll`.
