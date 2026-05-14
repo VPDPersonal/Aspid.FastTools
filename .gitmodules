@@ -1,3 +1,3 @@
-[submodule "Aspid.FastTools.Claude"]
-	path = Aspid.FastTools.Claude
-	url = git@github.com:VPDPersonal/Aspid.FastTools.Claude.git
+[submodule "Aspid.Claude.Plugins"]
+	path = Aspid.Claude.Plugins
+	url = git@github.com:VPDPersonal/Aspid.Claude.Plugins.git
