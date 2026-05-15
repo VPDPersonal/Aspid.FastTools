@@ -73,7 +73,8 @@ public class MyBehaviour : MonoBehaviour
 }
 ```
 
-### Generated code
+<details>
+<summary><b>Generated code</b></summary>
 
 ```csharp
 using Unity.Profiling;
@@ -96,6 +97,8 @@ internal static class __MyBehaviourProfilerMarkerExtensions
     }
 }
 ```
+
+</details>
 
 ### Result
 
@@ -443,54 +446,62 @@ The package covers:
 
 ### Full example
 
-```csharp
-using UnityEditor;
-using UnityEngine;
-using Aspid.FastTools.Editors;          // GetScriptName
-using Aspid.FastTools.UIElements;       // runtime VisualElement extensions
-using Aspid.FastTools.UIElements.Editors; // AddOpenScriptCommand
-using UnityEngine.UIElements;
+A reactive editor for an `AbilityConfig` `ScriptableObject` — title and status pill in the header, `PropertyField` body, and a Warning `HelpBox` that toggles based on `ManaCost`.
 
-[CustomEditor(typeof(MyBehaviour))]
-public class MyBehaviourEditor : Editor
+```csharp
+[CustomEditor(typeof(AbilityConfig))]
+internal sealed class AbilityConfigEditor : Editor
 {
     public override VisualElement CreateInspectorGUI()
     {
-        const string iconPath = "Editor/MyIcon";
+        var config = (AbilityConfig)target;
 
-        var scriptName = target.GetScriptName();
-        var dark  = new Color(0.15f, 0.15f, 0.15f);
-        var light = new Color(0.75f, 0.75f, 0.75f);
+        var badge = new Label()
+            .SetFontSize(10).SetUnityFontStyleAndWeight(FontStyle.Bold)
+            .SetPaddingX(10).SetPaddingY(3)
+            .SetBorderRadius(10).SetBorderWidth(1);
 
+        var helpBox = new HelpBox(
+                "This ability costs no mana — is that intentional?",
+                HelpBoxMessageType.Warning)
+            .SetMarginTop(8).SetBorderRadius(6);
+
+        var manaField = new PropertyField(serializedObject.FindProperty("_manaCost"))
+            .AddValueChanged(_ => Refresh());
+
+        Refresh();
         return new VisualElement()
-            .SetName("Header")
-            .SetBackgroundColor(dark)
-            .SetFlexDirection(FlexDirection.Row)
-            .SetPadding(top: 5, bottom: 5, left: 10, right: 10)
-            .SetBorderRadius(topLeft: 10, topRight: 10, bottomLeft: 10, bottomRight: 10)
-            .AddChild(new Image()
-                .SetName("Icon")
-                .AddOpenScriptCommand(target)
-                .SetImageFromResource(iconPath)
-                .SetSize(width: 40, height: 40))
-            .AddChild(new Label(scriptName)
-                .SetName("Title")
-                .SetFlexGrow(1)
-                .SetFontSize(16)
-                .SetMargin(left: 10)
-                .SetColor(light)
-                .SetAlignSelf(Align.Center)
-                .SetOverflow(Overflow.Hidden)
-                .SetWhiteSpace(WhiteSpace.NoWrap)
-                .SetTextOverflow(TextOverflow.Ellipsis)
-                .SetUnityFontStyleAndWeight(FontStyle.Bold));
+            .SetBorderRadius(10).SetBorderWidth(1)
+            .AddChild(new VisualElement()
+                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
+                .SetPaddingX(14).SetPaddingY(12)
+                .AddChild(new Label(target.GetScriptName())
+                    .SetFlexGrow(1).SetFontSize(15)
+                    .SetUnityFontStyleAndWeight(FontStyle.Bold))
+                .AddChild(badge))
+            .AddChild(new VisualElement()
+                .SetPaddingX(14).SetPaddingY(12)
+                .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName")))
+                .AddChild(new PropertyField(serializedObject.FindProperty("_description")))
+                .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))
+                .AddChild(manaField)
+                .AddChild(helpBox));
+
+        void Refresh()
+        {
+            var isFree = config.ManaCost is 0;
+            badge.SetText(isFree ? "FREE" : $"{config.ManaCost} MP");
+            helpBox.SetDisplay(isFree ? DisplayStyle.Flex : DisplayStyle.None);
+        }
     }
 }
 ```
 
+> The complete sample — `AbilityConfig.cs`, the polished `AbilityConfigEditor.cs` (custom colors, subtitle and divider, used in the screenshot below) and two `.asset` examples — ships in the `VisualElements` sample (Package Manager → Aspid.FastTools → Samples).
+
 ### Result
 
-![Aspid.FastTools.VisualElement.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.VisualElement.png)
+![Aspid.FastTools.VisualElement.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.VisualElement.gif)
 
 ---
 
