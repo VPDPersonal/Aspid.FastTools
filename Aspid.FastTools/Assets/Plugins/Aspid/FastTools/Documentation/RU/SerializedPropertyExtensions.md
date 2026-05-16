@@ -1,4 +1,4 @@
-# Расширения SerializedProperty — полный справочник
+# SerializedProperty Extensions — full reference
 
 Цепочные методы расширения над `SerializedProperty` для синхронизации владеющего `SerializedObject`, установки значений и рефлексии над полем-источником.
 
@@ -25,7 +25,7 @@ property
 | `UpdateIfRequiredOrScript()` | Вызывает `serializedObject.UpdateIfRequiredOrScript()` |
 | `ApplyModifiedProperties()` | Вызывает `serializedObject.ApplyModifiedProperties()` |
 
-## SetValue / SetXxx — типизированные сеттеры
+## SetValue / SetXxx — typed setters
 
 Для каждого поддерживаемого типа существуют четыре варианта:
 
@@ -36,7 +36,7 @@ property
 | `SetXxx(value)` | Типизированный сеттер (например, `SetInt`), пишущий в соответствующее поле `SerializedProperty.xxxValue` |
 | `SetXxxAndApply(value)` | `SetXxx(value)` плюс `ApplyModifiedProperties()` |
 
-### Поддерживаемые типы
+### Supported types
 
 | Семейство методов | Unity-тип | Примечания |
 |-------------------|-----------|------------|
@@ -60,7 +60,7 @@ property
 | `SetAnimationCurve` | `AnimationCurve` | |
 | `SetEntityId` | `Unity.Entities.EntityId` | Unity 6.2+. Apply-вариант называется `SetEntityIdApply` *(имя метода сохраняет опечатку из исходника: пропущено `And`)* |
 
-### Enum-сеттеры
+### Enum setters
 
 Значения enum не идут через `SetValue` — используйте явную пару ниже в зависимости от того, является ли поле `[Flags]`-перечислением:
 
@@ -69,7 +69,7 @@ property
 | `SetEnumFlag(int)` / `SetEnumFlagAndApply(int)` | Пишет в `enumValueFlag` |
 | `SetEnumIndex(int)` / `SetEnumIndexAndApply(int)` | Пишет в `enumValueIndex` |
 
-### Пример
+### Example
 
 ```csharp
 SerializedProperty property = GetProperty();
@@ -87,7 +87,7 @@ property
     .ApplyModifiedProperties();
 ```
 
-## Операции с массивами
+## Array operations
 
 | Метод | Описание |
 |-------|----------|
@@ -95,7 +95,7 @@ property
 | `AddArraySize(int = 1)` / `AddArraySizeAndApply(int = 1)` | Увеличивает `arraySize` на указанное количество (по умолчанию `1`) |
 | `RemoveArraySize(int = 1)` / `RemoveArraySizeAndApply(int = 1)` | Уменьшает `arraySize` на указанное количество (по умолчанию `1`) |
 
-## Сеттеры ссылок
+## Reference setters
 
 | Метод | Описание | Примечания |
 |-------|----------|------------|
@@ -104,7 +104,7 @@ property
 | `SetExposedReference(Object)` / `SetExposedReferenceAndApply(Object)` | Пишет в `exposedReferenceValue` | |
 | `SetBoxed(object)` / `SetBoxedAndApply(object)` | Пишет в `boxedValue` | Unity 6+ |
 
-## Рефлексионные хелперы
+## Reflection helpers
 
 Для drawer-/inspector-кода, которому нужно получить runtime-тип или экземпляр, стоящий за property:
 

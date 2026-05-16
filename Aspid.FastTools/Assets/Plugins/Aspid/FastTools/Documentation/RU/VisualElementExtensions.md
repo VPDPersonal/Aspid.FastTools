@@ -1,4 +1,4 @@
-# Расширения VisualElement — полный справочник
+# VisualElement Extensions — full reference
 
 Fluent-методы расширения для построения UIToolkit-деревьев в коде. Все методы возвращают `T` (сам элемент) для цепочки вызовов.
 
@@ -7,7 +7,7 @@ using Aspid.FastTools.UIElements;         // runtime-расширения
 using Aspid.FastTools.UIElements.Editors; // editor-only расширения (например, AddOpenScriptCommand)
 ```
 
-## Основные операции с элементами
+## Core element operations
 
 ```csharp
 element
@@ -59,7 +59,7 @@ element
 | `SetFocusable(bool)` | Устанавливает `element.focusable` |
 | `SetDelegatesFocus(bool)` | Устанавливает `element.delegatesFocus` |
 
-## USS и операции с классами
+## USS & class operations
 
 | Метод | Описание |
 |-------|----------|
@@ -73,11 +73,11 @@ element
 | `AddStyleSheetsFromResource(string)` | Добавляет таблицу стилей через `Resources.Load` |
 | `RemoveStyleSheetsFromResource(string)` | Удаляет таблицу стилей, загруженную через `Resources.Load` |
 
-## Расширения стилей — по категориям
+## Style extensions — by category
 
 Все методы стилей также доступны напрямую на `IStyle` (те же имена методов, работают с объектом стиля).
 
-### Разметка
+### Layout
 
 | Метод | Свойство стиля |
 |-------|----------------|
@@ -92,7 +92,7 @@ element
 | `SetJustifyContent(StyleEnum<Justify>)` | `justifyContent` |
 | `SetPosition(StyleEnum<Position>)` | `position` |
 
-### Размер
+### Size
 
 | Метод | Описание |
 |-------|----------|
@@ -109,7 +109,7 @@ element
 | `SetMinHeight(StyleLength)` | `minHeight` |
 | `SetMaxHeight(StyleLength)` | `maxHeight` |
 
-### Отступы
+### Spacing
 
 Все методы отступов имеют перегрузку с единым значением, перегрузку по сторонам (`top`, `right`, `bottom`, `left`), сеттеры по одной стороне и сеттеры по парам осей X/Y.
 
@@ -123,7 +123,7 @@ element
 
 > `SetDistance` — обёртка для четырёх свойств `top`/`right`/`bottom`/`left`, используемых при абсолютном позиционировании. `SetTop`, `SetRight`, `SetBottom`, `SetLeft` — это прямые алиасы для одного свойства.
 
-### Шрифт
+### Font
 
 | Метод | Свойство стиля |
 |-------|----------------|
@@ -132,7 +132,7 @@ element
 | `SetUnityFontDefinition(StyleFontDefinition)` | `unityFontDefinition` |
 | `SetUnityFontStyleAndWeight(StyleEnum<FontStyle>)` | `unityFontStyleAndWeight` |
 
-### Пресеты стиля шрифта
+### Font style presets
 
 Удобные методы для переключения bold / italic без перезаписи другого флага:
 
@@ -144,7 +144,7 @@ element
 | `AddItalicUnityFontStyleAndWeight()` | Добавляет italic, сохраняя bold |
 | `RemoveItalicUnityFontStyleAndWeight()` | Убирает italic, сохраняя bold |
 
-### Текст
+### Text
 
 | Метод | Свойство стиля | Примечания |
 |-------|---------------|------------|
@@ -162,7 +162,7 @@ element
 | `SetUnityTextAutoSize(StyleTextAutoSize)` | `unityTextAutoSize` | Unity 6.2+ |
 | `SetWhiteSpace(StyleEnum<WhiteSpace>)` | `whiteSpace` | |
 
-### Цвет и прозрачность
+### Color & Opacity
 
 | Метод | Свойство стиля |
 |-------|----------------|
@@ -170,7 +170,7 @@ element
 | `SetColor(string)` | `color`, разобранный из HTML-строки (`"#RRGGBB"` или именованный цвет) |
 | `SetOpacity(StyleFloat)` | `opacity` |
 
-### Рамка
+### Border
 
 | Метод | Описание |
 |-------|----------|
@@ -187,7 +187,7 @@ element
 | `SetBorderWidthX(StyleFloat)` · `SetBorderWidthY(StyleFloat)` | Горизонтальная или вертикальная пара |
 | `SetBorderWidthTop/Right/Bottom/Left(StyleFloat)` | Одна сторона |
 
-### Фон
+### Background
 
 | Метод | Свойство стиля |
 |-------|----------------|
@@ -203,7 +203,7 @@ element
 | `SetBackgroundPositionY(StyleBackgroundPosition)` | `backgroundPositionY` |
 | `SetUnityBackgroundImageTintColor(StyleColor)` | `unityBackgroundImageTintColor` |
 
-### Трансформации
+### Transform
 
 | Метод | Свойство стиля |
 |-------|----------------|
@@ -212,7 +212,7 @@ element
 | `SetTranslate(StyleTranslate)` | `translate` |
 | `SetTransformOrigin(StyleTransformOrigin)` | `transformOrigin` |
 
-### Aspect, Filter и Material
+### Aspect, Filter & Material
 
 Доступно начиная с Unity 6000.3+.
 
@@ -222,7 +222,7 @@ element
 | `SetFilter(StyleList<FilterFunction>)` | `filter` |
 | `SetUnityMaterial(StyleMaterialDefinition)` | `unityMaterial` |
 
-### Анимации переходов
+### Transition
 
 | Метод | Свойство стиля |
 |-------|----------------|
@@ -231,7 +231,7 @@ element
 | `SetTransitionProperty(StyleList<StylePropertyName>)` | `transitionProperty` |
 | `SetTransitionTimingFunction(StyleList<EasingFunction>)` | `transitionTimingFunction` |
 
-### Переполнение и видимость
+### Overflow & Visibility
 
 | Метод | Свойство стиля |
 |-------|----------------|
@@ -251,13 +251,13 @@ element
 | `SetUnitySliceScale(StyleFloat)` | `unitySliceScale` |
 | `SetUnitySliceType(StyleEnum<SliceType>)` | Unity 6+ |
 
-### Курсор
+### Cursor
 
 | Метод | Свойство стиля |
 |-------|----------------|
 | `SetCursor(StyleCursor)` | `cursor` |
 
-## Расширения для специализированных элементов
+## Specialized element extensions
 
 ### TextElement
 
@@ -472,7 +472,7 @@ container
 | `SetCullingEnabled(bool)` | Пропускает `onGUIHandler`, когда элемент за пределами экрана |
 | `SetContextType(ContextType)` | Устанавливает тип контекста IMGUI |
 
-### Collection-views (ListView, TreeView, MultiColumn-варианты)
+### Collection views (ListView, TreeView, MultiColumn variants)
 
 Общие методы распределены по нескольким специализированным расширениям:
 
@@ -491,7 +491,7 @@ listView
     .AddSelectionChanged(selected => Debug.Log(selected));
 ```
 
-#### Источник, layout и поведение — `BaseVerticalCollectionView`
+#### Source, layout and behavior — `BaseVerticalCollectionView`
 
 | Метод | Описание | Примечания |
 |-------|----------|------------|
@@ -507,7 +507,7 @@ listView
 | `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Фабрика заголовка | Unity 6+ |
 | `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Фабрика empty-state | Unity 6+ |
 
-#### События — `BaseVerticalCollectionView`
+#### Events — `BaseVerticalCollectionView`
 
 | Метод | Описание |
 |-------|----------|
@@ -521,7 +521,7 @@ listView
 | `AddSetupDragAndDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveSetupDragAndDrop` | Визуальный режим drag-and-drop |
 | `AddHandleDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveHandleDrop` | Обработка drop |
 
-#### Только для `BaseListView`
+#### `BaseListView`-specific
 
 | Метод | Описание |
 |-------|----------|
@@ -538,14 +538,14 @@ listView
 | `AddItemsAdded(Action<IEnumerable<int>>)` / `RemoveItemsAdded` | Добавление элементов по индексам |
 | `AddItemsRemoved(Action<IEnumerable<int>>)` / `RemoveItemsRemoved` | Удаление элементов по индексам |
 
-#### Только для `BaseTreeView`
+#### `BaseTreeView`-specific
 
 | Метод | Описание |
 |-------|----------|
 | `SetAutoExpand(bool)` | Авто-разворачивание новых узлов |
 | `AddItemExpandedChanged(Action<TreeViewExpansionChangedArgs>)` / `RemoveItemExpandedChanged` | Подписка на изменение раскрытия |
 
-#### Item-фабрики `ListView` / `TreeView`
+#### `ListView` / `TreeView` item factories
 
 Эти методы дублируются в `ListViewExtensions` и `TreeViewExtensions` (каждое работает со своим типом view).
 
@@ -563,7 +563,7 @@ listView
 |-------|----------|
 | `SetSortingMode(ColumnSortingMode)` | Встроенный режим сортировки заголовка колонки |
 
-## Команды редактора (только для редактора)
+## Editor commands (editor-only)
 
 ```csharp
 using Aspid.FastTools.UIElements.Editors;
