@@ -271,7 +271,7 @@ public class MyBehaviour : MonoBehaviour
 
 ---
 
-## ID System
+## ID System (Beta)
 
 > **Бета:** Система ID находится в бета-версии. Публичный API, структура генерируемого кода и редакторский UX могут измениться в будущих релизах.
 
@@ -366,10 +366,6 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 Цепочные расширения над `SerializedProperty` для синхронизации владеющего `SerializedObject`, записи типизированных значений и рефлексии над полем-источником.
 
 ```csharp
-using Aspid.FastTools.Editors;
-```
-
-```csharp
 property
     .Update()
     .SetVector3(Vector3.up)
@@ -391,10 +387,6 @@ property
 ---
 
 ## IMGUI Layout Scopes
-
-```csharp
-using Aspid.FastTools.Editors;
-```
 
 Три `ref struct`-области — `VerticalScope`, `HorizontalScope`, `ScrollViewScope` — оборачивают `EditorGUILayout.Begin*` / `End*`. Каждая предоставляет свойство `Rect` и вызывает соответствующий метод `End*` в `Dispose`:
 
@@ -436,26 +428,9 @@ using (VerticalScope.Begin(out var rect, GUI.skin.box))
 
 Fluent-методы расширения для построения UIToolkit-деревьев в коде. Все методы возвращают `T` (сам элемент) для цепочки вызовов.
 
-```csharp
-using Aspid.FastTools.UIElements;         // runtime-расширения
-using Aspid.FastTools.UIElements.Editors; // editor-only расширения (например, AddOpenScriptCommand)
-```
-
-### Quick reference
-
-Пакет покрывает:
-
-- **Основные операции с элементом** — имя, видимость, tooltip, user data, picking mode, data source, а также хелперы `AddChild`/`InsertChild`.
-- **Фокус** — `SetFocus`, `SetBlur`, `SetTabIndex`, `SetFocusable`.
-- **USS** — `AddClass`/`RemoveClass`/`ToggleInClass`/`EnableInClass`, `AddStyleSheets[FromResource]`.
-- **Стили** — все свойства `IStyle`: разметка, размер, отступы, шрифт, текст, цвет, рамка, фон, трансформации (вкл. aspect/filter/material с Unity 6.3+), переходы, overflow, slice, cursor.
-- **Специализированные элементы** — `TextElement`, `ITextEdition`, `ITextSelection`, `BaseField`, `BaseBoolField` (Toggle), `INotifyValueChanged` (с опциональными типами `Unity.Mathematics`), `IMixedValueSupport`, `Button`, `Slider`/`BaseSlider`, `ProgressBar`, `HelpBox`, `Foldout`, `Image`, `IMGUIContainer`, а также полная поверхность `ListView`/`TreeView`/`MultiColumn*`.
-- **Editor-only команды** — `AddOpenScriptCommand`, `BindTo`/`BindPropertyTo`, `Initialize` для `EnumField`/`EnumFlagsField`, подписка на изменения у `PropertyField`.
-- **USS custom-style helpers** — `ICustomStyle.TryGetByEnum` для парсинга строковых USS-свойств в enum.
-
 > Полный справочник по методам: [VisualElementExtensions.md](VisualElementExtensions.md)
 
-### Full example
+### Example
 
 Реактивный редактор для `ScriptableObject` `AbilityConfig` — заголовок и статус-пилла в шапке, тело из `PropertyField`, и Warning `HelpBox`, который переключается в зависимости от `ManaCost`.
 
@@ -519,10 +494,6 @@ internal sealed class AbilityConfigEditor : Editor
 ## Editor Helper Extensions
 
 Утилитарные методы для получения отображаемых имён объектов Unity в пользовательских редакторах.
-
-```csharp
-using Aspid.FastTools.Editors;
-```
 
 ```csharp
 public static string GetScriptName(this Object obj)

@@ -271,7 +271,7 @@ In the Inspector, select the enum type in the `EnumValues` header, then assign a
 
 ---
 
-## ID System
+## ID System (Beta)
 
 > **Beta:** the ID System is currently in beta. The public API, generated code layout and editor workflow may change in future releases.
 
@@ -366,10 +366,6 @@ The registry derives from `ScriptableObject` directly and exposes a generic coun
 Chainable extensions on `SerializedProperty` for synchronizing the owning `SerializedObject`, writing typed values, and reflecting on the underlying field.
 
 ```csharp
-using Aspid.FastTools.Editors;
-```
-
-```csharp
 property
     .Update()
     .SetVector3(Vector3.up)
@@ -391,10 +387,6 @@ The package covers:
 ---
 
 ## IMGUI Layout Scopes
-
-```csharp
-using Aspid.FastTools.Editors;
-```
 
 Three `ref struct` scopes — `VerticalScope`, `HorizontalScope`, `ScrollViewScope` — wrap `EditorGUILayout.Begin*` / `End*`. Each exposes a `Rect` property and calls the matching `End*` method on `Dispose`:
 
@@ -436,26 +428,9 @@ All `Begin` overloads match the corresponding `EditorGUILayout.Begin*` signature
 
 Fluent extension methods for building UIToolkit trees in code. All methods return `T` (the element itself) for chaining.
 
-```csharp
-using Aspid.FastTools.UIElements;         // runtime extensions
-using Aspid.FastTools.UIElements.Editors; // editor-only extensions (e.g. AddOpenScriptCommand)
-```
-
-### Quick reference
-
-The package covers:
-
-- **Core element operations** — name, visibility, tooltip, user data, picking mode, data source, and `AddChild`/`InsertChild` helpers.
-- **Focus** — `SetFocus`, `SetBlur`, `SetTabIndex`, `SetFocusable`.
-- **USS** — `AddClass`/`RemoveClass`/`ToggleInClass`/`EnableInClass`, `AddStyleSheets[FromResource]`.
-- **Styles** — every `IStyle` property: layout, size, spacing, font, text, color, border, background, transform (incl. Unity 6.3+ aspect/filter/material), transition, overflow, slice, cursor.
-- **Specialized elements** — `TextElement`, `ITextEdition`, `ITextSelection`, `BaseField`, `BaseBoolField` (Toggle), `INotifyValueChanged` (with optional `Unity.Mathematics` types), `IMixedValueSupport`, `Button`, `Slider`/`BaseSlider`, `ProgressBar`, `HelpBox`, `Foldout`, `Image`, `IMGUIContainer`, plus the full `ListView`/`TreeView`/`MultiColumn*` surface.
-- **Editor-only commands** — `AddOpenScriptCommand`, `BindTo`/`BindPropertyTo`, `EnumField`/`EnumFlagsField` `Initialize`, and `PropertyField` value-change subscriptions.
-- **USS custom-style helpers** — `ICustomStyle.TryGetByEnum` for parsing string USS properties as enums.
-
 > Full method-by-method reference: [VisualElementExtensions.md](VisualElementExtensions.md)
 
-### Full example
+### Example
 
 A reactive editor for an `AbilityConfig` `ScriptableObject` — title and status pill in the header, `PropertyField` body, and a Warning `HelpBox` that toggles based on `ManaCost`.
 
@@ -519,10 +494,6 @@ internal sealed class AbilityConfigEditor : Editor
 ## Editor Helper Extensions
 
 Utility methods for getting display names of Unity objects in custom editors.
-
-```csharp
-using Aspid.FastTools.Editors;
-```
 
 ```csharp
 public static string GetScriptName(this Object obj)
