@@ -123,17 +123,19 @@ Both support implicit conversion to `System.Type`.
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public class MyBehaviour : MonoBehaviour
+public abstract class Ability : MonoBehaviour
 {
-    [SerializeField] private SerializableType _anyType;
-    [SerializeField] private SerializableType<MonoBehaviour> _behaviourType;
+    public abstract void Activate();
+}
+
+public sealed class AbilitySelector : MonoBehaviour
+{
+    [SerializeField] private SerializableType<Ability> _abilityType;
 
     private void Start()
     {
-        Type type1 = _anyType;             // implicit operator
-        Type type2 = _behaviourType.Type;  // explicit property
-
-        var instance = (MonoBehaviour)gameObject.AddComponent(type2);
+        var ability = (Ability)gameObject.AddComponent(_abilityType.Type);
+        ability.Activate();
     }
 }
 ```
@@ -148,13 +150,16 @@ The dropdown is automatically constrained to subtypes of the class that declares
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public abstract class BaseEnemy : MonoBehaviour
+public abstract class EnemyBase : MonoBehaviour
 {
-    [SerializeField] private ComponentTypeSelector _typeSelector;
+    [SerializeField] private ComponentTypeSelector _enemyType;
+    [SerializeField] [Min(0)] private float _health = 100f;
+
+    public abstract void Attack();
 }
 
-public class FastEnemy : BaseEnemy { }
-public class TankEnemy : BaseEnemy { }
+public sealed class FastEnemy : EnemyBase { }
+public sealed class TankEnemy : EnemyBase { }
 ```
 
 ---
@@ -194,14 +199,16 @@ public enum TypeAllow
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public class MyBehaviour : MonoBehaviour
+public abstract class AbilityModifier
 {
-    [TypeSelector(typeof(IMyInterface))]
-    [SerializeField] private string _typeName;
+    public abstract void Apply();
+}
 
-    // Include abstract types and interfaces in the picker
-    [TypeSelector(typeof(object), Allow = TypeAllow.All)]
-    [SerializeField] private string _anyType;
+public sealed class AbilitySelector : MonoBehaviour
+{
+    // Each element of the array is its own picker constrained to AbilityModifier.
+    [TypeSelector(typeof(AbilityModifier))]
+    [SerializeField] private string[] _modifierTypes;
 }
 ```
 
@@ -216,6 +223,9 @@ The Inspector shows a button that opens a searchable popup window with:
 - Assembly disambiguation for types with identical names
 
 ![Aspid.FastTools.TypeSelectorWindow.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.TypeSelectorWindow.png)
+
+> The complete sample — `Ability` / `AbilitySelector` / `EnemyBase` and their subclasses — ships in the `Types` sample (Package Manager → Aspid.FastTools → Samples).
+
 ---
 
 ## Enum System

@@ -124,17 +124,19 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public class MyBehaviour : MonoBehaviour
+public abstract class Ability : MonoBehaviour
 {
-    [SerializeField] private SerializableType _anyType;
-    [SerializeField] private SerializableType<MonoBehaviour> _behaviourType;
+    public abstract void Activate();
+}
+
+public sealed class AbilitySelector : MonoBehaviour
+{
+    [SerializeField] private SerializableType<Ability> _abilityType;
 
     private void Start()
     {
-        Type type1 = _anyType;             // неявный оператор
-        Type type2 = _behaviourType.Type;  // явное свойство
-
-        var instance = (MonoBehaviour)gameObject.AddComponent(type2);
+        var ability = (Ability)gameObject.AddComponent(_abilityType.Type);
+        ability.Activate();
     }
 }
 ```
@@ -149,13 +151,16 @@ public class MyBehaviour : MonoBehaviour
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public abstract class BaseEnemy : MonoBehaviour
+public abstract class EnemyBase : MonoBehaviour
 {
-    [SerializeField] private ComponentTypeSelector _typeSelector;
+    [SerializeField] private ComponentTypeSelector _enemyType;
+    [SerializeField] [Min(0)] private float _health = 100f;
+
+    public abstract void Attack();
 }
 
-public class FastEnemy : BaseEnemy { }
-public class TankEnemy : BaseEnemy { }
+public sealed class FastEnemy : EnemyBase { }
+public sealed class TankEnemy : EnemyBase { }
 ```
 
 ---
@@ -195,14 +200,16 @@ public enum TypeAllow
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public class MyBehaviour : MonoBehaviour
+public abstract class AbilityModifier
 {
-    [TypeSelector(typeof(IMyInterface))]
-    [SerializeField] private string _typeName;
+    public abstract void Apply();
+}
 
-    // Включить абстрактные типы и интерфейсы в список выбора
-    [TypeSelector(typeof(object), Allow = TypeAllow.All)]
-    [SerializeField] private string _anyType;
+public sealed class AbilitySelector : MonoBehaviour
+{
+    // Каждый элемент массива — отдельный picker, ограниченный AbilityModifier.
+    [TypeSelector(typeof(AbilityModifier))]
+    [SerializeField] private string[] _modifierTypes;
 }
 ```
 
@@ -217,6 +224,9 @@ public class MyBehaviour : MonoBehaviour
 - Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
 
 ![Aspid.FastTools.TypeSelectorWindow.png](../Images/Aspid.FastTools.TypeSelectorWindow.png)
+
+> Полный сэмпл — `Ability` / `AbilitySelector` / `EnemyBase` и их наследники — поставляется в сэмпле `Types` (Package Manager → Aspid.FastTools → Samples).
+
 ---
 
 ## Система перечислений
