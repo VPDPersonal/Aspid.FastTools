@@ -28,19 +28,6 @@ You can donate via the following platforms:
 
 ---
 
-## Namespaces
-
-| Namespace | Description |
-|-----------|-------------|
-| `Aspid.FastTools.Types` | `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector`, `TypeSelectorAttribute` |
-| `Aspid.FastTools.Enums` | `EnumValues<T>` |
-| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` |
-| `Aspid.FastTools.UIElements` | Runtime `VisualElement` fluent extensions |
-| `Aspid.FastTools.Editors` | Editor helpers — `SerializedProperty` extensions, IMGUI scopes, `GetScriptName` |
-| `Aspid.FastTools.Types.Editors` · `.Enums.Editors` · `.Ids.Editors` · `.UIElements.Editors` | Per-feature editor code (property drawers, registry inspector, editor-only `VisualElement` extensions) |
-
----
-
 ## ProfilerMarker
 
 Provides source-generated `ProfilerMarker` registration. The generator creates a static marker per call-site, identified by the calling method and line number.
@@ -159,8 +146,21 @@ public abstract class EnemyBase : MonoBehaviour
     public abstract void Attack();
 }
 
-public sealed class FastEnemy : EnemyBase { }
-public sealed class TankEnemy : EnemyBase { }
+public sealed class FastEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _speed = 25f;
+
+    public override void Attack() =>
+        Debug.Log($"Fast enemy strikes! (speed: {_speed})");
+}
+
+public sealed class TankEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _armor = 50f;
+
+    public override void Attack() =>
+        Debug.Log($"Tank attacks! (armor: {_armor})");
+}
 ```
 
 ---
@@ -512,7 +512,7 @@ internal sealed class AbilityConfigEditor : Editor
 
 ### Result
 
-![Aspid.FastTools.VisualElement.gif](../Images/Aspid.FastTools.VisualElement.gif)
+![aspid_fasttools_visual_element.gif](../Images/aspid_fasttools_visual_element.gif)
 
 ---
 

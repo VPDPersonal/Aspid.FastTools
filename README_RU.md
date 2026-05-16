@@ -27,19 +27,6 @@
 
 ---
 
-## Пространства имён
-
-| Пространство имён | Описание |
-|-------------------|----------|
-| `Aspid.FastTools.Types` | `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector`, `TypeSelectorAttribute` |
-| `Aspid.FastTools.Enums` | `EnumValues<T>` |
-| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` |
-| `Aspid.FastTools.UIElements` | Runtime fluent-расширения `VisualElement` |
-| `Aspid.FastTools.Editors` | Редакторские утилиты — расширения `SerializedProperty`, IMGUI-области, `GetScriptName` |
-| `Aspid.FastTools.Types.Editors` · `.Enums.Editors` · `.Ids.Editors` · `.UIElements.Editors` | Редакторский код по фичам (property drawers, инспектор реестров, editor-only расширения `VisualElement`) |
-
----
-
 ## ProfilerMarker
 
 Предоставляет регистрацию `ProfilerMarker` через source generation. Генератор создаёт статический маркер для каждого места вызова, идентифицируемый по вызывающему методу и номеру строки.
@@ -158,8 +145,21 @@ public abstract class EnemyBase : MonoBehaviour
     public abstract void Attack();
 }
 
-public sealed class FastEnemy : EnemyBase { }
-public sealed class TankEnemy : EnemyBase { }
+public sealed class FastEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _speed = 25f;
+
+    public override void Attack() =>
+        Debug.Log($"Fast enemy strikes! (speed: {_speed})");
+}
+
+public sealed class TankEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _armor = 50f;
+
+    public override void Attack() =>
+        Debug.Log($"Tank attacks! (armor: {_armor})");
+}
 ```
 
 ---
@@ -511,7 +511,7 @@ internal sealed class AbilityConfigEditor : Editor
 
 ### Результат
 
-![Aspid.FastTools.VisualElement.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.VisualElement.gif)
+![aspid_fasttools_visual_element.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_visual_element.gif)
 
 ---
 
