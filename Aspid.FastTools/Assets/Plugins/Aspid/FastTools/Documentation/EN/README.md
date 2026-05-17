@@ -288,11 +288,6 @@ Provides serializable enum-to-value mappings configurable from the Inspector.
 
 A serializable collection of `EnumValue<TValue>` entries with a configurable default value. Implements `IEnumerable<KeyValuePair<Enum, TValue>>`.
 
-```csharp
-[Serializable]
-public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
-```
-
 | Member | Description |
 |--------|-------------|
 | `TValue GetValue(Enum enumValue)` | Returns the mapped value, or `_defaultValue` if not found |

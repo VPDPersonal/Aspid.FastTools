@@ -288,11 +288,6 @@ public sealed class TankEnemy : EnemyBase
 
 Сериализуемая коллекция записей `EnumValue<TValue>` с настраиваемым значением по умолчанию. Реализует `IEnumerable<KeyValuePair<Enum, TValue>>`.
 
-```csharp
-[Serializable]
-public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
-```
-
 | Член | Описание |
 |------|----------|
 | `TValue GetValue(Enum enumValue)` | Возвращает сопоставленное значение или `_defaultValue`, если не найдено |
