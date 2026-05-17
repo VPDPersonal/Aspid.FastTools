@@ -203,6 +203,8 @@ public sealed class AbilitySelector : MonoBehaviour
 }
 ```
 
+> The complete sample — `Ability` / `AbilitySelector` / `EnemyBase` and their subclasses — ships in the `Types` sample (Package Manager → Aspid.FastTools → Samples).
+
 ---
 
 ### Type Selector Window
@@ -216,6 +218,31 @@ The Inspector shows a button that opens a searchable popup window with:
 - Assembly disambiguation for types with identical names
 
 ![Aspid.FastTools.TypeSelectorWindow.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.TypeSelectorWindow.png)
+
+The same window is available as a public API — open it from any editor code (custom inspectors, `EditorWindow`, menu items) when you need a type picker outside the standard `SerializableType` / `[TypeSelector]` flow.
+
+```csharp
+namespace Aspid.FastTools.Types.Editors
+{
+    public sealed class TypeSelectorWindow : EditorWindow
+    {
+        public static void Show(
+            Rect screenRect,
+            Type[] types = null,
+            string currentAqn = "",
+            TypeAllow allow = TypeAllow.None,
+            Action<string> onSelected = null);
+    }
+}
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `screenRect` | Screen-space rectangle the dropdown is anchored to. |
+| `types` | Base types used to filter visible items. Only types assignable to **all** entries are listed. Defaults to `typeof(object)`. |
+| `currentAqn` | Assembly-qualified name of the currently selected type, used to pre-navigate to its location. Pass `null` or empty to start at the root. |
+| `allow` | Which special type kinds (abstract classes, interfaces) are included in addition to concrete classes. Default: `TypeAllow.None`. |
+| `onSelected` | Callback invoked with the assembly-qualified name of the selected type, or `null` if the user chose `<None>`. |
 
 ### ComponentTypeSelector
 
@@ -252,8 +279,6 @@ public sealed class TankEnemy : EnemyBase
 }
 ```
 ![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
-
-> The complete sample — `Ability` / `AbilitySelector` / `EnemyBase` and their subclasses — ships in the `Types` sample (Package Manager → Aspid.FastTools → Samples).
 
 ---
 

@@ -203,6 +203,8 @@ public sealed class AbilitySelector : MonoBehaviour
 }
 ```
 
+> Полный сэмпл — `Ability` / `AbilitySelector` / `EnemyBase` и их наследники — поставляется в сэмпле `Types` (Package Manager → Aspid.FastTools → Samples).
+
 ---
 
 ### Type Selector Window
@@ -216,6 +218,31 @@ public sealed class AbilitySelector : MonoBehaviour
 - Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
 
 ![Aspid.FastTools.TypeSelectorWindow.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.TypeSelectorWindow.png)
+
+Это же окно доступно как публичный API — открывайте его из любого editor-кода (кастомных инспекторов, `EditorWindow`, пунктов меню), когда нужно вывести выбор типа за пределами стандартного потока `SerializableType` / `[TypeSelector]`.
+
+```csharp
+namespace Aspid.FastTools.Types.Editors
+{
+    public sealed class TypeSelectorWindow : EditorWindow
+    {
+        public static void Show(
+            Rect screenRect,
+            Type[] types = null,
+            string currentAqn = "",
+            TypeAllow allow = TypeAllow.None,
+            Action<string> onSelected = null);
+    }
+}
+```
+
+| Параметр | Описание |
+|----------|----------|
+| `screenRect` | Прямоугольник в экранных координатах, к которому привязывается dropdown. |
+| `types` | Базовые типы, по которым фильтруются видимые элементы. В списке остаются только типы, совместимые со **всеми** записями. По умолчанию — `typeof(object)`. |
+| `currentAqn` | Assembly-qualified имя текущего выбранного типа: окно сразу откроется на его уровне иерархии. Передайте `null` или пустую строку, чтобы стартовать с корня. |
+| `allow` | Какие специальные категории (абстрактные классы, интерфейсы) включаются в список в дополнение к конкретным классам. По умолчанию: `TypeAllow.None`. |
+| `onSelected` | Callback с assembly-qualified именем выбранного типа или `null`, если пользователь выбрал `<None>`. |
 
 ### ComponentTypeSelector
 
@@ -252,8 +279,6 @@ public sealed class TankEnemy : EnemyBase
 }
 ```
 ![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
-
-> Полный сэмпл — `Ability` / `AbilitySelector` / `EnemyBase` и их наследники — поставляется в сэмпле `Types` (Package Manager → Aspid.FastTools → Samples).
 
 ---
 
