@@ -153,6 +153,7 @@ public sealed class AbilitySelector : MonoBehaviour
 }
 ```
 ![aspid_fasttools_serializable_type.gif](../Images/aspid_fasttools_serializable_type.gif)
+
 ### TypeSelectorAttribute
 
 Атрибут `PropertyAttribute`, доступный только в редакторе, ограничивающий всплывающее окно выбора типа конкретными базовыми типами. Применяется к полям `string`, хранящим assembly-qualified имена типов.
