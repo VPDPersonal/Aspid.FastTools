@@ -1,6 +1,4 @@
-<h1 align="center">
-  <img src="../Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
-</h1>
+<img src="../Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
 **Aspid.FastTools** — набор инструментов, предназначенных для минимизации рутинного написания кода в Unity.
 
