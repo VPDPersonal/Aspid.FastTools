@@ -87,6 +87,7 @@ public class MyBehaviour : MonoBehaviour
 
 <details>
 <summary><b>Сгенерированный код</b></summary>
+<br/>
 
 ```csharp
 using Unity.Profiling;
