@@ -2,11 +2,26 @@
 
 <p>
   <a href="https://assetstore.unity.com/packages/slug/365584"><img src="https://img.shields.io/badge/Unity_6.0%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d" alt="Unity 6.0+" /></a>
-  <a href="https://github.com/VPDPersonal/Aspid.FastTools/releases"><img src="https://img.shields.io/github/v/release/VPDPersonal/Aspid.FastTools?label=Release&labelColor=254d2c&color=4fa35d" alt="Releases" /></a>
+  <a href="https://github.com/VPDPersonal/Aspid.FastTools/releases"><img src="https://img.shields.io/github/v/release/VPDPersonal/Aspid.FastTools?include_prereleases&label=Release&labelColor=254d2c&color=4fa35d" alt="Releases" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/VPDPersonal/Aspid.FastTools?label=License&labelColor=254d2c&color=4fa35d" alt="License" /></a>
 </p>
 
-**Aspid.FastTools** is a set of tools designed to minimize routine code writing in Unity.
+**Aspid.FastTools** is a set of tools designed to minimize routine code writing in Unity. It combines Roslyn-powered source generators with a curated collection of runtime and editor utilities — including per-call-site `ProfilerMarker` registration, a serializable `System.Type`, an `EnumValues<TValue>` dictionary, a stable `int ↔ string` ID registry, fluent UI Toolkit extensions and IMGUI layout scopes.
+
+## Table of Contents
+
+- **Getting Started**
+  - [Integration](#integration)
+  - [Donate](#donate)
+- **Features**
+  - [ProfilerMarker](#profilermarker)
+  - [Serializable Type System](#serializable-type-system)
+  - [Enum System](#enum-system)
+  - [ID System (Beta)](#id-system-beta)
+  - [SerializedProperty Extensions](#serializedproperty-extensions)
+  - [IMGUI Layout Scopes](#imgui-layout-scopes)
+  - [VisualElement Extensions](#visualelement-extensions)
+  - [Editor Helper Extensions](#editor-helper-extensions)
 
 ---
 

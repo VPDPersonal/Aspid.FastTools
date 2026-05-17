@@ -1,11 +1,25 @@
 <img src="../Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
-**Aspid.FastTools** — набор инструментов, предназначенных для минимизации рутинного написания кода в Unity.
+**Aspid.FastTools** — набор инструментов, предназначенных для минимизации рутинного написания кода в Unity. Пакет объединяет генераторы кода на базе Roslyn и подборку runtime- и editor-утилит: регистрация `ProfilerMarker` для каждого места вызова, сериализуемый `System.Type`, словарь `EnumValues<TValue>`, стабильный реестр `int ↔ string` ID, fluent-расширения UI Toolkit и IMGUI-скоупы для разметки.
 
 ## Source Code
 
 [[Aspid.FastTools](https://github.com/VPDPersonal/Aspid.FastTools)]
 
+## Содержание
+
+- **Getting Started**
+  - [Integration](#integration)
+  - [Donate](#donate)
+- **Features**
+  - [ProfilerMarker](#profilermarker)
+  - [Serializable Type System](#serializable-type-system)
+  - [Enum System](#enum-system)
+  - [ID System (Beta)](#id-system-beta)
+  - [SerializedProperty Extensions](#serializedproperty-extensions)
+  - [IMGUI Layout Scopes](#imgui-layout-scopes)
+  - [VisualElement Extensions](#visualelement-extensions)
+  - [Editor Helper Extensions](#editor-helper-extensions)
 
 ---
 
