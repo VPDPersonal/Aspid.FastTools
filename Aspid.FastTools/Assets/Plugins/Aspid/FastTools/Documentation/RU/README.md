@@ -215,7 +215,7 @@ public sealed class AbilitySelector : MonoBehaviour
 - Историю навигации (кнопка «назад»)
 - Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
 
-![Aspid.FastTools.TypeSelectorWindow.png](../Images/Aspid.FastTools.TypeSelectorWindow.png)
+![aspid_fasttools_type_selector_window.png](../Images/aspid_fasttools_type_selector_window.png)
 
 Это же окно доступно как публичный API — открывайте его из любого editor-кода (кастомных инспекторов, `EditorWindow`, пунктов меню), когда нужно вывести выбор типа за пределами стандартного потока `SerializableType` / `[TypeSelector]`.
 
@@ -296,24 +296,48 @@ public sealed class TankEnemy : EnemyBase
 Поддерживает `[Flags]`-перечисления: `Equals` использует `HasFlag` и корректно обрабатывает члены со значением `0`.
 
 ```csharp
+using System;
 using UnityEngine;
 using Aspid.FastTools.Enums;
 
-public enum Direction { Left, Right, Up, Down }
+public enum DamageType { Physical, Fire, Ice, Poison }
 
-public class MyBehaviour : MonoBehaviour
+[Flags]
+public enum StatusEffect
 {
-    [SerializeField] private EnumValues<Sprite> _directionSprites;
+    None    = 0,
+    Burning = 1,
+    Frozen  = 2,
+    Slowed  = 4,
+    Stunned = 8,
+}
 
-    private void SetIcon(Direction dir)
+public sealed class DamageDealer : MonoBehaviour
+{
+    [SerializeField] private EnumValues<float> _damageMultipliers;
+    [SerializeField] private EnumValues<Color> _damageColors;
+
+    // Flag combinations (e.g. Burning | Slowed) match via HasFlag and first-hit wins,
+    // so list composite entries BEFORE their constituent flags.
+    [SerializeField] private EnumValues<float> _speedMultipliersByStatus;
+
+    [SerializeField] private DamageType _currentType;
+    [SerializeField] private StatusEffect _activeEffects;
+
+    private void DealDamage()
     {
-        var sprite = _directionSprites.GetValue(dir);
-        _image.sprite = sprite;
+        var multiplier = _damageMultipliers.GetValue(_currentType);
+        var color      = _damageColors.GetValue(_currentType);
+        var speedMod   = _speedMultipliersByStatus.GetValue(_activeEffects);
+        // ...
     }
 }
 ```
+![aspid_fasttools_enum_values.png](../Images/aspid_fasttools_enum_values.png)
 
 В Inspector выберите тип перечисления в заголовке `EnumValues`, затем назначьте значение для каждого члена перечисления. Нажмите правой кнопкой мыши по свойству, чтобы открыть контекстное меню с пунктом **Populate Missing Enum Members** — он добавит записи для всех отсутствующих членов перечисления, используя текущее Default Value как начальное значение.
+
+> Полный сэмпл — `DamageDealer` / `DamageType` / `StatusEffect` — поставляется в сэмпле `EnumValues` (Package Manager → Aspid.FastTools → Samples).
 
 ---
 
@@ -380,6 +404,8 @@ public class EnemySpawner : MonoBehaviour
 }
 ```
 
+![aspid_fasttools_id_selector.gif](../Images/aspid_fasttools_id_selector.gif)
+
 ### UniqueIdAttribute
 
 Помечает поле как требующее уникального значения среди всех ассетов объявляющего типа. Inspector показывает предупреждение, если два ассета используют одинаковый ID.
@@ -388,6 +414,8 @@ public class EnemySpawner : MonoBehaviour
 [Conditional("UNITY_EDITOR")]
 public sealed class UniqueIdAttribute : PropertyAttribute { }
 ```
+
+![aspid_fasttools_id_collision.gif](../Images/aspid_fasttools_id_collision.gif)
 
 ### IdRegistry
 
@@ -404,6 +432,8 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 | `IEnumerator<KeyValuePair<int, string>> GetEnumerator()` | Итерация по парам `(id, name)` |
 
 Реестр наследуется напрямую от `ScriptableObject` и предоставляет генерик-аналог `IdRegistry<T>` (с `T : struct, IId`), добавляющий типизированные перегрузки `Contains(T)` и `TryGetName(T, out string)`. Редактирование — добавление, переименование, удаление записей — выполняется через инспектор реестра и `RegistryEditorCore`, а не через публичный runtime API.
+
+![aspid_fasttools_id_registry.png](../Images/aspid_fasttools_id_registry.png)
 
 ---
 

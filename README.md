@@ -217,7 +217,7 @@ The Inspector shows a button that opens a searchable popup window with:
 - Navigation history (back button)
 - Assembly disambiguation for types with identical names
 
-![Aspid.FastTools.TypeSelectorWindow.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.TypeSelectorWindow.png)
+![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 The same window is available as a public API — open it from any editor code (custom inspectors, `EditorWindow`, menu items) when you need a type picker outside the standard `SerializableType` / `[TypeSelector]` flow.
 
@@ -298,24 +298,48 @@ A serializable collection of `EnumValue<TValue>` entries with a configurable def
 Supports `[Flags]` enums: `Equals` uses `HasFlag` and treats `0`-valued members correctly.
 
 ```csharp
+using System;
 using UnityEngine;
 using Aspid.FastTools.Enums;
 
-public enum Direction { Left, Right, Up, Down }
+public enum DamageType { Physical, Fire, Ice, Poison }
 
-public class MyBehaviour : MonoBehaviour
+[Flags]
+public enum StatusEffect
 {
-    [SerializeField] private EnumValues<Sprite> _directionSprites;
+    None    = 0,
+    Burning = 1,
+    Frozen  = 2,
+    Slowed  = 4,
+    Stunned = 8,
+}
 
-    private void SetIcon(Direction dir)
+public sealed class DamageDealer : MonoBehaviour
+{
+    [SerializeField] private EnumValues<float> _damageMultipliers;
+    [SerializeField] private EnumValues<Color> _damageColors;
+
+    // Flag combinations (e.g. Burning | Slowed) match via HasFlag and first-hit wins,
+    // so list composite entries BEFORE their constituent flags.
+    [SerializeField] private EnumValues<float> _speedMultipliersByStatus;
+
+    [SerializeField] private DamageType _currentType;
+    [SerializeField] private StatusEffect _activeEffects;
+
+    private void DealDamage()
     {
-        var sprite = _directionSprites.GetValue(dir);
-        _image.sprite = sprite;
+        var multiplier = _damageMultipliers.GetValue(_currentType);
+        var color      = _damageColors.GetValue(_currentType);
+        var speedMod   = _speedMultipliersByStatus.GetValue(_activeEffects);
+        // ...
     }
 }
 ```
+![aspid_fasttools_enum_values.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_enum_values.png)
 
 In the Inspector, select the enum type in the `EnumValues` header, then assign a value for each enum member. Right-click the property to open a context menu with **Populate Missing Enum Members** — it appends an entry for every enum member not yet in the list, seeded with the current Default Value.
+
+> The complete sample — `DamageDealer` / `DamageType` / `StatusEffect` — ships in the `EnumValues` sample (Package Manager → Aspid.FastTools → Samples).
 
 ---
 
@@ -382,6 +406,8 @@ public class EnemySpawner : MonoBehaviour
 }
 ```
 
+![aspid_fasttools_id_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_selector.gif)
+
 ### UniqueIdAttribute
 
 Marks a field as requiring a unique value across all assets of the declaring type. The Inspector shows a warning if two assets share the same ID.
@@ -390,6 +416,8 @@ Marks a field as requiring a unique value across all assets of the declaring typ
 [Conditional("UNITY_EDITOR")]
 public sealed class UniqueIdAttribute : PropertyAttribute { }
 ```
+
+![aspid_fasttools_id_collision.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_collision.gif)
 
 ### IdRegistry
 
@@ -406,6 +434,8 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 | `IEnumerator<KeyValuePair<int, string>> GetEnumerator()` | Iterate `(id, name)` pairs |
 
 The registry derives from `ScriptableObject` directly and exposes a generic counterpart `IdRegistry<T>` (with `T : struct, IId`) that adds typed `Contains(T)` and `TryGetName(T, out string)` overloads. Edits — adding, renaming, removing entries — happen through the registry inspector and `RegistryEditorCore`, not via a public runtime API.
+
+![aspid_fasttools_id_registry.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_registry.png)
 
 ---
 
