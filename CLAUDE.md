@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-**Aspid.FastTools** is a Unity package (`com.aspid.fasttools`) targeting Unity 2022.3+ that minimizes routine boilerplate code. It consists of two separate projects:
+**Aspid.FastTools** is a Unity package (`com.aspid.fasttools`) targeting Unity 6.0+ that minimizes routine boilerplate code. It consists of two separate projects:
 
 1. **`Aspid.FastTools/`** — The Unity project containing the package source (Runtime + Editor code)
 2. **`Aspid.FastTools.Generators/`** — A standalone .NET solution containing Roslyn source generators
