@@ -1,11 +1,25 @@
-# Aspid.FastTools
+<img src="../Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
-**Aspid.FastTools** is a set of tools designed to minimize routine code writing in Unity.
+**Aspid.FastTools** is a set of tools designed to minimize routine code writing in Unity. It combines Roslyn-powered source generators with a curated collection of runtime and editor utilities — including per-call-site `ProfilerMarker` registration, a serializable `System.Type`, an `EnumValues<TValue>` dictionary, a stable `int ↔ string` ID registry, fluent UI Toolkit extensions and IMGUI layout scopes.
 
 ## Source Code
 
 [[Aspid.FastTools](https://github.com/VPDPersonal/Aspid.FastTools)]
 
+## Table of Contents
+
+- **Getting Started**
+  - [Integration](#integration)
+  - [Donate](#donate)
+- **Features**
+  - [ProfilerMarker](#profilermarker)
+  - [Serializable Type System](#serializable-type-system)
+  - [Enum System](#enum-system)
+  - [ID System (Beta)](#id-system-beta)
+  - [SerializedProperty Extensions](#serializedproperty-extensions)
+  - [IMGUI Layout Scopes](#imgui-layout-scopes)
+  - [VisualElement Extensions](#visualelement-extensions)
+  - [Editor Helper Extensions](#editor-helper-extensions)
 
 ---
 
@@ -14,8 +28,18 @@
 Install Aspid.FastTools using one of the following methods:
 
 - **Download .unitypackage** — Visit the [Release page on GitHub](https://github.com/VPDPersonal/Aspid.FastTools/releases) and download the latest version, `Aspid.FastTools.X.X.X.unitypackage`. Import it into your project.
-- **Via UPM** (Unity Package Manager) integrate the following package:
-  - `https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools`
+
+- **Via UPM** (Unity Package Manager) — add the package using its Git URL:
+
+  ```
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools
+  ```
+
+  To install a specific version, append the release tag as a `#<tag>` fragment (see [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) for the list of available tags):
+
+  ```
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools#v.0.0.1-alpha.5
+  ```
 
 ---
 
@@ -25,19 +49,6 @@ This project is developed on a voluntary basis. If you find it useful, you can s
 
 You can donate via the following platforms:
 * \[[Unity Asset Store](https://assetstore.unity.com/packages/slug/365584)\]
-
----
-
-## Namespaces
-
-| Namespace | Description |
-|-----------|-------------|
-| `Aspid.FastTools.Types` | `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector`, `TypeSelectorAttribute` |
-| `Aspid.FastTools.Enums` | `EnumValues<T>` |
-| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` |
-| `Aspid.FastTools.UIElements` | Runtime `VisualElement` fluent extensions |
-| `Aspid.FastTools.Editors` | Editor helpers — `SerializedProperty` extensions, IMGUI scopes, `GetScriptName` |
-| `Aspid.FastTools.Types.Editors` · `.Enums.Editors` · `.Ids.Editors` · `.UIElements.Editors` | Per-feature editor code (property drawers, registry inspector, editor-only `VisualElement` extensions) |
 
 ---
 
@@ -74,7 +85,9 @@ public class MyBehaviour : MonoBehaviour
 }
 ```
 
-### Generated code
+<details>
+<summary><b>Generated code</b></summary>
+<br/>
 
 ```csharp
 using Unity.Profiling;
@@ -97,6 +110,8 @@ internal static class __MyBehaviourProfilerMarkerExtensions
     }
 }
 ```
+
+</details>
 
 ### Result
 
@@ -121,41 +136,23 @@ Both support implicit conversion to `System.Type`.
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public class MyBehaviour : MonoBehaviour
+public abstract class Ability : MonoBehaviour
 {
-    [SerializeField] private SerializableType _anyType;
-    [SerializeField] private SerializableType<MonoBehaviour> _behaviourType;
+    public abstract void Activate();
+}
+
+public sealed class AbilitySelector : MonoBehaviour
+{
+    [SerializeField] private SerializableType<Ability> _abilityType;
 
     private void Start()
     {
-        Type type1 = _anyType;             // implicit operator
-        Type type2 = _behaviourType.Type;  // explicit property
-
-        var instance = (MonoBehaviour)gameObject.AddComponent(type2);
+        var ability = (Ability)gameObject.AddComponent(_abilityType.Type);
+        ability.Activate();
     }
 }
 ```
-![Aspid.FastTools.SerializableType.png](../Images/Aspid.FastTools.SerializableType.png)
-### ComponentTypeSelector
-
-A serializable struct that renders a type-switching dropdown in the Inspector. Add it as a field to a base class — picking a subtype rewrites `m_Script` on the `SerializedObject`, effectively changing the component or ScriptableObject to the chosen subtype.
-
-The dropdown is automatically constrained to subtypes of the class that declares the field. No additional configuration is required.
-
-```csharp
-using UnityEngine;
-using Aspid.FastTools.Types;
-
-public abstract class BaseEnemy : MonoBehaviour
-{
-    [SerializeField] private ComponentTypeSelector _typeSelector;
-}
-
-public class FastEnemy : BaseEnemy { }
-public class TankEnemy : BaseEnemy { }
-```
-
----
+![aspid_fasttools_serializable_type.gif](../Images/aspid_fasttools_serializable_type.gif)
 
 ### TypeSelectorAttribute
 
@@ -192,16 +189,22 @@ public enum TypeAllow
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public class MyBehaviour : MonoBehaviour
+public abstract class AbilityModifier
 {
-    [TypeSelector(typeof(IMyInterface))]
-    [SerializeField] private string _typeName;
+    public abstract void Apply();
+}
 
-    // Include abstract types and interfaces in the picker
-    [TypeSelector(typeof(object), Allow = TypeAllow.All)]
-    [SerializeField] private string _anyType;
+public sealed class AbilitySelector : MonoBehaviour
+{
+    // Each element of the array is its own picker constrained to AbilityModifier.
+    [TypeSelector(typeof(AbilityModifier))]
+    [SerializeField] private string[] _modifierTypes;
 }
 ```
+
+> The complete sample — `Ability` / `AbilitySelector` / `EnemyBase` and their subclasses — ships in the `Types` sample (Package Manager → Aspid.FastTools → Samples).
+
+---
 
 ### Type Selector Window
 
@@ -213,7 +216,70 @@ The Inspector shows a button that opens a searchable popup window with:
 - Navigation history (back button)
 - Assembly disambiguation for types with identical names
 
-![Aspid.FastTools.TypeSelectorWindow.png](../Images/Aspid.FastTools.TypeSelectorWindow.png)
+![aspid_fasttools_type_selector_window.png](../Images/aspid_fasttools_type_selector_window.png)
+
+The same window is available as a public API — open it from any editor code (custom inspectors, `EditorWindow`, menu items) when you need a type picker outside the standard `SerializableType` / `[TypeSelector]` flow.
+
+```csharp
+namespace Aspid.FastTools.Types.Editors
+{
+    public sealed class TypeSelectorWindow : EditorWindow
+    {
+        public static void Show(
+            Rect screenRect,
+            Type[] types = null,
+            string currentAqn = "",
+            TypeAllow allow = TypeAllow.None,
+            Action<string> onSelected = null);
+    }
+}
+```
+
+| Parameter | Description |
+|-----------|-------------|
+| `screenRect` | Screen-space rectangle the dropdown is anchored to. |
+| `types` | Base types used to filter visible items. Only types assignable to **all** entries are listed. Defaults to `typeof(object)`. |
+| `currentAqn` | Assembly-qualified name of the currently selected type, used to pre-navigate to its location. Pass `null` or empty to start at the root. |
+| `allow` | Which special type kinds (abstract classes, interfaces) are included in addition to concrete classes. Default: `TypeAllow.None`. |
+| `onSelected` | Callback invoked with the assembly-qualified name of the selected type, or `null` if the user chose `<None>`. |
+
+### ComponentTypeSelector
+
+A serializable struct that renders a type-switching dropdown in the Inspector. Add it as a field to a base class — picking a subtype rewrites `m_Script` on the `SerializedObject`, effectively changing the component or ScriptableObject to the chosen subtype.
+
+The dropdown is automatically constrained to subtypes of the class that declares the field. No additional configuration is required.
+
+```csharp
+using UnityEngine;
+using Aspid.FastTools.Types;
+
+public abstract class EnemyBase : MonoBehaviour
+{
+    [SerializeField] private ComponentTypeSelector _enemyType;
+    [SerializeField] [Min(0)] private float _health = 100f;
+
+    public abstract void Attack();
+}
+
+public sealed class FastEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _speed = 25f;
+
+    public override void Attack() =>
+        Debug.Log($"Fast enemy strikes! (speed: {_speed})");
+}
+
+public sealed class TankEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _armor = 50f;
+
+    public override void Attack() =>
+        Debug.Log($"Tank attacks! (armor: {_armor})");
+}
+```
+
+![aspid_fasttools_component_type_selector.gif](../Images/aspid_fasttools_component_type_selector.gif)
+
 ---
 
 ## Enum System
@@ -224,11 +290,6 @@ Provides serializable enum-to-value mappings configurable from the Inspector.
 
 A serializable collection of `EnumValue<TValue>` entries with a configurable default value. Implements `IEnumerable<KeyValuePair<Enum, TValue>>`.
 
-```csharp
-[Serializable]
-public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
-```
-
 | Member | Description |
 |--------|-------------|
 | `TValue GetValue(Enum enumValue)` | Returns the mapped value, or `_defaultValue` if not found |
@@ -237,28 +298,52 @@ public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
 Supports `[Flags]` enums: `Equals` uses `HasFlag` and treats `0`-valued members correctly.
 
 ```csharp
+using System;
 using UnityEngine;
 using Aspid.FastTools.Enums;
 
-public enum Direction { Left, Right, Up, Down }
+public enum DamageType { Physical, Fire, Ice, Poison }
 
-public class MyBehaviour : MonoBehaviour
+[Flags]
+public enum StatusEffect
 {
-    [SerializeField] private EnumValues<Sprite> _directionSprites;
+    None    = 0,
+    Burning = 1,
+    Frozen  = 2,
+    Slowed  = 4,
+    Stunned = 8,
+}
 
-    private void SetIcon(Direction dir)
+public sealed class DamageDealer : MonoBehaviour
+{
+    [SerializeField] private EnumValues<float> _damageMultipliers;
+    [SerializeField] private EnumValues<Color> _damageColors;
+
+    // Flag combinations (e.g. Burning | Slowed) match via HasFlag and first-hit wins,
+    // so list composite entries BEFORE their constituent flags.
+    [SerializeField] private EnumValues<float> _speedMultipliersByStatus;
+
+    [SerializeField] private DamageType _currentType;
+    [SerializeField] private StatusEffect _activeEffects;
+
+    private void DealDamage()
     {
-        var sprite = _directionSprites.GetValue(dir);
-        _image.sprite = sprite;
+        var multiplier = _damageMultipliers.GetValue(_currentType);
+        var color      = _damageColors.GetValue(_currentType);
+        var speedMod   = _speedMultipliersByStatus.GetValue(_activeEffects);
+        // ...
     }
 }
 ```
+![aspid_fasttools_enum_values.png](../Images/aspid_fasttools_enum_values.png)
 
 In the Inspector, select the enum type in the `EnumValues` header, then assign a value for each enum member. Right-click the property to open a context menu with **Populate Missing Enum Members** — it appends an entry for every enum member not yet in the list, seeded with the current Default Value.
 
+> The complete sample — `DamageDealer` / `DamageType` / `StatusEffect` — ships in the `EnumValues` sample (Package Manager → Aspid.FastTools → Samples).
+
 ---
 
-## ID System
+## ID System (Beta)
 
 > **Beta:** the ID System is currently in beta. The public API, generated code layout and editor workflow may change in future releases.
 
@@ -321,6 +406,8 @@ public class EnemySpawner : MonoBehaviour
 }
 ```
 
+![aspid_fasttools_id_selector.gif](../Images/aspid_fasttools_id_selector.gif)
+
 ### UniqueIdAttribute
 
 Marks a field as requiring a unique value across all assets of the declaring type. The Inspector shows a warning if two assets share the same ID.
@@ -329,6 +416,8 @@ Marks a field as requiring a unique value across all assets of the declaring typ
 [Conditional("UNITY_EDITOR")]
 public sealed class UniqueIdAttribute : PropertyAttribute { }
 ```
+
+![aspid_fasttools_id_collision.gif](../Images/aspid_fasttools_id_collision.gif)
 
 ### IdRegistry
 
@@ -346,15 +435,13 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 
 The registry derives from `ScriptableObject` directly and exposes a generic counterpart `IdRegistry<T>` (with `T : struct, IId`) that adds typed `Contains(T)` and `TryGetName(T, out string)` overloads. Edits — adding, renaming, removing entries — happen through the registry inspector and `RegistryEditorCore`, not via a public runtime API.
 
+![aspid_fasttools_id_registry.png](../Images/aspid_fasttools_id_registry.png)
+
 ---
 
 ## SerializedProperty Extensions
 
 Chainable extensions on `SerializedProperty` for synchronizing the owning `SerializedObject`, writing typed values, and reflecting on the underlying field.
-
-```csharp
-using Aspid.FastTools.Editors;
-```
 
 ```csharp
 property
@@ -378,10 +465,6 @@ The package covers:
 ---
 
 ## IMGUI Layout Scopes
-
-```csharp
-using Aspid.FastTools.Editors;
-```
 
 Three `ref struct` scopes — `VerticalScope`, `HorizontalScope`, `ScrollViewScope` — wrap `EditorGUILayout.Begin*` / `End*`. Each exposes a `Rect` property and calls the matching `End*` method on `Dispose`:
 
@@ -423,85 +506,72 @@ All `Begin` overloads match the corresponding `EditorGUILayout.Begin*` signature
 
 Fluent extension methods for building UIToolkit trees in code. All methods return `T` (the element itself) for chaining.
 
-```csharp
-using Aspid.FastTools.UIElements;         // runtime extensions
-using Aspid.FastTools.UIElements.Editors; // editor-only extensions (e.g. AddOpenScriptCommand)
-```
-
-### Quick reference
-
-The package covers:
-
-- **Core element operations** — name, visibility, tooltip, user data, picking mode, data source, and `AddChild`/`InsertChild` helpers.
-- **Focus** — `SetFocus`, `SetBlur`, `SetTabIndex`, `SetFocusable`.
-- **USS** — `AddClass`/`RemoveClass`/`ToggleInClass`/`EnableInClass`, `AddStyleSheets[FromResource]`.
-- **Styles** — every `IStyle` property: layout, size, spacing, font, text, color, border, background, transform (incl. Unity 6.3+ aspect/filter/material), transition, overflow, slice, cursor.
-- **Specialized elements** — `TextElement`, `ITextEdition`, `ITextSelection`, `BaseField`, `BaseBoolField` (Toggle), `INotifyValueChanged` (with optional `Unity.Mathematics` types), `IMixedValueSupport`, `Button`, `Slider`/`BaseSlider`, `ProgressBar`, `HelpBox`, `Foldout`, `Image`, `IMGUIContainer`, plus the full `ListView`/`TreeView`/`MultiColumn*` surface.
-- **Editor-only commands** — `AddOpenScriptCommand`, `BindTo`/`BindPropertyTo`, `EnumField`/`EnumFlagsField` `Initialize`, and `PropertyField` value-change subscriptions.
-- **USS custom-style helpers** — `ICustomStyle.TryGetByEnum` for parsing string USS properties as enums.
-
 > Full method-by-method reference: [VisualElementExtensions.md](VisualElementExtensions.md)
 
-### Full example
+### Example
+
+A reactive editor for an `AbilityConfig` `ScriptableObject` — title and status pill in the header, `PropertyField` body, and a Warning `HelpBox` that toggles based on `ManaCost`.
 
 ```csharp
-using UnityEditor;
-using UnityEngine;
-using Aspid.FastTools.Editors;          // GetScriptName
-using Aspid.FastTools.UIElements;       // runtime VisualElement extensions
-using Aspid.FastTools.UIElements.Editors; // AddOpenScriptCommand
-using UnityEngine.UIElements;
-
-[CustomEditor(typeof(MyBehaviour))]
-public class MyBehaviourEditor : Editor
+[CustomEditor(typeof(AbilityConfig))]
+internal sealed class AbilityConfigEditor : Editor
 {
     public override VisualElement CreateInspectorGUI()
     {
-        const string iconPath = "Editor/MyIcon";
+        var config = (AbilityConfig)target;
 
-        var scriptName = target.GetScriptName();
-        var dark  = new Color(0.15f, 0.15f, 0.15f);
-        var light = new Color(0.75f, 0.75f, 0.75f);
+        var badge = new Label()
+            .SetFontSize(10).SetUnityFontStyleAndWeight(FontStyle.Bold)
+            .SetPaddingX(10).SetPaddingY(3)
+            .SetBorderRadius(10).SetBorderWidth(1);
 
+        var helpBox = new HelpBox(
+                "This ability costs no mana — is that intentional?",
+                HelpBoxMessageType.Warning)
+            .SetMarginTop(8).SetBorderRadius(6);
+
+        var manaField = new PropertyField(serializedObject.FindProperty("_manaCost"))
+            .AddValueChanged(_ => Refresh());
+
+        Refresh();
         return new VisualElement()
-            .SetName("Header")
-            .SetBackgroundColor(dark)
-            .SetFlexDirection(FlexDirection.Row)
-            .SetPadding(top: 5, bottom: 5, left: 10, right: 10)
-            .SetBorderRadius(topLeft: 10, topRight: 10, bottomLeft: 10, bottomRight: 10)
-            .AddChild(new Image()
-                .SetName("Icon")
-                .AddOpenScriptCommand(target)
-                .SetImageFromResource(iconPath)
-                .SetSize(width: 40, height: 40))
-            .AddChild(new Label(scriptName)
-                .SetName("Title")
-                .SetFlexGrow(1)
-                .SetFontSize(16)
-                .SetMargin(left: 10)
-                .SetColor(light)
-                .SetAlignSelf(Align.Center)
-                .SetOverflow(Overflow.Hidden)
-                .SetWhiteSpace(WhiteSpace.NoWrap)
-                .SetTextOverflow(TextOverflow.Ellipsis)
-                .SetUnityFontStyleAndWeight(FontStyle.Bold));
+            .SetBorderRadius(10).SetBorderWidth(1)
+            .AddChild(new VisualElement()
+                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
+                .SetPaddingX(14).SetPaddingY(12)
+                .AddChild(new Label(target.GetScriptName())
+                    .SetFlexGrow(1).SetFontSize(15)
+                    .SetUnityFontStyleAndWeight(FontStyle.Bold))
+                .AddChild(badge))
+            .AddChild(new VisualElement()
+                .SetPaddingX(14).SetPaddingY(12)
+                .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName")))
+                .AddChild(new PropertyField(serializedObject.FindProperty("_description")))
+                .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))
+                .AddChild(manaField)
+                .AddChild(helpBox));
+
+        void Refresh()
+        {
+            var isFree = config.ManaCost is 0;
+            badge.SetText(isFree ? "FREE" : $"{config.ManaCost} MP");
+            helpBox.SetDisplay(isFree ? DisplayStyle.Flex : DisplayStyle.None);
+        }
     }
 }
 ```
 
+> The complete sample — `AbilityConfig.cs`, the polished `AbilityConfigEditor.cs` (custom colors, subtitle and divider, used in the screenshot below) and two `.asset` examples — ships in the `VisualElements` sample (Package Manager → Aspid.FastTools → Samples).
+
 ### Result
 
-![Aspid.FastTools.VisualElement.png](../Images/Aspid.FastTools.VisualElement.png)
+![aspid_fasttools_visual_element.gif](../Images/aspid_fasttools_visual_element.gif)
 
 ---
 
 ## Editor Helper Extensions
 
 Utility methods for getting display names of Unity objects in custom editors.
-
-```csharp
-using Aspid.FastTools.Editors;
-```
 
 ```csharp
 public static string GetScriptName(this Object obj)

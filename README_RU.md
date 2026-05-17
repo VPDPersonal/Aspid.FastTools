@@ -1,42 +1,56 @@
-# Aspid.FastTools
+<img src="Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
-[![Unity 6.0+](https://img.shields.io/badge/Unity_6.0%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d)](https://unity.com/)
-[![Releases](https://img.shields.io/github/v/release/VPDPersonal/Aspid.FastTools?label=Release&labelColor=254d2c&color=4fa35d)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
-[![License](https://img.shields.io/github/license/VPDPersonal/Aspid.FastTools?label=License&labelColor=254d2c&color=4fa35d)](LICENSE)
+<p>
+  <a href="https://assetstore.unity.com/packages/slug/365584"><img src="https://img.shields.io/badge/Unity_6.0%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d" alt="Unity 6.0+" /></a>
+  <a href="https://github.com/VPDPersonal/Aspid.FastTools/releases"><img src="https://img.shields.io/github/v/release/VPDPersonal/Aspid.FastTools?include_prereleases&label=Release&labelColor=254d2c&color=4fa35d" alt="Releases" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/VPDPersonal/Aspid.FastTools?label=License&labelColor=254d2c&color=4fa35d" alt="License" /></a>
+</p>
 
-**Aspid.FastTools** — набор инструментов, предназначенных для минимизации рутинного написания кода в Unity.
+**Aspid.FastTools** — набор инструментов, предназначенных для минимизации рутинного написания кода в Unity. Пакет объединяет генераторы кода на базе Roslyn и подборку runtime- и editor-утилит: регистрация `ProfilerMarker` для каждого места вызова, сериализуемый `System.Type`, словарь `EnumValues<TValue>`, стабильный реестр `int ↔ string` ID, fluent-расширения UI Toolkit и IMGUI-скоупы для разметки.
+
+## Содержание
+
+- **Getting Started**
+  - [Integration](#integration)
+  - [Donate](#donate)
+- **Features**
+  - [ProfilerMarker](#profilermarker)
+  - [Serializable Type System](#serializable-type-system)
+  - [Enum System](#enum-system)
+  - [ID System (Beta)](#id-system-beta)
+  - [SerializedProperty Extensions](#serializedproperty-extensions)
+  - [IMGUI Layout Scopes](#imgui-layout-scopes)
+  - [VisualElement Extensions](#visualelement-extensions)
+  - [Editor Helper Extensions](#editor-helper-extensions)
 
 ---
 
-## Интеграция
+## Integration
 
 Установите Aspid.FastTools одним из следующих способов:
 
 - **Скачать .unitypackage** — Перейдите на [страницу релизов GitHub](https://github.com/VPDPersonal/Aspid.FastTools/releases) и скачайте последнюю версию `Aspid.FastTools.X.X.X.unitypackage`. Импортируйте его в проект.
-- **Через UPM** (Unity Package Manager) подключите следующий пакет:
-  - `https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools`
+
+- **Через UPM** (Unity Package Manager) — добавьте пакет по его Git URL:
+
+  ```
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools
+  ```
+
+  Чтобы установить конкретную версию, добавьте тег релиза в виде `#<tag>`-фрагмента (список доступных тегов — на странице [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)):
+
+  ```
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools#v.0.0.1-alpha.5
+  ```
 
 ---
 
-## Поддержать проект
+## Donate
 
 Этот проект разрабатывается на добровольной основе. Если он оказался для вас полезным, вы можете поддержать его развитие финансово. Это поможет уделять больше времени улучшению и сопровождению **Aspid.FastTools**.
 
 Поддержать проект можно через следующие платформы:
 * \[[Unity Asset Store](https://assetstore.unity.com/packages/slug/365584)\]
-
----
-
-## Пространства имён
-
-| Пространство имён | Описание |
-|-------------------|----------|
-| `Aspid.FastTools.Types` | `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector`, `TypeSelectorAttribute` |
-| `Aspid.FastTools.Enums` | `EnumValues<T>` |
-| `Aspid.FastTools.Ids` | `IId`, `UniqueIdAttribute`, `IdRegistry` |
-| `Aspid.FastTools.UIElements` | Runtime fluent-расширения `VisualElement` |
-| `Aspid.FastTools.Editors` | Редакторские утилиты — расширения `SerializedProperty`, IMGUI-области, `GetScriptName` |
-| `Aspid.FastTools.Types.Editors` · `.Enums.Editors` · `.Ids.Editors` · `.UIElements.Editors` | Редакторский код по фичам (property drawers, инспектор реестров, editor-only расширения `VisualElement`) |
 
 ---
 
@@ -73,7 +87,9 @@ public class MyBehaviour : MonoBehaviour
 }
 ```
 
-### Сгенерированный код
+<details>
+<summary><b>Сгенерированный код</b></summary>
+<br/>
 
 ```csharp
 using Unity.Profiling;
@@ -97,13 +113,15 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 }
 ```
 
-### Результат
+</details>
+
+### Result
 
 ![aspid_fasttools_profiler_markers.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_profiler_markers.png)
 
 ---
 
-## Система сериализуемых типов
+## Serializable Type System
 
 Позволяет сериализовать ссылку на `System.Type` в Unity Inspector. Выбранный тип хранится как assembly-qualified name и разрешается лениво при первом обращении.
 
@@ -120,41 +138,23 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public class MyBehaviour : MonoBehaviour
+public abstract class Ability : MonoBehaviour
 {
-    [SerializeField] private SerializableType _anyType;
-    [SerializeField] private SerializableType<MonoBehaviour> _behaviourType;
+    public abstract void Activate();
+}
+
+public sealed class AbilitySelector : MonoBehaviour
+{
+    [SerializeField] private SerializableType<Ability> _abilityType;
 
     private void Start()
     {
-        Type type1 = _anyType;             // неявный оператор
-        Type type2 = _behaviourType.Type;  // явное свойство
-
-        var instance = (MonoBehaviour)gameObject.AddComponent(type2);
+        var ability = (Ability)gameObject.AddComponent(_abilityType.Type);
+        ability.Activate();
     }
 }
 ```
-![Aspid.FastTools.SerializableType.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.SerializableType.png)
-### ComponentTypeSelector
-
-Сериализуемая структура, добавляющая в Inspector выпадающий список для смены типа объекта. Добавьте её как поле в базовый класс — при выборе подтипа редактор перезаписывает `m_Script` на `SerializedObject`, фактически превращая компонент или ScriptableObject в выбранный подтип.
-
-Список автоматически ограничивается подтипами класса, в котором объявлено поле. Дополнительная настройка не требуется.
-
-```csharp
-using UnityEngine;
-using Aspid.FastTools.Types;
-
-public abstract class BaseEnemy : MonoBehaviour
-{
-    [SerializeField] private ComponentTypeSelector _typeSelector;
-}
-
-public class FastEnemy : BaseEnemy { }
-public class TankEnemy : BaseEnemy { }
-```
-
----
+![aspid_fasttools_serializable_type.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_serializable_type.gif)
 
 ### TypeSelectorAttribute
 
@@ -191,18 +191,24 @@ public enum TypeAllow
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public class MyBehaviour : MonoBehaviour
+public abstract class AbilityModifier
 {
-    [TypeSelector(typeof(IMyInterface))]
-    [SerializeField] private string _typeName;
+    public abstract void Apply();
+}
 
-    // Включить абстрактные типы и интерфейсы в список выбора
-    [TypeSelector(typeof(object), Allow = TypeAllow.All)]
-    [SerializeField] private string _anyType;
+public sealed class AbilitySelector : MonoBehaviour
+{
+    // Каждый элемент массива — отдельный picker, ограниченный AbilityModifier.
+    [TypeSelector(typeof(AbilityModifier))]
+    [SerializeField] private string[] _modifierTypes;
 }
 ```
 
-### Окно выбора типа
+> Полный сэмпл — `Ability` / `AbilitySelector` / `EnemyBase` и их наследники — поставляется в сэмпле `Types` (Package Manager → Aspid.FastTools → Samples).
+
+---
+
+### Type Selector Window
 
 В Inspector отображается кнопка, открывающая всплывающее окно с поиском, которое включает:
 
@@ -212,21 +218,79 @@ public class MyBehaviour : MonoBehaviour
 - Историю навигации (кнопка «назад»)
 - Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
 
-![Aspid.FastTools.TypeSelectorWindow.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.TypeSelectorWindow.png)
+![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_type_selector_window.png)
+
+Это же окно доступно как публичный API — открывайте его из любого editor-кода (кастомных инспекторов, `EditorWindow`, пунктов меню), когда нужно вывести выбор типа за пределами стандартного потока `SerializableType` / `[TypeSelector]`.
+
+```csharp
+namespace Aspid.FastTools.Types.Editors
+{
+    public sealed class TypeSelectorWindow : EditorWindow
+    {
+        public static void Show(
+            Rect screenRect,
+            Type[] types = null,
+            string currentAqn = "",
+            TypeAllow allow = TypeAllow.None,
+            Action<string> onSelected = null);
+    }
+}
+```
+
+| Параметр | Описание |
+|----------|----------|
+| `screenRect` | Прямоугольник в экранных координатах, к которому привязывается dropdown. |
+| `types` | Базовые типы, по которым фильтруются видимые элементы. В списке остаются только типы, совместимые со **всеми** записями. По умолчанию — `typeof(object)`. |
+| `currentAqn` | Assembly-qualified имя текущего выбранного типа: окно сразу откроется на его уровне иерархии. Передайте `null` или пустую строку, чтобы стартовать с корня. |
+| `allow` | Какие специальные категории (абстрактные классы, интерфейсы) включаются в список в дополнение к конкретным классам. По умолчанию: `TypeAllow.None`. |
+| `onSelected` | Callback с assembly-qualified именем выбранного типа или `null`, если пользователь выбрал `<None>`. |
+
+### ComponentTypeSelector
+
+Сериализуемая структура, добавляющая в Inspector выпадающий список для смены типа объекта. Добавьте её как поле в базовый класс — при выборе подтипа редактор перезаписывает `m_Script` на `SerializedObject`, фактически превращая компонент или ScriptableObject в выбранный подтип.
+
+Список автоматически ограничивается подтипами класса, в котором объявлено поле. Дополнительная настройка не требуется.
+
+```csharp
+using UnityEngine;
+using Aspid.FastTools.Types;
+
+public abstract class EnemyBase : MonoBehaviour
+{
+    [SerializeField] private ComponentTypeSelector _enemyType;
+    [SerializeField] [Min(0)] private float _health = 100f;
+
+    public abstract void Attack();
+}
+
+public sealed class FastEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _speed = 25f;
+
+    public override void Attack() =>
+        Debug.Log($"Fast enemy strikes! (speed: {_speed})");
+}
+
+public sealed class TankEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _armor = 50f;
+
+    public override void Attack() =>
+        Debug.Log($"Tank attacks! (armor: {_armor})");
+}
+```
+
+![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
+
 ---
 
-## Система перечислений
+## Enum System
 
 Предоставляет сериализуемые отображения enum → значение, настраиваемые через Inspector.
 
 ### EnumValues\<TValue\>
 
 Сериализуемая коллекция записей `EnumValue<TValue>` с настраиваемым значением по умолчанию. Реализует `IEnumerable<KeyValuePair<Enum, TValue>>`.
-
-```csharp
-[Serializable]
-public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
-```
 
 | Член | Описание |
 |------|----------|
@@ -236,28 +300,52 @@ public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
 Поддерживает `[Flags]`-перечисления: `Equals` использует `HasFlag` и корректно обрабатывает члены со значением `0`.
 
 ```csharp
+using System;
 using UnityEngine;
 using Aspid.FastTools.Enums;
 
-public enum Direction { Left, Right, Up, Down }
+public enum DamageType { Physical, Fire, Ice, Poison }
 
-public class MyBehaviour : MonoBehaviour
+[Flags]
+public enum StatusEffect
 {
-    [SerializeField] private EnumValues<Sprite> _directionSprites;
+    None    = 0,
+    Burning = 1,
+    Frozen  = 2,
+    Slowed  = 4,
+    Stunned = 8,
+}
 
-    private void SetIcon(Direction dir)
+public sealed class DamageDealer : MonoBehaviour
+{
+    [SerializeField] private EnumValues<float> _damageMultipliers;
+    [SerializeField] private EnumValues<Color> _damageColors;
+
+    // Flag combinations (e.g. Burning | Slowed) match via HasFlag and first-hit wins,
+    // so list composite entries BEFORE their constituent flags.
+    [SerializeField] private EnumValues<float> _speedMultipliersByStatus;
+
+    [SerializeField] private DamageType _currentType;
+    [SerializeField] private StatusEffect _activeEffects;
+
+    private void DealDamage()
     {
-        var sprite = _directionSprites.GetValue(dir);
-        _image.sprite = sprite;
+        var multiplier = _damageMultipliers.GetValue(_currentType);
+        var color      = _damageColors.GetValue(_currentType);
+        var speedMod   = _speedMultipliersByStatus.GetValue(_activeEffects);
+        // ...
     }
 }
 ```
+![aspid_fasttools_enum_values.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_enum_values.png)
 
 В Inspector выберите тип перечисления в заголовке `EnumValues`, затем назначьте значение для каждого члена перечисления. Нажмите правой кнопкой мыши по свойству, чтобы открыть контекстное меню с пунктом **Populate Missing Enum Members** — он добавит записи для всех отсутствующих членов перечисления, используя текущее Default Value как начальное значение.
 
+> Полный сэмпл — `DamageDealer` / `DamageType` / `StatusEffect` — поставляется в сэмпле `EnumValues` (Package Manager → Aspid.FastTools → Samples).
+
 ---
 
-## Система ID
+## ID System (Beta)
 
 > **Бета:** Система ID находится в бета-версии. Публичный API, структура генерируемого кода и редакторский UX могут измениться в будущих релизах.
 
@@ -265,7 +353,7 @@ public class MyBehaviour : MonoBehaviour
 
 Единственный ScriptableObject `IdRegistry` сопоставляет строковые имена стабильным целочисленным ID и предоставляет полные `int ↔ string` поиски в рантайме.
 
-### Использование
+### Setup
 
 **1.** Объявите `partial struct`, реализующий `IId`. Генератор исходников автоматически добавит необходимые поля и свойство:
 
@@ -320,6 +408,8 @@ public class EnemySpawner : MonoBehaviour
 }
 ```
 
+![aspid_fasttools_id_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_selector.gif)
+
 ### UniqueIdAttribute
 
 Помечает поле как требующее уникального значения среди всех ассетов объявляющего типа. Inspector показывает предупреждение, если два ассета используют одинаковый ID.
@@ -328,6 +418,8 @@ public class EnemySpawner : MonoBehaviour
 [Conditional("UNITY_EDITOR")]
 public sealed class UniqueIdAttribute : PropertyAttribute { }
 ```
+
+![aspid_fasttools_id_collision.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_collision.gif)
 
 ### IdRegistry
 
@@ -345,15 +437,13 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 
 Реестр наследуется напрямую от `ScriptableObject` и предоставляет генерик-аналог `IdRegistry<T>` (с `T : struct, IId`), добавляющий типизированные перегрузки `Contains(T)` и `TryGetName(T, out string)`. Редактирование — добавление, переименование, удаление записей — выполняется через инспектор реестра и `RegistryEditorCore`, а не через публичный runtime API.
 
+![aspid_fasttools_id_registry.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_registry.png)
+
 ---
 
-## Расширения SerializedProperty
+## SerializedProperty Extensions
 
 Цепочные расширения над `SerializedProperty` для синхронизации владеющего `SerializedObject`, записи типизированных значений и рефлексии над полем-источником.
-
-```csharp
-using Aspid.FastTools.Editors;
-```
 
 ```csharp
 property
@@ -376,11 +466,7 @@ property
 
 ---
 
-## IMGUI-области разметки
-
-```csharp
-using Aspid.FastTools.Editors;
-```
+## IMGUI Layout Scopes
 
 Три `ref struct`-области — `VerticalScope`, `HorizontalScope`, `ScrollViewScope` — оборачивают `EditorGUILayout.Begin*` / `End*`. Каждая предоставляет свойство `Rect` и вызывает соответствующий метод `End*` в `Dispose`:
 
@@ -418,89 +504,76 @@ using (VerticalScope.Begin(out var rect, GUI.skin.box))
 
 ---
 
-## Расширения VisualElement
+## VisualElement Extensions
 
 Fluent-методы расширения для построения UIToolkit-деревьев в коде. Все методы возвращают `T` (сам элемент) для цепочки вызовов.
 
-```csharp
-using Aspid.FastTools.UIElements;         // runtime-расширения
-using Aspid.FastTools.UIElements.Editors; // editor-only расширения (например, AddOpenScriptCommand)
-```
-
-### Краткий справочник
-
-Пакет покрывает:
-
-- **Основные операции с элементом** — имя, видимость, tooltip, user data, picking mode, data source, а также хелперы `AddChild`/`InsertChild`.
-- **Фокус** — `SetFocus`, `SetBlur`, `SetTabIndex`, `SetFocusable`.
-- **USS** — `AddClass`/`RemoveClass`/`ToggleInClass`/`EnableInClass`, `AddStyleSheets[FromResource]`.
-- **Стили** — все свойства `IStyle`: разметка, размер, отступы, шрифт, текст, цвет, рамка, фон, трансформации (вкл. aspect/filter/material с Unity 6.3+), переходы, overflow, slice, cursor.
-- **Специализированные элементы** — `TextElement`, `ITextEdition`, `ITextSelection`, `BaseField`, `BaseBoolField` (Toggle), `INotifyValueChanged` (с опциональными типами `Unity.Mathematics`), `IMixedValueSupport`, `Button`, `Slider`/`BaseSlider`, `ProgressBar`, `HelpBox`, `Foldout`, `Image`, `IMGUIContainer`, а также полная поверхность `ListView`/`TreeView`/`MultiColumn*`.
-- **Editor-only команды** — `AddOpenScriptCommand`, `BindTo`/`BindPropertyTo`, `Initialize` для `EnumField`/`EnumFlagsField`, подписка на изменения у `PropertyField`.
-- **USS custom-style helpers** — `ICustomStyle.TryGetByEnum` для парсинга строковых USS-свойств в enum.
-
 > Полный справочник по методам: [VisualElementExtensions.md](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/RU/VisualElementExtensions.md)
 
-### Полный пример
+### Example
+
+Реактивный редактор для `ScriptableObject` `AbilityConfig` — заголовок и статус-пилла в шапке, тело из `PropertyField`, и Warning `HelpBox`, который переключается в зависимости от `ManaCost`.
 
 ```csharp
-using UnityEditor;
-using UnityEngine;
-using Aspid.FastTools.Editors;          // GetScriptName
-using Aspid.FastTools.UIElements;       // runtime-расширения VisualElement
-using Aspid.FastTools.UIElements.Editors; // AddOpenScriptCommand
-using UnityEngine.UIElements;
-
-[CustomEditor(typeof(MyBehaviour))]
-public class MyBehaviourEditor : Editor
+[CustomEditor(typeof(AbilityConfig))]
+internal sealed class AbilityConfigEditor : Editor
 {
     public override VisualElement CreateInspectorGUI()
     {
-        const string iconPath = "Editor/MyIcon";
+        var config = (AbilityConfig)target;
 
-        var scriptName = target.GetScriptName();
-        var dark  = new Color(0.15f, 0.15f, 0.15f);
-        var light = new Color(0.75f, 0.75f, 0.75f);
+        var badge = new Label()
+            .SetFontSize(10).SetUnityFontStyleAndWeight(FontStyle.Bold)
+            .SetPaddingX(10).SetPaddingY(3)
+            .SetBorderRadius(10).SetBorderWidth(1);
 
+        var helpBox = new HelpBox(
+                "This ability costs no mana — is that intentional?",
+                HelpBoxMessageType.Warning)
+            .SetMarginTop(8).SetBorderRadius(6);
+
+        var manaField = new PropertyField(serializedObject.FindProperty("_manaCost"))
+            .AddValueChanged(_ => Refresh());
+
+        Refresh();
         return new VisualElement()
-            .SetName("Header")
-            .SetBackgroundColor(dark)
-            .SetFlexDirection(FlexDirection.Row)
-            .SetPadding(top: 5, bottom: 5, left: 10, right: 10)
-            .SetBorderRadius(topLeft: 10, topRight: 10, bottomLeft: 10, bottomRight: 10)
-            .AddChild(new Image()
-                .SetName("Icon")
-                .AddOpenScriptCommand(target)
-                .SetImageFromResource(iconPath)
-                .SetSize(width: 40, height: 40))
-            .AddChild(new Label(scriptName)
-                .SetName("Title")
-                .SetFlexGrow(1)
-                .SetFontSize(16)
-                .SetMargin(left: 10)
-                .SetColor(light)
-                .SetAlignSelf(Align.Center)
-                .SetOverflow(Overflow.Hidden)
-                .SetWhiteSpace(WhiteSpace.NoWrap)
-                .SetTextOverflow(TextOverflow.Ellipsis)
-                .SetUnityFontStyleAndWeight(FontStyle.Bold));
+            .SetBorderRadius(10).SetBorderWidth(1)
+            .AddChild(new VisualElement()
+                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
+                .SetPaddingX(14).SetPaddingY(12)
+                .AddChild(new Label(target.GetScriptName())
+                    .SetFlexGrow(1).SetFontSize(15)
+                    .SetUnityFontStyleAndWeight(FontStyle.Bold))
+                .AddChild(badge))
+            .AddChild(new VisualElement()
+                .SetPaddingX(14).SetPaddingY(12)
+                .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName")))
+                .AddChild(new PropertyField(serializedObject.FindProperty("_description")))
+                .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))
+                .AddChild(manaField)
+                .AddChild(helpBox));
+
+        void Refresh()
+        {
+            var isFree = config.ManaCost is 0;
+            badge.SetText(isFree ? "FREE" : $"{config.ManaCost} MP");
+            helpBox.SetDisplay(isFree ? DisplayStyle.Flex : DisplayStyle.None);
+        }
     }
 }
 ```
 
-### Результат
+> Полный сэмпл — `AbilityConfig.cs`, полированный `AbilityConfigEditor.cs` (свои цвета, подзаголовок и divider — то, что на скриншоте ниже) и два `.asset`-примера — поставляется в сэмпле `VisualElements` (Package Manager → Aspid.FastTools → Samples).
 
-![Aspid.FastTools.VisualElement.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.VisualElement.png)
+### Result
+
+![aspid_fasttools_visual_element.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_visual_element.gif)
 
 ---
 
-## Вспомогательные расширения для редактора
+## Editor Helper Extensions
 
 Утилитарные методы для получения отображаемых имён объектов Unity в пользовательских редакторах.
-
-```csharp
-using Aspid.FastTools.Editors;
-```
 
 ```csharp
 public static string GetScriptName(this Object obj)
