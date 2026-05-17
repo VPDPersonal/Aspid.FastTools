@@ -152,7 +152,7 @@ public sealed class AbilitySelector : MonoBehaviour
     }
 }
 ```
-![Aspid.FastTools.SerializableType.png](../Images/Aspid.FastTools.SerializableType.png)
+![aspid_fasttools_serializable_type.gif](../Images/aspid_fasttools_serializable_type.gif)
 ### TypeSelectorAttribute
 
 An editor-only `PropertyAttribute` that restricts the type selection popup to specific base types. Applied to `string` fields that store assembly-qualified type names.
@@ -203,6 +203,18 @@ public sealed class AbilitySelector : MonoBehaviour
 
 ---
 
+### Type Selector Window
+
+The Inspector shows a button that opens a searchable popup window with:
+
+- Hierarchical namespace organization
+- Text search with filtering
+- Keyboard navigation (Arrow keys, Enter, Escape)
+- Navigation history (back button)
+- Assembly disambiguation for types with identical names
+
+![Aspid.FastTools.TypeSelectorWindow.png](../Images/Aspid.FastTools.TypeSelectorWindow.png)
+
 ### ComponentTypeSelector
 
 A serializable struct that renders a type-switching dropdown in the Inspector. Add it as a field to a base class — picking a subtype rewrites `m_Script` on the `SerializedObject`, effectively changing the component or ScriptableObject to the chosen subtype.
@@ -238,18 +250,6 @@ public sealed class TankEnemy : EnemyBase
 }
 ```
 ![aspid_fasttools_component_type_selector.gif](../Images/aspid_fasttools_component_type_selector.gif)
-
-### Type Selector Window
-
-The Inspector shows a button that opens a searchable popup window with:
-
-- Hierarchical namespace organization
-- Text search with filtering
-- Keyboard navigation (Arrow keys, Enter, Escape)
-- Navigation history (back button)
-- Assembly disambiguation for types with identical names
-
-![Aspid.FastTools.TypeSelectorWindow.png](../Images/Aspid.FastTools.TypeSelectorWindow.png)
 
 > The complete sample — `Ability` / `AbilitySelector` / `EnemyBase` and their subclasses — ships in the `Types` sample (Package Manager → Aspid.FastTools → Samples).
 

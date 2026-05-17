@@ -152,7 +152,7 @@ public sealed class AbilitySelector : MonoBehaviour
     }
 }
 ```
-![Aspid.FastTools.SerializableType.png](../Images/Aspid.FastTools.SerializableType.png)
+![aspid_fasttools_serializable_type.gif](../Images/aspid_fasttools_serializable_type.gif)
 ### TypeSelectorAttribute
 
 Атрибут `PropertyAttribute`, доступный только в редакторе, ограничивающий всплывающее окно выбора типа конкретными базовыми типами. Применяется к полям `string`, хранящим assembly-qualified имена типов.
@@ -203,6 +203,18 @@ public sealed class AbilitySelector : MonoBehaviour
 
 ---
 
+### Type Selector Window
+
+В Inspector отображается кнопка, открывающая всплывающее окно с поиском, которое включает:
+
+- Иерархическую организацию по пространствам имён
+- Текстовый поиск с фильтрацией
+- Навигацию с клавиатуры (стрелки, Enter, Escape)
+- Историю навигации (кнопка «назад»)
+- Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
+
+![Aspid.FastTools.TypeSelectorWindow.png](../Images/Aspid.FastTools.TypeSelectorWindow.png)
+
 ### ComponentTypeSelector
 
 Сериализуемая структура, добавляющая в Inspector выпадающий список для смены типа объекта. Добавьте её как поле в базовый класс — при выборе подтипа редактор перезаписывает `m_Script` на `SerializedObject`, фактически превращая компонент или ScriptableObject в выбранный подтип.
@@ -238,18 +250,6 @@ public sealed class TankEnemy : EnemyBase
 }
 ```
 ![aspid_fasttools_component_type_selector.gif](../Images/aspid_fasttools_component_type_selector.gif)
-
-### Type Selector Window
-
-В Inspector отображается кнопка, открывающая всплывающее окно с поиском, которое включает:
-
-- Иерархическую организацию по пространствам имён
-- Текстовый поиск с фильтрацией
-- Навигацию с клавиатуры (стрелки, Enter, Escape)
-- Историю навигации (кнопка «назад»)
-- Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
-
-![Aspid.FastTools.TypeSelectorWindow.png](../Images/Aspid.FastTools.TypeSelectorWindow.png)
 
 > Полный сэмпл — `Ability` / `AbilitySelector` / `EnemyBase` и их наследники — поставляется в сэмпле `Types` (Package Manager → Aspid.FastTools → Samples).
 
