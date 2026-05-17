@@ -30,8 +30,18 @@
 Установите Aspid.FastTools одним из следующих способов:
 
 - **Скачать .unitypackage** — Перейдите на [страницу релизов GitHub](https://github.com/VPDPersonal/Aspid.FastTools/releases) и скачайте последнюю версию `Aspid.FastTools.X.X.X.unitypackage`. Импортируйте его в проект.
-- **Через UPM** (Unity Package Manager) подключите следующий пакет:
-  - `https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools`
+
+- **Через UPM** (Unity Package Manager) — добавьте пакет по его Git URL:
+
+  ```
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools
+  ```
+
+  Чтобы установить конкретную версию, добавьте тег релиза в виде `#<tag>`-фрагмента (список доступных тегов — на странице [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)):
+
+  ```
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools#v.0.0.1-alpha.5
+  ```
 
 ---
 
