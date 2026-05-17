@@ -155,6 +155,7 @@ public sealed class AbilitySelector : MonoBehaviour
 }
 ```
 ![aspid_fasttools_serializable_type.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_serializable_type.gif)
+
 ### TypeSelectorAttribute
 
 An editor-only `PropertyAttribute` that restricts the type selection popup to specific base types. Applied to `string` fields that store assembly-qualified type names.
