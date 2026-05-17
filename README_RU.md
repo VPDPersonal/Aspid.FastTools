@@ -155,44 +155,6 @@ public sealed class AbilitySelector : MonoBehaviour
 }
 ```
 ![Aspid.FastTools.SerializableType.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.SerializableType.png)
-### ComponentTypeSelector
-
-Сериализуемая структура, добавляющая в Inspector выпадающий список для смены типа объекта. Добавьте её как поле в базовый класс — при выборе подтипа редактор перезаписывает `m_Script` на `SerializedObject`, фактически превращая компонент или ScriptableObject в выбранный подтип.
-
-Список автоматически ограничивается подтипами класса, в котором объявлено поле. Дополнительная настройка не требуется.
-
-```csharp
-using UnityEngine;
-using Aspid.FastTools.Types;
-
-public abstract class EnemyBase : MonoBehaviour
-{
-    [SerializeField] private ComponentTypeSelector _enemyType;
-    [SerializeField] [Min(0)] private float _health = 100f;
-
-    public abstract void Attack();
-}
-
-public sealed class FastEnemy : EnemyBase
-{
-    [SerializeField] [Min(0)] private float _speed = 25f;
-
-    public override void Attack() =>
-        Debug.Log($"Fast enemy strikes! (speed: {_speed})");
-}
-
-public sealed class TankEnemy : EnemyBase
-{
-    [SerializeField] [Min(0)] private float _armor = 50f;
-
-    public override void Attack() =>
-        Debug.Log($"Tank attacks! (armor: {_armor})");
-}
-```
-![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
-
----
-
 ### TypeSelectorAttribute
 
 Атрибут `PropertyAttribute`, доступный только в редакторе, ограничивающий всплывающее окно выбора типа конкретными базовыми типами. Применяется к полям `string`, хранящим assembly-qualified имена типов.
@@ -240,6 +202,44 @@ public sealed class AbilitySelector : MonoBehaviour
     [SerializeField] private string[] _modifierTypes;
 }
 ```
+
+---
+
+### ComponentTypeSelector
+
+Сериализуемая структура, добавляющая в Inspector выпадающий список для смены типа объекта. Добавьте её как поле в базовый класс — при выборе подтипа редактор перезаписывает `m_Script` на `SerializedObject`, фактически превращая компонент или ScriptableObject в выбранный подтип.
+
+Список автоматически ограничивается подтипами класса, в котором объявлено поле. Дополнительная настройка не требуется.
+
+```csharp
+using UnityEngine;
+using Aspid.FastTools.Types;
+
+public abstract class EnemyBase : MonoBehaviour
+{
+    [SerializeField] private ComponentTypeSelector _enemyType;
+    [SerializeField] [Min(0)] private float _health = 100f;
+
+    public abstract void Attack();
+}
+
+public sealed class FastEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _speed = 25f;
+
+    public override void Attack() =>
+        Debug.Log($"Fast enemy strikes! (speed: {_speed})");
+}
+
+public sealed class TankEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _armor = 50f;
+
+    public override void Attack() =>
+        Debug.Log($"Tank attacks! (armor: {_armor})");
+}
+```
+![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
 
 ### Type Selector Window
 

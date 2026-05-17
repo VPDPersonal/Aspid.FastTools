@@ -155,44 +155,6 @@ public sealed class AbilitySelector : MonoBehaviour
 }
 ```
 ![Aspid.FastTools.SerializableType.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/Aspid.FastTools.SerializableType.png)
-### ComponentTypeSelector
-
-A serializable struct that renders a type-switching dropdown in the Inspector. Add it as a field to a base class — picking a subtype rewrites `m_Script` on the `SerializedObject`, effectively changing the component or ScriptableObject to the chosen subtype.
-
-The dropdown is automatically constrained to subtypes of the class that declares the field. No additional configuration is required.
-
-```csharp
-using UnityEngine;
-using Aspid.FastTools.Types;
-
-public abstract class EnemyBase : MonoBehaviour
-{
-    [SerializeField] private ComponentTypeSelector _enemyType;
-    [SerializeField] [Min(0)] private float _health = 100f;
-
-    public abstract void Attack();
-}
-
-public sealed class FastEnemy : EnemyBase
-{
-    [SerializeField] [Min(0)] private float _speed = 25f;
-
-    public override void Attack() =>
-        Debug.Log($"Fast enemy strikes! (speed: {_speed})");
-}
-
-public sealed class TankEnemy : EnemyBase
-{
-    [SerializeField] [Min(0)] private float _armor = 50f;
-
-    public override void Attack() =>
-        Debug.Log($"Tank attacks! (armor: {_armor})");
-}
-```
-![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
-
----
-
 ### TypeSelectorAttribute
 
 An editor-only `PropertyAttribute` that restricts the type selection popup to specific base types. Applied to `string` fields that store assembly-qualified type names.
@@ -240,6 +202,44 @@ public sealed class AbilitySelector : MonoBehaviour
     [SerializeField] private string[] _modifierTypes;
 }
 ```
+
+---
+
+### ComponentTypeSelector
+
+A serializable struct that renders a type-switching dropdown in the Inspector. Add it as a field to a base class — picking a subtype rewrites `m_Script` on the `SerializedObject`, effectively changing the component or ScriptableObject to the chosen subtype.
+
+The dropdown is automatically constrained to subtypes of the class that declares the field. No additional configuration is required.
+
+```csharp
+using UnityEngine;
+using Aspid.FastTools.Types;
+
+public abstract class EnemyBase : MonoBehaviour
+{
+    [SerializeField] private ComponentTypeSelector _enemyType;
+    [SerializeField] [Min(0)] private float _health = 100f;
+
+    public abstract void Attack();
+}
+
+public sealed class FastEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _speed = 25f;
+
+    public override void Attack() =>
+        Debug.Log($"Fast enemy strikes! (speed: {_speed})");
+}
+
+public sealed class TankEnemy : EnemyBase
+{
+    [SerializeField] [Min(0)] private float _armor = 50f;
+
+    public override void Attack() =>
+        Debug.Log($"Tank attacks! (armor: {_armor})");
+}
+```
+![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
 
 ### Type Selector Window
 
