@@ -12,6 +12,7 @@
 
 - **Getting Started**
   - [Integration](#integration)
+  - [Claude Code Plugin](#claude-code-plugin)
   - [Donate](#donate)
 - **Features**
   - [ProfilerMarker](#profilermarker)
@@ -42,6 +43,25 @@
   ```
   https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools#v.0.0.1-alpha.5
   ```
+
+---
+
+## Claude Code Plugin
+
+Если вы используете [Claude Code](https://docs.claude.com/en/docs/claude-code), сопутствующий маркетплейс [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) поставляет плагин `aspid-fasttools` — набор скиллов, которые обучают Claude Code конвенциям и API этого пакета.
+
+Добавьте маркетплейс и установите плагин:
+
+```sh
+/plugin marketplace add VPDPersonal/Aspid.Claude.Plugins
+/plugin install aspid-fasttools@aspid-claude-plugins
+```
+
+Включённые скиллы:
+
+- **`aspid-id-struct`** — создаёт новую `IId`-структуру и `[UniqueId]`-поля для [ID System](#id-system-beta).
+- **`aspid-profiler-marker`** — вставляет вызовы `this.Marker()` с правильной формой `using`/scope.
+- **`aspid-visual-element-fluent`** — собирает editor- или runtime-UI через fluent-расширения `VisualElement`.
 
 ---
 

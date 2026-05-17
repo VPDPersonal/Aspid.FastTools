@@ -12,6 +12,7 @@
 
 - **Getting Started**
   - [Integration](#integration)
+  - [Claude Code Plugin](#claude-code-plugin)
   - [Donate](#donate)
 - **Features**
   - [ProfilerMarker](#profilermarker)
@@ -42,6 +43,25 @@ Install Aspid.FastTools using one of the following methods:
   ```
   https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools#v.0.0.1-alpha.5
   ```
+
+---
+
+## Claude Code Plugin
+
+If you use [Claude Code](https://docs.claude.com/en/docs/claude-code), the companion [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) marketplace ships the `aspid-fasttools` plugin — a set of skills that teach Claude Code this package's conventions and APIs.
+
+Add the marketplace and install the plugin:
+
+```sh
+/plugin marketplace add VPDPersonal/Aspid.Claude.Plugins
+/plugin install aspid-fasttools@aspid-claude-plugins
+```
+
+Included skills:
+
+- **`aspid-id-struct`** — scaffold a new `IId` struct and `[UniqueId]` fields for the [ID System](#id-system-beta).
+- **`aspid-profiler-marker`** — insert `this.Marker()` call sites with the right `using`/scope shape.
+- **`aspid-visual-element-fluent`** — build editor or runtime UI using the fluent `VisualElement` extensions.
 
 ---
 
