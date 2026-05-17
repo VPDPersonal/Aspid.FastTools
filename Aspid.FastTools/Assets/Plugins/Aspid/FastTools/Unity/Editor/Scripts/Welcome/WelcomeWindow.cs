@@ -18,7 +18,7 @@ namespace Aspid.FastTools.Editors
         private const float ToastEdgeMargin = 8f;
         private const float ToastCursorOffset = 16f;
 
-        private const string MenuPath = "Tools/Aspid FastTools/Welcome";
+        private const string MenuPath = "Tools/Aspid 🐍/Welcome FastTools";
 
         private const string PackageName = "com.aspid.fasttools";
         private const string PackageRootPath = "Assets/Plugins/Aspid/FastTools";
