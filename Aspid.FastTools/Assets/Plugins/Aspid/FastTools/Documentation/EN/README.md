@@ -187,6 +187,7 @@ public sealed class TankEnemy : EnemyBase
         Debug.Log($"Tank attacks! (armor: {_armor})");
 }
 ```
+![aspid_fasttools_component_type_selector.gif](../Images/aspid_fasttools_component_type_selector.gif)
 
 ---
 
