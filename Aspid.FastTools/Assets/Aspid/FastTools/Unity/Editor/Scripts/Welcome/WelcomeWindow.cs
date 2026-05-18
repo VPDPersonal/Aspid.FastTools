@@ -21,7 +21,7 @@ namespace Aspid.FastTools.Editors
         private const string MenuPath = "Tools/Aspid 🐍/Welcome FastTools";
 
         private const string PackageName = "com.aspid.fasttools";
-        private const string PackageRootPath = "Assets/Plugins/Aspid/FastTools";
+        private const string PackageRootPath = "Assets/Aspid/FastTools";
 
         private const string SamplesPath = PackageRootPath + "/Samples";
         private const string PackageManifestPath = PackageRootPath + "/package.json";

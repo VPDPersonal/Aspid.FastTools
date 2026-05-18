@@ -19,7 +19,7 @@ Compilation is handled automatically by Unity's build system when the project is
 ```bash
 # From Aspid.FastTools.Generators/
 dotnet build -c Release
-# Outputs DLL to: Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Aspid.FastTools.Generators.dll
+# Outputs DLL to: Aspid.FastTools/Assets/Aspid/FastTools/Aspid.FastTools.Generators.dll
 ```
 
 Run tests with:
@@ -42,7 +42,7 @@ dotnet test
 - All pipeline data structures are value-equatable `readonly struct` with explicit `IEquatable<T>` — never store `ISymbol`/`SyntaxNode` in pipeline data (breaks Roslyn's incremental cache). `Aspid.FastTools.Generators.Tests/IncrementalCacheTests` regression-tests this.
 - Dependencies: `Aspid.Generators.Helper`, `Microsoft.CodeAnalysis.CSharp`, `SourceGenerator.Foundations`
 
-**Unity package** (`Aspid.FastTools/Assets/Plugins/Aspid/FastTools/`):
+**Unity package** (`Aspid.FastTools/Assets/Aspid/FastTools/`):
 - `Unity/Runtime/` — shipped with player builds
 - `Unity/Editor/Scripts/` — editor-only code, excluded from builds
 - `Unity/Editor/Resources/UI/` — editor USS stylesheets, organized by domain (`UI/Components/`, `UI/Ids/`, `UI/Types/`, `UI/Enums/`, `UI/Windows/`); shared base palette at `UI/Aspid-FastTools-Default-Dark.uss`. Files follow `Aspid-FastTools-{Feature}.uss`.
@@ -160,7 +160,7 @@ Examples:
 
 All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this grammar; new variables in any other stylesheet must follow it from the start.
 
-**README files:** 4 files to keep in sync: root `README.md`/`README_RU.md` and `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/EN/README.md`/`RU/README.md`. Image paths differ between them — root files use `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/...`, the inner READMEs use `../Images/...`. Per-feature references (`SerializedPropertyExtensions.md`, `VisualElementExtensions.md`) live alongside each README inside `EN/`/`RU/`.
+**README files:** 4 files to keep in sync: root `README.md`/`README_RU.md` and `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/EN/README.md`/`RU/README.md`. Image paths differ between them — root files use `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/...`, the inner READMEs use `../Images/...`. Per-feature references (`SerializedPropertyExtensions.md`, `VisualElementExtensions.md`) live alongside each README inside `EN/`/`RU/`.
 
 ### Local Claude Code automation
 

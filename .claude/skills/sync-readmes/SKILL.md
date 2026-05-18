@@ -12,20 +12,20 @@ The package ships **eight** README files that drift from the code easily. Use th
 
 | Path | Locale | Image base path |
 |---|---|---|
-| `README.md` | EN | `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/` |
-| `README_RU.md` | RU | `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/` |
-| `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/README.md` | EN | `Images/` |
-| `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/README_RU.md` | RU | `Images/` |
+| `README.md` | EN | `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/` |
+| `README_RU.md` | RU | `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/` |
+| `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/README.md` | EN | `Images/` |
+| `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/README_RU.md` | RU | `Images/` |
 
 The Documentation copies have an extra `## Source Code` / `## Исходный код` block linking to the GitHub repo — the root copies don't. Otherwise the body is identical character-for-character.
 
 **Sample READMEs (one EN + one RU per sample):**
 
-- `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Samples/Types/`
-- `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Samples/Ids/`
-- `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Samples/EnumValues/`
-- `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Samples/ProfilerMarkers/`
-- `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Samples/VisualElements/`
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/Types/`
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/Ids/`
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/EnumValues/`
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/ProfilerMarkers/`
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/VisualElements/`
 
 ## Workflow
 
@@ -61,14 +61,14 @@ Run these commands from the repo root and skim the output:
 
 ```bash
 # All using statements in samples — these are ground truth for namespaces
-grep -rn "^using Aspid" Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Samples --include="*.cs" | sort -u
+grep -rn "^using Aspid" Aspid.FastTools/Assets/Aspid/FastTools/Samples --include="*.cs" | sort -u
 
 # All CreateAssetMenu paths in the package
-grep -rn "menuName" Aspid.FastTools/Assets/Plugins/Aspid/FastTools --include="*.cs"
+grep -rn "menuName" Aspid.FastTools/Assets/Aspid/FastTools --include="*.cs"
 
 # Confirm both READMEs of a pair stay aligned (count sections)
-grep -c "^## " README.md Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/README.md
-grep -c "^## " README_RU.md Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/README_RU.md
+grep -c "^## " README.md Aspid.FastTools/Assets/Aspid/FastTools/Documentation/README.md
+grep -c "^## " README_RU.md Aspid.FastTools/Assets/Aspid/FastTools/Documentation/README_RU.md
 ```
 
 Then visually diff each pair of matched files (EN root vs EN Documentation; RU root vs RU Documentation) — only image paths and the `## Source Code` block should differ.

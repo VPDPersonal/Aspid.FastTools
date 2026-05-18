@@ -33,13 +33,13 @@
 - **Через UPM** (Unity Package Manager) — добавьте пакет по его Git URL:
 
   ```
-  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Aspid/FastTools
   ```
 
   Чтобы установить конкретную версию, добавьте тег релиза в виде `#<tag>`-фрагмента (список доступных тегов — на странице [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)):
 
   ```
-  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools#v.0.0.1-alpha.5
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Aspid/FastTools#v.0.0.1-alpha.5
   ```
 
 ---

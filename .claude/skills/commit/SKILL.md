@@ -35,14 +35,14 @@ Commit titles and bodies are **in English**, even when the chat is in Russian. T
 
 ## `Samples~/` caveat
 
-Files under `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Samples~/` routinely appear or disappear in `git status` because Unity's Package Manager imports/removes samples into the working tree. They are **local artefacts**, not feature changes.
+Files under `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/` routinely appear or disappear in `git status` because Unity's Package Manager imports/removes samples into the working tree. They are **local artefacts**, not feature changes.
 
 - Do **not** stage anything under `Samples~/` unless the user explicitly said the commit is about samples.
 - Even if a `Samples~/*` file is in `IN_CONTEXT` because the agent touched it as part of an unrelated experiment, treat it as out-of-context for the commit and mention it in the skipped list.
 
 ## Generators DLL
 
-Editing `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/` triggers `.claude/hooks/rebuild-generators-on-change.sh`, which rebuilds the Roslyn generator and redeploys the DLL to `Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Aspid.FastTools.Generators.dll`.
+Editing `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/` triggers `.claude/hooks/rebuild-generators-on-change.sh`, which rebuilds the Roslyn generator and redeploys the DLL to `Aspid.FastTools/Assets/Aspid/FastTools/Aspid.FastTools.Generators.dll`.
 
 - Do **not** run `dotnet build` manually before committing — the hook already did it.
 - Include the deployed `Aspid.FastTools.Generators.dll` in the commit **only** when the commit actually changes the generator's source. For Unity-only edits, the DLL must not be in the diff; if it is, that means a previous unrelated generator edit deployed it — keep it out of this commit.

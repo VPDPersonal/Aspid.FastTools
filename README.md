@@ -1,4 +1,4 @@
-<img src="Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
+<img src="Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
 <p>
   <a href="https://assetstore.unity.com/packages/slug/365584"><img src="https://img.shields.io/badge/Unity_6.0%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d" alt="Unity 6.0+" /></a>
@@ -35,13 +35,13 @@ Install Aspid.FastTools using one of the following methods:
 - **Via UPM** (Unity Package Manager) — add the package using its Git URL:
 
   ```
-  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Aspid/FastTools
   ```
 
   To install a specific version, append the release tag as a `#<tag>` fragment (see [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) for the list of available tags):
 
   ```
-  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Plugins/Aspid/FastTools#v.0.0.1-alpha.5
+  https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Aspid/FastTools#v.0.0.1-alpha.5
   ```
 
 ---
@@ -137,7 +137,7 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
 ### Result
 
-![aspid_fasttools_profiler_markers.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_profiler_markers.png)
+![aspid_fasttools_profiler_markers.png](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_profiler_markers.png)
 
 ---
 
@@ -174,7 +174,7 @@ public sealed class AbilitySelector : MonoBehaviour
     }
 }
 ```
-![aspid_fasttools_serializable_type.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_serializable_type.gif)
+![aspid_fasttools_serializable_type.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_serializable_type.gif)
 
 ### TypeSelectorAttribute
 
@@ -238,7 +238,7 @@ The Inspector shows a button that opens a searchable popup window with:
 - Navigation history (back button)
 - Assembly disambiguation for types with identical names
 
-![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_type_selector_window.png)
+![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 The same window is available as a public API — open it from any editor code (custom inspectors, `EditorWindow`, menu items) when you need a type picker outside the standard `SerializableType` / `[TypeSelector]` flow.
 
@@ -300,7 +300,7 @@ public sealed class TankEnemy : EnemyBase
 }
 ```
 
-![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
+![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
 
 ---
 
@@ -357,7 +357,7 @@ public sealed class DamageDealer : MonoBehaviour
     }
 }
 ```
-![aspid_fasttools_enum_values.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_enum_values.png)
+![aspid_fasttools_enum_values.png](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_enum_values.png)
 
 In the Inspector, select the enum type in the `EnumValues` header, then assign a value for each enum member. Right-click the property to open a context menu with **Populate Missing Enum Members** — it appends an entry for every enum member not yet in the list, seeded with the current Default Value.
 
@@ -428,7 +428,7 @@ public class EnemySpawner : MonoBehaviour
 }
 ```
 
-![aspid_fasttools_id_selector.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_selector.gif)
+![aspid_fasttools_id_selector.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_selector.gif)
 
 ### UniqueIdAttribute
 
@@ -439,7 +439,7 @@ Marks a field as requiring a unique value across all assets of the declaring typ
 public sealed class UniqueIdAttribute : PropertyAttribute { }
 ```
 
-![aspid_fasttools_id_collision.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_collision.gif)
+![aspid_fasttools_id_collision.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_collision.gif)
 
 ### IdRegistry
 
@@ -457,7 +457,7 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 
 The registry derives from `ScriptableObject` directly and exposes a generic counterpart `IdRegistry<T>` (with `T : struct, IId`) that adds typed `Contains(T)` and `TryGetName(T, out string)` overloads. Edits — adding, renaming, removing entries — happen through the registry inspector and `RegistryEditorCore`, not via a public runtime API.
 
-![aspid_fasttools_id_registry.png](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_registry.png)
+![aspid_fasttools_id_registry.png](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_registry.png)
 
 ---
 
@@ -482,7 +482,7 @@ The package covers:
 - **References** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, and `SetBoxed` (Unity 6+).
 - **Reflection helpers** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` for resolving the C# member and runtime instance behind a property.
 
-> Full method-by-method reference: [SerializedPropertyExtensions.md](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/EN/SerializedPropertyExtensions.md)
+> Full method-by-method reference: [SerializedPropertyExtensions.md](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/EN/SerializedPropertyExtensions.md)
 
 ---
 
@@ -528,7 +528,7 @@ All `Begin` overloads match the corresponding `EditorGUILayout.Begin*` signature
 
 Fluent extension methods for building UIToolkit trees in code. All methods return `T` (the element itself) for chaining.
 
-> Full method-by-method reference: [VisualElementExtensions.md](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/EN/VisualElementExtensions.md)
+> Full method-by-method reference: [VisualElementExtensions.md](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/EN/VisualElementExtensions.md)
 
 ### Example
 
@@ -587,7 +587,7 @@ internal sealed class AbilityConfigEditor : Editor
 
 ### Result
 
-![aspid_fasttools_visual_element.gif](Aspid.FastTools/Assets/Plugins/Aspid/FastTools/Documentation/Images/aspid_fasttools_visual_element.gif)
+![aspid_fasttools_visual_element.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_visual_element.gif)
 
 ---
 
