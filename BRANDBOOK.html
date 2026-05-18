@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Aspid FastTools — Brand Book</title>
+<style>
+:root {
+    /* ---------- ICONS (placeholders, dark theme uses inline SVG) ---------- */
+
+    /* ---------- BACKGROUNDS (Neutral Surface Ramp) ---------- */
+    --aspid-colors-bg-darkness:                    #1A1A1A;
+    --aspid-colors-bg-dark:                        #242424;
+    --aspid-colors-bg-light:                       #2E2E2E;
+    --aspid-colors-bg-lightness:                   #383838;
+
+    /* ---------- TEXT ---------- */
+    --aspid-colors-text-darkness:                  #6E6E6E;
+    --aspid-colors-text-dark:                      #969696;
+    --aspid-colors-text-light:                     #BEBEBE;
+    --aspid-colors-text-lightness:                 #DCDCDC;
+
+    /* ---------- SHADES (Lines & Borders) ---------- */
+    --aspid-colors-shade-darkness:                 #2D2D2D;
+    --aspid-colors-shade-dark:                     #3C3C3C;
+    --aspid-colors-shade-light:                    #505050;
+    --aspid-colors-shade-lightness:                #646464;
+
+    /* ---------- STATUS: BACKGROUNDS (Gemstone Bases) ---------- */
+    --aspid-colors-status-success-darkness:        #082814;
+    --aspid-colors-status-success-dark:            #0C411E;
+    --aspid-colors-status-success-light:           #145A2D;
+    --aspid-colors-status-success-lightness:       #1E783C;
+
+    --aspid-colors-status-warning-darkness:        #2D1E05;
+    --aspid-colors-status-warning-dark:            #55370A;
+    --aspid-colors-status-warning-light:           #7D5514;
+    --aspid-colors-status-warning-lightness:       #A5731E;
+
+    --aspid-colors-status-error-darkness:          #320A0A;
+    --aspid-colors-status-error-dark:              #551414;
+    --aspid-colors-status-error-light:             #7D2323;
+    --aspid-colors-status-error-lightness:         #A53232;
+
+    --aspid-colors-status-info-darkness:           #081932;
+    --aspid-colors-status-info-dark:               #0F2D55;
+    --aspid-colors-status-info-light:              #194B82;
+    --aspid-colors-status-info-lightness:          #2369B4;
+
+    /* ---------- STATUS: TEXT (Gemstone Brilliance) ---------- */
+    --aspid-colors-status-success-text-darkness:   #376E41;
+    --aspid-colors-status-success-text-dark:       #55AF64;
+    --aspid-colors-status-success-text-light:      #78EB91;
+    --aspid-colors-status-success-text-lightness:  #B4FFC8;
+
+    --aspid-colors-status-warning-text-darkness:   #785523;
+    --aspid-colors-status-warning-text-dark:       #B9873C;
+    --aspid-colors-status-warning-text-light:      #F5B955;
+    --aspid-colors-status-warning-text-lightness:  #FFEBAF;
+
+    --aspid-colors-status-error-text-darkness:     #7D2D2D;
+    --aspid-colors-status-error-text-dark:         #B94141;
+    --aspid-colors-status-error-text-light:        #EB5F5F;
+    --aspid-colors-status-error-text-lightness:    #FFAFAF;
+
+    --aspid-colors-status-info-text-darkness:      #28507D;
+    --aspid-colors-status-info-text-dark:          #4182B9;
+    --aspid-colors-status-info-text-light:         #5AB9F0;
+    --aspid-colors-status-info-text-lightness:     #BEF0FF;
+
+    /* ---------- STATUS: SHADES (Muted Gemstones) ---------- */
+    --aspid-colors-status-success-shade-darkness:  #19371E;
+    --aspid-colors-status-success-shade-dark:      #285532;
+    --aspid-colors-status-success-shade-light:     #418250;
+    --aspid-colors-status-success-shade-lightness: #5FBE73;
+
+    --aspid-colors-status-warning-shade-darkness:  #372814;
+    --aspid-colors-status-warning-shade-dark:      #5A411E;
+    --aspid-colors-status-warning-shade-light:     #876432;
+    --aspid-colors-status-warning-shade-lightness: #B98C4B;
+
+    --aspid-colors-status-error-shade-darkness:    #371919;
+    --aspid-colors-status-error-shade-dark:        #5A2D2D;
+    --aspid-colors-status-error-shade-light:       #874141;
+    --aspid-colors-status-error-shade-lightness:   #BE5F5F;
+
+    --aspid-colors-status-info-shade-darkness:     #142337;
+    --aspid-colors-status-info-shade-dark:         #23415F;
+    --aspid-colors-status-info-shade-light:        #376491;
+    --aspid-colors-status-info-shade-lightness:    #5591C8;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+
+body {
+    background: var(--aspid-colors-bg-darkness);
+    color: var(--aspid-colors-text-light);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    font-size: 12px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------- LAYOUT ---------------- */
+.brandbook {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 60px 40px 120px;
+}
+
+.hero {
+    border-bottom: 1px solid var(--aspid-colors-shade-darkness);
+    padding-bottom: 40px;
+    margin-bottom: 60px;
+}
+
+.hero__eyebrow {
+    color: var(--aspid-colors-text-dark);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+.hero__title {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--aspid-colors-text-lightness);
+    margin: 0 0 12px 0;
+    letter-spacing: -0.02em;
+}
+
+.hero__title-accent {
+    background: linear-gradient(
+        90deg,
+        var(--aspid-colors-status-success-text-light) 0%,
+        var(--aspid-colors-status-info-text-light) 50%,
+        var(--aspid-colors-status-warning-text-light) 100%
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero__lede {
+    color: var(--aspid-colors-text-light);
+    font-size: 14px;
+    max-width: 720px;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.hero__meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+}
+
+.hero__meta-item {
+    font-size: 11px;
+    color: var(--aspid-colors-text-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.hero__meta-item strong {
+    color: var(--aspid-colors-text-lightness);
+    margin-left: 6px;
+    font-weight: 600;
+}
+
+/* ---------------- SECTIONS ---------------- */
+.section {
+    margin-bottom: 80px;
+}
+
+.section__head {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--aspid-colors-shade-darkness);
+    padding-bottom: 12px;
+}
+
+.section__index {
+    color: var(--aspid-colors-text-darkness);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    min-width: 28px;
+}
+
+.section__title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--aspid-colors-text-lightness);
+    margin: 0;
+    letter-spacing: -0.01em;
+}
+
+.section__lede {
+    color: var(--aspid-colors-text-dark);
+    font-size: 13px;
+    max-width: 760px;
+    margin: 0 0 28px 0;
+    line-height: 1.7;
+}
+
+.subsection__title {
+    color: var(--aspid-colors-text-light);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin: 32px 0 16px;
+    font-weight: 600;
+}
+
+.subsection__title:first-child { margin-top: 0; }
+
+/* ---------------- COLOR RAMPS ---------------- */
+.ramp {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.ramp__label {
+    color: var(--aspid-colors-text-light);
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.ramp__label small {
+    display: block;
+    color: var(--aspid-colors-text-darkness);
+    font-size: 10px;
+    margin-top: 2px;
+    letter-spacing: 0.05em;
+    font-weight: 400;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+}
+
+.ramp__swatches {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}
+
+.swatch {
+    height: 84px;
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid var(--aspid-colors-shade-darkness);
+    overflow: hidden;
+    position: relative;
+}
+
+.swatch__tone {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--aspid-colors-text-light);
+    opacity: 0.7;
+    font-weight: 600;
+}
+
+.swatch__hex {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    color: var(--aspid-colors-text-lightness);
+    font-weight: 500;
+}
+
+.swatch--text {
+    background: var(--aspid-colors-bg-dark);
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.swatch--text .swatch__sample {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.swatch--text .swatch__hex {
+    margin-top: 6px;
+    color: var(--aspid-colors-text-darkness);
+    font-size: 10px;
+}
+
+/* Ramp swatches with explicit fills */
+.s-bg-darkness    { background: var(--aspid-colors-bg-darkness); }
+.s-bg-dark        { background: var(--aspid-colors-bg-dark); }
+.s-bg-light       { background: var(--aspid-colors-bg-light); }
+.s-bg-lightness   { background: var(--aspid-colors-bg-lightness); }
+
+.s-shade-darkness  { background: var(--aspid-colors-shade-darkness); }
+.s-shade-dark      { background: var(--aspid-colors-shade-dark); }
+.s-shade-light     { background: var(--aspid-colors-shade-light); }
+.s-shade-lightness { background: var(--aspid-colors-shade-lightness); }
+
+.s-success-bg-darkness  { background: var(--aspid-colors-status-success-darkness); }
+.s-success-bg-dark      { background: var(--aspid-colors-status-success-dark); }
+.s-success-bg-light     { background: var(--aspid-colors-status-success-light); }
+.s-success-bg-lightness { background: var(--aspid-colors-status-success-lightness); }
+
+.s-warning-bg-darkness  { background: var(--aspid-colors-status-warning-darkness); }
+.s-warning-bg-dark      { background: var(--aspid-colors-status-warning-dark); }
+.s-warning-bg-light     { background: var(--aspid-colors-status-warning-light); }
+.s-warning-bg-lightness { background: var(--aspid-colors-status-warning-lightness); }
+
+.s-error-bg-darkness  { background: var(--aspid-colors-status-error-darkness); }
+.s-error-bg-dark      { background: var(--aspid-colors-status-error-dark); }
+.s-error-bg-light     { background: var(--aspid-colors-status-error-light); }
+.s-error-bg-lightness { background: var(--aspid-colors-status-error-lightness); }
+
+.s-info-bg-darkness  { background: var(--aspid-colors-status-info-darkness); }
+.s-info-bg-dark      { background: var(--aspid-colors-status-info-dark); }
+.s-info-bg-light     { background: var(--aspid-colors-status-info-light); }
+.s-info-bg-lightness { background: var(--aspid-colors-status-info-lightness); }
+
+.s-success-shade-darkness  { background: var(--aspid-colors-status-success-shade-darkness); }
+.s-success-shade-dark      { background: var(--aspid-colors-status-success-shade-dark); }
+.s-success-shade-light     { background: var(--aspid-colors-status-success-shade-light); }
+.s-success-shade-lightness { background: var(--aspid-colors-status-success-shade-lightness); }
+
+.s-warning-shade-darkness  { background: var(--aspid-colors-status-warning-shade-darkness); }
+.s-warning-shade-dark      { background: var(--aspid-colors-status-warning-shade-dark); }
+.s-warning-shade-light     { background: var(--aspid-colors-status-warning-shade-light); }
+.s-warning-shade-lightness { background: var(--aspid-colors-status-warning-shade-lightness); }
+
+.s-error-shade-darkness  { background: var(--aspid-colors-status-error-shade-darkness); }
+.s-error-shade-dark      { background: var(--aspid-colors-status-error-shade-dark); }
+.s-error-shade-light     { background: var(--aspid-colors-status-error-shade-light); }
+.s-error-shade-lightness { background: var(--aspid-colors-status-error-shade-lightness); }
+
+.s-info-shade-darkness  { background: var(--aspid-colors-status-info-shade-darkness); }
+.s-info-shade-dark      { background: var(--aspid-colors-status-info-shade-dark); }
+.s-info-shade-light     { background: var(--aspid-colors-status-info-shade-light); }
+.s-info-shade-lightness { background: var(--aspid-colors-status-info-shade-lightness); }
+
+/* Text-tone swatches */
+.t-text-darkness   { color: var(--aspid-colors-text-darkness); }
+.t-text-dark       { color: var(--aspid-colors-text-dark); }
+.t-text-light      { color: var(--aspid-colors-text-light); }
+.t-text-lightness  { color: var(--aspid-colors-text-lightness); }
+
+.t-success-darkness  { color: var(--aspid-colors-status-success-text-darkness); }
+.t-success-dark      { color: var(--aspid-colors-status-success-text-dark); }
+.t-success-light     { color: var(--aspid-colors-status-success-text-light); }
+.t-success-lightness { color: var(--aspid-colors-status-success-text-lightness); }
+
+.t-warning-darkness  { color: var(--aspid-colors-status-warning-text-darkness); }
+.t-warning-dark      { color: var(--aspid-colors-status-warning-text-dark); }
+.t-warning-light     { color: var(--aspid-colors-status-warning-text-light); }
+.t-warning-lightness { color: var(--aspid-colors-status-warning-text-lightness); }
+
+.t-error-darkness  { color: var(--aspid-colors-status-error-text-darkness); }
+.t-error-dark      { color: var(--aspid-colors-status-error-text-dark); }
+.t-error-light     { color: var(--aspid-colors-status-error-text-light); }
+.t-error-lightness { color: var(--aspid-colors-status-error-text-lightness); }
+
+.t-info-darkness  { color: var(--aspid-colors-status-info-text-darkness); }
+.t-info-dark      { color: var(--aspid-colors-status-info-text-dark); }
+.t-info-light     { color: var(--aspid-colors-status-info-text-light); }
+.t-info-lightness { color: var(--aspid-colors-status-info-text-lightness); }
+
+/* ---------------- TYPOGRAPHY ---------------- */
+.typography {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.type {
+    background: var(--aspid-colors-bg-dark);
+    border: 1px solid var(--aspid-colors-shade-darkness);
+    border-radius: 10px;
+    padding: 24px;
+}
+
+.type__sample {
+    color: var(--aspid-colors-text-lightness);
+    margin-bottom: 16px;
+}
+
+.type__sample--h1 { font-size: 36px; font-weight: 700; line-height: 1.1; }
+.type__sample--h2 { font-size: 24px; font-weight: 700; }
+.type__sample--h3 { font-size: 18px; font-weight: 600; }
+.type__sample--h4 { font-size: 16px; font-weight: 600; }
+.type__sample--h5 { font-size: 14px; font-weight: 500; }
+.type__sample--h6 { font-size: 13px; font-weight: 500; }
+.type__sample--h7 { font-size: 12px; font-weight: 400; }
+
+.type__meta {
+    display: flex;
+    gap: 16px;
+    color: var(--aspid-colors-text-darkness);
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.type__usage {
+    color: var(--aspid-colors-text-dark);
+    font-size: 11px;
+    margin-top: 12px;
+    font-style: italic;
+}
+
+/* ---------------- TOKEN GRID (spacing/radii) ---------------- */
+.tokens {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.token {
+    background: var(--aspid-colors-bg-dark);
+    border: 1px solid var(--aspid-colors-shade-darkness);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.token__demo {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--aspid-colors-bg-darkness);
+    border: 1px dashed var(--aspid-colors-shade-dark);
+    border-radius: 4px;
+}
+
+.token__bar {
+    height: 100%;
+    background: var(--aspid-colors-status-info-text-light);
+    opacity: 0.5;
+}
+
+.token__shape {
+    width: 48px;
+    height: 48px;
+    background: var(--aspid-colors-bg-lightness);
+    border: 1px solid var(--aspid-colors-shade-light);
+}
+
+.token__name {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    color: var(--aspid-colors-text-lightness);
+}
+
+.token__value {
+    font-size: 10px;
+    color: var(--aspid-colors-text-darkness);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* ---------------- ELEVATION ---------------- */
+.elevation {
+    display: flex;
+    gap: 0;
+    padding: 24px;
+    background: #0e0e0e;
+    border-radius: 10px;
+    align-items: flex-end;
+    height: 200px;
+}
+
+.elevation__layer {
+    flex: 1;
+    border: 1px solid var(--aspid-colors-shade-darkness);
+    padding: 12px;
+    color: var(--aspid-colors-text-light);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+.elevation__layer:nth-child(1) { background: #0e0e0e; height: 100%; border-right: 0; }
+.elevation__layer:nth-child(2) { background: var(--aspid-colors-bg-darkness); height: 90%; border-right: 0; }
+.elevation__layer:nth-child(3) { background: var(--aspid-colors-bg-dark); height: 80%; border-right: 0; }
+.elevation__layer:nth-child(4) { background: var(--aspid-colors-bg-light); height: 70%; }
+
+.elevation__label strong {
+    display: block;
+    color: var(--aspid-colors-text-lightness);
+    font-size: 11px;
+    margin-bottom: 4px;
+    letter-spacing: 0.15em;
+}
+
+/* ---------------- COMPONENTS ---------------- */
+.components {
+    display: grid;
+    gap: 16px;
+}
+
+.component-card {
+    background: var(--aspid-colors-bg-dark);
+    border: 1px solid var(--aspid-colors-shade-darkness);
+    border-radius: 10px;
+    padding: 24px;
+}
+
+.component-card__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--aspid-colors-shade-darkness);
+}
+
+.component-card__title {
+    color: var(--aspid-colors-text-lightness);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.component-card__tag {
+    color: var(--aspid-colors-text-darkness);
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.component-card__desc {
+    color: var(--aspid-colors-text-dark);
+    font-size: 12px;
+    margin: 0 0 20px 0;
+    line-height: 1.7;
+}
+
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+/* AspidBox */
+.aspid-box {
+    background: var(--aspid-colors-bg-dark);
+    border-radius: 10px;
+    padding: 10px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--aspid-colors-text-light);
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.aspid-box--darkness  { background: var(--aspid-colors-bg-darkness); }
+.aspid-box--dark      { background: var(--aspid-colors-bg-dark); }
+.aspid-box--light     { background: var(--aspid-colors-bg-light); }
+.aspid-box--lightness { background: var(--aspid-colors-bg-lightness); }
+
+.aspid-box--success { background: var(--aspid-colors-status-success-dark); }
+.aspid-box--warning { background: var(--aspid-colors-status-warning-dark); }
+.aspid-box--error   { background: var(--aspid-colors-status-error-dark); }
+.aspid-box--info    { background: var(--aspid-colors-status-info-dark); }
+
+/* AspidDividingLine */
+.dividing-line-demo {
+    padding: 18px;
+    background: var(--aspid-colors-bg-darkness);
+    border-radius: 10px;
+}
+.dividing-line {
+    height: 1px;
+    margin: 12px 0;
+}
+.dividing-line--neutral { background: var(--aspid-colors-shade-dark); }
+.dividing-line--success { background: var(--aspid-colors-status-success-shade-dark); }
+.dividing-line--warning { background: var(--aspid-colors-status-warning-shade-dark); }
+.dividing-line--error   { background: var(--aspid-colors-status-error-shade-dark); }
+.dividing-line--info    { background: var(--aspid-colors-status-info-shade-dark); }
+
+.dividing-line__label {
+    font-size: 10px;
+    color: var(--aspid-colors-text-darkness);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+}
+
+/* AspidLabel */
+.label-demo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 24px;
+}
+.aspid-label {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* AspidInspectorHeader */
+.inspector-header {
+    background: var(--aspid-colors-status-error-dark);
+    border-radius: 10px;
+    padding: 6px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.inspector-header--success { background: var(--aspid-colors-status-success-dark); }
+.inspector-header--warning { background: var(--aspid-colors-status-warning-dark); }
+.inspector-header--error   { background: var(--aspid-colors-status-error-dark); }
+.inspector-header--info    { background: var(--aspid-colors-status-info-dark); }
+
+.inspector-header__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.inspector-header--success .inspector-header__icon { background: var(--aspid-colors-status-success-darkness); color: var(--aspid-colors-status-success-text-light); }
+.inspector-header--warning .inspector-header__icon { background: var(--aspid-colors-status-warning-darkness); color: var(--aspid-colors-status-warning-text-light); }
+.inspector-header--error   .inspector-header__icon { background: var(--aspid-colors-status-error-darkness);   color: var(--aspid-colors-status-error-text-light); }
+.inspector-header--info    .inspector-header__icon { background: var(--aspid-colors-status-info-darkness);    color: var(--aspid-colors-status-info-text-light); }
+
+.inspector-header__icon svg { width: 22px; height: 22px; }
+
+.inspector-header__text { display: flex; flex-direction: column; }
+
+.inspector-header__title {
+    font-size: 16px;
+    font-weight: 700;
+}
+.inspector-header__subtitle {
+    font-size: 12px;
+    margin-top: 2px;
+}
+.inspector-header--success .inspector-header__title    { color: var(--aspid-colors-status-success-text-light); }
+.inspector-header--success .inspector-header__subtitle { color: var(--aspid-colors-status-success-text-dark); }
+.inspector-header--warning .inspector-header__title    { color: var(--aspid-colors-status-warning-text-light); }
+.inspector-header--warning .inspector-header__subtitle { color: var(--aspid-colors-status-warning-text-dark); }
+.inspector-header--error   .inspector-header__title    { color: var(--aspid-colors-status-error-text-light); }
+.inspector-header--error   .inspector-header__subtitle { color: var(--aspid-colors-status-error-text-dark); }
+.inspector-header--info    .inspector-header__title    { color: var(--aspid-colors-status-info-text-light); }
+.inspector-header--info    .inspector-header__subtitle { color: var(--aspid-colors-status-info-text-dark); }
+
+/* AspidHelpBox */
+.help-box {
+    padding: 8px 12px;
+    border: 1px solid var(--aspid-colors-shade-dark);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--aspid-colors-bg-darkness);
+    margin-bottom: 8px;
+}
+.help-box--success { background: var(--aspid-colors-status-success-light); border-color: var(--aspid-colors-status-success-shade-lightness); }
+.help-box--warning { background: var(--aspid-colors-status-warning-light); border-color: var(--aspid-colors-status-warning-shade-lightness); }
+.help-box--error   { background: var(--aspid-colors-status-error-light);   border-color: var(--aspid-colors-status-error-shade-lightness); }
+.help-box--info    { background: var(--aspid-colors-status-info-light);    border-color: var(--aspid-colors-status-info-shade-lightness); }
+
+.help-box__icon {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.help-box__icon svg { width: 22px; height: 22px; }
+.help-box--success .help-box__icon { color: var(--aspid-colors-status-success-text-lightness); }
+.help-box--warning .help-box__icon { color: var(--aspid-colors-status-warning-text-lightness); }
+.help-box--error   .help-box__icon { color: var(--aspid-colors-status-error-text-lightness); }
+.help-box--info    .help-box__icon { color: var(--aspid-colors-status-info-text-lightness); }
+
+.help-box__text { font-size: 12px; line-height: 1.5; }
+.help-box--success .help-box__text { color: var(--aspid-colors-status-success-text-lightness); }
+.help-box--warning .help-box__text { color: var(--aspid-colors-status-warning-text-lightness); }
+.help-box--error   .help-box__text { color: var(--aspid-colors-status-error-text-lightness); }
+.help-box--info    .help-box__text { color: var(--aspid-colors-status-info-text-lightness); }
+
+/* GradientButton */
+.gradient-button {
+    height: 30px;
+    padding: 0 10px;
+    border-radius: 10px;
+    background: var(--aspid-colors-bg-darkness);
+    color: var(--aspid-colors-text-light);
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    border: 0;
+    position: relative;
+    overflow: hidden;
+}
+.gradient-button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 80% 50%,
+        var(--gb-accent, var(--aspid-colors-status-success-text-dark)) 0%,
+        rgba(0,0,0,0) 60%);
+    opacity: 0.5;
+    pointer-events: none;
+}
+.gradient-button > span { position: relative; z-index: 1; }
+.gradient-button--success { --gb-accent: var(--aspid-colors-status-success-text-dark); }
+.gradient-button--warning { --gb-accent: var(--aspid-colors-status-warning-text-dark); }
+.gradient-button--error   { --gb-accent: var(--aspid-colors-status-error-text-dark); }
+.gradient-button--info    { --gb-accent: var(--aspid-colors-status-info-text-dark); }
+
+/* Animated dots / title / logo / overlay placeholders */
+.decorative-demo {
+    height: 90px;
+    border-radius: 10px;
+    background: var(--aspid-colors-bg-darkness);
+    border: 1px solid var(--aspid-colors-shade-darkness);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    color: var(--aspid-colors-text-light);
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 11px;
+}
+
+.dots-bg {
+    background-image:
+        radial-gradient(var(--aspid-colors-status-success-text-darkness) 1.55px, transparent 1.55px),
+        radial-gradient(var(--aspid-colors-status-warning-text-darkness) 1.55px, transparent 1.55px),
+        radial-gradient(var(--aspid-colors-status-error-text-darkness)   1.55px, transparent 1.55px);
+    background-size: 36px 36px;
+    background-position: 0 0, 12px 18px, 24px 6px;
+}
+
+.animated-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(
+        90deg,
+        var(--aspid-colors-status-success-text-dark) 0%,
+        var(--aspid-colors-status-warning-text-dark) 50%,
+        var(--aspid-colors-status-error-text-dark) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.animated-logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    background:
+        radial-gradient(circle at 30% 30%,
+            var(--aspid-colors-status-info-text-light) 0%,
+            var(--aspid-colors-status-info-darkness) 70%);
+    box-shadow:
+        0 0 0 1px var(--aspid-colors-status-info-shade-dark),
+        0 0 24px var(--aspid-colors-status-info-shade-darkness);
+}
+
+.hover-overlay-target {
+    width: 100%;
+    height: 100%;
+    background: var(--aspid-colors-bg-dark);
+    position: relative;
+    overflow: hidden;
+}
+.hover-overlay-target::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 70% 40%,
+        rgba(255,255,255,0.18) 0%,
+        rgba(255,255,255,0) 45%);
+}
+
+/* ---------------- PRINCIPLES ---------------- */
+.principles {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.principle {
+    background: var(--aspid-colors-bg-dark);
+    border: 1px solid var(--aspid-colors-shade-darkness);
+    border-radius: 10px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.principle__num {
+    font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    color: var(--aspid-colors-text-darkness);
+    letter-spacing: 0.15em;
+}
+
+.principle__title {
+    color: var(--aspid-colors-text-lightness);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.principle__body {
+    color: var(--aspid-colors-text-dark);
+    font-size: 12px;
+    line-height: 1.7;
+    margin: 0;
+}
+
+.principle__title em {
+    font-style: normal;
+}
+.principle--success .principle__title em { color: var(--aspid-colors-status-success-text-light); }
+.principle--info    .principle__title em { color: var(--aspid-colors-status-info-text-light); }
+.principle--warning .principle__title em { color: var(--aspid-colors-status-warning-text-light); }
+.principle--error   .principle__title em { color: var(--aspid-colors-status-error-text-light); }
+
+/* ---------------- FOOTER ---------------- */
+.footer {
+    margin-top: 80px;
+    padding-top: 32px;
+    border-top: 1px solid var(--aspid-colors-shade-darkness);
+    color: var(--aspid-colors-text-darkness);
+    font-size: 11px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+@media (max-width: 800px) {
+    .typography, .principles { grid-template-columns: 1fr; }
+    .tokens { grid-template-columns: 1fr 1fr; }
+    .ramp { grid-template-columns: 1fr; }
+    .ramp__label { margin-bottom: 4px; }
+    .hero__title { font-size: 32px; }
+    .brandbook { padding: 30px 18px 60px; }
+}
+</style>
+</head>
+<body>
+<div class="brandbook">
+
+    <!-- ============== HERO ============== -->
+    <header class="hero">
+        <div class="hero__eyebrow">Aspid Toolkit · Brand Book v1.2</div>
+        <h1 class="hero__title">
+            Aspid <span class="hero__title-accent">FastTools</span>
+        </h1>
+        <p class="hero__lede">
+            Dark, utilitarian design system for Unity Editor tooling. Flat surfaces layered by neutral value,
+            gemstone-themed semantic statuses in parallel text/shade scales, and a 4-stop background ramp
+            for deep content layering.
+        </p>
+        <div class="hero__meta">
+            <div class="hero__meta-item">Status<strong>Active</strong></div>
+            <div class="hero__meta-item">Theme<strong>Dark</strong></div>
+            <div class="hero__meta-item">Stops<strong>4 — darkness · dark · light · lightness</strong></div>
+            <div class="hero__meta-item">Surface<strong>Unity 6.0+ Editor</strong></div>
+        </div>
+    </header>
+
+    <!-- ============== 01 COLOR ============== -->
+    <section class="section">
+        <div class="section__head">
+            <span class="section__index">01</span>
+            <h2 class="section__title">Color — The Gemstone Model</h2>
+        </div>
+        <p class="section__lede">
+            Color is organized into three parallel neutral ramps and four semantic status gemstones.
+            Every axis follows the same four-stop scale: <strong>darkness → dark → light → lightness</strong>.
+            Each gemstone subdivides into a deep <em>background</em> body fill, a vibrant <em>text</em>
+            scale for readable labels, and a muted <em>shade</em> scale for borders and lines.
+        </p>
+
+        <h3 class="subsection__title">Neutral Surface Ramp · <code>--aspid-colors-bg-*</code></h3>
+        <div class="ramp">
+            <div class="ramp__label">Background<small>--aspid-colors-bg</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-bg-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#1A1A1A</span></div>
+                <div class="swatch s-bg-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#242424</span></div>
+                <div class="swatch s-bg-light"><span class="swatch__tone">light</span><span class="swatch__hex">#2E2E2E</span></div>
+                <div class="swatch s-bg-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#383838</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Shade<small>--aspid-colors-shade</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-shade-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#2D2D2D</span></div>
+                <div class="swatch s-shade-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#3C3C3C</span></div>
+                <div class="swatch s-shade-light"><span class="swatch__tone">light</span><span class="swatch__hex">#505050</span></div>
+                <div class="swatch s-shade-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#646464</span></div>
+            </div>
+        </div>
+
+        <h3 class="subsection__title">Text Ramp · <code>--aspid-colors-text-*</code></h3>
+        <div class="ramp">
+            <div class="ramp__label">Text<small>--aspid-colors-text</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch swatch--text"><span class="swatch__sample t-text-darkness">Aa Aa</span><span class="swatch__hex">darkness · #6E6E6E</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-text-dark">Aa Aa</span><span class="swatch__hex">dark · #969696</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-text-light">Aa Aa</span><span class="swatch__hex">light · #BEBEBE</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-text-lightness">Aa Aa</span><span class="swatch__hex">lightness · #DCDCDC</span></div>
+            </div>
+        </div>
+
+        <h3 class="subsection__title">Status — Backgrounds (Deep Gemstone Bases)</h3>
+        <div class="ramp">
+            <div class="ramp__label">Success · Emerald<small>--status-success</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-success-bg-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#082814</span></div>
+                <div class="swatch s-success-bg-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#0C411E</span></div>
+                <div class="swatch s-success-bg-light"><span class="swatch__tone">light</span><span class="swatch__hex">#145A2D</span></div>
+                <div class="swatch s-success-bg-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#1E783C</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Warning · Topaz<small>--status-warning</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-warning-bg-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#2D1E05</span></div>
+                <div class="swatch s-warning-bg-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#55370A</span></div>
+                <div class="swatch s-warning-bg-light"><span class="swatch__tone">light</span><span class="swatch__hex">#7D5514</span></div>
+                <div class="swatch s-warning-bg-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#A5731E</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Error · Ruby<small>--status-error</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-error-bg-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#320A0A</span></div>
+                <div class="swatch s-error-bg-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#551414</span></div>
+                <div class="swatch s-error-bg-light"><span class="swatch__tone">light</span><span class="swatch__hex">#7D2323</span></div>
+                <div class="swatch s-error-bg-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#A53232</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Info · Sapphire<small>--status-info</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-info-bg-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#081932</span></div>
+                <div class="swatch s-info-bg-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#0F2D55</span></div>
+                <div class="swatch s-info-bg-light"><span class="swatch__tone">light</span><span class="swatch__hex">#194B82</span></div>
+                <div class="swatch s-info-bg-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#2369B4</span></div>
+            </div>
+        </div>
+
+        <h3 class="subsection__title">Status — Text (Gemstone Brilliance)</h3>
+        <div class="ramp">
+            <div class="ramp__label">Success Text<small>--status-success-text</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch swatch--text"><span class="swatch__sample t-success-darkness">Aa Aa</span><span class="swatch__hex">darkness · #376E41</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-success-dark">Aa Aa</span><span class="swatch__hex">dark · #55AF64</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-success-light">Aa Aa</span><span class="swatch__hex">light · #78EB91</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-success-lightness">Aa Aa</span><span class="swatch__hex">lightness · #B4FFC8</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Warning Text<small>--status-warning-text</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch swatch--text"><span class="swatch__sample t-warning-darkness">Aa Aa</span><span class="swatch__hex">darkness · #785523</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-warning-dark">Aa Aa</span><span class="swatch__hex">dark · #B9873C</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-warning-light">Aa Aa</span><span class="swatch__hex">light · #F5B955</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-warning-lightness">Aa Aa</span><span class="swatch__hex">lightness · #FFEBAF</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Error Text<small>--status-error-text</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch swatch--text"><span class="swatch__sample t-error-darkness">Aa Aa</span><span class="swatch__hex">darkness · #7D2D2D</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-error-dark">Aa Aa</span><span class="swatch__hex">dark · #B94141</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-error-light">Aa Aa</span><span class="swatch__hex">light · #EB5F5F</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-error-lightness">Aa Aa</span><span class="swatch__hex">lightness · #FFAFAF</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Info Text<small>--status-info-text</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch swatch--text"><span class="swatch__sample t-info-darkness">Aa Aa</span><span class="swatch__hex">darkness · #28507D</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-info-dark">Aa Aa</span><span class="swatch__hex">dark · #4182B9</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-info-light">Aa Aa</span><span class="swatch__hex">light · #5AB9F0</span></div>
+                <div class="swatch swatch--text"><span class="swatch__sample t-info-lightness">Aa Aa</span><span class="swatch__hex">lightness · #BEF0FF</span></div>
+            </div>
+        </div>
+
+        <h3 class="subsection__title">Status — Shades (Muted Gemstones · Borders & Lines)</h3>
+        <div class="ramp">
+            <div class="ramp__label">Success Shade<small>--status-success-shade</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-success-shade-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#19371E</span></div>
+                <div class="swatch s-success-shade-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#285532</span></div>
+                <div class="swatch s-success-shade-light"><span class="swatch__tone">light</span><span class="swatch__hex">#418250</span></div>
+                <div class="swatch s-success-shade-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#5FBE73</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Warning Shade<small>--status-warning-shade</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-warning-shade-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#372814</span></div>
+                <div class="swatch s-warning-shade-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#5A411E</span></div>
+                <div class="swatch s-warning-shade-light"><span class="swatch__tone">light</span><span class="swatch__hex">#876432</span></div>
+                <div class="swatch s-warning-shade-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#B98C4B</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Error Shade<small>--status-error-shade</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-error-shade-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#371919</span></div>
+                <div class="swatch s-error-shade-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#5A2D2D</span></div>
+                <div class="swatch s-error-shade-light"><span class="swatch__tone">light</span><span class="swatch__hex">#874141</span></div>
+                <div class="swatch s-error-shade-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#BE5F5F</span></div>
+            </div>
+        </div>
+        <div class="ramp">
+            <div class="ramp__label">Info Shade<small>--status-info-shade</small></div>
+            <div class="ramp__swatches">
+                <div class="swatch s-info-shade-darkness"><span class="swatch__tone">darkness</span><span class="swatch__hex">#142337</span></div>
+                <div class="swatch s-info-shade-dark"><span class="swatch__tone">dark</span><span class="swatch__hex">#23415F</span></div>
+                <div class="swatch s-info-shade-light"><span class="swatch__tone">light</span><span class="swatch__hex">#376491</span></div>
+                <div class="swatch s-info-shade-lightness"><span class="swatch__tone">lightness</span><span class="swatch__hex">#5591C8</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== 02 TYPOGRAPHY ============== -->
+    <section class="section">
+        <div class="section__head">
+            <span class="section__index">02</span>
+            <h2 class="section__title">Typography</h2>
+        </div>
+        <p class="section__lede">
+            Inherits Unity's default editor font (Inter / system sans). Sizing is exposed through
+            <code>AspidLabel</code>'s seven-step scale — selectable per-element via the
+            <code>aspid-fasttools-label-size--h1…h7</code> classes or the
+            <code>--aspid-fasttools-metrics-label_size</code> custom property. <strong>H7</strong> is the
+            inspector default; larger steps are reserved for hero strips and decorative titles.
+        </p>
+        <div class="typography">
+            <div class="type">
+                <div class="type__sample type__sample--h1">Display</div>
+                <div class="type__meta"><span>H1</span><span>36px</span></div>
+                <div class="type__usage">Hero displays · welcome screens, animated titles</div>
+            </div>
+            <div class="type">
+                <div class="type__sample type__sample--h2">Window Title</div>
+                <div class="type__meta"><span>H2</span><span>24px</span></div>
+                <div class="type__usage">Editor-window titles</div>
+            </div>
+            <div class="type">
+                <div class="type__sample type__sample--h3">Page Title</div>
+                <div class="type__meta"><span>H3</span><span>18px</span></div>
+                <div class="type__usage">Page-level titles inside windows</div>
+            </div>
+            <div class="type">
+                <div class="type__sample type__sample--h4">Inspector Header</div>
+                <div class="type__meta"><span>H4</span><span>16px</span></div>
+                <div class="type__usage">AspidInspectorHeader title</div>
+            </div>
+            <div class="type">
+                <div class="type__sample type__sample--h5">Section Title</div>
+                <div class="type__meta"><span>H5</span><span>14px</span></div>
+                <div class="type__usage">Section titles, GradientButton labels</div>
+            </div>
+            <div class="type">
+                <div class="type__sample type__sample--h6">Subtext</div>
+                <div class="type__meta"><span>H6</span><span>13px</span></div>
+                <div class="type__usage">AspidInspectorHeader subtext, secondary captions</div>
+            </div>
+            <div class="type">
+                <div class="type__sample type__sample--h7">Default inspector body — dense and readable at 12px without ever asking for a second glance.</div>
+                <div class="type__meta"><span>H7</span><span>12px</span></div>
+                <div class="type__usage">Default inspector body, AspidLabel base</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== 03 SPACING & RADII ============== -->
+    <section class="section">
+        <div class="section__head">
+            <span class="section__index">03</span>
+            <h2 class="section__title">Spacing &amp; Radii</h2>
+        </div>
+        <p class="section__lede">
+            Conventions, not tokens. Spacing and radii are applied directly in component
+            stylesheets — there is no shared <code>--metrics-spacing-*</code> / <code>--metrics-radius-*</code>
+            palette. The values below are the recurring set used across <code>Aspid-FastTools-*.uss</code>;
+            new components should reuse them rather than introduce variants.
+        </p>
+
+        <h3 class="subsection__title">Spacing — recurring values</h3>
+        <div class="tokens">
+            <div class="token">
+                <div class="token__demo"><div class="token__bar" style="width: 2px;"></div></div>
+                <div>
+                    <div class="token__name">2px</div>
+                    <div class="token__value">hairline gaps</div>
+                </div>
+            </div>
+            <div class="token">
+                <div class="token__demo"><div class="token__bar" style="width: 5px;"></div></div>
+                <div>
+                    <div class="token__name">5px</div>
+                    <div class="token__value">base unit · row gap, vertical rhythm</div>
+                </div>
+            </div>
+            <div class="token">
+                <div class="token__demo"><div class="token__bar" style="width: 10px;"></div></div>
+                <div>
+                    <div class="token__name">10px</div>
+                    <div class="token__value">group padding, container insets</div>
+                </div>
+            </div>
+        </div>
+        <p class="section__lede" style="margin-top: 16px;">
+            Inspectors use a <code>-10px</code> left offset on
+            <code>.aspid-fasttools-inspector-container</code> to align with Unity's native chrome.
+        </p>
+
+        <h3 class="subsection__title">Border Radii — actual usage</h3>
+        <div class="tokens">
+            <div class="token">
+                <div class="token__demo"><div class="token__shape" style="border-radius:8px;"></div></div>
+                <div>
+                    <div class="token__name">8px</div>
+                    <div class="token__value">AspidHelpBox</div>
+                </div>
+            </div>
+            <div class="token">
+                <div class="token__demo"><div class="token__shape" style="border-radius:10px;"></div></div>
+                <div>
+                    <div class="token__name">10px</div>
+                    <div class="token__value">AspidBox · GradientButton · headers</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== 04 ELEVATION ============== -->
+    <section class="section">
+        <div class="section__head">
+            <span class="section__index">04</span>
+            <h2 class="section__title">Elevation</h2>
+        </div>
+        <p class="section__lede">
+            There is no shadow language. Depth comes from value: every step up the ramp is one elevation level higher.
+            Backgrounds layer like sediment, not like cards floating on a page.
+        </p>
+        <div class="elevation">
+            <div class="elevation__layer">
+                <div class="elevation__label">
+                    <strong>Level 0</strong>
+                    Unity Default Grey
+                </div>
+            </div>
+            <div class="elevation__layer">
+                <div class="elevation__label">
+                    <strong>Level 1</strong>
+                    bg-darkness
+                </div>
+            </div>
+            <div class="elevation__layer">
+                <div class="elevation__label">
+                    <strong>Level 2</strong>
+                    bg-dark · containers
+                </div>
+            </div>
+            <div class="elevation__layer">
+                <div class="elevation__label">
+                    <strong>Level 3</strong>
+                    bg-light · raised
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== 05 COMPONENTS ============== -->
+    <section class="section">
+        <div class="section__head">
+            <span class="section__index">05</span>
+            <h2 class="section__title">Components</h2>
+        </div>
+        <p class="section__lede">
+            Ten primitives compose the inspector and editor-window surfaces — five structural,
+            five decorative. They follow the BEM-namespaced USS convention
+            (<code>aspid-fasttools-{block}__{element}--{modifier}</code>) and share the palette declared
+            in <code>Aspid-FastTools-Default-Dark.uss</code>; per-component sheets live alongside their
+            C# class under <code>Resources/UI/Components/Aspid-FastTools-{Component}.uss</code>.
+        </p>
+
+        <h3 class="subsection__title">Structural</h3>
+
+        <div class="components">
+
+            <!-- AspidBox -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidBox</h3>
+                    <span class="component-card__tag">aspid-fasttools-background</span>
+                </div>
+                <p class="component-card__desc">
+                    The rounded-10 card. Default fill is <code>bg-dark</code>. Variants step through the
+                    surface ramp or pick up a status base.
+                </p>
+                <div class="component-grid">
+                    <div class="aspid-box aspid-box--darkness">darkness</div>
+                    <div class="aspid-box aspid-box--dark">dark</div>
+                    <div class="aspid-box aspid-box--light">light</div>
+                    <div class="aspid-box aspid-box--lightness">lightness</div>
+                </div>
+                <div style="height:10px;"></div>
+                <div class="component-grid">
+                    <div class="aspid-box aspid-box--success" style="color: var(--aspid-colors-status-success-text-light)">success</div>
+                    <div class="aspid-box aspid-box--warning" style="color: var(--aspid-colors-status-warning-text-light)">warning</div>
+                    <div class="aspid-box aspid-box--error"   style="color: var(--aspid-colors-status-error-text-light)">error</div>
+                    <div class="aspid-box aspid-box--info"    style="color: var(--aspid-colors-status-info-text-light)">info</div>
+                </div>
+            </div>
+
+            <!-- AspidDividingLine -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidDividingLine</h3>
+                    <span class="component-card__tag">aspid-fasttools-dividing-line</span>
+                </div>
+                <p class="component-card__desc">
+                    Structural rules that always sit below text in saturation. Use <code>shade-dark</code>
+                    for neutral separators or the matching status shade for sectioned content.
+                </p>
+                <div class="dividing-line-demo">
+                    <span class="dividing-line__label">Neutral · shade-dark</span>
+                    <div class="dividing-line dividing-line--neutral"></div>
+                    <span class="dividing-line__label">Success · status-success-shade-dark</span>
+                    <div class="dividing-line dividing-line--success"></div>
+                    <span class="dividing-line__label">Warning · status-warning-shade-dark</span>
+                    <div class="dividing-line dividing-line--warning"></div>
+                    <span class="dividing-line__label">Error · status-error-shade-dark</span>
+                    <div class="dividing-line dividing-line--error"></div>
+                    <span class="dividing-line__label">Info · status-info-shade-dark</span>
+                    <div class="dividing-line dividing-line--info"></div>
+                </div>
+            </div>
+
+            <!-- AspidLabel -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidLabel</h3>
+                    <span class="component-card__tag">aspid-fasttools-label-size</span>
+                </div>
+                <p class="component-card__desc">
+                    Content blocks. Picks the matching tone from the <code>text</code> or status <code>text</code> ramp
+                    so labels are always 20–40% lighter than the lines around them.
+                </p>
+                <div class="label-demo">
+                    <div class="aspid-label t-text-darkness">Neutral · darkness</div>
+                    <div class="aspid-label t-text-dark">Neutral · dark</div>
+                    <div class="aspid-label t-text-light">Neutral · light</div>
+                    <div class="aspid-label t-text-lightness">Neutral · lightness</div>
+                    <div class="aspid-label t-success-light">Success · light</div>
+                    <div class="aspid-label t-success-lightness">Success · lightness</div>
+                    <div class="aspid-label t-warning-light">Warning · light</div>
+                    <div class="aspid-label t-warning-lightness">Warning · lightness</div>
+                    <div class="aspid-label t-error-light">Error · light</div>
+                    <div class="aspid-label t-error-lightness">Error · lightness</div>
+                    <div class="aspid-label t-info-light">Info · light</div>
+                    <div class="aspid-label t-info-lightness">Info · lightness</div>
+                </div>
+            </div>
+
+            <!-- AspidInspectorHeader -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidInspectorHeader</h3>
+                    <span class="component-card__tag">aspid-fasttools-inspector-header</span>
+                </div>
+                <p class="component-card__desc">
+                    Hero strip — pairs a 40px gemstone icon with an <strong>H4</strong> title (16px)
+                    and a dimmer <strong>H6</strong> subtext (13px). The status icon and the
+                    <code>--aspid-fasttools-colors-gradient</code> accent ride the matching status ramp;
+                    title and subtext shift through the corresponding <code>text</code> tones.
+                </p>
+
+                <div class="inspector-header inspector-header--success">
+                    <div class="inspector-header__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="inspector-header__text">
+                        <span class="inspector-header__title">Validation Passed</span>
+                        <span class="inspector-header__subtitle">All references are resolved and ready to ship.</span>
+                    </div>
+                </div>
+                <div class="inspector-header inspector-header--warning">
+                    <div class="inspector-header__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div class="inspector-header__text">
+                        <span class="inspector-header__title">Stale References</span>
+                        <span class="inspector-header__subtitle">Three IDs point to deleted assets.</span>
+                    </div>
+                </div>
+                <div class="inspector-header inspector-header--error">
+                    <div class="inspector-header__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    </div>
+                    <div class="inspector-header__text">
+                        <span class="inspector-header__title">Compilation Failed</span>
+                        <span class="inspector-header__subtitle">Generator produced 4 errors in IdRegistry.g.cs.</span>
+                    </div>
+                </div>
+                <div class="inspector-header inspector-header--info">
+                    <div class="inspector-header__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </div>
+                    <div class="inspector-header__text">
+                        <span class="inspector-header__title">Registry · 184 entries</span>
+                        <span class="inspector-header__subtitle">Last sync 2026-04-27 · 14:02</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AspidHelpBox -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidHelpBox</h3>
+                    <span class="component-card__tag">aspid-fasttools-help-box</span>
+                </div>
+                <p class="component-card__desc">
+                    Advisory strip — <code>status-{tone}-light</code> for the fill,
+                    <code>status-{tone}-shade-lightness</code> for the border, and
+                    <code>status-{tone}-text-lightness</code> for "etched" legibility on top of the
+                    saturated body. The icon is bound through <code>--aspid-fasttools-icons-help-box</code>
+                    using Unity's built-in console icons (<code>console.infoicon</code> /
+                    <code>warnicon</code> / <code>erroricon</code>).
+                </p>
+
+                <div class="help-box help-box--success">
+                    <div class="help-box__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="help-box__text">Generator output is up to date — no recompile required.</div>
+                </div>
+                <div class="help-box help-box--warning">
+                    <div class="help-box__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
+                    <div class="help-box__text">Manual ID was set lower than the current next-id. Existing entries may collide.</div>
+                </div>
+                <div class="help-box help-box--error">
+                    <div class="help-box__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                    </div>
+                    <div class="help-box__text">Identifier is not a valid C# name. Rename before saving.</div>
+                </div>
+                <div class="help-box help-box--info">
+                    <div class="help-box__icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    </div>
+                    <div class="help-box__text">Names are stripped from player builds. Only int IDs ship at runtime.</div>
+                </div>
+            </div>
+
+            <h3 class="subsection__title" style="grid-column: 1 / -1;">Decorative</h3>
+
+            <!-- AspidGradientButton -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidGradientButton</h3>
+                    <span class="component-card__tag">aspid-fasttools-gradient-button</span>
+                </div>
+                <p class="component-card__desc">
+                    14px bold button with a status-driven radial accent. Body sits on
+                    <code>--aspid-fasttools-colors-gradient-button-bg</code> (defaults to
+                    <code>bg-darkness</code>); the accent comes from
+                    <code>--aspid-fasttools-colors-gradient-button-accent</code> — typically a
+                    <code>status-{tone}-text-dark</code> swatch. Optional
+                    <code>__trailing-label</code> right-aligns secondary copy.
+                </p>
+                <div class="component-grid">
+                    <button class="gradient-button gradient-button--success"><span>Build Generators</span></button>
+                    <button class="gradient-button gradient-button--info"><span>Open Registry</span></button>
+                    <button class="gradient-button gradient-button--warning"><span>Run Cleanup</span></button>
+                    <button class="gradient-button gradient-button--error"><span>Delete Asset</span></button>
+                </div>
+            </div>
+
+            <!-- AspidAnimatedTitle -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidAnimatedTitle</h3>
+                    <span class="component-card__tag">aspid-fasttools-animated-title</span>
+                </div>
+                <p class="component-card__desc">
+                    Multi-word display title that cycles three accents
+                    (<code>color-1/2/3</code>, defaulting to success / warning / error
+                    <code>text-dark</code>) and applies a sine-wave letter offset. Tunable via
+                    <code>--aspid-fasttools-prop-animated-title-color_*</code> and
+                    <code>--aspid-fasttools-prop-animated-title-wave_*</code> custom properties.
+                    Use it sparingly — welcome screens and About panels only.
+                </p>
+                <div class="decorative-demo">
+                    <span class="animated-title">Aspid FastTools</span>
+                </div>
+            </div>
+
+            <!-- AspidAnimatedLogo -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidAnimatedLogo</h3>
+                    <span class="component-card__tag">aspid-fasttools-animated-logo</span>
+                </div>
+                <p class="component-card__desc">
+                    Layered logo that cross-fades between sprites
+                    (<code>__layer</code> / <code>__layer--visible</code>) and pulses on hover.
+                    Pulse rate and hover amplitude are exposed as
+                    <code>--aspid-fasttools-prop-animated_logo-pulse_speed</code> and
+                    <code>--aspid-fasttools-prop-animated_logo-pulse_hover_amplitude</code>;
+                    layer images are bound through
+                    <code>AspidAnimatedLogoLayerImageStyle</code>.
+                </p>
+                <div class="decorative-demo">
+                    <div class="animated-logo"></div>
+                </div>
+            </div>
+
+            <!-- AspidAnimatedDotsBackground -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidAnimatedDotsBackground</h3>
+                    <span class="component-card__tag">aspid-fasttools-animated-dots-background</span>
+                </div>
+                <p class="component-card__desc">
+                    Absolute-positioned dot field for hero panels. Three blob colours
+                    (<code>--aspid-fasttools-colors-dot-blob-color-1/2/3</code>) and three
+                    metrics — <code>dot_radius</code> (1.55), <code>dot_spacing</code> (18) and
+                    <code>dot_scale_reference</code> (420) — drive density and parallax response.
+                </p>
+                <div class="decorative-demo dots-bg">
+                    <span>animated dots · parallax ready</span>
+                </div>
+            </div>
+
+            <!-- AspidHoverGradientOverlay -->
+            <div class="component-card">
+                <div class="component-card__head">
+                    <h3 class="component-card__title">AspidHoverGradientOverlay</h3>
+                    <span class="component-card__tag">aspid-fasttools-hover-gradient-overlay</span>
+                </div>
+                <p class="component-card__desc">
+                    Absolute overlay that paints a soft radial highlight tracking the cursor.
+                    Tint is bound to <code>--aspid-fasttools-colors-hover_overlay</code>
+                    (transparent by default); animation is shaped by
+                    <code>hover_overlay_steps</code> (75), <code>hover_overlay_lerp_rate</code> (0.12)
+                    and <code>hover_overlay_alpha_scale</code> (0.35). Drop it inside any
+                    AspidBox / GradientButton to add hover lift without restyling the host.
+                </p>
+                <div class="decorative-demo" style="padding: 0;">
+                    <div class="hover-overlay-target"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============== 06 PRINCIPLES ============== -->
+    <section class="section">
+        <div class="section__head">
+            <span class="section__index">06</span>
+            <h2 class="section__title">Principles</h2>
+        </div>
+        <div class="principles">
+            <div class="principle principle--success">
+                <span class="principle__num">01</span>
+                <h3 class="principle__title"><em>Text over Lines.</em></h3>
+                <p class="principle__body">
+                    Text is always 20–40% more saturated or lighter than the structural shade surrounding it.
+                    If a label disappears into its border, the wrong tone was picked.
+                </p>
+            </div>
+            <div class="principle principle--info">
+                <span class="principle__num">02</span>
+                <h3 class="principle__title"><em>Grounded Saturation.</em></h3>
+                <p class="principle__body">
+                    Pure whites and neons are forbidden. Depth comes from pigment richness — gemstone hues,
+                    not luminosity. Brightness is a finite resource; spend it on text, not surfaces.
+                </p>
+            </div>
+            <div class="principle principle--warning">
+                <span class="principle__num">03</span>
+                <h3 class="principle__title"><em>Density over Whitespace.</em></h3>
+                <p class="principle__body">
+                    Designed for 320px-wide inspectors. Row heights live between 18–22px and base spacing is
+                    a single 5px unit. Whitespace is a tool, not a default.
+                </p>
+            </div>
+            <div class="principle principle--error">
+                <span class="principle__num">04</span>
+                <h3 class="principle__title"><em>Status as State.</em></h3>
+                <p class="principle__body">
+                    Color exists to convey status. If an element is neutral, it must stay in the neutral
+                    grey ramp. Decorative color is not a feature of this system.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <span>Aspid FastTools · Brand Book v1.2</span>
+        <span>Engineer-first · Calm · Dense · Grounded</span>
+    </footer>
+</div>
+</body>
+</html>
