@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0] — 2026-05-17
+## [1.0.0-rc.1] — 2026-05-18
 
-Initial public release. Marketed as a preview while the **ID System** is finalised — its public API, generated boilerplate and editor workflow may still change in a follow-up release.
+First release candidate for `1.0.0`. Marketed as a preview while the **ID System** is finalised — its public API, generated boilerplate and editor workflow may still change before the final `1.0.0` release.
 
 ### Added
 
@@ -82,5 +82,5 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 - EN and RU READMEs at the package root and at `Documentation/EN/` and `Documentation/RU/`, mirroring the same content with language-appropriate image paths.
 - Per-feature reference documents next to each README: `SerializedPropertyExtensions.md`, `VisualElementExtensions.md`.
 
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0...HEAD
-[1.0.0]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0
+[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.1...HEAD
+[1.0.0-rc.1]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.1
