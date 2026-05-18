@@ -1,0 +1,175 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g. 1.0.0 or 1.0.0-rc.2). The leading "v" is added automatically.'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  PACKAGE_PATH: Aspid.FastTools/Assets/Aspid/FastTools
+  CHANGELOG_PATH: Aspid.FastTools/Assets/Aspid/FastTools/CHANGELOG.md
+  GENERATORS_SOLUTION_DIR: Aspid.FastTools.Generators
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME}"
+          fi
+          VERSION="${VERSION#v}"
+          if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Version '$VERSION' is not a valid SemVer string."
+            exit 1
+          fi
+          TAG="v$VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          if [[ "$VERSION" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Releasing $TAG"
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Check tag does not already exist
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.version.outputs.tag }}"
+          if git rev-parse --verify --quiet "refs/tags/$TAG" >/dev/null; then
+            echo "::error::Tag $TAG already exists locally. Delete it or pick another version."
+            exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $TAG already exists on origin."
+            exit 1
+          fi
+
+      - name: Validate package.json version
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          PKG_VERSION=$(jq -r .version "$PACKAGE_PATH/package.json")
+          if [[ "$PKG_VERSION" != "$VERSION" ]]; then
+            echo "::error file=$PACKAGE_PATH/package.json::package.json version ($PKG_VERSION) does not match release version ($VERSION). Bump it before tagging."
+            exit 1
+          fi
+          echo "package.json version matches: $PKG_VERSION"
+
+      - name: Extract CHANGELOG section
+        id: changelog
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          NOTES=$(awk -v ver="$VERSION" '
+            BEGIN { capture = 0 }
+            /^## \[/ {
+              if (capture) { exit }
+              if ($0 ~ "^## \\[" ver "\\]([^0-9A-Za-z.-]|$)") { capture = 1; next }
+            }
+            capture { print }
+          ' "$CHANGELOG_PATH")
+
+          if [[ -z "$(echo "$NOTES" | tr -d '[:space:]')" ]]; then
+            echo "::error file=$CHANGELOG_PATH::No CHANGELOG section found for version $VERSION. Add a '## [$VERSION] — YYYY-MM-DD' heading before releasing."
+            exit 1
+          fi
+
+          {
+            echo "notes<<__CHANGELOG_EOF__"
+            echo "$NOTES"
+            echo "__CHANGELOG_EOF__"
+          } >> "$GITHUB_OUTPUT"
+
+          echo "CHANGELOG section for $VERSION extracted ($(echo "$NOTES" | wc -l) lines)."
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build generators
+        run: dotnet build -c Release
+        working-directory: ${{ env.GENERATORS_SOLUTION_DIR }}
+
+      - name: Verify deployed generator DLL is present
+        run: |
+          set -euo pipefail
+          DEPLOYED="$PACKAGE_PATH/Aspid.FastTools.Generators.dll"
+          if [[ ! -s "$DEPLOYED" ]]; then
+            echo "::error file=$DEPLOYED::Generator DLL is missing from the package. Run 'dotnet build -c Release' in $GENERATORS_SOLUTION_DIR and commit the updated DLL before releasing."
+            exit 1
+          fi
+          echo "Deployed generator DLL: $(stat -c '%s bytes' "$DEPLOYED")"
+
+      - name: Create and push release tag
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.version.outputs.tag }}"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Checkout release tag
+        run: |
+          set -euo pipefail
+          git fetch origin "refs/tags/${{ steps.version.outputs.tag }}:refs/tags/${{ steps.version.outputs.tag }}" || true
+          git checkout "${{ steps.version.outputs.tag }}"
+
+      - name: Publish UPM subtree
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          UPM_TAG="upm/$VERSION"
+
+          if git ls-remote --exit-code --tags origin "$UPM_TAG" >/dev/null 2>&1; then
+            echo "::error::Tag $UPM_TAG already exists on origin. Refusing to overwrite a published UPM tag."
+            exit 1
+          fi
+
+          SPLIT_SHA=$(git subtree split --prefix="$PACKAGE_PATH" HEAD)
+          echo "Subtree split SHA: $SPLIT_SHA"
+
+          # Move the upm branch forward to this release's split commit.
+          git push --force origin "$SPLIT_SHA:refs/heads/upm"
+
+          # Immutable per-version tag for users who pin to a specific release.
+          git tag "$UPM_TAG" "$SPLIT_SHA"
+          git push origin "$UPM_TAG"
+
+          echo "Published $UPM_TAG and updated upm branch."
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: ${{ steps.changelog.outputs.notes }}
+          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
