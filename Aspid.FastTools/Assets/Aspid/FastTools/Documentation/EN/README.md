@@ -35,7 +35,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/A
 To install a specific version, append the release tag as a `#<tag>` fragment (see [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) for the list of available tags):
 
 ```
-https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Aspid/FastTools#v.0.0.1-alpha.5
+https://github.com/VPDPersonal/Aspid.FastTools.git?path=Aspid.FastTools/Assets/Aspid/FastTools#v1.0.0-rc.1
 ```
 
 ---
