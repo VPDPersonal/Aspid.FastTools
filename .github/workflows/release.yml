@@ -147,7 +147,15 @@ jobs:
         run: |
           set -euo pipefail
           VERSION="${{ steps.version.outputs.version }}"
-          UPM_TAG="upm/$VERSION"
+          PRERELEASE="${{ steps.version.outputs.prerelease }}"
+
+          if [[ "$PRERELEASE" == "true" ]]; then
+            UPM_BRANCH="upm-preview"
+          else
+            UPM_BRANCH="upm"
+          fi
+
+          UPM_TAG="$UPM_BRANCH/$VERSION"
 
           if git ls-remote --exit-code --tags origin "$UPM_TAG" >/dev/null 2>&1; then
             echo "::error::Tag $UPM_TAG already exists on origin. Refusing to overwrite a published UPM tag."
@@ -157,14 +165,12 @@ jobs:
           SPLIT_SHA=$(git subtree split --prefix="$PACKAGE_PATH" HEAD)
           echo "Subtree split SHA: $SPLIT_SHA"
 
-          # Move the upm branch forward to this release's split commit.
-          git push --force origin "$SPLIT_SHA:refs/heads/upm"
+          git push --force origin "$SPLIT_SHA:refs/heads/$UPM_BRANCH"
 
-          # Immutable per-version tag for users who pin to a specific release.
           git tag "$UPM_TAG" "$SPLIT_SHA"
           git push origin "$UPM_TAG"
 
-          echo "Published $UPM_TAG and updated upm branch."
+          echo "Published $UPM_TAG and updated $UPM_BRANCH branch."
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
