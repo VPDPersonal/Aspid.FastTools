@@ -28,16 +28,23 @@
 
 ## Integration
 
-Install Aspid.FastTools via UPM (Unity Package Manager) — add the package using its Git URL. The release workflow publishes a `upm` branch containing only the package contents at its root, so no `?path=` query is needed:
+Install Aspid.FastTools via UPM (Unity Package Manager) — add the package using its Git URL. The release workflow publishes two branches containing only the package contents at their root, so no `?path=` query is needed:
+
+| Branch | Contents |
+|---|---|
+| `upm` | Latest **stable** release |
+| `upm-preview` | Latest **preview** release (rc, beta, alpha, …) |
 
 ```
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
-To install a specific version, target the immutable per-release tag `upm/<version>` (see [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) for the list of available versions):
+To install a specific version, target the immutable per-release tag (see [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) for the list of available versions):
 
 ```
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm/1.0.0-rc.2
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm/1.0.0
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.2
 ```
 
 ---
