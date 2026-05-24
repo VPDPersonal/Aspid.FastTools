@@ -19,6 +19,44 @@ namespace Aspid.FastTools.UIElements
             element.Add(child);
             return element;
         }
+
+        /// <summary>
+        /// Removes the specified child from the element and returns the element for chaining.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="child">The child element to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChild<T>(this T element, VisualElement child)
+            where T : VisualElement
+        {
+            element.Remove(child);
+            return element;
+        }
+
+        /// <summary>
+        /// Removes the child at the specified index from the element and returns the element for chaining.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="index">The index of the child to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildAt<T>(this T element, int index)
+            where T : VisualElement
+        {
+            element.RemoveAt(index);
+            return element;
+        }
+
+        /// <summary>
+        /// Removes all children from the element and returns the element for chaining.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T ClearChildren<T>(this T element)
+            where T : VisualElement
+        {
+            element.Clear();
+            return element;
+        }
         
         /// <summary>
         /// Conditionally adds an element to the <see cref="VisualElement.contentContainer"/> of this element and returns the element for chaining.

@@ -13,12 +13,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<int>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<int>> callback)
             where T : INotifyValueChanged<int>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -26,12 +26,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<int>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<int>> callback)
             where T : INotifyValueChanged<int>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -39,12 +39,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<uint>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<uint>> callback)
             where T : INotifyValueChanged<uint>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -52,12 +52,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<uint>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<uint>> callback)
             where T : INotifyValueChanged<uint>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -65,12 +65,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<nint>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<nint>> callback)
             where T : INotifyValueChanged<nint>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -78,12 +78,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<nint>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<nint>> callback)
             where T : INotifyValueChanged<nint>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -91,12 +91,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<nuint>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<nuint>> callback)
             where T : INotifyValueChanged<nuint>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -104,12 +104,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<nuint>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<nuint>> callback)
             where T : INotifyValueChanged<nuint>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -119,12 +119,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<long>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<long>> callback)
             where T : INotifyValueChanged<long>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -132,12 +132,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<long>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<long>> callback)
             where T : INotifyValueChanged<long>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -145,12 +145,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<ulong>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<ulong>> callback)
             where T : INotifyValueChanged<ulong>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -158,12 +158,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<ulong>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<ulong>> callback)
             where T : INotifyValueChanged<ulong>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -173,12 +173,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<byte>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<byte>> callback)
             where T : INotifyValueChanged<byte>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -186,12 +186,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<byte>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<byte>> callback)
             where T : INotifyValueChanged<byte>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -199,12 +199,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<sbyte>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<sbyte>> callback)
             where T : INotifyValueChanged<sbyte>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -212,12 +212,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<sbyte>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<sbyte>> callback)
             where T : INotifyValueChanged<sbyte>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -227,12 +227,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<bool>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<bool>> callback)
             where T : INotifyValueChanged<bool>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -240,12 +240,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<bool>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<bool>> callback)
             where T : INotifyValueChanged<bool>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -255,12 +255,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<char>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<char>> callback)
             where T : INotifyValueChanged<char>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -268,12 +268,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<char>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<char>> callback)
             where T : INotifyValueChanged<char>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -283,12 +283,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Rect>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Rect>> callback)
             where T : INotifyValueChanged<Rect>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -296,12 +296,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Rect>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Rect>> callback)
             where T : INotifyValueChanged<Rect>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -309,12 +309,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<RectInt>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<RectInt>> callback)
             where T : INotifyValueChanged<RectInt>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -322,12 +322,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<RectInt>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<RectInt>> callback)
             where T : INotifyValueChanged<RectInt>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -337,12 +337,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Enum>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Enum>> callback)
             where T : INotifyValueChanged<Enum>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -350,12 +350,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Enum>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Enum>> callback)
             where T : INotifyValueChanged<Enum>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -366,12 +366,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<GUID>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<GUID>> callback)
             where T : INotifyValueChanged<GUID>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -379,12 +379,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<GUID>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<GUID>> callback)
             where T : INotifyValueChanged<GUID>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
 #endif
@@ -395,12 +395,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Color>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Color>> callback)
             where T : INotifyValueChanged<Color>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -408,12 +408,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Color>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Color>> callback)
             where T : INotifyValueChanged<Color>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -423,12 +423,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<short>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<short>> callback)
             where T : INotifyValueChanged<short>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -436,12 +436,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<short>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<short>> callback)
             where T : INotifyValueChanged<short>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -449,12 +449,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<ushort>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<ushort>> callback)
             where T : INotifyValueChanged<ushort>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -462,12 +462,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<ushort>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<ushort>> callback)
             where T : INotifyValueChanged<ushort>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -477,12 +477,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<float>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<float>> callback)
             where T : INotifyValueChanged<float>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -490,12 +490,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<float>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<float>> callback)
             where T : INotifyValueChanged<float>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -505,12 +505,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<double>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<double>> callback)
             where T : INotifyValueChanged<double>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -518,12 +518,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<double>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<double>> callback)
             where T : INotifyValueChanged<double>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -533,12 +533,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<string>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<string>> callback)
             where T : INotifyValueChanged<string>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -546,12 +546,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<string>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<string>> callback)
             where T : INotifyValueChanged<string>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -561,12 +561,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Bounds>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Bounds>> callback)
             where T : INotifyValueChanged<Bounds>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -574,12 +574,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Bounds>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Bounds>> callback)
             where T : INotifyValueChanged<Bounds>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -587,12 +587,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<BoundsInt>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<BoundsInt>> callback)
             where T : INotifyValueChanged<BoundsInt>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -600,12 +600,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<BoundsInt>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<BoundsInt>> callback)
             where T : INotifyValueChanged<BoundsInt>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -615,12 +615,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Hash128>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Hash128>> callback)
             where T : INotifyValueChanged<Hash128>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -628,12 +628,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Hash128>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Hash128>> callback)
             where T : INotifyValueChanged<Hash128>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -643,12 +643,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<decimal>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<decimal>> callback)
             where T : INotifyValueChanged<decimal>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -656,12 +656,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<decimal>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<decimal>> callback)
             where T : INotifyValueChanged<decimal>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -671,12 +671,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector2>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector2>> callback)
             where T : INotifyValueChanged<Vector2>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -684,12 +684,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector2>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector2>> callback)
             where T : INotifyValueChanged<Vector2>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -697,12 +697,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector2Int>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector2Int>> callback)
             where T : INotifyValueChanged<Vector2Int>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -710,12 +710,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector2Int>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector2Int>> callback)
             where T : INotifyValueChanged<Vector2Int>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -725,12 +725,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector3>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector3>> callback)
             where T : INotifyValueChanged<Vector3>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -738,12 +738,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector3>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector3>> callback)
             where T : INotifyValueChanged<Vector3>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         
@@ -751,12 +751,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector3Int>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector3Int>> callback)
             where T : INotifyValueChanged<Vector3Int>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -764,12 +764,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector3Int>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector3Int>> callback)
             where T : INotifyValueChanged<Vector3Int>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -779,12 +779,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector4>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector4>> callback)
             where T : INotifyValueChanged<Vector4>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -792,12 +792,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector4>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Vector4>> callback)
             where T : INotifyValueChanged<Vector4>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -807,12 +807,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Delegate>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Delegate>> callback)
             where T : INotifyValueChanged<Delegate>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -820,12 +820,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Delegate>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Delegate>> callback)
             where T : INotifyValueChanged<Delegate>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -835,12 +835,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Gradient>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Gradient>> callback)
             where T : INotifyValueChanged<Gradient>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -848,12 +848,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Gradient>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Gradient>> callback)
             where T : INotifyValueChanged<Gradient>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -863,12 +863,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Matrix4x4>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Matrix4x4>> callback)
             where T : INotifyValueChanged<Matrix4x4>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -876,12 +876,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Matrix4x4>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Matrix4x4>> callback)
             where T : INotifyValueChanged<Matrix4x4>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -891,12 +891,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Quaternion>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Quaternion>> callback)
             where T : INotifyValueChanged<Quaternion>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -904,12 +904,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Quaternion>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Quaternion>> callback)
             where T : INotifyValueChanged<Quaternion>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -919,12 +919,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<object>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<object>> callback)
             where T : INotifyValueChanged<object>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
 
@@ -932,12 +932,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<object>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<object>> callback)
             where T : INotifyValueChanged<object>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -947,12 +947,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<AnimationCurve>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<AnimationCurve>> callback)
             where T : INotifyValueChanged<AnimationCurve>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -960,12 +960,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<AnimationCurve>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<AnimationCurve>> callback)
             where T : INotifyValueChanged<AnimationCurve>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -975,12 +975,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Object>> value)
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<Object>> callback)
             where T : INotifyValueChanged<Object>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -988,12 +988,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Object>> value)
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<Object>> callback)
             where T : INotifyValueChanged<Object>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
         #endregion
@@ -1002,12 +1002,12 @@ namespace Aspid.FastTools.UIElements
         /// Subscribes to the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to subscribe.</param>
+        /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
-        public static TField AddValueChanged<TField, TValue>(this TField element, EventCallback<ChangeEvent<TValue>> value)
+        public static TField AddValueChanged<TField, TValue>(this TField element, EventCallback<ChangeEvent<TValue>> callback)
             where TField : INotifyValueChanged<TValue>
         {
-            element.RegisterValueChangedCallback(value);
+            element.RegisterValueChangedCallback(callback);
             return element;
         }
         
@@ -1015,12 +1015,12 @@ namespace Aspid.FastTools.UIElements
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
+        /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
-        public static TField RemoveValueChanged<TField, TValue>(this TField element, EventCallback<ChangeEvent<TValue>> value)
+        public static TField RemoveValueChanged<TField, TValue>(this TField element, EventCallback<ChangeEvent<TValue>> callback)
             where TField : INotifyValueChanged<TValue>
         {
-            element.UnregisterValueChangedCallback(value);
+            element.UnregisterValueChangedCallback(callback);
             return element;
         }
     }

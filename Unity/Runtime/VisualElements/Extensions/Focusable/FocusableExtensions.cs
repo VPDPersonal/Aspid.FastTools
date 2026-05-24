@@ -35,7 +35,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to check.</param>
         /// <returns><see langword="true"/> if the element holds keyboard focus; otherwise <see langword="false"/>.</returns>
         public static bool IsFocus(this Focusable element) =>
-            element.focusController.focusedElement == element;
+            element.focusController?.focusedElement == element;
 
         /// <summary>
         /// Sets <see cref="Focusable.tabIndex"/> and returns the element for chaining.

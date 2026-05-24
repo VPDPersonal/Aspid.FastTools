@@ -31,5 +31,19 @@ namespace Aspid.FastTools.UIElements.Editors
             element.UnregisterCallback(value);
             return element;
         }
+
+        /// <summary>
+        /// Sets the label of the property field.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The label text to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetLabel<T>(this T element, string value)
+            where T : PropertyField
+        {
+            element.label = value;
+            return element;
+        }
     }
 }

@@ -19,5 +19,18 @@ namespace Aspid.FastTools.UIElements.Editors
             element.Bind(obj);
             return element;
         }
+
+        /// <summary>
+        /// Unbinds the element from its serialized object.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to unbind.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T UnbindFrom<T>(this T element)
+            where T : VisualElement
+        {
+            element.Unbind();
+            return element;
+        }
     }
 }
