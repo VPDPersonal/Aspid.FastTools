@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### VisualElement fluent extensions
+- Per-type `SetLabel` overloads for `BaseField<T>` covering 25 Unity types (`Quaternion`, `AnimationCurve`, `Bounds`, `BoundsInt`, `Color`, `Color32`, `Gradient`, `Hash128`, `Rect`, `Vector2/3/4`, `Vector2Int/3Int`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `decimal`, `short`, `ushort`, `byte`, `sbyte`, `char`, `string`, `Enum`, `Object`).
+- Raw-enum overloads for all `StyleEnum<T>` setters on `IStyleExtensions` and `VisualElementExtensions.Style` (e.g. `SetFlexWrap(Wrap)` alongside `SetFlexWrap(StyleEnum<Wrap>)`).
+- Conditional `*If` variants (`AddChildIf`, `InsertChildIf`, `AddChildrenIf`, `InsertChildrenIf`) for all child management methods across `VisualElement`, `IEnumerable`, array and `List` sources.
+- `BindTo(SerializedObject)` and `UnbindFrom()` editor-side fluent extensions for `VisualElement`.
+- `SetLabel` for `PropertyField`, `SetBindingPath` for `IBindable` (editor-side).
+- Extended `INotifyValueChanged` `ValueChanged` with per-type overloads for common Unity types.
+- Extended `Button` (`SetText`), `Focusable`, `Manipulators` (`RemoveManipulator`), `ProgressBar` (`SetTitle`), `BaseListView`, `MultiColumnListView`, `MultiColumnTreeView` with new fluent methods.
+- Math-assembly `SetValue` extensions for `float2/3/4`, `int2/3/4` types.
+
+### Changed
+- Reorganized `BaseFieldExtensions` into `BaseFields/` subdirectory.
+- Renamed `Unbind<T>` extension to `UnbindFrom<T>` for consistency with `BindTo`.
+- Tightened `BindPropertyTo` generic constraint from `where T : IBindable` to `where T : VisualElement, IBindable`.
+
+### Fixed
+- `SetMinSize` parameter naming bug (`maxHeight` → `minHeight`).
+
 ## [1.0.0-rc.2] — 2026-05-18
 
 Release-workflow validation build. No functional changes versus `1.0.0-rc.1`.
