@@ -49,6 +49,20 @@ namespace Aspid.FastTools.UIElements
             element.clickable = value;
             return element;
         }
+        
+        /// <summary>
+        /// Sets the click handler of the button by replacing the clickable manipulator.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="action">The action to invoke on click.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetClickable<T>(this T element, Action action)
+            where T : Button
+        {
+            element.clickable = new Clickable(action);
+            return element;
+        }
 
         /// <summary>
         /// Sets <see cref="Button.iconImage"/> and returns the element for chaining.

@@ -141,6 +141,18 @@ namespace Aspid.FastTools.UIElements.Manipulators
         }
 
         /// <summary>
+        /// Adds a new <see cref="ContextualMenuManipulator"/> that uses the specified menu builder to populate the contextual menu.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="menuBuilder">The action invoked to populate the menu when it is shown.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddContextualMenuManipulator<T>(this T element, Action<ContextualMenuPopulateEvent> menuBuilder)
+            where T : VisualElement
+        {
+            return element.AddManipulatorSelf(new ContextualMenuManipulator(menuBuilder));
+        }
+
+        /// <summary>
         /// Adds a new <see cref="ContextualMenuManipulator"/> that uses the specified menu builder to populate the contextual menu, and outputs the created manipulator.
         /// </summary>
         /// <param name="element">The element to modify.</param>

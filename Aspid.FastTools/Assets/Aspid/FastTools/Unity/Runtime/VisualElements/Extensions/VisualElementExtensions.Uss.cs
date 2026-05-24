@@ -96,7 +96,14 @@ namespace Aspid.FastTools.UIElements
         public static T AddStyleSheetsFromResource<T>(this T element, string path)
             where T : VisualElement
         {
-            return element.AddStyleSheets(Resources.Load<StyleSheet>(path));
+            var styleSheet = Resources.Load<StyleSheet>(path);
+            if (styleSheet == null)
+            {
+                Debug.LogWarning($"Failed to load StyleSheet from Resources path: '{path}'");
+                return element;
+            }
+
+            return element.AddStyleSheets(styleSheet);
         }
 
         /// <summary>
@@ -121,7 +128,14 @@ namespace Aspid.FastTools.UIElements
         public static T RemoveStyleSheetsFromResource<T>(this T element, string path)
             where T : VisualElement
         {
-            return element.RemoveStyleSheets(Resources.Load<StyleSheet>(path));
+            var styleSheet = Resources.Load<StyleSheet>(path);
+            if (styleSheet == null)
+            {
+                Debug.LogWarning($"Failed to load StyleSheet from Resources path: '{path}'");
+                return element;
+            }
+
+            return element.RemoveStyleSheets(styleSheet);
         }
         #endregion
     }

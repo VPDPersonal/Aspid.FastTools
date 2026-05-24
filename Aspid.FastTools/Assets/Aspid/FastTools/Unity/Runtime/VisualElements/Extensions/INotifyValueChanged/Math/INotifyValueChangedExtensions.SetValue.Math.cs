@@ -589,6 +589,394 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
         
+        #region Unity.Mathematics.Double
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double2 value, bool notify = true)
+            where T : INotifyValueChanged<double2>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double3 value, bool notify = true)
+            where T : INotifyValueChanged<double3>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double4 value, bool notify = true)
+            where T : INotifyValueChanged<double4>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double2x2 value, bool notify = true)
+            where T : INotifyValueChanged<double2x2>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double2x3 value, bool notify = true)
+            where T : INotifyValueChanged<double2x3>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double2x4 value, bool notify = true)
+            where T : INotifyValueChanged<double2x4>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double3x2 value, bool notify = true)
+            where T : INotifyValueChanged<double3x2>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double3x3 value, bool notify = true)
+            where T : INotifyValueChanged<double3x3>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double3x4 value, bool notify = true)
+            where T : INotifyValueChanged<double3x4>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double4x2 value, bool notify = true)
+            where T : INotifyValueChanged<double4x2>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double4x3 value, bool notify = true)
+            where T : INotifyValueChanged<double4x3>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, double4x4 value, bool notify = true)
+            where T : INotifyValueChanged<double4x4>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        #endregion
+        
+        #region Unity.Mathematics.UInt
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint2 value, bool notify = true)
+            where T : INotifyValueChanged<uint2>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint3 value, bool notify = true)
+            where T : INotifyValueChanged<uint3>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint4 value, bool notify = true)
+            where T : INotifyValueChanged<uint4>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint2x2 value, bool notify = true)
+            where T : INotifyValueChanged<uint2x2>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint2x3 value, bool notify = true)
+            where T : INotifyValueChanged<uint2x3>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint2x4 value, bool notify = true)
+            where T : INotifyValueChanged<uint2x4>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint3x2 value, bool notify = true)
+            where T : INotifyValueChanged<uint3x2>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint3x3 value, bool notify = true)
+            where T : INotifyValueChanged<uint3x3>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint3x4 value, bool notify = true)
+            where T : INotifyValueChanged<uint3x4>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint4x2 value, bool notify = true)
+            where T : INotifyValueChanged<uint4x2>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint4x3 value, bool notify = true)
+            where T : INotifyValueChanged<uint4x3>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, uint4x4 value, bool notify = true)
+            where T : INotifyValueChanged<uint4x4>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        #endregion
+        
         #region Unity.Mathematics.Quaternion
         /// <summary>
         /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
