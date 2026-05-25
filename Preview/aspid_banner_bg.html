@@ -1,0 +1,775 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Aspid.FastTools — animated banner background</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --aspid-green: #4fa35d;
+      --aspid-green-dark: #254d2c;
+      --aspid-text: #dcdcdc;
+      --aspid-text-muted: #969696;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: var(--aspid-text);
+      font-family: -apple-system, "Helvetica Neue", system-ui, sans-serif;
+      overflow: hidden;
+    }
+    #stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #000;
+    }
+    #frame {
+      position: relative;
+      box-shadow: 0 0 0 1px #1a1a1a, 0 30px 60px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      background: #000;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+    #ui {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 280px;
+      padding: 14px 16px;
+      background: rgba(20, 20, 20, 0.92);
+      border: 1px solid #2a2a2a;
+      border-left: 3px solid var(--aspid-green);
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.4;
+      backdrop-filter: blur(8px);
+      user-select: none;
+      transition: opacity .2s ease, transform .2s ease;
+      max-height: calc(100vh - 32px);
+      overflow-y: auto;
+    }
+    #ui.hidden {
+      opacity: 0;
+      transform: translateX(20px);
+      pointer-events: none;
+    }
+    #ui h1 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--aspid-green);
+    }
+    #ui label {
+      display: block;
+      margin-top: 10px;
+      color: var(--aspid-text-muted);
+      font-size: 11px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+    #ui .row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      margin-top: 4px;
+    }
+    #ui .check {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 8px;
+      cursor: pointer;
+    }
+    #ui input[type="number"],
+    #ui select {
+      width: 100%;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      color: var(--aspid-text);
+      padding: 4px 6px;
+      border-radius: 4px;
+      font: inherit;
+    }
+    #ui input[type="range"] {
+      width: 100%;
+    }
+    #ui button {
+      flex: 1;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      color: var(--aspid-text);
+      padding: 6px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font: inherit;
+      transition: border-color .15s ease, color .15s ease;
+    }
+    #ui button:hover { border-color: var(--aspid-green); color: var(--aspid-green); }
+    #ui button.primary { border-color: var(--aspid-green-dark); color: var(--aspid-green); }
+    #ui button.danger { border-color: #5a1f1f; color: #ff6464; }
+    #ui button.danger:hover { border-color: #ff6464; color: #ff8e8e; }
+    #ui button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-color: #2a2a2a;
+      color: var(--aspid-text);
+    }
+    #ui .hint {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid #1f1f1f;
+      color: #6e6e6e;
+      font-size: 11px;
+    }
+    #ui kbd {
+      font-family: Menlo, monospace;
+      background: #0a0a0a;
+      border: 1px solid #2a2a2a;
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--aspid-green);
+      font-size: 10px;
+    }
+    #ui .section-title {
+      margin: 14px 0 0;
+      padding-top: 10px;
+      border-top: 1px solid #1f1f1f;
+      color: var(--aspid-green);
+      font-size: 10px;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+    }
+    #drophint {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      color: rgba(255, 255, 255, 0.0);
+      font-size: 14px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color .15s ease, background .15s ease;
+    }
+    #stage.dragging #drophint {
+      color: var(--aspid-green);
+      background: rgba(79, 163, 93, 0.08);
+      box-shadow: inset 0 0 0 2px var(--aspid-green);
+    }
+    #rec-badge {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(20, 20, 20, 0.92);
+      border: 1px solid #5a1f1f;
+      border-left: 3px solid #ff4040;
+      border-radius: 8px;
+      font-size: 12px;
+      letter-spacing: 1px;
+      color: #ff8e8e;
+      font-family: Menlo, monospace;
+    }
+    #rec-badge.visible { display: flex; }
+    #rec-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ff4040;
+      box-shadow: 0 0 8px #ff4040;
+      animation: blink 1s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.25; }
+    }
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translate(-50%, 20px);
+      padding: 10px 18px;
+      background: rgba(20, 20, 20, 0.95);
+      border: 1px solid #2a2a2a;
+      border-left: 3px solid var(--aspid-green);
+      border-radius: 6px;
+      color: var(--aspid-text);
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity .25s ease, transform .25s ease;
+      pointer-events: none;
+    }
+    #toast.visible {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <div id="frame">
+      <canvas id="bg"></canvas>
+      <div id="drophint">Drop an image to overlay</div>
+    </div>
+  </div>
+
+  <div id="rec-badge">
+    <div id="rec-dot"></div>
+    <span>REC</span>
+    <span id="rec-time">00:00</span>
+  </div>
+
+  <div id="toast"></div>
+
+  <div id="ui">
+    <h1>Banner Background</h1>
+
+    <label>Resolution</label>
+    <div class="row">
+      <select id="preset">
+        <option value="1600x480">1600 × 480 (README banner)</option>
+        <option value="1280x400">1280 × 400</option>
+        <option value="1920x1080">1920 × 1080</option>
+        <option value="1280x720">1280 × 720</option>
+        <option value="fullscreen">Fullscreen</option>
+        <option value="custom">Custom…</option>
+      </select>
+    </div>
+    <div class="row" id="customRow" style="display:none;">
+      <input id="customW" type="number" min="200" max="4096" step="10" value="1600" />
+      <span style="color:#666;">×</span>
+      <input id="customH" type="number" min="200" max="4096" step="10" value="480" />
+    </div>
+
+    <label>Speed (× <span id="speedLabel">1.0</span>)</label>
+    <input id="speed" type="range" min="0" max="3" step="0.05" value="1" />
+
+    <label>Time offset (<span id="timeLabel">0.0</span>s)</label>
+    <input id="time" type="range" min="0" max="60" step="0.05" value="0" />
+
+    <label>Image opacity (<span id="opacityLabel">1.00</span>)</label>
+    <input id="opacity" type="range" min="0" max="1" step="0.01" value="1" />
+
+    <label>Frame border</label>
+    <div class="row">
+      <select id="border">
+        <option value="hidden">Hidden</option>
+        <option value="thin" selected>Thin</option>
+        <option value="glow">Glow</option>
+      </select>
+    </div>
+
+    <div class="row" style="margin-top:12px;">
+      <button id="playPause" class="primary">Pause</button>
+      <button id="reset">Reset</button>
+    </div>
+
+    <div class="row">
+      <button id="upload">Upload image…</button>
+      <button id="clearImg">Clear</button>
+    </div>
+    <input id="file" type="file" accept="image/*" style="display:none;" />
+
+    <div class="section-title">Capture</div>
+
+    <label>FPS</label>
+    <div class="row">
+      <select id="fps">
+        <option value="24">24</option>
+        <option value="30" selected>30</option>
+        <option value="60">60</option>
+      </select>
+    </div>
+
+    <label>Format</label>
+    <div class="row">
+      <select id="format">
+        <option value="vp9">WebM (VP9, smaller)</option>
+        <option value="vp8">WebM (VP8, broader)</option>
+      </select>
+    </div>
+
+    <label class="check">
+      <input id="includeOverlay" type="checkbox" checked />
+      <span>Include overlay in capture</span>
+    </label>
+
+    <div class="row" style="margin-top:10px;">
+      <button id="snap">📸 Screenshot</button>
+      <button id="record" class="primary">⏺ Record</button>
+    </div>
+
+    <div class="hint">
+      <kbd>H</kbd> hide panel · <kbd>Space</kbd> pause · <kbd>S</kbd> screenshot · <kbd>R</kbd> record/stop.
+      <br />Drop image onto canvas to overlay.
+    </div>
+  </div>
+
+  <script>
+    // ---------- Algorithm port of AspidAnimatedDotsBackground.cs ----------
+    const BLOB_COUNT = 3;
+    const DOT_RADIUS_BASE = 1.55;
+    const DOT_SPACING_BASE = 18;
+    const SCALE_REFERENCE = 420;
+
+    // var(--aspid-colors-status-*-text-dark) from Aspid-FastTools-Default-Dark.uss
+    const COLORS = [
+      [85, 175, 100],   // success
+      [185, 135, 60],   // warning
+      [185, 65, 65],    // error
+    ];
+
+    const smoothstep01 = (t) => {
+      t = t < 0 ? 0 : t > 1 ? 1 : t;
+      return t * t * (3 - 2 * t);
+    };
+    const inverseLerp = (a, b, v) => {
+      if (a === b) return 0;
+      const k = (v - a) / (b - a);
+      return k < 0 ? 0 : k > 1 ? 1 : k;
+    };
+
+    const blobCenter = (i, w, h, t) => {
+      if (i === 0) return [
+        w * (0.24 + Math.sin(t * 0.38) * 0.11),
+        h * (0.30 + Math.cos(t * 0.44) * 0.09),
+      ];
+      if (i === 1) return [
+        w * (0.63 + Math.sin(t * 0.32 + 1.4) * 0.14),
+        h * (0.42 + Math.cos(t * 0.35 + 0.6) * 0.11),
+      ];
+      return [
+        w * (0.46 + Math.sin(t * 0.27 + 2.3) * 0.16),
+        h * (0.73 + Math.cos(t * 0.32 + 2.8) * 0.10),
+      ];
+    };
+    const blobRadius = (i, w, h) => {
+      if (i === 0) return [w * 0.22, h * 0.16];
+      if (i === 1) return [w * 0.26, h * 0.20];
+      return [w * 0.21, h * 0.15];
+    };
+    const applyDistortion = (x, y, i, t) => {
+      const ox = Math.sin(y * 0.026 + t * 1.18 + i * 1.7) * 14
+        + Math.cos(x * 0.018 - t * 0.82 + i) * 7;
+      const oy = Math.cos(x * 0.022 - t * 0.96 + i * 0.9) * 15
+        + Math.sin(y * 0.019 + t * 0.67 + i * 1.3) * 6;
+      return [x + ox, y + oy];
+    };
+
+    function sampleBlobField(x, y, t, centers, radii) {
+      let maxField = 0, total = 0, br = 0, bg = 0, bb = 0;
+      for (let i = 0; i < BLOB_COUNT; i++) {
+        const [dx0, dy0] = applyDistortion(x, y, i, t);
+        const [cx, cy] = centers[i];
+        const [rx, ry] = radii[i];
+        const dx = (dx0 - cx) / rx;
+        const dy = (dy0 - cy) / ry;
+        const contribution = Math.exp(-(dx * dx + dy * dy) * 1.2);
+        if (contribution > maxField) maxField = contribution;
+        total += contribution;
+        const c = COLORS[i];
+        br += c[0] * contribution;
+        bg += c[1] * contribution;
+        bb += c[2] * contribution;
+      }
+      if (total > 0) { br /= total; bg /= total; bb /= total; }
+      else { [br, bg, bb] = COLORS[0]; }
+      const strength = inverseLerp(0.05, 0.92, maxField);
+      return [strength, br, bg, bb];
+    }
+
+    function renderDots(ctx, w, h, t) {
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, w, h);
+
+      const scale = Math.sqrt(Math.min(w, h) / SCALE_REFERENCE);
+      const spacing = DOT_SPACING_BASE * scale;
+      const radius = DOT_RADIUS_BASE * scale;
+
+      const centers = [];
+      const radii = [];
+      for (let i = 0; i < BLOB_COUNT; i++) {
+        centers.push(blobCenter(i, w, h, t));
+        radii.push(blobRadius(i, w, h));
+      }
+
+      for (let y = spacing * 0.5; y < h; y += spacing) {
+        for (let x = spacing * 0.5; x < w; x += spacing) {
+          const [s0, br, bg, bb] = sampleBlobField(x, y, t, centers, radii);
+          const s = smoothstep01(s0);
+          if (s <= 0.002) continue;
+          ctx.fillStyle = `rgba(${br | 0}, ${bg | 0}, ${bb | 0}, ${s})`;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+
+    function drawOverlayContain(ctx, img, w, h, opacity) {
+      if (!img || opacity <= 0) return;
+      const r = Math.min(w / img.naturalWidth, h / img.naturalHeight);
+      const dw = img.naturalWidth * r;
+      const dh = img.naturalHeight * r;
+      const dx = (w - dw) / 2;
+      const dy = (h - dh) / 2;
+      const prev = ctx.globalAlpha;
+      ctx.globalAlpha = opacity;
+      ctx.drawImage(img, dx, dy, dw, dh);
+      ctx.globalAlpha = prev;
+    }
+
+    // ---------- Wiring ----------
+    const canvas = document.getElementById("bg");
+    const ctx = canvas.getContext("2d");
+    const frame = document.getElementById("frame");
+    const stage = document.getElementById("stage");
+    const recBadge = document.getElementById("rec-badge");
+    const recTime = document.getElementById("rec-time");
+    const toast = document.getElementById("toast");
+
+    const $ = (id) => document.getElementById(id);
+    const presetSel = $("preset");
+    const customRow = $("customRow");
+    const customW = $("customW");
+    const customH = $("customH");
+    const speed = $("speed");
+    const speedLabel = $("speedLabel");
+    const timeRange = $("time");
+    const timeLabel = $("timeLabel");
+    const opacity = $("opacity");
+    const opacityLabel = $("opacityLabel");
+    const borderSel = $("border");
+    const playPause = $("playPause");
+    const reset = $("reset");
+    const uploadBtn = $("upload");
+    const fileInput = $("file");
+    const clearImg = $("clearImg");
+    const ui = $("ui");
+    const snapBtn = $("snap");
+    const recordBtn = $("record");
+    const fpsSel = $("fps");
+    const formatSel = $("format");
+    const includeOverlay = $("includeOverlay");
+
+    let frameW = 1600, frameH = 480;
+    let timeOffset = 0;
+    let paused = false;
+    let baseTime = performance.now() / 1000;
+    let elapsedAtPause = 0;
+    let overlayImage = null;
+
+    function applySize() {
+      frame.style.width = frameW + "px";
+      frame.style.height = frameH + "px";
+      // Pixel-perfect (no DPR upscale) — keeps captures lean and matches the chosen resolution.
+      canvas.width = frameW;
+      canvas.height = frameH;
+    }
+
+    function applyPreset() {
+      const v = presetSel.value;
+      customRow.style.display = v === "custom" ? "" : "none";
+      if (v === "fullscreen") {
+        frameW = window.innerWidth;
+        frameH = window.innerHeight;
+      } else if (v === "custom") {
+        frameW = Math.max(200, +customW.value || 1600);
+        frameH = Math.max(200, +customH.value || 480);
+      } else {
+        const [w, h] = v.split("x").map(Number);
+        frameW = w; frameH = h;
+      }
+      applySize();
+    }
+
+    function applyBorder() {
+      const v = borderSel.value;
+      if (v === "hidden") frame.style.boxShadow = "none";
+      else if (v === "thin") frame.style.boxShadow = "0 0 0 1px #1a1a1a, 0 30px 60px rgba(0,0,0,.6)";
+      else frame.style.boxShadow = "0 0 0 1px rgba(79,163,93,.4), 0 0 60px rgba(79,163,93,.18), 0 30px 60px rgba(0,0,0,.6)";
+    }
+
+    function currentTime() {
+      if (paused) return elapsedAtPause + timeOffset;
+      const elapsed = (performance.now() / 1000 - baseTime) * parseFloat(speed.value);
+      return elapsed + timeOffset;
+    }
+
+    function loop() {
+      const t = currentTime();
+      renderDots(ctx, frameW, frameH, t);
+      drawOverlayContain(ctx, overlayImage, frameW, frameH, parseFloat(opacity.value));
+      requestAnimationFrame(loop);
+    }
+
+    function togglePause() {
+      if (!paused) {
+        elapsedAtPause = (performance.now() / 1000 - baseTime) * parseFloat(speed.value);
+        paused = true;
+        playPause.textContent = "Play";
+      } else {
+        baseTime = performance.now() / 1000 - elapsedAtPause / parseFloat(speed.value);
+        paused = false;
+        playPause.textContent = "Pause";
+      }
+    }
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("visible");
+      clearTimeout(showToast._timer);
+      showToast._timer = setTimeout(() => toast.classList.remove("visible"), 2200);
+    }
+
+    // ---------- Capture: screenshot ----------
+    function captureFrame() {
+      const out = document.createElement("canvas");
+      out.width = frameW;
+      out.height = frameH;
+      const octx = out.getContext("2d");
+      const t = currentTime();
+      renderDots(octx, frameW, frameH, t);
+      if (includeOverlay.checked) {
+        drawOverlayContain(octx, overlayImage, frameW, frameH, parseFloat(opacity.value));
+      }
+      return out;
+    }
+
+    function timestampName(ext) {
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, "0");
+      const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+      return `aspid-banner-${frameW}x${frameH}-${stamp}.${ext}`;
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    snapBtn.addEventListener("click", () => {
+      const out = captureFrame();
+      out.toBlob((blob) => {
+        if (!blob) { showToast("Screenshot failed"); return; }
+        downloadBlob(blob, timestampName("png"));
+        showToast(`Saved ${frameW}×${frameH} PNG`);
+      }, "image/png");
+    });
+
+    // ---------- Capture: video ----------
+    let recorder = null;
+    let recordCanvas = null;
+    let recordStream = null;
+    let recordChunks = [];
+    let recordStart = 0;
+    let recordTimer = 0;
+    let recordRAF = 0;
+
+    function pickMimeType(format) {
+      const candidates = format === "vp8"
+        ? ["video/webm;codecs=vp8", "video/webm"]
+        : ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+      for (const c of candidates) {
+        if (window.MediaRecorder && MediaRecorder.isTypeSupported(c)) return c;
+      }
+      return "";
+    }
+
+    function startRecording() {
+      if (!window.MediaRecorder || typeof HTMLCanvasElement.prototype.captureStream !== "function") {
+        showToast("MediaRecorder not supported in this browser");
+        return;
+      }
+      const fps = parseInt(fpsSel.value, 10);
+      const mime = pickMimeType(formatSel.value);
+      if (!mime) { showToast("WebM recording not supported"); return; }
+
+      // Dedicated capture canvas: lets us record exactly frameW × frameH and
+      // keeps UI / DOM badges out of the recorded pixels.
+      recordCanvas = document.createElement("canvas");
+      recordCanvas.width = frameW;
+      recordCanvas.height = frameH;
+      const rctx = recordCanvas.getContext("2d");
+
+      const renderCapture = () => {
+        const t = currentTime();
+        renderDots(rctx, frameW, frameH, t);
+        if (includeOverlay.checked) {
+          drawOverlayContain(rctx, overlayImage, frameW, frameH, parseFloat(opacity.value));
+        }
+        recordRAF = requestAnimationFrame(renderCapture);
+      };
+      renderCapture();
+
+      recordStream = recordCanvas.captureStream(fps);
+      recordChunks = [];
+      try {
+        recorder = new MediaRecorder(recordStream, {
+          mimeType: mime,
+          videoBitsPerSecond: 8_000_000,
+        });
+      } catch (e) {
+        showToast("Recorder init failed: " + e.message);
+        cancelAnimationFrame(recordRAF);
+        return;
+      }
+
+      recorder.ondataavailable = (e) => { if (e.data && e.data.size) recordChunks.push(e.data); };
+      recorder.onstop = () => {
+        cancelAnimationFrame(recordRAF);
+        const blob = new Blob(recordChunks, { type: mime.split(";")[0] });
+        downloadBlob(blob, timestampName("webm"));
+        showToast(`Saved ${frameW}×${frameH} @ ${fps}fps`);
+        recorder = null;
+        recordCanvas = null;
+        recordStream = null;
+      };
+      recorder.start(250);
+
+      recordStart = performance.now();
+      recordBadge(true);
+      recordTimer = setInterval(updateRecBadge, 250);
+      recordBtn.textContent = "⏹ Stop";
+      recordBtn.classList.remove("primary");
+      recordBtn.classList.add("danger");
+      snapBtn.disabled = true;
+      presetSel.disabled = true;
+    }
+
+    function stopRecording() {
+      if (!recorder) return;
+      try { recorder.stop(); } catch {}
+      recordStream?.getTracks().forEach((tr) => tr.stop());
+      clearInterval(recordTimer);
+      recordBadge(false);
+      recordBtn.textContent = "⏺ Record";
+      recordBtn.classList.add("primary");
+      recordBtn.classList.remove("danger");
+      snapBtn.disabled = false;
+      presetSel.disabled = false;
+    }
+
+    function recordBadge(on) {
+      recBadge.classList.toggle("visible", !!on);
+      recTime.textContent = "00:00";
+    }
+
+    function updateRecBadge() {
+      const sec = Math.floor((performance.now() - recordStart) / 1000);
+      const mm = String(Math.floor(sec / 60)).padStart(2, "0");
+      const ss = String(sec % 60).padStart(2, "0");
+      recTime.textContent = `${mm}:${ss}`;
+    }
+
+    recordBtn.addEventListener("click", () => {
+      if (recorder) stopRecording();
+      else startRecording();
+    });
+
+    // ---------- Standard controls ----------
+    presetSel.addEventListener("change", applyPreset);
+    customW.addEventListener("input", () => { if (presetSel.value === "custom") applyPreset(); });
+    customH.addEventListener("input", () => { if (presetSel.value === "custom") applyPreset(); });
+    borderSel.addEventListener("change", applyBorder);
+
+    speed.addEventListener("input", () => {
+      const old = parseFloat(speed.dataset.last || "1");
+      const now = performance.now() / 1000;
+      const elapsed = (now - baseTime) * old;
+      baseTime = now - elapsed / parseFloat(speed.value);
+      speed.dataset.last = speed.value;
+      speedLabel.textContent = parseFloat(speed.value).toFixed(2);
+    });
+    speed.dataset.last = "1";
+
+    timeRange.addEventListener("input", () => {
+      timeOffset = parseFloat(timeRange.value);
+      timeLabel.textContent = timeOffset.toFixed(1);
+    });
+
+    opacity.addEventListener("input", () => {
+      opacityLabel.textContent = parseFloat(opacity.value).toFixed(2);
+    });
+
+    playPause.addEventListener("click", togglePause);
+    reset.addEventListener("click", () => {
+      baseTime = performance.now() / 1000;
+      elapsedAtPause = 0;
+      paused = false;
+      playPause.textContent = "Pause";
+    });
+
+    uploadBtn.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => loadFile(e.target.files?.[0]));
+    clearImg.addEventListener("click", () => {
+      overlayImage = null;
+      showToast("Overlay cleared");
+    });
+
+    function loadFile(file) {
+      if (!file) return;
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        overlayImage = img;
+        URL.revokeObjectURL(url);
+        showToast(`Overlay: ${img.naturalWidth}×${img.naturalHeight}`);
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        showToast("Failed to load image");
+      };
+      img.src = url;
+    }
+
+    ["dragenter", "dragover"].forEach(t => {
+      stage.addEventListener(t, (e) => { e.preventDefault(); stage.classList.add("dragging"); });
+    });
+    ["dragleave", "drop"].forEach(t => {
+      stage.addEventListener(t, (e) => { e.preventDefault(); stage.classList.remove("dragging"); });
+    });
+    stage.addEventListener("drop", (e) => {
+      const file = e.dataTransfer?.files?.[0];
+      if (file && file.type.startsWith("image/")) loadFile(file);
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT") return;
+      if (e.key === "h" || e.key === "H") ui.classList.toggle("hidden");
+      if (e.key === " ") { e.preventDefault(); togglePause(); }
+      if (e.key === "s" || e.key === "S") snapBtn.click();
+      if (e.key === "r" || e.key === "R") recordBtn.click();
+    });
+
+    window.addEventListener("resize", () => {
+      if (presetSel.value === "fullscreen") applyPreset();
+    });
+
+    applyPreset();
+    applyBorder();
+    loop();
+  </script>
+</body>
+</html>
