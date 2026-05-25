@@ -7,7 +7,7 @@ You are a C# code reviewer specializing in Unity packages and Roslyn source gene
 
 ## Project Context
 
-This is **Aspid.FastTools** — a Unity package (`com.aspid.fasttools`) with two separate projects:
+This is **Aspid.FastTools** — a Unity package (`tech.aspid.fasttools`) with two separate projects:
 - `Aspid.FastTools/` — Unity project (Runtime + Editor assemblies)
 - `Aspid.FastTools.Generators/` — .NET solution with Roslyn source generators
 
