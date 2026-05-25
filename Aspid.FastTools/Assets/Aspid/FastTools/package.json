@@ -1,6 +1,6 @@
 {
   "name": "com.aspid.fasttools",
-  "version": "1.0.0-rc.2",
+  "version": "1.0.0-rc.3",
   "displayName": "Aspid.FastTools",
   "description": "Unity tools to cut boilerplate — source-generated ProfilerMarkers, serializable type/enum/ID systems, and a fluent UIToolkit API.",
   "unity": "6000.0",

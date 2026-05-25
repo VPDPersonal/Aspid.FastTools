@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.3] — 2026-05-25
+
 ### Added
 - Per-type `SetLabel` overloads for `BaseField<T>` covering 29 Unity types (`Quaternion`, `AnimationCurve`, `Bounds`, `BoundsInt`, `Color`, `Color32`, `Gradient`, `Hash128`, `Rect`, `Vector2/3/4`, `Vector2Int/3Int`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `decimal`, `short`, `ushort`, `byte`, `sbyte`, `char`, `string`, `Enum`, `Object`). ([#33])
 - Raw-enum overloads for all `StyleEnum<T>` setters on `IStyleExtensions` and `VisualElementExtensions.Style` (e.g. `SetFlexWrap(Wrap)` alongside `SetFlexWrap(StyleEnum<Wrap>)`). ([#33])
@@ -16,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extended `INotifyValueChanged` `ValueChanged` with per-type overloads for common Unity types. ([#33])
 - Extended `Button` (`SetText`), `Focusable`, `Manipulators` (`RemoveManipulator`), `ProgressBar` (`SetTitle`), `BaseListView`, `MultiColumnListView`, `MultiColumnTreeView` with new fluent methods. ([#33])
 - Math-assembly `SetValue` extensions for `float2/3/4`, `int2/3/4` types. ([#33])
+- UPM preview branch: prerelease versions now publish to `upm-preview` / `upm-preview/<version>` tags, keeping `upm` clean for stable releases. ([#31])
+- Preview-branch documentation and installation examples added to all four READMEs. ([#32])
 
 ### Changed
 - Reorganized `BaseFieldExtensions` into `BaseFields/` subdirectory. ([#33])
@@ -27,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Null-safety in `FocusableExtensions.IsFocus` — `focusController` is now null-checked to prevent `NullReferenceException`. ([#33])
 - `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` now log a warning and return gracefully instead of throwing when the stylesheet path is not found. ([#33])
 
+[#31]: https://github.com/VPDPersonal/Aspid.FastTools/pull/31
+[#32]: https://github.com/VPDPersonal/Aspid.FastTools/pull/32
 [#33]: https://github.com/VPDPersonal/Aspid.FastTools/pull/33
 
 ## [1.0.0-rc.2] — 2026-05-18
@@ -113,6 +119,7 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 
 [#8]: https://github.com/VPDPersonal/Aspid.FastTools/pull/8
 [#30]: https://github.com/VPDPersonal/Aspid.FastTools/pull/30
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.2...HEAD
+[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...HEAD
+[1.0.0-rc.3]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.2...v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.1
