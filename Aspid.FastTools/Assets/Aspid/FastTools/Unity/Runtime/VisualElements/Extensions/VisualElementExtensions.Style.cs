@@ -78,6 +78,42 @@ namespace Aspid.FastTools.UIElements
             element.style.SetFlexWrap(value);
             return element;
         }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.flexWrap"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Placement of children over multiple lines if not enough space is available in this container.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The flex wrap mode to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetFlexWrap<T>(
+            this T element,
+            Wrap value)
+            where T : VisualElement
+        {
+            element.style.SetFlexWrap(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.flexDirection"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Direction of the main axis to layout children in a container.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The flex direction to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetFlexDirection<T>(
+            this T element,
+            StyleEnum<FlexDirection> value)
+            where T : VisualElement
+        {
+            element.style.SetFlexDirection(value);
+            return element;
+        }
 
         /// <summary>
         /// Sets <see cref="IStyle.flexDirection"/> and returns the element for chaining.
@@ -114,11 +150,9 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : VisualElement
         {
-            element.style.SetSize(
+            return element.SetSize(
                 width: value,
                 height: value);
-
-            return element;
         }
 
         /// <summary>
@@ -172,18 +206,18 @@ namespace Aspid.FastTools.UIElements
         /// <para><c>minHeight</c> –– Minimum height for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
-        /// <param name="width">The minimum width to set, or <see langword="null"/> to leave unchanged.</param>
-        /// <param name="height">The minimum height to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <param name="minWidth">The minimum width to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <param name="minHeight">The minimum height to set, or <see langword="null"/> to leave unchanged.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetMinSize<T>(
             this T element,
-            StyleLength? width = null,
-            StyleLength? height = null)
+            StyleLength? minWidth = null,
+            StyleLength? minHeight = null)
             where T : VisualElement
         {
             element.style.SetMinSize(
-                minWidth: width,
-                minHeight: height);
+                minWidth: minWidth,
+                minHeight: minHeight);
 
             return element;
         }
@@ -203,8 +237,9 @@ namespace Aspid.FastTools.UIElements
             StyleLength value)
             where T : VisualElement
         {
-            element.style.SetMaxSize(value);
-            return element;
+            return element.SetMaxSize(
+                maxWidth: value,
+                maxHeight: value);
         }
 
         /// <summary>
@@ -215,18 +250,18 @@ namespace Aspid.FastTools.UIElements
         /// <para><c>maxHeight</c> –– Maximum height for an element, when it is flexible or measures its own size.</para>
         /// </remarks>
         /// <param name="element">The element to modify.</param>
-        /// <param name="width">The maximum width to set, or <see langword="null"/> to leave unchanged.</param>
-        /// <param name="height">The maximum height to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <param name="maxWidth">The maximum width to set, or <see langword="null"/> to leave unchanged.</param>
+        /// <param name="maxHeight">The maximum height to set, or <see langword="null"/> to leave unchanged.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetMaxSize<T>(
             this T element,
-            StyleLength? width = null,
-            StyleLength? height = null)
+            StyleLength? maxWidth = null,
+            StyleLength? maxHeight = null)
             where T : VisualElement
         {
             element.style.SetMaxSize(
-                maxWidth: width,
-                maxHeight: height);
+                maxWidth: maxWidth,
+                maxHeight: maxHeight);
 
             return element;
         }
@@ -412,6 +447,24 @@ namespace Aspid.FastTools.UIElements
             element.style.SetUnityFontStyleAndWeight(value);
             return element;
         }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.unityFontStyleAndWeight"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Font style and weight (normal, bold, italic) to draw the element's text.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The font style and weight to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetUnityFontStyleAndWeight<T>(
+            this T element,
+            FontStyle value)
+            where T : VisualElement
+        {
+            element.style.SetUnityFontStyleAndWeight(value);
+            return element;
+        }
         #endregion
 
         #region Text
@@ -448,6 +501,24 @@ namespace Aspid.FastTools.UIElements
             where T : VisualElement
         {
             element.style.SetLetterSpacing(value);
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.unityTextAlign"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Horizontal and vertical text alignment in the element's box.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The text alignment to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetUnityTextAlign<T>(
+            this T element,
+            StyleEnum<TextAnchor> value)
+            where T : VisualElement
+        {
+            element.style.SetUnityTextAlign(value);
             return element;
         }
 
@@ -499,6 +570,22 @@ namespace Aspid.FastTools.UIElements
         public static T SetUnityTextOutlineColor<T>(
             this T element,
             StyleColor value)
+            where T : VisualElement
+        {
+            element.style.SetUnityTextOutlineColor(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets the text outline color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetUnityTextOutlineColor<T>(
+            this T element,
+            string value)
             where T : VisualElement
         {
             element.style.SetUnityTextOutlineColor(value);
@@ -572,10 +659,46 @@ namespace Aspid.FastTools.UIElements
         /// <returns>The element, for chaining.</returns>
         public static T SetUnityTextGenerator<T>(
             this T element,
+            StyleEnum<TextGeneratorType> value)
+            where T : VisualElement
+        {
+            element.style.SetUnityTextGenerator(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.unityTextGenerator"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Switches between Unity's standard and advanced text generator.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The text generator type to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetUnityTextGenerator<T>(
+            this T element,
             TextGeneratorType value)
             where T : VisualElement
         {
             element.style.SetUnityTextGenerator(value);
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.unityEditorTextRenderingMode"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// TextElement editor rendering mode.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The editor text rendering mode to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetUnityEditorTextRenderingMode<T>(
+            this T element,
+            StyleEnum<EditorTextRenderingMode> value)
+            where T : VisualElement
+        {
+            element.style.SetUnityEditorTextRenderingMode(value);
             return element;
         }
 
@@ -613,6 +736,42 @@ namespace Aspid.FastTools.UIElements
             where T : VisualElement
         {
             element.style.SetTextOverflow(value);
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.textOverflow"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// The element's text overflow mode.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The text overflow mode to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetTextOverflow<T>(
+            this T element,
+            TextOverflow value)
+            where T : VisualElement
+        {
+            element.style.SetTextOverflow(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.unityTextOverflowPosition"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// The element's text overflow position.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The text overflow position to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetUnityTextOverflowPosition<T>(
+            this T element,
+            StyleEnum<TextOverflowPosition> value)
+            where T : VisualElement
+        {
+            element.style.SetUnityTextOverflowPosition(value);
             return element;
         }
 
@@ -709,6 +868,24 @@ namespace Aspid.FastTools.UIElements
             element.style.SetAlignSelf(value);
             return element;
         }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.alignSelf"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Similar to align-items, but only for this specific element.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The alignment to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetAlignSelf<T>(
+            this T element,
+            Align value)
+            where T : VisualElement
+        {
+            element.style.SetAlignSelf(value);
+            return element;
+        }
 
         /// <summary>
         /// Sets <see cref="IStyle.alignItems"/> and returns the element for chaining.
@@ -727,6 +904,24 @@ namespace Aspid.FastTools.UIElements
             element.style.SetAlignItems(value);
             return element;
         }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.alignItems"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Alignment of children on the cross axis of this container.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The children alignment to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetAlignItems<T>(
+            this T element,
+            Align value)
+            where T : VisualElement
+        {
+            element.style.SetAlignItems(value);
+            return element;
+        }
 
         /// <summary>
         /// Sets <see cref="IStyle.alignContent"/> and returns the element for chaining.
@@ -740,6 +935,24 @@ namespace Aspid.FastTools.UIElements
         public static T SetAlignContent<T>(
             this T element,
             StyleEnum<Align> value)
+            where T : VisualElement
+        {
+            element.style.SetAlignContent(value);
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.alignContent"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Alignment of the whole area of children on the cross axis if they span over multiple lines in this container.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The content alignment to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetAlignContent<T>(
+            this T element,
+            Align value)
             where T : VisualElement
         {
             element.style.SetAlignContent(value);
@@ -816,6 +1029,22 @@ namespace Aspid.FastTools.UIElements
                 bottom: value,
                 left: value);
 
+            return element;
+        }
+
+        /// <summary>
+        /// Sets the border color on all sides by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBorderColor<T>(
+            this T element,
+            string value)
+            where T : VisualElement
+        {
+            element.style.SetBorderColor(value);
             return element;
         }
 
@@ -909,6 +1138,22 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Sets the top border color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBorderColorTop<T>(
+            this T element,
+            string value)
+            where T : VisualElement
+        {
+            element.style.SetBorderColorTop(value);
+            return element;
+        }
+
+        /// <summary>
         /// Sets <see cref="IStyle.borderRightColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
@@ -920,6 +1165,22 @@ namespace Aspid.FastTools.UIElements
         public static T SetBorderColorRight<T>(
             this T element,
             StyleColor value)
+            where T : VisualElement
+        {
+            element.style.SetBorderColorRight(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets the right border color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBorderColorRight<T>(
+            this T element,
+            string value)
             where T : VisualElement
         {
             element.style.SetBorderColorRight(value);
@@ -945,6 +1206,22 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Sets the bottom border color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBorderColorBottom<T>(
+            this T element,
+            string value)
+            where T : VisualElement
+        {
+            element.style.SetBorderColorBottom(value);
+            return element;
+        }
+
+        /// <summary>
         /// Sets <see cref="IStyle.borderLeftColor"/> and returns the element for chaining.
         /// </summary>
         /// <remarks>
@@ -956,6 +1233,22 @@ namespace Aspid.FastTools.UIElements
         public static T SetBorderColorLeft<T>(
             this T element,
             StyleColor value)
+            where T : VisualElement
+        {
+            element.style.SetBorderColorLeft(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets the left border color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBorderColorLeft<T>(
+            this T element,
+            string value)
             where T : VisualElement
         {
             element.style.SetBorderColorLeft(value);
@@ -1052,6 +1345,46 @@ namespace Aspid.FastTools.UIElements
             where T : VisualElement
         {
             element.style.SetBorderRadiusBottom(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.borderTopLeftRadius"/>, <see cref="IStyle.borderBottomLeftRadius"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// <para><c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.</para>
+        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The radius to apply to both left corners.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBorderRadiusLeft<T>(
+            this T element,
+            StyleLength value)
+            where T : VisualElement
+        {
+            element.style.SetBorderRadiusLeft(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.borderTopRightRadius"/>, <see cref="IStyle.borderBottomRightRadius"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// <para><c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.</para>
+        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The radius to apply to both right corners.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBorderRadiusRight<T>(
+            this T element,
+            StyleLength value)
+            where T : VisualElement
+        {
+            element.style.SetBorderRadiusRight(value);
             return element;
         }
 
@@ -1656,6 +1989,24 @@ namespace Aspid.FastTools.UIElements
         /// <returns>The element, for chaining.</returns>
         public static T SetDisplay<T>(
             this T element,
+            StyleEnum<DisplayStyle> value)
+            where T : VisualElement
+        {
+            element.style.SetDisplay(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.display"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Defines how an element is displayed in the layout.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The display mode to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetDisplay<T>(
+            this T element,
             DisplayStyle value)
             where T : VisualElement
         {
@@ -1682,6 +2033,24 @@ namespace Aspid.FastTools.UIElements
             element.style.SetOverflow(value);
             return element;
         }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.overflow"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// How a container behaves if its content overflows its own box.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The overflow behavior to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetOverflow<T>(
+            this T element,
+            Overflow value)
+            where T : VisualElement
+        {
+            element.style.SetOverflow(value);
+            return element;
+        }
 
         /// <summary>
         /// Sets <see cref="IStyle.unityOverflowClipBox"/> and returns the element for chaining.
@@ -1695,6 +2064,24 @@ namespace Aspid.FastTools.UIElements
         public static T SetUnityOverflowClipBox<T>(
             this T element,
             StyleEnum<OverflowClipBox> value)
+            where T : VisualElement
+        {
+            element.style.SetUnityOverflowClipBox(value);
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.unityOverflowClipBox"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Specifies which box the element content is clipped against.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The overflow clip box to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetUnityOverflowClipBox<T>(
+            this T element,
+            OverflowClipBox value)
             where T : VisualElement
         {
             element.style.SetUnityOverflowClipBox(value);
@@ -1963,6 +2350,24 @@ namespace Aspid.FastTools.UIElements
             element.style.SetPosition(value);
             return element;
         }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.position"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Element's positioning in its parent container.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The position type to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetPosition<T>(
+            this T element,
+            Position value)
+            where T : VisualElement
+        {
+            element.style.SetPosition(value);
+            return element;
+        }
 
         /// <summary>
         /// Sets <see cref="IStyle.transformOrigin"/> and returns the element for chaining.
@@ -2043,7 +2448,7 @@ namespace Aspid.FastTools.UIElements
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="path">The Resources path of the texture to load.</param>
-        /// <returns>The style, for chaining.</returns>
+        /// <returns>The element, for chaining.</returns>
         public static T SetBackgroundImageFromResource<T>(
             this T element,
             string path)
@@ -2101,6 +2506,22 @@ namespace Aspid.FastTools.UIElements
         public static T SetUnityBackgroundImageTintColor<T>(
             this T element,
             StyleColor value)
+            where T : VisualElement
+        {
+            element.style.SetUnityBackgroundImageTintColor(value);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets the background image tint color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetUnityBackgroundImageTintColor<T>(
+            this T element,
+            string value)
             where T : VisualElement
         {
             element.style.SetUnityBackgroundImageTintColor(value);
@@ -2460,6 +2881,24 @@ namespace Aspid.FastTools.UIElements
             element.style.SetUnitySliceType(value);
             return element;
         }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.unitySliceType"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Specifies the type of slicing.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The slice type to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetUnitySliceType<T>(
+            this T element,
+            SliceType value)
+            where T : VisualElement
+        {
+            element.style.SetUnitySliceType(value);
+            return element;
+        }
 #endif
         #endregion
 
@@ -2476,6 +2915,24 @@ namespace Aspid.FastTools.UIElements
         public static T SetVisibility<T>(
             this T element,
             StyleEnum<Visibility> value)
+            where T : VisualElement
+        {
+            element.style.SetVisibility(value);
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.visibility"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Specifies whether an element is visible.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The visibility to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetVisibility<T>(
+            this T element,
+            Visibility value)
             where T : VisualElement
         {
             element.style.SetVisibility(value);
@@ -2501,6 +2958,24 @@ namespace Aspid.FastTools.UIElements
             element.style.SetWhiteSpace(value);
             return element;
         }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.whiteSpace"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Word wrap over multiple lines if not enough space is available to draw the text of an element.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The white-space mode to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetWhiteSpace<T>(
+            this T element,
+            WhiteSpace value)
+            where T : VisualElement
+        {
+            element.style.SetWhiteSpace(value);
+            return element;
+        }
         #endregion
 
         #region JustifyContent
@@ -2516,6 +2991,24 @@ namespace Aspid.FastTools.UIElements
         public static T SetJustifyContent<T>(
             this T element,
             StyleEnum<Justify> value)
+            where T : VisualElement
+        {
+            element.style.SetJustifyContent(value);
+            return element;
+        }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.justifyContent"/> and returns the element for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Justification of children on the main axis of this container.
+        /// </remarks>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The justify content mode to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetJustifyContent<T>(
+            this T element,
+            Justify value)
             where T : VisualElement
         {
             element.style.SetJustifyContent(value);

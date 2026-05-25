@@ -23,15 +23,29 @@ namespace Aspid.FastTools.UIElements.Editors
         }
 
         /// <summary>
-        /// Binds the bindable to the specified <see cref="SerializedProperty"/>.
+        /// Binds the element to the specified <see cref="SerializedProperty"/>.
         /// </summary>
-        /// <param name="element">The bindable to bind.</param>
+        /// <param name="element">The element to bind.</param>
         /// <param name="property">The serialized property to bind to.</param>
-        /// <returns>The bindable, for chaining.</returns>
+        /// <returns>The element, for chaining.</returns>
         public static T BindPropertyTo<T>(this T element, SerializedProperty property)
-            where T : IBindable
+            where T : VisualElement, IBindable
         {
             element.BindProperty(property);
+            return element;
+        }
+
+        /// <summary>
+        /// Sets the binding path of the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The binding path to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetBindingPath<T>(this T element, string value)
+            where T : VisualElement, IBindable
+        {
+            element.bindingPath = value;
             return element;
         }
     }

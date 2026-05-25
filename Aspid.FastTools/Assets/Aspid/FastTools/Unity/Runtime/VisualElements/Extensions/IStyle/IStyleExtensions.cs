@@ -80,6 +80,42 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Sets <see cref="IStyle.flexWrap"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Placement of children over multiple lines if not enough space is available in this container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The flex wrap mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetFlexWrap<T>(
+            this T style,
+            Wrap value)
+            where T : IStyle
+        {
+            style.flexWrap = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.flexDirection"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Direction of the main axis to layout children in a container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The flex direction to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetFlexDirection<T>(
+            this T style,
+            StyleEnum<FlexDirection> value)
+            where T : IStyle
+        {
+            style.flexDirection = value;
+            return style;
+        }
+
+        /// <summary>
         /// Sets <see cref="IStyle.flexDirection"/> and returns the style for chaining.
         /// </summary>
         /// <remarks>
@@ -184,7 +220,7 @@ namespace Aspid.FastTools.UIElements
 
             return style;
         }
-        
+
         /// <summary>
         /// Sets <see cref="IStyle.maxWidth"/>, <see cref="IStyle.maxHeight"/> and returns the style for chaining.
         /// </summary>
@@ -403,6 +439,24 @@ namespace Aspid.FastTools.UIElements
             style.unityFontStyleAndWeight = value;
             return style;
         }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.unityFontStyleAndWeight"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Font style and weight (normal, bold, italic) to draw the element's text.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The font style and weight to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetUnityFontStyleAndWeight<T>(
+            this T style,
+            FontStyle value)
+            where T : IStyle
+        {
+            style.unityFontStyleAndWeight = value;
+            return style;
+        }
         #endregion
 
         #region Text
@@ -439,6 +493,24 @@ namespace Aspid.FastTools.UIElements
             where T : IStyle
         {
             style.letterSpacing = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.unityTextAlign"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Horizontal and vertical text alignment in the element's box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text alignment to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetUnityTextAlign<T>(
+            this T style,
+            StyleEnum<TextAnchor> value)
+            where T : IStyle
+        {
+            style.unityTextAlign = value;
             return style;
         }
 
@@ -494,6 +566,26 @@ namespace Aspid.FastTools.UIElements
         {
             style.unityTextOutlineColor = value;
             return style;
+        }
+
+        /// <summary>
+        /// Sets the text outline color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The style type.</typeparam>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetUnityTextOutlineColor<T>(
+            this T style,
+            string value)
+            where T : IStyle
+        {
+            if (!ColorUtility.TryParseHtmlString(value, out var color))
+            {
+                Debug.LogWarning($"Failed to parse color string: '{value}'");
+                return style;
+            }
+            return style.SetUnityTextOutlineColor(color);
         }
 
         /// <summary>
@@ -564,10 +656,46 @@ namespace Aspid.FastTools.UIElements
         /// <returns>The style, for chaining.</returns>
         public static T SetUnityTextGenerator<T>(
             this T style,
+            StyleEnum<TextGeneratorType> value)
+            where T : IStyle
+        {
+            style.unityTextGenerator = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.unityTextGenerator"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Switches between Unity's standard and advanced text generator.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text generator type to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetUnityTextGenerator<T>(
+            this T style,
             TextGeneratorType value)
             where T : IStyle
         {
             style.unityTextGenerator = value;
+            return style;
+        }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.unityEditorTextRenderingMode"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// TextElement editor rendering mode.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The editor text rendering mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetUnityEditorTextRenderingMode<T>(
+            this T style,
+            StyleEnum<EditorTextRenderingMode> value)
+            where T : IStyle
+        {
+            style.unityEditorTextRenderingMode = value;
             return style;
         }
 
@@ -605,6 +733,42 @@ namespace Aspid.FastTools.UIElements
             where T : IStyle
         {
             style.textOverflow = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.textOverflow"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// The element's text overflow mode.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text overflow mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetTextOverflow<T>(
+            this T style,
+            TextOverflow value)
+            where T : IStyle
+        {
+            style.textOverflow = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.unityTextOverflowPosition"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// The element's text overflow position.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The text overflow position to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetUnityTextOverflowPosition<T>(
+            this T style,
+            StyleEnum<TextOverflowPosition> value)
+            where T : IStyle
+        {
+            style.unityTextOverflowPosition = value;
             return style;
         }
 
@@ -660,9 +824,13 @@ namespace Aspid.FastTools.UIElements
             string value)
             where T : IStyle
         {
-            ColorUtility.TryParseHtmlString(value, out var color);
-            style.SetColor(color);
+            if (!ColorUtility.TryParseHtmlString(value, out var color))
+            {
+                Debug.LogWarning($"Failed to parse color string: '{value}'");
+                return style;
+            }
 
+            style.SetColor(color);
             return style;
         }
 
@@ -705,6 +873,24 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Sets <see cref="IStyle.alignSelf"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Similar to align-items, but only for this specific element.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The alignment to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetAlignSelf<T>(
+            this T style,
+            Align value)
+            where T : IStyle
+        {
+            style.alignSelf = value;
+            return style;
+        }
+
+        /// <summary>
         /// Sets <see cref="IStyle.alignItems"/> and returns the style for chaining.
         /// </summary>
         /// <remarks>
@@ -723,6 +909,24 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Sets <see cref="IStyle.alignItems"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Alignment of children on the cross axis of this container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The children alignment to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetAlignItems<T>(
+            this T style,
+            Align value)
+            where T : IStyle
+        {
+            style.alignItems = value;
+            return style;
+        }
+
+        /// <summary>
         /// Sets <see cref="IStyle.alignContent"/> and returns the style for chaining.
         /// </summary>
         /// <remarks>
@@ -734,6 +938,24 @@ namespace Aspid.FastTools.UIElements
         public static T SetAlignContent<T>(
             this T style,
             StyleEnum<Align> value)
+            where T : IStyle
+        {
+            style.alignContent = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.alignContent"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Alignment of the whole area of children on the cross axis if they span over multiple lines in this container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The content alignment to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetAlignContent<T>(
+            this T style,
+            Align value)
             where T : IStyle
         {
             style.alignContent = value;
@@ -809,6 +1031,27 @@ namespace Aspid.FastTools.UIElements
                 right: value,
                 bottom: value,
                 left: value);
+        }
+
+        /// <summary>
+        /// Sets the border color on all sides by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The style type.</typeparam>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetBorderColor<T>(
+            this T style,
+            string value)
+            where T : IStyle
+        {
+            if (!ColorUtility.TryParseHtmlString(value, out var color))
+            {
+                Debug.LogWarning($"Failed to parse color string: '{value}'");
+                return style;
+            }
+
+            return style.SetBorderColor(color);
         }
 
         /// <summary>
@@ -901,6 +1144,27 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Sets the top border color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The style type.</typeparam>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetBorderColorTop<T>(
+            this T style,
+            string value)
+            where T : IStyle
+        {
+            if (!ColorUtility.TryParseHtmlString(value, out var color))
+            {
+                Debug.LogWarning($"Failed to parse color string: '{value}'");
+                return style;
+            }
+            
+            return style.SetBorderColorTop(color);
+        }
+
+        /// <summary>
         /// Sets <see cref="IStyle.borderRightColor"/> and returns the style for chaining.
         /// </summary>
         /// <remarks>
@@ -915,6 +1179,27 @@ namespace Aspid.FastTools.UIElements
             where T : IStyle
         {
             return style.SetBorderColor(right: value);
+        }
+
+        /// <summary>
+        /// Sets the right border color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The style type.</typeparam>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetBorderColorRight<T>(
+            this T style,
+            string value)
+            where T : IStyle
+        {
+            if (!ColorUtility.TryParseHtmlString(value, out var color))
+            {
+                Debug.LogWarning($"Failed to parse color string: '{value}'");
+                return style;
+            }
+            
+            return style.SetBorderColorRight(color);
         }
 
         /// <summary>
@@ -935,6 +1220,27 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Sets the bottom border color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The style type.</typeparam>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetBorderColorBottom<T>(
+            this T style,
+            string value)
+            where T : IStyle
+        {
+            if (!ColorUtility.TryParseHtmlString(value, out var color))
+            {
+                Debug.LogWarning($"Failed to parse color string: '{value}'");
+                return style;
+            }
+            
+            return style.SetBorderColorBottom(color);
+        }
+
+        /// <summary>
         /// Sets <see cref="IStyle.borderLeftColor"/> and returns the style for chaining.
         /// </summary>
         /// <remarks>
@@ -949,6 +1255,27 @@ namespace Aspid.FastTools.UIElements
             where T : IStyle
         {
             return style.SetBorderColor(left: value);
+        }
+
+        /// <summary>
+        /// Sets the left border color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The style type.</typeparam>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetBorderColorLeft<T>(
+            this T style,
+            string value)
+            where T : IStyle
+        {
+            if (!ColorUtility.TryParseHtmlString(value, out var color))
+            {
+                Debug.LogWarning($"Failed to parse color string: '{value}'");
+                return style;
+            }
+            
+            return style.SetBorderColorLeft(color);
         }
 
         /// <summary>
@@ -1046,6 +1373,48 @@ namespace Aspid.FastTools.UIElements
             return style.SetBorderRadius(
                 bottomRight: value,
                 bottomLeft: value);
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.borderTopLeftRadius"/>, <see cref="IStyle.borderBottomLeftRadius"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// <para><c>borderTopLeftRadius</c> –– The radius of the top-left corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderBottomLeftRadius</c> –– The radius of the bottom-left corner when a rounded rectangle is drawn in the element's box.</para>
+        /// </remarks>
+        /// <typeparam name="T">The style type.</typeparam>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The radius to apply to both left corners.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetBorderRadiusLeft<T>(
+            this T style,
+            StyleLength value)
+            where T : IStyle
+        {
+            return style.SetBorderRadius(
+                topLeft: value,
+                bottomLeft: value);
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.borderTopRightRadius"/>, <see cref="IStyle.borderBottomRightRadius"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// <para><c>borderTopRightRadius</c> –– The radius of the top-right corner when a rounded rectangle is drawn in the element's box.</para>
+        /// <para><c>borderBottomRightRadius</c> –– The radius of the bottom-right corner when a rounded rectangle is drawn in the element's box.</para>
+        /// </remarks>
+        /// <typeparam name="T">The style type.</typeparam>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The radius to apply to both right corners.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetBorderRadiusRight<T>(
+            this T style,
+            StyleLength value)
+            where T : IStyle
+        {
+            return style.SetBorderRadius(
+                topRight: value,
+                bottomRight: value);
         }
 
         /// <summary>
@@ -1644,6 +2013,24 @@ namespace Aspid.FastTools.UIElements
         /// <returns>The style, for chaining.</returns>
         public static T SetDisplay<T>(
             this T style,
+            StyleEnum<DisplayStyle> value)
+            where T : IStyle
+        {
+            style.display = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.display"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Defines how an element is displayed in the layout.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The display mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetDisplay<T>(
+            this T style,
             DisplayStyle value)
             where T : IStyle
         {
@@ -1672,6 +2059,24 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Sets <see cref="IStyle.overflow"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// How a container behaves if its content overflows its own box.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The overflow behavior to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetOverflow<T>(
+            this T style,
+            Overflow value)
+            where T : IStyle
+        {
+            style.overflow = value;
+            return style;
+        }
+
+        /// <summary>
         /// Sets <see cref="IStyle.unityOverflowClipBox"/> and returns the style for chaining.
         /// </summary>
         /// <remarks>
@@ -1683,6 +2088,24 @@ namespace Aspid.FastTools.UIElements
         public static T SetUnityOverflowClipBox<T>(
             this T style,
             StyleEnum<OverflowClipBox> value)
+            where T : IStyle
+        {
+            style.unityOverflowClipBox = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.unityOverflowClipBox"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Specifies which box the element content is clipped against.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The overflow clip box to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetUnityOverflowClipBox<T>(
+            this T style,
+            OverflowClipBox value)
             where T : IStyle
         {
             style.unityOverflowClipBox = value;
@@ -1952,6 +2375,26 @@ namespace Aspid.FastTools.UIElements
             return style;
         }
 
+
+
+        /// <summary>
+        /// Sets <see cref="IStyle.position"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Element's positioning in its parent container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The position type to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetPosition<T>(
+            this T style,
+            Position value)
+            where T : IStyle
+        {
+            style.position = value;
+            return style;
+        }
+
         /// <summary>
         /// Sets <see cref="IStyle.transformOrigin"/> and returns the style for chaining.
         /// </summary>
@@ -1989,7 +2432,7 @@ namespace Aspid.FastTools.UIElements
             style.backgroundColor = value;
             return style;
         }
-        
+
         /// <summary>
         /// Parses an HTML color string and sets <see cref="IStyle.backgroundColor"/>, returning the style for chaining.
         /// </summary>
@@ -2004,9 +2447,13 @@ namespace Aspid.FastTools.UIElements
             string value)
             where T : IStyle
         {
-            ColorUtility.TryParseHtmlString(value, out var color);
+            if (!ColorUtility.TryParseHtmlString(value, out var color))
+            {
+                Debug.LogWarning($"Failed to parse color string: '{value}'");
+                return style;
+            }
+            
             style.SetBackgroundColor(color);
-
             return style;
         }
 
@@ -2027,7 +2474,7 @@ namespace Aspid.FastTools.UIElements
             style.backgroundImage = value;
             return style;
         }
-        
+
         /// <summary>
         /// Loads a <see cref="Texture2D"/> from Resources and sets the <see cref="IStyle.backgroundImage"/> property.
         /// </summary>
@@ -2039,7 +2486,14 @@ namespace Aspid.FastTools.UIElements
             string path)
             where T : IStyle
         {
-            style.backgroundImage = Resources.Load<Texture2D>(path);
+            var texture = Resources.Load<Texture2D>(path);
+            if (texture == null)
+            {
+                Debug.LogWarning($"Failed to load Texture2D from Resources path: '{path}'");
+                return style;
+            }
+            
+            style.backgroundImage = texture;
             return style;
         }
 
@@ -2095,6 +2549,27 @@ namespace Aspid.FastTools.UIElements
         {
             style.unityBackgroundImageTintColor = value;
             return style;
+        }
+
+        /// <summary>
+        /// Sets the background image tint color by parsing an HTML color string via <see cref="ColorUtility.TryParseHtmlString"/>.
+        /// </summary>
+        /// <typeparam name="T">The style type.</typeparam>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The HTML color string (e.g. "#FF0000", "red").</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetUnityBackgroundImageTintColor<T>(
+            this T style,
+            string value)
+            where T : IStyle
+        {
+            if (!ColorUtility.TryParseHtmlString(value, out var color))
+            {
+                Debug.LogWarning($"Failed to parse color string: '{value}'");
+                return style;
+            }
+            
+            return style.SetUnityBackgroundImageTintColor(color);
         }
 
         /// <summary>
@@ -2451,6 +2926,24 @@ namespace Aspid.FastTools.UIElements
             style.unitySliceType = value;
             return style;
         }
+        
+        /// <summary>
+        /// Sets <see cref="IStyle.unitySliceType"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Specifies the type of slicing.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The slice type to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetUnitySliceType<T>(
+            this T style,
+            SliceType value)
+            where T : IStyle
+        {
+            style.unitySliceType = value;
+            return style;
+        }
 #endif
         #endregion
 
@@ -2467,6 +2960,24 @@ namespace Aspid.FastTools.UIElements
         public static T SetVisibility<T>(
             this T style,
             StyleEnum<Visibility> value)
+            where T : IStyle
+        {
+            style.visibility = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.visibility"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Specifies whether an element is visible.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The visibility to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetVisibility<T>(
+            this T style,
+            Visibility value)
             where T : IStyle
         {
             style.visibility = value;
@@ -2492,6 +3003,24 @@ namespace Aspid.FastTools.UIElements
             style.whiteSpace = value;
             return style;
         }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.whiteSpace"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Word wrap over multiple lines if not enough space is available to draw the text of an element.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The white-space mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetWhiteSpace<T>(
+            this T style,
+            WhiteSpace value)
+            where T : IStyle
+        {
+            style.whiteSpace = value;
+            return style;
+        }
         #endregion
 
         #region JustifyContent
@@ -2507,6 +3036,24 @@ namespace Aspid.FastTools.UIElements
         public static T SetJustifyContent<T>(
             this T style,
             StyleEnum<Justify> value)
+            where T : IStyle
+        {
+            style.justifyContent = value;
+            return style;
+        }
+
+        /// <summary>
+        /// Sets <see cref="IStyle.justifyContent"/> and returns the style for chaining.
+        /// </summary>
+        /// <remarks>
+        /// Justification of children on the main axis of this container.
+        /// </remarks>
+        /// <param name="style">The style to modify.</param>
+        /// <param name="value">The justify content mode to set.</param>
+        /// <returns>The style, for chaining.</returns>
+        public static T SetJustifyContent<T>(
+            this T style,
+            Justify value)
             where T : IStyle
         {
             style.justifyContent = value;

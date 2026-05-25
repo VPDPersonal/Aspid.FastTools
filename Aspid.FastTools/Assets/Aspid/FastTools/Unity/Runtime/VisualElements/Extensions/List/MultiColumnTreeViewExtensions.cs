@@ -1,3 +1,4 @@
+using System;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
@@ -19,6 +20,34 @@ namespace Aspid.FastTools.UIElements
             where T : MultiColumnTreeView
         {
             element.sortingMode = value;
+            return element;
+        }
+
+        /// <summary>
+        /// Subscribes to the <see cref="MultiColumnTreeView.columnSortingChanged"/> event and returns the element for chaining.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddColumnSortingChanged<T>(this T element, Action callback)
+            where T : MultiColumnTreeView
+        {
+            element.columnSortingChanged += callback;
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the <see cref="MultiColumnTreeView.columnSortingChanged"/> event and returns the element for chaining.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveColumnSortingChanged<T>(this T element, Action callback)
+            where T : MultiColumnTreeView
+        {
+            element.columnSortingChanged -= callback;
             return element;
         }
     }

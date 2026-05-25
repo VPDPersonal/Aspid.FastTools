@@ -43,5 +43,19 @@ namespace Aspid.FastTools.UIElements
             element.highValue = value;
             return element;
         }
+
+        /// <summary>
+        /// Sets the current value of the progress bar via <see cref="AbstractProgressBar.value"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, float value)
+            where T : AbstractProgressBar
+        {
+            element.value = value;
+            return element;
+        }
     }
 }

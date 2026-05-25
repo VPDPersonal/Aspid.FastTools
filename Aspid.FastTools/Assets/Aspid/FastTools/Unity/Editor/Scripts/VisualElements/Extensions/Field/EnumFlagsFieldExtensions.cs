@@ -7,7 +7,7 @@ namespace Aspid.FastTools.UIElements.Editors
     public static class EnumFlagsFieldExtensions
     {
         /// <summary>
-        /// Initializes the field with a default enum flags value.
+        /// Initializes the field with a default enum flags value via <see cref="EnumFlagsField.Init(Enum, bool)"/>.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="defaultValue">The default enum flags value to display.</param>
