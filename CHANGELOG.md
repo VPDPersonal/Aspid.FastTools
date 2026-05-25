@@ -10,22 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 #### VisualElement fluent extensions
-- Per-type `SetLabel` overloads for `BaseField<T>` covering 25 Unity types (`Quaternion`, `AnimationCurve`, `Bounds`, `BoundsInt`, `Color`, `Color32`, `Gradient`, `Hash128`, `Rect`, `Vector2/3/4`, `Vector2Int/3Int`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `decimal`, `short`, `ushort`, `byte`, `sbyte`, `char`, `string`, `Enum`, `Object`).
-- Raw-enum overloads for all `StyleEnum<T>` setters on `IStyleExtensions` and `VisualElementExtensions.Style` (e.g. `SetFlexWrap(Wrap)` alongside `SetFlexWrap(StyleEnum<Wrap>)`).
-- Conditional `*If` variants (`AddChildIf`, `InsertChildIf`, `AddChildrenIf`, `InsertChildrenIf`) for all child management methods across `VisualElement`, `IEnumerable`, array and `List` sources.
-- `BindTo(SerializedObject)` and `UnbindFrom()` editor-side fluent extensions for `VisualElement`.
-- `SetLabel` for `PropertyField`, `SetBindingPath` for `IBindable` (editor-side).
-- Extended `INotifyValueChanged` `ValueChanged` with per-type overloads for common Unity types.
-- Extended `Button` (`SetText`), `Focusable`, `Manipulators` (`RemoveManipulator`), `ProgressBar` (`SetTitle`), `BaseListView`, `MultiColumnListView`, `MultiColumnTreeView` with new fluent methods.
-- Math-assembly `SetValue` extensions for `float2/3/4`, `int2/3/4` types.
+- Per-type `SetLabel` overloads for `BaseField<T>` covering 25 Unity types (`Quaternion`, `AnimationCurve`, `Bounds`, `BoundsInt`, `Color`, `Color32`, `Gradient`, `Hash128`, `Rect`, `Vector2/3/4`, `Vector2Int/3Int`, `int`, `uint`, `long`, `ulong`, `float`, `double`, `decimal`, `short`, `ushort`, `byte`, `sbyte`, `char`, `string`, `Enum`, `Object`). ([#33])
+- Raw-enum overloads for all `StyleEnum<T>` setters on `IStyleExtensions` and `VisualElementExtensions.Style` (e.g. `SetFlexWrap(Wrap)` alongside `SetFlexWrap(StyleEnum<Wrap>)`). ([#33])
+- Conditional `*If` variants (`AddChildIf`, `InsertChildIf`, `AddChildrenIf`, `InsertChildrenIf`) for all child management methods across `VisualElement`, `IEnumerable`, array and `List` sources. ([#33])
+- `BindTo(SerializedObject)` and `UnbindFrom()` editor-side fluent extensions for `VisualElement`. ([#33])
+- `SetLabel` for `PropertyField`, `SetBindingPath` for `IBindable` (editor-side). ([#33])
+- Extended `INotifyValueChanged` `ValueChanged` with per-type overloads for common Unity types. ([#33])
+- Extended `Button` (`SetText`), `Focusable`, `Manipulators` (`RemoveManipulator`), `ProgressBar` (`SetTitle`), `BaseListView`, `MultiColumnListView`, `MultiColumnTreeView` with new fluent methods. ([#33])
+- Math-assembly `SetValue` extensions for `float2/3/4`, `int2/3/4` types. ([#33])
 
 ### Changed
-- Reorganized `BaseFieldExtensions` into `BaseFields/` subdirectory.
-- Renamed `Unbind<T>` extension to `UnbindFrom<T>` for consistency with `BindTo`.
-- Tightened `BindPropertyTo` generic constraint from `where T : IBindable` to `where T : VisualElement, IBindable`.
+- Reorganized `BaseFieldExtensions` into `BaseFields/` subdirectory. ([#33])
+- Renamed `Unbind<T>` extension to `UnbindFrom<T>` for consistency with `BindTo`. ([#33])
+- Tightened `BindPropertyTo` generic constraint from `where T : IBindable` to `where T : VisualElement, IBindable`. ([#33])
 
 ### Fixed
-- `SetMinSize` parameter naming bug (`maxHeight` → `minHeight`).
+- `SetMinSize` parameter naming bug (`maxHeight` → `minHeight`). ([#33])
+
+[#33]: https://github.com/VPDPersonal/Aspid.FastTools/pull/33
 
 ## [1.0.0-rc.2] — 2026-05-18
 
