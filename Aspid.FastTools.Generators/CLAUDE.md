@@ -1,6 +1,6 @@
 # Aspid.FastTools.Generators
 
-Standalone .NET solution containing Roslyn source generators for the `com.aspid.fasttools` Unity package.
+Standalone .NET solution containing Roslyn source generators for the `tech.aspid.fasttools` Unity package.
 
 ## Commands
 
