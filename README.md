@@ -37,6 +37,9 @@ Install Aspid.FastTools via UPM (Unity Package Manager) — add the package usin
 
 ```
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm
+```
+
+```
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
@@ -44,6 +47,9 @@ To install a specific version, target the immutable per-release tag (see [Releas
 
 ```
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm/1.0.0
+```
+
+```
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.2
 ```
 
