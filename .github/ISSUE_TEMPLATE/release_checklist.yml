@@ -1,0 +1,135 @@
+name: Release checklist
+description: Pre-publish QA checklist for an Asset Store / UPM release of Aspid.FastTools.
+title: "Release X.Y.Z — pre-publish checklist"
+labels: ["type: chore"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tick every box before publishing. Anything left unchecked in **§1 Blockers** must be resolved first.
+        Replace `X.Y.Z` in the title with the target version. Automatable sections (§4, §8, §9) can be run with the local skills/agents (`dotnet test`, `uss-bem-checker`, `sync-readmes`).
+
+  - type: input
+    id: version
+    attributes:
+      label: Target version
+      description: The version being released (must match `package.json` `version` and the `CHANGELOG` section).
+      placeholder: "1.0.0"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: blockers
+    attributes:
+      label: 1. Release blockers
+      description: Hard gates — release cannot ship until all are checked.
+      options:
+        - label: "`package.json` `version` bumped to the release version (no `-rc`/`-preview` suffix for a stable release)"
+        - label: "`CHANGELOG.md` `[Unreleased]` section closed into `[X.Y.Z]` with a date"
+        - label: Git release tag created and the release branch merged
+        - label: Working tree clean (`git status`)
+
+  - type: checkboxes
+    id: environment
+    attributes:
+      label: 0. Test environment
+      description: Cover the install paths and Unity versions a buyer will use.
+      options:
+        - label: Clean project on minimum Unity **6000.0** — imports with 0 errors / 0 warnings
+        - label: Project on latest LTS / 6.1+ — no API drift
+        - label: Installed from `.unitypackage` (Asset Store distribution form)
+        - label: Installed via UPM `upm` git tag (stable)
+        - label: Installed via UPM `upm-preview` branch (preview) — README badge links resolve
+        - label: Tested **with** and **without** `com.unity.mathematics` present
+
+  - type: checkboxes
+    id: manifest
+    attributes:
+      label: 2. Package integrity & manifest
+      options:
+        - label: "`documentationUrl` / `licensesUrl` / `changelogUrl` all resolve (no 404)"
+        - label: "`LICENSE` (MIT) present in package and matches the manifest"
+        - label: All `.meta` files present — no GUID churn / broken refs on import into a foreign project
+        - label: "No stray files shipped (`.csproj`, `bin/`, `obj/`, `.vs/`, test scenes, generator **source**)"
+        - label: Generator DLL present, flagged as RoslynAnalyzer (not a platform managed plugin)
+
+  - type: checkboxes
+    id: compilation
+    attributes:
+      label: 3. Compilation & builds
+      options:
+        - label: All asmdefs compile (`Aspid.FastTools`, `.Unity`, `.Unity.Editor`, `.Unity.VisualElements.Math`, sample asmdefs)
+        - label: Player build passes on **Mono** and **IL2CPP** (Runtime/ ⊄ UnityEditor boundary holds)
+        - label: Non-development build (`ENABLE_PROFILER` off) — ProfilerMarker dispatcher compiles via `#if` fallback `return default;`
+        - label: IL2CPP stripping keeps reflection paths `SerializableType` needs (AQN resolution works on an AOT build)
+        - label: At least one standalone (Win/Mac) **and** one AOT target (iOS/Android/WebGL) built
+
+  - type: checkboxes
+    id: generators
+    attributes:
+      label: 4. Source generators
+      options:
+        - label: "`dotnet test -c Release` green (incl. `IncrementalCacheTests`)"
+        - label: "ProfilerMarkersGenerator — unique marker per (type, method, line); `.WithName(literal)` & `$\"...\"` work; same-line dedup"
+        - label: "IdStructGenerator — generates `_id`/`Id`/`__stringId`; **AFID001** (no `partial`) and **AFID002** (members redeclared) reported; generics handled"
+        - label: Incremental cache intact — editing an unrelated file does not trigger regeneration
+
+  - type: checkboxes
+    id: mathematics
+    attributes:
+      label: 5. Optional Mathematics integration
+      options:
+        - label: Without `com.unity.mathematics` — compiles; Math satellite not built; no errors
+        - label: With `com.unity.mathematics` — satellite compiles; `SetValue`/`ValueChanged` for `float2/3/4`, `int2/3/4` available
+        - label: Installing / removing the package at runtime leaves no broken references
+
+  - type: checkboxes
+    id: features
+    attributes:
+      label: 6. Feature smoke (in editor)
+      options:
+        - label: "SerializableType / SerializableType<T> — inspector serialization, lazy resolve, TypeSelector (search/hierarchy), `ComponentTypeSelector`, survives domain reload"
+        - label: "EnumValues<TValue> — plain enum and `[Flags]`, add/remove, persistence"
+        - label: "Id Registry — create asset, one-struct-one-registry, `TryGetId`/`TryGetName`/`Contains`, Undo, Clean-up, Sort/Group, Next-ID backward warning, Open-Registry, `[UniqueId]` collisions"
+        - label: "VisualElement fluent API — layout/size/style/borders/colors/transitions/callbacks/USS/child; `*If` variants; `BindTo`/`UnbindFrom`; `SetLabel` overloads"
+        - label: Internal editor components (AspidLabel/Box/GradientButton/HelpBox/InspectorHeader/AnimatedLogo…) render, USS applies, animations run
+        - label: IMGUI scopes (Vertical/Horizontal/ScrollView) — correct `Rect`
+        - label: "Welcome Window (`Tools/Aspid FastTools/Welcome`) opens, reads `package.json`, sample-import buttons work; first-import auto-show fires once"
+
+  - type: checkboxes
+    id: samples
+    attributes:
+      label: 7. Samples (via Package Manager)
+      description: For each of Types, EnumValues, Ids, ProfilerMarkers, VisualElements.
+      options:
+        - label: Each imports through PM into `Assets/Samples/...`
+        - label: Each compiles (incl. Editor sub-asmdefs for Types / VisualElements)
+        - label: Scenes/demos open — no pink materials, no Missing Script
+        - label: "Manifest `displayName`/`description`/`path` match the real folders"
+
+  - type: checkboxes
+    id: uss
+    attributes:
+      label: 8. USS / visuals
+      options:
+        - label: "`uss-bem-checker` clean — no BEM / positional-grammar violations"
+        - label: Base palette `Aspid-FastTools-Default-Dark.uss` loads first; `--aspid-icons-*` resolve
+        - label: Checked in Dark and Light editor theme — no unreadable text
+
+  - type: checkboxes
+    id: docs
+    attributes:
+      label: 9. Documentation
+      options:
+        - label: "`sync-readmes` clean — 4 main READMEs in sync (EN/RU, root/Documentation), image paths correct"
+        - label: Images in `Documentation/Images/` exist and render on GitHub and in the unpacked package
+        - label: Stable (`upm`) and Preview (`upm-preview`) badges render
+        - label: Asset Store card screenshots proofread (no typos)
+
+  - type: checkboxes
+    id: final
+    attributes:
+      label: 10. Final smoke before upload
+      options:
+        - label: Fresh `.unitypackage` import into an empty project — clean console, one sample imports and runs
+        - label: "Asset Store card (version, Unity compatibility, category, license, tags) matches the package"
