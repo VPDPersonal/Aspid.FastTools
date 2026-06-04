@@ -8,7 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- Renamed UPM package from `com.aspid.fasttools` to `tech.aspid.fasttools` to align with the `tech.*` reverse-domain convention.
+- **BREAKING:** Renamed UPM package from `com.aspid.fasttools` to `tech.aspid.fasttools` to align with the `tech.*` reverse-domain convention. Existing consumers must update the dependency identifier in their `Packages/manifest.json` (and any Git/registry reference) to the new name. ([#36])
+
+### Documentation
+- Split the `upm` and `upm-preview` installation URLs into separate code blocks across all four READMEs. ([#38])
 
 ## [1.0.0-rc.3] — 2026-05-25
 
@@ -33,10 +36,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SetMinSize` parameter naming bug (`maxHeight` → `minHeight`). ([#33])
 - Null-safety in `FocusableExtensions.IsFocus` — `focusController` is now null-checked to prevent `NullReferenceException`. ([#33])
 - `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` now log a warning and return gracefully instead of throwing when the stylesheet path is not found. ([#33])
-
-[#31]: https://github.com/VPDPersonal/Aspid.FastTools/pull/31
-[#32]: https://github.com/VPDPersonal/Aspid.FastTools/pull/32
-[#33]: https://github.com/VPDPersonal/Aspid.FastTools/pull/33
 
 ## [1.0.0-rc.2] — 2026-05-18
 
@@ -122,6 +121,11 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 
 [#8]: https://github.com/VPDPersonal/Aspid.FastTools/pull/8
 [#30]: https://github.com/VPDPersonal/Aspid.FastTools/pull/30
+[#31]: https://github.com/VPDPersonal/Aspid.FastTools/pull/31
+[#32]: https://github.com/VPDPersonal/Aspid.FastTools/pull/32
+[#33]: https://github.com/VPDPersonal/Aspid.FastTools/pull/33
+[#36]: https://github.com/VPDPersonal/Aspid.FastTools/pull/36
+[#38]: https://github.com/VPDPersonal/Aspid.FastTools/pull/38
 [Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...HEAD
 [1.0.0-rc.3]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.2...v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.1...v1.0.0-rc.2
