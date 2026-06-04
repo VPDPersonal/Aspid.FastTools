@@ -4,28 +4,35 @@ description: Verify and update Aspid.FastTools README files against the actual c
 user-invocable: true
 ---
 
-The package ships **eight** README files that drift from the code easily. Use this skill whenever the user asks to "check / update / sync READMEs", or after any change that touches: namespaces of public types, public API surface, `[CreateAssetMenu]` paths, source generator output, or sample structure.
+The package ships **fourteen** README files (4 main + 10 sample) that drift from the code easily. Use this skill whenever the user asks to "check / update / sync READMEs", or after any change that touches: namespaces of public types, public API surface, `[CreateAssetMenu]` paths, source generator output, or sample structure.
 
 ## Files in scope
 
-**Main READMEs (mirror each other 1:1 except for image paths and one heading):**
+**Main READMEs (mirror each other 1:1 except for image paths and the differences listed below):**
 
 | Path | Locale | Image base path |
 |---|---|---|
 | `README.md` | EN | `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/` |
 | `README_RU.md` | RU | `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/` |
-| `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/README.md` | EN | `Images/` |
-| `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/README_RU.md` | RU | `Images/` |
+| `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/EN/README.md` | EN | `../Images/` |
+| `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/RU/README.md` | RU | `../Images/` |
 
-The Documentation copies have an extra `## Source Code` / `## Исходный код` block linking to the GitHub repo — the root copies don't. Otherwise the body is identical character-for-character.
+Per-feature references (`SerializedPropertyExtensions.md`, `VisualElementExtensions.md`) live alongside the Documentation copies inside `Documentation/EN/` and `Documentation/RU/`.
 
-**Sample READMEs (one EN + one RU per sample):**
+The body is identical character-for-character between root and Documentation copies **except** for these expected, structural differences (not drift):
 
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/Types/`
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/Ids/`
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/EnumValues/`
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/ProfilerMarkers/`
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples/VisualElements/`
+- **Badge block** (Unity / Release / License shields) — only in the root copies (GitHub / Asset Store storefront).
+- **`## Source Code` / `## Исходный код` block** linking to the GitHub repo — only in the Documentation copies.
+- **Image paths** — root uses the full `Aspid.FastTools/Assets/.../Documentation/Images/...`; Documentation copies use relative `../Images/...`.
+- **Feature-reference links** — root links to the full `Documentation/EN/SerializedPropertyExtensions.md` path; Documentation copies link to the bare `SerializedPropertyExtensions.md` (same folder).
+
+**Sample READMEs (one EN + one RU per sample, under `Samples~/`):**
+
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/Types/`
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/Ids/`
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/EnumValues/`
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/ProfilerMarkers/`
+- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/VisualElements/`
 
 ## Workflow
 
@@ -49,7 +56,7 @@ Common drift points discovered historically:
 
 ### 2. Apply edits to all matching files
 
-Most edits hit all four main READMEs (EN root, EN Documentation, RU root, RU Documentation). Apply the same change to each — they must stay textually identical inside their respective body except for the image paths and the `## Source Code` heading.
+Most edits hit all four main READMEs (EN root, EN Documentation, RU root, RU Documentation). Apply the same change to each — they must stay textually identical inside their respective body except for the structural differences listed in *Files in scope* (badge block, `## Source Code` block, image paths, feature-reference links).
 
 For RU edits, follow the existing RU translation conventions in the file: `Namespace` → `Пространство имён`, `Description` → `Описание`, code identifiers and English technical terms like `runtime`, `partial struct`, `Inspector` stay in English.
 
@@ -61,21 +68,23 @@ Run these commands from the repo root and skim the output:
 
 ```bash
 # All using statements in samples — these are ground truth for namespaces
-grep -rn "^using Aspid" Aspid.FastTools/Assets/Aspid/FastTools/Samples --include="*.cs" | sort -u
+grep -rn "^using Aspid" Aspid.FastTools/Assets/Aspid/FastTools/Samples~ --include="*.cs" | sort -u
 
 # All CreateAssetMenu paths in the package
 grep -rn "menuName" Aspid.FastTools/Assets/Aspid/FastTools --include="*.cs"
 
-# Confirm both READMEs of a pair stay aligned (count sections)
-grep -c "^## " README.md Aspid.FastTools/Assets/Aspid/FastTools/Documentation/README.md
-grep -c "^## " README_RU.md Aspid.FastTools/Assets/Aspid/FastTools/Documentation/README_RU.md
+# Confirm the heading STRUCTURE of each pair stays aligned (compare # markers, not text)
+diff <(grep -oE "^#{1,4} " README.md) <(grep -oE "^#{1,4} " Aspid.FastTools/Assets/Aspid/FastTools/Documentation/EN/README.md)
+diff <(grep -oE "^#{1,4} " README_RU.md) <(grep -oE "^#{1,4} " Aspid.FastTools/Assets/Aspid/FastTools/Documentation/RU/README.md)
+# EN ↔ RU structure must match (only translated heading text differs)
+diff <(grep -oE "^#{1,4} " README.md) <(grep -oE "^#{1,4} " README_RU.md)
 ```
 
-Then visually diff each pair of matched files (EN root vs EN Documentation; RU root vs RU Documentation) — only image paths and the `## Source Code` block should differ.
+Then visually diff each pair of matched files (EN root vs EN Documentation; RU root vs RU Documentation) — only the structural differences listed in *Files in scope* should appear (badge block, `## Source Code` block, image paths, feature-reference links).
 
 ## Arguments
 
 `$ARGUMENTS` (optional):
-- empty — full audit and update of all eight READMEs;
+- empty — full audit and update of all fourteen READMEs;
 - `--check` — audit only, report findings without editing;
 - a feature name (`ids`, `types`, `enums`, `visualelements`, `profilermarkers`, `imgui`, `serializedproperty`) — narrow the audit/update to that section.
