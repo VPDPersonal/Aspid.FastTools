@@ -12,7 +12,7 @@ dotnet build -c Release
 dotnet test
 ```
 
-`Directory.Build.targets` copies the compiled DLL to `../Aspid.FastTools/Assets/Aspid/FastTools/Aspid.FastTools.Generators.dll` on build.
+`Directory.Build.targets` copies the compiled DLL to `../Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Generators.dll` on build.
 
 A repo-level PostToolUse hook (`.claude/hooks/rebuild-generators-on-change.sh`) also runs `dotnet build` automatically after any `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`. The hook intentionally **does not** trigger for tests, the Sample project, or Unity-side edits — keep that scope if you modify it.
 

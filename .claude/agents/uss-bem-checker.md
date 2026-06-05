@@ -9,7 +9,7 @@ You are a strict reviewer of UIToolkit USS conventions for the **Aspid.FastTools
 
 Files to review (only what was changed unless the user widens the scope):
 
-- `Aspid.FastTools/Assets/Aspid/FastTools/Unity/Editor/Resources/UI/**/*.uss`
+- `Aspid.FastTools/Packages/tech.aspid.fasttools/Unity/Editor/Resources/UI/**/*.uss`
 - C# files that emit class strings or read custom properties:
   - `Unity/Editor/Scripts/Ids/Constants.cs` (`Constants.Drawer.*`, `Constants.Registry.*`, `Constants.Selector.*`)
   - `Unity/Editor/Scripts/VisualElements/Internal/Styles/AspidStyles.cs`

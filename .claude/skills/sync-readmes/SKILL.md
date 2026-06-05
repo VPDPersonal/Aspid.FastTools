@@ -12,10 +12,10 @@ The package ships **fourteen** README files (4 main + 10 sample) that drift from
 
 | Path | Locale | Image base path |
 |---|---|---|
-| `README.md` | EN | `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/` |
-| `README_RU.md` | RU | `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/` |
-| `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/EN/README.md` | EN | `../Images/` |
-| `Aspid.FastTools/Assets/Aspid/FastTools/Documentation/RU/README.md` | RU | `../Images/` |
+| `README.md` | EN | `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/` |
+| `README_RU.md` | RU | `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/` |
+| `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/EN/README.md` | EN | `../Images/` |
+| `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/README.md` | RU | `../Images/` |
 
 Per-feature references (`SerializedPropertyExtensions.md`, `VisualElementExtensions.md`) live alongside the Documentation copies inside `Documentation/EN/` and `Documentation/RU/`.
 
@@ -28,11 +28,11 @@ The body is identical character-for-character between root and Documentation cop
 
 **Sample READMEs (one EN + one RU per sample, under `Samples~/`):**
 
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/Types/`
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/Ids/`
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/EnumValues/`
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/ProfilerMarkers/`
-- `Aspid.FastTools/Assets/Aspid/FastTools/Samples~/VisualElements/`
+- `Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/Types/`
+- `Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/Ids/`
+- `Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/EnumValues/`
+- `Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/ProfilerMarkers/`
+- `Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/VisualElements/`
 
 ## Workflow
 
@@ -68,14 +68,14 @@ Run these commands from the repo root and skim the output:
 
 ```bash
 # All using statements in samples — these are ground truth for namespaces
-grep -rn "^using Aspid" Aspid.FastTools/Assets/Aspid/FastTools/Samples~ --include="*.cs" | sort -u
+grep -rn "^using Aspid" Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~ --include="*.cs" | sort -u
 
 # All CreateAssetMenu paths in the package
-grep -rn "menuName" Aspid.FastTools/Assets/Aspid/FastTools --include="*.cs"
+grep -rn "menuName" Aspid.FastTools/Packages/tech.aspid.fasttools --include="*.cs"
 
 # Confirm the heading STRUCTURE of each pair stays aligned (compare # markers, not text)
-diff <(grep -oE "^#{1,4} " README.md) <(grep -oE "^#{1,4} " Aspid.FastTools/Assets/Aspid/FastTools/Documentation/EN/README.md)
-diff <(grep -oE "^#{1,4} " README_RU.md) <(grep -oE "^#{1,4} " Aspid.FastTools/Assets/Aspid/FastTools/Documentation/RU/README.md)
+diff <(grep -oE "^#{1,4} " README.md) <(grep -oE "^#{1,4} " Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/EN/README.md)
+diff <(grep -oE "^#{1,4} " README_RU.md) <(grep -oE "^#{1,4} " Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/README.md)
 # EN ↔ RU structure must match (only translated heading text differs)
 diff <(grep -oE "^#{1,4} " README.md) <(grep -oE "^#{1,4} " README_RU.md)
 ```
