@@ -16,7 +16,7 @@ permissions:
 
 env:
   PACKAGE_PATH: Aspid.FastTools/Assets/Aspid/FastTools
-  CHANGELOG_PATH: Aspid.FastTools/Assets/Aspid/FastTools/CHANGELOG.md
+  CHANGELOG_PATH: CHANGELOG.md
   GENERATORS_SOLUTION_DIR: Aspid.FastTools.Generators
 
 jobs:

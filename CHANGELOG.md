@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.4] — 2026-06-05
+
+### Fixed
+- `EnumValues<TValue>` `[Flags]` enum keys no longer reset to `None` while editing an entry or right after adding a new one. The per-element drawer now refreshes the `EnumFlagsField` without notifying (so the programmatic reset no longer fires the value-changed callback that wiped the stored key), and both drawers skip redundant `_key` / `_enumType` writes that re-entered the row drawer mid-edit. ([#43])
+
 ### Documentation
 - Split the `upm` and `upm-preview` installation URLs into separate code blocks across all four READMEs. ([#38])
 
@@ -122,7 +127,9 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 [#32]: https://github.com/VPDPersonal/Aspid.FastTools/pull/32
 [#33]: https://github.com/VPDPersonal/Aspid.FastTools/pull/33
 [#38]: https://github.com/VPDPersonal/Aspid.FastTools/pull/38
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...HEAD
+[#43]: https://github.com/VPDPersonal/Aspid.FastTools/pull/43
+[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...HEAD
+[1.0.0-rc.4]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...v1.0.0-rc.4
 [1.0.0-rc.3]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.2...v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.1...v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.1
