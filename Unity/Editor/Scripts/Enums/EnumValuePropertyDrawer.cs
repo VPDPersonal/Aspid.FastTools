@@ -82,12 +82,14 @@ namespace Aspid.FastTools.Enums.Editors
                 }
 
                 var enumValue = (Enum)parsed;
-                keyProperty.SetStringAndApply(enumValue.ToString());
+
+                if (keyProperty.stringValue != enumValue.ToString())
+                    keyProperty.SetStringAndApply(enumValue.ToString());
 
                 if (enumType.IsDefined(typeof(FlagsAttribute), false))
                 {
                     keyEnumFlagField
-                        .SetValue(null)
+                        .SetValue(null, notify: false)
                         .Initialize(enumValue)
                         .SetDisplay(DisplayStyle.Flex);
                 }

@@ -64,8 +64,10 @@ namespace Aspid.FastTools.Enums.Editors
 
                 for (var i = 0; i < values.arraySize; i++)
                 {
-                    var element = values.GetArrayElementAtIndex(i);
-                    element.FindPropertyRelative("_enumType").SetStringAndApply(enumTypeValue);
+                    var enumTypeElement = values.GetArrayElementAtIndex(i).FindPropertyRelative("_enumType");
+
+                    if (enumTypeElement.stringValue != enumTypeValue)
+                        enumTypeElement.SetStringAndApply(enumTypeValue);
                 }
             }
         }
