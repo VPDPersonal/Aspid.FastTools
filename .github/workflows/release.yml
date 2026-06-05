@@ -15,7 +15,7 @@ permissions:
   contents: write
 
 env:
-  PACKAGE_PATH: Aspid.FastTools/Assets/Aspid/FastTools
+  PACKAGE_PATH: Aspid.FastTools/Packages/tech.aspid.fasttools
   CHANGELOG_PATH: CHANGELOG.md
   GENERATORS_SOLUTION_DIR: Aspid.FastTools.Generators
 

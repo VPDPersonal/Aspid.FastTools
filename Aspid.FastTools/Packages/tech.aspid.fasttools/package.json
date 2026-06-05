@@ -2,14 +2,13 @@
   "name": "tech.aspid.fasttools",
   "version": "1.0.0-rc.4",
   "displayName": "Aspid.FastTools",
-  "description": "Unity tools to cut boilerplate — source-generated ProfilerMarkers, serializable type/enum/ID systems, and a fluent UIToolkit API.",
+  "description": "Unity tools to cut boilerplate \u2014 source-generated ProfilerMarkers, serializable type/enum/ID systems, and a fluent UIToolkit API.",
   "unity": "6000.0",
   "license": "MIT",
   "licensesUrl": "https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE",
   "documentationUrl": "https://github.com/VPDPersonal/Aspid.FastTools/blob/main/README.md",
   "changelogUrl": "https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md",
-  "keywords":
-  [
+  "keywords": [
     "unity",
     "tools",
     "boilerplate",
@@ -28,14 +27,12 @@
     "imgui",
     "fluent"
   ],
-  "author":
-  {
+  "author": {
     "name": "Vladislav Panin",
-    "email": "vpd.aspid@gmail.com",
-    "url": "https://github.com/VPDPersonal"
+    "url": "https://github.com/VPDPersonal",
+    "email": "vpd.aspid@gmail.com"
   },
-  "samples":
-  [
+  "samples": [
     {
       "displayName": "Types",
       "description": "SerializableType, SerializableType<T>, TypeSelectorAttribute and ComponentTypeSelector usage with the editor type picker.",
@@ -48,7 +45,7 @@
     },
     {
       "displayName": "Ids",
-      "description": "IId / [UniqueId] structs paired with IdRegistry assets for stable int ↔ string IDs.",
+      "description": "IId / [UniqueId] structs paired with IdRegistry assets for stable int \u2194 string IDs.",
       "path": "Samples~/Ids"
     },
     {
@@ -61,5 +58,6 @@
       "description": "Fluent UI Toolkit extensions, presets and helpers.",
       "path": "Samples~/VisualElements"
     }
-  ]
+  ],
+  "unityRelease": "0f1"
 }

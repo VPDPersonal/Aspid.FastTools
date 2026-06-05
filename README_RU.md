@@ -1,4 +1,4 @@
-<img src="Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
+<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
 <p>
   <a href="https://assetstore.unity.com/packages/slug/365584"><img src="https://img.shields.io/badge/Unity_6.0%2B-000000?style=flat&logo=unity&logoColor=white&color=4fa35d" alt="Unity 6.0+" /></a>
@@ -152,7 +152,7 @@ internal static class __MyBehaviourProfilerMarkerExtensions
 
 ### Result
 
-![aspid_fasttools_profiler_markers.png](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_profiler_markers.png)
+![aspid_fasttools_profiler_markers.png](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_profiler_markers.png)
 
 ---
 
@@ -189,7 +189,7 @@ public sealed class AbilitySelector : MonoBehaviour
     }
 }
 ```
-![aspid_fasttools_serializable_type.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_serializable_type.gif)
+![aspid_fasttools_serializable_type.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serializable_type.gif)
 
 ### TypeSelectorAttribute
 
@@ -253,7 +253,7 @@ public sealed class AbilitySelector : MonoBehaviour
 - Историю навигации (кнопка «назад»)
 - Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
 
-![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_type_selector_window.png)
+![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 Это же окно доступно как публичный API — открывайте его из любого editor-кода (кастомных инспекторов, `EditorWindow`, пунктов меню), когда нужно вывести выбор типа за пределами стандартного потока `SerializableType` / `[TypeSelector]`.
 
@@ -315,7 +315,7 @@ public sealed class TankEnemy : EnemyBase
 }
 ```
 
-![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
+![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
 
 ---
 
@@ -372,7 +372,7 @@ public sealed class DamageDealer : MonoBehaviour
     }
 }
 ```
-![aspid_fasttools_enum_values.png](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_enum_values.png)
+![aspid_fasttools_enum_values.png](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_enum_values.png)
 
 В Inspector выберите тип перечисления в заголовке `EnumValues`, затем назначьте значение для каждого члена перечисления. Нажмите правой кнопкой мыши по свойству, чтобы открыть контекстное меню с пунктом **Populate Missing Enum Members** — он добавит записи для всех отсутствующих членов перечисления, используя текущее Default Value как начальное значение.
 
@@ -443,7 +443,7 @@ public class EnemySpawner : MonoBehaviour
 }
 ```
 
-![aspid_fasttools_id_selector.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_selector.gif)
+![aspid_fasttools_id_selector.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_id_selector.gif)
 
 ### UniqueIdAttribute
 
@@ -454,7 +454,7 @@ public class EnemySpawner : MonoBehaviour
 public sealed class UniqueIdAttribute : PropertyAttribute { }
 ```
 
-![aspid_fasttools_id_collision.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_collision.gif)
+![aspid_fasttools_id_collision.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_id_collision.gif)
 
 ### IdRegistry
 
@@ -472,7 +472,7 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 
 Реестр наследуется напрямую от `ScriptableObject` и предоставляет генерик-аналог `IdRegistry<T>` (с `T : struct, IId`), добавляющий типизированные перегрузки `Contains(T)` и `TryGetName(T, out string)`. Редактирование — добавление, переименование, удаление записей — выполняется через инспектор реестра и `RegistryEditorCore`, а не через публичный runtime API.
 
-![aspid_fasttools_id_registry.png](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_id_registry.png)
+![aspid_fasttools_id_registry.png](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_id_registry.png)
 
 ---
 
@@ -497,7 +497,7 @@ property
 - **Ссылки** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, а также `SetBoxed` (Unity 6+).
 - **Рефлексионные хелперы** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` для разрешения C#-члена и runtime-экземпляра, стоящих за property.
 
-> Полный справочник по методам: [SerializedPropertyExtensions.md](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/RU/SerializedPropertyExtensions.md)
+> Полный справочник по методам: [SerializedPropertyExtensions.md](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/SerializedPropertyExtensions.md)
 
 ---
 
@@ -543,7 +543,7 @@ using (VerticalScope.Begin(out var rect, GUI.skin.box))
 
 Fluent-методы расширения для построения UIToolkit-деревьев в коде. Все методы возвращают `T` (сам элемент) для цепочки вызовов.
 
-> Полный справочник по методам: [VisualElementExtensions.md](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/RU/VisualElementExtensions.md)
+> Полный справочник по методам: [VisualElementExtensions.md](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/VisualElementExtensions.md)
 
 ### Example
 
@@ -602,7 +602,7 @@ internal sealed class AbilityConfigEditor : Editor
 
 ### Result
 
-![aspid_fasttools_visual_element.gif](Aspid.FastTools/Assets/Aspid/FastTools/Documentation/Images/aspid_fasttools_visual_element.gif)
+![aspid_fasttools_visual_element.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_visual_element.gif)
 
 ---
 
