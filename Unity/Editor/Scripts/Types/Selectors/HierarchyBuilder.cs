@@ -7,9 +7,9 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class HierarchyBuilder
     {
-        public static TreeNode Build(Type[] types, TypeAllow allow)
+        public static TreeNode Build(Type[] types, TypeAllow allow, Func<Type, bool> filter = null)
         {
-            var allTypes = TypeInfo.GetAllTypeInfos(types, allow);
+            var allTypes = TypeInfo.GetAllTypeInfos(types, allow, filter);
 
             var root = new TreeNode("/");
             root.Children.Add(new TreeNode(TypeSelectorHelpers.NoneOption, null, TypeSelectorHelpers.NoneOption));

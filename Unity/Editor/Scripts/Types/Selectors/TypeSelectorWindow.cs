@@ -38,22 +38,25 @@ namespace Aspid.FastTools.Types.Editors
         /// <param name="currentAqn">Assembly-qualified name of the currently selected type, used to pre-navigate to that type's location. Pass <c>null</c> or empty to start at the root.</param>
         /// <param name="allow">Which type kinds are included in the list. Defaults to <c>TypeAllow.None</c>.</param>
         /// <param name="onSelected">Callback invoked with the assembly-qualified name of the selected type, or <c>null</c> if the user chose <c>&lt;None&gt;</c>.</param>
+        /// <param name="filter">Optional predicate applied to each candidate type after the base-type and <paramref name="allow"/> checks. Return <c>false</c> to hide a type. Pass <c>null</c> to keep every matching type.</param>
         public static void Show(
             Rect screenRect,
             Type[] types = null,
             string currentAqn = "",
             TypeAllow allow = TypeAllow.None,
-            Action<string> onSelected = null)
+            Action<string> onSelected = null,
+            Func<Type, bool> filter = null)
         {
             types ??= new[] { typeof(object) };
-            
+
             var window = CreateInstance<TypeSelectorWindow>();
             window.Initialize(
                 screenRect,
                 types,
                 currentAqn,
                 allow,
-                onSelected);
+                onSelected,
+                filter);
         }
 
         #region Initialization
@@ -62,14 +65,15 @@ namespace Aspid.FastTools.Types.Editors
             Type[] types,
             string currentAqn,
             TypeAllow allow,
-            Action<string> onSelected)
+            Action<string> onSelected,
+            Func<Type, bool> filter)
         {
             _onSelected = onSelected;
             _currentAqn = currentAqn ?? string.Empty;
 
             BuildUI();
 
-            var hierarchy = HierarchyBuilder.Build(types, allow);
+            var hierarchy = HierarchyBuilder.Build(types, allow, filter);
             InitializeNavigation(hierarchy, _currentAqn);
 
             RefreshView();

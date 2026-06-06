@@ -1,0 +1,44 @@
+:root {
+    margin:                                                 0;
+}
+
+/* Lay the foldout header out as a row so the type dropdown sits in the value column. */
+.aspid-fasttools-serialize-reference .unity-foldout__toggle {
+    flex-direction:                                         row;
+}
+
+.aspid-fasttools-serialize-reference .unity-foldout__toggle > .unity-toggle__input {
+    flex-grow:                                              0;
+    flex-shrink:                                            0;
+}
+
+/* The type dropdown fills the remaining width of the header row. */
+.aspid-fasttools-serialize-reference__dropdown {
+    flex-grow:                                              1;
+    margin:                                                 0 0 0 2px;
+}
+
+/* Hide the expand arrow when the reference is empty — there is nothing to expand. */
+.aspid-fasttools-serialize-reference--empty .unity-foldout__toggle .unity-toggle__checkmark {
+    visibility:                                             hidden;
+}
+
+/* Open-script button mirrors the SerializableType drawer affordance. */
+.aspid-fasttools-serialize-reference Button {
+    padding:                                                0;
+    min-width:                                              18px;
+    max-width:                                              18px;
+    min-height:                                             18px;
+    max-height:                                             18px;
+    margin:                                                 0 0 0 1px;
+}
+
+.aspid-fasttools-serialize-reference Button > VisualElement {
+    width:                                                  100%;
+    height:                                                 100%;
+    background-image:                                       resource("d_Folder Icon");
+}
+
+.aspid-fasttools-serialize-reference Button > VisualElement:enabled:hover {
+    background-image:                                       resource("d_FolderOpened Icon");
+}
