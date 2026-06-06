@@ -2,6 +2,8 @@
 
 **Aspid.FastTools** is a set of tools designed to minimize routine code writing in Unity. It combines Roslyn-powered source generators with a curated collection of runtime and editor utilities — including per-call-site `ProfilerMarker` registration, a serializable `System.Type`, an `EnumValues<TValue>` dictionary, a stable `int ↔ string` ID registry, fluent UI Toolkit extensions and IMGUI layout scopes.
 
+### \[[Unity Asset Store](https://assetstore.unity.com/packages/slug/365584)\] \[[Donate](#donate)\]
+
 ## Source Code
 
 [[Aspid.FastTools](https://github.com/VPDPersonal/Aspid.FastTools)]
@@ -42,7 +44,12 @@ To install a specific version, target the immutable per-release tag (see [Releas
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm/1.0.0
 ```
 
-### Preview
+Prefer a manual install? Download the `.unitypackage` from the [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) page, or get the package from the [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584).
+
+<details>
+<summary><strong>Preview</strong></summary>
+
+<br>
 
 The `upm-preview` branch always points to the latest **preview** release (rc, beta, alpha, …):
 
@@ -55,6 +62,8 @@ To install a specific preview version, target the immutable per-release tag (see
 ```
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.2
 ```
+
+</details>
 
 ---
 
