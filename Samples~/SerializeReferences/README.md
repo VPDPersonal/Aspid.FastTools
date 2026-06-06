@@ -14,11 +14,19 @@ The drawer ships both a UIToolkit and an IMGUI rendering path. The `IMGUILoadout
 
 ## How to run
 
-1. Create an empty GameObject in any scene and add the **Loadout** component (UIToolkit path) or **IMGUILoadout** component (IMGUI path).
-2. In the Inspector, click a `<None>` dropdown and pick an implementation — e.g. `Primary Weapon → Railgun`. The instance is created and its serialized fields appear inline under the foldout.
-3. Pick `Railgun`'s nested `Charge Effect → BurnEffect` to see recursive polymorphic editing.
-4. Press **+** on `Sidearms` and give each element its own weapon type.
-5. Set `On Hit Effect` — note only `BurnEffect` / `FreezeEffect` are offered (the abstract `StatusEffect` is hidden).
-6. Right-click the component header → **Log Loadout** to print the configured loadout to the Console.
+Two ready-made prefabs live in `Prefabs/` — double-click to open in Prefab Mode, or drag either into any scene:
+
+- **Loadout** (`Prefabs/Loadout.prefab`) — UIToolkit path. Pre-filled: `Primary Weapon = Railgun` (with a nested `BurnEffect` charge effect), `Sidearms = [Pistol, Shotgun]`, `On Hit Effect = FreezeEffect`.
+- **IMGUILoadout** (`Prefabs/IMGUILoadout.prefab`) — IMGUI path. Pre-filled: `Primary Weapon = Pistol`, `On Hit Effect = BurnEffect`.
+
+Then experiment with the dropdowns:
+
+1. Click any type dropdown and pick another implementation — the instance is created and its serialized fields appear inline under the foldout.
+2. Expand `Railgun` and change its nested `Charge Effect` to see recursive polymorphic editing.
+3. Press **+** on `Sidearms` and give each element its own weapon type.
+4. Open `On Hit Effect` — note only `BurnEffect` / `FreezeEffect` are offered (the abstract `StatusEffect` is hidden).
+5. Right-click the component header → **Log Loadout** to print the configured loadout to the Console.
+
+Prefer building from scratch? Add an empty GameObject and attach the **Loadout** (UIToolkit) or **IMGUILoadout** (IMGUI) component.
 
 Switching a field back to `<None>` clears the reference. If a stored type is later renamed or deleted, the dropdown shows a `<Missing …>` caption and a warning instead of silently clearing.
