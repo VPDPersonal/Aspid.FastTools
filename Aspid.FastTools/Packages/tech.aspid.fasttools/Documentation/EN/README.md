@@ -53,7 +53,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 To install a specific preview version, target the immutable per-release tag (see [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) for the list of available versions):
 
 ```
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.2
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.5
 ```
 
 ---
