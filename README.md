@@ -20,6 +20,7 @@
 - **Features**
   - [ProfilerMarker](#profilermarker)
   - [Serializable Type System](#serializable-type-system)
+  - [SerializeReference Selector](#serializereference-selector)
   - [Enum System](#enum-system)
   - [ID System (Beta)](#id-system-beta)
   - [SerializedProperty Extensions](#serializedproperty-extensions)
@@ -276,7 +277,8 @@ namespace Aspid.FastTools.Types.Editors
             Type[] types = null,
             string currentAqn = "",
             TypeAllow allow = TypeAllow.None,
-            Action<string> onSelected = null);
+            Action<string> onSelected = null,
+            Func<Type, bool> filter = null);
     }
 }
 ```
@@ -288,6 +290,7 @@ namespace Aspid.FastTools.Types.Editors
 | `currentAqn` | Assembly-qualified name of the currently selected type, used to pre-navigate to its location. Pass `null` or empty to start at the root. |
 | `allow` | Which special type kinds (abstract classes, interfaces) are included in addition to concrete classes. Default: `TypeAllow.None`. |
 | `onSelected` | Callback invoked with the assembly-qualified name of the selected type, or `null` if the user chose `<None>`. |
+| `filter` | Optional predicate applied to each candidate type after the base-type and `allow` checks. Return `false` to hide a type. Pass `null` to keep every match. |
 
 ### ComponentTypeSelector
 
@@ -325,6 +328,57 @@ public sealed class TankEnemy : EnemyBase
 ```
 
 ![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
+
+---
+
+## SerializeReference Selector
+
+A drop-in dropdown for `[SerializeReference]` fields. Add `[SerializeReferenceSelector]` next to `[SerializeReference]` and the Inspector replaces the default managed-reference UI with the same searchable, hierarchical type picker used by `SerializableType` — letting you choose which concrete implementation of the field's declared type is instantiated.
+
+- Lists every concrete, non-`UnityEngine.Object` class assignable to the field's declared interface / base type.
+- Picking a type instantiates it; `<None>` clears the reference.
+- The assigned instance's serialized fields are drawn inline under a foldout.
+- A stored type that no longer resolves (renamed or deleted) is surfaced as a missing-type warning instead of silently clearing.
+- Works on single fields, arrays, and `List<T>`, in both IMGUI and UIToolkit inspectors.
+
+```csharp
+using System;
+using UnityEngine;
+using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences;
+
+public interface IWeapon
+{
+    void Fire();
+}
+
+[Serializable]
+public sealed class Pistol : IWeapon
+{
+    [SerializeField] [Min(0)] private int _damage = 10;
+
+    public void Fire() => Debug.Log($"Pistol: {_damage} dmg");
+}
+
+[Serializable]
+public sealed class Railgun : IWeapon
+{
+    [SerializeField] [Min(0)] private float _chargeTime = 1.5f;
+
+    public void Fire() => Debug.Log($"Railgun charged for {_chargeTime}s");
+}
+
+public sealed class Loadout : MonoBehaviour
+{
+    [SerializeReference] [SerializeReferenceSelector]
+    private IWeapon _primary;
+
+    [SerializeReference] [SerializeReferenceSelector]
+    private List<IWeapon> _sidearms;
+}
+```
+
+The attribute is editor-only (`[Conditional("UNITY_EDITOR")]`) and carries no runtime cost.
 
 ---
 

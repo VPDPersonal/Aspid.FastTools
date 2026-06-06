@@ -17,6 +17,7 @@
 - **Features**
   - [ProfilerMarker](#profilermarker)
   - [Serializable Type System](#serializable-type-system)
+  - [SerializeReference Selector](#serializereference-selector)
   - [Enum System](#enum-system)
   - [ID System (Beta)](#id-system-beta)
   - [SerializedProperty Extensions](#serializedproperty-extensions)
@@ -273,7 +274,8 @@ namespace Aspid.FastTools.Types.Editors
             Type[] types = null,
             string currentAqn = "",
             TypeAllow allow = TypeAllow.None,
-            Action<string> onSelected = null);
+            Action<string> onSelected = null,
+            Func<Type, bool> filter = null);
     }
 }
 ```
@@ -285,6 +287,7 @@ namespace Aspid.FastTools.Types.Editors
 | `currentAqn` | Assembly-qualified имя текущего выбранного типа: окно сразу откроется на его уровне иерархии. Передайте `null` или пустую строку, чтобы стартовать с корня. |
 | `allow` | Какие специальные категории (абстрактные классы, интерфейсы) включаются в список в дополнение к конкретным классам. По умолчанию: `TypeAllow.None`. |
 | `onSelected` | Callback с assembly-qualified именем выбранного типа или `null`, если пользователь выбрал `<None>`. |
+| `filter` | Необязательный предикат, применяемый к каждому типу-кандидату после проверок базового типа и `allow`. Верните `false`, чтобы скрыть тип. Передайте `null`, чтобы оставить все совпадения. |
 
 ### ComponentTypeSelector
 
@@ -322,6 +325,57 @@ public sealed class TankEnemy : EnemyBase
 ```
 
 ![aspid_fasttools_component_type_selector.gif](../Images/aspid_fasttools_component_type_selector.gif)
+
+---
+
+## SerializeReference Selector
+
+Готовый выпадающий список для полей с `[SerializeReference]`. Добавьте `[SerializeReferenceSelector]` рядом с `[SerializeReference]`, и Inspector заменит стандартный UI managed-ссылки тем же иерархическим выбором типа с поиском, что используется в `SerializableType` — позволяя выбрать, какая конкретная реализация объявленного типа поля будет создана.
+
+- Показывает каждый конкретный, не наследующий `UnityEngine.Object` класс, совместимый с объявленным интерфейсом / базовым типом поля.
+- Выбор типа создаёт его экземпляр; `<None>` очищает ссылку.
+- Сериализуемые поля назначенного экземпляра рисуются вложенно под foldout.
+- Сохранённый тип, который больше не разрешается (переименован или удалён), показывается как предупреждение о потерянном типе, а не очищается молча.
+- Работает с одиночными полями, массивами и `List<T>`, в инспекторах IMGUI и UIToolkit.
+
+```csharp
+using System;
+using UnityEngine;
+using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences;
+
+public interface IWeapon
+{
+    void Fire();
+}
+
+[Serializable]
+public sealed class Pistol : IWeapon
+{
+    [SerializeField] [Min(0)] private int _damage = 10;
+
+    public void Fire() => Debug.Log($"Pistol: {_damage} dmg");
+}
+
+[Serializable]
+public sealed class Railgun : IWeapon
+{
+    [SerializeField] [Min(0)] private float _chargeTime = 1.5f;
+
+    public void Fire() => Debug.Log($"Railgun charged for {_chargeTime}s");
+}
+
+public sealed class Loadout : MonoBehaviour
+{
+    [SerializeReference] [SerializeReferenceSelector]
+    private IWeapon _primary;
+
+    [SerializeReference] [SerializeReferenceSelector]
+    private List<IWeapon> _sidearms;
+}
+```
+
+Атрибут существует только в редакторе (`[Conditional("UNITY_EDITOR")]`) и не несёт стоимости в рантайме.
 
 ---
 

@@ -25,14 +25,14 @@ namespace Aspid.FastTools.Types.Editors
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
         }
         
-        public static List<TypeInfo> GetAllTypeInfos(Type[] baseTypes, TypeAllow allow)
+        public static List<TypeInfo> GetAllTypeInfos(Type[] baseTypes, TypeAllow allow, Func<Type, bool> filter = null)
         {
             var result = new List<TypeInfo>();
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 Type[] types;
-                
+
                 try
                 {
                     types = assembly.GetTypes();
@@ -49,7 +49,8 @@ namespace Aspid.FastTools.Types.Editors
                         !t.Name.Contains("<") &&
                         !t.Name.Contains(">") &&
                         (allow.HasFlag(TypeAllow.Abstract) || !t.IsAbstract) &&
-                        (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface))
+                        (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
+                        (filter is null || filter(t)))
                     .Select(type => new TypeInfo(type)));
             }
 
