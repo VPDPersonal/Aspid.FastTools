@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.5] — 2026-06-06
+
+Packaging-only release. No functional or API changes versus `1.0.0-rc.4`.
+
+### Changed
+- The package is now developed as an embedded UPM package under `Packages/tech.aspid.fasttools` (previously kept inside the Unity project's `Assets/`), aligning the repository layout with the published `upm` / `upm-preview` subtree. No effect on the published package contents. ([#44])
+
 ## [1.0.0-rc.4] — 2026-06-05
 
 ### Fixed
@@ -128,7 +135,9 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 [#33]: https://github.com/VPDPersonal/Aspid.FastTools/pull/33
 [#38]: https://github.com/VPDPersonal/Aspid.FastTools/pull/38
 [#43]: https://github.com/VPDPersonal/Aspid.FastTools/pull/43
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...HEAD
+[#44]: https://github.com/VPDPersonal/Aspid.FastTools/pull/44
+[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...HEAD
+[1.0.0-rc.5]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...v1.0.0-rc.4
 [1.0.0-rc.3]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.2...v1.0.0-rc.3
 [1.0.0-rc.2]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.1...v1.0.0-rc.2
