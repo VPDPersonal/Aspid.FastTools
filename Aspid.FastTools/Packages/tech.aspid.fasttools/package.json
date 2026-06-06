@@ -39,6 +39,11 @@
       "path": "Samples~/Types"
     },
     {
+      "displayName": "SerializeReferences",
+      "description": "[SerializeReferenceSelector] type-picker dropdown for [SerializeReference] fields (single, List<T>, abstract base, nested), in both UIToolkit and IMGUI inspectors.",
+      "path": "Samples~/SerializeReferences"
+    },
+    {
       "displayName": "EnumValues",
       "description": "Inspector-serializable enum-keyed dictionary, including [Flags] handling.",
       "path": "Samples~/EnumValues"
