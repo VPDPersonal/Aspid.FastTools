@@ -39,13 +39,15 @@ namespace Aspid.FastTools.Types.Editors
         /// <param name="allow">Which type kinds are included in the list. Defaults to <c>TypeAllow.None</c>.</param>
         /// <param name="onSelected">Callback invoked with the assembly-qualified name of the selected type, or <c>null</c> if the user chose <c>&lt;None&gt;</c>.</param>
         /// <param name="filter">Optional predicate applied to each candidate type after the base-type and <paramref name="allow"/> checks. Return <c>false</c> to hide a type. Pass <c>null</c> to keep every matching type.</param>
+        /// <param name="additionalTypes">Optional extra types appended to the list verbatim, bypassing the base-type and <paramref name="allow"/> checks — used to inject entries the assignability scan cannot match, such as open generic definitions.</param>
         public static void Show(
             Rect screenRect,
             Type[] types = null,
             string currentAqn = "",
             TypeAllow allow = TypeAllow.None,
             Action<string> onSelected = null,
-            Func<Type, bool> filter = null)
+            Func<Type, bool> filter = null,
+            IEnumerable<Type> additionalTypes = null)
         {
             types ??= new[] { typeof(object) };
 
@@ -56,7 +58,8 @@ namespace Aspid.FastTools.Types.Editors
                 currentAqn,
                 allow,
                 onSelected,
-                filter);
+                filter,
+                additionalTypes);
         }
 
         #region Initialization
@@ -66,14 +69,15 @@ namespace Aspid.FastTools.Types.Editors
             string currentAqn,
             TypeAllow allow,
             Action<string> onSelected,
-            Func<Type, bool> filter)
+            Func<Type, bool> filter,
+            IEnumerable<Type> additionalTypes)
         {
             _onSelected = onSelected;
             _currentAqn = currentAqn ?? string.Empty;
 
             BuildUI();
 
-            var hierarchy = HierarchyBuilder.Build(types, allow, filter);
+            var hierarchy = HierarchyBuilder.Build(types, allow, filter, additionalTypes);
             InitializeNavigation(hierarchy, _currentAqn);
 
             RefreshView();

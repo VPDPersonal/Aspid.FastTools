@@ -160,9 +160,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!window) return;
 
             var currentType = SerializeReferenceHelpers.GetCurrentType(_property);
+            var fieldType = _types.Length > 0 ? _types[0] : typeof(object);
+            var screenRect = GetScreenRect();
 
             TypeSelectorWindow.Show(
-                screenRect: GetScreenRect(),
+                screenRect: screenRect,
                 types: _types,
                 currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
                 allow: TypeAllow.None,
@@ -172,14 +174,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         ? null
                         : Type.GetType(assemblyQualifiedName, throwOnError: false);
 
-                    _property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstance(selectedType));
-                    _property.isExpanded = selectedType is not null;
-                    Refresh(forceRebuild: true);
+                    // An open generic definition needs its arguments resolved (inferred from the field or
+                    // picked by the user) before it can be instantiated.
+                    if (selectedType is { IsGenericTypeDefinition: true })
+                        SerializeReferenceHelpers.ResolveGenericType(selectedType, fieldType, screenRect, Apply);
+                    else
+                        Apply(selectedType);
                 },
-                filter: SerializeReferenceHelpers.IsAssignableManagedReference);
+                filter: SerializeReferenceHelpers.IsAssignableManagedReference,
+                additionalTypes: SerializeReferenceHelpers.GetAssignableGenericDefinitions(fieldType));
 
             evt.StopPropagation();
             return;
+
+            void Apply(Type type)
+            {
+                _property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstance(type));
+                _property.isExpanded = type is not null;
+                Refresh(forceRebuild: true);
+            }
 
             Rect GetScreenRect() => new(
                 window.position.x + _dropdown.worldBound.xMin,
