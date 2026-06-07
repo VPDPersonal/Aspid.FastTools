@@ -78,7 +78,8 @@ namespace Aspid.FastTools.Types.Editors
 
         /// <summary>
         /// Short display name for a type. Open generic definitions are rendered with angle-bracket
-        /// parameters (<c>Modifier&lt;T&gt;</c>) instead of Unity's raw arity form (<c>Modifier`1</c>).
+        /// parameters (<c>Modifier&lt;T&gt;</c>) instead of Unity's raw arity form (<c>Modifier`1</c>);
+        /// generic arguments are formatted recursively so nested closed generics render fully.
         /// </summary>
         private static string FormatName(Type type)
         {
@@ -87,7 +88,7 @@ namespace Aspid.FastTools.Types.Editors
             var name = type.Name;
             var tick = name.IndexOf('`');
             var baseName = tick >= 0 ? name[..tick] : name;
-            var arguments = string.Join(", ", type.GetGenericArguments().Select(argument => argument.Name));
+            var arguments = string.Join(", ", type.GetGenericArguments().Select(FormatName));
             return $"{baseName}<{arguments}>";
         }
     }
