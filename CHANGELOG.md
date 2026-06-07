@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - `[SerializeReferenceSelector]` attribute and property drawer — a hierarchical type-selector dropdown for `[SerializeReference]` fields (and arrays / `List<T>` of them). Picking a concrete implementation instantiates it, `<None>` clears the reference, the assigned instance's nested properties are drawn inline under a foldout, and a stored type that no longer resolves is surfaced as a missing-type warning. Works in both IMGUI and UIToolkit inspectors and reuses the existing `TypeSelectorWindow`.
-- `TypeSelectorWindow.Show` gained an optional `filter` predicate that further narrows the candidate list after the base-type and `TypeAllow` checks (used by the SerializeReference drawer to exclude `UnityEngine.Object`, open generics, strings and delegates).
+- `[SerializeReferenceSelector]` now also offers open generic implementations (e.g. `Modifier<T>`). When the type arguments can be inferred from a closed-generic field (`Modifier<float>`) the closed type is created directly; otherwise a follow-up window lets you pick each argument (honouring the parameter's constraints) and validates the result against the field type before instantiating. Works in both IMGUI and UIToolkit paths.
+- `TypeSelectorWindow.Show` gained an optional `filter` predicate that further narrows the candidate list after the base-type and `TypeAllow` checks (used by the SerializeReference drawer to exclude `UnityEngine.Object`, strings and delegates), plus an optional `additionalTypes` parameter for injecting entries the assignability scan cannot match (such as open generic definitions).
 
 ## [1.0.0-rc.5] — 2026-06-06
 

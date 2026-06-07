@@ -339,6 +339,7 @@ A drop-in dropdown for `[SerializeReference]` fields. Add `[SerializeReferenceSe
 - Picking a type instantiates it; `<None>` clears the reference.
 - The assigned instance's serialized fields are drawn inline under a foldout.
 - A stored type that no longer resolves (renamed or deleted) is surfaced as a missing-type warning instead of silently clearing.
+- Open generic implementations (e.g. `Modifier<T>`) are offered too: arguments are inferred from a closed-generic field, or picked in a follow-up window (validated against the field type) before instantiation.
 - Works on single fields, arrays, and `List<T>`, in both IMGUI and UIToolkit inspectors.
 
 ```csharp
