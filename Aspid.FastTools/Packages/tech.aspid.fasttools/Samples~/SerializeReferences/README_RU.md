@@ -7,6 +7,7 @@
 - `Scripts/Loadout.cs` — одиночное поле (`IWeapon`), `List<IWeapon>` и поле с абстрактным базовым типом (`StatusEffect`), каждое с `[SerializeReference]` и `[SerializeReferenceSelector]`.
 - `Scripts/Weapons/` — интерфейс `IWeapon` и его реализации (`Pistol`, `Shotgun`, `Railgun`). `Railgun` вкладывает ещё одно поле `[SerializeReferenceSelector]` — показывает рекурсивное полиморфное редактирование.
 - `Scripts/Effects/` — абстрактный базовый `StatusEffect` с `BurnEffect` / `FreezeEffect`. В списке предлагаются только конкретные подтипы; абстрактный базовый класс никогда не показывается.
+- `Scripts/Modifiers/` — generic-иерархия: неабстрактный generic-класс `Modifier<T>` (`IModifier`) с закрытыми подтипами `DamageModifier : Modifier<float>`, `AmmoModifier : Modifier<int>`, `NameModifier : Modifier<string>`. Поле `IModifier` предлагает все три подтипа **и** сам открытый `Modifier<T>` — при его выборе открывается второе окно для выбора аргумента `T`. Поле `Modifier<float>` предлагает только присваиваемых кандидатов (`DamageModifier` и `Modifier<T>` с выведенным `T = float`).
 
 Drawer поддерживает и UIToolkit, и IMGUI. Вариант `IMGUILoadout` принудительно использует IMGUI-путь — удобно для сравнения или миграции IMGUI-проектов:
 
@@ -25,7 +26,8 @@ Drawer поддерживает и UIToolkit, и IMGUI. Вариант `IMGUILoa
 2. Разверните `Railgun` и смените вложенный `Charge Effect` — увидите рекурсивное полиморфное редактирование.
 3. Нажмите **+** на `Sidearms` и задайте каждому элементу свой тип оружия.
 4. Откройте `On Hit Effect` — обратите внимание, что предлагаются только `BurnEffect` / `FreezeEffect` (абстрактный `StatusEffect` скрыт).
-5. ПКМ по заголовку компонента → **Log Loadout**, чтобы вывести настроенное снаряжение в Console.
+5. Откройте `Modifier` — рядом с тремя конкретными подтипами (`DamageModifier`, `AmmoModifier`, `NameModifier`) предлагается и открытый `Modifier<T>`. Выберите `Modifier<T>` — откроется второе окно для выбора аргумента `T` (попробуйте `string`, затем `float`), и только потом создастся экземпляр. Откройте `Float Modifier` — предлагаются только присваиваемые к `Modifier<float>` кандидаты (`DamageModifier` и `Modifier<T>` с выведенным `T = float`, без дополнительного окна).
+6. ПКМ по заголовку компонента → **Log Loadout**, чтобы вывести настроенное снаряжение в Console.
 
 Хотите собрать с нуля? Добавьте пустой GameObject и прикрепите компонент **Loadout** (UIToolkit) или **IMGUILoadout** (IMGUI).
 

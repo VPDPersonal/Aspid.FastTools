@@ -21,5 +21,14 @@ namespace Aspid.FastTools.Samples.SerializeReferences
 
         [SerializeReference] [SerializeReferenceSelector]
         private StatusEffect _onHitEffect;
+
+        [SerializeReference] [SerializeReferenceSelector]
+        private IModifier _modifier;
+
+        [SerializeReference] [SerializeReferenceSelector]
+        private Modifier<float> _floatModifier;
+
+        [SerializeReference] [SerializeReferenceSelector]
+        private List<IModifier> _modifiers = new();
     }
 }
