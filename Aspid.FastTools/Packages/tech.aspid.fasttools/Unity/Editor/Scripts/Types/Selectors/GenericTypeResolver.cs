@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
@@ -19,12 +20,27 @@ namespace Aspid.FastTools.Types.Editors
         /// <summary>
         /// Predicate identifying open generic type definitions that can be offered for a field once closed
         /// over concrete arguments: non-abstract generic classes that are neither
-        /// <see cref="UnityEngine.Object"/> nor delegates.
+        /// <see cref="UnityEngine.Object"/> nor delegates, and that are not compiler-generated
+        /// (anonymous types, closure/iterator display classes such as <c>&lt;&gt;c__11&lt;T&gt;</c> or
+        /// <c>&lt;&gt;f__AnonymousType0&lt;…&gt;</c>) — these are added verbatim via the selector's
+        /// <c>additionalTypes</c> path, which bypasses the name/<see cref="CompilerGeneratedAttribute"/>
+        /// checks applied to ordinary candidates, so they must be excluded here.
         /// </summary>
         public static bool IsAssignableGenericDefinition(Type type) =>
             type is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: true } &&
             !typeof(UnityEngine.Object).IsAssignableFrom(type) &&
-            !typeof(Delegate).IsAssignableFrom(type);
+            !typeof(Delegate).IsAssignableFrom(type) &&
+            !IsCompilerGenerated(type);
+
+        /// <summary>
+        /// Returns <see langword="true"/> for compiler-emitted types that should never surface in the
+        /// selector: those marked <see cref="CompilerGeneratedAttribute"/> or whose name carries the
+        /// angle-bracket marker of an anonymous type / closure display class.
+        /// </summary>
+        private static bool IsCompilerGenerated(Type type) =>
+            type.IsDefined(typeof(CompilerGeneratedAttribute), false) ||
+            type.Name.Contains('<') ||
+            type.Name.Contains('>');
 
         /// <summary>
         /// Enumerates the open generic type definitions whose closed form could be assigned to
