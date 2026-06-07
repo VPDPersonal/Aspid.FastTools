@@ -18,14 +18,24 @@ namespace Aspid.FastTools.Types.Editors
 
         public TypeInfo(Type type)
         {
-            Name = type.Name;
+            Name = FormatName(type);
             FullName = type.FullName;
             Assembly = type.Assembly.GetName().Name;
             AssemblyQualifiedName = type.AssemblyQualifiedName;
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
         }
-        
-        public static List<TypeInfo> GetAllTypeInfos(Type[] baseTypes, TypeAllow allow, Func<Type, bool> filter = null)
+
+        /// <summary>
+        /// Collects the type infos shown in the selector. <paramref name="additionalTypes"/> are appended
+        /// verbatim (bypassing the base-type, name and <paramref name="allow"/> checks) so callers can inject
+        /// entries — such as open generic definitions — that the standard <see cref="Type.IsAssignableFrom"/>
+        /// scan cannot match.
+        /// </summary>
+        public static List<TypeInfo> GetAllTypeInfos(
+            Type[] baseTypes,
+            TypeAllow allow,
+            Func<Type, bool> filter = null,
+            IEnumerable<Type> additionalTypes = null)
         {
             var result = new List<TypeInfo>();
 
@@ -54,7 +64,31 @@ namespace Aspid.FastTools.Types.Editors
                     .Select(type => new TypeInfo(type)));
             }
 
+            if (additionalTypes is not null)
+            {
+                var existing = new HashSet<string>(result.Select(info => info.AssemblyQualifiedName));
+
+                result.AddRange(additionalTypes
+                    .Where(type => type is not null && existing.Add(type.AssemblyQualifiedName))
+                    .Select(type => new TypeInfo(type)));
+            }
+
             return result;
+        }
+
+        /// <summary>
+        /// Short display name for a type. Open generic definitions are rendered with angle-bracket
+        /// parameters (<c>Modifier&lt;T&gt;</c>) instead of Unity's raw arity form (<c>Modifier`1</c>).
+        /// </summary>
+        private static string FormatName(Type type)
+        {
+            if (!type.IsGenericType) return type.Name;
+
+            var name = type.Name;
+            var tick = name.IndexOf('`');
+            var baseName = tick >= 0 ? name[..tick] : name;
+            var arguments = string.Join(", ", type.GetGenericArguments().Select(argument => argument.Name));
+            return $"{baseName}<{arguments}>";
         }
     }
 }

@@ -113,6 +113,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static void ShowSelector(SerializedProperty property, Type[] types, Type currentType, Rect dropdownRect)
         {
             var persistent = property.Persistent();
+            var fieldType = types.Length > 0 ? types[0] : typeof(object);
             var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(dropdownRect.x, dropdownRect.y));
             var screenRect = new Rect(screenPosition.x, screenPosition.y, dropdownRect.width, dropdownRect.height);
 
@@ -127,10 +128,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         ? null
                         : Type.GetType(assemblyQualifiedName, throwOnError: false);
 
-                    persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstance(selectedType));
-                    persistent.isExpanded = selectedType is not null;
+                    // An open generic definition needs its arguments resolved (inferred from the field or
+                    // picked by the user) before it can be instantiated.
+                    if (selectedType is { IsGenericTypeDefinition: true })
+                        SerializeReferenceHelpers.ResolveGenericType(selectedType, fieldType, screenRect, Apply);
+                    else
+                        Apply(selectedType);
                 },
-                filter: SerializeReferenceHelpers.IsAssignableManagedReference);
+                filter: SerializeReferenceHelpers.IsAssignableManagedReference,
+                additionalTypes: SerializeReferenceHelpers.GetAssignableGenericDefinitions(fieldType));
+
+            return;
+
+            void Apply(Type type)
+            {
+                persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstance(type));
+                persistent.isExpanded = type is not null;
+            }
         }
 
         private static string GetCaption(SerializedProperty property, Type currentType)
