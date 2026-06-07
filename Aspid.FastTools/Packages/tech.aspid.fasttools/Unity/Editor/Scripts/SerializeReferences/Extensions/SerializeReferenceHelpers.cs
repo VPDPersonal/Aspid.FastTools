@@ -1,9 +1,5 @@
 using System;
-using System.Linq;
 using UnityEditor;
-using UnityEngine;
-using System.Reflection;
-using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Object = UnityEngine.Object;
 
@@ -13,7 +9,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// <summary>
     /// Shared helpers for the <c>[SerializeReferenceSelector]</c> drawers: resolving the declared
     /// managed-reference field type, filtering candidate types, instantiating the selected type, and
-    /// parsing Unity's managed-reference type-name format.
+    /// parsing Unity's managed-reference type-name format. The open-generic argument flow itself lives in
+    /// the shared <see cref="Aspid.FastTools.Types.Editors.GenericTypeResolver"/> /
+    /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorWindow"/>; <see cref="IsValidGenericArgument"/>
+    /// is supplied to the selector as its argument filter.
     /// </summary>
     internal static class SerializeReferenceHelpers
     {
@@ -85,23 +84,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return Type.GetType($"{fullName}, {assembly}", throwOnError: false);
         }
 
-        #region Generics
-
-        /// <summary>
-        /// Predicate identifying open generic type definitions that can be offered for a
-        /// <c>[SerializeReference]</c> field once closed over concrete arguments: non-abstract generic
-        /// classes that are neither <see cref="Object"/> nor delegates. Mirrors
-        /// <see cref="IsAssignableManagedReference"/> but for the open-generic case.
-        /// </summary>
-        public static bool IsAssignableGenericDefinition(Type type) =>
-            type is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: true } &&
-            !typeof(Object).IsAssignableFrom(type) &&
-            !typeof(Delegate).IsAssignableFrom(type);
-
         /// <summary>
         /// Predicate identifying types usable as a generic argument of a serialized managed reference:
         /// concrete, non-generic types Unity can serialize as a field value (primitives, <see cref="string"/>,
-        /// enums, <see cref="Object"/>-derived references, or <c>[Serializable]</c> structs/classes).
+        /// enums, <see cref="Object"/>-derived references, or <c>[Serializable]</c> structs/classes). Passed to
+        /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorWindow.Show"/> as the argument filter.
         /// </summary>
         public static bool IsValidGenericArgument(Type type)
         {
@@ -116,132 +103,5 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                    (type.IsValueType && type.IsSerializable) ||
                    (type.IsClass && type.IsSerializable);
         }
-
-        /// <summary>
-        /// Enumerates the open generic type definitions whose closed form could be assigned to
-        /// <paramref name="fieldType"/> — i.e. generic classes that implement/inherit the field's type
-        /// (matched by generic definition for a generic field, or directly for a non-generic field).
-        /// These are offered alongside the concrete candidates; selecting one resolves its type arguments
-        /// via <see cref="ResolveGenericType"/>.
-        /// </summary>
-        public static IEnumerable<Type> GetAssignableGenericDefinitions(Type fieldType)
-        {
-            if (fieldType is null) yield break;
-
-            foreach (var type in EnumerateDomainTypes())
-            {
-                if (!IsAssignableGenericDefinition(type)) continue;
-                if (CanCloseToFieldType(type, fieldType)) yield return type;
-            }
-        }
-
-        /// <summary>
-        /// Resolves a closed generic type from the selected open <paramref name="openDefinition"/>: when the
-        /// arguments can be inferred from a closed-generic <paramref name="fieldType"/> the closed type is
-        /// produced directly; otherwise a <see cref="GenericArgumentSelectorWindow"/> is opened at
-        /// <paramref name="anchor"/> so the user picks each argument. The resulting closed type is passed to
-        /// <paramref name="onResolved"/> (never invoked if the user cancels).
-        /// </summary>
-        public static void ResolveGenericType(Type openDefinition, Type fieldType, Rect anchor, Action<Type> onResolved)
-        {
-            if (openDefinition is null) return;
-
-            if (TryMakeConcreteFromField(fieldType, openDefinition, out var closed))
-                onResolved?.Invoke(closed);
-            else
-                GenericArgumentSelectorWindow.Show(anchor, openDefinition, fieldType, onResolved);
-        }
-
-        /// <summary>
-        /// Attempts to close <paramref name="openDefinition"/> using the type arguments of a closed-generic
-        /// <paramref name="fieldType"/> (e.g. a <c>Modifier&lt;float&gt;</c> field directly determines the
-        /// argument of a <c>Modifier&lt;&gt;</c> candidate). Returns <see langword="false"/> when the field is
-        /// not a closed generic or the inferred type would not be assignable.
-        /// </summary>
-        public static bool TryMakeConcreteFromField(Type fieldType, Type openDefinition, out Type closed)
-        {
-            closed = null;
-
-            if (fieldType is null || !fieldType.IsGenericType || fieldType.ContainsGenericParameters) return false;
-
-            var fieldArguments = fieldType.GetGenericArguments();
-            if (fieldArguments.Length != openDefinition.GetGenericArguments().Length) return false;
-
-            var fieldDefinition = fieldType.GetGenericTypeDefinition();
-            var matchesDefinition = GenericBaseDefinitions(openDefinition)
-                .Any(definition => definition == fieldDefinition);
-
-            if (!matchesDefinition) return false;
-
-            try
-            {
-                closed = openDefinition.MakeGenericType(fieldArguments);
-            }
-            catch (Exception)
-            {
-                closed = null;
-                return false;
-            }
-
-            return fieldType.IsAssignableFrom(closed);
-        }
-
-        private static bool CanCloseToFieldType(Type openDefinition, Type fieldType)
-        {
-            if (fieldType.IsGenericType)
-            {
-                var fieldDefinition = fieldType.GetGenericTypeDefinition();
-                return GenericBaseDefinitions(openDefinition).Any(definition => definition == fieldDefinition);
-            }
-
-            if (fieldType.IsAssignableFrom(openDefinition)) return true;
-            if (openDefinition.GetInterfaces().Contains(fieldType)) return true;
-
-            for (var current = openDefinition.BaseType; current is not null; current = current.BaseType)
-                if (current == fieldType) return true;
-
-            return false;
-        }
-
-        /// <summary>
-        /// Enumerates the generic-type-definition view of <paramref name="openDefinition"/> itself, its base
-        /// class chain, and its interfaces (only the generic ones, reduced to their definitions). Used to
-        /// match a candidate generic against a generic field's definition.
-        /// </summary>
-        private static IEnumerable<Type> GenericBaseDefinitions(Type openDefinition)
-        {
-            if (openDefinition.IsGenericType)
-                yield return openDefinition.GetGenericTypeDefinition();
-
-            for (var current = openDefinition.BaseType; current is not null; current = current.BaseType)
-                if (current.IsGenericType)
-                    yield return current.GetGenericTypeDefinition();
-
-            foreach (var contract in openDefinition.GetInterfaces())
-                if (contract.IsGenericType)
-                    yield return contract.GetGenericTypeDefinition();
-        }
-
-        private static IEnumerable<Type> EnumerateDomainTypes()
-        {
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                Type[] types;
-
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    types = ex.Types.Where(type => type is not null).ToArray();
-                }
-
-                foreach (var type in types)
-                    yield return type;
-            }
-        }
-
-        #endregion
     }
 }

@@ -168,21 +168,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 types: _types,
                 currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
                 allow: TypeAllow.None,
-                onSelected: assemblyQualifiedName =>
-                {
-                    var selectedType = string.IsNullOrEmpty(assemblyQualifiedName)
-                        ? null
-                        : Type.GetType(assemblyQualifiedName, throwOnError: false);
-
-                    // An open generic definition needs its arguments resolved (inferred from the field or
-                    // picked by the user) before it can be instantiated.
-                    if (selectedType is { IsGenericTypeDefinition: true })
-                        SerializeReferenceHelpers.ResolveGenericType(selectedType, fieldType, screenRect, Apply);
-                    else
-                        Apply(selectedType);
-                },
+                onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
+                    ? null
+                    : Type.GetType(assemblyQualifiedName, throwOnError: false)),
                 filter: SerializeReferenceHelpers.IsAssignableManagedReference,
-                additionalTypes: SerializeReferenceHelpers.GetAssignableGenericDefinitions(fieldType));
+                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(fieldType),
+                argumentFilter: SerializeReferenceHelpers.IsValidGenericArgument);
 
             evt.StopPropagation();
             return;

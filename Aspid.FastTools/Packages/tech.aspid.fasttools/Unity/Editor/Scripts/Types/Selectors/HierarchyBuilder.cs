@@ -11,12 +11,16 @@ namespace Aspid.FastTools.Types.Editors
             Type[] types,
             TypeAllow allow,
             Func<Type, bool> filter = null,
-            IEnumerable<Type> additionalTypes = null)
+            IEnumerable<Type> additionalTypes = null,
+            bool includeNoneOption = true)
         {
             var allTypes = TypeInfo.GetAllTypeInfos(types, allow, filter, additionalTypes);
 
             var root = new TreeNode("/");
-            root.Children.Add(new TreeNode(TypeSelectorHelpers.NoneOption, null, TypeSelectorHelpers.NoneOption));
+
+            // Generic-argument pages must yield a concrete type, so they omit the <None> entry.
+            if (includeNoneOption)
+                root.Children.Add(new TreeNode(TypeSelectorHelpers.NoneOption, null, TypeSelectorHelpers.NoneOption));
 
             AddGlobalNamespaceGroup(root, allTypes);
             AddNamespaceHierarchy(root, allTypes);

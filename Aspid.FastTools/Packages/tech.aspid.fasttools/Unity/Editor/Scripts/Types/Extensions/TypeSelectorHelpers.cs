@@ -42,7 +42,9 @@ namespace Aspid.FastTools.Types.Editors
 
         /// <summary>
         /// Short type name with angle-bracket generic arguments (<c>Modifier&lt;Single&gt;</c>) instead of
-        /// the raw arity form (<c>Modifier`1</c>). Non-generic types are returned unchanged.
+        /// the raw arity form (<c>Modifier`1</c>). Generic arguments are formatted recursively, so a nested
+        /// closed generic renders fully (<c>Modifier&lt;Modifier&lt;Int32&gt;&gt;</c>). Non-generic types
+        /// are returned unchanged.
         /// </summary>
         private static string FormatName(Type value)
         {
@@ -55,7 +57,7 @@ namespace Aspid.FastTools.Types.Editors
             var arguments = value.GetGenericArguments();
             var argumentNames = new string[arguments.Length];
             for (var i = 0; i < arguments.Length; i++)
-                argumentNames[i] = arguments[i].Name;
+                argumentNames[i] = FormatName(arguments[i]);
 
             return $"{baseName}<{string.Join(", ", argumentNames)}>";
         }
