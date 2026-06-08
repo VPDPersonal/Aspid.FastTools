@@ -337,6 +337,8 @@ A drop-in dropdown for `[SerializeReference]` fields. Add `[SerializeReferenceSe
 - The assigned instance's serialized fields are drawn inline under a foldout.
 - A stored type that no longer resolves (renamed or deleted) is surfaced as a missing-type warning instead of silently clearing.
 - Open generic implementations (e.g. `Modifier<T>`) are offered too: arguments are inferred from a closed-generic field, or picked in a follow-up window (validated against the field type) before instantiation.
+- Switching the selected type preserves matching data — fields shared by the old and new implementation (by name and serialized shape) carry over instead of resetting to defaults.
+- Right-click the header for a Copy / Paste context menu: it copies the managed-reference value and pastes it as an independent instance into any compatible field (paste is disabled when the clipboard type is not assignable to the target).
 - Works on single fields, arrays, and `List<T>`, in both IMGUI and UIToolkit inspectors.
 
 ```csharp
