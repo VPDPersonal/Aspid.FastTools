@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `TypeSelectorWindow.Show` gained an optional `filter` predicate that further narrows the candidate list after the base-type and `TypeAllow` checks (used by the SerializeReference drawer to exclude `UnityEngine.Object`, strings and delegates), plus an optional `additionalTypes` parameter for injecting entries the assignability scan cannot match (such as open generic definitions).
 - `[SerializeReferenceSelector]` now preserves matching data when switching types — fields shared by the old and new implementation (by name and serialized shape) carry over instead of resetting to defaults.
 - `[SerializeReferenceSelector]` header gained a Copy/Paste context menu (right-click) that copies the managed-reference value and pastes it as an independent instance into any compatible field; paste is disabled when the clipboard type is not assignable to the target. Works in both IMGUI and UIToolkit paths.
+- `[SerializeReferenceSelector]` can now repair a missing managed-reference type: the missing-type warning offers an **Edit Type** button that opens a small Assembly / Namespace / Class editor and rewrites the stored type directly in the asset YAML (Unity cannot reassign a missing reference through the serialization API). Applies to ScriptableObject assets, which are the only ones on which Unity preserves missing references (UUM-129100).
+- `[SerializeReferenceSelector]` now flags an aliased managed reference (two fields backed by the same instance, e.g. after duplicating an array element) with an info notice and a **Make Unique Reference** context action that clones it into an independent instance. Works in both IMGUI and UIToolkit paths.
 
 ## [1.0.0-rc.5] — 2026-06-06
 

@@ -20,6 +20,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var height = EditorGUIUtility.singleLineHeight;
 
             if (SerializeReferenceHelpers.IsMissingType(property))
+            {
+                height += spacing + GetWarningHeight();
+
+                if (SerializeReferenceHelpers.TryGetAssetLocation(property, out _, out _))
+                    height += spacing + EditorGUIUtility.singleLineHeight;
+            }
+
+            if (SerializeReferenceHelpers.HasSharedReference(property))
                 height += spacing + GetWarningHeight();
 
             if (property.managedReferenceValue is not null && property.isExpanded)
@@ -77,6 +85,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var warningRect = new Rect(position.x, y, position.width, warningHeight);
                 EditorGUI.HelpBox(warningRect, $"Missing type: {property.managedReferenceFullTypename}", MessageType.Warning);
                 y += warningHeight + spacing;
+
+                if (SerializeReferenceHelpers.TryGetAssetLocation(property, out _, out _))
+                {
+                    var buttonRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                    if (GUI.Button(buttonRect, "Edit Type"))
+                        OpenEditTypeWindow(property);
+                    y += EditorGUIUtility.singleLineHeight + spacing;
+                }
+            }
+
+            if (SerializeReferenceHelpers.HasSharedReference(property))
+            {
+                var sharedHeight = GetWarningHeight();
+                var sharedRect = new Rect(position.x, y, position.width, sharedHeight);
+                EditorGUI.HelpBox(sharedRect,
+                    "Shared reference — editing one field changes both. Right-click → Make Unique Reference.",
+                    MessageType.Info);
+                y += sharedHeight + spacing;
             }
 
             if (!hasValue || !property.isExpanded) return;
@@ -161,6 +187,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             else
                 menu.AddDisabledItem(pasteLabel);
 
+            if (SerializeReferenceHelpers.HasSharedReference(property))
+                menu.AddItem(new GUIContent("Make Unique Reference"), false,
+                    () => SerializeReferenceHelpers.MakeReferenceUnique(persistent));
+
             menu.ShowAsContext();
 
             void Paste(SerializedProperty target)
@@ -169,6 +199,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 target.SetManagedReferenceAndApply(value);
                 target.isExpanded = value is not null;
             }
+        }
+
+        private static void OpenEditTypeWindow(SerializedProperty property)
+        {
+            var persistent = property.Persistent();
+            SerializeReferenceEditTypeWindow.Show(
+                SerializeReferenceHelpers.GetMissingTypeName(persistent),
+                newType => SerializeReferenceHelpers.TryFixMissingType(persistent, newType));
         }
 
         private static string GetCaption(SerializedProperty property, Type currentType)

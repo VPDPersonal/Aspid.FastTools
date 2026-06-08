@@ -8,6 +8,7 @@ Look at:
 - `Scripts/Weapons/` — `IWeapon` interface and its implementations (`Pistol`, `Shotgun`, `Railgun`). `Railgun` nests another `[SerializeReferenceSelector]` field, showing recursive polymorphic editing.
 - `Scripts/Effects/` — abstract `StatusEffect` base with `BurnEffect` / `FreezeEffect`. The dropdown offers only the concrete subclasses; the abstract base is never listed.
 - `Scripts/Modifiers/` — generic hierarchy: a non-abstract `Modifier<T>` generic class (`IModifier`) with closed-generic subclasses `DamageModifier : Modifier<float>`, `AmmoModifier : Modifier<int>`, `NameModifier : Modifier<string>`. An `IModifier` field offers all three subclasses **and** the open generic `Modifier<T>` — picking `Modifier<T>` opens a second window to choose the argument `T`. A `Modifier<float>` field offers only the candidates assignable to it (`DamageModifier`, and `Modifier<T>` with `T` inferred to `float`).
+- `Scripts/WeaponPreset.cs` + `Presets/BrokenWeaponPreset.asset` — a `ScriptableObject` whose `_weapon` points at a type that no longer exists, used to demonstrate the missing-type repair flow (see *Maintenance features* below).
 
 The drawer ships both a UIToolkit and an IMGUI rendering path. The `IMGUILoadout` variant forces the IMGUI path so you can compare them or migrate IMGUI-only projects:
 
@@ -32,3 +33,29 @@ Then experiment with the dropdowns:
 Prefer building from scratch? Add an empty GameObject and attach the **Loadout** (UIToolkit) or **IMGUILoadout** (IMGUI) component.
 
 Switching a field back to `<None>` clears the reference. If a stored type is later renamed or deleted, the dropdown shows a `<Missing …>` caption and a warning instead of silently clearing.
+
+## Maintenance features
+
+The drawer also helps recover from the two ways a managed reference goes wrong in practice.
+
+### Copy / Paste & keep-data
+
+- **Right-click** any selector header → **Copy Serialize Reference** / **Paste Serialize Reference**. Paste rebuilds an *independent* instance in the target field and is greyed out when the copied type does not fit the field.
+- **Switching the type** keeps the fields the old and new implementation share. Set `Sidearms[0]` to `Pistol`, give it a damage value, then switch it to `Shotgun` and back — the `Pistol` value is still there.
+
+### Repair a missing type — `BrokenWeaponPreset.asset`
+
+`Presets/BrokenWeaponPreset.asset` ships pointing at `GhostWeapon`, a class that does not exist, so it always loads as missing.
+
+1. Select the asset. The `Weapon` field shows a **Missing type** warning and an **Edit Type** button.
+2. Click **Edit Type**, set **Class** to `Pistol` (leave Namespace / Assembly as they are), press **Apply**.
+3. The reference is restored to a `Pistol` with its preserved data (`_damage = 25`, `_magazineSize = 8`).
+
+> Missing managed references are only preserved by Unity on **ScriptableObject** assets — on GameObjects / prefabs the reference is dropped to `null` on load (Unity bug UUM-129100). That is why this demo uses a `ScriptableObject` and the repair rewrites the asset file directly.
+
+### Un-share an aliased reference — `LoadoutSharedRef.prefab`
+
+`Prefabs/LoadoutSharedRef.prefab` has both `Sidearms` elements backed by the **same** instance (a state you can also reach by duplicating an array element).
+
+1. Open it — both elements show a **shared reference** notice; editing one changes the other.
+2. **Right-click** one element → **Make Unique Reference**. It gets its own copy of the data and the two fields become independent.
