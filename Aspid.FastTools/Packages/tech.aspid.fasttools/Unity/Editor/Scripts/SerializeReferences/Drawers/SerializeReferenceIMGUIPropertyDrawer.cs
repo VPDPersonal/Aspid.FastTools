@@ -83,14 +83,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var warningHeight = GetWarningHeight();
                 var warningRect = new Rect(position.x, y, position.width, warningHeight);
-                EditorGUI.HelpBox(warningRect, $"Missing type: {property.managedReferenceFullTypename}", MessageType.Warning);
+                EditorGUI.HelpBox(warningRect, $"Missing type: {SerializeReferenceHelpers.GetMissingTypeDisplayName(property)}", MessageType.Warning);
                 y += warningHeight + spacing;
 
                 if (SerializeReferenceHelpers.TryGetAssetLocation(property, out _, out _))
                 {
                     var buttonRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
-                    if (GUI.Button(buttonRect, "Edit Type"))
-                        OpenEditTypeWindow(property);
+                    if (GUI.Button(buttonRect, "Fix"))
+                    {
+                        var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(buttonRect.x, buttonRect.yMax));
+                        var screenRect = new Rect(screenPosition.x, screenPosition.y, buttonRect.width, buttonRect.height);
+                        SerializeReferenceHelpers.ShowFixTypeSelector(property.Persistent(), screenRect, null);
+                    }
                     y += EditorGUIUtility.singleLineHeight + spacing;
                 }
             }
@@ -201,13 +205,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        private static void OpenEditTypeWindow(SerializedProperty property)
-        {
-            var persistent = property.Persistent();
-            SerializeReferenceEditTypeWindow.Show(
-                SerializeReferenceHelpers.GetMissingTypeName(persistent),
-                newType => SerializeReferenceHelpers.TryFixMissingType(persistent, newType));
-        }
 
         private static string GetCaption(SerializedProperty property, Type currentType)
         {
@@ -215,7 +212,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return TypeSelectorHelpers.GetTypeSelectorTitle(currentType);
 
             var missingName = SerializeReferenceHelpers.IsMissingType(property)
-                ? property.managedReferenceFullTypename
+                ? SerializeReferenceHelpers.GetMissingTypeDisplayName(property)
                 : null;
 
             return TypeSelectorHelpers.GetTypeSelectorTitle(null, missingName);

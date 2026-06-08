@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using System.Text.RegularExpressions;
@@ -27,6 +28,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public bool IsEmpty =>
             string.IsNullOrEmpty(Assembly) && string.IsNullOrEmpty(Namespace) && string.IsNullOrEmpty(Class);
+
+        /// <summary>
+        /// Builds the YAML type identity for a resolved <see cref="Type"/>, including the
+        /// <c>Name`N[[arg, asm],…]</c> shape Unity uses for closed generics.
+        /// </summary>
+        public static ManagedTypeName FromType(Type type)
+        {
+            if (type is null) return default;
+
+            var root = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+            return new ManagedTypeName(root.Assembly.GetName().Name, root.Namespace, BuildClassName(type));
+        }
+
+        private static string BuildClassName(Type type)
+        {
+            if (!type.IsGenericType) return type.Name;
+
+            var definition = type.GetGenericTypeDefinition();
+            var arguments = type.GetGenericArguments().Select(BuildGenericArgumentName);
+            return $"{definition.Name}[[{string.Join("],[", arguments)}]]";
+        }
+
+        private static string BuildGenericArgumentName(Type type) =>
+            $"{BuildFullClassName(type)}, {type.Assembly.GetName().Name}";
+
+        private static string BuildFullClassName(Type type)
+        {
+            if (!type.IsGenericType) return type.FullName;
+
+            var definition = type.GetGenericTypeDefinition();
+            var prefix = string.IsNullOrEmpty(definition.Namespace) ? string.Empty : $"{definition.Namespace}.";
+            return $"{prefix}{BuildClassName(type)}";
+        }
 
         /// <summary>Renders the inline YAML mapping Unity writes for a managed-reference type entry.</summary>
         public string ToYamlType() =>
@@ -107,6 +141,156 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Debug.LogError($"[SerializeReferenceSelector] Failed to rewrite managed-reference type in '{assetPath}': {exception}");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Reads the managed-reference id (<c>rid</c>) stored at <paramref name="propertyPath"/> within the object
+        /// document anchored at <paramref name="fileId"/>. Needed because Unity reports an invalid id for a property
+        /// whose type is missing — the real id only survives in the YAML. Resolves top-level fields (<c>_weapon</c>)
+        /// and top-level sequence elements (<c>_alternates.Array.data[i]</c>); deeper paths return
+        /// <see langword="false"/> so the caller can fall back.
+        /// </summary>
+        public static bool TryReadReferenceId(string assetPath, long fileId, string propertyPath, out long rid)
+        {
+            rid = 0;
+            try
+            {
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
+
+                var lines = File.ReadAllLines(assetPath);
+                var (start, end) = FindDocumentRange(lines, fileId);
+                if (start < 0) return false;
+
+                // Field pointers live before the "references:" block; restrict the search to them.
+                var fieldsEnd = end;
+                var references = new Regex(@"^\s*references:\s*$");
+                for (var i = start; i < end; i++)
+                    if (references.IsMatch(lines[i])) { fieldsEnd = i; break; }
+
+                // Unity paths look like "_weapon" or "_alternates.Array.data[3]"; normalise to "_weapon" / "_alternates[3]".
+                var path = propertyPath.Replace(".Array.data", string.Empty);
+                var segment = Regex.Match(path, @"^(?<name>[^\[\]\.]+)(\[(?<idx>\d+)\])?$");
+                if (!segment.Success) return false;
+
+                var name = segment.Groups["name"].Value;
+                var hasIndex = segment.Groups["idx"].Success;
+                var index = hasIndex ? int.Parse(segment.Groups["idx"].Value) : -1;
+
+                var fieldPattern = new Regex($@"^(?<indent>\s*){Regex.Escape(name)}:\s*(?<inline>.*)$");
+                var ridScalar = new Regex(@"rid:\s*(-?\d+)");
+
+                for (var i = start; i < fieldsEnd; i++)
+                {
+                    var field = fieldPattern.Match(lines[i]);
+                    if (!field.Success) continue;
+
+                    if (!hasIndex)
+                    {
+                        var inline = ridScalar.Match(field.Groups["inline"].Value);
+                        if (inline.Success) return long.TryParse(inline.Groups[1].Value, out rid);
+
+                        for (var j = i + 1; j < fieldsEnd && j <= i + 3; j++)
+                        {
+                            var scalar = ridScalar.Match(lines[j]);
+                            if (scalar.Success) return long.TryParse(scalar.Groups[1].Value, out rid);
+                            if (lines[j].Trim().Length > 0 && !lines[j].TrimStart().StartsWith("rid")) break;
+                        }
+
+                        return false;
+                    }
+
+                    var count = 0;
+                    for (var j = i + 1; j < fieldsEnd; j++)
+                    {
+                        var trimmed = lines[j].TrimStart();
+                        if (trimmed.StartsWith("- "))
+                        {
+                            if (count == index)
+                            {
+                                var scalar = ridScalar.Match(trimmed);
+                                return scalar.Success && long.TryParse(scalar.Groups[1].Value, out rid);
+                            }
+
+                            count++;
+                        }
+                        else if (trimmed.Length > 0 && !trimmed.StartsWith("-"))
+                        {
+                            break;
+                        }
+                    }
+
+                    return false;
+                }
+
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Reads the managed-reference id stored at <paramref name="propertyPath"/> and the type recorded for it in
+        /// the <c>RefIds</c> block, in a single pass over the asset YAML. This is how a missing reference is found
+        /// even when Unity has dropped it from the live object (notably on prefabs / GameObjects): the orphaned
+        /// id, type identity and payload all survive in the file.
+        /// </summary>
+        public static bool TryReadStoredType(string assetPath, long fileId, string propertyPath, out long rid, out ManagedTypeName type)
+        {
+            rid = 0;
+            type = default;
+
+            if (!TryReadReferenceId(assetPath, fileId, propertyPath, out rid)) return false;
+
+            try
+            {
+                var lines = File.ReadAllLines(assetPath);
+                var (start, end) = FindDocumentRange(lines, fileId);
+                if (start < 0) return false;
+
+                var refIdsStart = FindRefIdsStart(lines, start, end);
+                if (refIdsStart < 0) return false;
+
+                var ridPattern = new Regex($@"^\s*-\s+rid:\s*{rid}\s*$");
+                var typePattern = new Regex(@"^\s*type:\s*\{(?<body>.*)\}\s*$");
+
+                for (var i = refIdsStart; i < end; i++)
+                {
+                    if (!ridPattern.IsMatch(lines[i])) continue;
+
+                    for (var j = i + 1; j < end && j <= i + 4; j++)
+                    {
+                        var match = typePattern.Match(lines[j]);
+                        if (!match.Success) continue;
+
+                        return TryParseInlineType(match.Groups["body"].Value, out type);
+                    }
+
+                    return false;
+                }
+
+                return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        // Parses the inline "class: X, ns: Y, asm: Z" body of a RefIds type mapping, honouring single-quoted values
+        // (Unity quotes generic class names such as 'Modifier`1[[…]]').
+        private static bool TryParseInlineType(string body, out ManagedTypeName type)
+        {
+            type = default;
+
+            var match = Regex.Match(body,
+                @"class:\s*(?:'(?<class>(?:[^']|'')*)'|(?<class>[^,}]*?))\s*,\s*ns:\s*(?<ns>[^,}]*?)\s*,\s*asm:\s*(?<asm>[^,}]*?)\s*$");
+            if (!match.Success) return false;
+
+            var className = match.Groups["class"].Value.Replace("''", "'");
+            type = new ManagedTypeName(match.Groups["asm"].Value, match.Groups["ns"].Value, className);
+            return !type.IsEmpty;
         }
 
         // Returns the [start, end) line range of the document whose anchor equals fileId. Falls back to the single
