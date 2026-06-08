@@ -51,3 +51,45 @@
 .aspid-fasttools-serialize-reference Button > VisualElement:enabled:hover {
     background-image:                                       resource("d_FolderOpened Icon");
 }
+
+/* --- Compact inline notice (missing type / shared reference) ---
+   Replaces the bulky help-box + button: a small warning icon, a terse yellow message and an
+   underlined, clickable action word. The full explanation rides the element's tooltip on hover. */
+.aspid-fasttools-serialize-reference-notice {
+    flex-direction:                                        row;
+    align-items:                                           center;
+    flex-wrap:                                             wrap;
+    margin:                                                2px 0 1px 0;
+}
+
+.aspid-fasttools-serialize-reference-notice__icon {
+    width:                                                 14px;
+    height:                                                14px;
+    min-width:                                             14px;
+    margin-right:                                          5px;
+    background-size:                                       contain;
+    background-repeat:                                     no-repeat;
+    background-position:                                   center;
+    background-image:                                      resource("d_console.warnicon");
+}
+
+/* Both states use the same yellow text per the design — warning, not info. */
+.aspid-fasttools-serialize-reference-notice__message {
+    color:                                                 var(--aspid-colors-status-warning-text-light);
+    -unity-font-style:                                     normal;
+    white-space:                                           normal;
+}
+
+.aspid-fasttools-serialize-reference-notice__action {
+    margin-left:                                           4px;
+    color:                                                 var(--aspid-colors-status-warning-text-light);
+    -unity-font-style:                                     bold;
+    border-bottom-width:                                   1px;
+    border-bottom-color:                                   var(--aspid-colors-status-warning-text-light);
+    cursor:                                                link;
+}
+
+.aspid-fasttools-serialize-reference-notice__action:hover {
+    color:                                                 var(--aspid-colors-status-warning-text-lightness);
+    border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
+}

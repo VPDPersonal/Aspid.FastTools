@@ -20,15 +20,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var height = EditorGUIUtility.singleLineHeight;
 
             if (SerializeReferenceHelpers.IsMissingType(property))
-            {
-                height += spacing + GetWarningHeight();
-
-                if (SerializeReferenceHelpers.TryGetAssetLocation(property, out _, out _))
-                    height += spacing + EditorGUIUtility.singleLineHeight;
-            }
+                height += spacing + EditorGUIUtility.singleLineHeight;
 
             if (SerializeReferenceHelpers.HasSharedReference(property))
-                height += spacing + GetWarningHeight();
+                height += spacing + EditorGUIUtility.singleLineHeight;
 
             if (property.managedReferenceValue is not null && property.isExpanded)
                 height += GetChildrenHeight(property, spacing);
@@ -81,32 +76,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (SerializeReferenceHelpers.IsMissingType(property))
             {
-                var warningHeight = GetWarningHeight();
-                var warningRect = new Rect(position.x, y, position.width, warningHeight);
-                EditorGUI.HelpBox(warningRect, $"Missing type: {SerializeReferenceHelpers.GetMissingTypeDisplayName(property)}", MessageType.Warning);
-                y += warningHeight + spacing;
+                var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(property);
+                var canFix = SerializeReferenceHelpers.TryGetRepairLocation(property, out _, out _, out _);
 
-                if (SerializeReferenceHelpers.TryGetAssetLocation(property, out _, out _))
-                {
-                    var buttonRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
-                    if (GUI.Button(buttonRect, "Fix"))
-                    {
-                        var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(buttonRect.x, buttonRect.yMax));
-                        var screenRect = new Rect(screenPosition.x, screenPosition.y, buttonRect.width, buttonRect.height);
-                        SerializeReferenceHelpers.ShowFixTypeSelector(property.Persistent(), screenRect, null);
-                    }
-                    y += EditorGUIUtility.singleLineHeight + spacing;
-                }
+                DrawNotice(
+                    noticeRect,
+                    "Missing type —",
+                    canFix ? "Fix" : null,
+                    canFix
+                        ? $"Missing type: {typeName}.\nClick Fix to re-point this reference to an existing type, keeping its data."
+                        : $"Missing type: {typeName}.\nOpen this asset from the Project window to repair it.",
+                    canFix
+                        ? () =>
+                        {
+                            var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(noticeRect.x, noticeRect.yMax));
+                            var screenRect = new Rect(screenPosition.x, screenPosition.y, noticeRect.width, EditorGUIUtility.singleLineHeight);
+                            SerializeReferenceHelpers.ShowFixTypeSelector(property.Persistent(), screenRect, null);
+                        }
+                        : null);
+
+                y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
             if (SerializeReferenceHelpers.HasSharedReference(property))
             {
-                var sharedHeight = GetWarningHeight();
-                var sharedRect = new Rect(position.x, y, position.width, sharedHeight);
-                EditorGUI.HelpBox(sharedRect,
-                    "Shared reference — editing one field changes both. Right-click → Make Unique Reference.",
-                    MessageType.Info);
-                y += sharedHeight + spacing;
+                var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                var persistent = property.Persistent();
+
+                DrawNotice(
+                    noticeRect,
+                    "Shared reference —",
+                    "Make unique",
+                    "This reference is shared with another field — editing one changes both.\n" +
+                    "Click Make unique to give this field its own independent copy.",
+                    () => SerializeReferenceHelpers.MakeReferenceUnique(persistent));
+
+                y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
             if (!hasValue || !property.isExpanded) return;
@@ -218,6 +224,53 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return TypeSelectorHelpers.GetTypeSelectorTitle(null, missingName);
         }
 
-        private static float GetWarningHeight() => EditorGUIUtility.singleLineHeight * 2f;
+        // Warning yellow mirrors the UIToolkit notice palette:
+        // --aspid-colors-status-warning-text-light / -lightness.
+        private static readonly Color NoticeColor = new(245f / 255f, 185f / 255f, 85f / 255f);
+        private static readonly Color NoticeColorHover = new(255f / 255f, 235f / 255f, 175f / 255f);
+
+        private static GUIStyle _messageStyle;
+        private static GUIStyle _actionStyle;
+
+        /// <summary>
+        /// Draws a compact single-row warning: a small warning icon, a terse yellow message and an
+        /// optional underlined, clickable action word. The full <paramref name="detail"/> rides the
+        /// hover tooltip, mirroring the UIToolkit <see cref="SerializeReferenceNotice"/>.
+        /// </summary>
+        private static void DrawNotice(Rect rect, string message, string actionText, string detail, Action onClick)
+        {
+            _messageStyle ??= new GUIStyle(EditorStyles.label) { wordWrap = false };
+            _actionStyle ??= new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold };
+            _messageStyle.normal.textColor = NoticeColor;
+
+            const float iconSize = 16f;
+            var iconRect = new Rect(rect.x, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize);
+            GUI.Label(iconRect, EditorGUIUtility.IconContent("console.warnicon"));
+
+            var messageContent = new GUIContent(message, detail);
+            var messageWidth = _messageStyle.CalcSize(messageContent).x;
+            var messageRect = new Rect(iconRect.xMax + 4f, rect.y, messageWidth, rect.height);
+            GUI.Label(messageRect, messageContent, _messageStyle);
+
+            if (string.IsNullOrEmpty(actionText) || onClick is null) return;
+
+            var actionContent = new GUIContent(actionText, detail);
+            var actionWidth = _actionStyle.CalcSize(actionContent).x;
+            var actionRect = new Rect(messageRect.xMax + 4f, rect.y, actionWidth, rect.height);
+
+            var hover = actionRect.Contains(Event.current.mousePosition);
+            var actionColor = hover ? NoticeColorHover : NoticeColor;
+            _actionStyle.normal.textColor = actionColor;
+            _actionStyle.hover.textColor = actionColor;
+
+            EditorGUIUtility.AddCursorRect(actionRect, MouseCursor.Link);
+            var clicked = GUI.Button(actionRect, actionContent, _actionStyle);
+
+            // Underline the action word — IMGUI styles have no text-decoration, so draw the rule manually.
+            var underline = new Rect(actionRect.x, actionRect.center.y + EditorGUIUtility.singleLineHeight * 0.35f, actionWidth, 1f);
+            EditorGUI.DrawRect(underline, actionColor);
+
+            if (clicked) onClick();
+        }
     }
 }
