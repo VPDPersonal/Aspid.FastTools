@@ -43,15 +43,19 @@ The drawer also helps recover from the two ways a managed reference goes wrong i
 - **Right-click** any selector header → **Copy Serialize Reference** / **Paste Serialize Reference**. Paste rebuilds an *independent* instance in the target field and is greyed out when the copied type does not fit the field.
 - **Switching the type** keeps the fields the old and new implementation share. Set `Sidearms[0]` to `Pistol`, give it a damage value, then switch it to `Shotgun` and back — the `Pistol` value is still there.
 
-### Repair a missing type — `BrokenWeaponPreset.asset`
+### Repair a missing type — `BrokenWeaponPreset.asset` & `LoadoutMissingType.prefab`
 
-`Presets/BrokenWeaponPreset.asset` ships pointing at `GhostWeapon`, a class that does not exist, so it always loads as missing.
+Two assets ship pre-broken, pointing at classes that do not exist:
 
-1. Select the asset. The `Weapon` field shows a **Missing type** warning and an **Edit Type** button.
-2. Click **Edit Type**, set **Class** to `Pistol` (leave Namespace / Assembly as they are), press **Apply**.
-3. The reference is restored to a `Pistol` with its preserved data (`_damage = 25`, `_magazineSize = 8`).
+- `Presets/BrokenWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` references a missing `GhostWeapon`.
+- `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol`.
 
-> Missing managed references are only preserved by Unity on **ScriptableObject** assets — on GameObjects / prefabs the reference is dropped to `null` on load (Unity bug UUM-129100). That is why this demo uses a `ScriptableObject` and the repair rewrites the asset file directly.
+Select either **in the Project window**. The missing field shows a `<Missing …>` caption, a **Missing type** warning, and a **Fix** button:
+
+1. Click **Fix** — the usual searchable type picker opens. Choose `Pistol`.
+2. The reference is restored to a `Pistol` with its preserved data (the prefab keeps `_damage = 15`, `_magazineSize = 12`; the asset keeps `_damage = 25`, `_magazineSize = 8`). Picking the type rewrites the stored type in the asset file rather than recreating the instance, so the values survive.
+
+> The repair reads and rewrites the asset file directly — Unity does not expose a missing type through its serialization API (and on GameObjects/prefabs even drops it from the live object, UUM-129100), so the orphaned type and data are recovered straight from the YAML. It therefore needs a **saved asset file**: it works for ScriptableObjects and prefab assets selected in the Project, but not for objects edited in Prefab Mode or instances living in a scene (no backing asset to rewrite).
 
 ### Un-share an aliased reference — `LoadoutSharedRef.prefab`
 

@@ -185,7 +185,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             _missingBox ??= new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning));
-            _missingBox.Message = $"Missing type: {_property.managedReferenceFullTypename}";
+            _missingBox.Message = $"Missing type: {SerializeReferenceHelpers.GetMissingTypeDisplayName(_property)}";
             if (_missingBox.parent is null) this.AddChild(_missingBox);
 
             // Re-pointing the type rewrites the asset YAML, so the action is only offered for saved assets.
@@ -195,7 +195,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            _editTypeButton ??= new Button(OpenEditTypeWindow) { text = "Edit Type" };
+            _editTypeButton ??= new Button(OpenFixSelector) { text = "Fix" };
             if (_editTypeButton.parent is null) this.AddChild(_editTypeButton);
         }
 
@@ -216,14 +216,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_sharedBox.parent is null) this.AddChild(_sharedBox);
         }
 
-        private void OpenEditTypeWindow() =>
-            SerializeReferenceEditTypeWindow.Show(
-                SerializeReferenceHelpers.GetMissingTypeName(_property),
-                newType =>
-                {
-                    if (SerializeReferenceHelpers.TryFixMissingType(_property, newType))
-                        Refresh(forceRebuild: true);
-                });
+        private void OpenFixSelector()
+        {
+            var window = EditorWindow.focusedWindow != null
+                ? EditorWindow.focusedWindow
+                : EditorWindow.mouseOverWindow;
+            if (!window) return;
+
+            var bound = _editTypeButton.worldBound;
+            var screenRect = new Rect(
+                window.position.x + bound.xMin,
+                window.position.y + bound.yMax,
+                bound.width,
+                bound.height);
+
+            SerializeReferenceHelpers.ShowFixTypeSelector(_property, screenRect, () => Refresh(forceRebuild: true));
+        }
 
         private void OnFoldoutToggled(ChangeEvent<bool> evt)
         {
@@ -311,7 +319,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return TypeSelectorHelpers.GetTypeSelectorTitle(currentType);
 
             var missingName = SerializeReferenceHelpers.IsMissingType(_property)
-                ? _property.managedReferenceFullTypename
+                ? SerializeReferenceHelpers.GetMissingTypeDisplayName(_property)
                 : null;
 
             return TypeSelectorHelpers.GetTypeSelectorTitle(null, missingName);

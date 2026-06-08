@@ -1,7 +1,9 @@
 using System;
 using UnityEngine;
 using UnityEditor;
+using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
+using Aspid.FastTools.Types.Editors;
 using System.Runtime.Serialization;
 using Object = UnityEngine.Object;
 
@@ -34,12 +36,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             property.managedReferenceValue?.GetType();
 
         /// <summary>
-        /// Returns <see langword="true"/> when the property stores a type name that no longer resolves to a
-        /// loadable type (a renamed or deleted implementation), so the value reads back as <see langword="null"/>.
+        /// Returns <see langword="true"/> when this property holds a managed reference whose type can no longer be
+        /// loaded (renamed / moved / deleted). Unity does not expose a missing type through the per-property API
+        /// (the value reads back <see langword="null"/> and <see cref="SerializedProperty.managedReferenceFullTypename"/>
+        /// is empty) and even drops it from the live object on prefabs / GameObjects, so detection reads the stored
+        /// reference straight from the asset YAML: a null value whose recorded type cannot be resolved is missing.
         /// </summary>
         public static bool IsMissingType(SerializedProperty property) =>
-            property.managedReferenceValue is null &&
-            !string.IsNullOrEmpty(property.managedReferenceFullTypename);
+            TryGetMissingType(property, out _, out _);
+
+        // Core missing-type probe shared by the public helpers: reads the property's stored id and type from the
+        // asset YAML and reports it missing when the recorded type no longer resolves to a loadable Type.
+        private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType)
+        {
+            referenceId = 0;
+            storedType = default;
+
+            if (property.propertyType != SerializedPropertyType.ManagedReference) return false;
+            if (property.managedReferenceValue is not null) return false;
+            if (!TryGetAssetLocation(property, out var assetPath, out var fileId)) return false;
+            if (!SerializeReferenceYamlEditor.TryReadStoredType(assetPath, fileId, property.propertyPath, out referenceId, out storedType))
+                return false;
+
+            return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+        }
+
+        // True when the YAML-recorded type identity can be loaded — i.e. the reference is intact, not missing.
+        private static bool StoredTypeResolves(ManagedTypeName name)
+        {
+            if (string.IsNullOrEmpty(name.Class)) return false;
+
+            var className = name.Class.Replace('/', '+');
+            var fullName = string.IsNullOrEmpty(name.Namespace) ? className : $"{name.Namespace}.{className}";
+            var assemblyQualified = string.IsNullOrEmpty(name.Assembly) ? fullName : $"{fullName}, {name.Assembly}";
+
+            return Type.GetType(assemblyQualified, throwOnError: false) is not null;
+        }
 
         /// <summary>
         /// Predicate identifying types that can legally be assigned to a <c>[SerializeReference]</c> field:
@@ -134,25 +166,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         #region Missing-type repair
         /// <summary>
-        /// Parses the stored (now unresolvable) type identity of a missing managed reference out of
-        /// <see cref="SerializedProperty.managedReferenceFullTypename"/> (format
-        /// <c>"AssemblyName Namespace.ClassName"</c>), so it can prefill the edit-type window and locate the
-        /// matching YAML entry.
+        /// Resolves the stored (now unloadable) type identity of this property's missing managed reference, read from
+        /// the asset YAML, for display in the caption / warning. Returns <see langword="default"/> when the property
+        /// is not a recognised missing reference.
         /// </summary>
-        public static ManagedTypeName GetMissingTypeName(SerializedProperty property)
+        public static ManagedTypeName GetMissingTypeName(SerializedProperty property) =>
+            TryGetMissingType(property, out _, out var storedType) ? storedType : default;
+
+        /// <summary>
+        /// Human-readable <c>Namespace.Class</c> of this property's missing type, for the dropdown caption and the
+        /// warning message, or an empty string when the property is not a recognised missing reference.
+        /// </summary>
+        public static string GetMissingTypeDisplayName(SerializedProperty property)
         {
-            var typename = property.managedReferenceFullTypename;
-            if (string.IsNullOrEmpty(typename)) return default;
-
-            var separator = typename.IndexOf(' ');
-            var assembly = separator < 0 ? string.Empty : typename[..separator];
-            var fullName = separator < 0 ? typename : typename[(separator + 1)..];
-
-            var lastDot = fullName.LastIndexOf('.');
-            var @namespace = lastDot < 0 ? string.Empty : fullName[..lastDot];
-            var className = lastDot < 0 ? fullName : fullName[(lastDot + 1)..];
-
-            return new ManagedTypeName(assembly, @namespace, className);
+            var name = GetMissingTypeName(property);
+            if (name.IsEmpty) return string.Empty;
+            return string.IsNullOrEmpty(name.Namespace) ? name.Class : $"{name.Namespace}.{name.Class}";
         }
 
         /// <summary>
@@ -171,38 +200,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
-        /// Finds the <c>RefIds</c> id of the missing managed reference this property points at, matching by the
-        /// stored type identity (and falling back to the sole missing entry when the object has exactly one).
-        /// Required because Unity reports an invalid <see cref="SerializedProperty.managedReferenceId"/> for
-        /// missing references — the real id is only recoverable from the missing-type records.
+        /// Finds the <c>RefIds</c> id of the missing managed reference this property points at, read from the asset
+        /// YAML. Detection is strict and per-property: only a field whose own recorded type fails to resolve counts
+        /// as missing, so legitimately-empty fields are never flagged.
         /// </summary>
-        public static bool TryGetMissingReferenceId(SerializedProperty property, out long referenceId)
+        public static bool TryGetMissingReferenceId(SerializedProperty property, out long referenceId) =>
+            TryGetMissingType(property, out referenceId, out _);
+
+        /// <summary>
+        /// Opens the same hierarchical type picker the dropdown uses, anchored at <paramref name="screenRect"/>, to
+        /// choose the existing type a missing reference should resolve to. The chosen type is written into the asset
+        /// YAML (re-pointing the reference and keeping its stored data); <paramref name="onFixed"/> runs on success.
+        /// </summary>
+        public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed)
         {
-            referenceId = 0;
-            var target = property.serializedObject.targetObject;
-            if (!SerializationUtility.HasManagedReferencesWithMissingTypes(target)) return false;
+            var fieldType = GetFieldType(property);
 
-            var missing = SerializationUtility.GetManagedReferencesWithMissingTypes(target);
-            var name = GetMissingTypeName(property);
-
-            foreach (var entry in missing)
-            {
-                if (entry.className == name.Class &&
-                    (entry.namespaceName ?? string.Empty) == name.Namespace &&
-                    entry.assemblyName == name.Assembly)
+            TypeSelectorWindow.Show(
+                screenRect: screenRect,
+                types: new[] { fieldType },
+                currentAqn: string.Empty,
+                allow: TypeAllow.None,
+                onSelected: assemblyQualifiedName =>
                 {
-                    referenceId = entry.referenceId;
-                    return true;
-                }
-            }
+                    var type = string.IsNullOrEmpty(assemblyQualifiedName)
+                        ? null
+                        : Type.GetType(assemblyQualifiedName, throwOnError: false);
 
-            if (missing.Length == 1)
-            {
-                referenceId = missing[0].referenceId;
-                return true;
-            }
-
-            return false;
+                    if (type is not null && TryFixMissingType(property, ManagedTypeName.FromType(type)))
+                        onFixed?.Invoke();
+                },
+                filter: IsAssignableManagedReference,
+                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(fieldType),
+                argumentFilter: IsValidGenericArgument);
         }
 
         /// <summary>
