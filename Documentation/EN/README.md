@@ -339,6 +339,8 @@ A drop-in dropdown for `[SerializeReference]` fields. Add `[SerializeReferenceSe
 - Open generic implementations (e.g. `Modifier<T>`) are offered too: arguments are inferred from a closed-generic field, or picked in a follow-up window (validated against the field type) before instantiation.
 - Switching the selected type preserves matching data — fields shared by the old and new implementation (by name and serialized shape) carry over instead of resetting to defaults.
 - Right-click the header for a Copy / Paste context menu: it copies the managed-reference value and pastes it as an independent instance into any compatible field (paste is disabled when the clipboard type is not assignable to the target).
+- A missing type can be repaired in place: the warning offers an **Edit Type** button that rewrites the stored Assembly / Namespace / Class directly in the asset YAML (on ScriptableObject assets, the only ones where Unity preserves missing references).
+- An aliased reference (two fields sharing one instance, e.g. after duplicating a list element) is flagged, with a **Make Unique Reference** context action that splits it into an independent copy.
 - Works on single fields, arrays, and `List<T>`, in both IMGUI and UIToolkit inspectors.
 
 ```csharp

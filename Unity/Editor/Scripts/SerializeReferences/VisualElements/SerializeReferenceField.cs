@@ -48,6 +48,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly Type[] _types;
 
         private AspidHelpBox _missingBox;
+        private Button _editTypeButton;
+        private AspidHelpBox _sharedBox;
         private Type _currentType;
         private bool _contentBuilt;
         private float _arrowInset = float.NaN;
@@ -142,6 +144,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _foldout.SetValueWithoutNotify(hasValue && _property.isExpanded);
 
             UpdateMissingBox();
+            UpdateSharedBox();
 
             if (forceRebuild || !_contentBuilt || currentType != _currentType)
             {
@@ -177,14 +180,50 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!SerializeReferenceHelpers.IsMissingType(_property))
             {
                 _missingBox?.RemoveFromHierarchy();
+                _editTypeButton?.RemoveFromHierarchy();
                 return;
             }
 
             _missingBox ??= new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning));
             _missingBox.Message = $"Missing type: {_property.managedReferenceFullTypename}";
-
             if (_missingBox.parent is null) this.AddChild(_missingBox);
+
+            // Re-pointing the type rewrites the asset YAML, so the action is only offered for saved assets.
+            if (!SerializeReferenceHelpers.TryGetAssetLocation(_property, out _, out _))
+            {
+                _editTypeButton?.RemoveFromHierarchy();
+                return;
+            }
+
+            _editTypeButton ??= new Button(OpenEditTypeWindow) { text = "Edit Type" };
+            if (_editTypeButton.parent is null) this.AddChild(_editTypeButton);
         }
+
+        private void UpdateSharedBox()
+        {
+            if (!SerializeReferenceHelpers.HasSharedReference(_property))
+            {
+                _sharedBox?.RemoveFromHierarchy();
+                return;
+            }
+
+            _sharedBox ??= new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
+            {
+                Message = "This reference is shared with another field — editing one changes both. " +
+                          "Right-click → Make Unique Reference to give this field its own copy."
+            };
+
+            if (_sharedBox.parent is null) this.AddChild(_sharedBox);
+        }
+
+        private void OpenEditTypeWindow() =>
+            SerializeReferenceEditTypeWindow.Show(
+                SerializeReferenceHelpers.GetMissingTypeName(_property),
+                newType =>
+                {
+                    if (SerializeReferenceHelpers.TryFixMissingType(_property, newType))
+                        Refresh(forceRebuild: true);
+                });
 
         private void OnFoldoutToggled(ChangeEvent<bool> evt)
         {
@@ -247,6 +286,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             evt.menu.AppendAction("Paste Serialize Reference",
                 _ => PasteFromClipboard(),
                 canPaste ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+
+            if (SerializeReferenceHelpers.HasSharedReference(_property))
+                evt.menu.AppendAction("Make Unique Reference", _ => MakeUnique());
+        }
+
+        private void MakeUnique()
+        {
+            SerializeReferenceHelpers.MakeReferenceUnique(_property);
+            Refresh(forceRebuild: true);
         }
 
         private void PasteFromClipboard()
