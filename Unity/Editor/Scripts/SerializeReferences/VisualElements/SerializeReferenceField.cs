@@ -109,6 +109,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             toggle.AddChild(_dropdown)
                 .AddChild(_openButton);
 
+            // Copy/Paste lives on the header only — child PropertyFields keep their own contextual menus.
+            toggle.AddManipulator(new ContextualMenuManipulator(BuildContextMenu));
+
             this.AddChild(_foldout);
 
             Refresh(forceRebuild: true);
@@ -220,7 +223,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
-                _property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstance(type));
+                var previous = _property.managedReferenceValue;
+                _property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
                 _property.isExpanded = type is not null;
                 Refresh(forceRebuild: true);
             }
@@ -230,6 +234,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 window.position.y + _dropdown.worldBound.yMin,
                 _dropdown.worldBound.width,
                 _dropdown.worldBound.height);
+        }
+
+        private void BuildContextMenu(ContextualMenuPopulateEvent evt)
+        {
+            evt.menu.AppendAction("Copy Serialize Reference",
+                _ => SerializeReferenceClipboard.Copy(_property.managedReferenceValue));
+
+            var fieldType = _types.Length > 0 ? _types[0] : typeof(object);
+            var canPaste = SerializeReferenceClipboard.CanPasteInto(fieldType);
+
+            evt.menu.AppendAction("Paste Serialize Reference",
+                _ => PasteFromClipboard(),
+                canPaste ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+        }
+
+        private void PasteFromClipboard()
+        {
+            var value = SerializeReferenceClipboard.CreateInstance();
+            _property.SetManagedReferenceAndApply(value);
+            _property.isExpanded = value is not null;
+            Refresh(forceRebuild: true);
         }
 
         private string GetCaption(Type currentType)

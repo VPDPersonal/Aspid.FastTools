@@ -36,6 +36,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var line = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
 
+            var contextEvent = Event.current;
+            if (contextEvent.type == EventType.ContextClick && line.Contains(contextEvent.mousePosition))
+            {
+                var fieldType = types.Length > 0 ? types[0] : typeof(object);
+                ShowContextMenu(property, fieldType);
+                contextEvent.Use();
+            }
+
             var labelRect = new Rect(line.x, line.y, EditorGUIUtility.labelWidth, line.height);
             if (hasValue) property.isExpanded = EditorGUI.Foldout(labelRect, property.isExpanded, label, toggleOnLabelClick: true);
             else EditorGUI.LabelField(labelRect, label);
@@ -133,8 +141,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
-                persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstance(type));
+                var previous = persistent.managedReferenceValue;
+                persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
                 persistent.isExpanded = type is not null;
+            }
+        }
+
+        private static void ShowContextMenu(SerializedProperty property, Type fieldType)
+        {
+            var persistent = property.Persistent();
+            var menu = new GenericMenu();
+
+            menu.AddItem(new GUIContent("Copy Serialize Reference"), false,
+                () => SerializeReferenceClipboard.Copy(persistent.managedReferenceValue));
+
+            var pasteLabel = new GUIContent("Paste Serialize Reference");
+            if (SerializeReferenceClipboard.CanPasteInto(fieldType))
+                menu.AddItem(pasteLabel, false, () => Paste(persistent));
+            else
+                menu.AddDisabledItem(pasteLabel);
+
+            menu.ShowAsContext();
+
+            void Paste(SerializedProperty target)
+            {
+                var value = SerializeReferenceClipboard.CreateInstance();
+                target.SetManagedReferenceAndApply(value);
+                target.isExpanded = value is not null;
             }
         }
 

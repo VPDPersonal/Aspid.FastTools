@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using UnityEditor;
 using System.Runtime.Serialization;
 using Object = UnityEngine.Object;
@@ -66,6 +67,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 return FormatterServices.GetUninitializedObject(type);
             }
+        }
+
+        /// <summary>
+        /// Creates an instance of <paramref name="newType"/> and carries over the data of <paramref name="previous"/>
+        /// for every field the two types share by name and serialized shape. Mirrors Unity's own type-change
+        /// behaviour: the old value is serialized to JSON and overwritten onto the new instance, so matching fields
+        /// survive a type switch (e.g. a shared <c>_radius</c>) while the rest fall back to the new type's defaults.
+        /// A structural mismatch simply leaves the new instance untouched.
+        /// </summary>
+        public static object CreateInstancePreservingData(Type newType, object previous)
+        {
+            var instance = CreateInstance(newType);
+            if (instance is null || previous is null) return instance;
+
+            try
+            {
+                var json = JsonUtility.ToJson(previous);
+                if (!string.IsNullOrEmpty(json) && json != "{}")
+                    JsonUtility.FromJsonOverwrite(json, instance);
+            }
+            catch (Exception)
+            {
+                // Best effort: incompatible layouts just mean nothing is carried over.
+            }
+
+            return instance;
         }
 
         /// <summary>
