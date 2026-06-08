@@ -2,24 +2,33 @@
     margin:                                                 0;
 }
 
-/* Lay the foldout header out as a row so the type dropdown sits in the value column. */
+/* Lay the foldout header out as a row and centre its items so the dropdown and the open-script
+   button line up vertically, mirroring the single-row SerializableType field. */
 .aspid-fasttools-serialize-reference .unity-foldout__toggle {
     flex-direction:                                         row;
+    align-items:                                            center;
 }
 
-.aspid-fasttools-serialize-reference .unity-foldout__toggle > .unity-toggle__input {
+/* Keep the expand arrow at its natural width on the far left of the header. */
+.aspid-fasttools-serialize-reference .unity-foldout__toggle > .unity-foldout__input {
     flex-grow:                                              0;
     flex-shrink:                                            0;
 }
 
-/* The type dropdown fills the remaining width of the header row. */
+/* The type dropdown fills the header row up to the open-script button. Its left margin is set
+   in code to offset the arrow so the dropdown begins at the inspector value column. */
 .aspid-fasttools-serialize-reference__dropdown {
     flex-grow:                                              1;
-    margin:                                                 0 0 0 2px;
+}
+
+/* Cancel the EnumField caption's built-in -2px left margin so the text indents from the box
+   border like SerializableType's field instead of hugging the edge. */
+.aspid-fasttools-serialize-reference__dropdown .unity-enum-field__text {
+    margin-left:                                            0;
 }
 
 /* Hide the expand arrow when the reference is empty — there is nothing to expand. */
-.aspid-fasttools-serialize-reference--empty .unity-foldout__toggle .unity-toggle__checkmark {
+.aspid-fasttools-serialize-reference--empty .unity-foldout__toggle .unity-foldout__checkmark {
     visibility:                                             hidden;
 }
 

@@ -32,6 +32,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EmptyClass = BlockClass + "--empty";
         private const string DropdownClass = BlockClass + "__dropdown";
 
+        // Unity's BaseField input class — applied to the dropdown's inner input so it picks up the
+        // same flex/indent the EnumField theme rules target on a real field's visualInput.
+        private const string BaseFieldInputClass = "unity-base-field__input";
+
+        // Small gap kept between the value column and the dropdown's left edge.
+        private const float DropdownGap = 2f;
+
         private readonly Foldout _foldout;
         private readonly TextElement _caption;
         private readonly VisualElement _dropdown;
@@ -43,6 +50,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private AspidHelpBox _missingBox;
         private Type _currentType;
         private bool _contentBuilt;
+        private float _arrowInset = float.NaN;
 
         public SerializeReferenceField(string label, SerializedProperty property)
         {
@@ -54,7 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet);
 
-            _foldout = new Foldout().SetText(label);
+            _foldout = new Foldout();
             _foldout.RegisterValueChangedCallback(OnFoldoutToggled);
             _content = _foldout.contentContainer;
 
@@ -62,14 +70,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(EnumField.textUssClassName)
                 .SetPickingMode(PickingMode.Ignore);
 
-            _dropdown = new VisualElement()
-                .AddClass(EnumField.ussClassName)
+            // Mirror SerializableType's TypeField structure: an enum-field "root" wrapping a separate
+            // "__input" child. Unity's theme indents the caption through descendant selectors
+            // (".unity-enum-field .unity-enum-field__input"), which only match when the input is a
+            // child of the field — collapsing both classes onto one element drops that indent.
+            var dropdownInput = new VisualElement()
+                .AddClass(BaseFieldInputClass)
                 .AddClass(EnumField.inputUssClassName)
-                .AddClass(DropdownClass)
                 .AddChild(_caption)
                 .AddChild(new VisualElement()
                     .AddClass(EnumField.arrowUssClassName)
                     .SetPickingMode(PickingMode.Ignore));
+
+            _dropdown = new VisualElement()
+                .AddClass(EnumField.ussClassName)
+                .AddClass(DropdownClass)
+                .AddChild(dropdownInput);
 
             _dropdown.RegisterCallback<PointerDownEvent>(OnDropdownClicked);
 
@@ -77,14 +93,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(new VisualElement())
                 .AddClicked(() => SerializeReferenceHelpers.GetCurrentType(_property)?.OpenInScriptEditor());
 
-            _foldout.Q<Toggle>()
-                .AddChild(_dropdown)
+            // Carry the foldout caption on the toggle's BaseField label and opt into Unity's
+            // inspector field alignment so the label width tracks the value column exactly as
+            // SerializableType does (see InspectorTypeField). The expand arrow stays on the far
+            // left; the dropdown is then offset by the arrow width so it begins at the value column.
+            var toggle = _foldout.Q<Toggle>();
+            toggle.AddClass(BaseField<bool>.alignedFieldUssClassName);
+            toggle.labelElement.AddClass(PropertyField.labelUssClassName);
+            toggle.label = label;
+
+            var arrow = toggle.Q(className: Foldout.inputUssClassName);
+            toggle.Insert(0, arrow);
+            arrow.RegisterCallback<GeometryChangedEvent>(OnArrowGeometryChanged);
+
+            toggle.AddChild(_dropdown)
                 .AddChild(_openButton);
 
             this.AddChild(_foldout);
 
             Refresh(forceRebuild: true);
             this.TrackPropertyValue(_property, _ => Refresh(forceRebuild: false));
+        }
+
+        // The arrow sits in-flow before the aligned label, so the label (and the dropdown that
+        // follows it) overshoot the value column by the arrow's width. Pull the dropdown back by
+        // that measured width so its left edge lands on the value column at any nesting depth.
+        private void OnArrowGeometryChanged(GeometryChangedEvent evt)
+        {
+            var inset = ((VisualElement)evt.target).resolvedStyle.width;
+            if (Mathf.Approximately(inset, _arrowInset)) return;
+
+            _arrowInset = inset;
+            _dropdown.style.marginLeft = DropdownGap - inset;
         }
 
         private void Refresh(bool forceRebuild)
