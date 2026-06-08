@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -86,10 +87,92 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// exposes them for reassignment. Parser-free: the document and the target <c>RefIds</c> entry are located by
     /// line scanning, and only the inline <c>{ … }</c> on the entry's <c>type:</c> line is replaced.
     /// </summary>
+    /// <summary>
+    /// A single orphaned managed-reference entry found in an asset's YAML: the document it lives in
+    /// (<see cref="FileId"/>), its <c>RefIds</c> id and the stored (unresolvable) type. Surfaced by the
+    /// asset-level repair tool, which finds every such entry regardless of nesting depth or child object.
+    /// </summary>
+    internal readonly struct MissingReferenceEntry
+    {
+        public readonly long FileId;
+        public readonly long Rid;
+        public readonly ManagedTypeName StoredType;
+
+        public MissingReferenceEntry(long fileId, long rid, ManagedTypeName storedType)
+        {
+            FileId = fileId;
+            Rid = rid;
+            StoredType = storedType;
+        }
+    }
+
     internal static class SerializeReferenceYamlEditor
     {
         // "--- !u!114 &11400000" — object document header carrying the local file id as its YAML anchor.
         private static readonly Regex DocumentHeader = new(@"^--- !u!\d+ &(\d+)", RegexOptions.Compiled);
+
+        /// <summary>
+        /// Scans every object document in the asset and returns each <c>RefIds</c> entry whose stored type fails
+        /// the <paramref name="resolves"/> predicate. Because <c>RefIds</c> is a flat per-object list, this finds
+        /// missing references at any nesting depth and on any child object — without navigating the Inspector.
+        /// </summary>
+        public static List<MissingReferenceEntry> FindMissingReferences(string assetPath, Func<ManagedTypeName, bool> resolves)
+        {
+            var result = new List<MissingReferenceEntry>();
+
+            try
+            {
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
+
+                var lines = File.ReadAllLines(assetPath);
+
+                var headers = new List<(long fileId, int start)>();
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    var match = DocumentHeader.Match(lines[i]);
+                    if (match.Success && long.TryParse(match.Groups[1].Value, out var fileId))
+                        headers.Add((fileId, i));
+                }
+
+                var ridPattern = new Regex(@"^\s*-\s+rid:\s*(-?\d+)\s*$");
+                var typePattern = new Regex(@"^\s*type:\s*\{(?<body>.*)\}\s*$");
+
+                for (var h = 0; h < headers.Count; h++)
+                {
+                    var (fileId, start) = headers[h];
+                    var end = h + 1 < headers.Count ? headers[h + 1].start : lines.Length;
+
+                    var refIdsStart = FindRefIdsStart(lines, start, end);
+                    if (refIdsStart < 0) continue;
+
+                    for (var i = refIdsStart + 1; i < end; i++)
+                    {
+                        var ridMatch = ridPattern.Match(lines[i]);
+                        if (!ridMatch.Success || !long.TryParse(ridMatch.Groups[1].Value, out var rid)) continue;
+
+                        for (var j = i + 1; j < end && j <= i + 4; j++)
+                        {
+                            var typeMatch = typePattern.Match(lines[j]);
+                            if (!typeMatch.Success) continue;
+
+                            if (TryParseInlineType(typeMatch.Groups["body"].Value, out var type) &&
+                                !type.IsEmpty && !resolves(type))
+                            {
+                                result.Add(new MissingReferenceEntry(fileId, rid, type));
+                            }
+
+                            break;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Best effort — a parse failure simply yields no repair candidates.
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// Replaces the <c>type:</c> mapping of the <c>RefIds</c> entry identified by <paramref name="rid"/> within
