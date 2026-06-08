@@ -47,9 +47,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly SerializedProperty _property;
         private readonly Type[] _types;
 
-        private AspidHelpBox _missingBox;
-        private Button _editTypeButton;
-        private AspidHelpBox _sharedBox;
+        private SerializeReferenceNotice _missingNotice;
+        private SerializeReferenceNotice _sharedNotice;
         private Type _currentType;
         private bool _contentBuilt;
         private float _arrowInset = float.NaN;
@@ -134,6 +133,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void Refresh(bool forceRebuild)
         {
+            // A saved-asset repair reimports the asset and invalidates this property's SerializedObject; the inspector
+            // is rebuilt from a fresh selection instead, so a stale property here must no-op rather than throw.
+            if (!IsPropertyAlive()) return;
+
             var currentType = SerializeReferenceHelpers.GetCurrentType(_property);
             var hasValue = currentType is not null;
 
@@ -151,6 +154,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _currentType = currentType;
                 RebuildContent(hasValue);
             }
+        }
+
+        // The property's SerializedObject can be torn down out from under this field (e.g. a saved-asset repair
+        // reimports the asset); probing the target object reports that without throwing on the dangling handle.
+        private bool IsPropertyAlive()
+        {
+            try { return _property.serializedObject?.targetObject != null; }
+            catch (Exception) { return false; }
         }
 
         private void RebuildContent(bool hasValue)
@@ -179,41 +190,45 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (!SerializeReferenceHelpers.IsMissingType(_property))
             {
-                _missingBox?.RemoveFromHierarchy();
-                _editTypeButton?.RemoveFromHierarchy();
+                _missingNotice?.RemoveFromHierarchy();
                 return;
             }
 
-            _missingBox ??= new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning));
-            _missingBox.Message = $"Missing type: {SerializeReferenceHelpers.GetMissingTypeDisplayName(_property)}";
-            if (_missingBox.parent is null) this.AddChild(_missingBox);
+            _missingNotice ??= new SerializeReferenceNotice();
+            if (_missingNotice.parent is null) this.AddChild(_missingNotice);
 
-            // Re-pointing the type rewrites the asset YAML, so the action is only offered for saved assets.
-            if (!SerializeReferenceHelpers.TryGetAssetLocation(_property, out _, out _))
-            {
-                _editTypeButton?.RemoveFromHierarchy();
-                return;
-            }
+            var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(_property);
 
-            _editTypeButton ??= new Button(OpenFixSelector) { text = "Fix" };
-            if (_editTypeButton.parent is null) this.AddChild(_editTypeButton);
+            // Offered for saved assets (YAML rewrite) and Prefab Mode objects (in-memory) — anything with a
+            // resolvable backing document. Scene objects without one fall through to the read-only hint.
+            var canFix = SerializeReferenceHelpers.TryGetRepairLocation(_property, out _, out _, out _);
+
+            _missingNotice.Set(
+                message: "Missing type —",
+                actionText: canFix ? "Fix" : string.Empty,
+                detail: canFix
+                    ? $"Missing type: {typeName}.\nClick Fix to re-point this reference to an existing type, keeping its data."
+                    : $"Missing type: {typeName}.\nOpen this asset from the Project window to repair it.",
+                onAction: OpenFixSelector);
         }
 
         private void UpdateSharedBox()
         {
             if (!SerializeReferenceHelpers.HasSharedReference(_property))
             {
-                _sharedBox?.RemoveFromHierarchy();
+                _sharedNotice?.RemoveFromHierarchy();
                 return;
             }
 
-            _sharedBox ??= new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
-            {
-                Message = "This reference is shared with another field — editing one changes both. " +
-                          "Right-click → Make Unique Reference to give this field its own copy."
-            };
+            _sharedNotice ??= new SerializeReferenceNotice();
+            if (_sharedNotice.parent is null) this.AddChild(_sharedNotice);
 
-            if (_sharedBox.parent is null) this.AddChild(_sharedBox);
+            _sharedNotice.Set(
+                message: "Shared reference —",
+                actionText: "Make unique",
+                detail: "This reference is shared with another field — editing one changes both.\n" +
+                        "Click Make unique to give this field its own independent copy.",
+                onAction: MakeUnique);
         }
 
         private void OpenFixSelector()
@@ -223,7 +238,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : EditorWindow.mouseOverWindow;
             if (!window) return;
 
-            var bound = _editTypeButton.worldBound;
+            var bound = _missingNotice.worldBound;
             var screenRect = new Rect(
                 window.position.x + bound.xMin,
                 window.position.y + bound.yMax,

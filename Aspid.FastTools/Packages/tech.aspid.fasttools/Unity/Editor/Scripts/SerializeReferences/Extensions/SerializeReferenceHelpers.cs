@@ -1,10 +1,14 @@
 using System;
+using System.Text;
 using UnityEngine;
 using UnityEditor;
 using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
+using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
+using UnityEditor.SceneManagement;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
@@ -54,7 +58,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (property.propertyType != SerializedPropertyType.ManagedReference) return false;
             if (property.managedReferenceValue is not null) return false;
-            if (!TryGetAssetLocation(property, out var assetPath, out var fileId)) return false;
+            if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _)) return false;
             if (!SerializeReferenceYamlEditor.TryReadStoredType(assetPath, fileId, property.propertyPath, out referenceId, out storedType))
                 return false;
 
@@ -200,6 +204,73 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
+        /// Resolves the YAML document backing this property's stored managed reference and reports whether the repair
+        /// must be applied in memory. Saved assets (ScriptableObjects, prefab assets selected in the Project) resolve
+        /// directly and are repaired by rewriting the file. Objects open in <b>Prefab Mode</b> have no asset path of
+        /// their own — the path comes from the prefab stage and the document id is matched back to the asset on disk —
+        /// and must be repaired in memory (<paramref name="inMemory"/> = <see langword="true"/>), because the open
+        /// stage holds a separate copy that does not refresh on reimport and would overwrite a file rewrite on save.
+        /// </summary>
+        public static bool TryGetRepairLocation(SerializedProperty property, out string assetPath, out long fileId, out bool inMemory)
+        {
+            inMemory = false;
+            if (TryGetAssetLocation(property, out assetPath, out fileId)) return true;
+
+            assetPath = null;
+            fileId = 0;
+
+            var target = property.serializedObject.targetObject;
+            var go = target as GameObject ?? (target as Component)?.gameObject;
+            if (go is null) return false;
+
+            var stage = PrefabStageUtility.GetPrefabStage(go);
+            if (stage is null || !TryMatchAssetFileId(stage, target, go, out fileId)) return false;
+
+            assetPath = stage.assetPath;
+            inMemory = true;
+            return true;
+        }
+
+        // A Prefab Mode object is a copy in a preview scene and carries no file id of its own, so the matching
+        // persisted object is located in the asset by replaying its child path from the stage root, and the document
+        // id is read from the asset's component (or GameObject) there.
+        private static bool TryMatchAssetFileId(PrefabStage stage, Object target, GameObject stageGo, out long fileId)
+        {
+            fileId = 0;
+
+            var indices = new List<int>();
+            var transform = stageGo.transform;
+            var root = stage.prefabContentsRoot.transform;
+            while (transform != root)
+            {
+                if (transform.parent is null) return false; // object is not under the stage root
+                indices.Insert(0, transform.GetSiblingIndex());
+                transform = transform.parent;
+            }
+
+            var assetRoot = AssetDatabase.LoadAssetAtPath<GameObject>(stage.assetPath);
+            if (assetRoot is null) return false;
+
+            var assetTransform = assetRoot.transform;
+            foreach (var index in indices)
+            {
+                if (index < 0 || index >= assetTransform.childCount) return false;
+                assetTransform = assetTransform.GetChild(index);
+            }
+
+            if (target is not Component component)
+                return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(assetTransform.gameObject, out _, out fileId);
+
+            // Disambiguate by component index in case the object carries several components of the same type.
+            var stageComponents = stageGo.GetComponents(component.GetType());
+            var componentIndex = Array.IndexOf(stageComponents, component);
+            var assetComponents = assetTransform.GetComponents(component.GetType());
+            if (componentIndex < 0 || componentIndex >= assetComponents.Length) return false;
+
+            return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(assetComponents[componentIndex], out _, out fileId);
+        }
+
+        /// <summary>
         /// Finds the <c>RefIds</c> id of the missing managed reference this property points at, read from the asset
         /// YAML. Detection is strict and per-property: only a field whose own recorded type fails to resolve counts
         /// as missing, so legitimately-empty fields are never flagged.
@@ -227,7 +298,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         ? null
                         : Type.GetType(assemblyQualifiedName, throwOnError: false);
 
-                    if (type is not null && TryFixMissingType(property, ManagedTypeName.FromType(type)))
+                    if (type is not null && TryFixMissingType(property, type))
                         onFixed?.Invoke();
                 },
                 filter: IsAssignableManagedReference,
@@ -236,19 +307,136 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
-        /// Rewrites the missing type of this property to <paramref name="newType"/> directly in the asset YAML and
-        /// reimports it. Returns <see langword="true"/> on success; the caller refreshes the inspector.
+        /// Re-points this property's missing managed reference to <paramref name="newType"/>, keeping its stored data.
+        /// Saved assets are repaired by rewriting the type in the YAML and reimporting; objects open in Prefab Mode are
+        /// repaired in memory (see <see cref="TryGetRepairLocation"/>). Returns <see langword="true"/> on success; the
+        /// caller refreshes the inspector.
         /// </summary>
-        public static bool TryFixMissingType(SerializedProperty property, ManagedTypeName newType)
+        public static bool TryFixMissingType(SerializedProperty property, Type newType)
         {
-            if (!TryGetAssetLocation(property, out var assetPath, out var fileId)) return false;
+            if (newType is null) return false;
+            if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return false;
             if (!TryGetMissingReferenceId(property, out var referenceId)) return false;
-            if (!SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, referenceId, newType)) return false;
 
-            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            bool repaired;
+            if (inMemory)
+            {
+                repaired = TryFixMissingTypeInMemory(property, newType, referenceId);
+            }
+            else
+            {
+                repaired = SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, referenceId, ManagedTypeName.FromType(newType));
+                // ForceUpdate reloads the asset and invalidates the live SerializedObject, so the property must not be
+                // touched afterwards — the inspector is rebuilt below from a fresh selection instead.
+                if (repaired) AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            }
+
+            if (repaired) ScheduleInspectorRebuild();
+            return repaired;
+        }
+
+        // Forces the inspector to rebuild after a repair. Unity's object-level "contains missing SerializeReference
+        // types" banner is drawn from a flag cached when the editor is built and does not react to
+        // ClearManagedReferenceWithMissingType or an inspector reload — it only clears on a genuine reselection.
+        // A reimport (saved-asset path) likewise leaves the live SerializedObject stale. Deselecting and reselecting
+        // the current objects on the next ticks tears the editors down and recreates them from scratch — exactly what
+        // a manual reselect does — so the banner clears and the resolved field shows through.
+        private static void ScheduleInspectorRebuild()
+        {
+            var selection = Selection.objects;
+            if (selection is null || selection.Length == 0) return;
+
+            EditorApplication.delayCall += () =>
+            {
+                Selection.objects = Array.Empty<Object>();
+                EditorApplication.delayCall += () => Selection.objects = selection;
+            };
+        }
+
+        // Prefab Mode objects cannot be repaired by rewriting the asset file: the open stage holds its own copy that
+        // does not refresh on reimport and overwrites the change on save. Instead the reference is reassigned on the
+        // live object — recovering the orphaned field data Unity still keeps for the missing type — and the now-unused
+        // missing-type entry is cleared so the object stops being flagged.
+        private static bool TryFixMissingTypeInMemory(SerializedProperty property, Type newType, long referenceId)
+        {
+            var target = property.serializedObject.targetObject;
+            var instance = CreateInstance(newType);
+            if (instance is null) return false;
+
+            foreach (var entry in SerializationUtility.GetManagedReferencesWithMissingTypes(target))
+            {
+                if (entry.referenceId != referenceId) continue;
+                RecoverManagedReferenceData(entry.serializedData, instance);
+                break;
+            }
+
+            property.SetManagedReferenceAndApply(instance);
+            SerializationUtility.ClearManagedReferenceWithMissingType(target, referenceId);
+            EditorUtility.SetDirty(target);
             property.serializedObject.Update();
+
+            // Mark the owning scene (the prefab stage's preview scene, or a regular scene) dirty so the in-memory
+            // repair is offered for save — a file rewrite that the open stage would otherwise discard is avoided.
+            var scene = (target as Component)?.gameObject.scene ?? (target as GameObject)?.scene ?? default;
+            if (scene.IsValid()) EditorSceneManager.MarkSceneDirty(scene);
+
             return true;
         }
+
+        // Best-effort recovery of a missing reference's stored data onto the replacement instance. Unity surfaces the
+        // orphaned payload as the field block of YAML scalars (e.g. "_damage: 15"); the flat top-level scalars are
+        // mapped to JSON and overwritten onto the instance, so a renamed-type fix keeps its values. Nested mappings
+        // and sequences are skipped and left at the new type's defaults.
+        private static void RecoverManagedReferenceData(string serializedData, object instance)
+        {
+            if (string.IsNullOrEmpty(serializedData)) return;
+
+            try
+            {
+                var json = new StringBuilder("{");
+                var first = true;
+
+                foreach (var raw in serializedData.Split('\n'))
+                {
+                    var line = raw.TrimEnd('\r');
+                    // Only top-level scalars: skip blanks, indented (nested) lines and sequence items.
+                    if (line.Length == 0 || char.IsWhiteSpace(line[0]) || line[0] == '-') continue;
+
+                    var separator = line.IndexOf(':');
+                    if (separator <= 0) continue;
+
+                    var key = line[..separator].Trim();
+                    var value = line[(separator + 1)..].Trim();
+
+                    // Empty value = a mapping/array header (e.g. "_nested:"); complex flow values are not flat scalars.
+                    if (key.Length == 0 || value.Length == 0 || value[0] is '{' or '[') continue;
+
+                    if (!first) json.Append(',');
+                    first = false;
+
+                    json.Append('"').Append(key).Append("\":");
+                    json.Append(IsJsonNumber(value) ? value : Quote(UnquoteYaml(value)));
+                }
+
+                json.Append('}');
+                if (!first) JsonUtility.FromJsonOverwrite(json.ToString(), instance);
+            }
+            catch (Exception)
+            {
+                // Best effort: an unparseable payload simply leaves the new instance at its defaults.
+            }
+        }
+
+        private static bool IsJsonNumber(string value) => Regex.IsMatch(value, @"^-?\d+(\.\d+)?$");
+
+        // Unity single-quotes YAML scalars that contain reserved characters, doubling embedded quotes.
+        private static string UnquoteYaml(string value) =>
+            value.Length >= 2 && value[0] == '\'' && value[^1] == '\''
+                ? value[1..^1].Replace("''", "'")
+                : value;
+
+        private static string Quote(string value) =>
+            $"\"{value.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
         #endregion
 
         #region Cross references
