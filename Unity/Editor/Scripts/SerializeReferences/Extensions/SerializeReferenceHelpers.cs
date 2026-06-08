@@ -62,7 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // True when the YAML-recorded type identity can be loaded — i.e. the reference is intact, not missing.
-        private static bool StoredTypeResolves(ManagedTypeName name)
+        public static bool StoredTypeResolves(ManagedTypeName name)
         {
             if (string.IsNullOrEmpty(name.Class)) return false;
 
