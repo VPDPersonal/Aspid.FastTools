@@ -371,7 +371,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             property.SetManagedReferenceAndApply(instance);
-            SerializationUtility.ClearManagedReferenceWithMissingType(target, referenceId);
+            ClearMissingSubtree(target, referenceId);
             EditorUtility.SetDirty(target);
             property.serializedObject.Update();
 
@@ -381,6 +381,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (scene.IsValid()) EditorSceneManager.MarkSceneDirty(scene);
 
             return true;
+        }
+
+        // Clears the fixed missing-type entry and any missing-type entries it transitively referenced. The in-memory
+        // repair replaces the reference with a fresh instance, dropping the orphaned payload's nested references — so a
+        // missing child it carried (e.g. a missing effect nested inside a missing weapon) would otherwise linger as an
+        // unreachable orphan and keep Unity's object-level missing-types flag (and its banner) raised.
+        private static void ClearMissingSubtree(Object target, long rootReferenceId)
+        {
+            var dataByRid = new Dictionary<long, string>();
+            foreach (var entry in SerializationUtility.GetManagedReferencesWithMissingTypes(target))
+                dataByRid[entry.referenceId] = entry.serializedData;
+
+            var pending = new Stack<long>();
+            var visited = new HashSet<long>();
+            pending.Push(rootReferenceId);
+
+            while (pending.Count > 0)
+            {
+                var rid = pending.Pop();
+                if (!visited.Add(rid)) continue;
+                if (!dataByRid.TryGetValue(rid, out var data)) continue; // a resolvable reference, or already cleared
+
+                foreach (Match match in Regex.Matches(data ?? string.Empty, @"rid:\s*(-?\d+)"))
+                    if (long.TryParse(match.Groups[1].Value, out var child) && child != rid)
+                        pending.Push(child);
+
+                SerializationUtility.ClearManagedReferenceWithMissingType(target, rid);
+            }
         }
 
         // Best-effort recovery of a missing reference's stored data onto the replacement instance. Unity surfaces the
