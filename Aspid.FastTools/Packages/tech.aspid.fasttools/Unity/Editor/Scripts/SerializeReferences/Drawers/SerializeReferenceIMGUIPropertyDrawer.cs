@@ -9,8 +9,9 @@ using Aspid.FastTools.Types.Editors;
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// IMGUI rendering for the <c>[SerializeReferenceSelector]</c> drawer: a foldout-and-dropdown header
-    /// row, an optional missing-type warning, and the nested properties of the assigned instance.
+    /// IMGUI rendering for the <c>[TypeSelector]</c> drawer on a <c>[SerializeReference]</c> field: a
+    /// foldout-and-dropdown header row, an optional missing-type warning, and the nested properties of the
+    /// assigned instance. The optional base types narrow the candidate list below the declared field type.
     /// </summary>
     internal static class SerializeReferenceIMGUIPropertyDrawer
     {
@@ -31,18 +32,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return height;
         }
 
-        public static void Draw(Rect position, GUIContent label, SerializedProperty property, params Type[] types)
+        public static void Draw(Rect position, GUIContent label, SerializedProperty property, params Type[] baseTypes)
         {
             var spacing = EditorGUIUtility.standardVerticalSpacing;
             var currentType = SerializeReferenceHelpers.GetCurrentType(property);
             var hasValue = currentType is not null;
+            var fieldType = SerializeReferenceHelpers.GetFieldType(property);
 
             var line = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
 
             var contextEvent = Event.current;
             if (contextEvent.type == EventType.ContextClick && line.Contains(contextEvent.mousePosition))
             {
-                var fieldType = types.Length > 0 ? types[0] : typeof(object);
                 ShowContextMenu(property, fieldType);
                 contextEvent.Use();
             }
@@ -67,7 +68,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var caption = GetCaption(property, currentType);
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption), FocusType.Passive))
-                ShowSelector(property, types, currentType, dropdownRect);
+                ShowSelector(property, fieldType, baseTypes, currentType, dropdownRect);
 
             if (hasValue)
                 TypeIMGUIPropertyDrawer.DrawOpenScriptButton(openRect, currentType);
@@ -92,7 +93,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         {
                             var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(noticeRect.x, noticeRect.yMax));
                             var screenRect = new Rect(screenPosition.x, screenPosition.y, noticeRect.width, EditorGUIUtility.singleLineHeight);
-                            SerializeReferenceHelpers.ShowFixTypeSelector(property.Persistent(), screenRect, null);
+                            SerializeReferenceHelpers.ShowFixTypeSelector(property.Persistent(), screenRect, null, baseTypes);
                         }
                         : null);
 
@@ -154,23 +155,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return height;
         }
 
-        private static void ShowSelector(SerializedProperty property, Type[] types, Type currentType, Rect dropdownRect)
+        private static void ShowSelector(SerializedProperty property, Type fieldType, Type[] baseTypes, Type currentType, Rect dropdownRect)
         {
             var persistent = property.Persistent();
-            var fieldType = types.Length > 0 ? types[0] : typeof(object);
             var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(dropdownRect.x, dropdownRect.y));
             var screenRect = new Rect(screenPosition.x, screenPosition.y, dropdownRect.width, dropdownRect.height);
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                types: types,
+                types: new[] { fieldType },
                 currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
                 allow: TypeAllow.None,
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
                     ? null
                     : Type.GetType(assemblyQualifiedName, throwOnError: false)),
-                filter: SerializeReferenceHelpers.IsAssignableManagedReference,
-                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(fieldType),
+                filter: SerializeReferenceHelpers.BuildAssignableFilter(baseTypes),
+                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes),
                 argumentFilter: SerializeReferenceHelpers.IsValidGenericArgument);
 
             return;

@@ -6,7 +6,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
 {
     // Abstract base for a second polymorphic hierarchy.
     //
-    // When a field is declared as StatusEffect, [SerializeReferenceSelector] offers only the
+    // When a field is declared as StatusEffect, [TypeSelector] offers only the
     // concrete subclasses (BurnEffect, FreezeEffect) — the abstract base itself is never listed,
     // because it cannot be instantiated.
     [Serializable]
