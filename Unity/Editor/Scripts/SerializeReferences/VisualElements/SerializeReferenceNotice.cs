@@ -6,7 +6,7 @@ using Aspid.FastTools.UIElements;
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// A compact, single-row warning notice for the <c>[SerializeReferenceSelector]</c> drawer: a small
+    /// A compact, single-row warning notice for the <c>[TypeSelector]</c> drawer on <c>[SerializeReference]</c> fields: a small
     /// warning icon, a short yellow message and an underlined, clickable action word (e.g. <c>Fix</c>).
     /// The full explanation is surfaced on hover through the element's <see cref="VisualElement.tooltip"/>,
     /// so the inspector row stays terse while the detail is one hover away. Replaces the bulky

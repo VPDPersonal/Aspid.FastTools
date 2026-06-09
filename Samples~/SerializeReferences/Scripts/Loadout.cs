@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Aspid.FastTools.SerializeReferences;
+using Aspid.FastTools.Types;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Demonstrates [SerializeReferenceSelector] through the default (UIToolkit) Inspector.
+    // Demonstrates [TypeSelector] through the default (UIToolkit) Inspector.
     //
-    // Add [SerializeReferenceSelector] next to [SerializeReference] and the field renders as a
+    // Add [TypeSelector] next to [SerializeReference] and the field renders as a
     // searchable, hierarchical type dropdown:
     //   - single field      → pick one IWeapon implementation
     //   - List<T> / array    → each element is its own polymorphic picker
@@ -23,31 +23,31 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     public sealed class Loadout : MonoBehaviour
     {
         // Interface-typed field: lists every IWeapon implementation (Pistol, Shotgun, Railgun).
-        [SerializeReference] [SerializeReferenceSelector]
+        [SerializeReference] [TypeSelector]
         private IWeapon _primaryWeapon;
 
         // Each list element is its own independent picker.
-        [SerializeReference] [SerializeReferenceSelector]
+        [SerializeReference] [TypeSelector]
         private List<IWeapon> _sidearms = new();
 
         // Abstract-base field: the picker offers BurnEffect / FreezeEffect, never StatusEffect.
-        [SerializeReference] [SerializeReferenceSelector]
+        [SerializeReference] [TypeSelector]
         private StatusEffect _onHitEffect;
 
         // Generic hierarchy. Non-generic IModifier field: the picker offers the concrete subclasses
         // (DamageModifier, AmmoModifier, NameModifier) AND the open generic Modifier<T> — choosing the
         // latter opens a second window to pick T (e.g. string vs float).
-        [SerializeReference] [SerializeReferenceSelector]
+        [SerializeReference] [TypeSelector]
         private IModifier _modifier;
 
         // Closed-generic field type: only types assignable to Modifier<float> are offered —
         // DamageModifier (Modifier<float>) and Modifier<T> (its T is inferred to float, no extra window).
         // AmmoModifier (int) and NameModifier (string) are excluded.
-        [SerializeReference] [SerializeReferenceSelector]
+        [SerializeReference] [TypeSelector]
         private Modifier<float> _floatModifier;
 
         // Polymorphic list mixing different closed-generic subclasses.
-        [SerializeReference] [SerializeReferenceSelector]
+        [SerializeReference] [TypeSelector]
         private List<IModifier> _modifiers = new();
 
         [ContextMenu("Log Loadout")]

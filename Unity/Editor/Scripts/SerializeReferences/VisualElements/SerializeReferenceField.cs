@@ -19,8 +19,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// warning when the stored type can no longer be resolved.
     /// </summary>
     /// <remarks>
-    /// Always bound to a managed-reference <see cref="SerializedProperty"/>; created by the
-    /// <see cref="SerializeReferenceSelectorPropertyDrawer"/>, not from UXML. The field keeps the live
+    /// Always bound to a managed-reference <see cref="SerializedProperty"/>; created by
+    /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorPropertyDrawer"/>, not from UXML. The field keeps the live
     /// inspector property so child fields round-trip through Unity's binding (apply/Undo) and only rebuilds
     /// the nested properties when the assigned type actually changes.
     /// </remarks>
@@ -45,7 +45,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly Button _openButton;
         private readonly VisualElement _content;
         private readonly SerializedProperty _property;
-        private readonly Type[] _types;
+        private readonly Type _fieldType;
+        private readonly Type[] _baseTypes;
+        private readonly Func<Type, bool> _filter;
 
         private SerializeReferenceNotice _missingNotice;
         private SerializeReferenceNotice _sharedNotice;
@@ -53,10 +55,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private bool _contentBuilt;
         private float _arrowInset = float.NaN;
 
-        public SerializeReferenceField(string label, SerializedProperty property)
+        public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null)
         {
             _property = property;
-            _types = new[] { SerializeReferenceHelpers.GetFieldType(_property) };
+            _fieldType = SerializeReferenceHelpers.GetFieldType(_property);
+            _baseTypes = baseTypes;
+            _filter = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes);
 
             this.AddClass(BlockClass)
                 .AddClass(PropertyField.ussClassName)
@@ -245,7 +249,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 bound.width,
                 bound.height);
 
-            SerializeReferenceHelpers.ShowFixTypeSelector(_property, screenRect, () => Refresh(forceRebuild: true));
+            SerializeReferenceHelpers.ShowFixTypeSelector(_property, screenRect, () => Refresh(forceRebuild: true), _baseTypes);
         }
 
         private void OnFoldoutToggled(ChangeEvent<bool> evt)
@@ -265,19 +269,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!window) return;
 
             var currentType = SerializeReferenceHelpers.GetCurrentType(_property);
-            var fieldType = _types.Length > 0 ? _types[0] : typeof(object);
             var screenRect = GetScreenRect();
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                types: _types,
+                types: new[] { _fieldType },
                 currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
                 allow: TypeAllow.None,
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
                     ? null
                     : Type.GetType(assemblyQualifiedName, throwOnError: false)),
-                filter: SerializeReferenceHelpers.IsAssignableManagedReference,
-                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(fieldType),
+                filter: _filter,
+                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(_fieldType, _baseTypes),
                 argumentFilter: SerializeReferenceHelpers.IsValidGenericArgument);
 
             evt.StopPropagation();
@@ -303,8 +306,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             evt.menu.AppendAction("Copy Serialize Reference",
                 _ => SerializeReferenceClipboard.Copy(_property.managedReferenceValue));
 
-            var fieldType = _types.Length > 0 ? _types[0] : typeof(object);
-            var canPaste = SerializeReferenceClipboard.CanPasteInto(fieldType);
+            var canPaste = SerializeReferenceClipboard.CanPasteInto(_fieldType);
 
             evt.menu.AppendAction("Paste Serialize Reference",
                 _ => PasteFromClipboard(),

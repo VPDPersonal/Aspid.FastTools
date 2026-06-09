@@ -1,6 +1,6 @@
 using System;
 using UnityEngine;
-using Aspid.FastTools.SerializeReferences;
+using Aspid.FastTools.Types;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
@@ -12,7 +12,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     {
         [SerializeField] [Min(0f)] private float _chargeTime = 1.5f;
 
-        [SerializeReference] [SerializeReferenceSelector]
+        [SerializeReference] [TypeSelector]
         private StatusEffect _chargeEffect;
 
         public string Describe()

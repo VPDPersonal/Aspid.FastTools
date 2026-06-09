@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Aspid.FastTools.SerializeReferences;
+using Aspid.FastTools.Types;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // ScriptableObject host for [SerializeReferenceSelector], used to demonstrate the missing-type repair flow.
+    // ScriptableObject host for [TypeSelector], used to demonstrate the missing-type repair flow.
     //
     // Why a ScriptableObject and not the Loadout MonoBehaviour? Unity preserves a managed reference whose type
     // went missing (renamed / moved / deleted) only on ScriptableObject assets — on GameObjects and prefabs the
@@ -18,10 +18,10 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     [CreateAssetMenu(menuName = "Aspid/FastTools Samples/Weapon Preset", fileName = "WeaponPreset")]
     public sealed class WeaponPreset : ScriptableObject
     {
-        [SerializeReference] [SerializeReferenceSelector]
+        [SerializeReference] [TypeSelector]
         private IWeapon _weapon;
 
-        [SerializeReference] [SerializeReferenceSelector]
+        [SerializeReference] [TypeSelector]
         private List<IWeapon> _alternates = new();
     }
 }

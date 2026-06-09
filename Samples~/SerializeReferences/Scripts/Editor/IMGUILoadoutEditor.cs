@@ -7,7 +7,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences.Editors
     //
     // Unity picks IMGUI vs UIToolkit at the Editor level: when CreateInspectorGUI is NOT
     // overridden but OnInspectorGUI is, the whole inspector — including every nested
-    // PropertyDrawer — falls back to IMGUI. That routes [SerializeReferenceSelector] fields
+    // PropertyDrawer — falls back to IMGUI. That routes [TypeSelector] fields
     // through SerializeReferenceIMGUIPropertyDrawer.OnGUI instead of CreatePropertyGUI.
     [CustomEditor(typeof(IMGUILoadout))]
     internal sealed class IMGUILoadoutEditor : Editor

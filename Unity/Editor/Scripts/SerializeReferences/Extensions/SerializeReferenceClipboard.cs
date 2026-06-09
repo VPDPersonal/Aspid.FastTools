@@ -6,7 +6,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
     /// Editor-session clipboard backing the Copy/Paste context-menu entries of the
-    /// <c>[SerializeReferenceSelector]</c> drawers. Stores the copied managed-reference value as JSON plus its
+    /// <c>[TypeSelector]</c> drawer on <c>[SerializeReference]</c> fields. Stores the copied managed-reference value as JSON plus its
     /// concrete <see cref="Type"/>, so a paste reconstructs an independent instance (rather than aliasing the
     /// source object) and survives across different fields, inspectors, and target objects within the session.
     /// </summary>

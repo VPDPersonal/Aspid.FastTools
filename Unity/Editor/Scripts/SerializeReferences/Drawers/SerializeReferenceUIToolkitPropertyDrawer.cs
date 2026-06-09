@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine.UIElements;
 
@@ -6,10 +7,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceUIToolkitPropertyDrawer
     {
-        public static VisualElement Draw(string label, SerializedProperty property)
+        public static VisualElement Draw(string label, SerializedProperty property, params Type[] baseTypes)
         {
             label = string.IsNullOrWhiteSpace(label) ? null : label;
-            return new SerializeReferenceField(label, property);
+            return new SerializeReferenceField(label, property, baseTypes);
         }
     }
 }

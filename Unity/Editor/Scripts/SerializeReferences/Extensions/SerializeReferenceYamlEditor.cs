@@ -221,7 +221,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             catch (Exception exception)
             {
-                Debug.LogError($"[SerializeReferenceSelector] Failed to rewrite managed-reference type in '{assetPath}': {exception}");
+                Debug.LogError($"[TypeSelector] Failed to rewrite managed-reference type in '{assetPath}': {exception}");
                 return false;
             }
         }

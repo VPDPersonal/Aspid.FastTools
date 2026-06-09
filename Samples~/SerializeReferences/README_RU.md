@@ -1,11 +1,11 @@
 # Пример SerializeReferences
 
-Маленькая система снаряжения, демонстрирующая `[SerializeReferenceSelector]` — иерархический выпадающий список с поиском для полей `[SerializeReference]`. Вы прямо в Inspector выбираете, какая конкретная реализация полиморфного поля будет создана.
+Маленькая система снаряжения, демонстрирующая `[TypeSelector]` — иерархический выпадающий список с поиском для полей `[SerializeReference]`. Вы прямо в Inspector выбираете, какая конкретная реализация полиморфного поля будет создана.
 
 Смотрите:
 
-- `Scripts/Loadout.cs` — одиночное поле (`IWeapon`), `List<IWeapon>` и поле с абстрактным базовым типом (`StatusEffect`), каждое с `[SerializeReference]` и `[SerializeReferenceSelector]`.
-- `Scripts/Weapons/` — интерфейс `IWeapon` и его реализации (`Pistol`, `Shotgun`, `Railgun`). `Railgun` вкладывает ещё одно поле `[SerializeReferenceSelector]` — показывает рекурсивное полиморфное редактирование.
+- `Scripts/Loadout.cs` — одиночное поле (`IWeapon`), `List<IWeapon>` и поле с абстрактным базовым типом (`StatusEffect`), каждое с `[SerializeReference]` и `[TypeSelector]`.
+- `Scripts/Weapons/` — интерфейс `IWeapon` и его реализации (`Pistol`, `Shotgun`, `Railgun`). `Railgun` вкладывает ещё одно поле `[TypeSelector]` — показывает рекурсивное полиморфное редактирование.
 - `Scripts/Effects/` — абстрактный базовый `StatusEffect` с `BurnEffect` / `FreezeEffect`. В списке предлагаются только конкретные подтипы; абстрактный базовый класс никогда не показывается.
 - `Scripts/Modifiers/` — generic-иерархия: неабстрактный generic-класс `Modifier<T>` (`IModifier`) с закрытыми подтипами `DamageModifier : Modifier<float>`, `AmmoModifier : Modifier<int>`, `NameModifier : Modifier<string>`. Поле `IModifier` предлагает все три подтипа **и** сам открытый `Modifier<T>` — при его выборе открывается второе окно для выбора аргумента `T`. Поле `Modifier<float>` предлагает только присваиваемых кандидатов (`DamageModifier` и `Modifier<T>` с выведенным `T = float`).
 - `Scripts/WeaponPreset.cs` + `Presets/BrokenWeaponPreset.asset` — `ScriptableObject`, у которого поле `_weapon` указывает на несуществующий тип; используется для демонстрации починки потерянного типа (см. *Сервисные функции* ниже).
