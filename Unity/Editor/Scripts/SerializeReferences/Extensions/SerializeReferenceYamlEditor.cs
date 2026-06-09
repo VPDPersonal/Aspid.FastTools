@@ -229,9 +229,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Reads the managed-reference id (<c>rid</c>) stored at <paramref name="propertyPath"/> within the object
         /// document anchored at <paramref name="fileId"/>. Needed because Unity reports an invalid id for a property
-        /// whose type is missing — the real id only survives in the YAML. Resolves top-level fields (<c>_weapon</c>)
-        /// and top-level sequence elements (<c>_alternates.Array.data[i]</c>); deeper paths return
-        /// <see langword="false"/> so the caller can fall back.
+        /// whose type is missing — the real id only survives in the YAML. Resolves the path at any depth, walking each
+        /// segment either into a managed reference's <c>RefIds</c> data block (a <c>rid:</c> pointer) or down through a
+        /// plain serializable container (a nested struct/class mapping or a <c>List&lt;T&gt;</c> of them), so paths
+        /// such as <c>_weapon._chargeEffect</c>, <c>_config._weapon</c> and <c>_slots.Array.data[0]._weapon</c> all
+        /// resolve. An unresolvable segment returns <see langword="false"/> so the caller can fall back.
         /// </summary>
         public static bool TryReadReferenceId(string assetPath, long fileId, string propertyPath, out long rid)
         {
@@ -244,65 +246,51 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
-                // Field pointers live before the "references:" block; restrict the search to them.
+                // Field pointers (and the object's inline serializable data) live before the "references:" block; the
+                // RefIds entries and the nested data each managed reference stores live after it.
                 var fieldsEnd = end;
                 var references = new Regex(@"^\s*references:\s*$");
                 for (var i = start; i < end; i++)
                     if (references.IsMatch(lines[i])) { fieldsEnd = i; break; }
 
-                // Unity paths look like "_weapon" or "_alternates.Array.data[3]"; normalise to "_weapon" / "_alternates[3]".
-                var path = propertyPath.Replace(".Array.data", string.Empty);
-                var segment = Regex.Match(path, @"^(?<name>[^\[\]\.]+)(\[(?<idx>\d+)\])?$");
-                if (!segment.Success) return false;
+                var segments = ParsePathSegments(propertyPath.Replace(".Array.data", string.Empty));
+                if (segments is null) return false;
 
-                var name = segment.Groups["name"].Value;
-                var hasIndex = segment.Groups["idx"].Success;
-                var index = hasIndex ? int.Parse(segment.Groups["idx"].Value) : -1;
+                var refIdsStart = FindRefIdsStart(lines, start, end);
 
-                var fieldPattern = new Regex($@"^(?<indent>\s*){Regex.Escape(name)}:\s*(?<inline>.*)$");
-                var ridScalar = new Regex(@"rid:\s*(-?\d+)");
+                // Cursor over the lines the current segment is resolved against. It starts on the object's own field
+                // block, then for each segment either descends into a plain serializable container (a nested mapping
+                // or sequence item, by indent) or jumps into a managed reference's RefIds data block (by rid).
+                var cursorStart = start;
+                var cursorEnd = fieldsEnd;
+                var cursorIndent = -1; // the object's top-level fields: match at any indent
 
-                for (var i = start; i < fieldsEnd; i++)
+                for (var s = 0; s < segments.Count; s++)
                 {
-                    var field = fieldPattern.Match(lines[i]);
-                    if (!field.Success) continue;
+                    var kind = ResolveSegment(lines, cursorStart, cursorEnd, cursorIndent, segments[s],
+                        out var segmentRid, out var valueStart, out var valueEnd, out var valueIndent);
 
-                    if (!hasIndex)
+                    if (kind == SegmentKind.NotFound) return false;
+
+                    if (s == segments.Count - 1)
                     {
-                        var inline = ridScalar.Match(field.Groups["inline"].Value);
-                        if (inline.Success) return long.TryParse(inline.Groups[1].Value, out rid);
-
-                        for (var j = i + 1; j < fieldsEnd && j <= i + 3; j++)
-                        {
-                            var scalar = ridScalar.Match(lines[j]);
-                            if (scalar.Success) return long.TryParse(scalar.Groups[1].Value, out rid);
-                            if (lines[j].Trim().Length > 0 && !lines[j].TrimStart().StartsWith("rid")) break;
-                        }
-
-                        return false;
+                        if (kind != SegmentKind.Reference) return false;
+                        rid = segmentRid;
+                        return true;
                     }
 
-                    var count = 0;
-                    for (var j = i + 1; j < fieldsEnd; j++)
+                    if (kind == SegmentKind.Reference)
                     {
-                        var trimmed = lines[j].TrimStart();
-                        if (trimmed.StartsWith("- "))
-                        {
-                            if (count == index)
-                            {
-                                var scalar = ridScalar.Match(trimmed);
-                                return scalar.Success && long.TryParse(scalar.Groups[1].Value, out rid);
-                            }
-
-                            count++;
-                        }
-                        else if (trimmed.Length > 0 && !trimmed.StartsWith("-"))
-                        {
-                            break;
-                        }
+                        if (refIdsStart < 0) return false;
+                        if (!TryGetDataBlockRange(lines, refIdsStart, end, segmentRid, out cursorStart, out cursorEnd, out cursorIndent))
+                            return false;
                     }
-
-                    return false;
+                    else
+                    {
+                        cursorStart = valueStart;
+                        cursorEnd = valueEnd;
+                        cursorIndent = valueIndent;
+                    }
                 }
 
                 return false;
@@ -311,6 +299,212 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 return false;
             }
+        }
+
+        // A single managed-reference path segment: a field name with an optional sequence index ("_alternates[3]").
+        private readonly struct PathSegment
+        {
+            public readonly string Name;
+            public readonly bool HasIndex;
+            public readonly int Index;
+
+            public PathSegment(string name, bool hasIndex, int index)
+            {
+                Name = name;
+                HasIndex = hasIndex;
+                Index = index;
+            }
+        }
+
+        // Splits a normalised property path ("_weapon._chargeEffect", "_alternates[3]") into ordered segments.
+        private static List<PathSegment> ParsePathSegments(string path)
+        {
+            var result = new List<PathSegment>();
+            foreach (var raw in path.Split('.'))
+            {
+                var match = Regex.Match(raw, @"^(?<name>[^\[\]\.]+)(\[(?<idx>\d+)\])?$");
+                if (!match.Success) return null;
+
+                var hasIndex = match.Groups["idx"].Success;
+                result.Add(new PathSegment(match.Groups["name"].Value, hasIndex, hasIndex ? int.Parse(match.Groups["idx"].Value) : -1));
+            }
+
+            return result.Count > 0 ? result : null;
+        }
+
+        // What a resolved segment points at: a managed reference (a "rid:" pointer) or a plain serializable container
+        // (a nested mapping/sequence to descend into), or nothing.
+        private enum SegmentKind { NotFound, Reference, Container }
+
+        // Resolves one path segment within [rangeStart, rangeEnd). For a plain field the value is either a managed
+        // reference (its sole child is a "rid:" scalar) or a container to descend into; for an indexed field it is the
+        // segment.Index-th sequence item, itself either a "- rid:" reference or a "- field:" mapping container. When
+        // requiredIndent is non-negative only a field at exactly that effective indent matches (a leading "- " counts
+        // toward the indent so a sequence-of-mappings item's fields align with their dashless siblings), which keeps
+        // resolution on a block's direct children instead of descending into a deeper object that reuses the name.
+        private static SegmentKind ResolveSegment(string[] lines, int rangeStart, int rangeEnd, int requiredIndent,
+            PathSegment segment, out long rid, out int valueStart, out int valueEnd, out int valueIndent)
+        {
+            rid = 0;
+            valueStart = valueEnd = valueIndent = -1;
+
+            var fieldPattern = new Regex($@"^(?<lead>\s*)(?<dash>-\s+)?{Regex.Escape(segment.Name)}:\s*(?<inline>.*)$");
+
+            for (var i = rangeStart; i < rangeEnd; i++)
+            {
+                var field = fieldPattern.Match(lines[i]);
+                if (!field.Success) continue;
+
+                var fieldIndent = field.Groups["lead"].Length + field.Groups["dash"].Length;
+                if (requiredIndent >= 0 && fieldIndent != requiredIndent) continue;
+
+                return segment.HasIndex
+                    ? ResolveSequenceItem(lines, i + 1, rangeEnd, segment.Index, out rid, out valueStart, out valueEnd, out valueIndent)
+                    : ClassifyValue(lines, i, fieldIndent, field.Groups["inline"].Value, rangeEnd, out rid, out valueStart, out valueEnd, out valueIndent);
+            }
+
+            return SegmentKind.NotFound;
+        }
+
+        // Classifies the value of a plain (non-indexed) field at line i with effective indent fieldIndent: a managed
+        // reference when the value is a lone "rid:" scalar (inline or as the only following child), otherwise the
+        // indented mapping block to descend into.
+        private static SegmentKind ClassifyValue(string[] lines, int i, int fieldIndent, string inline, int rangeEnd,
+            out long rid, out int valueStart, out int valueEnd, out int valueIndent)
+        {
+            rid = 0;
+            valueStart = valueEnd = valueIndent = -1;
+
+            var inlineMatch = Regex.Match(inline, @"rid:\s*(-?\d+)");
+            if (inlineMatch.Success)
+                return long.TryParse(inlineMatch.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
+
+            // Gather the indented value block (lines more indented than the field).
+            var blockStart = i + 1;
+            var blockEnd = rangeEnd;
+            var firstChild = -1;
+            for (var j = blockStart; j < rangeEnd; j++)
+            {
+                if (lines[j].Trim().Length == 0) continue;
+                if (IndentOf(lines[j]) <= fieldIndent) { blockEnd = j; break; }
+                if (firstChild < 0) firstChild = j;
+            }
+
+            if (firstChild < 0) return SegmentKind.NotFound; // scalar/empty field: no managed reference here
+
+            // A managed reference's value block is exactly a "rid:" scalar; anything else is a container.
+            var ridScalar = Regex.Match(lines[firstChild].Trim(), @"^rid:\s*(-?\d+)$");
+            if (ridScalar.Success)
+                return long.TryParse(ridScalar.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
+
+            valueStart = blockStart;
+            valueEnd = blockEnd;
+            valueIndent = IndentOf(lines[firstChild]);
+            return SegmentKind.Container;
+        }
+
+        // Locates the index-th "- " item of a sequence whose items begin at [itemsStart, rangeEnd). A "- rid: N" item
+        // is a managed reference; a "- field: …" item is a mapping container whose fields begin on the dash line.
+        private static SegmentKind ResolveSequenceItem(string[] lines, int itemsStart, int rangeEnd, int index,
+            out long rid, out int valueStart, out int valueEnd, out int valueIndent)
+        {
+            rid = 0;
+            valueStart = valueEnd = valueIndent = -1;
+
+            var itemPattern = new Regex(@"^(?<lead>\s*)-\s");
+            var itemIndent = -1;
+            var count = 0;
+
+            for (var j = itemsStart; j < rangeEnd; j++)
+            {
+                if (lines[j].Trim().Length == 0) continue;
+
+                var item = itemPattern.Match(lines[j]);
+                if (!item.Success)
+                {
+                    if (itemIndent >= 0 && IndentOf(lines[j]) <= itemIndent) break; // dedented out of the sequence
+                    continue;
+                }
+
+                var indent = item.Groups["lead"].Length;
+                if (itemIndent < 0) itemIndent = indent;
+                else if (indent < itemIndent) break;    // dedented out of the sequence
+                else if (indent > itemIndent) continue; // item of a nested sequence, not ours
+
+                if (count == index)
+                {
+                    var ridMatch = Regex.Match(lines[j].TrimStart(), @"^-\s+rid:\s*(-?\d+)\s*$");
+                    if (ridMatch.Success)
+                        return long.TryParse(ridMatch.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
+
+                    // Mapping item: it runs until the next sibling "- " or a dedent; its fields start one "- " past
+                    // the item indent.
+                    var itemEnd = rangeEnd;
+                    for (var k = j + 1; k < rangeEnd; k++)
+                    {
+                        if (lines[k].Trim().Length == 0) continue;
+                        var ind = IndentOf(lines[k]);
+                        if (ind < itemIndent || (ind == itemIndent && itemPattern.IsMatch(lines[k]))) { itemEnd = k; break; }
+                    }
+
+                    valueStart = j;
+                    valueEnd = itemEnd;
+                    valueIndent = itemIndent + 2;
+                    return SegmentKind.Container;
+                }
+
+                count++;
+            }
+
+            return SegmentKind.NotFound;
+        }
+
+        // Locates the RefIds entry for rid and returns the line range of its "data:" block plus the indent of that
+        // block's direct children, so a nested segment can be resolved within the right scope.
+        private static bool TryGetDataBlockRange(string[] lines, int refIdsStart, int docEnd, long rid, out int blockStart, out int blockEnd, out int childIndent)
+        {
+            blockStart = blockEnd = childIndent = -1;
+            var ridPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
+            var dataPattern = new Regex(@"^\s*data:\s*$");
+
+            for (var i = refIdsStart; i < docEnd; i++)
+            {
+                var match = ridPattern.Match(lines[i]);
+                if (!match.Success) continue;
+
+                // The entry runs until the next list item at its own indent, or until the block dedents out of it.
+                var entryIndent = match.Groups["indent"].Length;
+                var entryEnd = docEnd;
+                for (var j = i + 1; j < docEnd; j++)
+                {
+                    if (lines[j].Trim().Length == 0) continue;
+                    var indent = IndentOf(lines[j]);
+                    if (indent < entryIndent || (indent == entryIndent && lines[j].TrimStart().StartsWith("- "))) { entryEnd = j; break; }
+                }
+
+                for (var j = i + 1; j < entryEnd; j++)
+                {
+                    if (!dataPattern.IsMatch(lines[j])) continue;
+
+                    blockStart = j + 1;
+                    blockEnd = entryEnd;
+                    for (var k = blockStart; k < blockEnd; k++)
+                        if (lines[k].Trim().Length > 0) { childIndent = IndentOf(lines[k]); break; }
+
+                    return blockStart < blockEnd && childIndent >= 0;
+                }
+
+                return false;
+            }
+
+            return false;
+        }
+
+        private static int IndentOf(string line)
+        {
+            var count = 0;
+            while (count < line.Length && line[count] == ' ') count++;
+            return count;
         }
 
         /// <summary>
