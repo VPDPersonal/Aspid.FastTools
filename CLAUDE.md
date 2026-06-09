@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-**Aspid.FastTools** is a Unity package (`tech.aspid.fasttools`) targeting Unity 6.0+ that minimizes routine boilerplate code. It consists of two separate projects:
+**Aspid.FastTools** is a Unity package (`tech.aspid.fasttools`) targeting Unity 6.0+ that minimizes routine boilerplate code. It consists of three components:
 
 1. **`Aspid.FastTools/`** — The Unity project containing the package source (Runtime + Editor code)
 2. **`Aspid.FastTools.Generators/`** — A standalone .NET solution containing Roslyn source generators
+3. **`Aspid.FastTools.Analyzers/`** — A git submodule (repo `VPDPersonal/Aspid.FastTools.Analyzers`) with a standalone Roslyn `DiagnosticAnalyzer` that validates package-attribute usage (currently the `AFT*` `[TypeSelector]` rules)
 
 ### Unity Package
 Compilation is handled automatically by Unity's build system when the project is open. There are no CLI build scripts.
@@ -27,6 +28,20 @@ Run tests with:
 # From Aspid.FastTools.Generators/
 dotnet test
 ```
+
+### Building & Deploying the Analyzer
+
+The analyzer lives in the `Aspid.FastTools.Analyzers/` git submodule (run `git submodule update --init` after cloning). It ships into the package as a prebuilt Roslyn DLL. Unlike the generator there is **no** auto-copy `Directory.Build.targets` — keeping it out keeps the submodule independent of this repo's layout — so the DLL is rebuilt and copied manually:
+
+```bash
+# From the repo root, after editing the submodule:
+dotnet build Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers.sln -c Release
+dotnet test  Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers.sln -c Release
+cp Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/bin/Release/netstandard2.0/Aspid.FastTools.Analyzers.dll \
+   Aspid.FastTools/Packages/tech.aspid.fasttools/
+```
+
+The committed `Aspid.FastTools.Analyzers.dll.meta` carries the `RoslynAnalyzer` label with every platform excluded (mirrors `Aspid.FastTools.Generators.dll.meta`). Diagnostic IDs use the `AFT*` prefix; the generator's `IdStructGenerator` uses `AFID*`.
 
 ## Architecture
 
@@ -69,7 +84,7 @@ dotnet test
 
 **SerializableType** (`Unity/Runtime/Types/`): Wraps `System.Type` for Unity Inspector serialization using assembly-qualified names with lazy resolution. `SerializableType<T>` adds generic constraint support.
 
-**TypeSelector** (`Unity/Editor/Scripts/Types/`): `EditorWindow`-based hierarchical type picker with search, used as a property drawer for `SerializableType`.
+**TypeSelector** (`Unity/Editor/Scripts/Types/`): `EditorWindow`-based hierarchical type picker with search. The `[TypeSelector]` attribute drives two field shapes: a `string` (storing an assembly-qualified type name, also backing `SerializableType`) and a `[SerializeReference]` managed reference (where picking a type instantiates it). On a managed reference the candidate list defaults to the field's declared type; passing base types (`[TypeSelector(typeof(IMelee))]`) narrows it. `TypeSelectorPropertyDrawer` dispatches on `SerializedProperty.propertyType`; the managed-reference path lives under `Unity/Editor/Scripts/SerializeReferences/`. Usage is validated at compile time by the `AFT*` rules in the analyzer submodule.
 
 **EnumValues<TValue>** (`Unity/Runtime/Enums/`): Serializable dictionary mapping enum values to arbitrary values. Handles `[Flags]` enums.
 
@@ -164,7 +179,7 @@ All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this 
 
 ### Local Claude Code automation
 
-- **PostToolUse hook** (`.claude/hooks/rebuild-generators-on-change.sh`): on every `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, runs `dotnet build -c Release` for the generator project (which redeploys the DLL into the Unity package). Unity-side edits, tests, and the Sample project are explicitly skipped — keep that scope when changing the hook.
+- **PostToolUse hook** (`.claude/hooks/rebuild-generators-on-change.sh`): on every `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, runs `dotnet build -c Release` for the generator project (which redeploys the DLL into the Unity package). Unity-side edits, tests, and the Sample project are explicitly skipped — keep that scope when changing the hook. The analyzer submodule is **not** covered — rebuild and copy its DLL manually (see *Building & Deploying the Analyzer*).
 - **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase), `open-pr` (project conventions for opening pull requests — see *Pull request conventions* below).
 - **Project subagents** (`.claude/agents/`): `code-reviewer` (Unity/Editor boundary + generator + package convention review), `uss-bem-checker` (validates USS class names + `--aspid-*` variables against the BEM/positional grammars above).
 

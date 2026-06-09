@@ -1,0 +1,3 @@
+[submodule "Aspid.FastTools.Analyzers"]
+	path = Aspid.FastTools.Analyzers
+	url = git@github.com:VPDPersonal/Aspid.FastTools.Analyzers.git
