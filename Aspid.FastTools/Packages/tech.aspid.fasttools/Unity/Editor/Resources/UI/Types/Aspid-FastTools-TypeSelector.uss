@@ -1,10 +1,10 @@
-:root {
+.aspid-fasttools-type-selector {
     padding:                5px;
     flex-grow:              1;
     flex-direction:         column;
 }
 
-.aspid-fasttools-type-selector-header {
+.aspid-fasttools-type-selector__header {
     padding-left:           10;
     height:                 20px;
     min-height:             20px;
@@ -15,7 +15,7 @@
 }
 
 /* -------------------------------------------------- Back Button --------------------------------------------------- */
-.aspid-fasttools-type-selector-header > Button {
+.aspid-fasttools-type-selector__header > Button {
     margin:                 0;
     width:                  20px;
     height:                 16px;
@@ -25,8 +25,8 @@
     color:                  var(--aspid-colors-text-lightness);
 }
 
-.aspid-fasttools-type-selector-header > Button:enabled:hover,
-.aspid-fasttools-type-selector-header > Button:enabled:focus {
+.aspid-fasttools-type-selector__header > Button:enabled:hover,
+.aspid-fasttools-type-selector__header > Button:enabled:focus {
     border-width:           1px;
     color:                  var(--aspid-colors-status-info-text-lightness);
     border-color:           var(--aspid-colors-status-info-shade-lightness);
@@ -34,19 +34,19 @@
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 /* ----------------------------------------------------- Title ------------------------------------------------------ */
-.aspid-fasttools-type-selector-header > Label {
+.aspid-fasttools-type-selector__header > Label {
     flex-grow:              1;
     -unity-font-style:      bold;
 }
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-ToolbarSearchField {
+.aspid-fasttools-type-selector ToolbarSearchField {
     width:                  auto;
     margin-bottom:          5px;
 }
 
 /* ------------------------------------------------------ Item ------------------------------------------------------ */
-.unity-collection-view__item {
+.aspid-fasttools-type-selector .unity-collection-view__item {
     height:                 20px;
     align-items:            center;
     padding-left:           5px;
@@ -54,12 +54,12 @@ ToolbarSearchField {
     flex-direction:         row;
 }
 
-.aspid-fasttools-type-selector-item-title {
+.aspid-fasttools-type-selector__item-title {
     color:                  var(--aspid-colors-text-lightness);
     flex-grow:              1;
 }
 
-.aspid-fasttools-type-selector-item-arrow {
+.aspid-fasttools-type-selector__item-arrow {
     color:                  var(--aspid-colors-text-light);
 }
 /* ------------------------------------------------------------------------------------------------------------------ */
