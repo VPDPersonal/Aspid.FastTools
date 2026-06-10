@@ -57,7 +57,7 @@ Select either **in the Project window**. The missing field shows a `<Missing …
 
 > The repair reads and rewrites the asset file directly — Unity does not expose a missing type through its serialization API (and on GameObjects/prefabs even drops it from the live object, UUM-129100), so the orphaned type and data are recovered straight from the YAML. It therefore needs a **saved asset file**: it works for ScriptableObjects and prefab assets selected in the Project, but not for objects edited in Prefab Mode or instances living in a scene (no backing asset to rewrite).
 >
-> When a missing reference is nested inside another value or sits on a child object the Inspector can't reach, use **`Tools → Aspid FastTools → Repair Missing References`** instead: it scans the whole asset file and lists every missing reference (any depth, any child) with its own **Fix** picker.
+> When a missing reference is nested inside another value or sits on a child object the Inspector can't reach, use **`Tools → Aspid 🐍 → Repair Missing References FastTools`** instead: it scans the whole asset file and lists every missing reference (any depth, any child) with its own **Fix** picker.
 
 ### Un-share an aliased reference — `LoadoutSharedRef.prefab`
 
