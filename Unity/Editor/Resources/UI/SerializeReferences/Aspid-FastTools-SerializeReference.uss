@@ -93,3 +93,159 @@
     color:                                                 var(--aspid-colors-status-warning-text-lightness);
     border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
 }
+
+/* --- Repair References window ---
+   Mirrors the Welcome window: an animated black dotted canvas behind a boxed asset-picker card (Aspid header
+   with the signature green divider, full-width picker, Rescan trailing it), then either a centred hero for the
+   terminal states (info = pick an asset, success = nothing to repair) or a warning-accented results group with
+   one full-width amber gradient row per orphaned managed reference (the whole row is the Fix action — stored
+   type as the label, dimmed rid, a "Fix" cue). */
+.aspid-fasttools-repair-references {
+    --aspid-fasttools-colors-bg:                           rgb(0, 0, 0);
+}
+
+.aspid-fasttools-repair-references__background {
+    background-color:                                      var(--aspid-fasttools-colors-bg);
+}
+
+.aspid-fasttools-repair-references__content {
+    flex-grow:                                             1;
+    padding:                                               12px;
+}
+
+/* The AspidBox supplies the rounded darkness panel; the hairline border lifts it off the pure-black canvas.
+   The box's own stylesheet sets `:root { flex-grow: 1; }` on the element itself, which outweighs a single
+   class from this ancestor sheet — the compound selector restores enough specificity to pin the card to its
+   content height. */
+.aspid-fasttools-repair-references__card.aspid-fasttools-background {
+    flex-grow:                                             0;
+    margin-bottom:                                         10px;
+    border-width:                                          1px;
+    border-color:                                          var(--aspid-colors-shade-darkness);
+}
+
+.aspid-fasttools-repair-references__card-header {
+    margin-bottom:                                         8px;
+}
+
+.aspid-fasttools-repair-references__field-row {
+    flex-direction:                                        row;
+    align-items:                                           center;
+}
+
+.aspid-fasttools-repair-references__asset {
+    flex-grow:                                             1;
+}
+
+.aspid-fasttools-repair-references__rescan {
+    min-width:                                             92px;
+    margin-left:                                           8px;
+    margin-bottom:                                         0;
+}
+
+/* Centre the Rescan label (the gradient button left-aligns its label by default). */
+.aspid-fasttools-repair-references__rescan .aspid-fasttools-gradient-button__label {
+    flex-grow:                                             0;
+    -unity-text-align:                                     middle-center;
+}
+
+/* Centred hero for the two terminal states: package icon in the status colour, headline, dimmed explanation. */
+.aspid-fasttools-repair-references__empty {
+    flex-grow:                                             1;
+    padding:                                               20px;
+    align-items:                                           center;
+    justify-content:                                       center;
+}
+
+.aspid-fasttools-repair-references__empty--hidden {
+    display:                                               none;
+}
+
+.aspid-fasttools-repair-references__empty-icon {
+    width:                                                 96px;
+    height:                                                96px;
+    opacity:                                               0.9;
+    margin-bottom:                                         14px;
+    background-size:                                       contain;
+    background-repeat:                                     no-repeat;
+    background-position:                                   center;
+}
+
+.aspid-fasttools-repair-references__empty-icon--info {
+    background-image:                                      var(--aspid-icons-status-info);
+}
+
+.aspid-fasttools-repair-references__empty-icon--success {
+    background-image:                                      var(--aspid-icons-status-success);
+}
+
+.aspid-fasttools-repair-references__empty-title {
+    margin-bottom:                                         4px;
+}
+
+.aspid-fasttools-repair-references__empty-message {
+    max-width:                                             420px;
+    color:                                                 var(--aspid-colors-text-dark);
+    white-space:                                           normal;
+    -unity-text-align:                                     middle-center;
+}
+
+.aspid-fasttools-repair-references__results {
+    flex-grow:                                             1;
+}
+
+.aspid-fasttools-repair-references__results--hidden {
+    display:                                               none;
+}
+
+.aspid-fasttools-repair-references__results-header {
+    margin-bottom:                                         6px;
+}
+
+.aspid-fasttools-repair-references__results-hint {
+    margin-bottom:                                         10px;
+    color:                                                 var(--aspid-colors-text-dark);
+    white-space:                                           normal;
+}
+
+.aspid-fasttools-repair-references__scroll {
+    flex-grow:                                             1;
+}
+
+/* Amber-tinted gradient rows — a broken reference reads as a warning — with a matching hover accent. */
+.aspid-fasttools-repair-references__entry {
+    --aspid-fasttools-colors-gradient_button-bg:           var(--aspid-colors-status-warning-darkness);
+    --aspid-fasttools-colors-gradient_button-accent:       var(--aspid-colors-status-warning-text-light);
+}
+
+/* The dimmed rid rides between the type label and the trailing "Fix" cue; reset the row's bold weight. */
+.aspid-fasttools-repair-references__entry-rid {
+    margin-left:                                           10px;
+    color:                                                 var(--aspid-colors-text-dark);
+    -unity-font-style:                                     normal;
+    -unity-text-align:                                     middle-right;
+}
+
+/* Inline type picker: the dropdown's selector view boxed in the window's dark style, expanded as an accordion
+   directly below the row being fixed. Fixed height — the selector's ListView needs bounds to virtualize. The
+   5px padding matches the selector's own edge spacing so its full-bleed header strip reaches the box border;
+   overflow keeps that strip inside the rounded corners. */
+.aspid-fasttools-repair-references__picker.aspid-fasttools-background {
+    flex-grow:                                             0;
+    height:                                                300px;
+    padding:                                               5px;
+    overflow:                                              hidden;
+    margin:                                                0 0 8px 0;
+    border-width:                                          1px;
+    border-color:                                          var(--aspid-colors-status-warning-shade-darkness);
+}
+
+/* Re-tint the selector list's default editor-blue hover/selection to the window's palette. */
+.aspid-fasttools-repair-references__picker .unity-collection-view__item:hover {
+    background-color:                                      var(--aspid-colors-bg-dark);
+}
+
+.aspid-fasttools-repair-references__picker .unity-collection-view__item--selected,
+.aspid-fasttools-repair-references__picker .unity-collection-view__item--selected:hover {
+    background-color:                                      var(--aspid-colors-status-success-dark);
+}
