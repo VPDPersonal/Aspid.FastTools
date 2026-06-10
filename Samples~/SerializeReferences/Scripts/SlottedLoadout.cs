@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Aspid.FastTools.SerializeReferences;
+using Aspid.FastTools.Types;
 
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Demonstrates [SerializeReferenceSelector] on references that live INSIDE plain [Serializable]
+    // Demonstrates [TypeSelector] on references that live INSIDE plain [Serializable]
     // containers — a single container field and a List<T> of them — instead of directly on the component.
     //
     // Everything works at this depth exactly as for a top-level field: the type-picker dropdown, the inline
@@ -24,7 +24,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
             [Min(0)] public int priority;
 
             // Polymorphic weapon nested one level inside the container — picker, inline fields and Fix all apply.
-            [SerializeReference] [SerializeReferenceSelector]
+            [SerializeReference] [TypeSelector]
             private IWeapon _weapon;
         }
 
