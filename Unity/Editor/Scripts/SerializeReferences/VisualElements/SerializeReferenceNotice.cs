@@ -23,7 +23,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string MessageClass = NoticeClass + "__message";
         private const string ActionClass = NoticeClass + "__action";
         private const string SuggestionClass = NoticeClass + "__suggestion";
+        private const string SuggestionVisibleClass = SuggestionClass + "--visible";
         private const string RidChipClass = NoticeClass + "__rid-chip";
+        private const string RidChipVisibleClass = RidChipClass + "--visible";
 
         // Info variant — a non-actionable, dim blue hint (e.g. the multi-object "different types" notice) rather than
         // the default actionable yellow warning. Swaps the icon and palette through the modifier class only.
@@ -55,12 +57,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _suggestion = new Label().AddClass(SuggestionClass);
             _suggestion.RegisterCallback<ClickEvent>(_ => _onSuggestion?.Invoke());
 
-            // The rid chip is a small round dot appended after the action; its background colour is set
-            // inline from code so the same rid always shows the same colour. Hidden by default.
+            // The rid chip is a small round dot appended after the action; its background colour is set inline from
+            // code so the same rid always shows the same colour. The base rule hides it; the --visible modifier reveals it.
             _ridChip = new VisualElement()
                 .AddClass(RidChipClass)
                 .SetPickingMode(PickingMode.Ignore);
-            _ridChip.SetDisplay(DisplayStyle.None);
 
             this.AddChild(icon)
                 .AddChild(_message)
@@ -121,7 +122,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var hasSuggestion = !string.IsNullOrEmpty(suggestionText) && onSuggestion is not null;
             _suggestion.text = suggestionText;
             _suggestion.tooltip = detail;
-            _suggestion.SetDisplay(hasSuggestion ? DisplayStyle.Flex : DisplayStyle.None);
+            _suggestion.EnableInClassList(SuggestionVisibleClass, hasSuggestion);
         }
 
         /// <summary>
@@ -131,7 +132,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public void SetRidChip(Color color)
         {
             _ridChip.style.backgroundColor = color;
-            _ridChip.SetDisplay(DisplayStyle.Flex);
+            _ridChip.EnableInClassList(RidChipVisibleClass, true);
         }
 
         private void ClearSuggestion()
@@ -139,13 +140,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _onSuggestion = null;
             _suggestion.text = string.Empty;
             _suggestion.tooltip = null;
-            _suggestion.SetDisplay(DisplayStyle.None);
+            _suggestion.EnableInClassList(SuggestionVisibleClass, false);
         }
 
         private void ClearRidChip()
         {
             _ridChip.style.backgroundColor = StyleKeyword.Null;
-            _ridChip.SetDisplay(DisplayStyle.None);
+            _ridChip.EnableInClassList(RidChipVisibleClass, false);
         }
     }
 }

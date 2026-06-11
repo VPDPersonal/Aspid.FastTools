@@ -27,6 +27,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// Intentional cross-<i>field</i> sharing is out of scope — that is handled by the existing shared-reference notice.
     /// This guard only acts on same-array aliasing that <i>appears</i> while the inspector is alive; pre-existing aliases
     /// present on the first observation of an array (inspector just opened, domain reload) are recorded, never fixed.
+    /// A fix is considered only when the array <i>grew</i> since the last observation and the duplicated rid's
+    /// occurrence count rose with it — the signature of an actual duplicate-element operation. Same-size observations
+    /// (a reorder) and shrunk ones (a removal) only resync the snapshot, so shuffling or deleting around a pre-existing
+    /// alias never de-aliases it.
     /// </para>
     /// </remarks>
     internal static class SerializeReferenceDuplicateGuard
@@ -112,7 +116,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return false;
             }
 
-            if (TryFindFreshDuplicate(snapshot.Map, current, out var duplicateIndex))
+            // The only operation that creates a fresh alias is one that *grows* the array (Ctrl+D / Duplicate / list +
+            // all append an element). A same-size or shrunk observation is a reorder or a removal — both of which can
+            // shuffle a pre-existing alias into a new (index, rid) binding that the per-index diff would otherwise
+            // misread as fresh — so those just resync the baseline and never fix, honouring the "pre-existing aliases
+            // are recorded, never fixed" contract.
+            if (size > snapshot.Size &&
+                TryFindFreshDuplicate(snapshot.Map, current, out var duplicateIndex))
             {
                 // Keep the existing baseline snapshot (do not advance it to the aliased layout): once the deferred fix
                 // lands, the next observation compares the de-aliased layout against that same baseline, so the fixed
@@ -122,7 +132,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return true;
             }
 
-            // No fresh duplicate: just advance the snapshot to the observed layout.
+            // No fresh duplicate (or a same-size / shrunk layout): just advance the snapshot to the observed layout.
             Store(key, size, signature, current);
             return false;
         }
@@ -186,9 +196,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // A fresh duplicate is the LATER element of a pair that now shares an rid where that exact (index, rid) binding
-        // was not present in the previous snapshot. Walking ascending, the first index whose rid is also held by some
-        // lower current index AND which is new-or-changed since the snapshot is the appended/duplicated copy to fix.
+        // A fresh duplicate is the LATER element of a pair that now shares an rid where (a) that exact (index, rid)
+        // binding was not present in the previous snapshot AND (b) the rid now occurs more times than it did in the
+        // snapshot. The occurrence-count gate is what separates a genuine new copy from a reorder: dragging an element
+        // of a pre-existing alias to a new index changes its (index, rid) binding but leaves the rid's total count
+        // unchanged, so it is not treated as fresh. Walking ascending, the first index satisfying both is the
+        // appended/duplicated copy to fix.
         private static bool TryFindFreshDuplicate(
             IReadOnlyDictionary<int, long> previous,
             IReadOnlyDictionary<int, long> current,
@@ -201,6 +214,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var pair in current)
                 if (!lowestIndexByRid.TryGetValue(pair.Value, out var existing) || pair.Key < existing)
                     lowestIndexByRid[pair.Value] = pair.Key;
+
+            // rid occurrence counts in each layout, to compare the multiset rather than per-index bindings.
+            var previousCount = CountByRid(previous);
+            var currentCount = CountByRid(current);
 
             var best = int.MaxValue;
             foreach (var pair in current)
@@ -215,12 +232,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // (or pre-existing) sharing, not a fresh duplicate. A new index, or a changed rid at this index, is fresh.
                 if (previous.TryGetValue(index, out var previousRid) && previousRid == rid) continue;
 
+                // Require the rid to have multiplied since the snapshot. A reorder that merely moved a pre-existing
+                // alias into a new binding leaves the rid's count unchanged and so is not a fresh duplicate.
+                previousCount.TryGetValue(rid, out var before);
+                if (currentCount[rid] <= before) continue;
+
                 if (index < best) best = index;
             }
 
             if (best == int.MaxValue) return false;
             duplicateIndex = best;
             return true;
+        }
+
+        // Occurrence count of each rid in an index -> rid map, for multiset comparison between snapshots.
+        private static Dictionary<long, int> CountByRid(IReadOnlyDictionary<int, long> map)
+        {
+            var counts = new Dictionary<long, int>(map.Count);
+            foreach (var pair in map)
+                counts[pair.Value] = counts.TryGetValue(pair.Value, out var existing) ? existing + 1 : 1;
+
+            return counts;
         }
 
         // Builds the index → rid map for the array, keeping only elements that are managed references with a real

@@ -111,7 +111,8 @@
 }
 
 /* Trailing Smart Fix suggestion ("· → Pistol?"): a second underlined clickable word after Fix, same warning
-   palette, sitting a touch further to the right so the two actions read as separate affordances. */
+   palette, sitting a touch further to the right so the two actions read as separate affordances. Hidden by
+   default; the --visible modifier reveals it when a suggestion is set. */
 .aspid-fasttools-serialize-reference-notice__suggestion {
     margin-left:                                           6px;
     color:                                                 var(--aspid-colors-status-warning-text-light);
@@ -119,6 +120,11 @@
     border-bottom-width:                                   1px;
     border-bottom-color:                                   var(--aspid-colors-status-warning-text-light);
     cursor:                                                link;
+    display:                                               none;
+}
+
+.aspid-fasttools-serialize-reference-notice__suggestion--visible {
+    display:                                               flex;
 }
 
 .aspid-fasttools-serialize-reference-notice__suggestion:hover {
@@ -127,7 +133,8 @@
 }
 
 /* Small round rid colour chip appended after the action word on the shared-reference notice. Its background
-   colour is set inline from code so the same rid always renders the same colour. Hidden by default. */
+   colour is set inline from code so the same rid always renders the same colour. Hidden by default; the
+   --visible modifier reveals it when a shared reference is detected. */
 .aspid-fasttools-serialize-reference-notice__rid-chip {
     width:                                                 8px;
     height:                                               8px;
@@ -135,6 +142,10 @@
     margin-left:                                          5px;
     border-radius:                                        4px;
     display:                                              none;
+}
+
+.aspid-fasttools-serialize-reference-notice__rid-chip--visible {
+    display:                                               flex;
 }
 
 /* Info variant — a non-actionable, dim hint (the multi-object "different types" notice that stands in for the

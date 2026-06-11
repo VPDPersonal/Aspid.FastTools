@@ -30,7 +30,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string BlockClass = "aspid-fasttools-serialize-reference";
         private const string EmptyClass = BlockClass + "--empty";
-        private const string MixedClass = BlockClass + "--mixed";
         private const string DropdownClass = BlockClass + "__dropdown";
         private const string RidStripeClass = BlockClass + "__rid-stripe";
         private const string RidStripeActiveClass = RidStripeClass + "--active";
@@ -171,7 +170,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _openButton.SetDisplay(hasValue && !mixedTypes ? DisplayStyle.Flex : DisplayStyle.None);
 
             _dropdown.EnableInClassList(MixedValueClass, mixedTypes);
-            EnableInClassList(MixedClass, mixedTypes);
             EnableInClassList(EmptyClass, !hasValue && !mixedTypes);
             _foldout.SetValueWithoutNotify(hasValue && !mixedTypes && _property.isExpanded);
 
