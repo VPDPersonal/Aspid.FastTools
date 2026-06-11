@@ -682,6 +682,56 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             $"\"{value.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"";
         #endregion
 
+        #region Constraint map
+        /// <summary>
+        /// Maps every managed reference in <paramref name="assetPath"/> to the declared field type that holds it, keyed
+        /// by the owning object document (its local file id) and the reference's <c>RefIds</c> id. A missing reference
+        /// reads back <see langword="null"/> through the serialization API, but its field still reports the declared
+        /// element type via <see cref="SerializedProperty.managedReferenceFieldTypename"/>, and the orphaned rid survives
+        /// in the YAML — so the two together recover the constraint the picker should honour. References nested inside a
+        /// missing parent are unreachable here (the parent is null) and simply fall back to an unconstrained picker, as do
+        /// orphaned rids no field points at.
+        /// </summary>
+        /// <remarks>
+        /// Shared by the asset-level Repair window (per-entry and project-wide group constraints) and the Managed
+        /// References graph window, so a single declared-type recovery backs every embedded picker.
+        /// </remarks>
+        public static Dictionary<(long fileId, long rid), Type> BuildConstraintMap(string assetPath)
+        {
+            var map = new Dictionary<(long, long), Type>();
+            if (string.IsNullOrEmpty(assetPath)) return map;
+
+            foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
+            {
+                if (obj == null) continue;
+                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out var fileId)) continue;
+
+                using var serialized = new SerializedObject(obj);
+                var iterator = serialized.GetIterator();
+                if (!iterator.Next(enterChildren: true)) continue;
+
+                do
+                {
+                    if (iterator.propertyType != SerializedPropertyType.ManagedReference) continue;
+
+                    var fieldType = GetFieldType(iterator);
+                    if (fieldType is null || fieldType == typeof(object)) continue;
+
+                    long rid;
+                    if (iterator.managedReferenceValue is not null)
+                        rid = iterator.managedReferenceId;
+                    else if (!SerializeReferenceYamlEditor.TryReadReferenceId(assetPath, fileId, iterator.propertyPath, out rid))
+                        continue;
+
+                    map[(fileId, rid)] = fieldType;
+                }
+                while (iterator.Next(enterChildren: true));
+            }
+
+            return map;
+        }
+        #endregion
+
         #region Cross references
         /// <summary>
         /// Returns <see langword="true"/> when another managed-reference property in the same object aliases this

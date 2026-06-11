@@ -366,21 +366,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The picker expands inline as an accordion panel directly below the clicked row's card — the same selector
         // view the dropdown window hosts, boxed in the window's dark style. One panel at a time; the Fix cue flips to
-        // ▲ while open and clicking it again collapses it. v1 uses an unconstrained picker (typeof(object));
-        // narrowing to the declared field type would need the live SerializedObject scan the Repair window runs.
+        // ▲ while open and clicking it again collapses it. The candidate list is constrained to the rid's declared
+        // field type (recovered from the asset's managed-reference fields), so a repair cannot pick an incompatible
+        // type that would null on import; a rid whose field type is unresolvable falls back to an unconstrained picker.
         private void TogglePicker(string assetPath, long rid, AspidGradientButton fixButton)
         {
             var wasOpen = _openPickerRow == fixButton;
             ClosePicker();
             if (wasOpen) return;
 
+            var constraint = ResolveConstraint(assetPath, rid);
+            var baseType = constraint ?? typeof(object);
+
             var view = new TypeSelectorView(
-                types: new[] { typeof(object) },
+                types: new[] { baseType },
                 currentAqn: string.Empty,
                 allow: TypeAllow.None,
                 onSelected: assemblyQualifiedName => ApplyFix(assetPath, rid, assemblyQualifiedName),
                 filter: SerializeReferenceHelpers.IsAssignableManagedReference,
-                additionalTypes: null,
+                additionalTypes: baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
                 argumentFilter: SerializeReferenceHelpers.IsValidGenericArgument,
                 onDismiss: ClosePicker);
 
@@ -431,6 +435,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             Rescan();
+        }
+
+        // Recovers the declared field type backing rid so the Fix picker is constrained the same way the Repair window
+        // constrains its own. The asset's whole managed-reference constraint map (keyed by document file id + rid) is
+        // built once and searched for the rid across documents — the scanner node does not carry its owning file id, so
+        // a match on the rid in any document supplies the constraint. Returns null (unconstrained) when no field points
+        // at the rid (an orphaned payload) or the field type is unresolvable.
+        private static Type ResolveConstraint(string assetPath, long rid)
+        {
+            var map = SerializeReferenceHelpers.BuildConstraintMap(assetPath);
+            foreach (var pair in map)
+                if (pair.Key.rid == rid)
+                    return pair.Value;
+
+            return null;
         }
 
         // Future work: a "Make unique" action on a SHARED node — cloning the aliased reference so the two fields no

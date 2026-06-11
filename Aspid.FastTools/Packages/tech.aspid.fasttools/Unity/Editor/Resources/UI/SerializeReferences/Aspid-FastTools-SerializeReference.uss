@@ -170,8 +170,16 @@
     margin-bottom:                                         0;
 }
 
-/* Centre the Rescan label (the gradient button left-aligns its label by default). */
-.aspid-fasttools-repair-references__rescan .aspid-fasttools-gradient-button__label {
+/* Scan Project sweeps every text asset under Assets/; sits beside Rescan on the picker row. */
+.aspid-fasttools-repair-references__scan-project {
+    min-width:                                             110px;
+    margin-left:                                           8px;
+    margin-bottom:                                         0;
+}
+
+/* Centre the toolbar button labels (the gradient button left-aligns its label by default). */
+.aspid-fasttools-repair-references__rescan .aspid-fasttools-gradient-button__label,
+.aspid-fasttools-repair-references__scan-project .aspid-fasttools-gradient-button__label {
     flex-grow:                                             0;
     -unity-text-align:                                     middle-center;
 }
@@ -235,6 +243,15 @@
     white-space:                                           normal;
 }
 
+/* Success summary reporting the count after a bulk Fix all; hidden until a bulk fix runs. */
+.aspid-fasttools-repair-references__summary {
+    margin-bottom:                                         10px;
+}
+
+.aspid-fasttools-repair-references__summary--hidden {
+    display:                                               none;
+}
+
 .aspid-fasttools-repair-references__scroll {
     flex-grow:                                             1;
 }
@@ -275,4 +292,92 @@
 .aspid-fasttools-repair-references__picker .unity-collection-view__item--selected,
 .aspid-fasttools-repair-references__picker .unity-collection-view__item--selected:hover {
     background-color:                                      var(--aspid-colors-status-success-dark);
+}
+
+/* --- Project-mode group cards ---
+   Each broken stored type becomes a darkness panel: a header row (type name + entry/file counts on the left,
+   bulk Fix all + optional Smart Fix on the right) over a list of ping-only entry rows. */
+.aspid-fasttools-repair-references__group.aspid-fasttools-background {
+    flex-grow:                                             0;
+    margin-bottom:                                         10px;
+    padding:                                               8px 10px;
+    border-width:                                          1px;
+    border-color:                                          var(--aspid-colors-status-warning-shade-darkness);
+}
+
+.aspid-fasttools-repair-references__group-header-row {
+    flex-direction:                                        row;
+    align-items:                                           center;
+    flex-wrap:                                             wrap;
+    margin-bottom:                                         6px;
+}
+
+.aspid-fasttools-repair-references__group-header {
+    flex-shrink:                                           1;
+}
+
+/* Dimmed "N entries · M files" count, riding between the type header and the trailing actions. */
+.aspid-fasttools-repair-references__group-count {
+    margin-left:                                           10px;
+    flex-grow:                                             1;
+    color:                                                 var(--aspid-colors-text-dark);
+    -unity-font-style:                                     normal;
+}
+
+.aspid-fasttools-repair-references__group-actions {
+    flex-direction:                                        row;
+    align-items:                                           center;
+}
+
+/* Amber bulk-fix button, matching the single-asset entry rows' warning palette. */
+.aspid-fasttools-repair-references__group-fix-all {
+    min-width:                                             96px;
+    margin-bottom:                                         0;
+    --aspid-fasttools-colors-gradient_button-bg:           var(--aspid-colors-status-warning-darkness);
+    --aspid-fasttools-colors-gradient_button-accent:       var(--aspid-colors-status-warning-text-light);
+}
+
+.aspid-fasttools-repair-references__group-fix-all .aspid-fasttools-gradient-button__label {
+    flex-grow:                                             0;
+    -unity-text-align:                                     middle-center;
+}
+
+/* Smart Fix quick-apply: a success-tinted suggestion sitting to the right of Fix all. */
+.aspid-fasttools-repair-references__group-suggest {
+    margin-left:                                           6px;
+    margin-bottom:                                         0;
+    --aspid-fasttools-colors-gradient_button-bg:           var(--aspid-colors-status-success-darkness);
+    --aspid-fasttools-colors-gradient_button-accent:       var(--aspid-colors-status-success-text-light);
+}
+
+.aspid-fasttools-repair-references__group-suggest .aspid-fasttools-gradient-button__label {
+    flex-grow:                                             0;
+    -unity-text-align:                                     middle-center;
+}
+
+/* A single broken reference inside a group: asset path on the left, dim rid on the right; the whole row pings. */
+.aspid-fasttools-repair-references__group-entry {
+    flex-direction:                                        row;
+    align-items:                                           center;
+    padding:                                               2px 4px;
+    border-radius:                                         3px;
+    cursor:                                                link;
+}
+
+.aspid-fasttools-repair-references__group-entry:hover {
+    background-color:                                      var(--aspid-colors-bg-dark);
+}
+
+.aspid-fasttools-repair-references__group-entry-path {
+    flex-grow:                                             1;
+    color:                                                 var(--aspid-colors-text-light);
+    white-space:                                           normal;
+    overflow:                                              hidden;
+    text-overflow:                                         ellipsis;
+}
+
+.aspid-fasttools-repair-references__group-entry-rid {
+    margin-left:                                           10px;
+    color:                                                 var(--aspid-colors-text-dark);
+    -unity-text-align:                                     middle-right;
 }
