@@ -110,6 +110,17 @@
     border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
 }
 
+/* Info variant — a non-actionable, dim hint (the multi-object "different types" notice that stands in for the
+   suppressed per-instance child fields). Swaps the warning icon for the info icon and the yellow text for the
+   generic dim shade, so it reads as informational rather than something to fix. */
+.aspid-fasttools-serialize-reference-notice--info .aspid-fasttools-serialize-reference-notice__icon {
+    background-image:                                      resource("d_console.infoicon");
+}
+
+.aspid-fasttools-serialize-reference-notice--info .aspid-fasttools-serialize-reference-notice__message {
+    color:                                                 var(--aspid-colors-text-dark);
+}
+
 /* --- Repair References window ---
    Mirrors the Welcome window: an animated black dotted canvas behind a boxed asset-picker card (Aspid header
    with the signature green divider, full-width picker, Rescan trailing it), then either a centred hero for the

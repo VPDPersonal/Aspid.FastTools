@@ -30,7 +30,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string BlockClass = "aspid-fasttools-serialize-reference";
         private const string EmptyClass = BlockClass + "--empty";
+        private const string MixedClass = BlockClass + "--mixed";
         private const string DropdownClass = BlockClass + "__dropdown";
+
+        // Unity's mixed-value class — applied to the dropdown so the EnumField theme shows the standard "—" treatment
+        // when the selected targets hold different managed-reference types under a multi-object selection.
+        private const string MixedValueClass = "unity-base-field--show-mixed-value";
+
+        // The caption Unity shows for a mixed (multiple-different-values) field.
+        private const string MixedCaption = "—";
 
         // Unity's BaseField input class — applied to the dropdown's inner input so it picks up the
         // same flex/indent the EnumField theme rules target on a real field's visualInput.
@@ -51,8 +59,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private SerializeReferenceNotice _missingNotice;
         private SerializeReferenceNotice _sharedNotice;
+        private SerializeReferenceNotice _mixedNotice;
         private Type _currentType;
         private bool _contentBuilt;
+        private bool _mixedTypes;
         private float _arrowInset = float.NaN;
 
         public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null)
@@ -141,22 +151,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // is rebuilt from a fresh selection instead, so a stale property here must no-op rather than throw.
             if (!IsPropertyAlive()) return;
 
+            var mixedTypes = SerializeReferenceHelpers.HasMixedTypes(_property);
             var currentType = SerializeReferenceHelpers.GetCurrentType(_property);
             var hasValue = currentType is not null;
 
-            _caption.SetText(GetCaption(currentType));
-            _openButton.SetDisplay(hasValue ? DisplayStyle.Flex : DisplayStyle.None);
+            // With mixed types the foldout would expose only the first target's children, which do not represent the
+            // selection; collapse it and key off the dim "different types" hint instead of the per-instance fields.
+            _caption.SetText(mixedTypes ? MixedCaption : GetCaption(currentType));
+            _caption.tooltip = mixedTypes ? "Mixed — the selected objects hold different types." : null;
+            _openButton.SetDisplay(hasValue && !mixedTypes ? DisplayStyle.Flex : DisplayStyle.None);
 
-            EnableInClassList(EmptyClass, !hasValue);
-            _foldout.SetValueWithoutNotify(hasValue && _property.isExpanded);
+            _dropdown.EnableInClassList(MixedValueClass, mixedTypes);
+            EnableInClassList(MixedClass, mixedTypes);
+            EnableInClassList(EmptyClass, !hasValue && !mixedTypes);
+            _foldout.SetValueWithoutNotify(hasValue && !mixedTypes && _property.isExpanded);
 
             UpdateMissingBox();
             UpdateSharedBox();
+            UpdateMixedBox(mixedTypes);
 
-            if (forceRebuild || !_contentBuilt || currentType != _currentType)
+            // A mixed selection never renders child fields — Unity's per-field multi-edit cannot merge fields of
+            // different types — so the content is cleared and rebuilt only when the (shared) type actually changes.
+            var rebuild = forceRebuild || !_contentBuilt || currentType != _currentType || mixedTypes != _mixedTypes;
+            if (rebuild)
             {
                 _currentType = currentType;
-                RebuildContent(hasValue);
+                _mixedTypes = mixedTypes;
+                RebuildContent(hasValue && !mixedTypes);
             }
         }
 
@@ -190,9 +211,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
+        private void UpdateMixedBox(bool mixedTypes)
+        {
+            if (!mixedTypes)
+            {
+                _mixedNotice?.RemoveFromHierarchy();
+                return;
+            }
+
+            _mixedNotice ??= new SerializeReferenceNotice();
+            if (_mixedNotice.parent is null) this.AddChild(_mixedNotice);
+
+            // Stands in for the per-instance child fields, which cannot be merged across different types. Keep it
+            // terse and non-actionable: selecting a single object restores its own field, or picking a type from the
+            // dropdown rewrites every target to that one type.
+            _mixedNotice.SetInfo(
+                message: "Different types selected",
+                detail: "The selected objects hold different managed-reference types, so their fields cannot be shown " +
+                        "together.\nPick a type from the dropdown to set it on all of them, or select a single object " +
+                        "to edit its own fields.");
+        }
+
         private void UpdateMissingBox()
         {
-            if (!SerializeReferenceHelpers.IsMissingType(_property))
+            // Missing-type detection reads the first target's backing asset YAML and its repair rewrites that one file,
+            // so the notice is meaningless (and potentially misleading) under a multi-object selection — suppress it.
+            if (!SerializeReferenceHelpers.NoticesApply(_property) ||
+                !SerializeReferenceHelpers.IsMissingType(_property))
             {
                 _missingNotice?.RemoveFromHierarchy();
                 return;
@@ -244,7 +289,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void UpdateSharedBox()
         {
-            if (!SerializeReferenceHelpers.HasSharedReference(_property))
+            // The shared-reference scan compares managedReferenceId only within the first target's SerializedObject and
+            // Make-unique rewrites that one object, so neither generalises to a multi-object selection — suppress it.
+            if (!SerializeReferenceHelpers.NoticesApply(_property) ||
+                !SerializeReferenceHelpers.HasSharedReference(_property))
             {
                 _sharedNotice?.RemoveFromHierarchy();
                 return;
@@ -294,7 +342,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (!window) return;
 
-            var currentType = SerializeReferenceHelpers.GetCurrentType(_property);
+            // Under mixed types there is no single "current" type to pre-highlight in the picker — open it unselected.
+            var currentType = SerializeReferenceHelpers.HasMixedTypes(_property)
+                ? null
+                : SerializeReferenceHelpers.GetCurrentType(_property);
             var screenRect = GetScreenRect();
 
             TypeSelectorWindow.Show(
@@ -314,9 +365,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
-                var previous = _property.managedReferenceValue;
-                _property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
-                _property.isExpanded = type is not null;
+                // Multi-object: each target gets its OWN instance, created from that target's previous value, so the
+                // managed reference is never aliased across objects; <None> clears all. One Undo step covers them all.
+                if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
+                {
+                    SerializeReferenceHelpers.ApplyManagedReferencePerTarget(
+                        _property,
+                        previous => SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
+
+                    // After a per-target pick the selection shares the new type, so the live foldout drives expansion;
+                    // set it on the live property (the per-target writes went through disposed SerializedObjects).
+                    _property.isExpanded = type is not null;
+                }
+                else
+                {
+                    var previous = _property.managedReferenceValue;
+                    _property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
+                    _property.isExpanded = type is not null;
+                }
+
                 Refresh(forceRebuild: true);
             }
 
@@ -329,6 +396,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void BuildContextMenu(ContextualMenuPopulateEvent evt)
         {
+            // Copy reads the first target's value (Unity's own convention for a multi-selection menu). Paste then
+            // applies an independent instance PER target, so the pasted reference is never aliased across objects.
             evt.menu.AppendAction("Copy Serialize Reference",
                 _ => SerializeReferenceClipboard.Copy(_property.managedReferenceValue));
 
@@ -338,7 +407,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _ => PasteFromClipboard(),
                 canPaste ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
 
-            if (SerializeReferenceHelpers.HasSharedReference(_property))
+            // Make-unique is a single-asset cross-reference operation; it is only offered (and only correct) for a
+            // single target — under a multi-object selection the shared-reference notice is already suppressed.
+            if (SerializeReferenceHelpers.NoticesApply(_property) &&
+                SerializeReferenceHelpers.HasSharedReference(_property))
                 evt.menu.AppendAction("Make Unique Reference", _ => MakeUnique());
         }
 
@@ -350,9 +422,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void PasteFromClipboard()
         {
-            var value = SerializeReferenceClipboard.CreateInstance();
-            _property.SetManagedReferenceAndApply(value);
-            _property.isExpanded = value is not null;
+            // Multi-object: rebuild a fresh instance from the clipboard for EACH target so no two objects share the same
+            // managed reference (CreateInstance already returns an independent instance per call). One Undo step covers all.
+            if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
+            {
+                SerializeReferenceHelpers.ApplyManagedReferencePerTarget(
+                    _property,
+                    _ => SerializeReferenceClipboard.CreateInstance());
+
+                // All targets now share the pasted type, so the live foldout drives expansion; set it on the live
+                // property (the per-target writes went through disposed SerializedObjects). Type is null only on an
+                // empty-reference paste, which collapses the foldout — matching the single-object branch.
+                _property.isExpanded = SerializeReferenceClipboard.Type is not null;
+            }
+            else
+            {
+                var value = SerializeReferenceClipboard.CreateInstance();
+                _property.SetManagedReferenceAndApply(value);
+                _property.isExpanded = value is not null;
+            }
+
             Refresh(forceRebuild: true);
         }
 
