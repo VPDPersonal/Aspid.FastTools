@@ -32,6 +32,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EmptyClass = BlockClass + "--empty";
         private const string MixedClass = BlockClass + "--mixed";
         private const string DropdownClass = BlockClass + "__dropdown";
+        private const string RidStripeClass = BlockClass + "__rid-stripe";
+        private const string RidStripeActiveClass = RidStripeClass + "--active";
 
         // Unity's mixed-value class — applied to the dropdown so the EnumField theme shows the standard "—" treatment
         // when the selected targets hold different managed-reference types under a multi-object selection.
@@ -60,6 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private SerializeReferenceNotice _missingNotice;
         private SerializeReferenceNotice _sharedNotice;
         private SerializeReferenceNotice _mixedNotice;
+        private VisualElement _ridStripe;
         private Type _currentType;
         private bool _contentBuilt;
         private bool _mixedTypes;
@@ -297,12 +300,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             // The shared-reference scan compares managedReferenceId only within the first target's SerializedObject and
             // Make-unique rewrites that one object, so neither generalises to a multi-object selection — suppress it.
-            if (!SerializeReferenceHelpers.NoticesApply(_property) ||
-                !SerializeReferenceHelpers.HasSharedReference(_property))
+            var rid = _property.managedReferenceId;
+            var isShared = SerializeReferenceHelpers.NoticesApply(_property) &&
+                           SerializeReferenceHelpers.HasSharedReference(_property) &&
+                           rid >= 0;
+
+            if (!isShared)
             {
                 _sharedNotice?.RemoveFromHierarchy();
+                RemoveRidStripe();
                 return;
             }
+
+            var ridColor = SerializeReferenceRidColor.ForRid(rid);
+
+            // Left stripe: a 3 px coloured bar absolutely positioned along the full height of the field root,
+            // giving an at-a-glance visual that connects the aliased fields before the user reads the notice.
+            ApplyRidStripe(ridColor);
 
             _sharedNotice ??= new SerializeReferenceNotice();
             if (_sharedNotice.parent is null) this.AddChild(_sharedNotice);
@@ -313,6 +327,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 detail: "This reference is shared with another field — editing one changes both.\n" +
                         "Click Make unique to give this field its own independent copy.",
                 onAction: MakeUnique);
+
+            // Color chip on the notice row so the rid colour is visible right next to the action text.
+            _sharedNotice.SetRidChip(ridColor);
+        }
+
+        private void ApplyRidStripe(Color color)
+        {
+            if (_ridStripe is null)
+            {
+                _ridStripe = new VisualElement()
+                    .AddClass(RidStripeClass)
+                    .SetPickingMode(PickingMode.Ignore);
+                // Insert as the first child so it renders behind everything else.
+                Insert(0, _ridStripe);
+            }
+
+            _ridStripe.style.backgroundColor = color;
+            _ridStripe.EnableInClassList(RidStripeActiveClass, true);
+        }
+
+        private void RemoveRidStripe()
+        {
+            if (_ridStripe is null) return;
+            _ridStripe.EnableInClassList(RidStripeActiveClass, false);
+            _ridStripe.style.backgroundColor = StyleKeyword.Null;
         }
 
         private void OpenFixSelector()

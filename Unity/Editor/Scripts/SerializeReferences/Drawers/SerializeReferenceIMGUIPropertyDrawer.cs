@@ -157,6 +157,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (noticesApply && SerializeReferenceHelpers.HasSharedReference(property))
             {
+                var rid = property.managedReferenceId;
+                if (rid >= 0)
+                {
+                    // Draw a 3 px deterministic-colour stripe at the left edge of the header row so the aliased
+                    // fields are visually identifiable by colour before the user reads the notice text.
+                    var stripeRect = new Rect(position.x, line.y, 3f, line.height);
+                    EditorGUI.DrawRect(stripeRect, SerializeReferenceRidColor.ForRid(rid));
+                }
+
                 var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
                 var persistent = property.Persistent();
 

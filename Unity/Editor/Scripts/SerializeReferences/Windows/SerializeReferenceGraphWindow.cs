@@ -286,7 +286,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (document.Shared.Contains(rid))
             {
                 var chip = new VisualElement().AddClass(ChipClass);
-                chip.style.backgroundColor = SharedChipColor(rid);
+                chip.style.backgroundColor = SerializeReferenceRidColor.ForRid(rid);
                 badges.AddChild(new Label("SHARED").AddClass(BadgeClass).AddClass(BadgeSharedClass).AddChild(chip));
             }
 
@@ -351,17 +351,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return group;
-        }
-
-        // Deterministic chip colour for a shared rid: a golden-ratio hue rotation off the rid hash keeps distinct
-        // rids visually separated while the same rid always maps to the same colour. Saturation/value are fixed to
-        // sit legibly on the dark palette.
-        private static Color SharedChipColor(long rid)
-        {
-            const float goldenRatioConjugate = 0.618033988749895f;
-            var hash = unchecked((uint)(rid * 2654435761));
-            var hue = (hash / (float)uint.MaxValue + goldenRatioConjugate * (hash & 0xFF)) % 1f;
-            return Color.HSVToRGB(hue, 0.55f, 0.85f);
         }
 
         // The picker expands inline as an accordion panel directly below the clicked row's card — the same selector
