@@ -43,6 +43,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static void Draw(Rect position, GUIContent label, SerializedProperty property, params Type[] baseTypes)
         {
+            // Auto-de-alias a freshly duplicated list element (Ctrl+D / Duplicate / list +): when this element shares its
+            // rid with another element of the same array, the guard queues a swap to an independent clone on the next
+            // editor tick (one Undo step) — never mutating the SerializedObject mid-draw. Cheap on the unchanged path
+            // (size + rolling-hash gate), so it is safe to call from every IMGUI repaint.
+            SerializeReferenceDuplicateGuard.Observe(property);
+
             var spacing = EditorGUIUtility.standardVerticalSpacing;
             var mixedTypes = SerializeReferenceHelpers.HasMixedTypes(property);
             var currentType = SerializeReferenceHelpers.GetCurrentType(property);
