@@ -1,0 +1,341 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using UnityEditor;
+using UnityEngine;
+using System.Collections.Generic;
+
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.SerializeReferences.Editors
+{
+    /// <summary>
+    /// Ranking engine behind the missing-type <b>Smart Fix</b> suggestion: given the stored (now unloadable) type
+    /// identity of a <c>[SerializeReference]</c>, the field names recorded for it and the field's declared base
+    /// constraint, it computes ordered repair candidates and surfaces the best one as a one-click suggestion. The
+    /// candidate pool is the same set the type picker would offer (concrete managed-reference types assignable to the
+    /// constraint), so a surfaced suggestion can never be a type the picker itself would refuse. The suggestion is
+    /// never auto-applied — the user always clicks (an explicit product decision).
+    /// </summary>
+    internal static class SerializeReferenceRepairSuggestions
+    {
+        /// <summary>
+        /// A scored repair candidate for a missing managed reference: the existing <see cref="Type"/> the reference
+        /// could be re-pointed to, the heuristic <see cref="Score"/> (highest wins) and a short human <see cref="Reason"/>.
+        /// </summary>
+        internal readonly struct RepairCandidate
+        {
+            public readonly Type Type;
+            public readonly float Score;
+            public readonly string Reason;
+
+            public RepairCandidate(Type type, float score, string reason)
+            {
+                Type = type;
+                Score = score;
+                Reason = reason;
+            }
+        }
+
+        // Only suggestions at or above this confidence are surfaced — below it the heuristics are too weak to offer.
+        public const float MinScore = 0.6f;
+
+        // The field-shape overlap can add up to this much, lifting a marginal name match over the threshold and
+        // breaking ties between equally-named candidates.
+        private const float FieldShapeBonus = 0.2f;
+
+        /// <summary>
+        /// Returns up to <paramref name="max"/> repair candidates for a missing managed reference, ordered by descending
+        /// score (ties broken by field-shape overlap). Only candidates scoring at least <see cref="MinScore"/> are
+        /// returned. The pool is every concrete managed-reference type assignable to <paramref name="baseConstraint"/>
+        /// (the field's declared element type), filtered by the same eligibility rules the picker uses, so a returned
+        /// type always satisfies the field's constraint.
+        /// </summary>
+        /// <param name="stored">The stored, now-unresolvable type identity read from the asset YAML.</param>
+        /// <param name="storedFieldNames">Top-level serialized field names recorded for the missing reference, or empty.</param>
+        /// <param name="baseConstraint">The field's declared element type; <c>typeof(object)</c> for an unconstrained field.</param>
+        /// <param name="max">Maximum number of candidates to return.</param>
+        public static IReadOnlyList<RepairCandidate> Rank(
+            ManagedTypeName stored,
+            IReadOnlyCollection<string> storedFieldNames,
+            Type baseConstraint,
+            int max = 3)
+        {
+            if (stored.IsEmpty || max <= 0) return Array.Empty<RepairCandidate>();
+
+            var constraint = baseConstraint ?? typeof(object);
+            var storedClass = NormalizeName(stored.Class);
+            if (string.IsNullOrEmpty(storedClass)) return Array.Empty<RepairCandidate>();
+
+            var hasFieldNames = storedFieldNames is { Count: > 0 };
+            var storedFields = hasFieldNames
+                ? new HashSet<string>(storedFieldNames, StringComparer.Ordinal)
+                : null;
+
+            var scored = new List<RepairCandidate>();
+
+            foreach (var candidate in EnumerateCandidates(constraint))
+            {
+                var baseScore = ScoreCandidate(stored, storedClass, candidate, out var reason);
+                if (baseScore <= 0f) continue;
+
+                var bonus = hasFieldNames ? FieldShapeOverlap(storedFields, candidate) * FieldShapeBonus : 0f;
+                var score = baseScore + bonus;
+                if (score < MinScore) continue;
+
+                scored.Add(new RepairCandidate(candidate, score, reason));
+            }
+
+            if (scored.Count == 0) return Array.Empty<RepairCandidate>();
+
+            scored.Sort((a, b) => b.Score.CompareTo(a.Score));
+            return scored.Count <= max ? scored : scored.GetRange(0, max);
+        }
+
+        // The picker's candidate pool: types derived from the constraint (or every loaded type when unconstrained),
+        // narrowed to the same managed-reference eligibility the picker enforces and to types actually assignable to
+        // the constraint — so a suggestion can never be a type the field would refuse.
+        private static IEnumerable<Type> EnumerateCandidates(Type constraint)
+        {
+            var pool = constraint == typeof(object)
+                ? TypeCache.GetTypesDerivedFrom<object>()
+                : TypeCache.GetTypesDerivedFrom(constraint);
+
+            foreach (var type in pool)
+            {
+                if (!SerializeReferenceHelpers.IsAssignableManagedReference(type)) continue;
+                if (constraint != typeof(object) && !constraint.IsAssignableFrom(type)) continue;
+                yield return type;
+            }
+        }
+
+        // Base score for a candidate against the stored identity, before the field-shape bonus. Returns 0 for no match.
+        private static float ScoreCandidate(ManagedTypeName stored, string storedClass, Type candidate, out string reason)
+        {
+            // A declared [MovedFrom] whose recorded old identity matches the stored one is an authoritative rename — top score.
+            if (MatchesMovedFrom(candidate, stored, storedClass))
+            {
+                reason = "declared [MovedFrom]";
+                return 1f;
+            }
+
+            var candidateClass = NormalizeName(candidate.Name);
+
+            // Same simple class name, different namespace and/or assembly — the class was moved/renamed-by-namespace.
+            if (string.Equals(candidateClass, storedClass, StringComparison.Ordinal))
+            {
+                reason = "same type name";
+                return 0.8f;
+            }
+
+            // Same name ignoring case — a casing-only rename.
+            if (string.Equals(candidateClass, storedClass, StringComparison.OrdinalIgnoreCase))
+            {
+                reason = "same name (case-insensitive)";
+                return 0.6f;
+            }
+
+            // A near-miss name — only surfaced once the field-shape bonus lifts it over the threshold.
+            if (LevenshteinAtMost(candidateClass, storedClass, 2))
+            {
+                reason = "similar name";
+                return 0.5f;
+            }
+
+            reason = null;
+            return 0f;
+        }
+
+        // True when the candidate carries a [MovedFrom] whose recorded old identity matches the stored type's class
+        // (and, when declared, namespace / assembly). The attribute's backing data is not public API, so every member
+        // is read reflectively and any failure is treated as "no match" rather than throwing.
+        private static bool MatchesMovedFrom(Type candidate, ManagedTypeName stored, string storedClass)
+        {
+            try
+            {
+                foreach (var attribute in candidate.GetCustomAttributes(inherit: false))
+                {
+                    var attributeType = attribute.GetType();
+                    if (attributeType.Name != "MovedFromAttribute") continue;
+
+                    var data = attributeType
+                        .GetField("data", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                        ?.GetValue(attribute);
+                    if (data is null) continue;
+
+                    var dataType = data.GetType();
+
+                    // When a "*HasChanged" flag is false the old value equals the current type's value, so fall back to
+                    // the candidate's own identity for that slot — exactly how Unity's updater resolves the old name.
+                    var oldClass = NormalizeName(ReadMovedSlot(dataType, data, "className", "classHasChanged", candidate.Name));
+                    if (!string.Equals(oldClass, storedClass, StringComparison.Ordinal)) continue;
+
+                    if (!string.IsNullOrEmpty(stored.Namespace))
+                    {
+                        var oldNamespace = ReadMovedSlot(dataType, data, "nameSpace", "nameSpaceHasChanged", candidate.Namespace);
+                        if (!string.Equals(oldNamespace ?? string.Empty, stored.Namespace, StringComparison.Ordinal)) continue;
+                    }
+
+                    if (!string.IsNullOrEmpty(stored.Assembly))
+                    {
+                        var oldAssembly = ReadMovedSlot(dataType, data, "assembly", "assemblyHasChanged", candidate.Assembly.GetName().Name);
+                        if (!string.Equals(oldAssembly ?? string.Empty, stored.Assembly, StringComparison.Ordinal)) continue;
+                    }
+
+                    return true;
+                }
+            }
+            catch (Exception)
+            {
+                // The attribute data struct is not public API; any reflection failure simply means "no MovedFrom match".
+            }
+
+            return false;
+        }
+
+        // Reads a string slot of MovedFromAttributeData, returning the recorded old value when its companion
+        // "*HasChanged" flag is true and the current type's value otherwise (a slot that did not change).
+        private static string ReadMovedSlot(Type dataType, object data, string valueField, string changedField, string current)
+        {
+            var changed = dataType.GetField(changedField, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            var hasChanged = changed?.GetValue(data) is true;
+            if (!hasChanged) return current;
+
+            var value = dataType.GetField(valueField, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            return value?.GetValue(data) as string;
+        }
+
+        // Overlap ratio (0..1) between the stored field names and the candidate's serialized instance field names:
+        // the fraction of stored names that exist on the candidate. An empty candidate shape contributes nothing.
+        private static float FieldShapeOverlap(HashSet<string> storedFields, Type candidate)
+        {
+            var candidateFields = GetSerializedFieldNames(candidate);
+            if (candidateFields.Count == 0 || storedFields.Count == 0) return 0f;
+
+            var matched = storedFields.Count(candidateFields.Contains);
+            return (float)matched / storedFields.Count;
+        }
+
+        // Names of the serialized instance fields Unity would persist for a type: public fields plus private fields
+        // marked [SerializeField], walking the base chain (each level only reports its own declared fields).
+        private static HashSet<string> GetSerializedFieldNames(Type type)
+        {
+            var names = new HashSet<string>(StringComparer.Ordinal);
+
+            for (var current = type; current is not null && current != typeof(object); current = current.BaseType)
+            {
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+                foreach (var field in current.GetFields(flags))
+                {
+                    if (field.IsStatic || field.IsLiteral || field.IsInitOnly) continue;
+                    if (field.IsNotSerialized) continue;
+
+                    var serialized = field.IsPublic || field.IsDefined(typeof(SerializeField), inherit: false);
+                    if (serialized) names.Add(field.Name);
+                }
+            }
+
+            return names;
+        }
+
+        // Strips Unity's generic-arity/expansion decoration from a stored or live class name so both sides compare on
+        // the bare simple name: "Modifier`1[[System.Single, mscorlib]]" and "Modifier`1" both reduce to "Modifier".
+        private static string NormalizeName(string className)
+        {
+            if (string.IsNullOrEmpty(className)) return string.Empty;
+
+            // Drop a bracketed generic expansion ("Foo`1[[...]]") and then the backtick-arity suffix ("Foo`1").
+            var bracket = className.IndexOf('[');
+            if (bracket >= 0) className = className[..bracket];
+
+            var tick = className.IndexOf('`');
+            if (tick >= 0) className = className[..tick];
+
+            // A nested type ("Outer/Inner" or "Outer+Inner") is identified by its innermost segment.
+            var slash = className.LastIndexOfAny(NestedSeparators);
+            if (slash >= 0) className = className[(slash + 1)..];
+
+            return className.Trim();
+        }
+
+        private static readonly char[] NestedSeparators = { '/', '+' };
+
+        // Bounded Levenshtein: returns true when the edit distance between a and b is at most maxDistance, bailing out
+        // early once a row's best possible distance exceeds the bound (so a long/short mismatch is rejected cheaply).
+        private static bool LevenshteinAtMost(string a, string b, int maxDistance)
+        {
+            if (a is null || b is null) return false;
+            if (Math.Abs(a.Length - b.Length) > maxDistance) return false;
+            if (a.Length == 0) return b.Length <= maxDistance;
+            if (b.Length == 0) return a.Length <= maxDistance;
+
+            var previous = new int[b.Length + 1];
+            var current = new int[b.Length + 1];
+            for (var j = 0; j <= b.Length; j++) previous[j] = j;
+
+            for (var i = 1; i <= a.Length; i++)
+            {
+                current[0] = i;
+                var rowBest = current[0];
+
+                for (var j = 1; j <= b.Length; j++)
+                {
+                    var cost = a[i - 1] == b[j - 1] ? 0 : 1;
+                    current[j] = Math.Min(Math.Min(previous[j] + 1, current[j - 1] + 1), previous[j - 1] + cost);
+                    if (current[j] < rowBest) rowBest = current[j];
+                }
+
+                if (rowBest > maxDistance) return false;
+                (previous, current) = (current, previous);
+            }
+
+            return previous[b.Length] <= maxDistance;
+        }
+
+        #region Cached ranking
+        // IMGUI repaints every frame, so the ranking — which scans the whole TypeCache — is cached per
+        // (asset, document, rid) with a small FIFO cap. The document file id is part of the key because a rid is only
+        // unique within one host object: in Prefab Mode several components of the same prefab asset share an asset path
+        // and can reuse a rid, so a (path, rid) key alone would alias their distinct rankings. The cache is cleared
+        // whenever a repair lands (a reimport changes the candidate set and clears the missing reference), so a stale
+        // entry never outlives the asset state it was computed against.
+        private const int CacheCapacity = 64;
+
+        private static readonly Dictionary<(string assetPath, long fileId, long rid), IReadOnlyList<RepairCandidate>> Cache = new();
+        private static readonly Queue<(string assetPath, long fileId, long rid)> CacheOrder = new();
+
+        /// <summary>
+        /// Cached <see cref="Rank"/> keyed by <paramref name="assetPath"/>, the host document's <paramref name="fileId"/>
+        /// and the reference's <paramref name="rid"/>, so a per-frame IMGUI repaint never re-scans the type cache. The
+        /// factory runs only on a cache miss.
+        /// </summary>
+        public static IReadOnlyList<RepairCandidate> GetCached(
+            string assetPath,
+            long fileId,
+            long rid,
+            Func<IReadOnlyList<RepairCandidate>> rank)
+        {
+            var key = (assetPath ?? string.Empty, fileId, rid);
+            if (Cache.TryGetValue(key, out var cached)) return cached;
+
+            var result = rank() ?? Array.Empty<RepairCandidate>();
+            Cache[key] = result;
+            CacheOrder.Enqueue(key);
+
+            while (CacheOrder.Count > CacheCapacity)
+            {
+                var evicted = CacheOrder.Dequeue();
+                Cache.Remove(evicted);
+            }
+
+            return result;
+        }
+
+        /// <summary>Drops every cached ranking — called after a repair, since the candidate set has changed.</summary>
+        public static void ClearCache()
+        {
+            Cache.Clear();
+            CacheOrder.Clear();
+        }
+        #endregion
+    }
+}

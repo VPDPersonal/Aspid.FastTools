@@ -612,5 +612,85 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return -1;
         }
+
+        /// <summary>
+        /// Reads the top-level serialized field names recorded for the managed reference <paramref name="rid"/> within
+        /// the object document anchored at <paramref name="fileId"/> — the direct keys of the entry's <c>data:</c>
+        /// block. Used by the Smart Fix suggestion's field-shape heuristic to compare the orphaned payload's shape
+        /// against a candidate type's serialized fields. Nested mappings and sequences are reported by their key only.
+        /// </summary>
+        public static List<string> GetReferenceFieldNames(string assetPath, long fileId, long rid)
+        {
+            var result = new List<string>();
+
+            try
+            {
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
+
+                var lines = File.ReadAllLines(assetPath);
+                var (start, end) = FindDocumentRange(lines, fileId);
+                if (start < 0) return result;
+
+                var refIdsStart = FindRefIdsStart(lines, start, end);
+                if (refIdsStart < 0) return result;
+
+                if (!TryGetDataBlockRange(lines, refIdsStart, end, rid, out var blockStart, out var blockEnd, out var childIndent))
+                    return result;
+
+                CollectTopLevelKeys(lines, blockStart, blockEnd, childIndent, result);
+            }
+            catch (Exception)
+            {
+                // Best effort — an unreadable block simply yields no field-shape signal.
+            }
+
+            return result;
+        }
+
+        // Collects the keys of "name: …" entries at exactly childIndent within [blockStart, blockEnd), skipping the
+        // deeper lines of nested mappings/sequences so only the block's own top-level fields are reported.
+        private static void CollectTopLevelKeys(string[] lines, int blockStart, int blockEnd, int childIndent, List<string> result)
+        {
+            var keyPattern = new Regex(@"^(?<indent>\s*)(?<key>[^\s:][^:]*):(\s.*|\s*)$");
+
+            for (var i = blockStart; i < blockEnd; i++)
+            {
+                if (lines[i].Trim().Length == 0) continue;
+                if (IndentOf(lines[i]) != childIndent) continue; // a nested line, not a direct field of this block
+
+                var match = keyPattern.Match(lines[i]);
+                if (!match.Success) continue;
+                if (match.Groups["indent"].Length != childIndent) continue;
+
+                var key = match.Groups["key"].Value.Trim();
+                if (key.Length > 0 && key != "-") result.Add(key);
+            }
+        }
+
+        /// <summary>
+        /// Parses the top-level field names from the flat YAML payload Unity exposes for an in-memory missing reference
+        /// (<see cref="UnityEditor.SerializationUtility.GetManagedReferencesWithMissingTypes"/>
+        /// <c>serializedData</c>). Mirrors the in-memory data-recovery parser: only top-level <c>key: value</c> scalars
+        /// (and mapping/sequence headers) are reported; indented and sequence-item lines are skipped.
+        /// </summary>
+        public static List<string> ParseTopLevelFieldNames(string serializedData)
+        {
+            var result = new List<string>();
+            if (string.IsNullOrEmpty(serializedData)) return result;
+
+            foreach (var raw in serializedData.Split('\n'))
+            {
+                var line = raw.TrimEnd('\r');
+                if (line.Length == 0 || char.IsWhiteSpace(line[0]) || line[0] == '-') continue;
+
+                var separator = line.IndexOf(':');
+                if (separator <= 0) continue;
+
+                var key = line[..separator].Trim();
+                if (key.Length > 0) result.Add(key);
+            }
+
+            return result;
+        }
     }
 }

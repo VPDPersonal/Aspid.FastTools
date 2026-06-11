@@ -94,6 +94,22 @@
     border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
 }
 
+/* Trailing Smart Fix suggestion ("· → Pistol?"): a second underlined clickable word after Fix, same warning
+   palette, sitting a touch further to the right so the two actions read as separate affordances. */
+.aspid-fasttools-serialize-reference-notice__suggestion {
+    margin-left:                                           6px;
+    color:                                                 var(--aspid-colors-status-warning-text-light);
+    -unity-font-style:                                     bold;
+    border-bottom-width:                                   1px;
+    border-bottom-color:                                   var(--aspid-colors-status-warning-text-light);
+    cursor:                                                link;
+}
+
+.aspid-fasttools-serialize-reference-notice__suggestion:hover {
+    color:                                                 var(--aspid-colors-status-warning-text-lightness);
+    border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
+}
+
 /* --- Repair References window ---
    Mirrors the Welcome window: an animated black dotted canvas behind a boxed asset-picker card (Aspid header
    with the signature green divider, full-width picker, Rescan trailing it), then either a centred hero for the
