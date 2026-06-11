@@ -224,6 +224,75 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
+        /// Computes the best <b>Smart Fix</b> repair suggestion for this property's missing managed reference: the
+        /// highest-scoring existing type the renamed/moved reference most likely became, ranked by
+        /// <see cref="SerializeReferenceRepairSuggestions"/>. The suggestion is never applied automatically — the caller
+        /// surfaces it as a one-click action. The candidate pool is constrained to types the picker itself would offer
+        /// (assignable to the field's declared type, narrowed by <paramref name="baseTypes"/>), so a suggestion can
+        /// never violate the field's constraint. Returns <see langword="false"/> when the property is not a recognised
+        /// missing reference, the repair location is unavailable, or no candidate clears the confidence threshold.
+        /// </summary>
+        public static bool TryGetRepairSuggestion(SerializedProperty property, Type[] baseTypes,
+            out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
+        {
+            suggestion = default;
+
+            if (!TryGetMissingType(property, out var referenceId, out var storedType)) return false;
+            if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return false;
+
+            var fieldType = GetFieldType(property);
+            // The same predicate the picker applies, so a surfaced suggestion is guaranteed to be a type the user could
+            // have picked manually — never one the [TypeSelector] base-type narrowing would have hidden.
+            var pickerFilter = BuildAssignableFilter(baseTypes);
+
+            var ranked = SerializeReferenceRepairSuggestions.GetCached(assetPath, fileId, referenceId,
+                () => SerializeReferenceRepairSuggestions.Rank(
+                    storedType,
+                    GetMissingFieldNames(property, assetPath, fileId, referenceId, inMemory),
+                    fieldType));
+
+            foreach (var candidate in ranked)
+            {
+                if (!pickerFilter(candidate.Type)) continue;
+                suggestion = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// The trailing notice label for a Smart Fix <paramref name="suggestion"/> — the short type name with the
+        /// "<c>·  → Name?</c>" affordance. Shared by the UIToolkit and IMGUI notices so the two never drift.
+        /// </summary>
+        public static string GetSuggestionLabel(SerializeReferenceRepairSuggestions.RepairCandidate suggestion) =>
+            $"·  → {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion.Type)}?";
+
+        /// <summary>
+        /// The hover-tooltip detail for a Smart Fix <paramref name="suggestion"/> — the full type identity and the
+        /// ranking reason. Shared by the UIToolkit and IMGUI notices so the two never drift.
+        /// </summary>
+        public static string GetSuggestionDetail(SerializeReferenceRepairSuggestions.RepairCandidate suggestion) =>
+            $"Suggested: {suggestion.Type.FullName}, {suggestion.Type.Assembly.GetName().Name}.\n" +
+            $"Reason: {suggestion.Reason}.\nClick to re-point this reference to it, keeping its data.";
+
+        // Top-level serialized field names of the missing reference's orphaned payload, for the field-shape heuristic.
+        // Saved assets read them straight from the rid's YAML data block; a Prefab Mode object has no committed block
+        // for the live copy, so the flat payload Unity still exposes for the missing reference is parsed instead.
+        private static List<string> GetMissingFieldNames(SerializedProperty property, string assetPath, long fileId, long referenceId, bool inMemory)
+        {
+            if (!inMemory)
+                return SerializeReferenceYamlEditor.GetReferenceFieldNames(assetPath, fileId, referenceId);
+
+            var target = property.serializedObject.targetObject;
+            foreach (var entry in SerializationUtility.GetManagedReferencesWithMissingTypes(target))
+                if (entry.referenceId == referenceId)
+                    return SerializeReferenceYamlEditor.ParseTopLevelFieldNames(entry.serializedData);
+
+            return new List<string>();
+        }
+
+        /// <summary>
         /// Resolves the on-disk asset path and the target object's local file id (the YAML document anchor) backing
         /// this property. Returns <see langword="false"/> for scene objects and prefab instances, which have no
         /// editable asset file — the YAML repair flow only applies to saved assets (ScriptableObjects, prefabs).
@@ -367,6 +436,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // touched afterwards — the inspector is rebuilt below from a fresh selection instead.
                 if (repaired) AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
             }
+
+            // A repair reimports the asset / rewrites the live object: the candidate set changes and the missing
+            // reference is gone, so any cached ranking for it is now stale.
+            if (repaired) SerializeReferenceRepairSuggestions.ClearCache();
 
             if (repaired) ScheduleInspectorRebuild();
             return repaired;

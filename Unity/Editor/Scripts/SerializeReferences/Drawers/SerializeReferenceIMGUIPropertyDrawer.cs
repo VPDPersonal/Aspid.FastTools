@@ -81,6 +81,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(property);
                 var canFix = SerializeReferenceHelpers.TryGetRepairLocation(property, out _, out _, out _);
 
+                // The Smart Fix suggestion rides the same row as a second clickable word ("· → Pistol?"): the highest
+                // ranked existing type the renamed/moved reference most likely became. The ranking is cached per
+                // (asset, rid), so this stays cheap across IMGUI's per-frame repaints. The candidate is pre-declared so
+                // it stays definitely assigned even when the short-circuit skips the probe (canFix == false).
+                SerializeReferenceRepairSuggestions.RepairCandidate suggestion = default;
+                var hasSuggestion = canFix &&
+                    SerializeReferenceHelpers.TryGetRepairSuggestion(property, baseTypes, out suggestion);
+
                 DrawNotice(
                     noticeRect,
                     "Missing type —",
@@ -95,6 +103,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                             var screenRect = new Rect(screenPosition.x, screenPosition.y, noticeRect.width, EditorGUIUtility.singleLineHeight);
                             SerializeReferenceHelpers.ShowFixTypeSelector(property.Persistent(), screenRect, null, baseTypes);
                         }
+                        : null,
+                    hasSuggestion ? SerializeReferenceHelpers.GetSuggestionLabel(suggestion) : null,
+                    hasSuggestion ? SerializeReferenceHelpers.GetSuggestionDetail(suggestion) : null,
+                    hasSuggestion
+                        ? () => SerializeReferenceHelpers.TryFixMissingType(property.Persistent(), suggestion.Type)
                         : null);
 
                 y += EditorGUIUtility.singleLineHeight + spacing;
@@ -233,11 +246,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static GUIStyle _actionStyle;
 
         /// <summary>
-        /// Draws a compact single-row warning: a small warning icon, a terse yellow message and an
-        /// optional underlined, clickable action word. The full <paramref name="detail"/> rides the
-        /// hover tooltip, mirroring the UIToolkit <see cref="SerializeReferenceNotice"/>.
+        /// Draws a compact single-row warning: a small warning icon, a terse yellow message, an optional underlined,
+        /// clickable action word and — for a missing-type notice with a Smart Fix candidate — an optional trailing
+        /// suggestion word ("· → Pistol?"). The full <paramref name="detail"/> rides each segment's hover tooltip,
+        /// mirroring the UIToolkit <see cref="SerializeReferenceNotice"/>.
         /// </summary>
-        private static void DrawNotice(Rect rect, string message, string actionText, string detail, Action onClick)
+        private static void DrawNotice(Rect rect, string message, string actionText, string detail, Action onClick,
+            string suggestionText = null, string suggestionDetail = null, Action onSuggestion = null)
         {
             _messageStyle ??= new GUIStyle(EditorStyles.label) { wordWrap = false };
             _actionStyle ??= new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold };
@@ -254,23 +269,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (string.IsNullOrEmpty(actionText) || onClick is null) return;
 
-            var actionContent = new GUIContent(actionText, detail);
-            var actionWidth = _actionStyle.CalcSize(actionContent).x;
-            var actionRect = new Rect(messageRect.xMax + 4f, rect.y, actionWidth, rect.height);
+            var actionEnd = DrawLink(messageRect.xMax + 4f, rect, actionText, detail, onClick);
 
-            var hover = actionRect.Contains(Event.current.mousePosition);
-            var actionColor = hover ? NoticeColorHover : NoticeColor;
-            _actionStyle.normal.textColor = actionColor;
-            _actionStyle.hover.textColor = actionColor;
+            if (!string.IsNullOrEmpty(suggestionText) && onSuggestion is not null)
+                DrawLink(actionEnd + 6f, rect, suggestionText, suggestionDetail, onSuggestion);
+        }
 
-            EditorGUIUtility.AddCursorRect(actionRect, MouseCursor.Link);
-            var clicked = GUI.Button(actionRect, actionContent, _actionStyle);
+        // Draws one underlined, clickable, hover-tracking link word at x and returns its right edge, so the caller can
+        // lay the next segment out after it. Shared by the Fix action and the trailing Smart Fix suggestion.
+        private static float DrawLink(float x, Rect rect, string text, string detail, Action onClick)
+        {
+            var content = new GUIContent(text, detail);
+            var width = _actionStyle.CalcSize(content).x;
+            var linkRect = new Rect(x, rect.y, width, rect.height);
 
-            // Underline the action word — IMGUI styles have no text-decoration, so draw the rule manually.
-            var underline = new Rect(actionRect.x, actionRect.center.y + EditorGUIUtility.singleLineHeight * 0.35f, actionWidth, 1f);
-            EditorGUI.DrawRect(underline, actionColor);
+            var hover = linkRect.Contains(Event.current.mousePosition);
+            var color = hover ? NoticeColorHover : NoticeColor;
+            _actionStyle.normal.textColor = color;
+            _actionStyle.hover.textColor = color;
+
+            EditorGUIUtility.AddCursorRect(linkRect, MouseCursor.Link);
+            var clicked = GUI.Button(linkRect, content, _actionStyle);
+
+            // Underline the word — IMGUI styles have no text-decoration, so draw the rule manually.
+            var underline = new Rect(linkRect.x, linkRect.center.y + EditorGUIUtility.singleLineHeight * 0.35f, width, 1f);
+            EditorGUI.DrawRect(underline, color);
 
             if (clicked) onClick();
+            return linkRect.xMax;
         }
     }
 }

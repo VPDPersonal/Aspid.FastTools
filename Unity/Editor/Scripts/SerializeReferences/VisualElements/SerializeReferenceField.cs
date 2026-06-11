@@ -214,6 +214,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ? $"Missing type: {typeName}.\nClick Fix to re-point this reference to an existing type, keeping its data."
                     : $"Missing type: {typeName}.\nOpen this asset from the Project window to repair it.",
                 onAction: OpenFixSelector);
+
+            UpdateSuggestion(canFix);
+        }
+
+        // The Smart Fix suggestion rides the missing notice as a second clickable segment ("· → Pistol?"): the highest
+        // ranked existing type the renamed/moved reference most likely became. It is offered only where the field can
+        // be repaired at all; clicking it applies the candidate directly through the same repair path as a manual Fix.
+        private void UpdateSuggestion(bool canFix)
+        {
+            if (!canFix ||
+                !SerializeReferenceHelpers.TryGetRepairSuggestion(_property, _baseTypes, out var suggestion))
+            {
+                _missingNotice.SetSuggestion(string.Empty, null, null);
+                return;
+            }
+
+            _missingNotice.SetSuggestion(
+                suggestionText: SerializeReferenceHelpers.GetSuggestionLabel(suggestion),
+                detail: SerializeReferenceHelpers.GetSuggestionDetail(suggestion),
+                onSuggestion: () => ApplySuggestion(suggestion.Type));
+        }
+
+        private void ApplySuggestion(Type suggestedType)
+        {
+            if (SerializeReferenceHelpers.TryFixMissingType(_property, suggestedType))
+                Refresh(forceRebuild: true);
         }
 
         private void UpdateSharedBox()
