@@ -34,6 +34,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string ItemTitleClass = BlockClass + "__item-title";
         private const string ItemArrowClass = BlockClass + "__item-arrow";
         private const string SectionTitleClass = BlockClass + "__section-title";
+        private const string ErrorClass = BlockClass + "__error";
         private const string FavoriteToggleClass = BlockClass + "__favorite-toggle";
         private const string FavoriteToggleOnModifier = FavoriteToggleClass + "--favorite-on";
 
@@ -153,15 +154,10 @@ namespace Aspid.FastTools.Types.Editors
 
             Label CreateErrorLabel()
             {
-                var label = new Label(string.Empty);
+                var label = new Label(string.Empty).AddClass(ErrorClass);
 
+                // Visibility is toggled in code (ShowError / HideError); the error palette and spacing live in USS.
                 label.style.display = DisplayStyle.None;
-                label.style.color = new Color(0.9f, 0.35f, 0.35f);
-                label.style.whiteSpace = WhiteSpace.Normal;
-                label.style.marginLeft = 4;
-                label.style.marginRight = 4;
-                label.style.marginTop = 2;
-                label.style.marginBottom = 2;
 
                 return label;
             }
@@ -529,16 +525,14 @@ namespace Aspid.FastTools.Types.Editors
 
             TypeSelectorPreferences.ToggleFavorite(node.AssemblyQualifiedName);
 
-            // Only the root page hosts the Favorites section; refresh it so the change is reflected.
-            if (Nav.IsAtRoot)
-            {
-                Nav.RefreshFavoritesSection();
-                RefreshView();
-            }
-            else
-            {
-                _listView.RefreshItems();
-            }
+            // Re-compose the root page's Favorites section regardless of which page the star was toggled on, so it is
+            // up to date once the user navigates back to root. A no-op for non-composing (generic-argument) controllers.
+            Nav.RefreshFavoritesSection();
+
+            // On the root page the recomposed section must be re-rendered; on a search/namespace page only the row's
+            // own star glyph changed, so a lighter item refresh suffices.
+            if (Nav.IsAtRoot) RefreshView();
+            else _listView.RefreshItems();
         }
         #endregion
 

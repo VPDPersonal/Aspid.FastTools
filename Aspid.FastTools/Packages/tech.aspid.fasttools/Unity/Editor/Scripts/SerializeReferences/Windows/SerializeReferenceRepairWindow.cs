@@ -74,10 +74,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // either binary or never carry [SerializeReference] data, so skipping them keeps the sweep fast.
         private static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
 
-        private enum Mode { SingleAsset, Project }
-
-        private Mode _mode = Mode.SingleAsset;
-
         private Object _target;
         private ObjectField _assetField;
         private VisualElement _empty;
@@ -202,7 +198,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Assigning an asset always returns to single-asset mode: the ObjectField is the single-asset entry point,
             // so a fresh pick replaces any project-wide grouped results with that asset's per-entry list.
-            _mode = Mode.SingleAsset;
             if (_list is not null) Rescan();
         }
 
@@ -214,7 +209,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (_list is null) return;
 
-            _mode = Mode.SingleAsset;
             ClosePicker();
             HideSummary();
             _list.Clear();
@@ -297,6 +291,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var type = ResolveType(assemblyQualifiedName);
             if (type is null) return;
+
+            // An asset open in Prefab Mode holds a separate in-memory stage copy that does not refresh on reimport and
+            // overwrites a file rewrite on save (the same hazard the per-property inspector flow sidesteps by repairing
+            // in memory). Rewriting the file here would be silently discarded, so abort with an explanation instead.
+            var prefabStagePath = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
+            if (!string.IsNullOrEmpty(prefabStagePath) &&
+                string.Equals(prefabStagePath, assetPath, StringComparison.Ordinal))
+            {
+                EditorUtility.DisplayDialog(
+                    "Repair Missing References",
+                    "This asset is open in Prefab Mode, whose in-memory copy would overwrite a file rewrite on save.\n\n" +
+                    "Close Prefab Mode and try again, or use the field's inline Fix in the Inspector, which repairs in memory.",
+                    "OK");
+                return;
+            }
+
             if (!SerializeReferenceYamlEditor.TryRewriteType(assetPath, entry.FileId, entry.Rid, ManagedTypeName.FromType(type))) return;
 
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
@@ -315,7 +325,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (_list is null) return;
 
-            _mode = Mode.Project;
             ClosePicker();
             HideSummary();
             _list.Clear();
@@ -431,12 +440,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (TryGetGroupSuggestion(group, constraint, out var suggestion))
             {
-                var suggestLabel = $"·  → {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion.Type)}?";
-                var suggest = new AspidGradientButton(suggestLabel, _ => ApplyGroupFix(group, suggestion.Type))
+                // Reuse the shared label/detail builders so the Smart Fix copy never drifts from the inspector notice.
+                var suggest = new AspidGradientButton(SerializeReferenceHelpers.GetSuggestionLabel(suggestion),
+                        _ => ApplyGroupFix(group, suggestion.Type))
                     .AddClass(GroupSuggestClass);
-                suggest.tooltip =
-                    $"Suggested: {suggestion.Type.FullName}, {suggestion.Type.Assembly.GetName().Name}.\n" +
-                    $"Reason: {suggestion.Reason}.\nClick to re-point every entry in this group to it.";
+                suggest.tooltip = SerializeReferenceHelpers.GetSuggestionDetail(suggestion);
                 actions.AddChild(suggest);
             }
 
@@ -514,14 +522,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (newType is null) return;
             ClosePicker();
 
-            // A scene that is open in the editor would race the rewrite: the in-memory scene wins on the next
-            // Ctrl+S and silently clobbers the file fix (same hazard the per-property flow avoids in Prefab Mode
-            // by repairing in memory). Such entries are skipped here; close the scene and rescan to include them.
+            // A scene — or a prefab open in Prefab Mode — that is loaded in the editor would race the rewrite: the
+            // in-memory copy wins on the next Ctrl+S and silently clobbers the file fix (same hazard the per-property
+            // flow avoids in Prefab Mode by repairing in memory). Such entries are skipped here; close the scene /
+            // Prefab Mode and rescan to include them.
+            var prefabStagePath = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
             var entries = new List<ProjectEntry>(group.Entries.Count);
-            var skippedOpenScenes = 0;
+            var skipped = 0;
             foreach (var entry in group.Entries)
             {
-                if (UnityEngine.SceneManagement.SceneManager.GetSceneByPath(entry.AssetPath).isLoaded) skippedOpenScenes++;
+                var openInScene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(entry.AssetPath).isLoaded;
+                var openInPrefabMode = !string.IsNullOrEmpty(prefabStagePath) &&
+                                       string.Equals(prefabStagePath, entry.AssetPath, StringComparison.Ordinal);
+
+                if (openInScene || openInPrefabMode) skipped++;
                 else entries.Add(entry);
             }
 
@@ -529,20 +543,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 EditorUtility.DisplayDialog(
                     "Repair Missing References",
-                    "All references in this group live in currently open scene(s). Close the scene(s) and rescan, " +
+                    "All references in this group live in open scene(s) or Prefab Mode. Close them and rescan, " +
                     "or repair the fields directly in the Inspector.",
                     "OK");
                 return;
             }
 
             var files = entries.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
-            var skippedNote = skippedOpenScenes > 0
-                ? $"\n\n{skippedOpenScenes} reference(s) in currently open scene(s) will be skipped."
+            var skippedNote = skipped > 0
+                ? $"\n\n{skipped} reference(s) in open scene(s) or Prefab Mode will be skipped."
                 : string.Empty;
+
+            // When the group's picker fell back to an unconstrained list because its entries' declared field types
+            // disagree, the single chosen type cannot fit every entry — warn that the mismatched ones null on reimport.
+            group.ResolveConstraint(out var mixedFieldTypes);
+            var mixedNote = mixedFieldTypes
+                ? "\n\nField types in this group differ — the chosen type may not fit every entry; incompatible ones " +
+                  "will become null on reimport."
+                : string.Empty;
+
             if (!EditorUtility.DisplayDialog(
                     "Repair Missing References",
                     $"Rewrite {entries.Count} reference(s) in {files} file(s) to '{newType.FullName}'?\n\n" +
-                    "This edits the asset files directly and cannot be undone." + skippedNote,
+                    "This edits the asset files directly and cannot be undone." + skippedNote + mixedNote,
                     "Rewrite",
                     "Cancel"))
                 return;
@@ -553,6 +576,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .ToArray();
 
             var rewritten = 0;
+
+            // Batch the per-file reimports: StartAssetEditing defers every ImportAsset until StopAssetEditing, so the
+            // whole group reimports in one pass instead of the editor churning once per file mid-loop.
+            AssetDatabase.StartAssetEditing();
             try
             {
                 for (var i = 0; i < byFile.Length; i++)
@@ -578,6 +605,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             finally
             {
+                AssetDatabase.StopAssetEditing();
                 EditorUtility.ClearProgressBar();
             }
 
@@ -588,8 +616,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var summary = rewritten == 1
                 ? $"Rewrote 1 reference to {newType.FullName}."
                 : $"Rewrote {rewritten} references to {newType.FullName}.";
-            if (skippedOpenScenes > 0)
-                summary += $" Skipped {skippedOpenScenes} in open scene(s).";
+            if (skipped > 0)
+                summary += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
             ShowSummary(summary);
         }
 
@@ -760,8 +788,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // The common declared field type of every entry, or typeof(object) when they disagree or any is
             // unresolvable. Per-file constraint maps are built once and cached, so the intersection costs one scan per
             // distinct asset regardless of how many of the group's entries it holds.
-            public Type ResolveConstraint()
+            public Type ResolveConstraint() => ResolveConstraint(out _);
+
+            // Overload reporting whether the typeof(object) fallback was caused specifically by the entries' declared
+            // field types <i>disagreeing</i> (as opposed to one being unrecoverable). The bulk-fix confirmation warns
+            // on this case, since the one chosen type may not fit every entry and the mismatched ones null on reimport.
+            public Type ResolveConstraint(out bool mixedFieldTypes)
             {
+                mixedFieldTypes = false;
                 Type common = null;
 
                 foreach (var entry in Entries)
@@ -777,8 +811,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (!map.TryGetValue((entry.Entry.FileId, entry.Entry.Rid), out var fieldType) || fieldType is null)
                         return typeof(object);
 
-                    if (common is null) common = fieldType;
-                    else if (common != fieldType) return typeof(object);
+                    if (common is null)
+                    {
+                        common = fieldType;
+                    }
+                    else if (common != fieldType)
+                    {
+                        mixedFieldTypes = true;
+                        return typeof(object);
+                    }
                 }
 
                 return common ?? typeof(object);

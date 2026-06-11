@@ -53,13 +53,22 @@
     -unity-text-align:                                    middle-center;
 }
 
-/* Info help-box for the two empty states; centred in the space below the asset card. */
+/* Info help-box for the two empty states; centred in the space below the asset card. The --hidden modifier
+   swaps it out for the results scroll (and vice versa), mirroring the Repair window. */
 .aspid-fasttools-reference-graph__empty {
     margin-top:                                           8px;
 }
 
+.aspid-fasttools-reference-graph__empty--hidden {
+    display:                                              none;
+}
+
 .aspid-fasttools-reference-graph__scroll {
     flex-grow:                                            1;
+}
+
+.aspid-fasttools-reference-graph__scroll--hidden {
+    display:                                              none;
 }
 
 /* --- Per-document group --- */

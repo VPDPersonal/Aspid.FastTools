@@ -33,7 +33,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string AssetClass = RootClass + "__asset";
         private const string RescanClass = RootClass + "__rescan";
         private const string EmptyClass = RootClass + "__empty";
+        private const string EmptyHiddenClass = EmptyClass + "--hidden";
         private const string ScrollClass = RootClass + "__scroll";
+        private const string ScrollHiddenClass = ScrollClass + "--hidden";
 
         private const string DocumentClass = RootClass + "__document";
         private const string DocumentHeaderClass = RootClass + "__document-header";
@@ -185,15 +187,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void ShowEmpty(string message)
         {
-            _scroll.style.display = DisplayStyle.None;
-            _empty.style.display = DisplayStyle.Flex;
+            _scroll.AddClass(ScrollHiddenClass);
+            _empty.RemoveClass(EmptyHiddenClass);
             _empty.Message = message;
         }
 
         private void ShowResults()
         {
-            _empty.style.display = DisplayStyle.None;
-            _scroll.style.display = DisplayStyle.Flex;
+            _empty.AddClass(EmptyHiddenClass);
+            _scroll.RemoveClass(ScrollHiddenClass);
         }
 
         // One serialized object document: a header card naming the component / ScriptableObject, then each root's
@@ -295,9 +297,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (missing)
             {
                 // Self-referencing capture matches the Repair window so the click handler can hand TogglePicker the
-                // button it lives on to anchor the inline picker directly below the row's card.
+                // button it lives on to anchor the inline picker directly below the row's card. The owning document's
+                // file id is captured too, so the rewrite targets exactly this document — not the first one whose rid
+                // collides with it.
+                var fileId = document.FileId;
                 AspidGradientButton fixButton = null;
-                fixButton = new AspidGradientButton(FixCollapsedText, _ => TogglePicker(assetPath, rid, fixButton))
+                fixButton = new AspidGradientButton(FixCollapsedText, _ => TogglePicker(assetPath, fileId, rid, fixButton))
                     .AddClass(FixClass);
                 row.AddChild(fixButton);
             }
@@ -358,20 +363,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // ▲ while open and clicking it again collapses it. The candidate list is constrained to the rid's declared
         // field type (recovered from the asset's managed-reference fields), so a repair cannot pick an incompatible
         // type that would null on import; a rid whose field type is unresolvable falls back to an unconstrained picker.
-        private void TogglePicker(string assetPath, long rid, AspidGradientButton fixButton)
+        private void TogglePicker(string assetPath, long fileId, long rid, AspidGradientButton fixButton)
         {
             var wasOpen = _openPickerRow == fixButton;
             ClosePicker();
             if (wasOpen) return;
 
-            var constraint = ResolveConstraint(assetPath, rid);
+            var constraint = ResolveConstraint(assetPath, fileId, rid);
             var baseType = constraint ?? typeof(object);
 
             var view = new TypeSelectorView(
                 types: new[] { baseType },
                 currentAqn: string.Empty,
                 allow: TypeAllow.None,
-                onSelected: assemblyQualifiedName => ApplyFix(assetPath, rid, assemblyQualifiedName),
+                onSelected: assemblyQualifiedName => ApplyFix(assetPath, fileId, rid, assemblyQualifiedName),
                 filter: SerializeReferenceHelpers.IsAssignableManagedReference,
                 additionalTypes: baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
                 argumentFilter: SerializeReferenceHelpers.IsValidGenericArgument,
@@ -401,7 +406,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _openPickerRow = null;
         }
 
-        private void ApplyFix(string assetPath, long rid, string assemblyQualifiedName)
+        private void ApplyFix(string assetPath, long fileId, long rid, string assemblyQualifiedName)
         {
             var type = string.IsNullOrEmpty(assemblyQualifiedName)
                 ? null
@@ -409,36 +414,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (type is null) return;
 
-            // The missing entry lives in exactly one document; the scanner does not carry the owning fileId on a
-            // node, so rewrite is attempted per document until one succeeds. (A rid is unique within a document; a
-            // collision across documents would at worst rewrite the first match — acceptable for v1.)
-            var documents = SerializeReferenceGraphScanner.Build(assetPath);
-            foreach (var document in documents)
-            {
-                if (document.FindNode(rid) is null) continue;
-                if (!SerializeReferenceYamlEditor.TryRewriteType(assetPath, document.FileId, rid, ManagedTypeName.FromType(type)))
-                    continue;
+            // The missing entry lives in exactly one document — the one whose Fix button was clicked. Rewrite only that
+            // document, identified by its captured file id: a rid is unique within a document but can collide across
+            // documents, so looping the asset's documents could rewrite a healthy reference that merely shares the rid.
+            if (!SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, rid, ManagedTypeName.FromType(type)))
+                return;
 
-                AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
-                break;
-            }
-
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            SerializeReferenceRepairSuggestions.ClearCache();
             Rescan();
         }
 
         // Recovers the declared field type backing rid so the Fix picker is constrained the same way the Repair window
         // constrains its own. The asset's whole managed-reference constraint map (keyed by document file id + rid) is
-        // built once and searched for the rid across documents — the scanner node does not carry its owning file id, so
-        // a match on the rid in any document supplies the constraint. Returns null (unconstrained) when no field points
-        // at the rid (an orphaned payload) or the field type is unresolvable.
-        private static Type ResolveConstraint(string assetPath, long rid)
+        // built once and looked up by the owning document's exact (fileId, rid) key, so a rid that collides across
+        // documents resolves to this document's field type rather than another's. Returns null (unconstrained) when no
+        // field points at the rid (an orphaned payload) or the field type is unresolvable.
+        private static Type ResolveConstraint(string assetPath, long fileId, long rid)
         {
             var map = SerializeReferenceHelpers.BuildConstraintMap(assetPath);
-            foreach (var pair in map)
-                if (pair.Key.rid == rid)
-                    return pair.Value;
-
-            return null;
+            return map.TryGetValue((fileId, rid), out var constraint) ? constraint : null;
         }
 
         // Future work: a "Make unique" action on a SHARED node — cloning the aliased reference so the two fields no

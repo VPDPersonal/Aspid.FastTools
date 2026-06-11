@@ -45,6 +45,14 @@
     margin-bottom:          5px;
 }
 
+/* Inline error (e.g. a generic-argument constraint violation). Visibility is toggled in code; only the
+   error palette and spacing live here. */
+.aspid-fasttools-type-selector__error {
+    margin:                 2px 4px;
+    white-space:            normal;
+    color:                  var(--aspid-colors-status-error-text-light);
+}
+
 /* ------------------------------------------------------ Item ------------------------------------------------------ */
 .aspid-fasttools-type-selector .unity-collection-view__item {
     height:                 20px;

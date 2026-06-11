@@ -701,21 +701,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var map = new Dictionary<(long, long), Type>();
             if (string.IsNullOrEmpty(assetPath)) return map;
 
+            // A managed-reference graph may be cyclic (the graph window renders back-edges), so descending into a rid
+            // already on this document's walk would loop forever. One HashSet per call, cleared per document (rids are
+            // only unique within a document), records visited rids; revisiting one advances without entering its
+            // already-walked subtree.
+            var visited = new HashSet<long>();
+
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
                 if (obj == null) continue;
                 if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out var fileId)) continue;
 
+                visited.Clear();
+
                 using var serialized = new SerializedObject(obj);
                 var iterator = serialized.GetIterator();
-                if (!iterator.Next(enterChildren: true)) continue;
 
-                do
+                var enterChildren = true;
+                while (iterator.Next(enterChildren))
                 {
-                    if (iterator.propertyType != SerializedPropertyType.ManagedReference) continue;
+                    enterChildren = true;
 
-                    var fieldType = GetFieldType(iterator);
-                    if (fieldType is null || fieldType == typeof(object)) continue;
+                    if (iterator.propertyType != SerializedPropertyType.ManagedReference) continue;
 
                     long rid;
                     if (iterator.managedReferenceValue is not null)
@@ -723,9 +730,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     else if (!SerializeReferenceYamlEditor.TryReadReferenceId(assetPath, fileId, iterator.propertyPath, out rid))
                         continue;
 
+                    // A rid already walked is a back-edge in a cyclic graph; record the constraint but do not descend
+                    // into its subtree again, or the iterator would never terminate.
+                    if (rid >= 0 && !visited.Add(rid)) enterChildren = false;
+
+                    var fieldType = GetFieldType(iterator);
+                    if (fieldType is null || fieldType == typeof(object)) continue;
+
                     map[(fileId, rid)] = fieldType;
                 }
-                while (iterator.Next(enterChildren: true));
             }
 
             return map;
