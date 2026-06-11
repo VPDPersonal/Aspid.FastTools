@@ -180,7 +180,7 @@ All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this 
 ### Local Claude Code automation
 
 - **PostToolUse hook** (`.claude/hooks/rebuild-generators-on-change.sh`): on every `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, runs `dotnet build -c Release` for the generator project (which redeploys the DLL into the Unity package). Unity-side edits, tests, and the Sample project are explicitly skipped — keep that scope when changing the hook.
-- **PostToolUse hook** (`.claude/hooks/rebuild-analyzers-on-change.sh`): same pattern for the analyzer submodule — on edits to `*.cs` under the analyzer project (Tests/Sample skipped), rebuilds it and copies the DLL into the Unity package. Requires its entry in `.claude/settings.json` `hooks.PostToolUse` next to the generator hook.
+- **PostToolUse hook** (`.claude/hooks/rebuild-analyzers-on-change.sh`): same pattern for the analyzer submodule — on edits to `*.cs` under the analyzer project (Tests/Sample skipped), rebuilds it and copies the DLL into the Unity package. Wired in `.claude/settings.json` `hooks.PostToolUse` next to the generator hook.
 - **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `build-analyzer` (manual analyzer submodule build + test + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase), `open-pr` (project conventions for opening pull requests — see *Pull request conventions* below).
 - **Project subagents** (`.claude/agents/`): `code-reviewer` (Unity/Editor boundary + generator + package convention review), `uss-bem-checker` (validates USS class names + `--aspid-*` variables against the BEM/positional grammars above).
 
