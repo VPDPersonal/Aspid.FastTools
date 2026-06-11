@@ -333,9 +333,10 @@ public sealed class TankEnemy : EnemyBase
 
 ## SerializeReference Selector
 
-A drop-in dropdown for `[SerializeReference]` fields. Add `[SerializeReferenceSelector]` next to `[SerializeReference]` and the Inspector replaces the default managed-reference UI with the same searchable, hierarchical type picker used by `SerializableType` — letting you choose which concrete implementation of the field's declared type is instantiated.
+A drop-in dropdown for `[SerializeReference]` fields. Add `[TypeSelector]` next to `[SerializeReference]` and the Inspector replaces the default managed-reference UI with the same searchable, hierarchical type picker used by `SerializableType` — letting you choose which concrete implementation of the field's declared type is instantiated.
 
 - Lists every concrete, non-`UnityEngine.Object` class assignable to the field's declared interface / base type.
+- Passing base types narrows the candidates below the field's declared type — `[TypeSelector(typeof(IMelee))]` on an `IWeapon` field offers only `IMelee` implementations.
 - Picking a type instantiates it; `<None>` clears the reference.
 - The assigned instance's serialized fields are drawn inline under a foldout.
 - A stored type that no longer resolves (renamed or deleted) is surfaced as a missing-type warning instead of silently clearing.
@@ -351,7 +352,7 @@ A drop-in dropdown for `[SerializeReference]` fields. Add `[SerializeReferenceSe
 using System;
 using UnityEngine;
 using System.Collections.Generic;
-using Aspid.FastTools.SerializeReferences;
+using Aspid.FastTools.Types;
 
 public interface IWeapon
 {
@@ -376,10 +377,10 @@ public sealed class Railgun : IWeapon
 
 public sealed class Loadout : MonoBehaviour
 {
-    [SerializeReference] [SerializeReferenceSelector]
+    [SerializeReference] [TypeSelector]
     private IWeapon _primary;
 
-    [SerializeReference] [SerializeReferenceSelector]
+    [SerializeReference] [TypeSelector]
     private List<IWeapon> _sidearms;
 }
 ```

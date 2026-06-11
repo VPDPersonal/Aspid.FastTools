@@ -46,16 +46,36 @@ namespace Aspid.FastTools.Types.Editors
         /// Enumerates the open generic type definitions whose closed form could be assigned to
         /// <paramref name="fieldType"/> — i.e. generic classes that implement/inherit the field's type
         /// (matched by generic definition for a generic field, or directly for a non-generic field).
+        /// When <paramref name="narrowTypes"/> are supplied, the definition must additionally be closeable to
+        /// every one of them, so a narrowing constraint applied to the candidate scan is honoured here too
+        /// (these definitions are injected verbatim via the selector's <c>additionalTypes</c> path, which
+        /// otherwise bypasses that filter).
         /// </summary>
-        public static IEnumerable<Type> GetAssignableGenericDefinitions(Type fieldType)
+        public static IEnumerable<Type> GetAssignableGenericDefinitions(Type fieldType, params Type[] narrowTypes)
         {
             if (fieldType is null) yield break;
 
             foreach (var type in EnumerateDomainTypes())
             {
                 if (!IsAssignableGenericDefinition(type)) continue;
-                if (CanCloseToFieldType(type, fieldType)) yield return type;
+                if (!CanCloseToFieldType(type, fieldType)) continue;
+                if (CanCloseToAllNarrowing(type, narrowTypes)) yield return type;
             }
+        }
+
+        // True when the open definition can close to every meaningful narrowing base type. Nulls and the
+        // unconstrained `object` sentinel impose no restriction, mirroring the concrete-type narrowing filter.
+        private static bool CanCloseToAllNarrowing(Type openDefinition, Type[] narrowTypes)
+        {
+            if (narrowTypes is null) return true;
+
+            foreach (var narrowType in narrowTypes)
+            {
+                if (narrowType is null || narrowType == typeof(object)) continue;
+                if (!CanCloseToFieldType(openDefinition, narrowType)) return false;
+            }
+
+            return true;
         }
 
         /// <summary>

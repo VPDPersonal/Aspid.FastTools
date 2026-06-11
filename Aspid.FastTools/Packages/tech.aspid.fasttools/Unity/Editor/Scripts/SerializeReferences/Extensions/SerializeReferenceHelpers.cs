@@ -15,8 +15,8 @@ using Object = UnityEngine.Object;
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// Shared helpers for the <c>[SerializeReferenceSelector]</c> drawers: resolving the declared
-    /// managed-reference field type, filtering candidate types, instantiating the selected type, and
+    /// Shared helpers for the <c>[TypeSelector]</c> drawer on <c>[SerializeReference]</c> fields: resolving the
+    /// declared managed-reference field type, filtering candidate types, instantiating the selected type, and
     /// parsing Unity's managed-reference type-name format. The open-generic argument flow itself lives in
     /// the shared <see cref="Aspid.FastTools.Types.Editors.GenericTypeResolver"/> /
     /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorWindow"/>; <see cref="IsValidGenericArgument"/>
@@ -86,6 +86,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             type != typeof(string) &&
             !typeof(Object).IsAssignableFrom(type) &&
             !typeof(Delegate).IsAssignableFrom(type);
+
+        /// <summary>
+        /// Builds the candidate predicate for the type picker: the structural <see cref="IsAssignableManagedReference"/>
+        /// check, optionally narrowed so only types assignable to one of <paramref name="baseTypes"/> qualify. A null or
+        /// empty set — or one that only names <see cref="object"/> (the unconstrained <c>[TypeSelector]</c> default) —
+        /// applies no extra narrowing, leaving every concrete type assignable to the field's declared type as a candidate.
+        /// </summary>
+        public static Func<Type, bool> BuildAssignableFilter(Type[] baseTypes)
+        {
+            var narrowing = FilterNarrowingTypes(baseTypes);
+            if (narrowing is null) return IsAssignableManagedReference;
+
+            return type => IsAssignableManagedReference(type) &&
+                           Array.Exists(narrowing, baseType => baseType.IsAssignableFrom(type));
+        }
+
+        // Drops nulls and the unconstrained `object` sentinel; returns null when nothing meaningful narrows the set,
+        // so the caller can fall back to the plain structural filter without allocating a predicate closure.
+        private static Type[] FilterNarrowingTypes(Type[] baseTypes)
+        {
+            if (baseTypes is null || baseTypes.Length == 0) return null;
+
+            var count = 0;
+            foreach (var type in baseTypes)
+                if (type is not null && type != typeof(object)) count++;
+
+            if (count == 0) return null;
+
+            var result = new Type[count];
+            var index = 0;
+            foreach (var type in baseTypes)
+                if (type is not null && type != typeof(object)) result[index++] = type;
+
+            return result;
+        }
 
         /// <summary>
         /// Creates an instance of <paramref name="type"/> for assignment to a managed reference.
@@ -280,10 +315,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         /// <summary>
         /// Opens the same hierarchical type picker the dropdown uses, anchored at <paramref name="screenRect"/>, to
-        /// choose the existing type a missing reference should resolve to. The chosen type is written into the asset
-        /// YAML (re-pointing the reference and keeping its stored data); <paramref name="onFixed"/> runs on success.
+        /// choose the existing type a missing reference should resolve to. <paramref name="baseTypes"/> narrows the
+        /// candidates the same way the live dropdown does, so a repair cannot pick a type the attribute excludes. The
+        /// chosen type is written into the asset YAML (re-pointing the reference and keeping its stored data);
+        /// <paramref name="onFixed"/> runs on success.
         /// </summary>
-        public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed)
+        public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed, Type[] baseTypes = null)
         {
             var fieldType = GetFieldType(property);
 
@@ -301,8 +338,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (type is not null && TryFixMissingType(property, type))
                         onFixed?.Invoke();
                 },
-                filter: IsAssignableManagedReference,
-                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(fieldType),
+                filter: BuildAssignableFilter(baseTypes),
+                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes),
                 argumentFilter: IsValidGenericArgument);
         }
 

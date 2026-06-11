@@ -4,9 +4,9 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Non-abstract generic base for the [SerializeReferenceSelector] generic test.
+    // Non-abstract generic base for the [TypeSelector] generic test.
     //
-    // Because it is a concrete open generic, [SerializeReferenceSelector] lists it as "Modifier<T>".
+    // Because it is a concrete open generic, [TypeSelector] lists it as "Modifier<T>".
     //   - On a non-generic IModifier field, picking it opens a second window to choose the argument T
     //     (e.g. string in one case, float in another), then instantiates Modifier<string> / Modifier<float>.
     //   - On a closed-generic field such as Modifier<float>, the argument is inferred from the field, so it

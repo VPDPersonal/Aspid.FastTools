@@ -330,9 +330,10 @@ public sealed class TankEnemy : EnemyBase
 
 ## SerializeReference Selector
 
-Готовый выпадающий список для полей с `[SerializeReference]`. Добавьте `[SerializeReferenceSelector]` рядом с `[SerializeReference]`, и Inspector заменит стандартный UI managed-ссылки тем же иерархическим выбором типа с поиском, что используется в `SerializableType` — позволяя выбрать, какая конкретная реализация объявленного типа поля будет создана.
+Готовый выпадающий список для полей с `[SerializeReference]`. Добавьте `[TypeSelector]` рядом с `[SerializeReference]`, и Inspector заменит стандартный UI managed-ссылки тем же иерархическим выбором типа с поиском, что используется в `SerializableType` — позволяя выбрать, какая конкретная реализация объявленного типа поля будет создана.
 
 - Показывает каждый конкретный, не наследующий `UnityEngine.Object` класс, совместимый с объявленным интерфейсом / базовым типом поля.
+- Передача базовых типов сужает список ниже объявленного типа поля — `[TypeSelector(typeof(IMelee))]` на поле `IWeapon` предлагает только реализации `IMelee`.
 - Выбор типа создаёт его экземпляр; `<None>` очищает ссылку.
 - Сериализуемые поля назначенного экземпляра рисуются вложенно под foldout.
 - Сохранённый тип, который больше не разрешается (переименован или удалён), показывается как предупреждение о потерянном типе, а не очищается молча.
@@ -348,7 +349,7 @@ public sealed class TankEnemy : EnemyBase
 using System;
 using UnityEngine;
 using System.Collections.Generic;
-using Aspid.FastTools.SerializeReferences;
+using Aspid.FastTools.Types;
 
 public interface IWeapon
 {
@@ -373,10 +374,10 @@ public sealed class Railgun : IWeapon
 
 public sealed class Loadout : MonoBehaviour
 {
-    [SerializeReference] [SerializeReferenceSelector]
+    [SerializeReference] [TypeSelector]
     private IWeapon _primary;
 
-    [SerializeReference] [SerializeReferenceSelector]
+    [SerializeReference] [TypeSelector]
     private List<IWeapon> _sidearms;
 }
 ```
