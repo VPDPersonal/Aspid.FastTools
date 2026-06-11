@@ -16,6 +16,42 @@ namespace Aspid.FastTools.Types.Editors
         public readonly string Namespace;
         public readonly string AssemblyQualifiedName;
 
+        /// <summary>
+        /// Leaf display name shown in the picker. Falls back to <see cref="Name"/> when no
+        /// <see cref="TypeSelectorItemAttribute"/> renames the type.
+        /// </summary>
+        public readonly string DisplayName;
+
+        /// <summary>
+        /// Category segments the type is re-homed under (from a <c>/</c>-separated
+        /// <see cref="TypeSelectorItemAttribute.DisplayPath"/>); empty when the type keeps its
+        /// namespace location.
+        /// </summary>
+        public readonly IReadOnlyList<string> CategoryPath;
+
+        /// <summary>
+        /// Tooltip override from <see cref="TypeSelectorItemAttribute.Tooltip"/>; falls back to
+        /// <see cref="FullName"/> when no override is supplied.
+        /// </summary>
+        public readonly string Tooltip;
+
+        /// <summary>
+        /// Ordering hint from <see cref="TypeSelectorItemAttribute.Order"/> (lower = higher).
+        /// </summary>
+        public readonly int Order;
+
+        /// <summary>
+        /// Raw icon identifier from <see cref="TypeSelectorItemAttribute.Icon"/>; <see langword="null"/>
+        /// when no icon was requested.
+        /// </summary>
+        public readonly string Icon;
+
+        /// <summary>
+        /// Whether <see cref="CategoryPath"/> re-homes the type under explicit category nodes
+        /// (a <c>/</c>-separated display path) instead of its namespace hierarchy.
+        /// </summary>
+        public bool HasCategoryPath => CategoryPath.Count > 0;
+
         public TypeInfo(Type type)
         {
             Name = FormatName(type);
@@ -23,6 +59,43 @@ namespace Aspid.FastTools.Types.Editors
             Assembly = type.Assembly.GetName().Name;
             AssemblyQualifiedName = type.AssemblyQualifiedName;
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
+
+            var item = type.GetCustomAttribute<TypeSelectorItemAttribute>(inherit: false);
+
+            DisplayName = Name;
+            CategoryPath = Array.Empty<string>();
+            Tooltip = type.FullName;
+            Order = 0;
+            Icon = null;
+
+            if (item is null) return;
+
+            Order = item.Order;
+            Icon = string.IsNullOrWhiteSpace(item.Icon) ? null : item.Icon;
+
+            if (!string.IsNullOrWhiteSpace(item.Tooltip))
+                Tooltip = item.Tooltip;
+
+            if (string.IsNullOrWhiteSpace(item.DisplayPath)) return;
+
+            if (item.DisplayPath.Contains('/'))
+            {
+                var segments = item.DisplayPath
+                    .Split('/')
+                    .Select(segment => segment.Trim())
+                    .Where(segment => segment.Length > 0)
+                    .ToArray();
+
+                if (segments.Length > 0)
+                {
+                    DisplayName = segments[^1];
+                    CategoryPath = segments.Take(segments.Length - 1).ToArray();
+                }
+            }
+            else
+            {
+                DisplayName = item.DisplayPath.Trim();
+            }
         }
 
         /// <summary>

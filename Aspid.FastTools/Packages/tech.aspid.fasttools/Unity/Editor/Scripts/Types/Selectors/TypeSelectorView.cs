@@ -29,8 +29,16 @@ namespace Aspid.FastTools.Types.Editors
 
         private const string BlockClass = "aspid-fasttools-type-selector";
         private const string HeaderClass = BlockClass + "__header";
+        private const string ItemClass = BlockClass + "__item";
+        private const string ItemIconClass = BlockClass + "__item-icon";
         private const string ItemTitleClass = BlockClass + "__item-title";
         private const string ItemArrowClass = BlockClass + "__item-arrow";
+        private const string SectionTitleClass = BlockClass + "__section-title";
+        private const string FavoriteToggleClass = BlockClass + "__favorite-toggle";
+        private const string FavoriteToggleOnModifier = FavoriteToggleClass + "--favorite-on";
+
+        private const string StarFilledGlyph = "★";
+        private const string StarEmptyGlyph = "☆";
 
         private Label _titleLabel;
         private Button _backButton;
@@ -81,7 +89,9 @@ namespace Aspid.FastTools.Types.Editors
             BuildUI();
 
             var hierarchy = HierarchyBuilder.Build(types, allow, filter, additionalTypes);
-            var navigation = new NavigationController(hierarchy);
+
+            // Only the base page composes the Favorites/Recents sections; generic-argument pages do not.
+            var navigation = new NavigationController(hierarchy, composeSections: true);
 
             if (!string.IsNullOrWhiteSpace(_currentAqn))
                 navigation.NavigateToAssemblyQualifiedName(_currentAqn);
@@ -173,14 +183,25 @@ namespace Aspid.FastTools.Types.Editors
 
             VisualElement CreateListItem()
             {
+                var icon = new Image()
+                    .AddClass(ItemIconClass)
+                    .SetPickingMode(PickingMode.Ignore);
+
                 var label = new Label()
                     .AddClass(ItemTitleClass);
+
+                var favorite = new Button()
+                    .AddClass(FavoriteToggleClass)
+                    .SetText(StarEmptyGlyph);
 
                 var arrow = new Label("›")
                     .AddClass(ItemArrowClass);
 
                 return new VisualElement()
+                    .AddClass(ItemClass)
+                    .AddChild(icon)
                     .AddChild(label)
+                    .AddChild(favorite)
                     .AddChild(arrow);
             }
 
@@ -192,14 +213,50 @@ namespace Aspid.FastTools.Types.Editors
                 if (index < 0 || index >= items.Count) return;
 
                 var node = items[index];
+                var isSectionTitle = node.IsSectionTitle;
+
+                element.EnableInClass(SectionTitleClass, isSectionTitle);
+                element.SetPickingMode(isSectionTitle ? PickingMode.Ignore : PickingMode.Position);
+
                 element.Q<Label>(className: ItemTitleClass)
                     .SetText(node.DisplayName)
                     .SetTooltip(node.Tooltip);
+
+                BindIcon(element.Q<Image>(className: ItemIconClass), node);
+                BindFavorite(element.Q<Button>(className: FavoriteToggleClass), node);
 
                 element.Q<Label>(className: ItemArrowClass)
                     .SetDisplay(node.HasChildren && !Nav.IsSearching
                         ? DisplayStyle.Flex
                         : DisplayStyle.None);
+            }
+
+            void BindIcon(Image icon, TreeNode node)
+            {
+                var texture = TypeSelectorIconResolver.Resolve(node.Icon);
+
+                icon
+                    .SetImage(texture)
+                    .SetDisplay(texture is not null ? DisplayStyle.Flex : DisplayStyle.None);
+            }
+
+            void BindFavorite(Button favorite, TreeNode node)
+            {
+                // Replace any handler bound to a previously recycled row.
+                favorite.clickable = new Clickable(() => ToggleFavorite(node));
+
+                if (!node.IsType)
+                {
+                    favorite.SetDisplay(DisplayStyle.None);
+                    return;
+                }
+
+                var isFavorite = TypeSelectorPreferences.IsFavorite(node.AssemblyQualifiedName);
+
+                favorite
+                    .SetDisplay(DisplayStyle.Flex)
+                    .SetText(isFavorite ? StarFilledGlyph : StarEmptyGlyph)
+                    .EnableInClass(FavoriteToggleOnModifier, isFavorite);
             }
         }
         #endregion
@@ -250,13 +307,19 @@ namespace Aspid.FastTools.Types.Editors
                 return true;
             }
 
-            if (_listView.selectedIndex is 0)
+            if (!IsListFocused(focused)) return false;
+
+            // Walk up past any section titles; jump to the search field when nothing precedes.
+            var target = FindSelectableIndex(_listView.selectedIndex - 1, step: -1);
+
+            if (target < 0)
             {
                 _searchField.Focus();
                 return true;
             }
 
-            return false;
+            SetSelectedIndex(target);
+            return true;
         }
 
         private bool HandleDownArrow()
@@ -275,14 +338,50 @@ namespace Aspid.FastTools.Types.Editors
                 if (Nav.CurrentItems is not { Count: > 0 }) return false;
 
                 _listView.Focus();
+
+                // Land on the first selectable row (skipping any leading section title).
+                var first = FindSelectableIndex(0, step: 1);
+                if (first >= 0) SetSelectedIndex(first);
+
                 return true;
             }
 
-            return false;
+            if (!IsListFocused(focused)) return false;
+
+            // Walk down past any section titles.
+            var target = FindSelectableIndex(_listView.selectedIndex + 1, step: 1);
+            if (target >= 0) SetSelectedIndex(target);
+
+            return true;
         }
 
         private bool IsSearchFocused(Focusable focused) =>
             focused == _searchField || IsDescendantOf(focused as VisualElement, _searchField);
+
+        private bool IsListFocused(Focusable focused) =>
+            focused == _listView || IsDescendantOf(focused as VisualElement, _listView);
+
+        /// <summary>
+        /// Returns the nearest selectable item index starting at <paramref name="start"/> and walking by
+        /// <paramref name="step"/>, skipping section titles. Returns <c>-1</c> when none is found.
+        /// </summary>
+        private int FindSelectableIndex(int start, int step)
+        {
+            var items = _pages.Count > 0 ? Nav.CurrentItems : null;
+            if (items is null) return -1;
+
+            for (var i = start; i >= 0 && i < items.Count; i += step)
+                if (items[i].IsSelectable || items[i].HasChildren)
+                    return i;
+
+            return -1;
+        }
+
+        private void SetSelectedIndex(int index)
+        {
+            _listView.selectedIndex = index;
+            _listView.ScrollToItem(index);
+        }
 
         private bool TryMoveSearchCursorToStart()
         {
@@ -416,8 +515,30 @@ namespace Aspid.FastTools.Types.Editors
 
         private void Emit(string assemblyQualifiedName)
         {
+            // Single choke point for every finalized pick: concrete base selections and constructed
+            // closed generics both flow through here, so the recorded recent is always the closed type.
+            TypeSelectorPreferences.RecordRecent(assemblyQualifiedName);
+
             _onSelected?.Invoke(assemblyQualifiedName);
             _onDismiss?.Invoke();
+        }
+
+        private void ToggleFavorite(TreeNode node)
+        {
+            if (!node.IsType) return;
+
+            TypeSelectorPreferences.ToggleFavorite(node.AssemblyQualifiedName);
+
+            // Only the root page hosts the Favorites section; refresh it so the change is reflected.
+            if (Nav.IsAtRoot)
+            {
+                Nav.RefreshFavoritesSection();
+                RefreshView();
+            }
+            else
+            {
+                _listView.RefreshItems();
+            }
         }
         #endregion
 

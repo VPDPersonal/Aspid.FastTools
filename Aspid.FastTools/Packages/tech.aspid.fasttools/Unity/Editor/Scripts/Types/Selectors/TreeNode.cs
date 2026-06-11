@@ -3,6 +3,19 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
+    /// <summary>
+    /// The role a <see cref="TreeNode"/> plays in the rendered list, used to style and gate
+    /// interaction (section headers are not selectable and never show a star toggle).
+    /// </summary>
+    internal enum TreeNodeKind
+    {
+        /// <summary>A regular hierarchy node (type leaf, namespace or category container).</summary>
+        Default,
+
+        /// <summary>A non-selectable header that introduces the Favorites or Recents section.</summary>
+        SectionTitle,
+    }
+
     internal class TreeNode
     {
         public string Caption { get; set; }
@@ -15,9 +28,45 @@ namespace Aspid.FastTools.Types.Editors
 
         public string AssemblyQualifiedName { get; set; }
 
+        /// <summary>
+        /// Ordering hint sourced from <see cref="TypeSelectorItemAttribute.Order"/>; lower values sort
+        /// first, ties broken alphabetically by <see cref="DisplayName"/>. Category nodes keep the
+        /// default <c>0</c>.
+        /// </summary>
+        public int Order { get; set; }
+
+        /// <summary>
+        /// Raw editor icon identifier sourced from <see cref="TypeSelectorItemAttribute.Icon"/>;
+        /// <see langword="null"/> when the node has no icon.
+        /// </summary>
+        public string Icon { get; set; }
+
+        /// <summary>
+        /// The real (short) type name, kept separately from <see cref="DisplayName"/> so search keeps
+        /// matching the original type name even when a <see cref="TypeSelectorItemAttribute"/> renames
+        /// the leaf. <see langword="null"/> for non-type nodes.
+        /// </summary>
+        public string SearchName { get; set; }
+
+        /// <summary>
+        /// The node's presentation role. Section titles are non-interactive separators inserted by the
+        /// Favorites/Recents rendering; everything else is <see cref="TreeNodeKind.Default"/>.
+        /// </summary>
+        public TreeNodeKind Kind { get; set; }
+
         public bool HasChildren => Children.Count > 0;
 
-        public bool IsSelectable => AssemblyQualifiedName is not null || DisplayName == TypeSelectorHelpers.NoneOption;
+        public bool IsSectionTitle => Kind == TreeNodeKind.SectionTitle;
+
+        /// <summary>
+        /// Whether this node represents a concrete pickable type (has an assembly-qualified name and is
+        /// not a section header). Used to gate the favorite star toggle.
+        /// </summary>
+        public bool IsType => Kind == TreeNodeKind.Default && AssemblyQualifiedName is not null;
+
+        public bool IsSelectable =>
+            Kind == TreeNodeKind.Default &&
+            (AssemblyQualifiedName is not null || DisplayName == TypeSelectorHelpers.NoneOption);
 
         public TreeNode(string displayName, string assemblyQualifiedName = null, string caption = null)
         {
@@ -25,6 +74,10 @@ namespace Aspid.FastTools.Types.Editors
             AssemblyQualifiedName = assemblyQualifiedName;
             Caption = caption ?? displayName;
             Tooltip = string.Empty;
+            Order = 0;
+            Icon = null;
+            SearchName = null;
+            Kind = TreeNodeKind.Default;
             Children = new List<TreeNode>();
         }
 
@@ -37,6 +90,10 @@ namespace Aspid.FastTools.Types.Editors
                 return true;
 
             if (Caption?.ToLowerInvariant().Contains(filter) == true)
+                return true;
+
+            // Keep matching the real type name even after a [TypeSelectorItem] renames the leaf.
+            if (SearchName?.ToLowerInvariant().Contains(filter) == true)
                 return true;
 
             if (AssemblyQualifiedName?.ToLowerInvariant().Contains(filter) == true)
