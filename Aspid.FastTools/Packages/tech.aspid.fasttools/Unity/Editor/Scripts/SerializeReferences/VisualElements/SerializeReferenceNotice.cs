@@ -12,6 +12,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// that applies the best ranked repair candidate in one click. The full explanation is surfaced on hover through each
     /// segment's <see cref="VisualElement.tooltip"/>, so the inspector row stays terse while the detail is one hover away.
     /// Replaces the bulky <c>AspidHelpBox</c>-plus-button pair previously used for missing-type and shared-reference states.
+    /// An <see cref="SetInfo"/> variant re-tints the row to a dim, non-actionable info palette — used for the
+    /// multi-object "different types" hint that stands in for the suppressed child fields.
     /// </summary>
     internal sealed class SerializeReferenceNotice : VisualElement
     {
@@ -20,6 +22,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string MessageClass = NoticeClass + "__message";
         private const string ActionClass = NoticeClass + "__action";
         private const string SuggestionClass = NoticeClass + "__suggestion";
+
+        // Info variant — a non-actionable, dim blue hint (e.g. the multi-object "different types" notice) rather than
+        // the default actionable yellow warning. Swaps the icon and palette through the modifier class only.
+        private const string InfoModifierClass = NoticeClass + "--info";
 
         private readonly Label _message;
         private readonly Label _action;
@@ -59,12 +65,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         public void Set(string message, string actionText, string detail, Action onAction)
         {
+            EnableInClassList(InfoModifierClass, false);
+
             _message.text = message;
             _onAction = onAction;
 
             var hasAction = !string.IsNullOrEmpty(actionText) && onAction is not null;
             _action.text = actionText;
             _action.SetDisplay(hasAction ? DisplayStyle.Flex : DisplayStyle.None);
+
+            tooltip = detail;
+            ClearSuggestion();
+        }
+
+        /// <summary>
+        /// Configures the notice as a dim, non-actionable info hint: an info icon, dim text and no clickable segments.
+        /// Used for the multi-object "different types" notice, which only explains why the per-instance child fields are
+        /// hidden and offers nothing to click.
+        /// </summary>
+        public void SetInfo(string message, string detail)
+        {
+            EnableInClassList(InfoModifierClass, true);
+
+            _message.text = message;
+            _onAction = null;
+            _action.text = string.Empty;
+            _action.SetDisplay(DisplayStyle.None);
 
             tooltip = detail;
             ClearSuggestion();

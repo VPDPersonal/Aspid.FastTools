@@ -20,11 +20,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var spacing = EditorGUIUtility.standardVerticalSpacing;
             var height = EditorGUIUtility.singleLineHeight;
 
-            if (SerializeReferenceHelpers.IsMissingType(property))
-                height += spacing + EditorGUIUtility.singleLineHeight;
+            // Mixed types across the selection: the per-instance child fields cannot be merged, so only the dropdown
+            // and a single-line "different types" hint are drawn — never the children or the per-asset notices.
+            if (SerializeReferenceHelpers.HasMixedTypes(property))
+                return height + spacing + EditorGUIUtility.singleLineHeight;
 
-            if (SerializeReferenceHelpers.HasSharedReference(property))
-                height += spacing + EditorGUIUtility.singleLineHeight;
+            // Per-asset notices are suppressed under a multi-object selection (each reads/writes a single backing asset).
+            if (SerializeReferenceHelpers.NoticesApply(property))
+            {
+                if (SerializeReferenceHelpers.IsMissingType(property))
+                    height += spacing + EditorGUIUtility.singleLineHeight;
+
+                if (SerializeReferenceHelpers.HasSharedReference(property))
+                    height += spacing + EditorGUIUtility.singleLineHeight;
+            }
 
             if (property.managedReferenceValue is not null && property.isExpanded)
                 height += GetChildrenHeight(property, spacing);
@@ -35,8 +44,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static void Draw(Rect position, GUIContent label, SerializedProperty property, params Type[] baseTypes)
         {
             var spacing = EditorGUIUtility.standardVerticalSpacing;
+            var mixedTypes = SerializeReferenceHelpers.HasMixedTypes(property);
             var currentType = SerializeReferenceHelpers.GetCurrentType(property);
-            var hasValue = currentType is not null;
+            var hasValue = currentType is not null && !mixedTypes;
             var fieldType = SerializeReferenceHelpers.GetFieldType(property);
 
             var line = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
@@ -66,16 +76,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 dropdownRect.width -= openSize + 1f;
             }
 
-            var caption = GetCaption(property, currentType);
-            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption), FocusType.Passive))
-                ShowSelector(property, fieldType, baseTypes, currentType, dropdownRect);
+            // Mixed types across the selection: show the standard "—" treatment on the dropdown and never the open-script
+            // button (there is no single type to open). Picking a type still rewrites every target. The "—" caption is
+            // what renders the dash here — DropdownButton has no mixed-value styling — but EditorGUI.showMixedValue is
+            // still set/restored to mirror the UIToolkit side's mixed flag and to propagate to any nested IMGUI control.
+            var caption = mixedTypes ? "—" : GetCaption(property, currentType);
+            var previousMixed = EditorGUI.showMixedValue;
+            EditorGUI.showMixedValue = mixedTypes;
+            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption,
+                    mixedTypes ? "Mixed — the selected objects hold different types." : null), FocusType.Passive))
+                // Under mixed types there is no single "current" type to pre-highlight — open the picker unselected.
+                ShowSelector(property, fieldType, baseTypes, mixedTypes ? null : currentType, dropdownRect);
+            EditorGUI.showMixedValue = previousMixed;
 
             if (hasValue)
                 TypeIMGUIPropertyDrawer.DrawOpenScriptButton(openRect, currentType);
 
             var y = line.yMax + spacing;
 
-            if (SerializeReferenceHelpers.IsMissingType(property))
+            // Mixed types: stand in for the per-instance child fields (which cannot be merged) with a single dim info
+            // line, and skip the per-asset notices entirely.
+            if (mixedTypes)
+            {
+                var hintRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                DrawInfoNotice(
+                    hintRect,
+                    "Different types selected",
+                    "The selected objects hold different managed-reference types, so their fields cannot be shown " +
+                    "together.\nPick a type from the dropdown to set it on all of them, or select a single object " +
+                    "to edit its own fields.");
+                return;
+            }
+
+            // Per-asset notices read/write a single backing asset, so they are suppressed under a multi-object selection.
+            var noticesApply = SerializeReferenceHelpers.NoticesApply(property);
+
+            if (noticesApply && SerializeReferenceHelpers.IsMissingType(property))
             {
                 var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
                 var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(property);
@@ -113,7 +149,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
-            if (SerializeReferenceHelpers.HasSharedReference(property))
+            if (noticesApply && SerializeReferenceHelpers.HasSharedReference(property))
             {
                 var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
                 var persistent = property.Persistent();
@@ -190,8 +226,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
-                var previous = persistent.managedReferenceValue;
-                persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
+                // Multi-object: each target gets its OWN instance, created from that target's previous value, so the
+                // managed reference is never aliased across objects; <None> clears all. One Undo step covers them all.
+                if (SerializeReferenceHelpers.IsEditingMultipleObjects(persistent))
+                {
+                    SerializeReferenceHelpers.ApplyManagedReferencePerTarget(
+                        persistent,
+                        previous => SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
+
+                    // All targets now share the new type, so the live foldout drives expansion; set it on the
+                    // persistent property (the per-target writes went through disposed SerializedObjects).
+                    persistent.isExpanded = type is not null;
+                    return;
+                }
+
+                var single = persistent.managedReferenceValue;
+                persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, single));
                 persistent.isExpanded = type is not null;
             }
         }
@@ -201,6 +251,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var persistent = property.Persistent();
             var menu = new GenericMenu();
 
+            // Copy reads the first target's value (Unity's convention for a multi-selection menu). Paste then applies an
+            // independent instance PER target, so the pasted reference is never aliased across objects.
             menu.AddItem(new GUIContent("Copy Serialize Reference"), false,
                 () => SerializeReferenceClipboard.Copy(persistent.managedReferenceValue));
 
@@ -210,7 +262,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             else
                 menu.AddDisabledItem(pasteLabel);
 
-            if (SerializeReferenceHelpers.HasSharedReference(property))
+            // Make-unique is a single-asset cross-reference operation; only offered (and only correct) for a single
+            // target — under a multi-object selection the shared-reference notice is already suppressed.
+            if (SerializeReferenceHelpers.NoticesApply(property) &&
+                SerializeReferenceHelpers.HasSharedReference(property))
                 menu.AddItem(new GUIContent("Make Unique Reference"), false,
                     () => SerializeReferenceHelpers.MakeReferenceUnique(persistent));
 
@@ -218,6 +273,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Paste(SerializedProperty target)
             {
+                if (SerializeReferenceHelpers.IsEditingMultipleObjects(target))
+                {
+                    SerializeReferenceHelpers.ApplyManagedReferencePerTarget(
+                        target,
+                        _ => SerializeReferenceClipboard.CreateInstance());
+
+                    // All targets now share the pasted type, so the live foldout drives expansion; set it on the
+                    // persistent property (the per-target writes went through disposed SerializedObjects). A null
+                    // clipboard type is an empty-reference paste, which collapses — matching the single-object branch.
+                    target.isExpanded = SerializeReferenceClipboard.Type is not null;
+                    return;
+                }
+
                 var value = SerializeReferenceClipboard.CreateInstance();
                 target.SetManagedReferenceAndApply(value);
                 target.isExpanded = value is not null;
@@ -242,8 +310,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Color NoticeColor = new(245f / 255f, 185f / 255f, 85f / 255f);
         private static readonly Color NoticeColorHover = new(255f / 255f, 235f / 255f, 175f / 255f);
 
+        // Dim grey for the non-actionable mixed-types info hint, mirroring the UIToolkit info notice's --aspid-colors-text-dark.
+        private static readonly Color InfoNoticeColor = new(150f / 255f, 150f / 255f, 150f / 255f);
+
         private static GUIStyle _messageStyle;
         private static GUIStyle _actionStyle;
+        private static GUIStyle _infoMessageStyle;
+
+        /// <summary>
+        /// Draws a compact single-row, non-actionable info hint: a small info icon and a terse dim message. Used for the
+        /// multi-object "different types" notice that stands in for the suppressed child fields, mirroring the UIToolkit
+        /// <see cref="SerializeReferenceNotice"/> info variant. The full <paramref name="detail"/> rides the hover tooltip.
+        /// </summary>
+        private static void DrawInfoNotice(Rect rect, string message, string detail)
+        {
+            _infoMessageStyle ??= new GUIStyle(EditorStyles.label) { wordWrap = false };
+            _infoMessageStyle.normal.textColor = InfoNoticeColor;
+
+            const float iconSize = 16f;
+            var iconRect = new Rect(rect.x, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize);
+            GUI.Label(iconRect, EditorGUIUtility.IconContent("console.infoicon"));
+
+            var messageContent = new GUIContent(message, detail);
+            var messageRect = new Rect(iconRect.xMax + 4f, rect.y, rect.xMax - iconRect.xMax - 4f, rect.height);
+            GUI.Label(messageRect, messageContent, _infoMessageStyle);
+        }
 
         /// <summary>
         /// Draws a compact single-row warning: a small warning icon, a terse yellow message, an optional underlined,

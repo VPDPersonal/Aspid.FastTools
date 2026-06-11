@@ -39,6 +39,111 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static Type GetCurrentType(SerializedProperty property) =>
             property.managedReferenceValue?.GetType();
 
+        #region Multi-object editing
+        /// <summary>
+        /// Returns <see langword="true"/> when this property belongs to a <see cref="SerializedObject"/> editing more
+        /// than one target object at once (a multi-selection in the inspector).
+        /// </summary>
+        public static bool IsEditingMultipleObjects(SerializedProperty property) =>
+            property.serializedObject.isEditingMultipleObjects;
+
+        /// <summary>
+        /// Returns <see langword="true"/> when the selected targets do not all hold the same managed-reference type —
+        /// either Unity reports <see cref="SerializedProperty.hasMultipleDifferentValues"/>, or the per-target
+        /// <see cref="SerializedProperty.managedReferenceFullTypename"/> differs across
+        /// <see cref="SerializedObject.targetObjects"/>. Always <see langword="false"/> for a single target, so the
+        /// single-object paths are untouched. Used to drive the dropdown's mixed-value state and to suppress merging
+        /// child field UIs of incompatible types.
+        /// </summary>
+        public static bool HasMixedTypes(SerializedProperty property)
+        {
+            if (!property.serializedObject.isEditingMultipleObjects) return false;
+
+            // hasMultipleDifferentValues catches differing concrete instances; the explicit type-name comparison also
+            // catches the all-missing case, where every target reads back a null value but the stored (unloadable)
+            // type names still differ — hasMultipleDifferentValues does not always flag that on its own.
+            if (property.hasMultipleDifferentValues) return true;
+
+            // A non-null, agreed value means all targets share the concrete type — skip the per-target probe (and its
+            // SerializedObject allocations). The per-target comparison only matters for the all-missing case (null value).
+            if (property.managedReferenceValue is not null) return false;
+
+            var first = property.managedReferenceFullTypename;
+            var targets = property.serializedObject.targetObjects;
+            if (targets.Length < 2) return false;
+
+            foreach (var target in targets)
+            {
+                if (target == null) continue;
+
+                using var single = new SerializedObject(target);
+                var other = single.FindProperty(property.propertyPath);
+                if (other is null) continue;
+                if (other.managedReferenceFullTypename != first) return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Applies a managed-reference change to <b>every</b> selected target independently, so each object receives its
+        /// own instance rather than the shared reference that a single multi-object
+        /// <see cref="SerializedProperty.managedReferenceValue"/> assignment would alias across all of them. For each
+        /// target, <paramref name="factory"/> is invoked with that target's <i>previous</i> value (to support Keep-Data
+        /// through <see cref="CreateInstancePreservingData"/>) and must return a fresh, independent instance (or
+        /// <see langword="null"/> to clear). The whole batch is collapsed into a single Undo step so one Ctrl+Z reverts
+        /// all targets together. The originating <paramref name="property"/>'s <see cref="SerializedObject"/> is then
+        /// refreshed so the live inspector re-reads the new state.
+        /// </summary>
+        public static void ApplyManagedReferencePerTarget(SerializedProperty property, Func<object, object> factory)
+        {
+            var serializedObject = property.serializedObject;
+            var targets = serializedObject.targetObjects;
+            var propertyPath = property.propertyPath;
+
+            Undo.IncrementCurrentGroup();
+            var undoGroup = Undo.GetCurrentGroup();
+
+            foreach (var target in targets)
+            {
+                if (target == null) continue;
+
+                using var single = new SerializedObject(target);
+                var singleProperty = single.FindProperty(propertyPath);
+                if (singleProperty is null) continue;
+
+                var previous = singleProperty.managedReferenceValue;
+                var instance = factory(previous);
+
+                // Each target gets its own instance: the factory must not return the same object for two targets,
+                // otherwise the managed reference would be aliased across objects again.
+                singleProperty.managedReferenceValue = instance;
+                singleProperty.isExpanded = instance is not null;
+                single.ApplyModifiedProperties();
+            }
+
+            Undo.CollapseUndoOperations(undoGroup);
+
+            // Pull the per-target writes back into the inspector's live SerializedObject so the drawer re-reads the new
+            // state without waiting for the next external change notification. Update() re-reads from the targets and
+            // discards any unapplied edits the live SO still holds — applying it instead would write the live SO's stale
+            // (pre-change) managed reference back over the per-target writes. This drawer applies its own change through
+            // the per-target path immediately, so the live SO carries no competing pending edits to lose here.
+            serializedObject.Update();
+        }
+
+        /// <summary>
+        /// Whether the per-asset missing/shared notices may be shown for this property. They are file-level operations
+        /// keyed to a single backing asset (YAML rewrite, single-object cross-reference scan), so under a multi-object
+        /// selection they would either misreport (the probes read only the first target) or apply to a single target
+        /// while presenting as if they covered the selection. The conservative rule is therefore to surface a notice
+        /// only for a single target; with several targets selected the notices are suppressed and the mixed/same-type
+        /// hint takes their place. Returns <see langword="true"/> for the single-target case (notices allowed).
+        /// </summary>
+        public static bool NoticesApply(SerializedProperty property) =>
+            !property.serializedObject.isEditingMultipleObjects;
+        #endregion
+
         /// <summary>
         /// Returns <see langword="true"/> when this property holds a managed reference whose type can no longer be
         /// loaded (renamed / moved / deleted). Unity does not expose a missing type through the per-property API
