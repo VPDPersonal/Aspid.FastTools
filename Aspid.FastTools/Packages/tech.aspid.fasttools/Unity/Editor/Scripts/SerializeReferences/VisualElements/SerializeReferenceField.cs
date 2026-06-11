@@ -151,6 +151,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // is rebuilt from a fresh selection instead, so a stale property here must no-op rather than throw.
             if (!IsPropertyAlive()) return;
 
+            // Auto-de-alias a freshly duplicated list element (Ctrl+D / Duplicate / list +): when this element shares its
+            // rid with another element of the same array, the guard queues a swap to an independent clone on the next
+            // editor tick (one Undo step), which property tracking then re-renders. forceRebuild keeps this pass coherent.
+            if (SerializeReferenceDuplicateGuard.Observe(_property))
+                forceRebuild = true;
+
             var mixedTypes = SerializeReferenceHelpers.HasMixedTypes(_property);
             var currentType = SerializeReferenceHelpers.GetCurrentType(_property);
             var hasValue = currentType is not null;
