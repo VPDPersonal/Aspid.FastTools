@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 
@@ -22,6 +23,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string MessageClass = NoticeClass + "__message";
         private const string ActionClass = NoticeClass + "__action";
         private const string SuggestionClass = NoticeClass + "__suggestion";
+        private const string RidChipClass = NoticeClass + "__rid-chip";
 
         // Info variant — a non-actionable, dim blue hint (e.g. the multi-object "different types" notice) rather than
         // the default actionable yellow warning. Swaps the icon and palette through the modifier class only.
@@ -30,6 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly Label _message;
         private readonly Label _action;
         private readonly Label _suggestion;
+        private readonly VisualElement _ridChip;
 
         private Action _onAction;
         private Action _onSuggestion;
@@ -52,16 +55,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _suggestion = new Label().AddClass(SuggestionClass);
             _suggestion.RegisterCallback<ClickEvent>(_ => _onSuggestion?.Invoke());
 
+            // The rid chip is a small round dot appended after the action; its background colour is set
+            // inline from code so the same rid always shows the same colour. Hidden by default.
+            _ridChip = new VisualElement()
+                .AddClass(RidChipClass)
+                .SetPickingMode(PickingMode.Ignore);
+            _ridChip.SetDisplay(DisplayStyle.None);
+
             this.AddChild(icon)
                 .AddChild(_message)
                 .AddChild(_action)
-                .AddChild(_suggestion);
+                .AddChild(_suggestion)
+                .AddChild(_ridChip);
         }
 
         /// <summary>
         /// Updates the notice content. The <paramref name="actionText"/> word is the only clickable part;
         /// pass an empty string to hide it (e.g. when the action is unavailable for unsaved targets). Setting the
-        /// notice also clears any previously shown <see cref="SetSuggestion"/> segment.
+        /// notice also clears any previously shown <see cref="SetSuggestion"/> segment and any rid chip.
         /// </summary>
         public void Set(string message, string actionText, string detail, Action onAction)
         {
@@ -76,6 +87,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             tooltip = detail;
             ClearSuggestion();
+            ClearRidChip();
         }
 
         /// <summary>
@@ -94,6 +106,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             tooltip = detail;
             ClearSuggestion();
+            ClearRidChip();
         }
 
         /// <summary>
@@ -111,12 +124,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _suggestion.SetDisplay(hasSuggestion ? DisplayStyle.Flex : DisplayStyle.None);
         }
 
+        /// <summary>
+        /// Shows a small round colour chip after the action word, tinted with <paramref name="color"/>.
+        /// Used by the shared-reference notice to make aliased fields identifiable by their rid colour.
+        /// </summary>
+        public void SetRidChip(Color color)
+        {
+            _ridChip.style.backgroundColor = color;
+            _ridChip.SetDisplay(DisplayStyle.Flex);
+        }
+
         private void ClearSuggestion()
         {
             _onSuggestion = null;
             _suggestion.text = string.Empty;
             _suggestion.tooltip = null;
             _suggestion.SetDisplay(DisplayStyle.None);
+        }
+
+        private void ClearRidChip()
+        {
+            _ridChip.style.backgroundColor = StyleKeyword.Null;
+            _ridChip.SetDisplay(DisplayStyle.None);
         }
     }
 }
