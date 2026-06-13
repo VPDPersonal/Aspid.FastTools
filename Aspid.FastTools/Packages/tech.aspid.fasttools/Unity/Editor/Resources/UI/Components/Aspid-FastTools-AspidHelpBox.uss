@@ -24,8 +24,8 @@
 }
 
 :root.aspid-fasttools-status--info {
-    background-color:                                           var(--aspid-colors-status-info-light);
-    border-color:                                               var(--aspid-colors-status-info-shade-lightness);
+    background-color:                                           var(--aspid-colors-bg-dark);
+    border-color:                                               var(--aspid-colors-status-info-shade-light);
 }
 
 /* --- ICON --- */

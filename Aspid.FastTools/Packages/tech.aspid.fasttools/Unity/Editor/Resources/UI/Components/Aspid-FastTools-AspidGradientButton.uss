@@ -1,43 +1,36 @@
-/* Classic button: a solid dark pill with a green left accent bar; on hover the whole border and the text turn the
-   accent colour, on press the fill darkens. Fill / accent / border come from custom properties so a context stylesheet
-   can re-tone a button (e.g. the graph window's Fix buttons to a warning hue) without touching this sheet. */
+/* Classic flat button that sits naturally on the dark Aspid cards: a solid raised fill (one step lighter than the
+   card) with a thin border; on hover the border and text turn the accent green, on press the fill sinks. Fill / accent
+   / border come from custom properties so a context stylesheet can re-tone a button (e.g. the graph's Fix buttons to a
+   warning hue) without touching this sheet. */
 :root {
     color:                                              var(--aspid-colors-text-light);
     height:                                             30px;
+    min-height:                                         30px;
     margin:                                             0 0 5px 0;
-    padding:                                            0 10px 0 12px;
+    padding:                                            0 12px;
     overflow:                                           hidden;
-    font-size:                                          14px;
-    border-radius:                                      8px;
+    font-size:                                          13px;
+    border-radius:                                      6px;
     flex-direction:                                     row;
+    align-items:                                        center;
     -unity-font-style:                                  bold;
     -unity-text-align:                                  middle-left;
 
     transition-property:                                all;
-    transition-duration:                                0.12s;
+    transition-duration:                                0.1s;
 
     background-color:                                   var(--aspid-fasttools-colors-gradient_button-bg);
-
-    border-top-width:                                   1px;
-    border-right-width:                                 1px;
-    border-bottom-width:                                1px;
-    border-left-width:                                  4px;
-
-    border-top-color:                                   var(--aspid-fasttools-colors-gradient_button-border);
-    border-right-color:                                 var(--aspid-fasttools-colors-gradient_button-border);
-    border-bottom-color:                                var(--aspid-fasttools-colors-gradient_button-border);
-    border-left-color:                                  var(--aspid-fasttools-colors-gradient_button-accent);
+    border-width:                                       1px;
+    border-color:                                       var(--aspid-fasttools-colors-gradient_button-border);
 
     --aspid-fasttools-colors-gradient_button-bg:        var(--aspid-colors-bg-dark);
     --aspid-fasttools-colors-gradient_button-accent:    var(--aspid-colors-status-success-text-light);
-    --aspid-fasttools-colors-gradient_button-border:    var(--aspid-colors-shade-darkness);
+    --aspid-fasttools-colors-gradient_button-border:    var(--aspid-colors-shade-light);
 }
 
-/* Hover: the three neutral sides and the text adopt the accent colour (the left bar is already accent-coloured). */
+/* Hover: the border and text adopt the accent colour. */
 .aspid-fasttools-gradient-button:hover {
-    border-top-color:                                   var(--aspid-fasttools-colors-gradient_button-accent);
-    border-right-color:                                 var(--aspid-fasttools-colors-gradient_button-accent);
-    border-bottom-color:                                var(--aspid-fasttools-colors-gradient_button-accent);
+    border-color:                                       var(--aspid-fasttools-colors-gradient_button-accent);
     color:                                              var(--aspid-fasttools-colors-gradient_button-accent);
 }
 
