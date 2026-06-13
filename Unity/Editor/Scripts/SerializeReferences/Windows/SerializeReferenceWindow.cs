@@ -22,18 +22,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Project,
         }
 
-        private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
-
         private const string RootClass = "aspid-fasttools-serialize-reference-window";
         private const string ToolbarClass = RootClass + "__toolbar";
-        private const string TabClass = RootClass + "__tab";
-        private const string TabActiveClass = TabClass + "--active";
-        private const string TabLabelClass = RootClass + "__tab-label";
+        private const string ToolbarButtonClass = RootClass + "__toolbar-button";
         private const string ContainerClass = RootClass + "__container";
 
+        private const float InactiveOpacity = 0.45f;
+
         private VisualElement _container;
-        private VisualElement _inspectTab;
-        private VisualElement _projectTab;
+        private AspidGradientButton _inspectButton;
+        private AspidGradientButton _projectButton;
         private Mode _mode = Mode.Inspect;
         private Object _pendingTarget;
 
@@ -67,17 +65,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void CreateGUI()
         {
             var root = rootVisualElement;
-            root.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
-                .AddStyleSheetsFromResource(StyleSheetPath)
-                .AddClass(RootClass);
+            root.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet).AddClass(RootClass);
 
-            _inspectTab = BuildTab("Inspect Asset", Mode.Inspect);
-            _projectTab = BuildTab("Project Audit", Mode.Project);
+            _inspectButton = ModeButton("Inspect Asset", Mode.Inspect);
+            _projectButton = ModeButton("Project Audit", Mode.Project);
 
-            var toolbar = new VisualElement()
-                .AddClass(ToolbarClass)
-                .AddChild(_inspectTab)
-                .AddChild(_projectTab);
+            var toolbar = new VisualElement().AddClass(ToolbarClass);
+            toolbar.style.flexDirection = FlexDirection.Row;
+            toolbar.style.flexShrink = 0;
+            toolbar.AddChild(_inspectButton).AddChild(_projectButton);
 
             _container = new VisualElement().AddClass(ContainerClass);
             _container.style.flexGrow = 1;
@@ -87,12 +83,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SwitchMode(_mode);
         }
 
-        private VisualElement BuildTab(string label, Mode mode)
+        private AspidGradientButton ModeButton(string label, Mode mode)
         {
-            var tab = new VisualElement().AddClass(TabClass);
-            tab.AddChild(new Label(label).AddClass(TabLabelClass).SetPickingMode(PickingMode.Ignore));
-            tab.AddManipulator(new Clickable(() => SwitchMode(mode)));
-            return tab;
+            var button = new AspidGradientButton(label, _ => SwitchMode(mode)).AddClass(ToolbarButtonClass);
+            button.style.flexGrow = 1;
+            return button;
         }
 
         private void SwitchMode(Mode mode)
@@ -125,8 +120,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void UpdateToolbar()
         {
-            _inspectTab?.EnableInClassList(TabActiveClass, _mode == Mode.Inspect);
-            _projectTab?.EnableInClassList(TabActiveClass, _mode == Mode.Project);
+            if (_inspectButton != null) _inspectButton.style.opacity = _mode == Mode.Inspect ? 1f : InactiveOpacity;
+            if (_projectButton != null) _projectButton.style.opacity = _mode == Mode.Project ? 1f : InactiveOpacity;
         }
     }
 }

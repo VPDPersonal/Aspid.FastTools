@@ -1,42 +1,18 @@
-/* Classic flat button that sits naturally on the dark Aspid cards: a solid raised fill (one step lighter than the
-   card) with a thin border; on hover the border and text turn the accent green, on press the fill sinks. Fill / accent
-   / border come from custom properties so a context stylesheet can re-tone a button (e.g. the graph's Fix buttons to a
-   warning hue) without touching this sheet. */
 :root {
     color:                                              var(--aspid-colors-text-light);
     height:                                             30px;
-    min-height:                                         30px;
     margin:                                             0 0 5px 0;
-    padding:                                            0 12px;
+    padding:                                            0 10px;
     overflow:                                           hidden;
-    font-size:                                          13px;
-    border-radius:                                      6px;
+    font-size:                                          14px;
+    border-width:                                       0;
+    border-radius:                                      10px;
     flex-direction:                                     row;
-    align-items:                                        center;
     -unity-font-style:                                  bold;
     -unity-text-align:                                  middle-left;
 
-    transition-property:                                all;
-    transition-duration:                                0.1s;
-
-    background-color:                                   var(--aspid-fasttools-colors-gradient_button-bg);
-    border-width:                                       1px;
-    border-color:                                       var(--aspid-fasttools-colors-gradient_button-border);
-
-    --aspid-fasttools-colors-gradient_button-bg:        var(--aspid-colors-bg-dark);
-    --aspid-fasttools-colors-gradient_button-accent:    var(--aspid-colors-status-success-text-light);
-    --aspid-fasttools-colors-gradient_button-border:    var(--aspid-colors-shade-light);
-}
-
-/* Hover: the border and text adopt the accent colour. */
-.aspid-fasttools-gradient-button:hover {
-    border-color:                                       var(--aspid-fasttools-colors-gradient_button-accent);
-    color:                                              var(--aspid-fasttools-colors-gradient_button-accent);
-}
-
-/* Pressed: the fill sinks to the darkest surface. */
-.aspid-fasttools-gradient-button:active {
-    background-color:                                   var(--aspid-colors-bg-darkness);
+    --aspid-fasttools-colors-gradient_button-bg:        var(--aspid-colors-bg-darkness);
+    --aspid-fasttools-colors-gradient_button-accent:    var(--aspid-colors-status-success-text-dark);
 }
 
 .aspid-fasttools-gradient-button__trailing-label {
