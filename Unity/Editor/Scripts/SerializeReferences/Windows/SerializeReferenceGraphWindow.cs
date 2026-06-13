@@ -56,6 +56,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string ChipClass = RootClass + "__chip";
         private const string FixClass = RootClass + "__fix";
+        private const string ClearOrphanClass = RootClass + "__clear-orphan";
+        private const string OpenSourceClass = RootClass + "__open-source";
         private const string OrphanGroupClass = RootClass + "__orphan-group";
         private const string OrphanGroupHeaderClass = RootClass + "__orphan-group-header";
         private const string PickerClass = RootClass + "__picker";
@@ -169,6 +171,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var assetPath = _target ? AssetDatabase.GetAssetPath(_target) : null;
             if (string.IsNullOrEmpty(assetPath))
             {
+                // A nested prefab instance keeps its managed-reference data in the source prefab, not the host, so offer
+                // to retarget the graph onto that source where the RefIds actually live.
+                if (SerializeReferenceHelpers.TryGetSourcePrefabPath(_target, out var sourcePath))
+                {
+                    ShowResults();
+
+                    var info = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info));
+                    info.Message = "This is a prefab instance — its managed references live in the source prefab.";
+                    _list.AddChild(info);
+
+                    _list.AddChild(new AspidGradientButton("Open Source Prefab",
+                            _ => SetTarget(AssetDatabase.LoadAssetAtPath<Object>(sourcePath)))
+                        .AddClass(OpenSourceClass));
+                    return;
+                }
+
                 ShowEmpty("Select a saved asset (a prefab or ScriptableObject) to map its managed-reference graph.");
                 return;
             }
@@ -287,9 +305,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (document.Shared.Contains(rid))
             {
-                var chip = new VisualElement().AddClass(ChipClass);
-                chip.style.backgroundColor = SerializeReferenceRidColor.ForRid(rid);
-                badges.AddChild(new Label("SHARED").AddClass(BadgeClass).AddClass(BadgeSharedClass).AddChild(chip));
+                var shared = new Label("SHARED").AddClass(BadgeClass).AddClass(BadgeSharedClass);
+                if (SerializeReferenceSettings.RidColorsEnabled)
+                {
+                    var chip = new VisualElement().AddClass(ChipClass);
+                    chip.style.backgroundColor = SerializeReferenceRidColor.ForRid(rid);
+                    shared.AddChild(chip);
+                }
+
+                badges.AddChild(shared);
             }
 
             row.AddChild(badges);
@@ -352,10 +376,46 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 row.AddClass(NodeLabelOrphanClass);
 
                 card.AddChild(row);
+
+                // Drop a dangling RefIds entry no field points at. File edit, so it is confirmed and not undoable.
+                var rid = node.Rid;
+                card.AddChild(new AspidGradientButton("Clear", _ => ClearOrphan(assetPath, document.FileId, rid))
+                    .AddClass(ClearOrphanClass));
+
                 group.AddChild(card);
             }
 
             return group;
+        }
+
+        // Removes a single orphaned RefIds entry from the saved asset. Re-derives the orphan set fresh (the on-screen
+        // graph may be stale) and only removes a rid that is still genuinely orphaned, then reimports and rescans.
+        private void ClearOrphan(string assetPath, long fileId, long rid)
+        {
+            if (!EditorUtility.DisplayDialog(
+                    "Drop Orphaned Entry",
+                    $"Remove the orphaned managed-reference entry (rid {rid}) from\n{assetPath}?\n\n" +
+                    "This edits the asset file directly and cannot be undone.",
+                    "Remove", "Cancel"))
+                return;
+
+            // Guard against a stale graph: confirm the rid is still an orphan against a fresh scan before deleting.
+            var stillOrphan = false;
+            foreach (var document in SerializeReferenceGraphScanner.Build(assetPath))
+                if (document.FileId == fileId && document.Orphans.Contains(rid)) { stillOrphan = true; break; }
+
+            if (!stillOrphan)
+            {
+                Rescan();
+                return;
+            }
+
+            if (!SerializeReferenceYamlEditor.TryRemoveEntry(assetPath, fileId, rid)) return;
+
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            SerializeReferenceRepairSuggestions.ClearCache();
+            SerializeReferenceTypeUsageIndex.ClearCache();
+            Rescan();
         }
 
         // The picker expands inline as an accordion panel directly below the clicked row's card — the same selector

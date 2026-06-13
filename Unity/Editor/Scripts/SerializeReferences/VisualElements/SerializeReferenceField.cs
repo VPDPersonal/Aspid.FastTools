@@ -34,6 +34,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string RidStripeClass = BlockClass + "__rid-stripe";
         private const string RidStripeActiveClass = RidStripeClass + "--active";
 
+        // Applied to the header while a compatible MonoScript is dragged over the field.
+        private const string DropTargetClass = BlockClass + "--drop-target";
+
         // Unity's mixed-value class — applied to the dropdown so the EnumField theme shows the standard "—" treatment
         // when the selected targets hold different managed-reference types under a multi-object selection.
         private const string MixedValueClass = "unity-base-field--show-mixed-value";
@@ -61,6 +64,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private SerializeReferenceNotice _missingNotice;
         private SerializeReferenceNotice _sharedNotice;
         private SerializeReferenceNotice _mixedNotice;
+        private SerializeReferenceNotice _requiredNotice;
         private VisualElement _ridStripe;
         private Type _currentType;
         private bool _contentBuilt;
@@ -129,6 +133,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Copy/Paste lives on the header only — child PropertyFields keep their own contextual menus.
             toggle.AddManipulator(new ContextualMenuManipulator(BuildContextMenu));
 
+            // Dropping a MonoScript on the header assigns an instance of its class (when assignable).
+            RegisterDragAndDrop(toggle);
+
+            // When this field is a list element, replace the list's "+" with a picker-backed add (kills duplicate-last
+            // rid aliasing at the source). Installed on attach, once per ListView.
+            RegisterCallback<AttachToPanelEvent>(_ =>
+                SerializeReferenceListAddBehavior.TryInstall(this, _property, _fieldType, _baseTypes));
+
             this.AddChild(_foldout);
 
             Refresh(forceRebuild: true);
@@ -176,6 +188,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             UpdateMissingBox();
             UpdateSharedBox();
             UpdateMixedBox(mixedTypes);
+            UpdateRequiredBox();
 
             // A mixed selection never renders child fields — Unity's per-field multi-edit cannot merge fields of
             // different types — so the content is cleared and rebuilt only when the (shared) type actually changes.
@@ -237,6 +250,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 detail: "The selected objects hold different managed-reference types, so their fields cannot be shown " +
                         "together.\nPick a type from the dropdown to set it on all of them, or select a single object " +
                         "to edit its own fields.");
+        }
+
+        // A field marked [SerializeReferenceRequired] but left empty shows a non-actionable notice (the dropdown right
+        // above is the fix). Suppressed under a multi-object selection and when the type is missing (its own notice).
+        private void UpdateRequiredBox()
+        {
+            if (!SerializeReferenceHelpers.NoticesApply(_property) || !SerializeReferenceRequiredGate.IsViolation(_property))
+            {
+                _requiredNotice?.RemoveFromHierarchy();
+                return;
+            }
+
+            _requiredNotice ??= new SerializeReferenceNotice();
+            if (_requiredNotice.parent is null) this.AddChild(_requiredNotice);
+
+            SerializeReferenceRequiredGate.TryGetRequired(_property, out var required);
+            var message = string.IsNullOrEmpty(required?.Message) ? "Required reference is not set" : required.Message;
+
+            _requiredNotice.SetInfo(
+                message: message,
+                detail: "This [SerializeReference] field is marked required but has no value. Pick a type from the dropdown.");
         }
 
         private void UpdateMissingBox()
@@ -310,11 +344,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            var ridColor = SerializeReferenceRidColor.ForRid(rid);
+            // Rid colours are an opt-out via Project Settings; the shared notice itself always shows, only its colour
+            // stripe/chip is suppressed.
+            var ridColorsEnabled = SerializeReferenceSettings.RidColorsEnabled;
+            var ridColor = ridColorsEnabled ? SerializeReferenceRidColor.ForRid(rid) : Color.clear;
 
             // Left stripe: a 3 px coloured bar absolutely positioned along the full height of the field root,
             // giving an at-a-glance visual that connects the aliased fields before the user reads the notice.
-            ApplyRidStripe(ridColor);
+            if (ridColorsEnabled) ApplyRidStripe(ridColor);
+            else RemoveRidStripe();
 
             _sharedNotice ??= new SerializeReferenceNotice();
             if (_sharedNotice.parent is null) this.AddChild(_sharedNotice);
@@ -455,6 +493,104 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (SerializeReferenceHelpers.NoticesApply(_property) &&
                 SerializeReferenceHelpers.HasSharedReference(_property))
                 evt.menu.AppendAction("Make Unique Reference", _ => MakeUnique());
+
+            // Find every asset/field using the current type, via the sr: Quick Search provider.
+            var usagesType = SerializeReferenceHelpers.GetCurrentType(_property);
+            if (usagesType != null)
+                evt.menu.AppendAction($"Find Usages of {usagesType.Name}",
+                    _ => SerializeReferenceUsageSearchProvider.OpenSearch(usagesType));
+
+            // Link this field to an existing instance of the same object (the inverse of Make Unique), single-target only.
+            if (SerializeReferenceHelpers.NoticesApply(_property))
+                foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(_property))
+                {
+                    var path = candidate.Path;
+                    evt.menu.AppendAction($"Link to Existing/{candidate.Type.Name}  ({path})", _ => LinkToExisting(path));
+                }
+
+            // Generate a new subclass of the field's type and assign it once it compiles.
+            if (_fieldType != null)
+                evt.menu.AppendAction("Create New Script…", _ => CreateNewScript());
+
+            // Save the current instance as a durable named template, and paste any assignable saved template.
+            if (usagesType != null)
+                evt.menu.AppendAction("Save as Template…", _ => SaveAsTemplate(usagesType));
+
+            foreach (var template in SerializeReferenceTemplates.LoadResolved())
+            {
+                if (_fieldType != null && !_fieldType.IsAssignableFrom(template.Type)) continue;
+                var name = template.Name;
+                evt.menu.AppendAction($"Paste Template/{name}", _ => ApplyTemplate(name));
+            }
+        }
+
+        private void RegisterDragAndDrop(VisualElement target)
+        {
+            target.RegisterCallback<DragEnterEvent>(_ => UpdateDrag(target));
+            target.RegisterCallback<DragUpdatedEvent>(_ => UpdateDrag(target));
+            target.RegisterCallback<DragLeaveEvent>(_ => target.RemoveFromClassList(DropTargetClass));
+            target.RegisterCallback<DragPerformEvent>(_ => PerformDrop(target));
+            target.RegisterCallback<DetachFromPanelEvent>(_ => target.RemoveFromClassList(DropTargetClass));
+        }
+
+        private void UpdateDrag(VisualElement target)
+        {
+            if (SerializeReferenceDropHandler.TryResolveDroppedType(_fieldType, _baseTypes, out _))
+            {
+                DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+                target.AddToClassList(DropTargetClass);
+            }
+            else
+            {
+                DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+                target.RemoveFromClassList(DropTargetClass);
+            }
+        }
+
+        private void PerformDrop(VisualElement target)
+        {
+            target.RemoveFromClassList(DropTargetClass);
+            if (!SerializeReferenceDropHandler.TryResolveDroppedType(_fieldType, _baseTypes, out var type)) return;
+
+            DragAndDrop.AcceptDrag();
+            SerializeReferenceDropHandler.Assign(_property, type);
+            Refresh(forceRebuild: true);
+        }
+
+        private void LinkToExisting(string sourcePath)
+        {
+            if (SerializeReferenceLinker.LinkTo(_property, sourcePath)) Refresh(forceRebuild: true);
+        }
+
+        private void CreateNewScript()
+        {
+            if (!SerializeReferenceScriptCreator.TryCreateSubclassStub(_fieldType, out _, out var fullTypeName)) return;
+            SerializeReferencePendingAssignment.Enqueue(_property.serializedObject.targetObject, _property.propertyPath, fullTypeName);
+        }
+
+        private void SaveAsTemplate(Type type)
+        {
+            var value = _property.managedReferenceValue;
+            if (value is null) return;
+
+            SerializeReferenceNamePrompt.Show("Save Template", SerializeReferenceTemplates.SuggestName(type),
+                name => SerializeReferenceTemplates.Save(name, value));
+        }
+
+        private void ApplyTemplate(string name)
+        {
+            if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
+            {
+                SerializeReferenceHelpers.ApplyManagedReferencePerTarget(_property, _ => SerializeReferenceTemplates.CreateInstance(name));
+            }
+            else
+            {
+                var instance = SerializeReferenceTemplates.CreateInstance(name);
+                if (instance is null) return;
+                _property.SetManagedReferenceAndApply(instance);
+            }
+
+            Refresh(forceRebuild: true);
         }
 
         private void MakeUnique()

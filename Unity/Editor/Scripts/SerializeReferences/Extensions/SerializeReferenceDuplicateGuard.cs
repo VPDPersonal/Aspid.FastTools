@@ -71,6 +71,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         public static bool Observe(SerializedProperty elementProperty)
         {
+            if (!SerializeReferenceSettings.AutoDeAliasEnabled) return false;
             if (elementProperty is null) return false;
             if (elementProperty.propertyType != SerializedPropertyType.ManagedReference) return false;
 
