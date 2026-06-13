@@ -1,18 +1,49 @@
+/* Classic button: a solid dark pill with a green left accent bar; on hover the whole border and the text turn the
+   accent colour, on press the fill darkens. Fill / accent / border come from custom properties so a context stylesheet
+   can re-tone a button (e.g. the graph window's Fix buttons to a warning hue) without touching this sheet. */
 :root {
     color:                                              var(--aspid-colors-text-light);
     height:                                             30px;
     margin:                                             0 0 5px 0;
-    padding:                                            0 10px;
+    padding:                                            0 10px 0 12px;
     overflow:                                           hidden;
     font-size:                                          14px;
-    border-width:                                       0;
-    border-radius:                                      10px;
+    border-radius:                                      8px;
     flex-direction:                                     row;
     -unity-font-style:                                  bold;
     -unity-text-align:                                  middle-left;
 
-    --aspid-fasttools-colors-gradient_button-bg:        var(--aspid-colors-bg-darkness);
-    --aspid-fasttools-colors-gradient_button-accent:    var(--aspid-colors-status-success-text-dark);
+    transition-property:                                all;
+    transition-duration:                                0.12s;
+
+    background-color:                                   var(--aspid-fasttools-colors-gradient_button-bg);
+
+    border-top-width:                                   1px;
+    border-right-width:                                 1px;
+    border-bottom-width:                                1px;
+    border-left-width:                                  4px;
+
+    border-top-color:                                   var(--aspid-fasttools-colors-gradient_button-border);
+    border-right-color:                                 var(--aspid-fasttools-colors-gradient_button-border);
+    border-bottom-color:                                var(--aspid-fasttools-colors-gradient_button-border);
+    border-left-color:                                  var(--aspid-fasttools-colors-gradient_button-accent);
+
+    --aspid-fasttools-colors-gradient_button-bg:        var(--aspid-colors-bg-dark);
+    --aspid-fasttools-colors-gradient_button-accent:    var(--aspid-colors-status-success-text-light);
+    --aspid-fasttools-colors-gradient_button-border:    var(--aspid-colors-shade-darkness);
+}
+
+/* Hover: the three neutral sides and the text adopt the accent colour (the left bar is already accent-coloured). */
+.aspid-fasttools-gradient-button:hover {
+    border-top-color:                                   var(--aspid-fasttools-colors-gradient_button-accent);
+    border-right-color:                                 var(--aspid-fasttools-colors-gradient_button-accent);
+    border-bottom-color:                                var(--aspid-fasttools-colors-gradient_button-accent);
+    color:                                              var(--aspid-fasttools-colors-gradient_button-accent);
+}
+
+/* Pressed: the fill sinks to the darkest surface. */
+.aspid-fasttools-gradient-button:active {
+    background-color:                                   var(--aspid-colors-bg-darkness);
 }
 
 .aspid-fasttools-gradient-button__trailing-label {
