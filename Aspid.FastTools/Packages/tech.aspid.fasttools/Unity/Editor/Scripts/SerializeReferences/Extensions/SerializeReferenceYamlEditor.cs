@@ -106,6 +106,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
     }
 
+    /// <summary>A single computed line change for the bulk-fix diff preview: where it lands and the before/after text.</summary>
+    internal readonly struct RewriteEdit
+    {
+        public readonly string AssetPath;
+        public readonly int LineNumber;
+        public readonly string OldLine;
+        public readonly string NewLine;
+
+        public RewriteEdit(string assetPath, int lineNumber, string oldLine, string newLine)
+        {
+            AssetPath = assetPath;
+            LineNumber = lineNumber;
+            OldLine = oldLine;
+            NewLine = newLine;
+        }
+
+        public bool IsValid => LineNumber >= 0 && !string.IsNullOrEmpty(AssetPath);
+    }
+
     internal static class SerializeReferenceYamlEditor
     {
         // "--- !u!114 &11400000" — object document header carrying the local file id as its YAML anchor.
@@ -181,6 +200,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         public static bool TryRewriteType(string assetPath, long fileId, long rid, ManagedTypeName newType)
         {
+            // Single scan shared with the diff preview: compute the edit, then apply exactly that line so the preview
+            // and the applied result can never diverge.
+            if (!TryComputeRewrite(assetPath, fileId, rid, newType, out var edit)) return false;
+
+            try
+            {
+                var lines = File.ReadAllLines(assetPath);
+                if (edit.LineNumber < 0 || edit.LineNumber >= lines.Length || lines[edit.LineNumber] != edit.OldLine)
+                    return false; // the file changed since the edit was computed — abort rather than write a stale line
+
+                lines[edit.LineNumber] = edit.NewLine;
+                File.WriteAllLines(assetPath, lines);
+                // Same-tick writes can leave the modification-time key unchanged, so bust the probe cache explicitly.
+                SerializeReferenceYamlProbeCache.ClearCache();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[TypeSelector] Failed to rewrite managed-reference type in '{assetPath}': {exception}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Computes — without writing — the single line change a <see cref="TryRewriteType"/> would make to re-point the
+        /// <paramref name="rid"/> entry to <paramref name="newType"/>. Drives the bulk-fix diff preview; the rewrite
+        /// applies the returned edit verbatim, so what the preview shows is exactly what is written.
+        /// </summary>
+        public static bool TryComputeRewrite(string assetPath, long fileId, long rid, ManagedTypeName newType, out RewriteEdit edit)
+        {
+            edit = default;
+
             try
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
@@ -189,13 +240,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
-                // Field pointers ("_sidearms:\n  - rid: 1002") share the "- rid:" shape with RefIds entries, so
-                // confine the search to the RefIds block — the entries are the only ones with a following type:.
+                // Field pointers ("_sidearms:\n  - rid: 1002") share the "- rid:" shape with RefIds entries, so confine
+                // the search to the RefIds block — the entries are the only ones with a following type:.
                 var refIdsStart = FindRefIdsStart(lines, start, end);
                 if (refIdsStart < 0) return false;
 
-                // Match the list item "    - rid: <id>" (the leading dash distinguishes a RefIds entry from a
-                // nested data "rid:" scalar).
                 var ridPattern = new Regex($@"^\s*-\s+rid:\s*{rid}\s*$");
                 var typePattern = new Regex(@"^(?<indent>\s*type:\s*)\{.*\}\s*$");
 
@@ -209,8 +258,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         var match = typePattern.Match(lines[j]);
                         if (!match.Success) continue;
 
-                        lines[j] = match.Groups["indent"].Value + newType.ToYamlType();
-                        File.WriteAllLines(assetPath, lines);
+                        edit = new RewriteEdit(assetPath, j, lines[j], match.Groups["indent"].Value + newType.ToYamlType());
                         return true;
                     }
 
@@ -221,7 +269,66 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             catch (Exception exception)
             {
-                Debug.LogError($"[TypeSelector] Failed to rewrite managed-reference type in '{assetPath}': {exception}");
+                Debug.LogError($"[TypeSelector] Failed to compute managed-reference rewrite in '{assetPath}': {exception}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Deletes a whole <c>- rid: N</c> entry (its type and data block) from the <c>RefIds</c> list of the document
+        /// anchored at <paramref name="fileId"/>. Used to drop an orphaned managed-reference payload that no field points
+        /// at. Confined to the <c>RefIds</c> block so a same-shaped field pointer is never touched. Returns whether an
+        /// entry was removed. The edit is not undoable — callers confirm first.
+        /// </summary>
+        public static bool TryRemoveEntry(string assetPath, long fileId, long rid)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
+
+                var lines = File.ReadAllLines(assetPath);
+                var (start, end) = FindDocumentRange(lines, fileId);
+                if (start < 0) return false;
+
+                var refIdsStart = FindRefIdsStart(lines, start, end);
+                if (refIdsStart < 0) return false;
+
+                var ridPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
+
+                for (var i = refIdsStart; i < end; i++)
+                {
+                    var match = ridPattern.Match(lines[i]);
+                    if (!match.Success) continue;
+
+                    // The entry runs until the next list item at its own indent, or until the block dedents out of it —
+                    // the same bounding rule the data-block reader uses.
+                    var entryIndent = match.Groups["indent"].Length;
+                    var entryEnd = end;
+                    for (var j = i + 1; j < end; j++)
+                    {
+                        if (lines[j].Trim().Length == 0) continue;
+                        var indent = IndentOf(lines[j]);
+                        if (indent < entryIndent || (indent == entryIndent && lines[j].TrimStart().StartsWith("- ")))
+                        {
+                            entryEnd = j;
+                            break;
+                        }
+                    }
+
+                    var remaining = new List<string>(lines.Length - (entryEnd - i));
+                    for (var k = 0; k < i; k++) remaining.Add(lines[k]);
+                    for (var k = entryEnd; k < lines.Length; k++) remaining.Add(lines[k]);
+
+                    File.WriteAllLines(assetPath, remaining);
+                    SerializeReferenceYamlProbeCache.ClearCache();
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[Aspid FastTools] Failed to remove RefIds entry rid {rid} in '{assetPath}': {exception}");
                 return false;
             }
         }
@@ -242,7 +349,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
-                var lines = File.ReadAllLines(assetPath);
+                var lines = SerializeReferenceYamlProbeCache.ReadAllLines(assetPath);
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -522,7 +629,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             try
             {
-                var lines = File.ReadAllLines(assetPath);
+                var lines = SerializeReferenceYamlProbeCache.ReadAllLines(assetPath);
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -627,7 +734,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
 
-                var lines = File.ReadAllLines(assetPath);
+                var lines = SerializeReferenceYamlProbeCache.ReadAllLines(assetPath);
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return result;
 

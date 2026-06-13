@@ -33,6 +33,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (SerializeReferenceHelpers.HasSharedReference(property))
                     height += spacing + EditorGUIUtility.singleLineHeight;
+
+                if (SerializeReferenceRequiredGate.IsViolation(property))
+                    height += spacing + EditorGUIUtility.singleLineHeight;
             }
 
             if (property.managedReferenceValue is not null && property.isExpanded)
@@ -62,6 +65,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 ShowContextMenu(property, fieldType);
                 contextEvent.Use();
+            }
+
+            // Dropping a MonoScript on the header row assigns an instance of its class (when assignable).
+            if ((contextEvent.type == EventType.DragUpdated || contextEvent.type == EventType.DragPerform) &&
+                line.Contains(contextEvent.mousePosition))
+            {
+                if (SerializeReferenceDropHandler.TryResolveDroppedType(fieldType, baseTypes, out var droppedType))
+                {
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Link;
+                    if (contextEvent.type == EventType.DragPerform)
+                    {
+                        DragAndDrop.AcceptDrag();
+                        SerializeReferenceDropHandler.Assign(property, droppedType);
+                        contextEvent.Use();
+                        return; // re-layout on the next repaint with the new value
+                    }
+                }
+                else
+                {
+                    DragAndDrop.visualMode = DragAndDropVisualMode.Rejected;
+                }
             }
 
             var labelRect = new Rect(line.x, line.y, EditorGUIUtility.labelWidth, line.height);
@@ -158,7 +182,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (noticesApply && SerializeReferenceHelpers.HasSharedReference(property))
             {
                 var rid = property.managedReferenceId;
-                if (rid >= 0)
+                if (rid >= 0 && SerializeReferenceSettings.RidColorsEnabled)
                 {
                     // Draw a 3 px deterministic-colour stripe at the left edge of the header row so the aliased
                     // fields are visually identifiable by colour before the user reads the notice text.
@@ -177,6 +201,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "Click Make unique to give this field its own independent copy.",
                     () => SerializeReferenceHelpers.MakeReferenceUnique(persistent));
 
+                y += EditorGUIUtility.singleLineHeight + spacing;
+            }
+
+            // A required-but-empty reference shows a non-actionable notice; the header dropdown above is the fix.
+            if (noticesApply && SerializeReferenceRequiredGate.IsViolation(property))
+            {
+                var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                SerializeReferenceRequiredGate.TryGetRequired(property, out var required);
+                var message = string.IsNullOrEmpty(required?.Message) ? "Required reference is not set" : required.Message;
+
+                DrawInfoNotice(noticeRect, message, "This [SerializeReference] field is marked required but has no value.");
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
@@ -284,6 +319,45 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 menu.AddItem(new GUIContent("Make Unique Reference"), false,
                     () => SerializeReferenceHelpers.MakeReferenceUnique(persistent));
 
+            // Find every asset/field using the current type, via the sr: Quick Search provider.
+            var usagesType = SerializeReferenceHelpers.GetCurrentType(property);
+            if (usagesType != null)
+                menu.AddItem(new GUIContent($"Find Usages of {usagesType.Name}"), false,
+                    () => SerializeReferenceUsageSearchProvider.OpenSearch(usagesType));
+
+            // Link this field to an existing instance of the same object (inverse of Make Unique), single-target only.
+            if (SerializeReferenceHelpers.NoticesApply(property))
+                foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(property))
+                {
+                    var path = candidate.Path;
+                    menu.AddItem(new GUIContent($"Link to Existing/{candidate.Type.Name}  ({path})"), false,
+                        () => SerializeReferenceLinker.LinkTo(property, path));
+                }
+
+            // Generate a new subclass of the field's type and assign it once it compiles.
+            if (fieldType != null)
+                menu.AddItem(new GUIContent("Create New Script…"), false, () =>
+                {
+                    if (SerializeReferenceScriptCreator.TryCreateSubclassStub(fieldType, out _, out var fullTypeName))
+                        SerializeReferencePendingAssignment.Enqueue(property.serializedObject.targetObject, property.propertyPath, fullTypeName);
+                });
+
+            // Save the current instance as a durable named template, and paste any assignable saved template.
+            if (usagesType != null)
+            {
+                var value = persistent.managedReferenceValue;
+                menu.AddItem(new GUIContent("Save as Template…"), false,
+                    () => SerializeReferenceNamePrompt.Show("Save Template",
+                        SerializeReferenceTemplates.SuggestName(usagesType), name => SerializeReferenceTemplates.Save(name, value)));
+            }
+
+            foreach (var template in SerializeReferenceTemplates.LoadResolved())
+            {
+                if (fieldType != null && !fieldType.IsAssignableFrom(template.Type)) continue;
+                var name = template.Name;
+                menu.AddItem(new GUIContent($"Paste Template/{name}"), false, () => ApplyTemplate(property, name));
+            }
+
             menu.ShowAsContext();
 
             void Paste(SerializedProperty target)
@@ -305,6 +379,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 target.SetManagedReferenceAndApply(value);
                 target.isExpanded = value is not null;
             }
+        }
+
+        // Applies a saved template to the property (an independent instance per target on a multi-object selection).
+        private static void ApplyTemplate(SerializedProperty property, string name)
+        {
+            var persistent = property.Persistent();
+
+            if (SerializeReferenceHelpers.IsEditingMultipleObjects(persistent))
+            {
+                SerializeReferenceHelpers.ApplyManagedReferencePerTarget(persistent, _ => SerializeReferenceTemplates.CreateInstance(name));
+                persistent.isExpanded = true;
+                return;
+            }
+
+            var instance = SerializeReferenceTemplates.CreateInstance(name);
+            if (instance is null) return;
+
+            persistent.SetManagedReferenceAndApply(instance);
+            persistent.isExpanded = true;
         }
 
 

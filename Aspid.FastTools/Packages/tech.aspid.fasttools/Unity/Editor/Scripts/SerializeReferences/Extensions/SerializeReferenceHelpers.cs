@@ -39,6 +39,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static Type GetCurrentType(SerializedProperty property) =>
             property.managedReferenceValue?.GetType();
 
+        #region Project scan helpers
+        // File kinds that can carry SerializeReference managed-reference documents. Single-sourced here so the Repair
+        // window, the usage index, the breakage detector and the build/CI gate all scan the same candidate set.
+        internal static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
+
+        /// <summary>
+        /// Returns <see langword="true"/> when <paramref name="path"/> is a project asset (under <c>Assets/</c>) whose
+        /// extension can host managed references. Promoted from the Repair window so every project-wide scanner shares
+        /// one definition.
+        /// </summary>
+        internal static bool IsScanCandidate(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !path.StartsWith("Assets/", StringComparison.Ordinal)) return false;
+            if (SerializeReferenceSettings.IsExcluded(path)) return false;
+
+            foreach (var extension in ScanExtensions)
+                if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+            return false;
+        }
+
+        /// <summary>
+        /// Stable grouping key for a stored type identity (class + namespace + assembly). <see cref="ManagedTypeName"/>
+        /// carries no value equality, so the three fields are joined into a key string instead.
+        /// </summary>
+        internal static string StoredTypeKey(ManagedTypeName type) =>
+            $"{type.Assembly}|{type.Namespace}|{type.Class}";
+        #endregion
+
         #region Multi-object editing
         /// <summary>
         /// Returns <see langword="true"/> when this property belongs to a <see cref="SerializedObject"/> editing more
@@ -433,11 +463,62 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (go is null) return false;
 
             var stage = PrefabStageUtility.GetPrefabStage(go);
-            if (stage is null || !TryMatchAssetFileId(stage, target, go, out fileId)) return false;
+            if (stage is not null)
+            {
+                if (!TryMatchAssetFileId(stage, target, go, out fileId)) return false;
 
-            assetPath = stage.assetPath;
-            inMemory = true;
+                assetPath = stage.assetPath;
+                inMemory = true;
+                return true;
+            }
+
+            // A plain object in a saved scene: its scene file is the YAML document store and its scene-local file id is
+            // the document anchor. Repaired in memory (a loaded scene must not be rewritten on disk under it).
+            if (TryGetSceneLocation(target, go, out assetPath, out fileId))
+            {
+                inMemory = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        // Resolves a saved-scene object's (scene path, document file id). GlobalObjectId.targetObjectId is the scene's
+        // local file identifier, which matches the YAML "--- !u!114 &<fileID>" anchor. Bails for unsaved/dirty scenes
+        // (the on-disk YAML would not match the live object) and for prefab-instance overrides (their data lives in the
+        // source prefab, not this scene — see jump-to-source-prefab).
+        private static bool TryGetSceneLocation(Object target, GameObject go, out string assetPath, out long fileId)
+        {
+            assetPath = null;
+            fileId = 0;
+
+            var scene = go.scene;
+            if (!scene.IsValid() || string.IsNullOrEmpty(scene.path) || scene.isDirty) return false;
+
+            var globalId = GlobalObjectId.GetGlobalObjectIdSlow(target);
+            if (globalId.identifierType != 2) return false;     // 2 == scene object
+            if (globalId.targetPrefabId != 0) return false;      // a prefab-instance override — defer to the source prefab
+
+            assetPath = scene.path;
+            fileId = unchecked((long)globalId.targetObjectId);
             return true;
+        }
+
+        /// <summary>
+        /// Resolves the source prefab asset path for a nested prefab instance's <paramref name="target"/>, whose managed
+        /// reference data lives in that source prefab rather than the host. Returns <see langword="false"/> for plain
+        /// scene objects and saved assets.
+        /// </summary>
+        public static bool TryGetSourcePrefabPath(Object target, out string sourcePath)
+        {
+            sourcePath = null;
+            if (target == null) return false;
+
+            var go = target as GameObject ?? (target as Component)?.gameObject;
+            if (go is null || !PrefabUtility.IsPartOfPrefabInstance(go)) return false;
+
+            sourcePath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(go);
+            return !string.IsNullOrEmpty(sourcePath);
         }
 
         // A Prefab Mode object is a copy in a preview scene and carries no file id of its own, so the matching
@@ -543,8 +624,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             // A repair reimports the asset / rewrites the live object: the candidate set changes and the missing
-            // reference is gone, so any cached ranking for it is now stale.
-            if (repaired) SerializeReferenceRepairSuggestions.ClearCache();
+            // reference is gone, so any cached ranking and any cached YAML lines for it are now stale.
+            if (repaired)
+            {
+                SerializeReferenceRepairSuggestions.ClearCache();
+                SerializeReferenceYamlProbeCache.ClearCache();
+            }
 
             if (repaired) ScheduleInspectorRebuild();
             return repaired;

@@ -419,3 +419,10 @@
     color:                                                 var(--aspid-colors-text-dark);
     -unity-text-align:                                     middle-right;
 }
+
+/* A compatible MonoScript dragged over the field highlights the header as a valid drop target. */
+.aspid-fasttools-serialize-reference--drop-target {
+    background-color:                                      var(--aspid-colors-bg-light);
+    border-left-width:                                     2px;
+    border-left-color:                                     var(--aspid-colors-status-info-light);
+}

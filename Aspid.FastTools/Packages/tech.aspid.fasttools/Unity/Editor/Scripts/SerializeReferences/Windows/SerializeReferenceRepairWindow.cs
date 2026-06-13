@@ -70,10 +70,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string FixCollapsedText = "Fix  ▼";
         private const string FixExpandedText = "Fix  ▲";
 
-        // Project scan candidates: serialized text assets that can host managed references. Other extensions are
-        // either binary or never carry [SerializeReference] data, so skipping them keeps the sweep fast.
-        private static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
-
         private Object _target;
         private ObjectField _assetField;
         private VisualElement _empty;
@@ -95,6 +91,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             window.minSize = new Vector2(460f, 320f);
             window.SetTarget(target);
             window.Show();
+        }
+
+        /// <summary>
+        /// Opens the window straight into project-scan mode — the deep-link target for the proactive breakage
+        /// notification, so the user lands on the grouped, Smart-Fix-ranked results.
+        /// </summary>
+        public static void OpenProjectScan()
+        {
+            var window = GetWindow<SerializeReferenceRepairWindow>();
+            window.titleContent = new GUIContent("Repair References");
+            window.minSize = new Vector2(460f, 320f);
+            window.Show();
+
+            // ScanProject needs the GUI built (_list assigned in CreateGUI); defer one tick for a freshly created window.
+            EditorApplication.delayCall += () => { if (window != null) window.ScanProject(); };
         }
 
         private void CreateGUI()
@@ -352,51 +363,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _list.AddChild(BuildGroupCard(group));
         }
 
-        // Enumerates the project's candidate assets and accumulates missing references grouped by stored type. Returns
-        // the groups (sorted by descending entry count) and reports whether the user canceled the progress bar.
+        // Groups every unresolved managed reference in the project by stored type. Backed by the shared usage index, so
+        // a warm index makes repeat scans an in-memory filter (the one-time cold warm shows its own progress bar). The
+        // index is built from the same SerializeReferenceGraphScanner / StoredTypeResolves path that
+        // FindMissingReferences uses, so the unresolved set matches the old per-asset sweep. The out parameter is kept
+        // for the call site but is always false: the warm-up runs to completion (see the index) rather than being
+        // cancelable mid-scan.
         private static List<ProjectGroup> CollectProjectGroups(out bool canceled)
         {
             canceled = false;
             var byType = new Dictionary<string, ProjectGroup>(StringComparer.Ordinal);
 
-            var paths = AssetDatabase.GetAllAssetPaths()
-                .Where(IsScanCandidate)
-                .ToArray();
-
-            try
+            foreach (var usage in SerializeReferenceTypeUsageIndex.EnumerateUnresolved())
             {
-                for (var i = 0; i < paths.Length; i++)
+                var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
+                if (string.IsNullOrEmpty(path)) continue;
+
+                var key = SerializeReferenceHelpers.StoredTypeKey(usage.StoredType);
+                if (!byType.TryGetValue(key, out var group))
                 {
-                    var path = paths[i];
-
-                    if (EditorUtility.DisplayCancelableProgressBar(
-                            "Scanning Project",
-                            $"{path}  ({i + 1}/{paths.Length})",
-                            (float)i / paths.Length))
-                    {
-                        canceled = true;
-                        break;
-                    }
-
-                    var missing = SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves);
-                    if (missing.Count == 0) continue;
-
-                    foreach (var entry in missing)
-                    {
-                        var key = StoredTypeKey(entry.StoredType);
-                        if (!byType.TryGetValue(key, out var group))
-                        {
-                            group = new ProjectGroup(entry.StoredType);
-                            byType.Add(key, group);
-                        }
-
-                        group.Add(path, entry);
-                    }
+                    group = new ProjectGroup(usage.StoredType);
+                    byType.Add(key, group);
                 }
-            }
-            finally
-            {
-                EditorUtility.ClearProgressBar();
+
+                group.Add(path, new MissingReferenceEntry(usage.FileId, usage.Rid, usage.StoredType));
             }
 
             var groups = byType.Values.ToList();
@@ -562,15 +552,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                   "will become null on reimport."
                 : string.Empty;
 
+            var managedType = ManagedTypeName.FromType(newType);
+
+            // Diff preview: show the exact YAML lines this rewrite will change (computed by the same scan the rewrite
+            // applies, so the preview cannot lie) before confirming an irreversible file edit.
+            var diff = BuildDiffPreview(entries, managedType);
+
             if (!EditorUtility.DisplayDialog(
                     "Repair Missing References",
                     $"Rewrite {entries.Count} reference(s) in {files} file(s) to '{newType.FullName}'?\n\n" +
+                    diff +
                     "This edits the asset files directly and cannot be undone." + skippedNote + mixedNote,
                     "Rewrite",
                     "Cancel"))
                 return;
-
-            var managedType = ManagedTypeName.FromType(newType);
             var byFile = entries
                 .GroupBy(entry => entry.AssetPath, StringComparer.Ordinal)
                 .ToArray();
@@ -619,6 +614,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (skipped > 0)
                 summary += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
             ShowSummary(summary);
+        }
+
+        // Builds a compact old -> new line preview of the YAML the bulk fix will rewrite, using the same scan
+        // (TryComputeRewrite) the rewrite applies, so the preview is exactly what gets written. Capped so the
+        // confirmation stays readable.
+        private static string BuildDiffPreview(List<ProjectEntry> entries, ManagedTypeName newType)
+        {
+            const int maxShown = 8;
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("Changes:");
+
+            var shown = 0;
+            foreach (var entry in entries)
+            {
+                if (shown >= maxShown)
+                {
+                    builder.AppendLine($"  …and {entries.Count - shown} more");
+                    break;
+                }
+
+                if (!SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, newType, out var edit))
+                    continue;
+
+                builder.AppendLine($"  {System.IO.Path.GetFileName(entry.AssetPath)} (rid {entry.Entry.Rid}):");
+                builder.AppendLine($"    - {edit.OldLine.Trim()}");
+                builder.AppendLine($"    + {edit.NewLine.Trim()}");
+                shown++;
+            }
+
+            builder.AppendLine();
+            return builder.ToString();
         }
 
         // The group's Smart Fix suggestion: rank the stored type against the candidate pool (constrained to the
@@ -730,22 +756,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // ---------------------------------------------------------------------------------------------------------
         // Project scan data
         // ---------------------------------------------------------------------------------------------------------
-
-        private static bool IsScanCandidate(string path)
-        {
-            if (string.IsNullOrEmpty(path) || !path.StartsWith("Assets/", StringComparison.Ordinal)) return false;
-
-            foreach (var extension in ScanExtensions)
-                if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
-                    return true;
-
-            return false;
-        }
-
-        // Stable grouping key for a stored type identity (class + namespace + assembly). ManagedTypeName carries no
-        // value equality, so the three fields are joined into a key string instead.
-        private static string StoredTypeKey(ManagedTypeName type) =>
-            $"{type.Assembly}|{type.Namespace}|{type.Class}";
 
         // One broken reference located during a project scan: where it lives (asset path) and the orphaned entry.
         private readonly struct ProjectEntry
