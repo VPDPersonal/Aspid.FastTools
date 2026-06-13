@@ -20,7 +20,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// depth and the orphans the Inspector cannot navigate to. The tree is read-only except that a missing reference
     /// can be re-pointed in place through the same embedded type picker the Repair window uses.
     /// </summary>
-    internal sealed class SerializeReferenceGraphWindow : EditorWindow
+    internal sealed class SerializeReferenceGraphView : VisualElement
     {
         private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-ReferenceGraph";
 
@@ -77,21 +77,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
 
-        [MenuItem("Tools/Aspid 🐍/Managed References FastTools", priority = 21)]
-        private static void Open() => Open(Selection.activeObject);
-
-        public static void Open(Object target)
+        public SerializeReferenceGraphView(Object target)
         {
-            var window = GetWindow<SerializeReferenceGraphWindow>();
-            window.titleContent = new GUIContent("Managed References");
-            window.minSize = new Vector2(480f, 360f);
-            window.SetTarget(target);
-            window.Show();
-        }
+            _target = target;
 
-        private void CreateGUI()
-        {
-            var root = rootVisualElement;
+            var root = this;
+            style.flexGrow = 1;
             root.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(RootClass);

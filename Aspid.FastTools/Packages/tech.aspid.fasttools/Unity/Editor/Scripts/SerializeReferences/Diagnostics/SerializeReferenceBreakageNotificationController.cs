@@ -38,7 +38,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>Public deep-link the user can wire to a button/menu — opens Repair straight into project-scan mode.</summary>
-        public static void OpenRepair() => SerializeReferenceRepairWindow.OpenProjectScan();
+        public static void OpenRepair() => SerializeReferenceWindow.OpenProjectScan();
 
         private static void ShowToast(string message)
         {

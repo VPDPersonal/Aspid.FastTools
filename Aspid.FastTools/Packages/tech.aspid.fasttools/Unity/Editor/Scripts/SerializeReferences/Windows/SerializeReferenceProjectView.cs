@@ -25,7 +25,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// one type pick + one confirmation rewrites every entry across every affected file.</item>
     /// </list>
     /// </summary>
-    internal sealed class SerializeReferenceRepairWindow : EditorWindow
+    internal sealed class SerializeReferenceProjectView : VisualElement
     {
         private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";
 
@@ -70,8 +70,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string FixCollapsedText = "Fix  ▼";
         private const string FixExpandedText = "Fix  ▲";
 
-        private Object _target;
-        private ObjectField _assetField;
         private VisualElement _empty;
         private VisualElement _results;
         private AspidLabel _resultsHeader;
@@ -81,36 +79,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
 
-        [MenuItem("Tools/Aspid 🐍/Repair Missing References FastTools", priority = 20)]
-        private static void Open() => Open(Selection.activeObject as Object);
+        /// <summary>Jump from a project-audit result row to that asset's Inspect graph. Wired by the host window.</summary>
+        public Action<Object> OnInspectAsset;
 
-        public static void Open(Object target)
+        public SerializeReferenceProjectView()
         {
-            var window = GetWindow<SerializeReferenceRepairWindow>();
-            window.titleContent = new GUIContent("Repair References");
-            window.minSize = new Vector2(460f, 320f);
-            window.SetTarget(target);
-            window.Show();
-        }
-
-        /// <summary>
-        /// Opens the window straight into project-scan mode — the deep-link target for the proactive breakage
-        /// notification, so the user lands on the grouped, Smart-Fix-ranked results.
-        /// </summary>
-        public static void OpenProjectScan()
-        {
-            var window = GetWindow<SerializeReferenceRepairWindow>();
-            window.titleContent = new GUIContent("Repair References");
-            window.minSize = new Vector2(460f, 320f);
-            window.Show();
-
-            // ScanProject needs the GUI built (_list assigned in CreateGUI); defer one tick for a freshly created window.
-            EditorApplication.delayCall += () => { if (window != null) window.ScanProject(); };
-        }
-
-        private void CreateGUI()
-        {
-            var root = rootVisualElement;
+            var root = this;
+            style.flexGrow = 1;
             root.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(RootClass);
@@ -122,34 +97,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(BackgroundClass)
                 .SetPickingMode(PickingMode.Ignore);
 
-            // The asset picker sits in a Welcome-style card: an Aspid header with the signature green divider above
-            // the full-width field, Rescan and Scan Project trailing it on the same row.
-            var assetHeader = new AspidLabel("Asset", AspidLabelPreset.Default
+            // Project Audit has no per-asset field — the whole project is the subject (single-asset work lives in the
+            // Inspect graph). A header card carries just the Scan Project action.
+            var assetHeader = new AspidLabel("Project Audit", AspidLabelPreset.Default
                     .SetLabelTheme(ThemeStyle.Type.Lightness)
                     .SetLabelSize(AspidLabelSizeStyle.Type.H3)
                     .SetLineTheme(ThemeStyle.Type.Dark)
                     .SetLineStatus(StatusStyle.Type.Success))
                 .AddClass(CardHeaderClass);
 
-            _assetField = new ObjectField
-            {
-                objectType = typeof(Object),
-                allowSceneObjects = false,
-                value = _target,
-            };
-            _assetField.AddClass(AssetClass);
-            _assetField.RegisterValueChangedCallback(evt => SetTarget(evt.newValue));
-
-            var rescan = new AspidGradientButton("Rescan", _ => Rescan())
-                .AddClass(RescanClass);
-
             var scanProject = new AspidGradientButton("Scan Project", _ => ScanProject())
                 .AddClass(ScanProjectClass);
 
             var fieldRow = new VisualElement()
                 .AddClass(FieldRowClass)
-                .AddChild(_assetField)
-                .AddChild(rescan)
                 .AddChild(scanProject);
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -196,133 +157,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             root.AddChild(background)
                 .AddChild(content);
-
-            Rescan();
-        }
-
-        private void SetTarget(Object target)
-        {
-            _target = target;
-            // Open() retargets an already-open window, so the field must follow the new target —
-            // without notifying, or the change callback would trigger a second scan.
-            _assetField?.SetValueWithoutNotify(target);
-
-            // Assigning an asset always returns to single-asset mode: the ObjectField is the single-asset entry point,
-            // so a fresh pick replaces any project-wide grouped results with that asset's per-entry list.
-            if (_list is not null) Rescan();
-        }
-
-        // ---------------------------------------------------------------------------------------------------------
-        // Single-asset mode
-        // ---------------------------------------------------------------------------------------------------------
-
-        private void Rescan()
-        {
-            if (_list is null) return;
-
-            ClosePicker();
-            HideSummary();
-            _list.Clear();
-
-            var assetPath = _target ? AssetDatabase.GetAssetPath(_target) : null;
-            if (string.IsNullOrEmpty(assetPath))
-            {
-                ShowEmptyState(
-                    success: false,
-                    title: "No asset selected",
-                    message: "Select a saved asset (a prefab or ScriptableObject) to scan for missing references, " +
-                             "or press Scan Project to sweep the whole project at once.");
-                return;
-            }
-
-            var missing = SerializeReferenceYamlEditor.FindMissingReferences(assetPath, SerializeReferenceHelpers.StoredTypeResolves);
-            if (missing.Count == 0)
-            {
-                ShowEmptyState(
-                    success: true,
-                    title: "All references intact",
-                    message: "No missing managed references in this asset.");
-                return;
-            }
-
-            ShowResults(missing.Count == 1 ? "1 missing reference" : $"{missing.Count} missing references");
-            _resultsHint.text = "Pick a replacement type for each entry — Fix rewrites the stored type directly in the asset file.";
-
-            // The declared field type backing each missing reference constrains the replacement list, so the picker
-            // only offers types actually assignable to the field — re-pointing to an incompatible type would drop the
-            // reference to null on the next import.
-            var constraints = SerializeReferenceHelpers.BuildConstraintMap(assetPath);
-
-            foreach (var entry in missing)
-            {
-                constraints.TryGetValue((entry.FileId, entry.Rid), out var constraint);
-                _list.AddChild(BuildRow(assetPath, entry, constraint));
-            }
-        }
-
-        // Each missing reference is a full-width gradient row (label = stored type, dimmed rid, trailing "Fix" cue),
-        // the whole row acting as the Fix button — the same affordance the Welcome window uses for its sample list.
-        private VisualElement BuildRow(string assetPath, MissingReferenceEntry entry, Type constraint)
-        {
-            var typeName = string.IsNullOrEmpty(entry.StoredType.Namespace)
-                ? entry.StoredType.Class
-                : $"{entry.StoredType.Namespace}.{entry.StoredType.Class}";
-
-            AspidGradientButton row = null;
-            row = new AspidGradientButton(entry.StoredType.Class, FixCollapsedText, _ => TogglePicker(assetPath, entry, constraint, row));
-            row.AddClass(EntryClass);
-            row.tooltip = typeName;
-
-            var rid = new Label($"rid {entry.Rid}")
-                .AddClass(EntryRidClass)
-                .SetPickingMode(PickingMode.Ignore);
-
-            // Slot the rid between the label (index 1) and the trailing "Fix" cue (index 2) so the flex-grown label
-            // pushes it to the right edge alongside the action.
-            row.InsertChild(2, rid);
-
-            return row;
-        }
-
-        // The picker expands inline as an accordion panel right below the clicked row — the same selector view the
-        // dropdown window hosts, boxed in this window's dark style instead of a floating grey popup. One panel at a
-        // time; the row's trailing cue flips to ▲ while its panel is open and clicking the row again collapses it.
-        private void TogglePicker(string assetPath, MissingReferenceEntry entry, Type constraint, AspidGradientButton row)
-        {
-            var wasOpen = _openPickerRow == row;
-            ClosePicker();
-            if (wasOpen) return;
-
-            var view = BuildPickerView(constraint, assemblyQualifiedName => ApplyFix(assetPath, entry, assemblyQualifiedName));
-            OpenPickerBelow(row, view);
-            row.TrailingText = FixExpandedText;
-        }
-
-        private void ApplyFix(string assetPath, MissingReferenceEntry entry, string assemblyQualifiedName)
-        {
-            var type = ResolveType(assemblyQualifiedName);
-            if (type is null) return;
-
-            // An asset open in Prefab Mode holds a separate in-memory stage copy that does not refresh on reimport and
-            // overwrites a file rewrite on save (the same hazard the per-property inspector flow sidesteps by repairing
-            // in memory). Rewriting the file here would be silently discarded, so abort with an explanation instead.
-            var prefabStagePath = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
-            if (!string.IsNullOrEmpty(prefabStagePath) &&
-                string.Equals(prefabStagePath, assetPath, StringComparison.Ordinal))
-            {
-                EditorUtility.DisplayDialog(
-                    "Repair Missing References",
-                    "This asset is open in Prefab Mode, whose in-memory copy would overwrite a file rewrite on save.\n\n" +
-                    "Close Prefab Mode and try again, or use the field's inline Fix in the Inspector, which repairs in memory.",
-                    "OK");
-                return;
-            }
-
-            if (!SerializeReferenceYamlEditor.TryRewriteType(assetPath, entry.FileId, entry.Rid, ManagedTypeName.FromType(type))) return;
-
-            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
-            SerializeReferenceRepairSuggestions.ClearCache();
-            Rescan();
         }
 
         // ---------------------------------------------------------------------------------------------------------
@@ -332,7 +166,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Sweeps every candidate text asset under Assets/, finds the missing references in each, and groups them by
         // their stored broken type. The sweep is the slow part (it parses every asset's YAML), so it runs behind a
         // cancelable progress bar; cancelling shows whatever was collected so far.
-        private void ScanProject()
+        public void ScanProject()
         {
             if (_list is null) return;
 
@@ -479,7 +313,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             row.RegisterCallback<ClickEvent>(_ =>
             {
                 var asset = AssetDatabase.LoadMainAssetAtPath(entry.AssetPath);
-                if (asset is not null) EditorGUIUtility.PingObject(asset);
+                if (asset is null) return;
+
+                // Cross-link: jump to the asset's full Inspect graph; ping as a fallback when hosted standalone.
+                if (OnInspectAsset is not null) OnInspectAsset(asset);
+                else EditorGUIUtility.PingObject(asset);
             });
 
             return row;
