@@ -1,18 +1,10 @@
-/* --- Managed References window ---
-   Mirrors the Repair window: an animated black dotted canvas behind a boxed asset-picker card (Aspid header with
-   the signature green divider, full-width picker, Rescan trailing it), then either a centred info help-box (no
-   asset / no managed references) or a scrolling per-document tree of indented node cards. Each node row shows the
-   stored type short name (amber when the type is missing), the dim rid and MISSING / SHARED badges; a missing row
-   carries a trailing amber Fix gradient button that expands an inline type picker. Orphaned rids — reachable from
-   no root — collect in a trailing warning-tinted group per document. */
-.aspid-fasttools-reference-graph {
-    --aspid-fasttools-colors-bg:                          rgb(0, 0, 0);
-}
-
-.aspid-fasttools-reference-graph__background {
-    background-color:                                     var(--aspid-fasttools-colors-bg);
-}
-
+/* --- Inspect Asset view ---
+   Transparent content floating over the window's shared dotted canvas: a boxed asset-picker card (Aspid header with
+   a neutral divider, full-width picker, Rescan trailing it), then either a centred hero (no asset / no managed
+   references) or a scrolling per-document tree of indented node cards. Each node row shows the stored type short name
+   (amber when the type is missing), the dim rid and MISSING / SHARED badges; a missing row carries a trailing amber
+   Fix gradient button that expands an inline type picker. Orphaned rids — reachable from no root — collect in a
+   trailing warning-tinted group per document. */
 .aspid-fasttools-reference-graph__content {
     flex-grow:                                            1;
     padding:                                              12px;
@@ -53,14 +45,43 @@
     -unity-text-align:                                    middle-center;
 }
 
-/* Info help-box for the two empty states; centred in the space below the asset card. The --hidden modifier
-   swaps it out for the results scroll (and vice versa), mirroring the Repair window. */
+/* Centred hero for the two empty states (no asset / no managed references): a large dimmed info icon, a headline
+   and a dimmed explanation, filling the space below the asset card. The --hidden modifier swaps it for the results
+   scroll (and vice versa), mirroring the Project Audit view's hero. */
 .aspid-fasttools-reference-graph__empty {
-    margin-top:                                           8px;
+    flex-grow:                                            1;
+    padding:                                              20px;
+    align-items:                                          center;
+    justify-content:                                      center;
 }
 
 .aspid-fasttools-reference-graph__empty--hidden {
     display:                                              none;
+}
+
+.aspid-fasttools-reference-graph__empty-icon {
+    width:                                                96px;
+    height:                                               96px;
+    opacity:                                              0.9;
+    margin-bottom:                                        14px;
+    background-size:                                      contain;
+    background-repeat:                                    no-repeat;
+    background-position:                                  center;
+}
+
+.aspid-fasttools-reference-graph__empty-icon--info {
+    background-image:                                     var(--aspid-icons-status-info);
+}
+
+.aspid-fasttools-reference-graph__empty-title {
+    margin-bottom:                                        4px;
+}
+
+.aspid-fasttools-reference-graph__empty-message {
+    max-width:                                            420px;
+    color:                                                var(--aspid-colors-text-dark);
+    white-space:                                          normal;
+    -unity-text-align:                                    middle-center;
 }
 
 .aspid-fasttools-reference-graph__scroll {

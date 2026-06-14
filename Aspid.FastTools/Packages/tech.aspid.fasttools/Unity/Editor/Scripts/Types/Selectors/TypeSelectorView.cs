@@ -29,22 +29,47 @@ namespace Aspid.FastTools.Types.Editors
 
         private const string BlockClass = "aspid-fasttools-type-selector";
         private const string HeaderClass = BlockClass + "__header";
+        private const string CrumbClass = BlockClass + "__breadcrumb";
+        private const string CrumbCurrentModifier = CrumbClass + "--current";
+        private const string CrumbLinkModifier = CrumbClass + "--link";
+        private const string CrumbSeparatorClass = BlockClass + "__breadcrumb-separator";
         private const string ItemClass = BlockClass + "__item";
+        private const string ItemInSectionClass = ItemClass + "--in-section";
         private const string ItemIconClass = BlockClass + "__item-icon";
+        private const string ItemGlyphClass = BlockClass + "__item-glyph";
         private const string ItemTitleClass = BlockClass + "__item-title";
         private const string ItemArrowClass = BlockClass + "__item-arrow";
         private const string SectionTitleClass = BlockClass + "__section-title";
         private const string ErrorClass = BlockClass + "__error";
+        private const string EmptyHintClass = BlockClass + "__empty-hint";
+        private const string FooterHintClass = BlockClass + "__footer-hint";
         private const string FavoriteToggleClass = BlockClass + "__favorite-toggle";
         private const string FavoriteToggleOnModifier = FavoriteToggleClass + "--favorite-on";
 
         private const string StarFilledGlyph = "★";
         private const string StarEmptyGlyph = "☆";
 
-        private Label _titleLabel;
-        private Button _backButton;
+        // A type leaf with no explicit [TypeSelectorItem] icon falls back to the C# script glyph; a namespace /
+        // category container falls back to a folder glyph, so every row carries an icon and the list reads as a rhythm.
+        private const string TypeFallbackIcon = "d_cs Script Icon";
+        private const string ContainerFallbackIcon = "d_Folder Icon";
+
+        // <None> draws a crisp hollow-circle text glyph in the leading slot — it is vertically symmetric, so it centres
+        // cleanly on the caption.
+        private const string NoneGlyph = "○";
+
+        // Section headers use Unity's native foldout-arrow image (collapsed points right, expanded points down) in the
+        // icon slot. It is the solid triangle look that fit best, and being an image like the type/folder icons it
+        // centres exactly on the caption — where the text-glyph triangle rode off because its ink sits skewed in the
+        // font's em box (unlike the symmetric circle). Both arrows are light grey, so they read on the dark surface.
+        private const string SectionCollapsedIcon = "IN foldout";
+        private const string SectionExpandedIcon = "IN foldout on";
+
+        private VisualElement _breadcrumbBar;
         private ListView _listView;
         private Label _errorLabel;
+        private Label _emptyHint;
+        private Label _footerHint;
         private ToolbarSearchField _searchField;
 
         private readonly List<PickerPage> _pages = new();
@@ -56,7 +81,6 @@ namespace Aspid.FastTools.Types.Editors
         private readonly string _currentAqn;
 
         private NavigationController Nav => _pages[^1].Navigation;
-        private bool CanGoBack => Nav.CanNavigateBack || _pages.Count > 1;
 
         /// <summary>
         /// Creates a type selector view.
@@ -120,6 +144,7 @@ namespace Aspid.FastTools.Types.Editors
             _searchField = CreateSearchField();
             _listView = CreateListView();
             _errorLabel = CreateErrorLabel();
+            _emptyHint = CreateEmptyHint();
 
             this.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
                 .AddStyleSheetsFromResource(StyleSheetPath)
@@ -127,21 +152,38 @@ namespace Aspid.FastTools.Types.Editors
                 .AddChild(CreateHeader())
                 .AddChild(_searchField)
                 .AddChild(_errorLabel)
-                .AddChild(_listView);
+                .AddChild(_listView)
+                .AddChild(_emptyHint)
+                .AddChild(CreateFooterHint());
 
             RegisterCallback<KeyDownEvent>(HandleKeyDown, TrickleDown.TrickleDown);
+
+            // The ListView drives its own selection from NavigationMoveEvent — a separate event from the KeyDownEvent
+            // handled above. Left to fire it would advance the selection a second time on top of ours and skip a row,
+            // so the directional moves are swallowed here and our KeyDown handler stays the single arrow navigator.
+            RegisterCallback<NavigationMoveEvent>(SuppressDirectionalNavigation, TrickleDown.TrickleDown);
+
+            // The footer hint drops its directional affordances while the search field holds focus, so re-render it
+            // whenever focus moves between the search field and the list.
+            RegisterCallback<FocusInEvent>(_ => UpdateFooterHint());
             return;
 
-            VisualElement CreateHeader()
-            {
-                _titleLabel = new Label(string.Empty);
-                _backButton = new Button(NavigateBack).SetText("←");
+            // The breadcrumb trail is rebuilt per refresh (RebuildBreadcrumbs); the bar is just its container.
+            VisualElement CreateHeader() =>
+                _breadcrumbBar = new VisualElement().AddClass(HeaderClass);
 
-                return new VisualElement()
-                    .AddClass(HeaderClass)
-                    .AddChild(_backButton)
-                    .AddChild(_titleLabel);
+            Label CreateEmptyHint()
+            {
+                var label = new Label(string.Empty).AddClass(EmptyHintClass);
+                label.style.display = DisplayStyle.None;
+                return label;
             }
+
+            // Text is filled per refresh by UpdateFooterHint, which adapts the hint to the current selection.
+            Label CreateFooterHint() =>
+                _footerHint = new Label(string.Empty)
+                    .AddClass(FooterHintClass)
+                    .SetPickingMode(PickingMode.Ignore);
 
             ToolbarSearchField CreateSearchField()
             {
@@ -173,6 +215,7 @@ namespace Aspid.FastTools.Types.Editors
                 list.SetMakeItem(CreateListItem);
                 list.SetBindItem(BindListItem);
                 list.itemsChosen += HandleItemChosen;
+                list.selectedIndicesChanged += _ => UpdateFooterHint();
 
                 return list;
             }
@@ -181,6 +224,12 @@ namespace Aspid.FastTools.Types.Editors
             {
                 var icon = new Image()
                     .AddClass(ItemIconClass)
+                    .SetPickingMode(PickingMode.Ignore);
+
+                // Text-glyph alternative to the image icon, occupying the same leading slot (shown for <None> / section
+                // headers, hidden when an image icon is shown).
+                var glyph = new Label()
+                    .AddClass(ItemGlyphClass)
                     .SetPickingMode(PickingMode.Ignore);
 
                 var label = new Label()
@@ -193,12 +242,19 @@ namespace Aspid.FastTools.Types.Editors
                 var arrow = new Label("›")
                     .AddClass(ItemArrowClass);
 
-                return new VisualElement()
+                var row = new VisualElement()
                     .AddClass(ItemClass)
                     .AddChild(icon)
+                    .AddChild(glyph)
                     .AddChild(label)
                     .AddChild(favorite)
                     .AddChild(arrow);
+
+                // Clicking a section header toggles its collapse; the bound node rides on userData (set per rebind).
+                // Normal rows fall through to the ListView's own selection / choose handling untouched.
+                row.RegisterCallback<ClickEvent>(OnRowClicked);
+
+                return row;
             }
 
             void BindListItem(VisualElement element, int index)
@@ -211,14 +267,23 @@ namespace Aspid.FastTools.Types.Editors
                 var node = items[index];
                 var isSectionTitle = node.IsSectionTitle;
 
-                element.EnableInClass(SectionTitleClass, isSectionTitle);
-                element.SetPickingMode(isSectionTitle ? PickingMode.Ignore : PickingMode.Position);
+                // OnRowClicked reads this to know which node it operates on after row recycling.
+                element.userData = node;
 
+                element.EnableInClass(SectionTitleClass, isSectionTitle);
+                // Favorites/Recents item rows take the indented grouping style.
+                element.EnableInClass(ItemInSectionClass, !isSectionTitle && node.SectionKey is not null);
+
+                // Every row is pickable: type/namespace rows pick or drill, and section headers are navigable too —
+                // selecting one highlights the group and the collapse toggle runs on click / Right-Left / Enter.
+                element.SetPickingMode(PickingMode.Position);
+
+                // The section's collapse chevron now rides in the leading glyph slot, so the caption is just the name.
                 element.Q<Label>(className: ItemTitleClass)
                     .SetText(node.DisplayName)
                     .SetTooltip(node.Tooltip);
 
-                BindIcon(element.Q<Image>(className: ItemIconClass), node);
+                BindLeading(element.Q<Image>(className: ItemIconClass), element.Q<Label>(className: ItemGlyphClass), node);
                 BindFavorite(element.Q<Button>(className: FavoriteToggleClass), node);
 
                 element.Q<Label>(className: ItemArrowClass)
@@ -227,13 +292,37 @@ namespace Aspid.FastTools.Types.Editors
                         : DisplayStyle.None);
             }
 
-            void BindIcon(Image icon, TreeNode node)
+            // Fills the leading slot: a crisp text glyph for the special rows (<None> circle, section chevron) or the
+            // image icon for everything else. The two are mutually exclusive — whichever is used, the other is hidden —
+            // so the slot stays a uniform width across the list.
+            void BindLeading(Image icon, Label glyph, TreeNode node)
             {
-                var texture = TypeSelectorIconResolver.Resolve(node.Icon);
+                // <None> fills the leading slot with a crisp text-glyph circle; every other row uses the image icon
+                // slot. The two are mutually exclusive so the leading column stays a uniform width across the list.
+                if (node.DisplayName == TypeSelectorHelpers.NoneOption)
+                {
+                    icon.SetDisplay(DisplayStyle.None);
+                    glyph.SetText(NoneGlyph).SetDisplay(DisplayStyle.Flex);
+                    return;
+                }
+
+                glyph.SetDisplay(DisplayStyle.None);
+
+                // Section headers show the native foldout arrow (collapsed/expanded); types/containers their explicit
+                // [TypeSelectorItem] icon or a uniform fallback. All go through the image slot so the column aligns.
+                var texture = node.IsSectionTitle
+                    ? TypeSelectorIconResolver.Resolve(Nav.IsSectionCollapsed(node.SectionKey) ? SectionCollapsedIcon : SectionExpandedIcon)
+                    : TypeSelectorIconResolver.Resolve(node.Icon) ?? TypeSelectorIconResolver.Resolve(FallbackIconName(node));
 
                 icon
                     .SetImage(texture)
                     .SetDisplay(texture is not null ? DisplayStyle.Flex : DisplayStyle.None);
+            }
+
+            static string FallbackIconName(TreeNode node)
+            {
+                if (node.IsType) return TypeFallbackIcon;
+                return node.HasChildren ? ContainerFallbackIcon : null;
             }
 
             void BindFavorite(Button favorite, TreeNode node)
@@ -257,7 +346,56 @@ namespace Aspid.FastTools.Types.Editors
         }
         #endregion
 
+        #region Section rows
+        // A click on a section header (Favorites/Recents) toggles its collapsed state and keeps the header selected so
+        // it stays highlighted; every other row falls through untouched to the ListView's own selection/choose handling.
+        private void OnRowClicked(ClickEvent evt)
+        {
+            if (evt.currentTarget is not VisualElement row) return;
+            if (row.userData is not TreeNode node || !node.IsSectionTitle) return;
+
+            ToggleSectionKeepSelection(node);
+            evt.StopPropagation();
+        }
+
+        // Collapses/expands a section and re-selects its header at the new index, so a keyboard or mouse toggle leaves
+        // the highlight on the section the user is acting on (the list rebuilds, so the index can shift).
+        private void ToggleSectionKeepSelection(TreeNode sectionTitle)
+        {
+            Nav.ToggleSection(sectionTitle.SectionKey);
+            RefreshView();
+
+            var index = Nav.CurrentItems.IndexOf(sectionTitle);
+            if (index >= 0) SetSelectedIndex(index);
+
+            UpdateFooterHint();
+        }
+
+        // The TreeNode under the current list selection, or null when nothing is selected / out of range.
+        private TreeNode SelectedNode()
+        {
+            var items = Nav.CurrentItems;
+            var index = _listView.selectedIndex;
+            return index >= 0 && index < items.Count ? items[index] : null;
+        }
+        #endregion
+
         #region KeyDown Handlers
+        // Swallows the directional NavigationMoveEvents the ListView would otherwise act on, so our KeyDown handler is
+        // the only thing that moves the selection (Tab's Next/Previous is left alone for focus traversal).
+        private static void SuppressDirectionalNavigation(NavigationMoveEvent evt)
+        {
+            switch (evt.direction)
+            {
+                case NavigationMoveEvent.Direction.Up:
+                case NavigationMoveEvent.Direction.Down:
+                case NavigationMoveEvent.Direction.Left:
+                case NavigationMoveEvent.Direction.Right:
+                    evt.StopPropagation();
+                    break;
+            }
+        }
+
         private void HandleKeyDown(KeyDownEvent evt)
         {
             switch (evt.keyCode)
@@ -276,16 +414,13 @@ namespace Aspid.FastTools.Types.Editors
                     break;
 
                 case KeyCode.RightArrow:
-                    HandleRightArrow();
-                    evt.StopPropagation();
+                    if (!IsSearchFocused(focusController?.focusedElement) && HandleRightArrow())
+                        evt.StopPropagation();
                     break;
 
                 case KeyCode.LeftArrow:
-                    if (_searchField.focusController.focusedElement != _searchField)
-                    {
-                        NavigateBack();
+                    if (!IsSearchFocused(focusController?.focusedElement) && HandleLeftArrow())
                         evt.StopPropagation();
-                    }
                     break;
             }
         }
@@ -294,18 +429,14 @@ namespace Aspid.FastTools.Types.Editors
         {
             var focused = focusController?.focusedElement;
 
+            // In the search field, Up only walks the caret to the line start; there is nothing above the field to
+            // focus now that the breadcrumb trail is mouse-only.
             if (IsSearchFocused(focused))
-            {
-                if (TryMoveSearchCursorToStart()) return true;
-                if (!CanGoBack || Nav.IsSearching) return false;
-
-                _backButton.Focus();
-                return true;
-            }
+                return TryMoveSearchCursorToStart();
 
             if (!IsListFocused(focused)) return false;
 
-            // Walk up past any section titles; jump to the search field when nothing precedes.
+            // Step up one row; jump to the search field when nothing precedes.
             var target = FindSelectableIndex(_listView.selectedIndex - 1, step: -1);
 
             if (target < 0)
@@ -322,12 +453,6 @@ namespace Aspid.FastTools.Types.Editors
         {
             var focused = focusController?.focusedElement;
 
-            if (focused == _backButton)
-            {
-                _searchField.Focus();
-                return true;
-            }
-
             if (IsSearchFocused(focused))
             {
                 if (TryMoveSearchCursorToEnd()) return true;
@@ -335,7 +460,7 @@ namespace Aspid.FastTools.Types.Editors
 
                 _listView.Focus();
 
-                // Land on the first selectable row (skipping any leading section title).
+                // Land on the first navigable row.
                 var first = FindSelectableIndex(0, step: 1);
                 if (first >= 0) SetSelectedIndex(first);
 
@@ -344,7 +469,7 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!IsListFocused(focused)) return false;
 
-            // Walk down past any section titles.
+            // Step down one row.
             var target = FindSelectableIndex(_listView.selectedIndex + 1, step: 1);
             if (target >= 0) SetSelectedIndex(target);
 
@@ -358,8 +483,10 @@ namespace Aspid.FastTools.Types.Editors
             focused == _listView || IsDescendantOf(focused as VisualElement, _listView);
 
         /// <summary>
-        /// Returns the nearest selectable item index starting at <paramref name="start"/> and walking by
-        /// <paramref name="step"/>, skipping section titles. Returns <c>-1</c> when none is found.
+        /// Returns the nearest navigable item index starting at <paramref name="start"/> and walking by
+        /// <paramref name="step"/>. Every visible row is navigable — type leaves, namespace/category containers and
+        /// collapsible section headers alike — so the arrow keys step one row at a time without skipping. Returns
+        /// <c>-1</c> when none is found.
         /// </summary>
         private int FindSelectableIndex(int start, int step)
         {
@@ -367,7 +494,7 @@ namespace Aspid.FastTools.Types.Editors
             if (items is null) return -1;
 
             for (var i = start; i >= 0 && i < items.Count; i += step)
-                if (items[i].IsSelectable || items[i].HasChildren)
+                if (items[i].IsSelectable || items[i].HasChildren || items[i].IsSectionTitle)
                     return i;
 
             return -1;
@@ -417,13 +544,43 @@ namespace Aspid.FastTools.Types.Editors
             else _onDismiss?.Invoke();
         }
 
-        private void HandleRightArrow()
+        private bool HandleRightArrow()
         {
-            var items = Nav.CurrentItems;
-            var index = _listView.selectedIndex;
+            var node = SelectedNode();
+            if (node is null) return false;
 
-            if (index >= 0 && index < items.Count && items[index].HasChildren)
-                NavigateInto(items[index]);
+            // On a collapsed section header Right expands it; on a namespace/category container it drills in.
+            if (node.IsSectionTitle)
+            {
+                if (!Nav.IsSectionCollapsed(node.SectionKey)) return false;
+                ToggleSectionKeepSelection(node);
+                return true;
+            }
+
+            if (node.HasChildren && !Nav.IsSearching)
+            {
+                NavigateInto(node);
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool HandleLeftArrow()
+        {
+            // On an expanded section header Left collapses it instead of navigating up; everywhere else Left walks back
+            // up the hierarchy (or pops a generic-argument page).
+            if (SelectedNode() is { IsSectionTitle: true } section)
+            {
+                if (Nav.IsSectionCollapsed(section.SectionKey)) return false;
+                ToggleSectionKeepSelection(section);
+                return true;
+            }
+
+            if (!Nav.CanNavigateBack && _pages.Count <= 1) return false;
+
+            NavigateBack();
+            return true;
         }
 
         private void HandleSearchChanged(string query)
@@ -444,7 +601,9 @@ namespace Aspid.FastTools.Types.Editors
         #region Navigation
         private void ActivateNode(TreeNode node)
         {
-            if (node.HasChildren && !Nav.IsSearching) NavigateInto(node);
+            // Enter / double-click on a section header toggles it (the same as clicking it or the Right/Left keys).
+            if (node.IsSectionTitle) ToggleSectionKeepSelection(node);
+            else if (node.HasChildren && !Nav.IsSearching) NavigateInto(node);
             else if (node.IsSelectable) SelectNode(node);
         }
 
@@ -464,16 +623,12 @@ namespace Aspid.FastTools.Types.Editors
 
             if (Nav.CanNavigateBack)
             {
-                var backButtonWasFocused = focusController?.focusedElement == _backButton;
                 var previousNode = Nav.NavigateBack();
                 RefreshView();
 
                 var index = Nav.CurrentItems.IndexOf(previousNode);
                 _listView.selectedIndex = index >= 0 ? index : 0;
                 _listView.ScrollToItem(_listView.selectedIndex);
-
-                if (backButtonWasFocused && !CanGoBack)
-                    _searchField.Focus();
                 return;
             }
 
@@ -671,21 +826,148 @@ namespace Aspid.FastTools.Types.Editors
         #region View
         private void RefreshView()
         {
-            _titleLabel.text = GetTitle();
-            _backButton.SetEnabled(CanGoBack);
-            _backButton.SetDisplay(Nav.IsSearching ? DisplayStyle.None : DisplayStyle.Flex);
+            RebuildBreadcrumbs();
 
-            _listView.itemsSource = Nav.CurrentItems;
+            var items = Nav.CurrentItems;
+            _listView.itemsSource = items;
             _listView.Rebuild();
+
+            // An empty list (most often a search miss) swaps the ListView for a centred hint so the picker never
+            // shows a blank void.
+            var hasItems = items.Count > 0;
+            _listView.SetDisplay(hasItems ? DisplayStyle.Flex : DisplayStyle.None);
+            _emptyHint.text = hasItems ? string.Empty : BuildEmptyHintText();
+            _emptyHint.SetDisplay(hasItems ? DisplayStyle.None : DisplayStyle.Flex);
+
+            UpdateFooterHint();
         }
 
-        private string GetTitle()
+        private string BuildEmptyHintText() =>
+            Nav.IsSearching
+                ? $"No types match '{_searchField.value}'."
+                : "Nothing here.";
+
+        // The footer hint mirrors what the current selection affords, so the available keys are never a guess: ↑↓
+        // navigation is always shown; the action key (Open / Expand / Collapse / Select) and the back/close keys adapt
+        // to the selected row and the navigation state.
+        private void UpdateFooterHint()
         {
+            if (_footerHint is null) return;
+
+            // When the search field holds focus the arrow keys drive the caret, so the directional ← Back / → Open
+            // affordances do not apply and are dropped — only the always-true keys are shown.
+            var searchFocused = IsSearchFocused(focusController?.focusedElement);
+
+            var parts = new List<string> { "↑↓ Navigate" };
+            var node = SelectedNode();
+
+            if (!searchFocused && node is { IsSectionTitle: true })
+                parts.Add(Nav.IsSectionCollapsed(node.SectionKey) ? "→ Expand" : "← Collapse");
+            else if (!searchFocused && node is { HasChildren: true } && !Nav.IsSearching)
+                parts.Add("→ Open");
+            else if (node is { IsSelectable: true })
+                parts.Add("Enter Select");
+
+            if (Nav.IsSearching)
+            {
+                parts.Add("Esc Clear");
+            }
+            else
+            {
+                if (!searchFocused && (Nav.CanNavigateBack || _pages.Count > 1)) parts.Add("← Back");
+                parts.Add("Esc Close");
+            }
+
+            _footerHint.text = string.Join("  ·  ", parts);
+        }
+
+        // Rebuilds the clickable breadcrumb trail in the header. It mirrors the navigation path: a root crumb, one
+        // crumb per opened ancestor, then the current level as a bright, non-clickable tail. Generic-argument pages
+        // prepend a context crumb (the partially-built type) that escapes back to where the user opened it.
+        private void RebuildBreadcrumbs()
+        {
+            _breadcrumbBar.Clear();
+
+            // While searching the trail is moot — the list is a flat result set — so show a single quiet marker.
+            if (Nav.IsSearching)
+            {
+                AddCrumb("Search", isCurrent: true, action: null);
+                return;
+            }
+
             var page = _pages[^1];
 
-            if (Nav.IsSearching || page.IsBase) return Nav.GetCurrentTitle();
+            // Base page sitting at the root: render a plain title rather than a one-item trail.
+            if (page.IsBase && !Nav.CanNavigateBack)
+            {
+                AddCrumb("Select Type", isCurrent: true, action: null);
+                return;
+            }
 
-            return Nav.CanNavigateBack ? $"{page.TitlePrefix} / {Nav.GetCurrentTitle()}" : page.TitlePrefix;
+            var crumbs = new List<(string Label, Action Action, bool IsCurrent)>();
+            var atContextRoot = !Nav.CanNavigateBack;
+
+            if (page.IsBase)
+            {
+                crumbs.Add(("Types", () => JumpToDepth(0), false));
+            }
+            else
+            {
+                // Generic-argument context (e.g. "Modifier<?>"): from the page's own root it pops back to the previous
+                // page; once drilled into a namespace it jumps back to this page's root listing instead. It reads as
+                // the current location only while nothing deeper is open.
+                crumbs.Add((page.TitlePrefix, atContextRoot ? PopPage : () => JumpToDepth(0), atContextRoot));
+            }
+
+            // Real ancestors live at Breadcrumbs[1..] (index 0 is the hidden "/" root).
+            var trail = Nav.Breadcrumbs;
+            for (var i = 1; i < trail.Count; i++)
+            {
+                var depth = i;
+                crumbs.Add((trail[i].DisplayName, () => JumpToDepth(depth), false));
+            }
+
+            if (Nav.CanNavigateBack)
+                crumbs.Add((Nav.CurrentNode.DisplayName, null, true));
+
+            for (var i = 0; i < crumbs.Count; i++)
+            {
+                AddCrumb(crumbs[i].Label, crumbs[i].IsCurrent, crumbs[i].Action);
+                if (i < crumbs.Count - 1) AddSeparator();
+            }
+        }
+
+        private void AddCrumb(string text, bool isCurrent, Action action)
+        {
+            var crumb = new Label(text)
+                .AddClass(CrumbClass)
+                .EnableInClass(CrumbCurrentModifier, isCurrent)
+                // Full text on the tooltip recovers any crumb that ellipsised to fit the header strip.
+                .SetTooltip(text);
+
+            // Clickability tracks the action, not the current flag: the generic-context crumb is both "here" and an
+            // escape hatch, so it can be the current crumb yet still navigate.
+            if (action is not null)
+            {
+                crumb.AddClass(CrumbLinkModifier);
+                crumb.RegisterCallback<ClickEvent>(_ => action());
+            }
+
+            _breadcrumbBar.AddChild(crumb);
+        }
+
+        private void AddSeparator() =>
+            _breadcrumbBar.AddChild(new Label("›")
+                .AddClass(CrumbSeparatorClass)
+                .SetPickingMode(PickingMode.Ignore));
+
+        // Jumps the breadcrumb trail up to a given depth (0 = root) and resets the list selection to the top.
+        private void JumpToDepth(int keep)
+        {
+            HideError();
+            Nav.NavigateToDepth(keep);
+            RefreshView();
+            SelectFirstItem();
         }
 
         private void ShowError(string message)

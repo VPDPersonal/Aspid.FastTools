@@ -25,7 +25,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-ReferenceGraph";
 
         private const string RootClass = "aspid-fasttools-reference-graph";
-        private const string BackgroundClass = RootClass + "__background";
         private const string ContentClass = RootClass + "__content";
         private const string CardClass = RootClass + "__card";
         private const string CardHeaderClass = RootClass + "__card-header";
@@ -34,6 +33,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string RescanClass = RootClass + "__rescan";
         private const string EmptyClass = RootClass + "__empty";
         private const string EmptyHiddenClass = EmptyClass + "--hidden";
+        private const string EmptyIconClass = RootClass + "__empty-icon";
+        private const string EmptyIconInfoClass = EmptyIconClass + "--info";
+        private const string EmptyTitleClass = RootClass + "__empty-title";
+        private const string EmptyMessageClass = RootClass + "__empty-message";
         private const string ScrollClass = RootClass + "__scroll";
         private const string ScrollHiddenClass = ScrollClass + "--hidden";
 
@@ -68,18 +71,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Indentation step (px) applied per tree depth so nested cards read as a hierarchy.
         private const float IndentStep = 16f;
 
+        // Reports this view's state-tone to the host window, which owns the shared dotted canvas behind every mode.
+        private readonly Action<Color> _onCanvasTone;
+
         private Object _target;
         private ObjectField _assetField;
-        private AspidHelpBox _empty;
+        private VisualElement _empty;
         private ScrollView _scroll;
         private VisualElement _list;
 
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
 
-        public SerializeReferenceGraphView(Object target)
+        public SerializeReferenceGraphView(Object target, Action<Color> onCanvasTone)
         {
             _target = target;
+            _onCanvasTone = onCanvasTone;
 
             var root = this;
             style.flexGrow = 1;
@@ -87,17 +94,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(RootClass);
 
-            // Mirror the Repair window: an animated black dotted canvas fills the window, the content flows above it
-            // so the dark Aspid cards read against black instead of the muddy inspector grey.
-            var background = new AspidAnimatedDotsBackground()
-                .AddClass(BackgroundClass)
-                .SetPickingMode(PickingMode.Ignore);
-
             var assetHeader = new AspidLabel("Asset", AspidLabelPreset.Default
                     .SetLabelTheme(ThemeStyle.Type.Lightness)
-                    .SetLabelSize(AspidLabelSizeStyle.Type.H3)
-                    .SetLineTheme(ThemeStyle.Type.Dark)
-                    .SetLineStatus(StatusStyle.Type.Success))
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H4)
+                    .SetLineTheme(ThemeStyle.Type.Dark))
                 .AddClass(CardHeaderClass);
 
             _assetField = new ObjectField
@@ -122,10 +122,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(assetHeader)
                 .AddChild(fieldRow);
 
-            // The empty state (no asset / no managed references) shares one info help-box centred below the card; a
-            // successful scan swaps it for the per-document tree list inside a scroll view.
-            _empty = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
-                .AddClass(EmptyClass);
+            // The empty state (no asset / no managed references) shares one centred hero below the card — a large
+            // dimmed info icon, a headline and a dimmed explanation; a successful scan swaps it for the per-document
+            // tree list inside a scroll view.
+            _empty = new VisualElement().AddClass(EmptyClass);
 
             _list = new VisualElement();
             _scroll = new ScrollView().AddClass(ScrollClass);
@@ -137,8 +137,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(_empty)
                 .AddChild(_scroll);
 
-            root.AddChild(background)
-                .AddChild(content);
+            root.AddChild(content);
 
             Rescan();
         }
@@ -167,6 +166,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (SerializeReferenceHelpers.TryGetSourcePrefabPath(_target, out var sourcePath))
                 {
                     ShowResults();
+                    _onCanvasTone?.Invoke(SerializeReferenceCanvasStyle.Info);
 
                     var info = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info));
                     info.Message = "This is a prefab instance — its managed references live in the source prefab.";
@@ -178,27 +178,68 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return;
                 }
 
-                ShowEmpty("Select a saved asset (a prefab or ScriptableObject) to map its managed-reference graph.");
+                ShowEmpty(
+                    "No asset selected",
+                    "Select a saved asset (a prefab or ScriptableObject) to map its managed-reference graph.");
                 return;
             }
 
             var documents = SerializeReferenceGraphScanner.Build(assetPath);
             if (documents.Count == 0)
             {
-                ShowEmpty("No [SerializeReference] managed references in this asset.");
+                ShowEmpty(
+                    "No managed references",
+                    "This asset has no [SerializeReference] managed references to map.");
                 return;
             }
 
             ShowResults();
+
+            // Tint the canvas amber when the graph still needs attention (missing types or orphaned rids), green when
+            // it is fully healthy — the same status-wash language the Project Audit view uses.
+            var hasIssues = false;
             foreach (var document in documents)
+            {
                 _list.AddChild(BuildDocument(assetPath, document));
+                if (DocumentHasIssues(document)) hasIssues = true;
+            }
+
+            _onCanvasTone?.Invoke(hasIssues
+                ? SerializeReferenceCanvasStyle.Warning
+                : SerializeReferenceCanvasStyle.Success);
         }
 
-        private void ShowEmpty(string message)
+        // A document has issues when it carries any orphaned rid or any unresolved (missing-type) node.
+        private static bool DocumentHasIssues(ReferenceGraphDocument document)
+        {
+            if (document.Orphans.Count > 0) return true;
+
+            foreach (var node in document.Nodes)
+                if (!node.Resolves && !node.StoredType.IsEmpty) return true;
+
+            return false;
+        }
+
+        // Both empty states reuse one hero (mirroring the Project Audit view): a large dimmed info icon, a headline
+        // and a dimmed explanation, centred in the space below the asset card.
+        private void ShowEmpty(string title, string message)
         {
             _scroll.AddClass(ScrollHiddenClass);
             _empty.RemoveClass(EmptyHiddenClass);
-            _empty.Message = message;
+            _empty.Clear();
+            _onCanvasTone?.Invoke(SerializeReferenceCanvasStyle.Info);
+
+            var icon = new VisualElement()
+                .AddClass(EmptyIconClass)
+                .AddClass(EmptyIconInfoClass);
+
+            _empty.AddChild(icon)
+                .AddChild(new AspidLabel(title, AspidLabelPreset.Default
+                        .SetLabelTheme(ThemeStyle.Type.Lightness)
+                        .SetLabelSize(AspidLabelSizeStyle.Type.H3)
+                        .SetLineSize(AspidDividingLineSizeStyle.Type.None))
+                    .AddClass(EmptyTitleClass))
+                .AddChild(new Label(message).AddClass(EmptyMessageClass));
         }
 
         private void ShowResults()

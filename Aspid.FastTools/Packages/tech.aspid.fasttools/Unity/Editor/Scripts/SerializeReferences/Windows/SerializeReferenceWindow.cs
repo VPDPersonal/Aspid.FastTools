@@ -23,17 +23,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         private const string RootClass = "aspid-fasttools-serialize-reference-window";
+        private const string BackgroundClass = RootClass + "__background";
         private const string ToolbarClass = RootClass + "__toolbar";
         private const string ToolbarButtonClass = RootClass + "__toolbar-button";
+        private const string ToolbarButtonActiveClass = ToolbarButtonClass + "--active";
+        private const string TabUnderlineClass = RootClass + "__tab-underline";
         private const string ContainerClass = RootClass + "__container";
 
-        private const float InactiveOpacity = 0.45f;
+        private const string WindowStyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
 
+        private AspidAnimatedDotsBackground _background;
         private VisualElement _container;
-        private AspidGradientButton _inspectButton;
-        private AspidGradientButton _projectButton;
+        private Button _inspectButton;
+        private Button _projectButton;
         private Mode _mode = Mode.Inspect;
         private Object _pendingTarget;
+
+        // One-shot flag: the breakage-notification deep-link wants the project scanned immediately even from a cold
+        // index, whereas a plain Project Audit tab click is warmth-gated inside the view. Consumed in SwitchMode.
+        private bool _forceProjectScan;
 
         [MenuItem("Tools/Aspid 🐍/Managed References FastTools", priority = 21)]
         private static void OpenMenu() => Open(Selection.activeObject);
@@ -50,6 +58,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static void OpenProjectScan()
         {
             var window = Reveal();
+            window._forceProjectScan = true;
             window.SwitchMode(Mode.Project);
         }
 
@@ -65,28 +74,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void CreateGUI()
         {
             var root = rootVisualElement;
-            root.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet).AddClass(RootClass);
+            root.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+                .AddStyleSheetsFromResource(WindowStyleSheetPath)
+                .AddClass(RootClass);
+
+            // One dotted canvas, owned by the window, absolutely fills it behind everything; the transparent toolbar
+            // and mode content float over it so the dots read continuously. Its tint follows the active view's state,
+            // routed through the SetCanvasTone callback handed to each view.
+            _background = new AspidAnimatedDotsBackground()
+                .AddClass(BackgroundClass)
+                .SetPickingMode(PickingMode.Ignore);
 
             _inspectButton = ModeButton("Inspect Asset", Mode.Inspect);
             _projectButton = ModeButton("Project Audit", Mode.Project);
 
             var toolbar = new VisualElement().AddClass(ToolbarClass);
-            toolbar.style.flexDirection = FlexDirection.Row;
-            toolbar.style.flexShrink = 0;
             toolbar.AddChild(_inspectButton).AddChild(_projectButton);
 
             _container = new VisualElement().AddClass(ContainerClass);
             _container.style.flexGrow = 1;
 
-            root.AddChild(toolbar).AddChild(_container);
+            root.AddChild(_background).AddChild(toolbar).AddChild(_container);
 
             SwitchMode(_mode);
         }
 
-        private AspidGradientButton ModeButton(string label, Mode mode)
+        private Button ModeButton(string label, Mode mode)
         {
-            var button = new AspidGradientButton(label, _ => SwitchMode(mode)).AddClass(ToolbarButtonClass);
-            button.style.flexGrow = 1;
+            var button = new Button(() => SwitchMode(mode)) { text = label };
+            button.AddClass(ToolbarButtonClass);
+
+            // The active underline is a child bar, not a border-bottom — flipping a child's background-color via the
+            // parent's --active class repaints reliably (a border-color flip only showed up after a window resize).
+            button.AddChild(new VisualElement()
+                .AddClass(TabUnderlineClass)
+                .SetPickingMode(PickingMode.Ignore));
+
             return button;
         }
 
@@ -99,17 +122,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (mode == Mode.Inspect)
             {
-                _container.AddChild(new SerializeReferenceGraphView(_pendingTarget));
+                _container.AddChild(new SerializeReferenceGraphView(_pendingTarget, SetCanvasTone));
             }
             else
             {
-                var project = new SerializeReferenceProjectView { OnInspectAsset = InspectAsset };
+                var project = new SerializeReferenceProjectView
+                {
+                    OnInspectAsset = InspectAsset,
+                    OnCanvasTone = SetCanvasTone,
+                };
                 _container.AddChild(project);
-                project.ScanProject();
+
+                // A plain tab switch is warmth-gated inside Initialize (no cold-scan freeze on large projects); the
+                // breakage-notification deep-link forces the scan, since the user opened it to see the breakage.
+                if (_forceProjectScan)
+                {
+                    _forceProjectScan = false;
+                    project.ScanProject();
+                }
+                else
+                {
+                    project.Initialize();
+                }
             }
 
             UpdateToolbar();
         }
+
+        // The active view reports its state-tone here; the window owns the shared dotted canvas and applies it.
+        private void SetCanvasTone(Color tone) => _background?.SetTone(tone);
 
         // Cross-link: jumping from a project-audit result to that asset's full graph.
         private void InspectAsset(Object target)
@@ -120,8 +161,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void UpdateToolbar()
         {
-            if (_inspectButton != null) _inspectButton.style.opacity = _mode == Mode.Inspect ? 1f : InactiveOpacity;
-            if (_projectButton != null) _projectButton.style.opacity = _mode == Mode.Project ? 1f : InactiveOpacity;
+            _inspectButton?.EnableInClassList(ToolbarButtonActiveClass, _mode == Mode.Inspect);
+            _projectButton?.EnableInClassList(ToolbarButtonActiveClass, _mode == Mode.Project);
         }
     }
 }
