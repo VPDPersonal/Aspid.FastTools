@@ -54,6 +54,14 @@ namespace Aspid.FastTools.Types.Editors
         /// </summary>
         public TreeNodeKind Kind { get; set; }
 
+        /// <summary>
+        /// Title of the Favorites/Recents section this row belongs to (set on both the section header and its item
+        /// rows by <see cref="NavigationController"/>), or <see langword="null"/> for rows outside any composed section
+        /// (the &lt;None&gt; option, root categories, search results). Drives which section a row collapses under and
+        /// the indented, left-lined styling of section items.
+        /// </summary>
+        public string SectionKey { get; set; }
+
         public bool HasChildren => Children.Count > 0;
 
         public bool IsSectionTitle => Kind == TreeNodeKind.SectionTitle;

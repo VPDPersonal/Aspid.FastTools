@@ -16,6 +16,12 @@ namespace Aspid.FastTools.Types.Editors
         // Cached composition of the root page (None + Favorites/Recents sections + root children).
         private readonly List<TreeNode> _rootItems = new();
 
+        // Sections (by title) the user has collapsed; their item rows are hidden from _visibleRootItems until expanded.
+        private readonly HashSet<string> _collapsedSections = new();
+
+        // _rootItems with collapsed sections' item rows filtered out — the list actually shown on the root page.
+        private readonly List<TreeNode> _visibleRootItems = new();
+
         // All pickable type leaves in the current candidate set, keyed by assembly-qualified name.
         private readonly Dictionary<string, TreeNode> _typesByAqn = new();
 
@@ -32,12 +38,22 @@ namespace Aspid.FastTools.Types.Editors
         public bool IsAtRoot =>
             !IsSearching && _breadcrumbs.Count is 0;
 
+        /// <summary>
+        /// The ancestor chain from the synthetic root down to (but excluding) <see cref="CurrentNode"/>.
+        /// <c>Breadcrumbs[0]</c> is always the hidden <c>"/"</c> root; real ancestors start at index 1.
+        /// The breadcrumb bar reads this to render the clickable trail.
+        /// </summary>
+        public IReadOnlyList<TreeNode> Breadcrumbs => _breadcrumbs;
+
+        /// <summary>The node whose children are currently listed (the deepest opened level).</summary>
+        public TreeNode CurrentNode => _currentNode;
+
         public List<TreeNode> CurrentItems
         {
             get
             {
                 if (IsSearching) return _searchResults;
-                if (_composeSections && IsAtRoot) return _rootItems;
+                if (_composeSections && IsAtRoot) return _visibleRootItems;
                 return _currentNode.Children;
             }
         }
@@ -59,17 +75,6 @@ namespace Aspid.FastTools.Types.Editors
 
             IndexTypeLeaves(root);
             RebuildRootItems();
-        }
-
-        public string GetCurrentTitle()
-        {
-            if (IsSearching) return "Search";
-            if (_breadcrumbs.Count is 0) return "Select Type";
-
-            return string.Join("/", _breadcrumbs
-                .Select(node => node.DisplayName)
-                .Append(_currentNode.DisplayName)
-                .Where(name => name is not "/"));
         }
 
         public void ApplySearch(string query)
@@ -102,6 +107,17 @@ namespace Aspid.FastTools.Types.Editors
         {
             _breadcrumbs.Add(_currentNode);
             _currentNode = node;
+        }
+
+        /// <summary>
+        /// Pops breadcrumbs until exactly <paramref name="keep"/> remain, making the ancestor that sat at that
+        /// depth the current node. <c>keep == 0</c> returns to the root page. A <paramref name="keep"/> at or above
+        /// the current depth is a no-op. Used by the breadcrumb bar to jump up several levels in one click.
+        /// </summary>
+        public void NavigateToDepth(int keep)
+        {
+            while (_breadcrumbs.Count > keep && CanNavigateBack)
+                NavigateBack();
         }
 
         public TreeNode NavigateBack()
@@ -140,6 +156,24 @@ namespace Aspid.FastTools.Types.Editors
             if (_composeSections) RebuildRootItems();
         }
 
+        /// <summary>Whether the section identified by <paramref name="sectionKey"/> is currently collapsed.</summary>
+        public bool IsSectionCollapsed(string sectionKey) =>
+            sectionKey is not null && _collapsedSections.Contains(sectionKey);
+
+        /// <summary>
+        /// Toggles the collapsed state of the section identified by <paramref name="sectionKey"/> and re-filters the
+        /// visible root composition. No-op when this controller does not compose sections.
+        /// </summary>
+        public void ToggleSection(string sectionKey)
+        {
+            if (!_composeSections || string.IsNullOrEmpty(sectionKey)) return;
+
+            if (!_collapsedSections.Remove(sectionKey))
+                _collapsedSections.Add(sectionKey);
+
+            RebuildVisibleRootItems();
+        }
+
         private void RebuildRootItems()
         {
             _rootItems.Clear();
@@ -151,12 +185,29 @@ namespace Aspid.FastTools.Types.Editors
             if (noneOption is not null)
                 _rootItems.Add(noneOption);
 
-            AppendSection("★ Favorites", TypeSelectorPreferences.LoadFavorites());
+            AppendSection("Favorites", TypeSelectorPreferences.LoadFavorites());
             AppendSection("Recent", TypeSelectorPreferences.LoadRecents());
 
             foreach (var child in _rootNode.Children)
                 if (child != noneOption)
                     _rootItems.Add(child);
+
+            RebuildVisibleRootItems();
+        }
+
+        // Re-derives _visibleRootItems from _rootItems, dropping the item rows of any collapsed section. Section titles
+        // themselves always stay visible so the user can expand a collapsed section again.
+        private void RebuildVisibleRootItems()
+        {
+            _visibleRootItems.Clear();
+
+            foreach (var node in _rootItems)
+            {
+                if (!node.IsSectionTitle && node.SectionKey is not null && _collapsedSections.Contains(node.SectionKey))
+                    continue;
+
+                _visibleRootItems.Add(node);
+            }
         }
 
         private void AppendSection(string title, IReadOnlyList<string> assemblyQualifiedNames)
@@ -174,12 +225,13 @@ namespace Aspid.FastTools.Types.Editors
                     Order = source.Order,
                     Icon = source.Icon,
                     SearchName = source.SearchName,
+                    SectionKey = title,
                 });
             }
 
             if (rows.Count is 0) return;
 
-            _rootItems.Add(new TreeNode(title) { Kind = TreeNodeKind.SectionTitle });
+            _rootItems.Add(new TreeNode(title) { Kind = TreeNodeKind.SectionTitle, SectionKey = title });
             _rootItems.AddRange(rows);
         }
 

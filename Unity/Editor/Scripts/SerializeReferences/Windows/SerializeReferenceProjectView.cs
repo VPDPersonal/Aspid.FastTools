@@ -30,13 +30,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";
 
         private const string RootClass = "aspid-fasttools-repair-references";
-        private const string BackgroundClass = RootClass + "__background";
         private const string ContentClass = RootClass + "__content";
-        private const string CardClass = RootClass + "__card";
-        private const string CardHeaderClass = RootClass + "__card-header";
-        private const string FieldRowClass = RootClass + "__field-row";
-        private const string AssetClass = RootClass + "__asset";
-        private const string RescanClass = RootClass + "__rescan";
+        private const string PanelClass = RootClass + "__panel";
+        private const string PanelTitleClass = RootClass + "__panel-title";
+        private const string PanelDescriptionClass = RootClass + "__panel-description";
         private const string ScanProjectClass = RootClass + "__scan-project";
         private const string EmptyClass = RootClass + "__empty";
         private const string EmptyHiddenClass = EmptyClass + "--hidden";
@@ -70,6 +67,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string FixCollapsedText = "Fix  ▼";
         private const string FixExpandedText = "Fix  ▲";
 
+        // The scan button's label adapts to the index state: a deliberate "Scan Project" call-to-action while the
+        // index is cold (the first build is expensive), a quiet "Rescan" refresh once a scan has warmed it.
+        private const string ScanLabel = "Scan Project";
+        private const string RescanLabel = "Rescan";
+
         private VisualElement _empty;
         private VisualElement _results;
         private AspidLabel _resultsHeader;
@@ -78,9 +80,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private VisualElement _list;
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
+        private AspidGradientButton _scanButton;
 
         /// <summary>Jump from a project-audit result row to that asset's Inspect graph. Wired by the host window.</summary>
         public Action<Object> OnInspectAsset;
+
+        /// <summary>Reports this view's state-tone to the host window, which owns the shared dotted canvas. Wired by the window.</summary>
+        public Action<Color> OnCanvasTone;
 
         public SerializeReferenceProjectView()
         {
@@ -90,33 +96,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(RootClass);
 
-            // The animated dotted canvas absolutely fills the window (its own stylesheet positions it); the content
-            // flows above it, mirroring the Welcome window so the dark Aspid components read against black instead of
-            // the muddy default inspector grey.
-            var background = new AspidAnimatedDotsBackground()
-                .AddClass(BackgroundClass)
-                .SetPickingMode(PickingMode.Ignore);
-
-            // Project Audit has no per-asset field — the whole project is the subject (single-asset work lives in the
-            // Inspect graph). A header card carries just the Scan Project action.
-            var assetHeader = new AspidLabel("Project Audit", AspidLabelPreset.Default
+            // A full-width translucent header panel gives the Scan Project action a purposeful home, stacked: a title
+            // and a one-line description of what the audit does, then a full-width Scan Project button below. The
+            // dotted canvas (owned by the host window) reads through the panel's semi-transparent fill. The title is
+            // phrased around the action rather than repeating the tab's "Project Audit" name.
+            var panelTitle = new AspidLabel("Find missing references", AspidLabelPreset.Default
                     .SetLabelTheme(ThemeStyle.Type.Lightness)
-                    .SetLabelSize(AspidLabelSizeStyle.Type.H3)
-                    .SetLineTheme(ThemeStyle.Type.Dark)
-                    .SetLineStatus(StatusStyle.Type.Success))
-                .AddClass(CardHeaderClass);
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                    .SetLineSize(AspidDividingLineSizeStyle.Type.None))
+                .AddClass(PanelTitleClass);
 
-            var scanProject = new AspidGradientButton("Scan Project", _ => ScanProject())
+            var panelDescription = new Label(
+                    "Sweep every asset under Assets/ for broken [SerializeReference] types and bulk-fix them by type.")
+                .AddClass(PanelDescriptionClass);
+
+            // Stored as a field so its label can flip between the cold CTA and the warm refresh (see ScanLabel /
+            // RescanLabel). It opens with the cold label; Initialize / ScanProject reconcile it with the index state.
+            _scanButton = new AspidGradientButton(ScanLabel, _ => ScanProject())
                 .AddClass(ScanProjectClass);
 
-            var fieldRow = new VisualElement()
-                .AddClass(FieldRowClass)
-                .AddChild(scanProject);
-
-            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
-                .AddClass(CardClass)
-                .AddChild(assetHeader)
-                .AddChild(fieldRow);
+            var panel = new VisualElement()
+                .AddClass(PanelClass)
+                .AddChild(panelTitle)
+                .AddChild(panelDescription)
+                .AddChild(_scanButton);
 
             // The two terminal states (no asset / nothing to repair) share one hero centred in the space below the
             // card; scan results swap it for a warning-accented header, a short hint and the row list.
@@ -151,12 +154,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var content = new VisualElement()
                 .AddClass(ContentClass)
-                .AddChild(card)
+                .AddChild(panel)
                 .AddChild(_empty)
                 .AddChild(_results);
 
-            root.AddChild(background)
-                .AddChild(content);
+            root.AddChild(content);
+        }
+
+        // The tab-switch entry point. The project sweep's first pass is cold-built per session — the static usage
+        // index does not survive domain reloads — and parses every candidate asset's YAML behind a blocking bar,
+        // which is slow on large projects. So a plain switch to the Project Audit tab only auto-shows results when the
+        // index is already warm (a near-free in-memory filter); while cold it shows just the Scan panel over the idle
+        // canvas and waits for a deliberate Scan Project click, rather than freezing the editor on the tab switch. The
+        // breakage-notification deep-link bypasses this gate and forces a scan (the host window calls ScanProject
+        // directly), because the user opened it specifically to see the broken references.
+        public void Initialize()
+        {
+            if (SerializeReferenceTypeUsageIndex.IsWarm) ScanProject();
+            else ShowIdle();
         }
 
         // ---------------------------------------------------------------------------------------------------------
@@ -169,6 +184,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public void ScanProject()
         {
             if (_list is null) return;
+
+            // A scan always warms the index, so the button is a refresh affordance from here on — whether this is the
+            // first cold scan the user triggered or a warm rescan.
+            if (_scanButton is not null) _scanButton.Text = RescanLabel;
 
             ClosePicker();
             HideSummary();
@@ -531,10 +550,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _openPickerRow = anchor;
 
-            // Anchor the panel directly after the row in its own parent so it reads as belonging to that row, whether
-            // the row is a top-level single-asset entry (parent = _list) or a Fix all button nested in a group header.
-            var parent = anchor.parent ?? _list;
-            parent.InsertChild(parent.IndexOf(anchor) + 1, _openPicker);
+            // The Fix all button lives in the right-aligned actions cluster of the group's header row, so anchoring
+            // the picker directly after the button would cram the selector into that narrow right-hand column (it read
+            // as a side panel). Walk up to the group card and drop the picker full-width right below the whole header
+            // row instead, so it reads as a dropdown spanning the card, with the entry rows shifting down beneath it.
+            // The ?? fallback keeps a sane target if the actions → header-row → card nesting ever changes.
+            var headerRow = anchor.parent?.parent;   // anchor → actions → header row
+            var card = headerRow?.parent;            // header row → card
+            var container = card ?? anchor.parent ?? _list;
+            var after = card is not null ? headerRow : anchor;
+            container.InsertChild(container.IndexOf(after) + 1, _openPicker);
+
             view.FocusSearch();
         }
 
@@ -559,6 +585,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _results.AddClass(ResultsHiddenClass);
             _empty.RemoveClass(EmptyHiddenClass);
             _empty.Clear();
+            OnCanvasTone?.Invoke(success ? SerializeReferenceCanvasStyle.Success : SerializeReferenceCanvasStyle.Info);
 
             var icon = new VisualElement()
                 .AddClass(EmptyIconClass)
@@ -576,11 +603,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(new Label(message).AddClass(EmptyMessageClass));
         }
 
+        // The cold-index idle state shown until the user triggers the first scan: just the Scan panel floating over
+        // the info-toned canvas, with neither the results list nor a terminal hero (the project is unscanned, so
+        // "clean" cannot be claimed yet). The button keeps its cold Scan Project label until ScanProject relabels it.
+        private void ShowIdle()
+        {
+            _results.AddClass(ResultsHiddenClass);
+            _empty.AddClass(EmptyHiddenClass);
+            OnCanvasTone?.Invoke(SerializeReferenceCanvasStyle.Info);
+        }
+
         private void ShowResults(string headerText)
         {
             _empty.AddClass(EmptyHiddenClass);
             _results.RemoveClass(ResultsHiddenClass);
             _resultsHeader.Text = headerText;
+            OnCanvasTone?.Invoke(SerializeReferenceCanvasStyle.Warning);
         }
 
         private void ShowSummary(string message)

@@ -1,0 +1,76 @@
+/* --- Managed References window chrome ---
+   The shell hosting the two modes (Inspect Asset / Project Audit). One animated dotted canvas, owned by the window,
+   fills the whole window behind everything; the toolbar and the mode content are transparent and float over it, so
+   the dots read continuously from the tab strip down through the content. The active mode is marked by a bright,
+   bold label and a signature green underline (a child bar, not a border-bottom — see below). */
+.aspid-fasttools-serialize-reference-window {
+    flex-grow:                                            1;
+}
+
+/* The shared dotted canvas: a black base over which the dots paint; it absolutely fills the window via its own
+   stylesheet, sitting behind the toolbar and the mode content. Its blob tint is driven from code per view state. */
+.aspid-fasttools-serialize-reference-window__background {
+    background-color:                                     rgb(0, 0, 0);
+}
+
+/* The tab strip is fully transparent so the dotted canvas shows through behind the tabs. A little top padding lifts
+   the tabs off the window's top edge instead of jamming them against it. */
+.aspid-fasttools-serialize-reference-window__toolbar {
+    flex-direction:                                       row;
+    flex-shrink:                                          0;
+    padding-top:                                          6px;
+    background-color:                                     rgba(0, 0, 0, 0);
+}
+
+/* Each mode tab: a large, flat, full-flex button stripped of Unity's button chrome and of any fill, so it sits
+   directly on the canvas. The element-qualified selector outranks the built-in `.unity-button` rules. The small
+   horizontal margin opens a gap between the two tabs (and their underlines). The active underline rides a child bar
+   (see below), not a border-bottom, so it always repaints. */
+Button.aspid-fasttools-serialize-reference-window__toolbar-button {
+    flex-grow:                                            1;
+    margin:                                               0 4px;
+    padding:                                              15px 16px;
+    background-color:                                     rgba(0, 0, 0, 0);
+    border-width:                                         0;
+    border-radius:                                        0;
+    color:                                                var(--aspid-colors-text-dark);
+    font-size:                                            14px;
+    -unity-font-style:                                    normal;
+    -unity-text-align:                                    middle-center;
+}
+
+/* Hover on an inactive tab: a faint light wash (kept translucent so the dots still read) and a brighter label. */
+Button.aspid-fasttools-serialize-reference-window__toolbar-button:hover {
+    background-color:                                     rgba(255, 255, 255, 0.05);
+    color:                                                var(--aspid-colors-text-light);
+}
+
+/* Active tab: brightest label, bold weight. Placed after the base/hover rules so it wins at equal specificity. */
+Button.aspid-fasttools-serialize-reference-window__toolbar-button--active {
+    color:                                                var(--aspid-colors-text-lightness);
+    -unity-font-style:                                    bold;
+}
+
+/* The active tab also lifts on hover (same faint wash as inactive tabs) for consistent feedback, but keeps its
+   brightest label rather than dimming to the inactive-hover colour. */
+Button.aspid-fasttools-serialize-reference-window__toolbar-button--active:hover {
+    background-color:                                     rgba(255, 255, 255, 0.05);
+    color:                                                var(--aspid-colors-text-lightness);
+}
+
+/* Underline accent: a 2px child bar pinned to the tab's bottom edge. Toggling a child's background-color via the
+   parent's --active class repaints reliably, whereas flipping a border-bottom-color did not redraw until the next
+   relayout (the underline only appeared after a window resize). A grey baseline marks every (inactive) tab; the
+   active tab swaps it for the signature green. */
+.aspid-fasttools-serialize-reference-window__tab-underline {
+    position:                                             absolute;
+    left:                                                 0;
+    right:                                                0;
+    bottom:                                               0;
+    height:                                               2px;
+    background-color:                                     var(--aspid-colors-shade-light);
+}
+
+Button.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-underline {
+    background-color:                                     var(--aspid-colors-status-success-text-light);
+}
