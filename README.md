@@ -20,6 +20,7 @@
 - **Features**
   - [ProfilerMarker](#profilermarker)
   - [Serializable Type System](#serializable-type-system)
+  - [SerializeReference Selector](#serializereference-selector)
   - [Enum System](#enum-system)
   - [ID System (Beta)](#id-system-beta)
   - [SerializedProperty Extensions](#serializedproperty-extensions)
@@ -250,6 +251,29 @@ public sealed class AbilitySelector : MonoBehaviour
 
 > The complete sample — `Ability` / `AbilitySelector` / `EnemyBase` and their subclasses — ships in the `Types` sample (Package Manager → Aspid.FastTools → Samples).
 
+Decorate a candidate type with `[TypeSelectorItem]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost:
+
+```csharp
+using Aspid.FastTools.Types;
+
+// Re-home the type under a category and give it a tooltip and ordering hint:
+[TypeSelectorItem("Combat/Damage Modifier", Tooltip = "Scales incoming damage", Order = 10)]
+public sealed class DamageModifier { }
+
+// A plain name (no '/') just renames the leaf in place, keeping its namespace location:
+[TypeSelectorItem("Damage Modifier")]
+public sealed class DamageModifierAlt { }
+```
+
+| Member | Description |
+|--------|-------------|
+| `DisplayPath` | A `"Category/Name"` value re-homes the type under those category nodes; a plain value renames the leaf in place. `null`/empty keeps the default type name. |
+| `Tooltip` | Tooltip shown when hovering the type's row. |
+| `Order` | Ordering hint within the group — lower values appear higher; ties are broken alphabetically. Default `0`. |
+| `Icon` | Editor icon shown left of the label — an `EditorGUIUtility.IconContent` name or a `Resources` texture path. |
+
+> Search still matches the real type name, so a re-homed or renamed entry stays findable by its original name.
+
 ---
 
 ### Type Selector Window
@@ -261,6 +285,7 @@ The Inspector shows a button that opens a searchable popup window with:
 - Keyboard navigation (Arrow keys, Enter, Escape)
 - Navigation history (back button)
 - Assembly disambiguation for types with identical names
+- **Favorites** and **Recent** sections on the root page: a hover-revealed ★ toggle pins a type to Favorites, and the last 8 picked types are kept under Recent (both persisted per project, hidden while searching)
 
 ![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_type_selector_window.png)
 
@@ -276,7 +301,8 @@ namespace Aspid.FastTools.Types.Editors
             Type[] types = null,
             string currentAqn = "",
             TypeAllow allow = TypeAllow.None,
-            Action<string> onSelected = null);
+            Action<string> onSelected = null,
+            Func<Type, bool> filter = null);
     }
 }
 ```
@@ -288,6 +314,7 @@ namespace Aspid.FastTools.Types.Editors
 | `currentAqn` | Assembly-qualified name of the currently selected type, used to pre-navigate to its location. Pass `null` or empty to start at the root. |
 | `allow` | Which special type kinds (abstract classes, interfaces) are included in addition to concrete classes. Default: `TypeAllow.None`. |
 | `onSelected` | Callback invoked with the assembly-qualified name of the selected type, or `null` if the user chose `<None>`. |
+| `filter` | Optional predicate applied to each candidate type after the base-type and `allow` checks. Return `false` to hide a type. Pass `null` to keep every match. |
 
 ### ComponentTypeSelector
 
@@ -325,6 +352,69 @@ public sealed class TankEnemy : EnemyBase
 ```
 
 ![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
+
+---
+
+## SerializeReference Selector
+
+A drop-in dropdown for `[SerializeReference]` fields. Add `[TypeSelector]` next to `[SerializeReference]` and the Inspector replaces the default managed-reference UI with the same searchable, hierarchical type picker used by `SerializableType` — letting you choose which concrete implementation of the field's declared type is instantiated.
+
+- Lists every concrete, non-`UnityEngine.Object` class assignable to the field's declared interface / base type.
+- Passing base types narrows the candidates below the field's declared type — `[TypeSelector(typeof(IMelee))]` on an `IWeapon` field offers only `IMelee` implementations.
+- Picking a type instantiates it; `<None>` clears the reference.
+- The assigned instance's serialized fields are drawn inline under a foldout.
+- A stored type that no longer resolves (renamed or deleted) is surfaced as a missing-type warning instead of silently clearing.
+- Open generic implementations (e.g. `Modifier<T>`) are offered too: arguments are inferred from a closed-generic field, or picked in a follow-up window (validated against the field type) before instantiation.
+- Switching the selected type preserves matching data — fields shared by the old and new implementation (by name and serialized shape) carry over instead of resetting to defaults.
+- Right-click the header for a Copy / Paste context menu: it copies the managed-reference value and pastes it as an independent instance into any compatible field (paste is disabled when the clipboard type is not assignable to the target).
+- A missing type can be repaired in place: the warning is a compact yellow notice whose underlined **Fix** word opens the type picker — choose the correct type and the reference is re-pointed while keeping its stored data; hover the notice for the full missing-type detail. Works for saved assets (ScriptableObjects and prefab assets) selected in the Project **and for objects open in Prefab Mode** — saved assets are rewritten in their YAML, while a Prefab Mode object is repaired on the live instance, recovering the data Unity still holds for the missing type. The repair also reaches nested references — through nested managed references and through plain `[Serializable]` containers (a struct/class field or a `List<T>` of them) — so a missing type buried in a slot or list element is fixed inline too.
+- The notice can also surface a **Smart Fix** suggestion — a second clickable segment next to **Fix** (e.g. `· → Pistol?`) that ranks the most likely replacement (a declared `[MovedFrom]` rename, the same class name in a different namespace/assembly, a casing-only rename, or a near-miss name backed by a matching field shape) and applies it in one click. The suggestion is only ever a type the picker would offer, and is never auto-applied — you always click.
+- For missing references the Inspector cannot surface in the moment — components on child objects when the asset is not open in Prefab Mode, plus bulk repair and orphaned entries no field points at — the **Repair Missing References** window (`Tools → Aspid 🐍 → Repair Missing References FastTools`) scans the whole asset file and lists every one with its own **Fix** picker, no Prefab Mode required. A `Scan Project` button extends this project-wide: it sweeps every `.prefab` / `.asset` / `.unity` file under `Assets/`, groups the broken references by their stored type, and rewrites every entry across every affected file with a single `Fix all` (plus a Smart Fix quick-apply) per group — entries in currently open scenes are skipped during a bulk apply.
+- The **Managed References** window (`Tools → Aspid 🐍 → Managed References FastTools`) maps an asset's whole managed-reference graph from the YAML: a per-component tree of field-pointer roots, nested children, shared references and orphaned payloads, with `MISSING` / `SHARED` badges, deterministic per-rid colours, and a constrained inline **Fix** for missing entries. It surfaces references at any nesting depth and the orphans the Inspector cannot navigate to.
+- An aliased reference (two fields sharing one instance, e.g. after duplicating a list element) is flagged by the same compact notice, whose underlined **Make unique** word (also a right-click → **Make Unique Reference** action) splits it into an independent copy; the shared fields are tinted with a deterministic per-rid colour stripe and chip that matches the **Managed References** window.
+- Duplicating a list element (Duplicate / Ctrl+D, or `+`-appending a copy of the last element) no longer aliases the reference in the first place — the copy silently becomes an independent instance in a single Undo step. Intentional cross-field sharing is left untouched and keeps the **Make unique** notice.
+- Multi-object editing is supported: a mixed selection shows a mixed-type dropdown, and picking a type (or pasting) applies an independent instance to each selected object in one Undo group; per-asset notices are suppressed under a multi-object selection.
+- Usage is validated at compile time by the Roslyn analyzer: `AFT0004` (error) flags a `[SerializeReference]` + `[TypeSelector]` field whose type derives from `UnityEngine.Object`, and `AFT0005` (warning) flags a constraint no visible concrete type can satisfy — the picker would be empty.
+- Works on single fields, arrays, and `List<T>`, in both IMGUI and UIToolkit inspectors.
+
+```csharp
+using System;
+using UnityEngine;
+using System.Collections.Generic;
+using Aspid.FastTools.Types;
+
+public interface IWeapon
+{
+    void Fire();
+}
+
+[Serializable]
+public sealed class Pistol : IWeapon
+{
+    [SerializeField] [Min(0)] private int _damage = 10;
+
+    public void Fire() => Debug.Log($"Pistol: {_damage} dmg");
+}
+
+[Serializable]
+public sealed class Railgun : IWeapon
+{
+    [SerializeField] [Min(0)] private float _chargeTime = 1.5f;
+
+    public void Fire() => Debug.Log($"Railgun charged for {_chargeTime}s");
+}
+
+public sealed class Loadout : MonoBehaviour
+{
+    [SerializeReference] [TypeSelector]
+    private IWeapon _primary;
+
+    [SerializeReference] [TypeSelector]
+    private List<IWeapon> _sidearms;
+}
+```
+
+The attribute is editor-only (`[Conditional("UNITY_EDITOR")]`) and carries no runtime cost.
 
 ---
 

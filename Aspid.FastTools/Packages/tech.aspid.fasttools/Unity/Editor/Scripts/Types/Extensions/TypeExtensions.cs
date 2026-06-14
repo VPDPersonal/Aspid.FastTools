@@ -28,9 +28,14 @@ namespace Aspid.FastTools.Types.Editors
         /// </returns>
         public static MonoScript FindMonoScript(this Type type)
         {
-            var isEnum = type.IsEnum;
-            var typeName = type.Name;
-            var typeNamespace = type.Namespace;
+            if (type is null) return null;
+
+            // A closed generic (e.g. Modifier<Modifier<int>>) has no script of its own — the source file
+            // declares the open definition, so look that up and match by its arity-stripped name.
+            var lookupType = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+            var isEnum = lookupType.IsEnum;
+            var typeName = StripArity(lookupType.Name);
+            var typeNamespace = lookupType.Namespace;
 
             var scripts = AssetDatabase.FindAssets(filter: $"t:MonoScript {typeName}")
                 .Select(AssetDatabase.GUIDToAssetPath)
@@ -42,7 +47,7 @@ namespace Aspid.FastTools.Types.Editors
 
             foreach (var script in scripts)
             {
-                if (script.GetClass() != type) continue;
+                if (script.GetClass() != lookupType) continue;
                 return script;
             }
 
@@ -92,8 +97,15 @@ namespace Aspid.FastTools.Types.Editors
             var script = type.FindMonoScript();
             if (script is null) return (script: null, line: 0);
 
-            var line = FindTypeLineNumber(script.text, type.Name, type.IsEnum);
+            var lookupType = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+            var line = FindTypeLineNumber(script.text, StripArity(lookupType.Name), lookupType.IsEnum);
             return (script, line);
+        }
+
+        private static string StripArity(string name)
+        {
+            var tick = name.IndexOf('`');
+            return tick >= 0 ? name[..tick] : name;
         }
         
         private static int FindTypeLineNumber(string text, string typeName, bool isEnum)

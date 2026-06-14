@@ -1,0 +1,445 @@
+:root {
+    margin:                                                 0;
+}
+
+/* Lay the foldout header out as a row and centre its items so the dropdown and the open-script
+   button line up vertically, mirroring the single-row SerializableType field. */
+.aspid-fasttools-serialize-reference .unity-foldout__toggle {
+    flex-direction:                                         row;
+    align-items:                                            center;
+}
+
+/* Keep the expand arrow at its natural width on the far left of the header. */
+.aspid-fasttools-serialize-reference .unity-foldout__toggle > .unity-foldout__input {
+    flex-grow:                                              0;
+    flex-shrink:                                            0;
+}
+
+/* The type dropdown fills the header row up to the open-script button. Its left margin is set
+   in code to offset the arrow so the dropdown begins at the inspector value column. */
+.aspid-fasttools-serialize-reference__dropdown {
+    flex-grow:                                              1;
+}
+
+/* Cancel the EnumField caption's built-in -2px left margin so the text indents from the box
+   border like SerializableType's field instead of hugging the edge. */
+.aspid-fasttools-serialize-reference__dropdown .unity-enum-field__text {
+    margin-left:                                            0;
+}
+
+/* Hide the expand arrow when the reference is empty — there is nothing to expand. */
+.aspid-fasttools-serialize-reference--empty .unity-foldout__toggle .unity-foldout__checkmark {
+    visibility:                                             hidden;
+}
+
+/* Open-script button mirrors the SerializableType drawer affordance. */
+.aspid-fasttools-serialize-reference Button {
+    padding:                                                0;
+    min-width:                                              18px;
+    max-width:                                              18px;
+    min-height:                                             18px;
+    max-height:                                             18px;
+    margin:                                                 0 0 0 1px;
+}
+
+.aspid-fasttools-serialize-reference Button > VisualElement {
+    width:                                                  100%;
+    height:                                                 100%;
+    background-image:                                       resource("d_Folder Icon");
+}
+
+.aspid-fasttools-serialize-reference Button > VisualElement:enabled:hover {
+    background-image:                                       resource("d_FolderOpened Icon");
+}
+
+/* --- Shared-reference rid colour stripe ---
+   A 3 px absolutely-positioned bar on the left edge of the field root, coloured per-rid so aliased fields
+   can be matched at a glance. Hidden (zero width) by default; the --active modifier reveals it when a shared
+   reference is detected. The colour is always set inline from code; only geometry lives here. */
+.aspid-fasttools-serialize-reference__rid-stripe {
+    position:                                              absolute;
+    left:                                                  0;
+    top:                                                   0;
+    bottom:                                                0;
+    width:                                                 0;
+}
+
+.aspid-fasttools-serialize-reference__rid-stripe--active {
+    width:                                                 3px;
+}
+
+/* --- Compact inline notice (missing type / shared reference) ---
+   Replaces the bulky help-box + button: a small warning icon, a terse yellow message and an
+   underlined, clickable action word. The full explanation rides the element's tooltip on hover. */
+.aspid-fasttools-serialize-reference-notice {
+    flex-direction:                                        row;
+    align-items:                                           center;
+    flex-wrap:                                             wrap;
+    margin:                                                2px 0 1px 0;
+}
+
+.aspid-fasttools-serialize-reference-notice__icon {
+    width:                                                 14px;
+    height:                                                14px;
+    min-width:                                             14px;
+    margin-right:                                          5px;
+    background-size:                                       contain;
+    background-repeat:                                     no-repeat;
+    background-position:                                   center;
+    background-image:                                      resource("d_console.warnicon");
+}
+
+/* Both states use the same yellow text per the design — warning, not info. */
+.aspid-fasttools-serialize-reference-notice__message {
+    color:                                                 var(--aspid-colors-status-warning-text-light);
+    -unity-font-style:                                     normal;
+    white-space:                                           normal;
+}
+
+.aspid-fasttools-serialize-reference-notice__action {
+    margin-left:                                           4px;
+    color:                                                 var(--aspid-colors-status-warning-text-light);
+    -unity-font-style:                                     bold;
+    border-bottom-width:                                   1px;
+    border-bottom-color:                                   var(--aspid-colors-status-warning-text-light);
+    cursor:                                                link;
+}
+
+.aspid-fasttools-serialize-reference-notice__action:hover {
+    color:                                                 var(--aspid-colors-status-warning-text-lightness);
+    border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
+}
+
+/* Trailing Smart Fix suggestion ("· → Pistol?"): a second underlined clickable word after Fix, same warning
+   palette, sitting a touch further to the right so the two actions read as separate affordances. Hidden by
+   default; the --visible modifier reveals it when a suggestion is set. */
+.aspid-fasttools-serialize-reference-notice__suggestion {
+    margin-left:                                           6px;
+    color:                                                 var(--aspid-colors-status-warning-text-light);
+    -unity-font-style:                                     bold;
+    border-bottom-width:                                   1px;
+    border-bottom-color:                                   var(--aspid-colors-status-warning-text-light);
+    cursor:                                                link;
+    display:                                               none;
+}
+
+.aspid-fasttools-serialize-reference-notice__suggestion--visible {
+    display:                                               flex;
+}
+
+.aspid-fasttools-serialize-reference-notice__suggestion:hover {
+    color:                                                 var(--aspid-colors-status-warning-text-lightness);
+    border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
+}
+
+/* Small round rid colour chip appended after the action word on the shared-reference notice. Its background
+   colour is set inline from code so the same rid always renders the same colour. Hidden by default; the
+   --visible modifier reveals it when a shared reference is detected. */
+.aspid-fasttools-serialize-reference-notice__rid-chip {
+    width:                                                 8px;
+    height:                                               8px;
+    min-width:                                            8px;
+    margin-left:                                          5px;
+    border-radius:                                        4px;
+    display:                                              none;
+}
+
+.aspid-fasttools-serialize-reference-notice__rid-chip--visible {
+    display:                                               flex;
+}
+
+/* Info variant — a non-actionable, dim hint (the multi-object "different types" notice that stands in for the
+   suppressed per-instance child fields). Swaps the warning icon for the info icon and the yellow text for the
+   generic dim shade, so it reads as informational rather than something to fix. */
+.aspid-fasttools-serialize-reference-notice--info .aspid-fasttools-serialize-reference-notice__icon {
+    background-image:                                      resource("d_console.infoicon");
+}
+
+.aspid-fasttools-serialize-reference-notice--info .aspid-fasttools-serialize-reference-notice__message {
+    color:                                                 var(--aspid-colors-text-dark);
+}
+
+/* --- Project Audit view ---
+   Transparent content floating over the window's shared dotted canvas (tinted by status from code — green when
+   clean, amber when something needs fixing). A single Scan Project action sits in a slim translucent panel at the
+   top-left; the old boxed header card was dropped since the active tab already names the mode. Below sits either a
+   centred hero for the terminal states (success = nothing to repair, info = canceled) or warning-accented group
+   cards, one per broken stored type, each with a bulk Fix all over its entry rows. */
+.aspid-fasttools-repair-references__content {
+    flex-grow:                                             1;
+    padding:                                               12px;
+}
+
+/* Full-width translucent header panel, stacked: the audit's title + one-line description, then a full-width Scan
+   Project button below. The semi-transparent dark fill lets the window's dotted canvas read through. Replaces both
+   the old solid header card and the bare floating button. */
+.aspid-fasttools-repair-references__panel {
+    flex-direction:                                       column;
+    flex-shrink:                                          0;
+    margin-bottom:                                        12px;
+    padding:                                              12px;
+    border-radius:                                        8px;
+    border-width:                                         1px;
+    border-color:                                         var(--aspid-colors-shade-darkness);
+    background-color:                                     rgba(20, 20, 20, 0.55);
+}
+
+.aspid-fasttools-repair-references__panel-title {
+    margin-bottom:                                        2px;
+}
+
+/* The description carries the gap above the button (margin-bottom), so the button-to-description spacing matches the
+   button-to-panel-edge spacing (the panel's 12px bottom padding). Put on the plain Label here — not the button's
+   margin-top — because the gradient button's own :root margin would override an equal-specificity rule. */
+.aspid-fasttools-repair-references__panel-description {
+    color:                                                var(--aspid-colors-text-dark);
+    white-space:                                          normal;
+    margin-bottom:                                        12px;
+}
+
+/* Scan Project / Rescan sweeps every text asset under Assets/; full-width below the description. The descendant
+   selector outranks the gradient button's own :root, so the panel zeros the button's margin (spacing lives on the
+   description / panel padding) while keeping its natural 0 10px padding, so the label sits indented inside the pill
+   rather than hugging its left edge. */
+.aspid-fasttools-repair-references__panel .aspid-fasttools-repair-references__scan-project {
+    margin:                                               0;
+}
+
+/* Centred hero for the two terminal states: package icon in the status colour, headline, dimmed explanation. */
+.aspid-fasttools-repair-references__empty {
+    flex-grow:                                             1;
+    padding:                                               20px;
+    align-items:                                           center;
+    justify-content:                                       center;
+}
+
+.aspid-fasttools-repair-references__empty--hidden {
+    display:                                               none;
+}
+
+.aspid-fasttools-repair-references__empty-icon {
+    width:                                                 96px;
+    height:                                                96px;
+    opacity:                                               0.9;
+    margin-bottom:                                         14px;
+    background-size:                                       contain;
+    background-repeat:                                     no-repeat;
+    background-position:                                   center;
+}
+
+.aspid-fasttools-repair-references__empty-icon--info {
+    background-image:                                      var(--aspid-icons-status-info);
+}
+
+.aspid-fasttools-repair-references__empty-icon--success {
+    background-image:                                      var(--aspid-icons-status-success);
+}
+
+.aspid-fasttools-repair-references__empty-title {
+    margin-bottom:                                         4px;
+}
+
+.aspid-fasttools-repair-references__empty-message {
+    max-width:                                             420px;
+    color:                                                 var(--aspid-colors-text-dark);
+    white-space:                                           normal;
+    -unity-text-align:                                     middle-center;
+}
+
+.aspid-fasttools-repair-references__results {
+    flex-grow:                                             1;
+}
+
+.aspid-fasttools-repair-references__results--hidden {
+    display:                                               none;
+}
+
+.aspid-fasttools-repair-references__results-header {
+    margin-bottom:                                         6px;
+}
+
+.aspid-fasttools-repair-references__results-hint {
+    margin-bottom:                                         10px;
+    color:                                                 var(--aspid-colors-text-dark);
+    white-space:                                           normal;
+}
+
+/* Success summary reporting the count after a bulk Fix all; hidden until a bulk fix runs. */
+.aspid-fasttools-repair-references__summary {
+    margin-bottom:                                         10px;
+}
+
+.aspid-fasttools-repair-references__summary--hidden {
+    display:                                               none;
+}
+
+/* The vertical scrollbar rides the scroll's right edge; a right padding insets it from the window edge so it does
+   not hug the border, and gives the group cards a small gap before it. */
+.aspid-fasttools-repair-references__scroll {
+    flex-grow:                                             1;
+    padding-right:                                         6px;
+}
+
+/* Amber-tinted gradient rows — a broken reference reads as a warning — with a matching hover accent. */
+.aspid-fasttools-repair-references__entry {
+    --aspid-fasttools-colors-gradient_button-bg:           var(--aspid-colors-status-warning-darkness);
+    --aspid-fasttools-colors-gradient_button-accent:       var(--aspid-colors-status-warning-text-light);
+}
+
+/* The dimmed rid rides between the type label and the trailing "Fix" cue; reset the row's bold weight. */
+.aspid-fasttools-repair-references__entry-rid {
+    margin-left:                                           10px;
+    color:                                                 var(--aspid-colors-text-dark);
+    -unity-font-style:                                     normal;
+    -unity-text-align:                                     middle-right;
+}
+
+/* Inline type picker: the selector view expanded as an accordion full-width in the group card, below the header
+   row. A translucent fill (the cards'/panel's value) lets the window's dotted canvas read through it too, framed by
+   a neutral border and the card's 8px radius rather than the warning amber it used to carry. It composites over the
+   card's own translucent fill, so the open picker still sits a touch denser than the bare card — enough figure to
+   read as an active surface without going opaque. Fixed height — the selector's ListView needs bounds to virtualize.
+   The 5px padding matches the selector's own edge spacing so its full-bleed header strip reaches the box border;
+   overflow keeps that strip inside the rounded corners. */
+.aspid-fasttools-repair-references__picker.aspid-fasttools-background {
+    flex-grow:                                             0;
+    height:                                                300px;
+    padding:                                               5px;
+    overflow:                                              hidden;
+    margin:                                                0 0 8px 0;
+    border-radius:                                         8px;
+    border-width:                                          1px;
+    border-color:                                          var(--aspid-colors-shade-dark);
+    background-color:                                      rgba(20, 20, 20, 0.55);
+}
+
+/* Bleed the selector's header strip to the picker box edges (top + sides) so it reads as a filled header bar, not an
+   inset rectangle. -10px cancels both the picker box's 5px padding and the selector root's own 5px padding; the
+   picker's overflow:hidden + 8px radius round the header's top corners to match the box. */
+.aspid-fasttools-repair-references__picker .aspid-fasttools-type-selector__header {
+    margin:                                                -10px -10px 5px;
+}
+
+/* Stretch the search field to the full row width so it lines up with the header and the list rows below — Unity's
+   ToolbarSearchField otherwise keeps an intrinsic width that left the field visibly narrower than the items. */
+.aspid-fasttools-repair-references__picker .aspid-fasttools-type-selector ToolbarSearchField {
+    margin:                                                0 0 5px 0;
+    width:                                                 auto;
+    max-width:                                             none;
+    align-self:                                            stretch;
+}
+
+/* Row hover and selection are owned by the base type-selector stylesheet now — a neutral surface lift plus a 2 px
+   green accent bar on the left edge — so this host no longer paints the rows. It only makes the list area read denser
+   than the translucent picker chrome: a near-opaque backing keeps the window's dotted canvas from bleeding through the
+   type names while the framing border, header and footer still composite over the dots. */
+.aspid-fasttools-repair-references__picker .aspid-fasttools-type-selector .unity-collection-view {
+    background-color:                                     rgba(20, 20, 20, 0.5);
+}
+
+/* Bleed the selector's footer hint to the picker box edges (bottom + sides), mirroring the header strip above.
+   -10px cancels both the picker box's 5px padding and the selector root's own 5px padding. */
+.aspid-fasttools-repair-references__picker .aspid-fasttools-type-selector__footer-hint {
+    margin:                                              5px -10px -10px;
+}
+
+/* --- Project-mode group cards ---
+   Each broken stored type becomes a card that shares the Scan panel's surface: a translucent dark fill so the
+   window's dotted canvas reads through, a neutral border and the panel's 8px radius (overriding AspidBox's opaque
+   darkness fill and its 10px --rounded). The warning read comes from the amber type header and the amber-tinted
+   dotted canvas behind it, not a warm border — so the cards belong to the same family as the Scan panel above them.
+   Layout: a header row (type name + entry/file counts on the left, bulk Fix all + optional Smart Fix on the right)
+   over a list of ping-only entry rows. */
+.aspid-fasttools-repair-references__group.aspid-fasttools-background {
+    flex-grow:                                             0;
+    margin-bottom:                                         10px;
+    padding:                                               8px 10px;
+    border-radius:                                         8px;
+    border-width:                                          1px;
+    border-color:                                          var(--aspid-colors-shade-darkness);
+    background-color:                                      rgba(20, 20, 20, 0.55);
+}
+
+.aspid-fasttools-repair-references__group-header-row {
+    flex-direction:                                        row;
+    align-items:                                           center;
+    flex-wrap:                                             wrap;
+    margin-bottom:                                         6px;
+}
+
+.aspid-fasttools-repair-references__group-header {
+    flex-shrink:                                           1;
+}
+
+/* Dimmed "N entries · M files" count, riding between the type header and the trailing actions. */
+.aspid-fasttools-repair-references__group-count {
+    margin-left:                                           10px;
+    flex-grow:                                             1;
+    color:                                                 var(--aspid-colors-text-dark);
+    -unity-font-style:                                     normal;
+}
+
+.aspid-fasttools-repair-references__group-actions {
+    flex-direction:                                        row;
+    align-items:                                           center;
+}
+
+/* Amber bulk-fix button, matching the single-asset entry rows' warning palette. */
+.aspid-fasttools-repair-references__group-fix-all {
+    min-width:                                             96px;
+    margin-bottom:                                         0;
+    --aspid-fasttools-colors-gradient_button-bg:           var(--aspid-colors-status-warning-darkness);
+    --aspid-fasttools-colors-gradient_button-accent:       var(--aspid-colors-status-warning-text-light);
+}
+
+.aspid-fasttools-repair-references__group-fix-all .aspid-fasttools-gradient-button__label {
+    flex-grow:                                             0;
+    -unity-text-align:                                     middle-center;
+}
+
+/* Smart Fix quick-apply: a success-tinted suggestion sitting to the right of Fix all. */
+.aspid-fasttools-repair-references__group-suggest {
+    margin-left:                                           6px;
+    margin-bottom:                                         0;
+    --aspid-fasttools-colors-gradient_button-bg:           var(--aspid-colors-status-success-darkness);
+    --aspid-fasttools-colors-gradient_button-accent:       var(--aspid-colors-status-success-text-light);
+}
+
+.aspid-fasttools-repair-references__group-suggest .aspid-fasttools-gradient-button__label {
+    flex-grow:                                             0;
+    -unity-text-align:                                     middle-center;
+}
+
+/* A single broken reference inside a group: asset path on the left, dim rid on the right; the whole row pings. */
+.aspid-fasttools-repair-references__group-entry {
+    flex-direction:                                        row;
+    align-items:                                           center;
+    padding:                                               2px 4px;
+    border-radius:                                         3px;
+    cursor:                                                link;
+}
+
+.aspid-fasttools-repair-references__group-entry:hover {
+    background-color:                                      var(--aspid-colors-bg-dark);
+}
+
+.aspid-fasttools-repair-references__group-entry-path {
+    flex-grow:                                             1;
+    color:                                                 var(--aspid-colors-text-light);
+    white-space:                                           normal;
+    overflow:                                              hidden;
+    text-overflow:                                         ellipsis;
+}
+
+.aspid-fasttools-repair-references__group-entry-rid {
+    margin-left:                                           10px;
+    color:                                                 var(--aspid-colors-text-dark);
+    -unity-text-align:                                     middle-right;
+}
+
+/* A compatible MonoScript dragged over the field highlights the header as a valid drop target. */
+.aspid-fasttools-serialize-reference--drop-target {
+    background-color:                                      var(--aspid-colors-bg-light);
+    border-left-width:                                     2px;
+    border-left-color:                                     var(--aspid-colors-status-info-light);
+}
