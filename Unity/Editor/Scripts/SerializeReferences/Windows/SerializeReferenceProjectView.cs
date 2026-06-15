@@ -561,7 +561,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var after = card is not null ? headerRow : anchor;
             container.InsertChild(container.IndexOf(after) + 1, _openPicker);
 
-            view.FocusSearch();
+            view.FocusPicker();
         }
 
         private void ClosePicker()

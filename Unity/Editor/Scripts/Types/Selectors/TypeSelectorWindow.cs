@@ -54,7 +54,7 @@ namespace Aspid.FastTools.Types.Editors
             var size = new Vector2(Mathf.Max(350, screenRect.width), 320);
             window.ShowAsDropDown(screenRect, size);
 
-            view.FocusSearch();
+            view.FocusPicker();
         }
     }
 }

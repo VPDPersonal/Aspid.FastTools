@@ -486,7 +486,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var anchor = fixButton?.parent?.parent ?? _list;
             var parent = anchor.parent ?? _list;
             parent.InsertChild(parent.IndexOf(anchor) + 1, _openPicker);
-            view.FocusSearch();
+            view.FocusPicker();
         }
 
         private void ClosePicker()
