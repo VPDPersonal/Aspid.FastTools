@@ -29,6 +29,11 @@ namespace Aspid.FastTools.Types.Editors
 
         private const string BlockClass = "aspid-fasttools-type-selector";
         private const string HeaderClass = BlockClass + "__header";
+        private const string HeaderSearchFocusedModifier = HeaderClass + "--search-focused";
+        private const string TrailClass = BlockClass + "__trail";
+        private const string SearchButtonClass = BlockClass + "__search-button";
+        private const string SearchButtonIconClass = BlockClass + "__search-button-icon";
+        private const string SearchFieldClass = BlockClass + "__search-field";
         private const string CrumbClass = BlockClass + "__breadcrumb";
         private const string CrumbCurrentModifier = CrumbClass + "--current";
         private const string CrumbLinkModifier = CrumbClass + "--link";
@@ -45,6 +50,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string FooterHintClass = BlockClass + "__footer-hint";
         private const string FavoriteToggleClass = BlockClass + "__favorite-toggle";
         private const string FavoriteToggleOnModifier = FavoriteToggleClass + "--favorite-on";
+        private const string ItemIconCollapsedModifier = ItemIconClass + "--collapsed";
 
         private const string StarFilledGlyph = "★";
         private const string StarEmptyGlyph = "☆";
@@ -54,23 +60,43 @@ namespace Aspid.FastTools.Types.Editors
         private const string TypeFallbackIcon = "d_cs Script Icon";
         private const string ContainerFallbackIcon = "d_Folder Icon";
 
+        // A folder container shows an opened-folder icon while it is the selected row, so the highlight reads as "about
+        // to drill in". Only the fallback-folder containers swap; containers with an explicit icon keep it.
+        private const string ContainerOpenFallbackIcon = "d_FolderOpened Icon";
+
         // <None> draws a crisp hollow-circle text glyph in the leading slot — it is vertically symmetric, so it centres
         // cleanly on the caption.
         private const string NoneGlyph = "○";
 
-        // Section headers use Unity's native foldout-arrow image (collapsed points right, expanded points down) in the
-        // icon slot. It is the solid triangle look that fit best, and being an image like the type/folder icons it
-        // centres exactly on the caption — where the text-glyph triangle rode off because its ink sits skewed in the
-        // font's em box (unlike the symmetric circle). Both arrows are light grey, so they read on the dark surface.
-        private const string SectionCollapsedIcon = "IN foldout";
-        private const string SectionExpandedIcon = "IN foldout on";
+        // Section headers carry their own identity icon in the leading slot instead of a foldout arrow: a star for
+        // Favorites, a history clock for Recent. Each swaps between a collapsed and an expanded variant — the star goes
+        // hollow → gold, the clock keeps its glyph — and the collapsed variant is additionally dimmed (USS), so the
+        // open/closed state reads from the icon alone now that the arrow is gone.
+        private const string FavoritesCollapsedIcon = "d_Favorite";
+        private const string FavoritesExpandedIcon = "d_Favorite Icon";
+        private const string RecentCollapsedIcon = "d_UnityEditor.HistoryWindow";
+        private const string RecentExpandedIcon = "d_UnityEditor.HistoryWindow";
 
+        // Unity's built-in magnifier, used for the header's search affordance (dark-skin variant to match the picker).
+        private const string SearchIcon = "d_Search Icon";
+
+        private VisualElement _header;
         private VisualElement _breadcrumbBar;
+        private Button _searchButton;
         private ListView _listView;
         private Label _errorLabel;
         private Label _emptyHint;
         private Label _footerHint;
         private ToolbarSearchField _searchField;
+
+        // The header swaps between the breadcrumb trail (+ magnifier) and the search field. The field is shown only
+        // while it holds focus or a query; these mirror that so the swap and the Esc ladder stay in sync.
+        private bool _searchFieldFocused;
+        private bool _searchChromeOpen;
+
+        // Space toggles a favorite, but it is also a navigation submit key — so the same press raises a NavigationSubmit
+        // that would choose (and close on) the row. This arms the submit suppressor for that one event.
+        private bool _suppressNextSubmit;
 
         private readonly List<PickerPage> _pages = new();
 
@@ -134,9 +160,27 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         /// <summary>
-        /// Moves keyboard focus into the search field. Call after the view is attached to a panel.
+        /// Gives the picker keyboard focus so the arrow keys navigate and any printable key starts a search (the search
+        /// field stays collapsed until then). Call after the view is attached to a panel.
         /// </summary>
-        public void FocusSearch() => _searchField.Focus();
+        public void FocusPicker()
+        {
+            if (Nav.CurrentItems.Count > 0)
+            {
+                _listView.Focus();
+
+                if (_listView.selectedIndex < 0)
+                {
+                    var first = FindSelectableIndex(0, step: 1);
+                    if (first >= 0) SetSelectedIndex(first);
+                }
+
+                return;
+            }
+
+            // No rows to land on (e.g. an empty page); focus the root so type-to-search still has a keystroke sink.
+            Focus();
+        }
 
         #region Initialization
         private void BuildUI()
@@ -146,15 +190,20 @@ namespace Aspid.FastTools.Types.Editors
             _errorLabel = CreateErrorLabel();
             _emptyHint = CreateEmptyHint();
 
+            // The root catches type-to-search keystrokes even when there is no row to focus (an empty page).
+            focusable = true;
+
             this.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(BlockClass)
                 .AddChild(CreateHeader())
-                .AddChild(_searchField)
                 .AddChild(_errorLabel)
                 .AddChild(_listView)
                 .AddChild(_emptyHint)
                 .AddChild(CreateFooterHint());
+
+            // Resting state: the breadcrumb trail and magnifier show; the search field stays collapsed until used.
+            UpdateSearchChrome();
 
             RegisterCallback<KeyDownEvent>(HandleKeyDown, TrickleDown.TrickleDown);
 
@@ -163,14 +212,43 @@ namespace Aspid.FastTools.Types.Editors
             // so the directional moves are swallowed here and our KeyDown handler stays the single arrow navigator.
             RegisterCallback<NavigationMoveEvent>(SuppressDirectionalNavigation, TrickleDown.TrickleDown);
 
+            // Space toggling a favorite also raises a submit (Space is a submit key); swallow that one event so the row
+            // is not chosen on the same press. Enter's submit is left to choose normally.
+            RegisterCallback<NavigationSubmitEvent>(SuppressFavoriteSubmit, TrickleDown.TrickleDown);
+
             // The footer hint drops its directional affordances while the search field holds focus, so re-render it
             // whenever focus moves between the search field and the list.
             RegisterCallback<FocusInEvent>(_ => UpdateFooterHint());
             return;
 
-            // The breadcrumb trail is rebuilt per refresh (RebuildBreadcrumbs); the bar is just its container.
-            VisualElement CreateHeader() =>
-                _breadcrumbBar = new VisualElement().AddClass(HeaderClass);
+            // The header carries the breadcrumb trail and a magnifier button side by side; the search field overlays the
+            // same strip when active and is hidden otherwise (UpdateSearchChrome drives the swap). The trail itself is
+            // rebuilt per refresh (RebuildBreadcrumbs); the bar is just its container.
+            VisualElement CreateHeader()
+            {
+                _breadcrumbBar = new VisualElement().AddClass(TrailClass);
+                _searchButton = CreateSearchButton();
+
+                return _header = new VisualElement()
+                    .AddClass(HeaderClass)
+                    .AddChild(_breadcrumbBar)
+                    .AddChild(_searchButton)
+                    .AddChild(_searchField);
+            }
+
+            // The lone search affordance in the resting header: clicking it flips the header into the search field.
+            Button CreateSearchButton()
+            {
+                var icon = new Image()
+                    .AddClass(SearchButtonIconClass)
+                    .SetImage(TypeSelectorIconResolver.Resolve(SearchIcon))
+                    .SetPickingMode(PickingMode.Ignore);
+
+                return new Button(() => OpenSearch())
+                    .AddClass(SearchButtonClass)
+                    .SetTooltip("Search types")
+                    .AddChild(icon);
+            }
 
             Label CreateEmptyHint()
             {
@@ -187,9 +265,36 @@ namespace Aspid.FastTools.Types.Editors
 
             ToolbarSearchField CreateSearchField()
             {
-                var field = new ToolbarSearchField();
+                var field = new ToolbarSearchField().AddClass(SearchFieldClass);
 
                 field.RegisterValueChangedCallback(e => HandleSearchChanged(e.newValue ?? string.Empty));
+
+                // The field collapses back to the trail once it loses focus while empty; track focus to drive that.
+                field.RegisterCallback<FocusInEvent>(_ =>
+                {
+                    _searchFieldFocused = true;
+
+                    // Light the header's accent frame while the field is focused.
+                    _header.EnableInClass(HeaderSearchFocusedModifier, true);
+
+                    // Focus belongs to the search field now, so no list row should read as selected — clear the
+                    // highlight until the user steps back down into the list (which re-selects the first row).
+                    _listView.ClearSelection();
+
+                    UpdateSearchChrome();
+                    UpdateFooterHint();
+                });
+
+                field.RegisterCallback<FocusOutEvent>(evt =>
+                {
+                    // Focus moving within the field (text input ↔ its clear button) is not a real blur — keep it open.
+                    if (evt.relatedTarget is VisualElement next && IsDescendantOf(next, _searchField)) return;
+
+                    _searchFieldFocused = false;
+                    _header.EnableInClass(HeaderSearchFocusedModifier, false);
+                    UpdateSearchChrome();
+                    UpdateFooterHint();
+                });
 
                 return field;
             }
@@ -215,7 +320,14 @@ namespace Aspid.FastTools.Types.Editors
                 list.SetMakeItem(CreateListItem);
                 list.SetBindItem(BindListItem);
                 list.itemsChosen += HandleItemChosen;
-                list.selectedIndicesChanged += _ => UpdateFooterHint();
+
+                // Re-bind the visible rows on every selection change so the selected folder can swap to its opened icon
+                // (selection only toggles a USS class otherwise; the leading image is set in code, not USS).
+                list.selectedIndicesChanged += _ =>
+                {
+                    list.RefreshItems();
+                    UpdateFooterHint();
+                };
 
                 return list;
             }
@@ -283,7 +395,7 @@ namespace Aspid.FastTools.Types.Editors
                     .SetText(node.DisplayName)
                     .SetTooltip(node.Tooltip);
 
-                BindLeading(element.Q<Image>(className: ItemIconClass), element.Q<Label>(className: ItemGlyphClass), node);
+                BindLeading(element.Q<Image>(className: ItemIconClass), element.Q<Label>(className: ItemGlyphClass), node, index == _listView.selectedIndex);
                 BindFavorite(element.Q<Button>(className: FavoriteToggleClass), node);
 
                 element.Q<Label>(className: ItemArrowClass)
@@ -295,7 +407,7 @@ namespace Aspid.FastTools.Types.Editors
             // Fills the leading slot: a crisp text glyph for the special rows (<None> circle, section chevron) or the
             // image icon for everything else. The two are mutually exclusive — whichever is used, the other is hidden —
             // so the slot stays a uniform width across the list.
-            void BindLeading(Image icon, Label glyph, TreeNode node)
+            void BindLeading(Image icon, Label glyph, TreeNode node, bool isSelected)
             {
                 // <None> fills the leading slot with a crisp text-glyph circle; every other row uses the image icon
                 // slot. The two are mutually exclusive so the leading column stays a uniform width across the list.
@@ -308,13 +420,32 @@ namespace Aspid.FastTools.Types.Editors
 
                 glyph.SetDisplay(DisplayStyle.None);
 
-                // Section headers show the native foldout arrow (collapsed/expanded); types/containers their explicit
-                // [TypeSelectorItem] icon or a uniform fallback. All go through the image slot so the column aligns.
-                var texture = node.IsSectionTitle
-                    ? TypeSelectorIconResolver.Resolve(Nav.IsSectionCollapsed(node.SectionKey) ? SectionCollapsedIcon : SectionExpandedIcon)
-                    : TypeSelectorIconResolver.Resolve(node.Icon) ?? TypeSelectorIconResolver.Resolve(FallbackIconName(node));
+                var sectionCollapsed = false;
+                Texture texture;
+
+                if (node.IsSectionTitle)
+                {
+                    // Section headers carry an identity icon whose collapsed variant is dimmed (USS) — that is the
+                    // open/closed read now that the foldout arrow is gone.
+                    sectionCollapsed = Nav.IsSectionCollapsed(node.SectionKey);
+                    texture = TypeSelectorIconResolver.Resolve(SectionIcon(node.SectionKey, sectionCollapsed));
+                }
+                else
+                {
+                    // Types/containers use their explicit [TypeSelectorItem] icon or a uniform fallback. A fallback-folder
+                    // container opens while its row is selected; containers with an explicit icon keep it unchanged.
+                    texture = TypeSelectorIconResolver.Resolve(node.Icon);
+
+                    if (texture is null)
+                    {
+                        var fallback = FallbackIconName(node);
+                        if (fallback == ContainerFallbackIcon && isSelected) fallback = ContainerOpenFallbackIcon;
+                        texture = TypeSelectorIconResolver.Resolve(fallback);
+                    }
+                }
 
                 icon
+                    .EnableInClass(ItemIconCollapsedModifier, sectionCollapsed)
                     .SetImage(texture)
                     .SetDisplay(texture is not null ? DisplayStyle.Flex : DisplayStyle.None);
             }
@@ -323,6 +454,16 @@ namespace Aspid.FastTools.Types.Editors
             {
                 if (node.IsType) return TypeFallbackIcon;
                 return node.HasChildren ? ContainerFallbackIcon : null;
+            }
+
+            // The leading identity icon for a section header, in its collapsed or expanded variant.
+            static string SectionIcon(string sectionKey, bool collapsed)
+            {
+                if (sectionKey == NavigationController.RecentSection)
+                    return collapsed ? RecentCollapsedIcon : RecentExpandedIcon;
+
+                // Favorites — and any future section — default to the star pair.
+                return collapsed ? FavoritesCollapsedIcon : FavoritesExpandedIcon;
             }
 
             void BindFavorite(Button favorite, TreeNode node)
@@ -380,6 +521,55 @@ namespace Aspid.FastTools.Types.Editors
         }
         #endregion
 
+        #region Search chrome
+        // The single place the header swaps modes: the search field is shown (and the trail + magnifier hidden) whenever
+        // the field is focused or carries a query; otherwise the header is the breadcrumb trail with the magnifier.
+        private void UpdateSearchChrome()
+        {
+            _searchChromeOpen = _searchFieldFocused || !string.IsNullOrEmpty(_searchField.value);
+
+            _breadcrumbBar.SetDisplay(_searchChromeOpen ? DisplayStyle.None : DisplayStyle.Flex);
+            _searchButton.SetDisplay(_searchChromeOpen ? DisplayStyle.None : DisplayStyle.Flex);
+            _searchField.SetDisplay(_searchChromeOpen ? DisplayStyle.Flex : DisplayStyle.None);
+        }
+
+        // Flips the header into the search field and moves focus there. An optional first character (from type-to-search)
+        // is seeded so the keystroke that opened the search is not lost.
+        private void OpenSearch(string initialText = null)
+        {
+            // Reveal the field (the trail + magnifier give way to it) before focusing.
+            _searchChromeOpen = true;
+            _breadcrumbBar.SetDisplay(DisplayStyle.None);
+            _searchButton.SetDisplay(DisplayStyle.None);
+            _searchField.SetDisplay(DisplayStyle.Flex);
+
+            // Seeding the value works immediately, but the field was just un-hidden — its display only resolves on the
+            // next layout pass, and a display:none element silently refuses Focus(). Defer the focus (and caret-to-end)
+            // to that pass so the field reliably takes focus and any further typing lands in it.
+            if (!string.IsNullOrEmpty(initialText))
+                _searchField.value = initialText;
+
+            _searchField.schedule.Execute(() =>
+            {
+                // The deferred tick can land after the embedding host collapsed the panel; bail if we are detached.
+                if (_searchField.panel is null) return;
+
+                _searchField.Focus();
+                TryMoveSearchCursorToEnd();
+            });
+
+            UpdateFooterHint();
+        }
+
+        // Returns the header to the breadcrumb trail and hands keyboard focus back to the list. The field's FocusOut then
+        // hides it (it is empty), so the trail reappears.
+        private void CollapseSearch()
+        {
+            ResetSearchField();
+            FocusPicker();
+        }
+        #endregion
+
         #region KeyDown Handlers
         // Swallows the directional NavigationMoveEvents the ListView would otherwise act on, so our KeyDown handler is
         // the only thing that moves the selection (Tab's Next/Previous is left alone for focus traversal).
@@ -396,8 +586,32 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
+        // Consumes the single NavigationSubmit raised by a favorite-toggling Space (armed in HandleKeyDown) so the row is
+        // not chosen on the same press. A one-shot: it only fires for that one event, leaving Enter's submit alone.
+        private void SuppressFavoriteSubmit(NavigationSubmitEvent evt)
+        {
+            if (!_suppressNextSubmit) return;
+
+            _suppressNextSubmit = false;
+            evt.StopPropagation();
+        }
+
         private void HandleKeyDown(KeyDownEvent evt)
         {
+            // Any real key press other than the favorite Space (and other than the paired character event, keyCode None)
+            // cancels a pending favorite-submit suppression, so a later Enter still chooses normally.
+            if (evt.keyCode != KeyCode.Space && evt.keyCode != KeyCode.None)
+                _suppressNextSubmit = false;
+
+            // Type-to-search: while the trail is showing, a printable keystroke flips the header into the search field
+            // and seeds the character. Navigation/control keys (handled below) and modifier chords fall through.
+            if (!_searchChromeOpen && IsTypingCharacter(evt))
+            {
+                OpenSearch(evt.character.ToString());
+                evt.StopPropagation();
+                return;
+            }
+
             switch (evt.keyCode)
             {
                 case KeyCode.UpArrow:
@@ -413,6 +627,17 @@ namespace Aspid.FastTools.Types.Editors
                     evt.StopPropagation();
                     break;
 
+                // Space stars/unstars the selected type from the keyboard (letters are reserved for type-to-search, so
+                // Space is the free toggle). In the search field it falls through to type a literal space.
+                case KeyCode.Space:
+                    if (!IsSearchFocused(focusController?.focusedElement) && HandleToggleFavoriteKey())
+                    {
+                        // Disarm the submit this same Space raises, so the row toggles favorite without being chosen.
+                        _suppressNextSubmit = true;
+                        evt.StopPropagation();
+                    }
+                    break;
+
                 case KeyCode.RightArrow:
                     if (!IsSearchFocused(focusController?.focusedElement) && HandleRightArrow())
                         evt.StopPropagation();
@@ -423,6 +648,19 @@ namespace Aspid.FastTools.Types.Editors
                         evt.StopPropagation();
                     break;
             }
+        }
+
+        // A KeyDownEvent that represents a printable character typed without a command/control/alt chord. Unity raises a
+        // separate character event (keyCode == None, character set) alongside the keyCode event, so keying off the
+        // character keeps arrows/Esc/Enter — which carry no printable character — on the navigation path below.
+        private static bool IsTypingCharacter(KeyDownEvent evt)
+        {
+            var c = evt.character;
+
+            if (c == '\0' || char.IsControl(c) || char.IsWhiteSpace(c)) return false;
+            if (evt.ctrlKey || evt.commandKey || evt.altKey) return false;
+
+            return true;
         }
 
         private bool HandleUpArrow()
@@ -436,12 +674,13 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!IsListFocused(focused)) return false;
 
-            // Step up one row; jump to the search field when nothing precedes.
+            // Step up one row; when nothing precedes the top row, Up opens the search field (revealing it if collapsed)
+            // and moves focus into it, so the list and the search read as one continuous keyboard column.
             var target = FindSelectableIndex(_listView.selectedIndex - 1, step: -1);
 
             if (target < 0)
             {
-                _searchField.Focus();
+                OpenSearch();
                 return true;
             }
 
@@ -539,9 +778,23 @@ namespace Aspid.FastTools.Types.Editors
 
         private void HandleEscapeKey()
         {
-            if (Nav.IsSearching && !string.IsNullOrWhiteSpace(_searchField.value))
+            // A three-step ladder: the first Esc clears a running query and keeps the field open and focused for a retype
+            // (re-asserted here so the rung behaves the same whether focus sits in the field or has moved to the results);
+            // a second (empty field) collapses the header back to the trail; a third (trail showing) dismisses the picker.
+            if (!string.IsNullOrEmpty(_searchField.value))
+            {
                 _searchField.value = string.Empty;
-            else _onDismiss?.Invoke();
+                OpenSearch();
+                return;
+            }
+
+            if (_searchChromeOpen)
+            {
+                CollapseSearch();
+                return;
+            }
+
+            _onDismiss?.Invoke();
         }
 
         private bool HandleRightArrow()
@@ -583,9 +836,26 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
+        // Space toggles the selected type's Favorites membership in place — the same action as the row's hover star, but
+        // reachable from the keyboard while navigating. Only concrete types are favoritable; other rows decline it.
+        private bool HandleToggleFavoriteKey()
+        {
+            if (SelectedNode() is not { IsType: true } node) return false;
+
+            ToggleFavorite(node);
+
+            // Favoriting at the root recomposes the list (the Favorites section moves), so keep the highlight on the row
+            // the user acted on where it survives the rebuild.
+            var index = Nav.CurrentItems.IndexOf(node);
+            if (index >= 0) SetSelectedIndex(index);
+
+            return true;
+        }
+
         private void HandleSearchChanged(string query)
         {
             Nav.ApplySearch(query);
+            UpdateSearchChrome();
             RefreshView();
         }
 
@@ -760,9 +1030,10 @@ namespace Aspid.FastTools.Types.Editors
         {
             _pages.Add(page);
             ResetSearchField();
+            UpdateSearchChrome();
             RefreshView();
             SelectFirstItem();
-            _searchField.Focus();
+            FocusPicker();
         }
 
         private void PopPage()
@@ -772,9 +1043,10 @@ namespace Aspid.FastTools.Types.Editors
             _pages.RemoveAt(_pages.Count - 1);
             HideError();
             ResetSearchField();
+            UpdateSearchChrome();
             RefreshView();
             SelectFirstItem();
-            _searchField.Focus();
+            FocusPicker();
         }
 
         private void PopToDepth(int depth)
@@ -868,13 +1140,27 @@ namespace Aspid.FastTools.Types.Editors
             else if (node is { IsSelectable: true })
                 parts.Add("Enter Select");
 
+            // Concrete types can be starred from the keyboard; the glyph mirrors the current membership.
+            if (!searchFocused && node is { IsType: true })
+                parts.Add(TypeSelectorPreferences.IsFavorite(node.AssemblyQualifiedName)
+                    ? StarFilledGlyph + " Space Unfavorite"
+                    : StarEmptyGlyph + " Space Favorite");
+
             if (Nav.IsSearching)
             {
                 parts.Add("Esc Clear");
             }
+            else if (_searchChromeOpen)
+            {
+                // The field is open but empty — Esc cancels the search rather than closing the picker.
+                parts.Add("Esc Cancel");
+            }
             else
             {
                 if (!searchFocused && (Nav.CanNavigateBack || _pages.Count > 1)) parts.Add("← Back");
+
+                // The search bar is gone from the resting header, so advertise the type-to-search affordance.
+                parts.Add("Type to search");
                 parts.Add("Esc Close");
             }
 

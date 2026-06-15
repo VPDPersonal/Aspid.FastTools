@@ -6,6 +6,11 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal sealed class NavigationController
     {
+        // Section keys double as the section titles and as the lookup the view keys its section icon off, so they live
+        // here as the single source of truth.
+        public const string FavoritesSection = "Favorites";
+        public const string RecentSection = "Recent";
+
         private TreeNode _currentNode;
         private readonly TreeNode _rootNode;
         private readonly bool _composeSections;
@@ -72,6 +77,13 @@ namespace Aspid.FastTools.Types.Editors
             _breadcrumbs.Clear();
 
             if (!_composeSections) return;
+
+            // Favorites and Recents open collapsed: they are a quick-access convenience, not the primary list, so the
+            // root lands on the full type hierarchy and the user expands a section when they want it. Seeding the keys
+            // here (rather than per-section) also collapses a section that only appears later — once its first favorite
+            // or recent is recorded — while a user-driven expand survives, since RebuildRootItems never re-adds them.
+            _collapsedSections.Add(FavoritesSection);
+            _collapsedSections.Add(RecentSection);
 
             IndexTypeLeaves(root);
             RebuildRootItems();
@@ -185,8 +197,8 @@ namespace Aspid.FastTools.Types.Editors
             if (noneOption is not null)
                 _rootItems.Add(noneOption);
 
-            AppendSection("Favorites", TypeSelectorPreferences.LoadFavorites());
-            AppendSection("Recent", TypeSelectorPreferences.LoadRecents());
+            AppendSection(FavoritesSection, TypeSelectorPreferences.LoadFavorites());
+            AppendSection(RecentSection, TypeSelectorPreferences.LoadRecents());
 
             foreach (var child in _rootNode.Children)
                 if (child != noneOption)
