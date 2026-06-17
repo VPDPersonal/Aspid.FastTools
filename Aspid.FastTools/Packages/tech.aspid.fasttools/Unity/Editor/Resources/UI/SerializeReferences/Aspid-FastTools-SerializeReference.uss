@@ -280,6 +280,18 @@
     display:                                               none;
 }
 
+/* Pull the summary into the same translucent-dark family as the Scan panel and the group cards. The base help-box's
+   status state paints a solid bright fill, which read as a foreign block over the window's dotted canvas while every
+   other surface here is the rgba dark fill with status carried by accents. So keep that same fill and let the amber
+   read come from a muted warning border plus the help-box's own amber icon/text — not a loud surface. Scoped under
+   __results and qualified with the status class so it outranks the base :root.aspid-fasttools-status--warning rule the
+   help box attaches to itself. */
+.aspid-fasttools-repair-references__results
+    .aspid-fasttools-repair-references__summary.aspid-fasttools-status--warning {
+    background-color:                                      rgba(90, 65, 30, 0.25);
+    border-color:                                          var(--aspid-colors-status-warning-shade-dark);
+}
+
 /* The vertical scrollbar rides the scroll's right edge; a right padding insets it from the window edge so it does
    not hug the border, and gives the group cards a small gap before it. */
 .aspid-fasttools-repair-references__scroll {
@@ -339,7 +351,7 @@
    picker's overflow:hidden + 8px radius round the header's top corners to match the box. */
 .aspid-fasttools-repair-references__picker
     .aspid-fasttools-type-selector__header {
-    background-color:                                       #00000000;   
+    background-color:                                       #00000000;
     margin:                                                 0;
     margin-bottom:                                          5px;
 }

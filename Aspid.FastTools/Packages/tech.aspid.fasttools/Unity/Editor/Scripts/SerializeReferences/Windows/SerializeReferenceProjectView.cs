@@ -139,11 +139,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _resultsHint = new Label(string.Empty).AddClass(ResultsHintClass);
 
-            // A success help-box reporting how many references the last bulk fix rewrote; hidden until a Fix all runs.
-            _summary = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Info))
+            // A help-box reporting how many references the last bulk fix rewrote; hidden until a Fix all runs. Amber-
+            // toned (Warning) so it sits in the Project Audit view's warning family — the amber results header, group
+            // cards and canvas tone — rather than reading as a foreign green block. SetMessageType(Warning) also
+            // derives the matching amber status accent that colors the border and text.
+            _summary = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))
                 .AddClass(SummaryClass)
                 .AddClass(SummaryHiddenClass);
-            _summary.Status = StatusStyle.Type.Success;
 
             _list = new VisualElement();
 
@@ -468,14 +470,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
-            // Re-sweep so the list reflects the new state, then surface the summary above it.
+            // Re-sweep so the list reflects the new state, then surface the summary above it. The headline carries the
+            // action + count; the body names both ends of the fix — the missing stored type and the type the entries
+            // now point at (long, so they wrap below the divider) — plus any skipped note.
             ScanProject();
-            var summary = rewritten == 1
-                ? $"Rewrote 1 reference to {newType.FullName}."
-                : $"Rewrote {rewritten} references to {newType.FullName}.";
+            var summaryTitle = rewritten == 1 ? "Rewrote 1 reference" : $"Rewrote {rewritten} references";
+            var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
             if (skipped > 0)
-                summary += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
-            ShowSummary(summary);
+                summaryBody += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
+            ShowSummary(summaryTitle, summaryBody);
         }
 
         // Builds a compact old -> new line preview of the YAML the bulk fix will rewrite, using the same scan
@@ -644,8 +647,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             OnCanvasTone?.Invoke(SerializeReferenceCanvasStyle.Warning);
         }
 
-        private void ShowSummary(string message)
+        private void ShowSummary(string title, string message)
         {
+            _summary.Title = title;
             _summary.Message = message;
             _summary.RemoveClass(SummaryHiddenClass);
         }
