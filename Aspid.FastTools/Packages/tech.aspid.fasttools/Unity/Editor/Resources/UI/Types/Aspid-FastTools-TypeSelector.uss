@@ -14,7 +14,7 @@
     align-items:            center;
     flex-wrap:              nowrap;
     overflow:               hidden;
-    padding:                2px 8px;
+    padding:                2px 5px;
     border-radius:          8px 8px 0 0;
     margin:                 -5px -2px 5px;
     background-color:       var(--aspid-colors-bg-dark);
@@ -183,8 +183,6 @@
     flex-direction:         row;
     padding-left:           1px;
     padding-right:          5px;
-    border-left-width:      2px;
-    border-left-color:      rgba(0, 0, 0, 0);
 }
 
 .aspid-fasttools-type-selector .unity-collection-view__item:hover {
@@ -194,7 +192,6 @@
 .aspid-fasttools-type-selector .unity-collection-view__item--selected,
 .aspid-fasttools-type-selector .unity-collection-view__item--selected:hover {
     background-color:       var(--aspid-colors-bg-lightness);
-    border-left-color:      var(--aspid-colors-status-success-text-light);
 }
 
 .aspid-fasttools-type-selector__item {

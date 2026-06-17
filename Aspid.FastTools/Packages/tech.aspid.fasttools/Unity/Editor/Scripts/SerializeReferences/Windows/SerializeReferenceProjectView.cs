@@ -52,9 +52,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EntryClass = RootClass + "__entry";
         private const string EntryRidClass = RootClass + "__entry-rid";
         private const string PickerClass = RootClass + "__picker";
+        private const string PickerAttachedClass = PickerClass + "--attached";
 
         private const string GroupClass = RootClass + "__group";
+        private const string GroupPickingClass = GroupClass + "--picking";
         private const string GroupHeaderRowClass = RootClass + "__group-header-row";
+        private const string GroupHeaderRowPickingClass = GroupHeaderRowClass + "--picking";
         private const string GroupHeaderClass = RootClass + "__group-header";
         private const string GroupCountClass = RootClass + "__group-count";
         private const string GroupActionsClass = RootClass + "__group-actions";
@@ -80,6 +83,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private VisualElement _list;
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
+        private VisualElement _openPickerHeader;
+        private VisualElement _openPickerCard;
         private AspidGradientButton _scanButton;
 
         /// <summary>Jump from a project-audit result row to that asset's Inspect graph. Wired by the host window.</summary>
@@ -561,6 +566,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var after = card is not null ? headerRow : anchor;
             container.InsertChild(container.IndexOf(after) + 1, _openPicker);
 
+            // When the picker lands under the full header row, the whole group card becomes the active surface: the
+            // card lights an accent frame, the gap below the header closes, and the selector sheds its own box to
+            // blend into the card (see __group--picking / __group-header-row--picking / __picker--attached). The Fix
+            // button keeps the card surface it sits on at rest, so it never reads as a foreign element. Only valid on
+            // the card path — the ?? fallback below (no card) keeps the bare boxed picker.
+            if (card is not null)
+            {
+                _openPickerCard = card;
+                _openPickerHeader = headerRow;
+                _openPickerCard.AddClass(GroupPickingClass);
+                _openPickerHeader.AddClass(GroupHeaderRowPickingClass);
+                _openPicker.AddClass(PickerAttachedClass);
+            }
+
             view.FocusPicker();
         }
 
@@ -568,9 +587,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             _openPicker?.RemoveFromHierarchy();
             if (_openPickerRow is not null) _openPickerRow.TrailingText = FixCollapsedText;
+            _openPickerHeader?.RemoveClass(GroupHeaderRowPickingClass);
+            _openPickerCard?.RemoveClass(GroupPickingClass);
 
             _openPicker = null;
             _openPickerRow = null;
+            _openPickerHeader = null;
+            _openPickerCard = null;
         }
 
         private static Type ResolveType(string assemblyQualifiedName) =>
