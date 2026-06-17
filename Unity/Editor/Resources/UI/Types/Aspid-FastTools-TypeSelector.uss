@@ -86,7 +86,8 @@
 }
 
 /* The inner text input stretches to fill the field so the typing area spans the strip, not just the field's frame. */
-.aspid-fasttools-type-selector__search-field .unity-search-field-base__text-field {
+.aspid-fasttools-type-selector__search-field
+    .unity-search-field-base__text-field {
     flex-grow:              1;
     max-width:              none;
 }
@@ -101,7 +102,8 @@
 
 /* The built-in magnifier renders tiny (8x8) and hugs the left edge. Enlarge it and give it a left inset so it sits
    with breathing room and reads at the weight of the list-row icons. */
-.aspid-fasttools-type-selector__search-field .unity-search-field-base__search-button {
+.aspid-fasttools-type-selector__search-field
+    .unity-search-field-base__search-button {
     width:                  11px;
     height:                 11px;
 }
@@ -165,7 +167,7 @@
 .aspid-fasttools-type-selector__footer-hint {
     margin:                 5px -2px -5px;
     padding:                3px 8px;
-    font-size:              10px;
+    font-size: 12px;
     color:                  var(--aspid-colors-text-darkness);
     background-color:       var(--aspid-colors-bg-dark);
     border-top-width:       1px;
@@ -256,12 +258,15 @@
 }
 
 /* Reveal the star on row hover (or whenever the type is already favorited). */
-.aspid-fasttools-type-selector__item:hover .aspid-fasttools-type-selector__favorite-toggle {
+.aspid-fasttools-type-selector__item:hover
+    .aspid-fasttools-type-selector__favorite-toggle {
     opacity:                1;
 }
 
 /* Reveal it on the keyboard-selected row too, so a keyboard user sees the star state and the Space-to-toggle target. */
-.aspid-fasttools-type-selector .unity-collection-view__item--selected .aspid-fasttools-type-selector__favorite-toggle {
+.aspid-fasttools-type-selector
+    .unity-collection-view__item--selected
+    .aspid-fasttools-type-selector__favorite-toggle {
     opacity:                1;
 }
 
@@ -287,7 +292,8 @@
 
 /* Same caption colour as the rest of the list — the section is set apart only by its chevron and bold weight, not a
    different hue. (It is navigable/selectable too; the wrapper carries the green accent bar when it is the active row.) */
-.aspid-fasttools-type-selector__section-title .aspid-fasttools-type-selector__item-title {
+.aspid-fasttools-type-selector__section-title
+    .aspid-fasttools-type-selector__item-title {
     color:                  var(--aspid-colors-text-lightness);
     -unity-font-style:      bold;
 }
