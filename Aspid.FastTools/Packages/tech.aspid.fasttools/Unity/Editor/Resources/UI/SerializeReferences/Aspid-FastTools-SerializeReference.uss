@@ -10,7 +10,9 @@
 }
 
 /* Keep the expand arrow at its natural width on the far left of the header. */
-.aspid-fasttools-serialize-reference .unity-foldout__toggle > .unity-foldout__input {
+.aspid-fasttools-serialize-reference
+    .unity-foldout__toggle
+    > .unity-foldout__input {
     flex-grow:                                              0;
     flex-shrink:                                            0;
 }
@@ -28,7 +30,9 @@
 }
 
 /* Hide the expand arrow when the reference is empty — there is nothing to expand. */
-.aspid-fasttools-serialize-reference--empty .unity-foldout__toggle .unity-foldout__checkmark {
+.aspid-fasttools-serialize-reference--empty
+    .unity-foldout__toggle
+    .unity-foldout__checkmark {
     visibility:                                             hidden;
 }
 
@@ -151,11 +155,13 @@
 /* Info variant — a non-actionable, dim hint (the multi-object "different types" notice that stands in for the
    suppressed per-instance child fields). Swaps the warning icon for the info icon and the yellow text for the
    generic dim shade, so it reads as informational rather than something to fix. */
-.aspid-fasttools-serialize-reference-notice--info .aspid-fasttools-serialize-reference-notice__icon {
+.aspid-fasttools-serialize-reference-notice--info
+    .aspid-fasttools-serialize-reference-notice__icon {
     background-image:                                      resource("d_console.infoicon");
 }
 
-.aspid-fasttools-serialize-reference-notice--info .aspid-fasttools-serialize-reference-notice__message {
+.aspid-fasttools-serialize-reference-notice--info
+    .aspid-fasttools-serialize-reference-notice__message {
     color:                                                 var(--aspid-colors-text-dark);
 }
 
@@ -201,7 +207,8 @@
    selector outranks the gradient button's own :root, so the panel zeros the button's margin (spacing lives on the
    description / panel padding) while keeping its natural 0 10px padding, so the label sits indented inside the pill
    rather than hugging its left edge. */
-.aspid-fasttools-repair-references__panel .aspid-fasttools-repair-references__scan-project {
+.aspid-fasttools-repair-references__panel
+    .aspid-fasttools-repair-references__scan-project {
     margin:                                               0;
 }
 
@@ -282,8 +289,12 @@
 
 /* Amber-tinted gradient rows — a broken reference reads as a warning — with a matching hover accent. */
 .aspid-fasttools-repair-references__entry {
-    --aspid-fasttools-colors-gradient_button-bg:           var(--aspid-colors-status-warning-darkness);
-    --aspid-fasttools-colors-gradient_button-accent:       var(--aspid-colors-status-warning-text-light);
+    --aspid-fasttools-colors-gradient_button-bg: var(
+        --aspid-colors-status-warning-darkness
+    );
+    --aspid-fasttools-colors-gradient_button-accent: var(
+        --aspid-colors-status-warning-text-light
+    );
 }
 
 /* The dimmed rid rides between the type label and the trailing "Fix" cue; reset the row's bold weight. */
@@ -326,7 +337,8 @@
 /* Bleed the selector's header strip to the picker box edges (top + sides) so it reads as a filled header bar, not an
    inset rectangle. -10px cancels both the picker box's 5px padding and the selector root's own 5px padding; the
    picker's overflow:hidden + 8px radius round the header's top corners to match the box. */
-.aspid-fasttools-repair-references__picker .aspid-fasttools-type-selector__header {
+.aspid-fasttools-repair-references__picker
+    .aspid-fasttools-type-selector__header {
     background-color:                                       #00000000;   
     margin:                                                 0;
     margin-bottom:                                          5px;
@@ -335,27 +347,38 @@
 /* The boxless attached picker has no rounded corners to hug, so the breadcrumb strip drops its own rounded top
    corners too — otherwise the strip's 8px radius would leave two card-fill notches at its top, breaking the flush
    band that should butt directly under the group header. */
-.aspid-fasttools-repair-references__picker--attached .aspid-fasttools-type-selector__header {
+.aspid-fasttools-repair-references__picker--attached
+    .aspid-fasttools-type-selector__header {
     border-radius:                                         8px;
 }
 
 /* The search field now lives inside the header strip and fills it via the base stylesheet's __search-field rule
    (flex-grow), so the host no longer needs to stretch a root-level ToolbarSearchField. */
 
-/* Row hover and selection are owned by the base type-selector stylesheet now — a neutral surface lift plus a 2 px
-   green accent bar on the left edge — so this host no longer paints the rows. It only makes the list area read denser
-   than the translucent picker chrome: a near-opaque backing keeps the window's dotted canvas from bleeding through the
-   type names while the framing border, header and footer still composite over the dots. */
-.aspid-fasttools-repair-references__picker .aspid-fasttools-type-selector .unity-collection-view {
-    padding: 5px;
-    border-radius:                                        8px;
-    background-color:                                     rgba(20, 20, 20, 0.75);
-}
-
 /* Bleed the selector's footer hint to the picker box edges (bottom + sides), mirroring the header strip above.
    -10px cancels both the picker box's 5px padding and the selector root's own 5px padding. */
-.aspid-fasttools-repair-references__picker .aspid-fasttools-type-selector__footer-hint {
-    margin:                                              5px -7px 0;
+.aspid-fasttools-repair-references__picker
+    .aspid-fasttools-type-selector__footer-hint {
+    margin: 5px -7px 0;
+}
+
+/* In the attached (boxless) picker the footer keeps its dark fill — the host rule above only nudges its margins — so
+   full-bleed it reads as a square strip welded across the rounded card. Pull it level with the header pill and list
+   panel instead: a rounded plate at the same 8px radius, inset to the list's width with a 5px gap above (the selector's
+   own 5px bottom padding holds the matching gap below) and no top divider — so header, list and footer read as one
+   rounded stack rather than a bar pasted onto the bottom edge. The base footer's opaque dark fill is kept. */
+.aspid-fasttools-repair-references__picker--attached
+    .aspid-fasttools-type-selector__footer-hint {
+    margin: 5px 0 0 0;
+    border-top-width: 0;
+    border-radius: 8px;
+}
+
+.aspid-fasttools-type-selector
+    .unity-collection-view__item.aspid-fasttools-type-selector__item {
+    border-radius: 8px;
+    padding-left: 5px;
+    margin-bottom: 2;
 }
 
 /* --- Project-mode group cards ---
@@ -379,7 +402,7 @@
    denser fill lift it off the dotted canvas, and the embedded selector drops its own box (see __picker--attached) so
    header, selector and entry rows all read as one active card rather than a button stacked over a separate dropdown. */
 .aspid-fasttools-repair-references__group--picking.aspid-fasttools-background {
-    border-color:                                          var(--aspid-colors-status-warning-shade-dark);
+    border-color: var(--aspid-colors-status-warning-shade-light);
     /*background-color:                                      rgba(20, 20, 20, 0.72);*/
 }
 
@@ -418,11 +441,16 @@
 .aspid-fasttools-repair-references__group-fix-all {
     min-width:                                             96px;
     margin-bottom:                                         0;
-    --aspid-fasttools-colors-gradient_button-bg:           var(--aspid-colors-status-warning-darkness);
-    --aspid-fasttools-colors-gradient_button-accent:       var(--aspid-colors-status-warning-text-light);
+    --aspid-fasttools-colors-gradient_button-bg: var(
+        --aspid-colors-status-warning-darkness
+    );
+    --aspid-fasttools-colors-gradient_button-accent: var(
+        --aspid-colors-status-warning-text-light
+    );
 }
 
-.aspid-fasttools-repair-references__group-fix-all .aspid-fasttools-gradient-button__label {
+.aspid-fasttools-repair-references__group-fix-all
+    .aspid-fasttools-gradient-button__label {
     flex-grow:                                             0;
     -unity-text-align:                                     middle-center;
 }
@@ -431,11 +459,16 @@
 .aspid-fasttools-repair-references__group-suggest {
     margin-left:                                           6px;
     margin-bottom:                                         0;
-    --aspid-fasttools-colors-gradient_button-bg:           var(--aspid-colors-status-success-darkness);
-    --aspid-fasttools-colors-gradient_button-accent:       var(--aspid-colors-status-success-text-light);
+    --aspid-fasttools-colors-gradient_button-bg: var(
+        --aspid-colors-status-success-darkness
+    );
+    --aspid-fasttools-colors-gradient_button-accent: var(
+        --aspid-colors-status-success-text-light
+    );
 }
 
-.aspid-fasttools-repair-references__group-suggest .aspid-fasttools-gradient-button__label {
+.aspid-fasttools-repair-references__group-suggest
+    .aspid-fasttools-gradient-button__label {
     flex-grow:                                             0;
     -unity-text-align:                                     middle-center;
 }
