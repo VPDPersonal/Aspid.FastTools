@@ -45,9 +45,10 @@ The drawer also helps recover from the two ways a managed reference goes wrong i
 
 ### Repair a missing type — `BrokenWeaponPreset.asset` & `LoadoutMissingType.prefab`
 
-Two assets ship pre-broken, pointing at classes that do not exist:
+Three assets ship pre-broken, pointing at classes that do not exist:
 
 - `Presets/BrokenWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` references a missing `GhostWeapon`.
+- `Presets/BrokenArsenalPreset.asset` — a second `ScriptableObject` that also references the missing `GhostWeapon`, three times over (`Weapon` plus two of its `Alternates`), so it shares a broken type with `BrokenWeaponPreset.asset`.
 - `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol`.
 
 Select either **in the Project window**. The missing field shows a `<Missing …>` caption, a **Missing type** warning, and a **Fix** button:
@@ -58,6 +59,8 @@ Select either **in the Project window**. The missing field shows a `<Missing …
 > The repair reads and rewrites the asset file directly — Unity does not expose a missing type through its serialization API (and on GameObjects/prefabs even drops it from the live object, UUM-129100), so the orphaned type and data are recovered straight from the YAML. It therefore needs a **saved asset file**: it works for ScriptableObjects and prefab assets selected in the Project, but not for objects edited in Prefab Mode or instances living in a scene (no backing asset to rewrite).
 >
 > When a missing reference is nested inside another value or sits on a child object the Inspector can't reach, use **`Tools → Aspid 🐍 → Repair Missing References FastTools`** instead: it scans the whole asset file and lists every missing reference (any depth, any child) with its own **Fix** picker.
+>
+> Its **Project Audit** tab sweeps every asset under `Assets/` and groups the broken references by their stored type — so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into a single **GhostWeapon** group (`4 entries · 2 files`). One **Fix all** picks a single replacement and re-points every entry across both files at once.
 
 ### Un-share an aliased reference — `LoadoutSharedRef.prefab`
 
