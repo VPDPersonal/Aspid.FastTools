@@ -57,18 +57,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string GroupClass = RootClass + "__group";
         private const string GroupPickingClass = GroupClass + "--picking";
         private const string GroupHeaderRowClass = RootClass + "__group-header-row";
-        private const string GroupHeaderRowPickingClass = GroupHeaderRowClass + "--picking";
         private const string GroupHeaderClass = RootClass + "__group-header";
         private const string GroupCountClass = RootClass + "__group-count";
-        private const string GroupActionsClass = RootClass + "__group-actions";
         private const string GroupFixAllClass = RootClass + "__group-fix-all";
         private const string GroupSuggestClass = RootClass + "__group-suggest";
         private const string GroupEntryClass = RootClass + "__group-entry";
         private const string GroupEntryPathClass = RootClass + "__group-entry-path";
         private const string GroupEntryRidClass = RootClass + "__group-entry-rid";
 
-        private const string FixCollapsedText = "Fix  ▼";
-        private const string FixExpandedText = "Fix  ▲";
+        // The bulk-fix button is a single dropdown button: one "Fix all (N)" label with a trailing chevron that flips
+        // ▼→▲ while the type picker is open (see BuildFixAllLabel). Only the glyph differs between the two states.
+        private const string FixArrowCollapsed = "▼";
+        private const string FixArrowExpanded = "▲";
 
         // The scan button's label adapts to the index state: a deliberate "Scan Project" call-to-action while the
         // index is cold (the first build is expensive), a quiet "Rescan" refresh once a scan has warmed it.
@@ -83,7 +83,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private VisualElement _list;
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
-        private VisualElement _openPickerHeader;
         private VisualElement _openPickerCard;
         private AspidGradientButton _scanButton;
 
@@ -254,11 +253,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return groups;
         }
 
-        // A broken-type group card: a header (display name + entry/file counts), a Fix all bulk action, an optional
-        // Smart Fix quick-apply, then one ping-only row per entry. Entries are intentionally not individually fixable
-        // here — the per-row Fix affordance is reserved for single-asset mode, where the whole row is the button;
-        // adding a second per-entry action under a bulk-fix group would fight that layout, so project mode is
-        // group-level only (a precise per-asset fix is one ObjectField pick away).
+        // A broken-type group card: the whole header is one flat clickable row — the broken type name + entry/file
+        // counts on the left, the bulk "Fix all (N) ▼" action on the right — so clicking anywhere on the header
+        // toggles the type picker. An optional Smart Fix quick-apply sits below it, then one ping-only row per
+        // entry. Entries are intentionally not individually fixable here — the per-row Fix affordance is reserved for
+        // single-asset mode, where the whole row is the button; adding a second per-entry action under a bulk-fix
+        // group would fight that layout, so project mode is group-level only (a precise per-asset fix is one
+        // ObjectField pick away).
         private VisualElement BuildGroupCard(ProjectGroup group)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -267,26 +268,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var constraint = group.ResolveConstraint();
             var displayName = group.DisplayName;
 
+            // The header button. Built first so the type name + count can be docked into its body to the left of the
+            // action label; the click handler toggles the inline picker (the captured local is assigned before use).
+            AspidGradientButton fixAll = null;
+            fixAll = new AspidGradientButton(BuildFixAllLabel(group, expanded: false),
+                    _ => ToggleGroupPicker(group, constraint, fixAll))
+                .AddClass(GroupFixAllClass);
+            fixAll.tooltip = constraint == typeof(object)
+                ? $"{displayName}\nMixed or unresolvable field types — the picker is unconstrained (any managed-reference type)."
+                : $"{displayName}\nConstrained to {constraint.FullName}.";
+
+            // The type name + count line, ignored for picking so clicks fall through to the button's own handler.
             var header = new AspidLabel(group.StoredType.Class, AspidLabelPreset.Default
                     .SetLabelStatus(StatusStyle.Type.Warning)
                     .SetLabelSize(AspidLabelSizeStyle.Type.H5)
                     .SetLineSize(AspidDividingLineSizeStyle.Type.None))
-                .AddClass(GroupHeaderClass);
-            header.tooltip = constraint == typeof(object)
-                ? $"{displayName}\nMixed or unresolvable field types — the picker is unconstrained (any managed-reference type)."
-                : $"{displayName}\nConstrained to {constraint.FullName}.";
+                .AddClass(GroupHeaderClass)
+                .SetPickingMode(PickingMode.Ignore);
 
             var count = new Label(BuildGroupCountText(group))
                 .AddClass(GroupCountClass)
                 .SetPickingMode(PickingMode.Ignore);
 
-            var actions = new VisualElement().AddClass(GroupActionsClass);
+            var info = new VisualElement()
+                .AddClass(GroupHeaderRowClass)
+                .AddChild(header)
+                .AddChild(count);
+            info.pickingMode = PickingMode.Ignore;
 
-            AspidGradientButton fixAll = null;
-            fixAll = new AspidGradientButton($"Fix all ({group.Entries.Count})", FixCollapsedText,
-                    _ => ToggleGroupPicker(group, constraint, fixAll))
-                .AddClass(GroupFixAllClass);
-            actions.AddChild(fixAll);
+            fixAll.AddLeadingContent(info);
+            card.AddChild(fixAll);
 
             if (TryGetGroupSuggestion(group, constraint, out var suggestion))
             {
@@ -295,16 +306,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         _ => ApplyGroupFix(group, suggestion.Type))
                     .AddClass(GroupSuggestClass);
                 suggest.tooltip = SerializeReferenceHelpers.GetSuggestionDetail(suggestion);
-                actions.AddChild(suggest);
+                card.AddChild(suggest);
             }
-
-            var headerRow = new VisualElement()
-                .AddClass(GroupHeaderRowClass)
-                .AddChild(header)
-                .AddChild(count)
-                .AddChild(actions);
-
-            card.AddChild(headerRow);
 
             foreach (var entry in group.Entries)
                 card.AddChild(BuildGroupEntryRow(entry));
@@ -320,6 +323,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var fileText = files == 1 ? "1 file" : $"{files} files";
             return $"{entryText} · {fileText}";
         }
+
+        // The bulk-fix button's single label: "Fix all (N)" plus a trailing chevron that flips when the picker opens,
+        // so the bulk action reads as one dropdown button rather than a split "Fix all" + "Fix ▼" pair.
+        private static string BuildFixAllLabel(ProjectGroup group, bool expanded) =>
+            $"Fix all ({group.Entries.Count})  {(expanded ? FixArrowExpanded : FixArrowCollapsed)}";
 
         // A single broken reference inside a group: its asset path and rid. Clicking pings the asset in the Project
         // window (read-only — the bulk Fix above is the only mutation in project mode).
@@ -365,7 +373,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             });
 
             OpenPickerBelow(button, view);
-            button.TrailingText = FixExpandedText;
+            button.Text = BuildFixAllLabel(group, expanded: true);
         }
 
         // Rewrites every entry in the group to newType, after a mandatory confirmation (file rewrites are not
@@ -558,28 +566,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _openPickerRow = anchor;
 
-            // The Fix all button lives in the right-aligned actions cluster of the group's header row, so anchoring
-            // the picker directly after the button would cram the selector into that narrow right-hand column (it read
-            // as a side panel). Walk up to the group card and drop the picker full-width right below the whole header
-            // row instead, so it reads as a dropdown spanning the card, with the entry rows shifting down beneath it.
-            // The ?? fallback keeps a sane target if the actions → header-row → card nesting ever changes.
-            var headerRow = anchor.parent?.parent;   // anchor → actions → header row
-            var card = headerRow?.parent;            // header row → card
-            var container = card ?? anchor.parent ?? _list;
-            var after = card is not null ? headerRow : anchor;
-            container.InsertChild(container.IndexOf(after) + 1, _openPicker);
+            // The header button is a direct child of the group card, so the picker drops right below it inside the
+            // card — reading as a dropdown spanning the card, with the entry rows shifting down beneath it. The ??
+            // fallback keeps a sane target if the button is ever hosted outside a card.
+            var card = anchor.parent;
+            var container = card ?? _list;
+            container.InsertChild(container.IndexOf(anchor) + 1, _openPicker);
 
-            // When the picker lands under the full header row, the whole group card becomes the active surface: the
-            // card lights an accent frame, the gap below the header closes, and the selector sheds its own box to
-            // blend into the card (see __group--picking / __group-header-row--picking / __picker--attached). The Fix
-            // button keeps the card surface it sits on at rest, so it never reads as a foreign element. Only valid on
-            // the card path — the ?? fallback below (no card) keeps the bare boxed picker.
+            // The whole card becomes the active surface: it lights an accent frame, the header button welds to the
+            // picker (its bottom corners square and its gap closes — see __group--picking) and the selector sheds its
+            // own box to blend into the card (see __picker--attached), so header, selector and entry rows read as one
+            // active card rather than a button stacked over a separate dropdown.
             if (card is not null)
             {
                 _openPickerCard = card;
-                _openPickerHeader = headerRow;
                 _openPickerCard.AddClass(GroupPickingClass);
-                _openPickerHeader.AddClass(GroupHeaderRowPickingClass);
                 _openPicker.AddClass(PickerAttachedClass);
             }
 
@@ -589,13 +590,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void ClosePicker()
         {
             _openPicker?.RemoveFromHierarchy();
-            if (_openPickerRow is not null) _openPickerRow.TrailingText = FixCollapsedText;
-            _openPickerHeader?.RemoveClass(GroupHeaderRowPickingClass);
+            // Flip the open button's chevron back to its resting ▼. ClosePicker has no group reference here, but only
+            // the trailing glyph differs between the collapsed and expanded labels, so swapping it in place is enough.
+            if (_openPickerRow is not null)
+                _openPickerRow.Text = _openPickerRow.Text.Replace(FixArrowExpanded, FixArrowCollapsed);
             _openPickerCard?.RemoveClass(GroupPickingClass);
 
             _openPicker = null;
             _openPickerRow = null;
-            _openPickerHeader = null;
             _openPickerCard = null;
         }
 
