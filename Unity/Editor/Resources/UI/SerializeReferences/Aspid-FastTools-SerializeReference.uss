@@ -389,7 +389,7 @@
 .aspid-fasttools-type-selector
     .unity-collection-view__item.aspid-fasttools-type-selector__item {
     border-radius: 8px;
-    padding-left: 5px;
+    padding-left: 8px;
     margin-bottom: 2;
 }
 
@@ -398,8 +398,8 @@
    window's dotted canvas reads through, a neutral border and the panel's 8px radius (overriding AspidBox's opaque
    darkness fill and its 10px --rounded). The warning read comes from the amber type header and the amber-tinted
    dotted canvas behind it, not a warm border — so the cards belong to the same family as the Scan panel above them.
-   Layout: a header row (type name + entry/file counts on the left, bulk Fix all + optional Smart Fix on the right)
-   over a list of ping-only entry rows. */
+   Layout: the whole header is one flat clickable row (the type name + entry/file counts on the left, the bulk
+   "Fix all (N) ▼" action on the right), an optional Smart Fix button below it, then a list of ping-only entry rows. */
 .aspid-fasttools-repair-references__group.aspid-fasttools-background {
     flex-grow:                                             0;
     margin-bottom:                                         10px;
@@ -418,59 +418,61 @@
     /*background-color:                                      rgba(20, 20, 20, 0.72);*/
 }
 
+/* The header IS one clickable row, but flat — the gradient fill is set transparent so it matches the card surface
+   instead of reading as a pill. Its info line (type name + count) hugs the left and the "Fix all (N) ▼" action label
+   pins to the right. Horizontal padding matches the entry rows below (4px) so the type name lines up with the entry
+   paths and the action lines up with their rid column; height is freed to auto and margin-bottom holds the gap to the
+   rows / docked picker below. The accent only drives a subtle amber hover glow — the lone cue that the row is
+   interactive.
+   The selector is scoped under the card (.__group …) on purpose: the AspidGradientButton's own stylesheet sets these
+   same properties on :root, which ties on specificity with a lone class and wins, so the descendant selector raises
+   specificity to override its padding/height/margin (the gradient colour vars already cascade through). */
+.aspid-fasttools-repair-references__group
+    .aspid-fasttools-repair-references__group-fix-all {
+    flex-direction:                                        row;
+    align-items:                                           center;
+    height:                                                auto;
+    padding:                                               4px 4px;
+    margin-bottom:                                         6px;
+    --aspid-fasttools-colors-gradient_button-bg:           rgba(0, 0, 0, 0);
+    --aspid-fasttools-colors-gradient_button-accent: var(
+        --aspid-colors-status-warning-text-light
+    );
+}
+
+/* Picker open: drop the gap so the dropdown docks directly under the header row. */
+.aspid-fasttools-repair-references__group--picking
+    .aspid-fasttools-repair-references__group-fix-all {
+    margin-bottom:                                         0;
+}
+
+/* The "Fix all (N) ▼" action label: its own flex-grow fills the gap left of it, then the text right-aligns so the
+   action pins to the right edge of the header row (lining up with the entry rows' right-hand rid column). */
+.aspid-fasttools-repair-references__group-fix-all
+    .aspid-fasttools-gradient-button__label {
+    -unity-text-align:                                     middle-right;
+}
+
+/* The info line: the broken type name with the dimmed count beside it, hugging the left of the header row. */
 .aspid-fasttools-repair-references__group-header-row {
     flex-direction:                                        row;
     align-items:                                           center;
-    flex-wrap:                                             wrap;
-    margin-bottom:                                         6px;
-}
-
-/* Picker open: just drop the gap below the header so the selector docks flush against it rather than floating in a
-   separate box lower down. The header keeps the exact surface it has at rest — no fill, no frame, no shift — so the
-   Fix button stays put and never reads as a foreign element pinned to a contrasting strip. */
-.aspid-fasttools-repair-references__group-header-row--picking {
-    margin-bottom:                                         0;
 }
 
 .aspid-fasttools-repair-references__group-header {
     flex-shrink:                                           1;
 }
 
-/* Dimmed "N entries · M files" count, riding between the type header and the trailing actions. */
+/* Dimmed "N entries · M files" count, sitting beside the type header. */
 .aspid-fasttools-repair-references__group-count {
     margin-left:                                           10px;
-    flex-grow:                                             1;
     color:                                                 var(--aspid-colors-text-dark);
     -unity-font-style:                                     normal;
 }
 
-.aspid-fasttools-repair-references__group-actions {
-    flex-direction:                                        row;
-    align-items:                                           center;
-}
-
-/* Amber bulk-fix button, matching the single-asset entry rows' warning palette. */
-.aspid-fasttools-repair-references__group-fix-all {
-    min-width:                                             96px;
-    margin-bottom:                                         0;
-    --aspid-fasttools-colors-gradient_button-bg: var(
-        --aspid-colors-status-warning-darkness
-    );
-    --aspid-fasttools-colors-gradient_button-accent: var(
-        --aspid-colors-status-warning-text-light
-    );
-}
-
-.aspid-fasttools-repair-references__group-fix-all
-    .aspid-fasttools-gradient-button__label {
-    flex-grow:                                             0;
-    -unity-text-align:                                     middle-center;
-}
-
-/* Smart Fix quick-apply: a success-tinted suggestion sitting to the right of Fix all. */
+/* Smart Fix quick-apply: a success-tinted one-click suggestion, full-width below the header button. */
 .aspid-fasttools-repair-references__group-suggest {
-    margin-left:                                           6px;
-    margin-bottom:                                         0;
+    margin-bottom:                                         8px;
     --aspid-fasttools-colors-gradient_button-bg: var(
         --aspid-colors-status-success-darkness
     );
@@ -481,7 +483,6 @@
 
 .aspid-fasttools-repair-references__group-suggest
     .aspid-fasttools-gradient-button__label {
-    flex-grow:                                             0;
     -unity-text-align:                                     middle-center;
 }
 

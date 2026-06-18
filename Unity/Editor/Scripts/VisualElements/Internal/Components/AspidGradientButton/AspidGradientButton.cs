@@ -143,6 +143,21 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
         }
 
+        /// <summary>
+        /// Inserts <paramref name="content"/> ahead of the text label in the button's child order, so it leads the
+        /// label — to its left in the default row layout, or above it when the button is switched to a column
+        /// flex-direction. Lets the button carry a richer body (e.g. a header line) alongside its
+        /// <see cref="Text"/> action label.
+        /// </summary>
+        /// <typeparam name="T">The content element type.</typeparam>
+        /// <param name="content">The element to insert ahead of the label.</param>
+        /// <returns>The same <paramref name="content"/>, for fluent chaining.</returns>
+        public T AddLeadingContent<T>(T content) where T : VisualElement
+        {
+            Insert(IndexOf(_label), content);
+            return content;
+        }
+
         private void OnMouseEnter(MouseEnterEvent _)
         {
             _overlay.SetTarget(1f);
