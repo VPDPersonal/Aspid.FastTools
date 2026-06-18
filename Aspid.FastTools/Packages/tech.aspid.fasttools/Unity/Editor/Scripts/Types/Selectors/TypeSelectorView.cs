@@ -32,7 +32,6 @@ namespace Aspid.FastTools.Types.Editors
         private const string HeaderSearchFocusedModifier = HeaderClass + "--search-focused";
         private const string TrailClass = BlockClass + "__trail";
         private const string SearchButtonClass = BlockClass + "__search-button";
-        private const string SearchButtonIconClass = BlockClass + "__search-button-icon";
         private const string SearchFieldClass = BlockClass + "__search-field";
         private const string CrumbClass = BlockClass + "__breadcrumb";
         private const string CrumbCurrentModifier = CrumbClass + "--current";
@@ -227,27 +226,28 @@ namespace Aspid.FastTools.Types.Editors
             VisualElement CreateHeader()
             {
                 _breadcrumbBar = new VisualElement().AddClass(TrailClass);
+
+                // Clicking the breadcrumb strip anywhere but a navigable crumb — the bright current tail, a separator,
+                // or the empty space past the trail — opens the search field, command-palette style. The link crumbs
+                // stop the click in AddCrumb, so they still navigate (e.g. "Types" walks back) instead of opening search.
+                _breadcrumbBar.RegisterCallback<ClickEvent>(_ => OpenSearch());
+
                 _searchButton = CreateSearchButton();
 
                 return _header = new VisualElement()
                     .AddClass(HeaderClass)
-                    .AddChild(_breadcrumbBar)
                     .AddChild(_searchButton)
+                    .AddChild(_breadcrumbBar)
                     .AddChild(_searchField);
             }
 
             // The lone search affordance in the resting header: clicking it flips the header into the search field.
             Button CreateSearchButton()
             {
-                var icon = new Image()
-                    .AddClass(SearchButtonIconClass)
-                    .SetImage(TypeSelectorIconResolver.Resolve(SearchIcon))
-                    .SetPickingMode(PickingMode.Ignore);
-
                 return new Button(() => OpenSearch())
                     .AddClass(SearchButtonClass)
-                    .SetTooltip("Search types")
-                    .AddChild(icon);
+                    .AddClass("unity-search-field-base__search-button")
+                    .SetTooltip("Search types");
             }
 
             Label CreateEmptyHint()
@@ -1236,7 +1236,13 @@ namespace Aspid.FastTools.Types.Editors
             if (action is not null)
             {
                 crumb.AddClass(CrumbLinkModifier);
-                crumb.RegisterCallback<ClickEvent>(_ => action());
+                crumb.RegisterCallback<ClickEvent>(evt =>
+                {
+                    action();
+
+                    // Keep the click off the breadcrumb bar's open-search handler — a navigable crumb navigates only.
+                    evt.StopPropagation();
+                });
             }
 
             _breadcrumbBar.AddChild(crumb);
