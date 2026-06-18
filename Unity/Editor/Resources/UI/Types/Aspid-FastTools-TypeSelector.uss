@@ -22,46 +22,37 @@
     border-color:           var(--aspid-colors-bg-dark);
 }
 
-/* The header lights an accent frame while the search field holds focus. The border lives on the header (the clipping
-   container), so it paints as a clean, unclipped rectangle — unlike a border on the bleeding field. Idle, the border
-   matches the header fill and is invisible, so toggling the colour causes no layout shift. */
-.aspid-fasttools-type-selector__header--search-focused {
-    /*border-radius:          8px 8px 8px 8px;*/
-    border-color:           var(--aspid-colors-status-info-text-light);
-}
-
-/* The breadcrumb trail fills the strip and shrinks/ellipsises under pressure, leaving the magnifier pinned right. */
+/* The breadcrumb trail fills the strip and shrinks/ellipsises under pressure, leaving the magnifier pinned right.
+   Clicking anywhere on it but a navigable crumb opens the search field, so the strip carries the text caret cursor as
+   the "click to search" cue; the link crumbs override it back to the link cursor. */
 .aspid-fasttools-type-selector__trail {
     flex-grow:              1;
     flex-shrink:            1;
+    min-height:             16px;
     flex-direction:         row;
     align-items:            center;
     flex-wrap:              nowrap;
     overflow:               hidden;
+    cursor:                 text;
 }
 
-/* Magnifier button: the only search affordance in the resting header. Flat and transparent so it reads as chrome, it
-   lifts a step on hover; clicking it (or typing) swaps the trail for the search field. */
+/* Magnifier button: the only search affordance in the resting header. Pinned to the left edge, ahead of the breadcrumb
+   trail. Flat and transparent so it reads as chrome, it lifts a step on hover; clicking it (or typing) swaps the trail
+   for the search field. */
 .aspid-fasttools-type-selector__search-button {
-    width:                  20px;
-    height:                 16px;
-    margin:                 0 0 0 4px;
+    width:                  11px;
+    height:                 11px;
+    margin:                 0 4px 0 2px;
     padding:                0;
     flex-shrink:            0;
     align-items:            center;
-    justify-content:        center;
     border-width:           0;
     border-radius:          3px;
     background-color:       rgba(0, 0, 0, 0);
 }
 
 .aspid-fasttools-type-selector__search-button:hover {
-    background-color:       var(--aspid-colors-bg-light);
-}
-
-.aspid-fasttools-type-selector__search-button-icon {
-    width:                  14px;
-    height:                 14px;
+    -unity-background-image-tint-color:  var(--aspid-colors-status-info-text-light);
 }
 
 /* The search field overlays the same header strip when active and fills it on every edge. Unity's ToolbarSearchField
@@ -106,6 +97,11 @@
     .unity-search-field-base__search-button {
     width:                  11px;
     height:                 11px;
+}
+
+ToolbarSearchField TextElement {
+    font-size:      12px;
+    -unity-font-style:      bold;
 }
 
 /* A breadcrumb crumb. Ancestors are dim and shrink/ellipsis under pressure; the current crumb is bright and pinned. */
