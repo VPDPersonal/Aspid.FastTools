@@ -74,3 +74,46 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--active:hover 
 Button.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-underline {
     background-color:                                     var(--aspid-colors-status-success-text-light);
 }
+
+/* The edge tabs (home on the left, settings on the right) are square and icon-only, so they opt out of the flex sizing
+   the label tabs use (flex-grow:1): a fixed-width square that stretches to the strip's full height, so the bottom
+   underline bar lines up with the mode tabs' underlines. No label and no padding — the glyph lives on an inner
+   __tab-icon element, leaving the button's own background free for the shared hover wash. The extra --square class
+   outranks the base toolbar-button rule. */
+Button.aspid-fasttools-serialize-reference-window__toolbar-button--square {
+    flex-grow:                                            0;
+    flex-shrink:                                          0;
+    width:                                                30px;
+    padding:                                              0;
+    align-self:                                           stretch;
+    align-items:                                          center;
+    justify-content:                                      center;
+}
+
+/* The square-tab glyph: a white silhouette tinted per state. Dim grey at rest, matching the inactive label tone.
+   Sized close to the 30px tab so the icon reads clearly rather than looking lost. The actual image is supplied by a
+   per-glyph modifier (--home / --settings) so home and settings share every rule but the picture. */
+.aspid-fasttools-serialize-reference-window__tab-icon {
+    width:                                                24px;
+    height:                                               24px;
+    -unity-background-image-tint-color:                   var(--aspid-colors-text-dark);
+}
+
+.aspid-fasttools-serialize-reference-window__tab-icon--home {
+    background-image:                                     var(--aspid-icons-home);
+}
+
+.aspid-fasttools-serialize-reference-window__tab-icon--settings {
+    background-image:                                     var(--aspid-icons-settings);
+}
+
+/* Hover brightens the glyph; the faint background wash comes from the base :hover rule above. */
+Button.aspid-fasttools-serialize-reference-window__toolbar-button--square:hover .aspid-fasttools-serialize-reference-window__tab-icon {
+    -unity-background-image-tint-color:                   var(--aspid-colors-text-light);
+}
+
+/* Active square tab: the glyph contour lights up the signature green (matching the bottom underline bar), so the
+   selected edge tab reads green just like the mode tabs' active accent. */
+Button.aspid-fasttools-serialize-reference-window__toolbar-button--square.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-icon {
+    -unity-background-image-tint-color:                   var(--aspid-colors-status-success-text-light);
+}

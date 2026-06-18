@@ -12,13 +12,17 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    internal sealed class WelcomeWindow : EditorWindow
+    /// <summary>
+    /// The Welcome panel as a reusable element: hero, samples list, footer links and the cursor toast.
+    /// Hosted as the leftmost "home" tab of the Managed References window (see SerializeReferenceWindow).
+    /// The UI is cloned from the same UXML the standalone window used; only the toast positioning is
+    /// retargeted from the window root to this view (the view sits below the tab strip).
+    /// </summary>
+    internal sealed class WelcomeView : VisualElement
     {
         private const long ToastVisibleDurationMs = 2500;
         private const float ToastEdgeMargin = 8f;
         private const float ToastCursorOffset = 16f;
-
-        private const string MenuPath = "Tools/Aspid 🐍/Welcome FastTools";
 
         private const string PackageName = "tech.aspid.fasttools";
         private const string PackageRootPath = "Assets/Aspid/FastTools";
@@ -44,66 +48,36 @@ namespace Aspid.FastTools.Editors
         private IVisualElementScheduledItem _toastShow;
         private IVisualElementScheduledItem _toastHide;
 
-        private static string SeenKey => $"Aspid.FastTools.WelcomeWindow.Seen::{ProjectPath}";
-
-        public static bool HasBeenSeen
+        public WelcomeView()
         {
-            get => EditorPrefs.GetBool(SeenKey, false);
-            private set => EditorPrefs.SetBool(SeenKey, value);
-        }
-
-        private static string ProjectPath
-        {
-            get
-            {
-                var projectDirectory = Directory.GetParent(Application.dataPath);
-                return projectDirectory?.FullName ?? Application.dataPath;
-            }
-        }
-
-        [MenuItem(MenuPath, priority = 0)]
-        public static void ShowWindow()
-        {
-            var window = GetWindow<WelcomeWindow>(
-                utility: false,
-                title: "Aspid FastTools Welcome",
-                focus: true);
-
-            window.minSize = new Vector2(560f, 420f);
-            window.Show();
-
-            HasBeenSeen = true;
-        }
-
-        private void CreateGUI()
-        {
-            titleContent = new GUIContent(text: "Aspid FastTools Welcome");
-
-            var root = rootVisualElement;
-            root.Clear();
+            style.flexGrow = 1;
 
             var tree = Resources.Load<VisualTreeAsset>(UxmlResourcePath);
             if (tree == null)
             {
-                Debug.LogError($"WelcomeWindow: failed to load UXML at Resources/{UxmlResourcePath}.uxml");
+                Debug.LogError($"WelcomeView: failed to load UXML at Resources/{UxmlResourcePath}.uxml");
                 return;
             }
 
-            tree.CloneTree(root);
+            tree.CloneTree(this);
 
-            _toast = root.Q<Label>(ToastName);
+            // The host window already paints one shared dotted canvas behind every tab; drop the Welcome UXML's
+            // own background so the tabs read over a single continuous canvas instead of a doubled-up layer.
+            this.Q<AspidAnimatedDotsBackground>()?.RemoveFromHierarchy();
+
+            _toast = this.Q<Label>(ToastName);
             if (_toast != null)
             {
-                // Reparent to the EditorWindow root so absolute coordinates we set in ShowToast
-                // are panel-relative (welcome-content has padding that would offset positioning).
+                // Reparent to the view root so the absolute coordinates we set in ShowToast are view-relative
+                // (welcome-content has padding that would offset positioning).
                 _toast.RemoveFromHierarchy();
-                rootVisualElement.Add(_toast);
+                Add(_toast);
                 _toast.SetPickingMode(PickingMode.Ignore);
             }
 
-            PopulateSamples(root);
-            SetUpFooter(root);
-            SetUpLogoLink(root);
+            PopulateSamples(this);
+            SetUpFooter(this);
+            SetUpLogoLink(this);
         }
 
         private static void SetUpLogoLink(VisualElement root)
@@ -118,17 +92,21 @@ namespace Aspid.FastTools.Editors
 
             _toast.text = message;
 
+            // The view sits below the tab strip, so the event's panel-space cursor position must be converted to
+            // view-local coordinates before it drives the toast's absolute top/left.
+            var local = this.WorldToLocal(mousePosition);
+
             // Tentative position; clamping happens after the toast resolves its size on the
             // next layout pass (see _toastShow callback below).
-            _toast.style.top = mousePosition.y + ToastCursorOffset;
-            _toast.style.left = mousePosition.x;
+            _toast.style.top = local.y + ToastCursorOffset;
+            _toast.style.left = local.x;
 
             // Defer the visible class so the opacity:0 baseline is committed first; otherwise
             // Unity batches the position update with the class change and the fade-in snaps.
             _toastShow?.Pause();
             _toastShow = _toast.schedule.Execute(() =>
             {
-                ClampToastWithinPanel(mousePosition);
+                ClampToastWithinPanel(local);
                 _toast.AddClass(ToastVisibleClass);
             }).StartingIn(16);
 
@@ -136,27 +114,27 @@ namespace Aspid.FastTools.Editors
             _toastHide = _toast.schedule.Execute(HideToast).StartingIn(ToastVisibleDurationMs);
         }
 
-        private void ClampToastWithinPanel(Vector2 mousePosition)
+        private void ClampToastWithinPanel(Vector2 local)
         {
             if (_toast == null) return;
 
-            var panelWidth = rootVisualElement.layout.width;
-            var panelHeight = rootVisualElement.layout.height;
+            var panelWidth = layout.width;
+            var panelHeight = layout.height;
             var toastWidth = _toast.layout.width;
             var toastHeight = _toast.layout.height;
 
             if (float.IsNaN(toastWidth) || float.IsNaN(toastHeight)) return;
             if (toastWidth <= 0f || toastHeight <= 0f) return;
 
-            var left = mousePosition.x;
+            var left = local.x;
             if (left + toastWidth + ToastEdgeMargin > panelWidth)
                 left = panelWidth - toastWidth - ToastEdgeMargin;
             if (left < ToastEdgeMargin)
                 left = ToastEdgeMargin;
 
-            var top = mousePosition.y + ToastCursorOffset;
+            var top = local.y + ToastCursorOffset;
             if (top + toastHeight + ToastEdgeMargin > panelHeight)
-                top = mousePosition.y - toastHeight - ToastEdgeMargin;
+                top = local.y - toastHeight - ToastEdgeMargin;
             if (top < ToastEdgeMargin)
                 top = ToastEdgeMargin;
 
