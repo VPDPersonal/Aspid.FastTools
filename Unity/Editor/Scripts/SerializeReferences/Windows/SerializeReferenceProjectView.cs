@@ -46,8 +46,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ResultsHiddenClass = ResultsClass + "--hidden";
         private const string ResultsHeaderClass = RootClass + "__results-header";
         private const string ResultsHintClass = RootClass + "__results-hint";
+        private const string SummaryListClass = RootClass + "__summary-list";
         private const string SummaryClass = RootClass + "__summary";
-        private const string SummaryHiddenClass = SummaryClass + "--hidden";
         private const string ScrollClass = RootClass + "__scroll";
         private const string EntryClass = RootClass + "__entry";
         private const string EntryRidClass = RootClass + "__entry-rid";
@@ -78,7 +78,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private VisualElement _empty;
         private VisualElement _results;
         private AspidLabel _resultsHeader;
-        private AspidHelpBox _summary;
+        private VisualElement _summaries;
         private Label _resultsHint;
         private VisualElement _list;
         private VisualElement _openPicker;
@@ -138,33 +138,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _resultsHint = new Label(string.Empty).AddClass(ResultsHintClass);
 
-            // A help-box reporting how many references the last bulk fix rewrote; hidden until a Fix all runs. Amber-
-            // toned (Warning) so it sits in the Project Audit view's warning family — the amber results header, group
-            // cards and canvas tone — rather than reading as a foreign green block. SetMessageType(Warning) also
-            // derives the matching amber status accent that colors the border and text.
-            _summary = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))
-                .AddClass(SummaryClass)
-                .AddClass(SummaryHiddenClass);
+            // A running stack of help-boxes — one receipt per bulk Fix all, in the order they ran — so chaining fixes
+            // across groups keeps every prior summary on screen instead of overwriting it; the stack is cleared only on
+            // a fresh scan (Rescan / Initialize). Empty until the first Fix all, so the container has no footprint then.
+            // Each box is amber-toned (Warning) so it sits in the Project Audit view's warning family — the amber
+            // results header, group cards and canvas tone — rather than reading as a foreign green block.
+            _summaries = new VisualElement().AddClass(SummaryListClass);
 
             _list = new VisualElement();
-
-            var scroll = new ScrollView().AddClass(ScrollClass);
-            scroll.AddChild(_list);
 
             _results = new VisualElement()
                 .AddClass(ResultsClass)
                 .AddChild(_resultsHeader)
                 .AddChild(_resultsHint)
-                .AddChild(_summary)
-                .AddChild(scroll);
+                .AddChild(_summaries)
+                .AddChild(_list);
 
+            // One scroll spans the whole view between the window's tabs and footer: the Find-missing panel, the empty
+            // hero, the results header/hint/summary and the group list all live inside it, so the panel scrolls away
+            // with the group list rather than staying pinned above a separately-scrolling list.
             var content = new VisualElement()
                 .AddClass(ContentClass)
                 .AddChild(panel)
                 .AddChild(_empty)
                 .AddChild(_results);
 
-            root.AddChild(content);
+            var scroll = new ScrollView().AddClass(ScrollClass);
+            scroll.AddChild(content);
+
+            root.AddChild(scroll);
         }
 
         // The tab-switch entry point. The project sweep's first pass is cold-built per session — the static usage
@@ -196,10 +198,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
 
             ClosePicker();
-            HideSummary();
-            _list.Clear();
+            ClearSummaries();
 
             var groups = CollectProjectGroups(out var canceled);
+            RenderGroups(groups, canceled);
+        }
+
+        // Paints a freshly-collected group set into the results region: the count header + hint and one card per
+        // group, or the terminal "Project clean" / "Scan canceled" hero when there is nothing to list. Shared by the
+        // Rescan entry point and the post-fix re-sweep — except ApplyGroupFix special-cases the came-back-clean case
+        // so the rewrite's summary HelpBox survives instead of being replaced by the hero (see there).
+        private void RenderGroups(List<ProjectGroup> groups, bool canceled)
+        {
+            _list.Clear();
 
             if (groups.Count == 0)
             {
@@ -481,11 +492,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Re-sweep so the list reflects the new state, then surface the summary above it. The headline carries the
             // action + count; the body names both ends of the fix — the missing stored type and the type the entries
             // now point at (long, so they wrap below the divider) — plus any skipped note.
-            ScanProject();
             var summaryTitle = rewritten == 1 ? "Rewrote 1 reference" : $"Rewrote {rewritten} references";
             var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
             if (skipped > 0)
                 summaryBody += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
+
+            if (_scanButton is not null) _scanButton.Text = RescanLabel;
+            var groups = CollectProjectGroups(out var canceled);
+
+            if (groups.Count == 0)
+            {
+                // The fix cleared the last broken type. Stay in the results region instead of swapping to the
+                // "Project clean" hero, so the summary HelpBox below survives as the receipt for this rewrite — the
+                // hero would hide it along with the whole _results subtree. The celebratory empty state is reserved
+                // for an explicit Rescan (which the hint invites), so the user reads "what just happened" before the
+                // view resets to clean.
+                _list.Clear();
+                ShowResults("No missing references");
+                _resultsHint.text =
+                    "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+            }
+            else
+            {
+                RenderGroups(groups, canceled);
+            }
+
             ShowSummary(summaryTitle, summaryBody);
         }
 
@@ -649,14 +680,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             OnCanvasTone?.Invoke(SerializeReferenceCanvasStyle.Warning);
         }
 
+        // Appends one receipt to the running stack rather than overwriting the previous: chaining a fix across several
+        // groups leaves every earlier summary on screen, newest at the bottom (just above the list, where the lone
+        // summary used to sit). The stack is reset only by ClearSummaries on the next fresh scan.
         private void ShowSummary(string title, string message)
         {
-            _summary.Title = title;
-            _summary.Message = message;
-            _summary.RemoveClass(SummaryHiddenClass);
+            var summary = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))
+                .AddClass(SummaryClass);
+            summary.Title = title;
+            summary.Message = message;
+            _summaries.AddChild(summary);
         }
 
-        private void HideSummary() => _summary?.AddClass(SummaryHiddenClass);
+        private void ClearSummaries() => _summaries?.Clear();
 
         // ---------------------------------------------------------------------------------------------------------
         // Project scan data

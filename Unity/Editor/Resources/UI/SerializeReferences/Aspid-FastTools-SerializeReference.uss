@@ -171,8 +171,13 @@
    top-left; the old boxed header card was dropped since the active tab already names the mode. Below sits either a
    centred hero for the terminal states (success = nothing to repair, info = canceled) or warning-accented group
    cards, one per broken stored type, each with a bulk Fix all over its entry rows. */
+/* The scrolled content. flex-grow lets it stretch to the viewport when the results are short (so the empty hero
+   centres); flex-shrink:0 stops the scroll's content-container from compressing it when it overflows (UIToolkit's
+   flex-shrink defaults to 1, which would squash the panel and group cards instead of scrolling) — the pair gives
+   "fill when small, scroll when tall". */
 .aspid-fasttools-repair-references__content {
     flex-grow:                                             1;
+    flex-shrink:                                           0;
     padding:                                               12px;
 }
 
@@ -276,13 +281,11 @@
     white-space:                                           normal;
 }
 
-/* Success summary reporting the count after a bulk Fix all; hidden until a bulk fix runs. */
+/* One receipt per bulk Fix all, stacked in the summary list (newest at the bottom); the margin both spaces stacked
+   receipts apart and holds the gap from the last one to the group list / empty area below. The list container itself
+   has no styling — empty until the first fix, so it leaves no footprint then. */
 .aspid-fasttools-repair-references__summary {
     margin-bottom:                                         10px;
-}
-
-.aspid-fasttools-repair-references__summary--hidden {
-    display:                                               none;
 }
 
 /* Pull the summary into the same translucent-dark family as the Scan panel and the group cards. The base help-box's
@@ -297,11 +300,18 @@
     border-color:                                          var(--aspid-colors-status-warning-shade-dark);
 }
 
-/* The vertical scrollbar rides the scroll's right edge; a right padding insets it from the window edge so it does
-   not hug the border, and gives the group cards a small gap before it. */
+/* One scroll wraps the whole view (the Find-missing panel + hero + results header/hint/summary + group list) so
+   everything between the window's tabs and footer scrolls as one — the panel is no longer pinned above a separately-
+   scrolling list. flex-grow fills the area between toolbar and footer; the content-container override lets the inner
+   content stretch to the viewport (UIToolkit's default flex-shrink:0 keeps it from collapsing when it overflows) so
+   the empty hero still centres while a long result list scrolls. */
 .aspid-fasttools-repair-references__scroll {
     flex-grow:                                             1;
-    padding-right:                                         6px;
+}
+
+.aspid-fasttools-repair-references__scroll .unity-scroll-view__content-container {
+    flex-grow:                                             1;
+    flex-shrink:                                           0;
 }
 
 /* Amber-tinted gradient rows — a broken reference reads as a warning — with a matching hover accent. */
@@ -491,10 +501,12 @@
     -unity-text-align:                                     middle-center;
 }
 
-/* A single broken reference inside a group: asset path on the left, dim rid on the right; the whole row pings. */
+/* A single broken reference inside a group: asset path on the left, dim rid on the right; the whole row pings. The
+   path wraps to as many lines as it needs while the rid stays pinned to the right, so align-items sits at the top to
+   anchor the rid to the path's first line rather than floating it against the middle of a multi-line block. */
 .aspid-fasttools-repair-references__group-entry {
     flex-direction:                                        row;
-    align-items:                                           center;
+    align-items:                                           flex-start;
     padding:                                               2px 4px;
     border-radius:                                         3px;
     cursor:                                                link;
@@ -504,15 +516,20 @@
     background-color:                                      var(--aspid-colors-bg-dark);
 }
 
+/* min-width:0 lets the path shrink below its content's intrinsic width so a long path wraps to multiple lines within
+   the row instead of overrunning it and shoving the rid off the right edge (default min-width:auto would refuse to
+   shrink). white-space:normal does the wrapping; the rid keeps its full width beside it. */
 .aspid-fasttools-repair-references__group-entry-path {
     flex-grow:                                             1;
+    flex-shrink:                                           1;
+    min-width:                                             0;
     color:                                                 var(--aspid-colors-text-light);
     white-space:                                           normal;
-    overflow:                                              hidden;
-    text-overflow:                                         ellipsis;
 }
 
+/* flex-shrink:0 keeps the rid at its natural width and pinned to the right however many lines the path wraps to. */
 .aspid-fasttools-repair-references__group-entry-rid {
+    flex-shrink:                                           0;
     margin-left:                                           10px;
     color:                                                 var(--aspid-colors-text-dark);
     -unity-text-align:                                     middle-right;

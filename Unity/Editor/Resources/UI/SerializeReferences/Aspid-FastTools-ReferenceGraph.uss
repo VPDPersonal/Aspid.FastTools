@@ -6,8 +6,13 @@
    (amber when the type is missing), the dim rid and MISSING / SHARED badges; a missing row carries a trailing amber
    Fix gradient button that expands an inline type picker. Orphaned rids — reachable from no root — collect in a
    trailing warning-tinted group per document. */
+/* The scrolled content. flex-grow lets it stretch to the viewport when the graph is short (so the empty hero centres);
+   flex-shrink:0 stops the scroll's content-container from compressing it when it overflows (UIToolkit's flex-shrink
+   defaults to 1, which would squash the cards instead of scrolling) — the pair gives "fill when small, scroll when
+   tall". */
 .aspid-fasttools-reference-graph__content {
     flex-grow:                                            1;
+    flex-shrink:                                          0;
     padding:                                              12px;
 }
 
@@ -105,12 +110,46 @@
     -unity-text-align:                                    middle-center;
 }
 
+/* One scroll wraps the whole view (asset card + hero + overview + document list) so everything between the window's
+   tabs and footer scrolls as one — the asset card is no longer pinned above a separately-scrolling list. flex-grow
+   fills the area between toolbar and footer; the content-container override lets the inner content stretch to the
+   viewport (UIToolkit's default flex-shrink:0 keeps it from collapsing when it overflows) so the empty hero still
+   centres while a long graph scrolls. */
 .aspid-fasttools-reference-graph__scroll {
     flex-grow:                                            1;
 }
 
-.aspid-fasttools-reference-graph__scroll--hidden {
+.aspid-fasttools-reference-graph__scroll .unity-scroll-view__content-container {
+    flex-grow:                                            1;
+    flex-shrink:                                          0;
+}
+
+/* The per-document list, swapped for the centred empty hero by the --hidden modifier. */
+.aspid-fasttools-reference-graph__list--hidden {
     display:                                              none;
+}
+
+/* --- Scan overview ---
+   A status headline over a dim one-line breakdown, sitting between the asset card and the document scroll — the
+   Inspect Asset twin of the Project Audit results header. The headline's AspidLabel drives its own colour (amber when
+   the graph carries missing / orphaned references, green when every type resolves) and its divider; the --hidden
+   modifier drops the whole block in the empty / prefab-instance states. */
+.aspid-fasttools-reference-graph__overview {
+    flex-grow:                                            0;
+}
+
+.aspid-fasttools-reference-graph__overview--hidden {
+    display:                                              none;
+}
+
+.aspid-fasttools-reference-graph__overview-title {
+    margin-bottom:                                        6px;
+}
+
+.aspid-fasttools-reference-graph__overview-hint {
+    margin-bottom:                                        10px;
+    color:                                                var(--aspid-colors-text-dark);
+    white-space:                                          normal;
 }
 
 /* --- Per-document group --- */

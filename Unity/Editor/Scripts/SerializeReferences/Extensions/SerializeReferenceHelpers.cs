@@ -62,6 +62,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> when <paramref name="path"/> is a Unity scene. Scenes cannot be read through
+        /// <see cref="AssetDatabase.LoadAllAssetsAtPath"/> — it warns "Do not use ReadObjectThreaded on scene objects!"
+        /// and returns nothing useful — so every object-loading scanner skips them and relies on the YAML pass instead.
+        /// </summary>
+        internal static bool IsScene(string path) =>
+            !string.IsNullOrEmpty(path) && path.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Stable grouping key for a stored type identity (class + namespace + assembly). <see cref="ManagedTypeName"/>
         /// carries no value equality, so the three fields are joined into a key string instead.
         /// </summary>
@@ -785,6 +793,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var map = new Dictionary<(long, long), Type>();
             if (string.IsNullOrEmpty(assetPath)) return map;
+
+            // Scenes cannot be read through LoadAllAssetsAtPath (see IsScene); an unconstrained picker is the fallback.
+            if (IsScene(assetPath)) return map;
 
             // A managed-reference graph may be cyclic (the graph window renders back-edges), so descending into a rid
             // already on this document's walk would loop forever. One HashSet per call, cleared per document (rids are

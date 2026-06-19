@@ -41,8 +41,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var listView = elementField.GetFirstAncestorOfType<ListView>();
             if (listView is null || listView.overridingAddButtonBehavior != null) return;
 
-            listView.overridingAddButtonBehavior = (_, button) =>
-                OpenAppendPicker(target, arrayPath, elementType, baseTypes, button);
+            // Assigning overridingAddButtonBehavior calls ListView.RefreshItems(), which rebuilds the list's item
+            // elements — a hierarchy change. TryInstall runs from the element's AttachToPanelEvent (the only point the
+            // ListView ancestor is reachable), so the subtree is still mid-attach; mutating it synchronously throws
+            // "Modifying the parent of a VisualElement while it's already being modified". Defer one tick — anchored to
+            // the long-lived ListView so it survives item recycling — and re-check the guard, since sibling elements
+            // attaching in the same pass each queue their own install before the first one lands.
+            listView.schedule.Execute(() =>
+            {
+                if (listView.overridingAddButtonBehavior != null) return;
+
+                listView.overridingAddButtonBehavior = (_, button) =>
+                    OpenAppendPicker(target, arrayPath, elementType, baseTypes, button);
+            });
         }
 
         private static void OpenAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, VisualElement anchor)
