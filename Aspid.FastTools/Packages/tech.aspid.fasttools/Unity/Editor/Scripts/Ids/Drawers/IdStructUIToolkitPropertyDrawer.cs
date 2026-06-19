@@ -17,7 +17,7 @@ namespace Aspid.FastTools.Ids.Editors
             };
 
             var root = new VisualElement()
-                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+                .AddAspidThemeStyleSheets()
                 .AddChild(new PropertyField(ctx.Property).SetDisplay(DisplayStyle.None))
                 .AddChild(idField);
 

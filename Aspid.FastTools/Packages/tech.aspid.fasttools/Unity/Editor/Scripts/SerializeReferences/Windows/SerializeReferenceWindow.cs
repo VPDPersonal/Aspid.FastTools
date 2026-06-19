@@ -92,7 +92,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void CreateGUI()
         {
             var root = rootVisualElement;
-            root.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+            root.AddAspidThemeStyleSheets()
                 .AddStyleSheetsFromResource(WindowStyleSheetPath)
                 .AddClass(RootClass);
 

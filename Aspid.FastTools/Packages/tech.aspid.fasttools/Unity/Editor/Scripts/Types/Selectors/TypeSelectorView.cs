@@ -192,7 +192,7 @@ namespace Aspid.FastTools.Types.Editors
             // The root catches type-to-search keystrokes even when there is no row to focus (an empty page).
             focusable = true;
 
-            this.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+            this.AddAspidThemeStyleSheets()
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(BlockClass)
                 .AddChild(CreateHeader())
