@@ -5,7 +5,6 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using UnityEditor.PackageManager.UI;
-using System.Text.RegularExpressions;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
@@ -13,7 +12,7 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 namespace Aspid.FastTools.Editors
 {
     /// <summary>
-    /// The Welcome panel as a reusable element: hero, samples list, footer links and the cursor toast.
+    /// The Welcome panel as a reusable element: hero, samples list, the logo asset-store link and the cursor toast.
     /// Hosted as the leftmost "home" tab of the Managed References window (see SerializeReferenceWindow).
     /// The UI is cloned from the same UXML the standalone window used; only the toast positioning is
     /// retargeted from the window root to this view (the view sits below the tab strip).
@@ -28,20 +27,22 @@ namespace Aspid.FastTools.Editors
         private const string PackageRootPath = "Assets/Aspid/FastTools";
 
         private const string SamplesPath = PackageRootPath + "/Samples";
-        private const string PackageManifestPath = PackageRootPath + "/package.json";
-        private const string GitHubUrl = "https://github.com/VPDPersonal/Aspid.FastTools";
-        private const string GitHubReleasesUrl = GitHubUrl + "/releases";
-        private const string GitHubReleaseTagUrlFormat = GitHubReleasesUrl + "/tag/v{0}";
         private const string AssetStoreUrl = "https://assetstore.unity.com/packages/slug/365584";
 
         private const string UxmlResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
 
         private const string LogoName = "welcome-logo";
         private const string ToastName = "welcome-toast";
-        private const string GitHubName = "welcome-github";
-        private const string VersionName = "welcome-version";
         private const string SamplesListName = "welcome-samples-list";
         private const string ToastVisibleClass = "aspid-fasttools-welcome__toast--visible";
+
+        private const string SampleCardClass = "aspid-fasttools-welcome__sample";
+        private const string SampleBodyClass = "aspid-fasttools-welcome__sample-body";
+        private const string SampleHeaderClass = "aspid-fasttools-welcome__sample-header";
+        private const string SampleTitleClass = "aspid-fasttools-welcome__sample-title";
+        private const string SampleActionClass = "aspid-fasttools-welcome__sample-action";
+        private const string SampleDividerClass = "aspid-fasttools-welcome__sample-divider";
+        private const string SampleDescriptionClass = "aspid-fasttools-welcome__sample-description";
 
         private Label _toast;
         private VisualElement _samplesList;
@@ -76,7 +77,6 @@ namespace Aspid.FastTools.Editors
             }
 
             PopulateSamples(this);
-            SetUpFooter(this);
             SetUpLogoLink(this);
         }
 
@@ -176,19 +176,39 @@ namespace Aspid.FastTools.Editors
         private AspidGradientButton CreateUpmSampleButton(Sample sample)
         {
             var displayName = sample.displayName;
+            var description = sample.description;
             var captured = sample;
 
             if (sample.isImported)
             {
-                return new AspidGradientButton(displayName, "Select  ▼", evt =>
+                // The sample already lives under Assets — re-importing overwrites it, so mirror the Package
+                // Manager and confirm before clobbering any local edits the user may have made to the copy.
+                return CreateSampleCard(displayName, description, "Reimport  ▼", evt =>
                 {
-                    var assetPath = ToProjectRelativePath(captured.importPath);
-                    PingAsset(assetPath);
-                    ShowToast($"“{displayName}” selected in the Project window", GetMousePosition(evt));
+                    var pointer = GetMousePosition(evt);
+                    var target = ToProjectRelativePath(captured.importPath);
+
+                    var confirmed = EditorUtility.DisplayDialog(
+                        $"Reimport “{displayName}”",
+                        $"This overwrites “{target}”, discarding any local changes to the sample. Continue?",
+                        "Reimport",
+                        "Cancel");
+
+                    if (!confirmed) return;
+
+                    if (!captured.Import(Sample.ImportOptions.OverridePreviousImports | Sample.ImportOptions.HideImportWindow))
+                    {
+                        ShowToast($"Failed to reimport “{displayName}”", pointer);
+                        return;
+                    }
+
+                    AssetDatabase.Refresh();
+                    ShowToast($"“{displayName}” reimported into Assets/Samples", pointer);
+                    RebuildSamplesList();
                 });
             }
 
-            return new AspidGradientButton(displayName, "Import  ▼", evt =>
+            return CreateSampleCard(displayName, description, "Import  ▼", evt =>
             {
                 var pointer = GetMousePosition(evt);
 
@@ -204,6 +224,75 @@ namespace Aspid.FastTools.Editors
             });
         }
 
+        /// <summary>
+        /// Builds a two-line sample row: the display name on the first line, the package.json description (when
+        /// present) wrapping below it, and the <paramref name="trailingText"/> action pinned to the right edge.
+        /// The name + description live in a flex-grow leading column so the trailing action stays right-aligned;
+        /// the <see cref="SampleCardClass"/> USS rule relaxes the gradient button's fixed single-line height.
+        /// </summary>
+        private AspidGradientButton CreateSampleCard(string displayName, string description, string actionText, Action<EventBase> onClick)
+        {
+            var card = new AspidGradientButton(string.Empty, onClick)
+                .AddClass(SampleCardClass);
+
+            var body = new VisualElement()
+                .AddClass(SampleBodyClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            // First line: the name on the left and the Import/Reimport action pinned to the right.
+            var header = new VisualElement()
+                .AddClass(SampleHeaderClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            var title = new Label(displayName)
+                .AddClass(SampleTitleClass)
+                .SetPickingMode(PickingMode.Ignore);
+            header.Add(title);
+
+            Label action = null;
+            if (!string.IsNullOrEmpty(actionText))
+            {
+                action = new Label(actionText)
+                    .AddClass(SampleActionClass)
+                    .SetPickingMode(PickingMode.Ignore);
+                header.Add(action);
+            }
+
+            body.Add(header);
+
+            if (!string.IsNullOrEmpty(description))
+            {
+                // Full-width rule under the whole header line, then the wrapped description below it.
+                body.Add(new AspidDividingLine(AspidDividingLinePreset.Default
+                        .SetTheme(ThemeStyle.Type.Light)
+                        .SetSize(AspidDividingLineSizeStyle.Type.Thin))
+                    .AddClass(SampleDividerClass)
+                    .SetPickingMode(PickingMode.Ignore));
+
+                body.Add(new Label(description)
+                    .AddClass(SampleDescriptionClass)
+                    .SetPickingMode(PickingMode.Ignore));
+            }
+
+            card.AddLeadingContent(body);
+            card.FillWithLeadingContent();
+
+            // The action/title now live in the leading content instead of the button's own labels, so the
+            // button's built-in hover recolor no longer reaches them — mirror it here against the accent color.
+            card.RegisterCallback<MouseEnterEvent>(_ =>
+            {
+                title.style.color = card.Accent;
+                if (action is not null) action.style.color = card.Accent;
+            });
+            card.RegisterCallback<MouseLeaveEvent>(_ =>
+            {
+                title.style.color = StyleKeyword.Null;
+                if (action is not null) action.style.color = StyleKeyword.Null;
+            });
+
+            return card;
+        }
+
         private void AddLocalSamples()
         {
             foreach (var subfolder in AssetDatabase.GetSubFolders(SamplesPath))
@@ -211,7 +300,7 @@ namespace Aspid.FastTools.Editors
                 var fileName = Path.GetFileName(subfolder);
                 if (string.IsNullOrEmpty(fileName)) continue;
 
-                _samplesList.Add(new AspidGradientButton(fileName, evt =>
+                _samplesList.Add(CreateSampleCard(fileName, null, string.Empty, evt =>
                 {
                     PingAsset(subfolder);
                     ShowToast($"“{fileName}” selected in the Project window", GetMousePosition(evt));
@@ -225,42 +314,6 @@ namespace Aspid.FastTools.Editors
             IMouseEvent mouse => mouse.mousePosition,
             _ => Vector2.zero,
         };
-
-        private static void SetUpFooter(VisualElement root)
-        {
-            var version = ReadPackageVersion();
-            var versionLabel = root.Q<Label>(VersionName);
-
-            if (versionLabel is not null)
-            {
-                versionLabel.text = "v" + version;
-
-                var releaseUrl = version is "?"
-                    ? GitHubReleasesUrl
-                    : string.Format(GitHubReleaseTagUrlFormat, version);
-
-                versionLabel.AddManipulator(new Clickable(() => Application.OpenURL(releaseUrl)));
-            }
-
-            var githubLabel = root.Q<Label>(GitHubName);
-            githubLabel?.AddManipulator(new Clickable(() => Application.OpenURL(GitHubUrl)));
-        }
-
-        private static string ReadPackageVersion()
-        {
-            var package = PackageInfo.FindForPackageName(PackageName);
-            if (package is not null && !string.IsNullOrEmpty(package.version))
-                return package.version;
-
-            var manifest = AssetDatabase.LoadAssetAtPath<TextAsset>(PackageManifestPath);
-            if (manifest is null) return "?";
-
-            var match = Regex.Match(
-                input: manifest.text,
-                pattern: "\"version\"\\s*:\\s*\"([^\"]+)\"");
-
-            return match.Success ? match.Groups[1].Value : "?";
-        }
 
         private static void PingAsset(string assetPath)
         {
