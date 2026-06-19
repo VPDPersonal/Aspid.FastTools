@@ -4,8 +4,9 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
+    // Ranged branch of the IWeapon hierarchy (see IRanged).
     [Serializable]
-    public sealed class Shotgun : IWeapon
+    public sealed class Shotgun : IRanged
     {
         [SerializeField] [Min(1)] private int _pellets = 8;
         [SerializeField] [Range(0f, 90f)] private float _spreadAngle = 25f;
