@@ -2,6 +2,8 @@
 
 A tiny loadout system that demonstrates `[TypeSelector]` — a searchable, hierarchical type dropdown for `[SerializeReference]` fields. You pick which concrete implementation of a polymorphic field is instantiated, directly in the Inspector.
 
+> **New here? Start with [TUTORIAL.md](TUTORIAL.md)** ([RU](TUTORIAL_RU.md)) — a guided, step-by-step tour (Lessons 1–8) built around `Scripts/Tutorial/TypeSelectorTutorial.cs` and `Scenes/TypeSelectorTutorial.unity`. This page is the feature reference; the tutorial is the walkthrough.
+
 Look at:
 
 - `Scripts/Loadout.cs` — single (`IWeapon`), `List<IWeapon>`, and abstract-base (`StatusEffect`) `[SerializeReference]` fields, each annotated with `[TypeSelector]`.

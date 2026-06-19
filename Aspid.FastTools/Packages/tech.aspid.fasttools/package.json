@@ -40,7 +40,7 @@
     },
     {
       "displayName": "SerializeReferences",
-      "description": "[TypeSelector] type-picker dropdown for [SerializeReference] fields (single, List<T>, abstract base, nested), in both UIToolkit and IMGUI inspectors.",
+      "description": "[TypeSelector] type-picker dropdown for [SerializeReference] fields (single, List<T>, abstract base, narrowing, nested, generics, required), in both UIToolkit and IMGUI inspectors. Includes a step-by-step TUTORIAL and a guided TypeSelectorTutorial scene.",
       "path": "Samples~/SerializeReferences"
     },
     {

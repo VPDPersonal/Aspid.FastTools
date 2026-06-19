@@ -2,6 +2,8 @@
 
 Маленькая система снаряжения, демонстрирующая `[TypeSelector]` — иерархический выпадающий список с поиском для полей `[SerializeReference]`. Вы прямо в Inspector выбираете, какая конкретная реализация полиморфного поля будет создана.
 
+> **Впервые здесь? Начните с [TUTORIAL_RU.md](TUTORIAL_RU.md)** ([EN](TUTORIAL.md)) — пошаговый разбор (уроки 1–8) вокруг `Scripts/Tutorial/TypeSelectorTutorial.cs` и `Scenes/TypeSelectorTutorial.unity`. Эта страница — справочник по фичам, а туториал — пошаговое прохождение.
+
 Смотрите:
 
 - `Scripts/Loadout.cs` — одиночное поле (`IWeapon`), `List<IWeapon>` и поле с абстрактным базовым типом (`StatusEffect`), каждое с `[SerializeReference]` и `[TypeSelector]`.
