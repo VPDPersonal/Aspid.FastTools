@@ -7,8 +7,9 @@ namespace Aspid.FastTools.Samples.SerializeReferences
 {
     // Demonstrates a nested [SerializeReference] inside a managed-reference payload:
     // the charge effect is itself polymorphic and gets its own inline dropdown.
+    // Ranged branch of the IWeapon hierarchy (see IRanged).
     [Serializable]
-    public sealed class Railgun : IWeapon
+    public sealed class Railgun : IRanged
     {
         [SerializeField] [Min(0f)] private float _chargeTime = 1.5f;
 
