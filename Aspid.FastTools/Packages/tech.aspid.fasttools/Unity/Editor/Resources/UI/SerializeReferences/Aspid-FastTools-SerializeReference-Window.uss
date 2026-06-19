@@ -7,6 +7,17 @@
     flex-grow:                                            1;
 }
 
+/* Docked-window floor for the mode content.
+   EditorWindow.minSize (480×360) only bounds the window while it floats; once docked into a column its
+   rootVisualElement ignores it and can be squeezed far below that, collapsing the cards into character-wrapped
+   text and vertical labels. Squeezing that far can't be prevented in a dock, so instead of letting the content
+   crush, the container that hosts the active mode gets a hard width floor: below it the content stops shrinking
+   and slides off the right edge (clipped by the window) rather than breaking. The toolbar and footer are left
+   flexible on purpose so their tabs/links stay reachable in a narrow dock — only the content is floored. */
+.aspid-fasttools-serialize-reference-window__container {
+    min-width:                                            340px;
+}
+
 /* The shared dotted canvas: a black base over which the dots paint; it absolutely fills the window via its own
    stylesheet, sitting behind the toolbar and the mode content. Its blob tint is driven from code per view state. */
 .aspid-fasttools-serialize-reference-window__background {
