@@ -93,7 +93,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static void CollectRequiredViolations(string assetPath, List<GateViolation> violations)
         {
             // Loading objects + walking SerializedObjects is heavier than the pure-YAML missing scan, so this check is
-            // opt-in (off by default for the fast build-time mode).
+            // opt-in (off by default for the fast build-time mode). Scenes cannot be read through LoadAllAssetsAtPath
+            // (see SerializeReferenceHelpers.IsScene), so the required-fields check skips them.
+            if (SerializeReferenceHelpers.IsScene(assetPath)) return;
+
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
                 if (asset == null) continue;

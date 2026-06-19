@@ -426,6 +426,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var map = new Dictionary<long, string>();
 
+            // Scenes are unreadable through LoadAllAssetsAtPath (see SerializeReferenceHelpers.IsScene); their
+            // documents simply fall back to the YAML class id label.
+            if (SerializeReferenceHelpers.IsScene(assetPath)) return map;
+
             try
             {
                 foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))

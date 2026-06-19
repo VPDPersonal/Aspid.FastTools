@@ -38,7 +38,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EmptyTitleClass = RootClass + "__empty-title";
         private const string EmptyMessageClass = RootClass + "__empty-message";
         private const string ScrollClass = RootClass + "__scroll";
-        private const string ScrollHiddenClass = ScrollClass + "--hidden";
+        private const string ListClass = RootClass + "__list";
+        private const string ListHiddenClass = ListClass + "--hidden";
+
+        private const string OverviewClass = RootClass + "__overview";
+        private const string OverviewHiddenClass = OverviewClass + "--hidden";
+        private const string OverviewTitleClass = RootClass + "__overview-title";
+        private const string OverviewHintClass = RootClass + "__overview-hint";
 
         private const string DocumentClass = RootClass + "__document";
         private const string DocumentHeaderClass = RootClass + "__document-header";
@@ -90,6 +96,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private ObjectField _assetField;
         private AspidGradientButton _rescanButton;
         private VisualElement _empty;
+        private VisualElement _overview;
+        private AspidLabel _overviewTitle;
+        private Label _overviewHint;
         private ScrollView _scroll;
         private VisualElement _list;
 
@@ -156,17 +165,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // tree list inside a scroll view.
             _empty = new VisualElement().AddClass(EmptyClass);
 
-            _list = new VisualElement();
-            _scroll = new ScrollView().AddClass(ScrollClass);
-            _scroll.AddChild(_list);
+            // Scan overview, mirroring the Project Audit results header: a status headline over a dim one-line
+            // breakdown, sitting between the asset card and the document scroll. Amber "N missing references" when the
+            // graph carries broken / orphaned references, green "No missing references" when every type resolves — the
+            // same status read the dotted canvas wears. Hidden in the empty / prefab-instance states (see HideOverview /
+            // ShowResults); its label / line status flip between Warning and Success per scan (see ShowOverview).
+            _overviewTitle = new AspidLabel(string.Empty, AspidLabelPreset.Default
+                    .SetLabelStatus(StatusStyle.Type.Warning)
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H4)
+                    .SetLineTheme(ThemeStyle.Type.Dark)
+                    .SetLineStatus(StatusStyle.Type.Warning))
+                .AddClass(OverviewTitleClass);
 
+            _overviewHint = new Label(string.Empty).AddClass(OverviewHintClass);
+
+            _overview = new VisualElement()
+                .AddClass(OverviewClass)
+                .AddClass(OverviewHiddenClass)
+                .AddChild(_overviewTitle)
+                .AddChild(_overviewHint);
+
+            _list = new VisualElement().AddClass(ListClass);
+
+            // One scroll spans the whole view between the window's tabs and footer: the asset card, the empty hero, the
+            // scan overview and the per-document tree all live inside it, so the card and overview scroll away with the
+            // document list rather than staying pinned above a separately-scrolling list.
             var content = new VisualElement()
                 .AddClass(ContentClass)
                 .AddChild(card)
                 .AddChild(_empty)
-                .AddChild(_scroll);
+                .AddChild(_overview)
+                .AddChild(_list);
 
-            root.AddChild(content);
+            _scroll = new ScrollView().AddClass(ScrollClass);
+            _scroll.AddChild(content);
+
+            root.AddChild(_scroll);
 
             Rescan();
         }
@@ -224,9 +258,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             ShowResults();
 
-            // Tint the canvas amber when the graph still needs attention (missing types or orphaned rids), green when
-            // it is fully healthy — the same status-wash language the Project Audit view uses.
-            var hasIssues = false;
+            // Tally the whole asset's graph as the documents are built, so the overview header can headline the
+            // missing / orphaned count (amber) or a clean bill of health (green) — the same status-wash language the
+            // Project Audit view uses, and the same read the dotted canvas wears below.
+            var total = 0;
+            var missing = 0;
+            var orphans = 0;
 
             // The per-document header only earns its place when there is more than one document to tell apart (a
             // multi-component prefab); a single document drops it (see BuildDocument).
@@ -234,10 +271,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var document in documents)
             {
                 _list.AddChild(BuildDocument(assetPath, document, showHeaders));
-                if (DocumentHasIssues(document)) hasIssues = true;
+
+                total += document.Nodes.Count;
+                foreach (var node in document.Nodes)
+                    if (!node.Resolves && !node.StoredType.IsEmpty) missing++;
+                orphans += document.Orphans.Count;
             }
 
-            _onCanvasTone?.Invoke(hasIssues
+            ShowOverview(total, missing, orphans);
+
+            _onCanvasTone?.Invoke(missing > 0 || orphans > 0
                 ? SerializeReferenceCanvasStyle.Warning
                 : SerializeReferenceCanvasStyle.Success);
         }
@@ -265,7 +308,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // and a dimmed explanation, centred in the space below the asset card.
         private void ShowEmpty(string title, string message)
         {
-            _scroll.AddClass(ScrollHiddenClass);
+            HideOverview();
+            _list.AddClass(ListHiddenClass);
             _empty.RemoveClass(EmptyHiddenClass);
             _empty.Clear();
             _onCanvasTone?.Invoke(SerializeReferenceCanvasStyle.Info);
@@ -285,9 +329,56 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void ShowResults()
         {
+            // The generic "swap the hero for the scroll" call. The overview header is left hidden here; only the
+            // document-graph path (Rescan) re-shows it via ShowOverview, so the prefab-instance branch — which reuses
+            // ShowResults for its info box — keeps the missing-reference headline suppressed.
+            HideOverview();
             _empty.AddClass(EmptyHiddenClass);
-            _scroll.RemoveClass(ScrollHiddenClass);
+            _list.RemoveClass(ListHiddenClass);
         }
+
+        // The scan overview above the document scroll, mirroring the Project Audit results header. Headlines the
+        // missing count first, then orphaned rids, falling back to a green all-clear; the label and its divider flip
+        // between Warning (amber) and Success (green) in place, and the dim hint spells out the full breakdown.
+        private void ShowOverview(int total, int missing, int orphans)
+        {
+            var status = missing > 0 || orphans > 0
+                ? StatusStyle.Type.Warning
+                : StatusStyle.Type.Success;
+
+            _overviewTitle.Text = missing > 0
+                ? (missing == 1 ? "1 missing reference" : $"{missing} missing references")
+                : orphans > 0
+                    ? (orphans == 1 ? "1 orphaned reference" : $"{orphans} orphaned references")
+                    : "No missing references";
+
+            _overviewTitle.LabelStatus = status;
+            _overviewTitle.LineStatus = status;
+
+            _overviewHint.text = BuildOverviewHint(total, missing, orphans);
+            _overview.RemoveClass(OverviewHiddenClass);
+        }
+
+        // The overview's dim subtitle: the mapped reference count, annotated with the missing / orphaned tallies and a
+        // one-line cue toward the matching inline action — or a clean bill of health when nothing is broken.
+        private static string BuildOverviewHint(int total, int missing, int orphans)
+        {
+            var references = total == 1 ? "1 managed reference" : $"{total} managed references";
+            if (missing == 0 && orphans == 0)
+                return $"{references} mapped — every [SerializeReference] type resolves.";
+
+            var parts = new List<string>(2);
+            if (missing > 0) parts.Add(missing == 1 ? "1 missing type" : $"{missing} missing types");
+            if (orphans > 0) parts.Add(orphans == 1 ? "1 orphaned rid" : $"{orphans} orphaned rids");
+
+            var action = missing > 0
+                ? "Fix a missing type inline from its card."
+                : "Clear an orphaned rid from its card.";
+
+            return $"{references} mapped · {string.Join(" · ", parts)}. {action}";
+        }
+
+        private void HideOverview() => _overview?.AddClass(OverviewHiddenClass);
 
         // One serialized object document: a clickable header band (styled like the Project Audit group header — a
         // gradient row carrying the component / ScriptableObject name, a reference count and a collapse chevron) over a
