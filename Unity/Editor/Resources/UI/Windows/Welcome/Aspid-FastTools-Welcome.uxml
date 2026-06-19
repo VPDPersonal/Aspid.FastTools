@@ -17,12 +17,5 @@
             </ui:VisualElement>
         </ui:ScrollView>
         <ui:Label name="welcome-toast" class="aspid-fasttools-welcome__toast"/>
-        <ui:VisualElement name="welcome-footer" style="margin-top: 2px;">
-            <Aspid.FastTools.UIElements.Editors.Internal.AspidDividingLine theme="Darkness"/>
-            <ui:VisualElement style="flex-grow: 1; flex-direction: row; justify-content: space-between; margin-top: 5px; padding-left: 10px; padding-right: 10px;">
-                <ui:Label name="welcome-version" text="v1.0.0" class="aspid-fasttools-welcome__footer-version"/>
-                <ui:Label name="welcome-github" text="GitHub" class="aspid-fasttools-welcome__footer-link"/>
-            </ui:VisualElement>
-        </ui:VisualElement>
     </ui:VisualElement>
 </ui:UXML>
