@@ -1,5 +1,6 @@
 .claude/settings.local.json
 .worktrees/
+.claude/worktrees/
 .zed/
 
 # UPM convention: `Samples~` is hidden from Unity importer but must be tracked.
