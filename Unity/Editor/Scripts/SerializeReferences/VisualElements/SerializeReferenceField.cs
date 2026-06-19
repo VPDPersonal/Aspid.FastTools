@@ -81,7 +81,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             this.AddClass(BlockClass)
                 .AddClass(PropertyField.ussClassName)
                 .AddStyleSheetsFromResource(StyleSheetPath)
-                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet);
+                .AddAspidThemeStyleSheets();
 
             _foldout = new Foldout();
             _foldout.RegisterValueChangedCallback(OnFoldoutToggled);

@@ -64,7 +64,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             this.AddClass(EnumField.ussClassName)
                 .AddStyleSheetsFromResource(StyleSheetPath)
-                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet);
+                .AddAspidThemeStyleSheets();
             
             _visualInput = visualInput;
             

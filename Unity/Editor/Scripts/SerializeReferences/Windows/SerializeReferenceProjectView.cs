@@ -96,7 +96,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var root = this;
             style.flexGrow = 1;
-            root.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+            root.AddAspidThemeStyleSheets()
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(RootClass);
 
