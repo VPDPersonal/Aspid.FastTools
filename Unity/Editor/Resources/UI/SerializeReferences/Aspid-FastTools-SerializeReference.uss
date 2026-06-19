@@ -300,15 +300,25 @@
     border-color:                                          var(--aspid-colors-status-warning-shade-dark);
 }
 
-/* The receipt's right-pinned Undo chip — reverts exactly that fix. A compact amber chip inside the help box row: the
-   text container before it flex-grows, so flex-shrink:0 + the left margin float it to the trailing edge. Scoped under
-   __summary (two classes) to outrank the gradient button's lone-class :root height/padding/margin/colour defaults. */
+/* The receipt's Undo chip — reverts exactly that fix. Positioned absolute against the help box's top-right corner
+   (right matches its 12px padding so the right edge sits flush to the content edge) rather than sitting in the row's
+   flex flow. Out of flow, it reserves no width, so the help box's text container — the title with its full-width
+   dividing line, and the message below — stretches edge to edge instead of being cut short at the chip; the chip then
+   overlays the right end of the title line. Sized to the title band so it stays between the card's top border and the
+   title's dividing line (≈8px top padding + ~18px H5 title + 5px line margin) instead of overflowing past the line:
+   a fixed 20px height with the auto label height/3px vertical padding dropped, then nudged to top:6px to sit centred
+   in the band. font-size drops to 12px so the chip reads as a secondary action under the bold title rather than
+   matching its weight. Scoped under __summary (two classes) to outrank the gradient button's lone-class :root
+   height/padding/font/colour defaults. */
 .aspid-fasttools-repair-references__summary
     .aspid-fasttools-repair-references__summary-undo {
-    flex-shrink:                                           0;
-    height:                                                auto;
-    margin:                                                0 0 0 12px;
-    padding:                                               4px 14px;
+    position:                                              absolute;
+    top:                                                   6px;
+    right:                                                 12px;
+    height:                                                20px;
+    margin:                                                0;
+    padding:                                               0 12px;
+    font-size:                                             12px;
     border-radius:                                         6px;
     border-width:                                          1px;
     border-color:                                          var(--aspid-colors-status-warning-shade-dark);
