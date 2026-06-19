@@ -1,7 +1,8 @@
 /* --- Inspect Asset view ---
-   Transparent content floating over the window's shared dotted canvas: a boxed asset-picker card (Aspid header with
-   a neutral divider, full-width picker, Rescan trailing it), then either a centred hero (no asset / no managed
-   references) or a scrolling per-document tree of indented node cards. Each node row shows the stored type short name
+   Transparent content floating over the window's shared dotted canvas: a boxed asset-picker card (Aspid title +
+   description, then a single control that fuses the asset field into the Rescan action), then either a centred hero
+   (no asset / no managed references) or a scrolling per-document tree of indented node cards. Each node row shows the
+   stored type short name
    (amber when the type is missing), the dim rid and MISSING / SHARED badges; a missing row carries a trailing amber
    Fix gradient button that expands an inline type picker. Orphaned rids — reachable from no root — collect in a
    trailing warning-tinted group per document. */
@@ -10,39 +11,59 @@
     padding:                                              12px;
 }
 
-/* The AspidBox supplies the rounded darkness panel; the hairline border lifts it off the pure-black canvas. The
-   box's own stylesheet sets `:root { flex-grow: 1; }` on the element itself, which outweighs a single class from
-   this ancestor sheet — the compound selector restores enough specificity to pin the card to its content height. */
+/* The asset-picker card joins the Project Audit family: a translucent dark fill (the same rgba(20,20,20,0.55) the
+   Project Audit panel and group cards carry) so the window's dotted canvas reads through it rather than sitting on an
+   opaque slab, framed by a hairline border and an 8px radius. AspidBox would otherwise paint an opaque
+   --aspid-colors-bg-darkness fill and a 10px --rounded radius; the compound selector raises specificity over both
+   that theme rule and the box's own `:root { flex-grow: 1; }`, pinning the card to its content height. */
 .aspid-fasttools-reference-graph__card.aspid-fasttools-background {
     flex-grow:                                            0;
-    margin-bottom:                                        10px;
+    margin-bottom:                                        12px;
+    padding:                                              10px;
+    border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
+    background-color:                                     rgba(20, 20, 20, 0.55);
 }
 
-.aspid-fasttools-reference-graph__card-header {
-    margin-bottom:                                        8px;
+/* Title + one-line description, mirroring the Project Audit panel's __panel-title / __panel-description rhythm: the
+   title sits tight above the description, the description carries the dim tone and the gap down to the asset field. */
+.aspid-fasttools-reference-graph__card-title {
+    padding-left:                                         4px;
+    margin-bottom:                                        2px;
 }
 
-.aspid-fasttools-reference-graph__field-row {
-    flex-direction:                                       row;
-    align-items:                                          center;
+.aspid-fasttools-reference-graph__card-description {
+    padding-left:                                         4px;
+    color:                                                var(--aspid-colors-text-dark);
+    white-space:                                          normal;
+    margin-bottom:                                        12px;
 }
 
+/* The asset field rides inside the Rescan button as its leading content: it grows to fill the row (the "Rescan" label
+   pins to the right) and sheds the ObjectField's default field margin so its left edge stays flush in the row. */
 .aspid-fasttools-reference-graph__asset {
     flex-grow:                                            1;
+    margin:                                               0;
 }
 
-.aspid-fasttools-reference-graph__rescan {
-    min-width:                                            92px;
-    margin-left:                                          8px;
-    margin-bottom:                                        0;
+/* Rescan hosts the asset field: a row sized to the field's natural height (height auto + centred) rather than the
+   gradient button's default 30px pill, the "Rescan" label flush left and the field filling the row to its right. Code
+   drops the label text when no asset is selected, keeping the field — and so the picker — reachable. Scoped under __card
+   so these layout overrides outrank the gradient button's own :root defaults (height / padding / margin) on the class tie. */
+.aspid-fasttools-reference-graph__card
+    .aspid-fasttools-reference-graph__rescan {
+    height:                                               auto;
+    align-items:                                          center;
+    padding:                                              3px 8px 3px 6px;
+    margin:                                               0;
 }
 
-/* Centre the Rescan label (the gradient button left-aligns its label by default). */
+/* The button's own label carries the "Rescan" word. FillWithTrailingContent stops it growing (so the hosted field owns
+   the row), leaving it to pin left before the field; the right margin spaces it off the field. */
 .aspid-fasttools-reference-graph__rescan .aspid-fasttools-gradient-button__label {
-    flex-grow:                                            0;
-    -unity-text-align:                                    middle-center;
+    margin-right:                                         8px;
+    -unity-text-align:                                    middle-left;
 }
 
 /* Centred hero for the two empty states (no asset / no managed references): a large dimmed info icon, a headline
@@ -97,73 +118,187 @@
     margin-bottom:                                        12px;
 }
 
-.aspid-fasttools-reference-graph__document-header {
+/* The document header band, styled like the Project Audit group header: a clickable gradient row with a transparent
+   static fill (only an amber hover glow when the document has issues, neutral otherwise) carrying the document title +
+   a reference count on the left and a collapse chevron on the right. Scoped under __document so the two custom
+   properties outrank the gradient button's own :root defaults (the layout overrides win on the class tie too). */
+.aspid-fasttools-reference-graph__document
+    .aspid-fasttools-reference-graph__document-header {
+    flex-direction:                                       row;
+    align-items:                                          center;
+    height:                                               auto;
+    padding:                                              5px 8px;
     margin-bottom:                                        6px;
+    border-radius:                                        6px;
+    --aspid-fasttools-colors-gradient_button-bg:          rgba(0, 0, 0, 0);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-text-lightness);
 }
 
-/* --- Node cards --- */
+/* A document carrying missing / orphaned references glows amber on hover, matching the broken-node accent. */
+.aspid-fasttools-reference-graph__document
+    .aspid-fasttools-reference-graph__document-header--issues {
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-light);
+}
+
+/* The chevron (the button's own Text label) fills the gap left of it and right-aligns, pinning to the band's right. */
+.aspid-fasttools-reference-graph__document-header .aspid-fasttools-gradient-button__label {
+    flex-grow:                                            1;
+    font-size:                                            11px;
+    -unity-text-align:                                    middle-right;
+}
+
+/* Leading content: the document title + a dim reference count, hugging the left of the band, shrinkable so a long
+   title ellipsises rather than shoving the chevron off the band. */
+.aspid-fasttools-reference-graph__document-header-row {
+    flex-direction:                                       row;
+    align-items:                                          center;
+    flex-shrink:                                          1;
+}
+
+.aspid-fasttools-reference-graph__document-title {
+    flex-shrink:                                          1;
+    overflow:                                             hidden;
+    text-overflow:                                        ellipsis;
+    white-space:                                          nowrap;
+    color:                                                var(--aspid-colors-text-lightness);
+    -unity-font-style:                                    bold;
+    font-size:                                            13px;
+}
+
+/* The title turns amber when the document carries missing / orphaned references. */
+.aspid-fasttools-reference-graph__document-header--issues .aspid-fasttools-reference-graph__document-title {
+    color:                                                var(--aspid-colors-status-warning-text-light);
+}
+
+/* The dim reference-count subtitle beside the title. */
+.aspid-fasttools-reference-graph__document-count {
+    margin-left:                                          10px;
+    flex-shrink:                                          0;
+    color:                                                var(--aspid-colors-text-dark);
+    -unity-font-style:                                    normal;
+    font-size:                                            11px;
+}
+
+/* --- Node cards ---
+   Each managed reference is its own card laid out over two lines, mirroring the Project Audit group header: a top band
+   carrying the stored type (an amber status pill when missing / orphaned) with the MISSING / SHARED badges beside it
+   and, for a missing node, the inline Fix dropdown docked right; a bottom line with the dim field path and the rid.
+   Translucent fill + 8px radius keep them in the window's card family; indentation (margin-left, set in code) carries
+   the tree depth. AspidBox would otherwise paint an opaque fill and a 10px --rounded radius; the compound selector
+   raises specificity over both that theme rule and the box's own `:root { flex-grow: 1; }`. */
 .aspid-fasttools-reference-graph__node.aspid-fasttools-background {
     flex-grow:                                            0;
-    margin-bottom:                                        4px;
-    padding:                                              4px 8px;
+    margin-bottom:                                        5px;
+    padding:                                              8px 10px;
+    border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
+    background-color:                                     rgba(20, 20, 20, 0.55);
+}
+
+/* A missing reference is called out at rest by its amber type pill and the "Fix Missing" action alone — the card keeps
+   the neutral node border until its picker opens (see __node--picking below), so the resting stack stays calm rather
+   than framing every broken row in amber. */
+
+/* Picker open: the whole card becomes the active surface — a warm amber frame (the same accent the type pill and Fix
+   action wear) lifts it off the dotted canvas while the welded selector sheds its own box (see __picker--attached), so
+   band, selector and meta line read as one active card. Mirrors the Project Audit group's --picking state. */
+.aspid-fasttools-reference-graph__node--picking.aspid-fasttools-background {
+    border-color:                                         var(--aspid-colors-status-warning-shade-light);
+}
+
+/* A back-edge leaf (a cycle) is a single dim line, no bottom row — a fainter fill and a dimmer border sink it behind
+   the live nodes. */
+.aspid-fasttools-reference-graph__node--back-edge.aspid-fasttools-background {
+    border-color:                                         var(--aspid-colors-shade-dark);
+    background-color:                                     rgba(20, 20, 20, 0.35);
+}
+
+/* The top band of a missing node: the Fix dropdown styled as a flat row (transparent gradient fill, amber accent on
+   hover) — the type pill + badges hug the left as leading content, the "Fix Missing ▼" label pins right. Padding/height
+   match the Project Audit group header band (__group-fix-all) so the two read identically. Scoped under __node so these
+   props outrank the gradient button's own :root defaults (the layout overrides win on the class tie too). */
+.aspid-fasttools-reference-graph__node
+    .aspid-fasttools-reference-graph__node-band {
+    flex-direction:                                       row;
+    align-items:                                          center;
+    height:                                               auto;
+    margin:                                               0;
+    padding:                                              4px 4px;
+    --aspid-fasttools-colors-gradient_button-bg:          rgba(0, 0, 0, 0);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-light);
+}
+
+/* The "Fix Missing ▼" label fills the gap left of it then right-aligns, pinning the action to the band's right edge.
+   Font size is left to the gradient button's default so it matches the Project Audit "Fix all" action (which likewise
+   sets no size) rather than reading smaller. */
+.aspid-fasttools-reference-graph__node-band .aspid-fasttools-gradient-button__label {
+    flex-grow:                                            1;
+    -unity-text-align:                                    middle-right;
+    color:                                                var(--aspid-colors-status-warning-text-light);
+}
+
+/* The band's leading content (and the non-missing top row): the type pill + badges hugging the left, shrinkable so a
+   long type ellipsises rather than shoving the Fix action off the band. */
+.aspid-fasttools-reference-graph__node-band-row {
+    flex-direction:                                       row;
+    align-items:                                          center;
+    flex-shrink:                                          1;
+}
+
+/* Header line of a back-edge leaf (its only line) — a plain row holding the dim "↩ rid N" label. */
+.aspid-fasttools-reference-graph__node-header {
+    flex-direction:                                       row;
+    align-items:                                          center;
+}
+
+/* The stored type short name. An Aspid status label drives its colour (amber pill when missing / orphaned, light text
+   otherwise), so this only constrains layout. */
+.aspid-fasttools-reference-graph__node-type {
+    flex-shrink:                                          1;
 }
 
 /* A back-edge leaf (a cycle pointing at a rid already on the render path) reads dim and italic. */
-.aspid-fasttools-reference-graph__node--back-edge.aspid-fasttools-background {
-    border-color:                                         var(--aspid-colors-shade-dark);
-}
-
-.aspid-fasttools-reference-graph__node--back-edge .aspid-fasttools-reference-graph__node-label {
+.aspid-fasttools-reference-graph__node--back-edge .aspid-fasttools-reference-graph__node-type {
     color:                                                var(--aspid-colors-text-darkness);
     -unity-font-style:                                    italic;
 }
 
-/* The single-row node body: root label, type name (grown so the rid and badges push right), rid, badges, Fix. */
-.aspid-fasttools-reference-graph__node-label {
+/* Bottom line: the field path, then the rid (+ an orphan's Clear), a touch below the band. Horizontal padding matches
+   the band's 4px so the path lines up under the type pill. */
+.aspid-fasttools-reference-graph__node-footer {
     flex-direction:                                       row;
     align-items:                                          center;
-    flex-wrap:                                            wrap;
+    margin-top:                                           4px;
+    padding:                                              0 4px;
 }
 
-/* The field/element name a root reference sits under — a dim lead-in before the type name. */
+/* The field/element path the reference sits under — a dim italic lead-in that grows so the rid pins to the right. */
 .aspid-fasttools-reference-graph__node-root-label {
-    margin-right:                                         6px;
+    flex-grow:                                            1;
+    flex-shrink:                                          1;
+    overflow:                                             hidden;
+    text-overflow:                                        ellipsis;
+    white-space:                                          nowrap;
     color:                                                var(--aspid-colors-text-dark);
     -unity-font-style:                                    italic;
 }
 
-/* The stored type short name; flex-grown so trailing elements align to the right edge. */
-.aspid-fasttools-reference-graph__node-type {
-    flex-grow:                                            1;
-    flex-shrink:                                          1;
-    color:                                                var(--aspid-colors-text-lightness);
-    -unity-font-style:                                    bold;
-}
-
-/* A missing type reads amber, matching the MISSING badge and the Fix button. */
-.aspid-fasttools-reference-graph__node-label--missing .aspid-fasttools-reference-graph__node-type {
-    color:                                                var(--aspid-colors-status-warning-text-light);
-}
-
-/* An orphan row's type dims toward the warning palette so it reads as a leftover, even when its type resolves. */
-.aspid-fasttools-reference-graph__node-label--orphan .aspid-fasttools-reference-graph__node-type {
-    color:                                                var(--aspid-colors-status-warning-text-dark);
-    -unity-font-style:                                    normal;
-}
-
+/* The rid: a dim, small subtitle on the right of the bottom line. */
 .aspid-fasttools-reference-graph__node-rid {
-    margin-left:                                          8px;
+    flex-shrink:                                          0;
     color:                                                var(--aspid-colors-text-dark);
     -unity-font-style:                                    normal;
     font-size:                                            10px;
 }
 
-/* --- Badges --- */
+/* --- Badges ---
+   Sit on the top band after the type pill (where the Project Audit header's count sits); the left margin spaces them
+   off it. */
 .aspid-fasttools-reference-graph__node-badges {
     flex-direction:                                       row;
     align-items:                                          center;
+    flex-shrink:                                          0;
     margin-left:                                          8px;
 }
 
@@ -195,53 +330,96 @@
     border-radius:                                        4px;
 }
 
-/* --- Inline Fix gradient button (missing rows) --- */
-.aspid-fasttools-reference-graph__fix {
-    min-width:                                            66px;
-    margin-left:                                          8px;
-    margin-bottom:                                        0;
-    padding:                                              2px 6px;
-    --aspid-fasttools-colors-gradient_button-bg:          var(--aspid-colors-status-warning-darkness);
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-light);
-}
-
-.aspid-fasttools-reference-graph__fix .aspid-fasttools-gradient-button__label {
-    flex-grow:                                            0;
-    font-size:                                            11px;
-    -unity-text-align:                                    middle-center;
-}
-
-/* --- Orphaned group --- */
+/* --- Orphaned group ---
+   A warning-accented sibling of the node cards: a faint warm translucent fill (echoing the warning palette, like the
+   Project Audit summary's tinted block) under an amber border and an 8px radius, so the orphan region reads as a
+   warning zone over the dotted canvas without going opaque. The amber header carries the rest of the status read. */
 .aspid-fasttools-reference-graph__orphan-group.aspid-fasttools-background {
     flex-grow:                                            0;
     margin-top:                                           6px;
-    padding:                                              6px 8px;
+    padding:                                              8px 10px;
+    border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-status-warning-shade-darkness);
+    background-color:                                     rgba(45, 30, 5, 0.3);
 }
 
 .aspid-fasttools-reference-graph__orphan-group-header {
     margin-bottom:                                        4px;
 }
 
-/* Orphan rows sit flush inside the group card rather than in their own node cards. */
-.aspid-fasttools-reference-graph__orphan-group .aspid-fasttools-reference-graph__node-label {
-    padding:                                              2px 0;
+/* Each orphan's Clear action sits on its card's footer line after the rid / Fix, warm-tinted to match the group; the
+   left margin spaces it off whatever precedes it. */
+.aspid-fasttools-reference-graph__clear-orphan {
+    margin:                                               0 0 0 8px;
+    padding:                                              2px 6px;
+    --aspid-fasttools-colors-gradient_button-bg:          var(--aspid-colors-status-warning-darkness);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-light);
 }
 
-/* --- Inline type picker (mirrors the Repair window) ---
-   The dropdown's selector view boxed in the window's dark style, expanded directly below the row being fixed. Fixed
-   height — the selector's ListView needs bounds to virtualize. The 5px padding matches the selector's own edge
-   spacing so its full-bleed header strip reaches the box border; overflow keeps that strip inside the rounded
-   corners. */
+.aspid-fasttools-reference-graph__clear-orphan .aspid-fasttools-gradient-button__label {
+    flex-grow:                                            0;
+    font-size:                                            11px;
+    -unity-text-align:                                    middle-center;
+}
+
+/* --- Inline type picker (mirrors the Project Audit picker exactly) ---
+   The selector view expanded inline, welded into the card being fixed (see TogglePicker): translucent dark fill,
+   neutral border, 8px radius and a fixed height (the ListView needs bounds to virtualize). padding:0 plus the header /
+   footer bleed rules below let the selector's full-bleed strips reach the box edges — the same treatment the Project
+   Audit picker uses, so the two selectors look identical. */
 .aspid-fasttools-reference-graph__picker.aspid-fasttools-background {
     flex-grow:                                            0;
     height:                                               300px;
-    padding:                                              5px;
+    padding:                                              0;
     overflow:                                             hidden;
-    margin:                                               0 0 8px 0;
+    margin:                                               0 -2px 8px -2px;
+    border-radius:                                        8px;
     border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-status-warning-shade-darkness);
+    border-color:                                         var(--aspid-colors-shade-dark);
+    background-color:                                     rgba(20, 20, 20, 0.55);
+}
+
+/* Welded under a node's Fix band: the selector sheds its own box (no border, radius or fill) so it dissolves into the
+   active card; the card's --picking accent frames the whole thing. */
+.aspid-fasttools-reference-graph__picker--attached.aspid-fasttools-background {
+    border-width:                                         0;
+    border-radius:                                        0;
+    background-color:                                     rgba(0, 0, 0, 0);
+}
+
+/* Bleed the selector's header strip to the picker box edges so it reads as a filled header bar, not an inset rectangle. */
+.aspid-fasttools-reference-graph__picker .aspid-fasttools-type-selector__header {
+    background-color:                                     #00000000;
+    margin:                                               0;
+    margin-bottom:                                        5px;
+}
+
+/* The boxless attached picker keeps the breadcrumb strip's rounded corners (the card frames it). */
+.aspid-fasttools-reference-graph__picker--attached .aspid-fasttools-type-selector__header {
+    border-radius:                                        8px;
+}
+
+/* Bleed the selector's footer hint to the picker box edges, mirroring the header strip above. */
+.aspid-fasttools-reference-graph__picker .aspid-fasttools-type-selector__footer-hint {
+    margin:                                               5px -7px 0;
+}
+
+/* In the attached (boxless) picker the footer pulls level with the list as a rounded plate rather than a bar pasted on
+   the edge: the same 8px radius, no top divider. */
+.aspid-fasttools-reference-graph__picker--attached .aspid-fasttools-type-selector__footer-hint {
+    margin:                                               5px 0 0 0;
+    border-top-width:                                    0;
+    border-radius:                                        8px;
+}
+
+/* Match the Project Audit selector's item insets so the rows line up identically. The global type-selector item rule
+   that does this lives in the Project Audit stylesheet, which this window does not load, so it is restated here. */
+.aspid-fasttools-reference-graph__picker
+    .unity-collection-view__item.aspid-fasttools-type-selector__item {
+    border-radius:                                        8px;
+    padding-left:                                         8px;
+    margin-bottom:                                        2px;
 }
 
 /* Re-tint the selector list's default editor-blue hover/selection to the window's palette. */
