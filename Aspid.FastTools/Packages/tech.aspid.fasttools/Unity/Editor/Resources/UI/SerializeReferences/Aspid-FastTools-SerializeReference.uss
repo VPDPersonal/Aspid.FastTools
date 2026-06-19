@@ -300,6 +300,31 @@
     border-color:                                          var(--aspid-colors-status-warning-shade-dark);
 }
 
+/* The receipt's right-pinned Undo chip — reverts exactly that fix. A compact amber chip inside the help box row: the
+   text container before it flex-grows, so flex-shrink:0 + the left margin float it to the trailing edge. Scoped under
+   __summary (two classes) to outrank the gradient button's lone-class :root height/padding/margin/colour defaults. */
+.aspid-fasttools-repair-references__summary
+    .aspid-fasttools-repair-references__summary-undo {
+    flex-shrink:                                           0;
+    height:                                                auto;
+    margin:                                                0 0 0 12px;
+    padding:                                               4px 14px;
+    border-radius:                                         6px;
+    border-width:                                          1px;
+    border-color:                                          var(--aspid-colors-status-warning-shade-dark);
+    --aspid-fasttools-colors-gradient_button-bg: var(
+        --aspid-colors-status-warning-darkness
+    );
+    --aspid-fasttools-colors-gradient_button-accent: var(
+        --aspid-colors-status-warning-text-light
+    );
+}
+
+.aspid-fasttools-repair-references__summary-undo
+    .aspid-fasttools-gradient-button__label {
+    -unity-text-align:                                     middle-center;
+}
+
 /* One scroll wraps the whole view (the Find-missing panel + hero + results header/hint/summary + group list) so
    everything between the window's tabs and footer scrolls as one — the panel is no longer pinned above a separately-
    scrolling list. flex-grow fills the area between toolbar and footer; the content-container override lets the inner

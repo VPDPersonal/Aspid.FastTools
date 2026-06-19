@@ -48,6 +48,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ResultsHintClass = RootClass + "__results-hint";
         private const string SummaryListClass = RootClass + "__summary-list";
         private const string SummaryClass = RootClass + "__summary";
+        private const string SummaryUndoClass = RootClass + "__summary-undo";
         private const string ScrollClass = RootClass + "__scroll";
         private const string EntryClass = RootClass + "__entry";
         private const string EntryRidClass = RootClass + "__entry-rid";
@@ -395,22 +396,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (newType is null) return;
             ClosePicker();
 
-            // A scene — or a prefab open in Prefab Mode — that is loaded in the editor would race the rewrite: the
-            // in-memory copy wins on the next Ctrl+S and silently clobbers the file fix (same hazard the per-property
-            // flow avoids in Prefab Mode by repairing in memory). Such entries are skipped here; close the scene /
-            // Prefab Mode and rescan to include them.
-            var prefabStagePath = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
-            var entries = new List<ProjectEntry>(group.Entries.Count);
-            var skipped = 0;
-            foreach (var entry in group.Entries)
-            {
-                var openInScene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(entry.AssetPath).isLoaded;
-                var openInPrefabMode = !string.IsNullOrEmpty(prefabStagePath) &&
-                                       string.Equals(prefabStagePath, entry.AssetPath, StringComparison.Ordinal);
-
-                if (openInScene || openInPrefabMode) skipped++;
-                else entries.Add(entry);
-            }
+            var entries = FilterWritableEntries(group.Entries, out var skipped);
 
             if (entries.Count == 0)
             {
@@ -438,54 +424,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var managedType = ManagedTypeName.FromType(newType);
 
             // Diff preview: show the exact YAML lines this rewrite will change (computed by the same scan the rewrite
-            // applies, so the preview cannot lie) before confirming an irreversible file edit.
+            // applies, so the preview cannot lie) before confirming the file edit.
             var diff = BuildDiffPreview(entries, managedType);
 
             if (!EditorUtility.DisplayDialog(
                     "Repair Missing References",
                     $"Rewrite {entries.Count} reference(s) in {files} file(s) to '{newType.FullName}'?\n\n" +
                     diff +
-                    "This edits the asset files directly and cannot be undone." + skippedNote + mixedNote,
+                    "This edits the asset files directly; an Undo button on the summary can revert it." + skippedNote + mixedNote,
                     "Rewrite",
                     "Cancel"))
                 return;
-            var byFile = entries
-                .GroupBy(entry => entry.AssetPath, StringComparer.Ordinal)
-                .ToArray();
 
-            var rewritten = 0;
-
-            // Batch the per-file reimports: StartAssetEditing defers every ImportAsset until StopAssetEditing, so the
-            // whole group reimports in one pass instead of the editor churning once per file mid-loop.
-            AssetDatabase.StartAssetEditing();
-            try
-            {
-                for (var i = 0; i < byFile.Length; i++)
-                {
-                    var file = byFile[i];
-                    EditorUtility.DisplayProgressBar(
-                        "Repairing References",
-                        $"{file.Key}  ({i + 1}/{byFile.Length})",
-                        (float)i / byFile.Length);
-
-                    var changed = false;
-                    foreach (var entry in file)
-                    {
-                        if (!SerializeReferenceYamlEditor.TryRewriteType(file.Key, entry.Entry.FileId, entry.Entry.Rid, managedType))
-                            continue;
-
-                        rewritten++;
-                        changed = true;
-                    }
-
-                    if (changed) AssetDatabase.ImportAsset(file.Key, ImportAssetOptions.ForceUpdate);
-                }
-            }
-            finally
-            {
-                AssetDatabase.StopAssetEditing();
-                EditorUtility.ClearProgressBar();
-            }
+            var rewritten = BatchRewriteEntries(entries, managedType, "Repairing References");
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
@@ -496,6 +447,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
             if (skipped > 0)
                 summaryBody += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
+
+            // Undo re-points the same entries back to their original (now-missing) stored type — restoring the broken
+            // state — via the same YAML rewrite. The data blocks were never touched on disk (only the type line moved),
+            // so flipping the type back is a faithful revert. Captured into the summary's button below.
+            var originalType = group.StoredType;
+            var missingName = group.DisplayName;
+            var appliedName = newType.FullName;
+            void Undo(VisualElement receipt) => UndoGroupFix(entries, originalType, missingName, appliedName, receipt);
 
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
             var groups = CollectProjectGroups(out var canceled);
@@ -517,7 +476,120 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 RenderGroups(groups, canceled);
             }
 
-            ShowSummary(summaryTitle, summaryBody);
+            ShowSummary(summaryTitle, summaryBody, Undo);
+        }
+
+        // The skip filter both the fix and the undo share: a scene — or a prefab open in Prefab Mode — that is loaded in
+        // the editor would race a file rewrite, since the in-memory copy wins on the next Ctrl+S and silently clobbers
+        // the on-disk edit (the same hazard the per-property flow avoids in Prefab Mode by repairing in memory). Returns
+        // the entries safe to write on disk; reports how many were held back.
+        private static List<ProjectEntry> FilterWritableEntries(IReadOnlyList<ProjectEntry> source, out int skipped)
+        {
+            var prefabStagePath = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
+            var writable = new List<ProjectEntry>(source.Count);
+            skipped = 0;
+
+            foreach (var entry in source)
+            {
+                var openInScene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(entry.AssetPath).isLoaded;
+                var openInPrefabMode = !string.IsNullOrEmpty(prefabStagePath) &&
+                                       string.Equals(prefabStagePath, entry.AssetPath, StringComparison.Ordinal);
+
+                if (openInScene || openInPrefabMode) skipped++;
+                else writable.Add(entry);
+            }
+
+            return writable;
+        }
+
+        // Rewrites every entry's stored type to targetType, batched per file behind a cancel-free progress bar.
+        // StartAssetEditing defers each ImportAsset until StopAssetEditing, so the whole set reimports in one pass
+        // instead of the editor churning once per file mid-loop. Returns how many entries were actually rewritten.
+        // Shared by the forward fix (re-point to the chosen type) and Undo (re-point back to the missing type).
+        private static int BatchRewriteEntries(IReadOnlyList<ProjectEntry> entries, ManagedTypeName targetType, string progressTitle)
+        {
+            var byFile = entries
+                .GroupBy(entry => entry.AssetPath, StringComparer.Ordinal)
+                .ToArray();
+
+            var rewritten = 0;
+
+            AssetDatabase.StartAssetEditing();
+            try
+            {
+                for (var i = 0; i < byFile.Length; i++)
+                {
+                    var file = byFile[i];
+                    EditorUtility.DisplayProgressBar(
+                        progressTitle,
+                        $"{file.Key}  ({i + 1}/{byFile.Length})",
+                        (float)i / byFile.Length);
+
+                    var changed = false;
+                    foreach (var entry in file)
+                    {
+                        if (!SerializeReferenceYamlEditor.TryRewriteType(file.Key, entry.Entry.FileId, entry.Entry.Rid, targetType))
+                            continue;
+
+                        rewritten++;
+                        changed = true;
+                    }
+
+                    if (changed) AssetDatabase.ImportAsset(file.Key, ImportAssetOptions.ForceUpdate);
+                }
+            }
+            finally
+            {
+                AssetDatabase.StopAssetEditing();
+                EditorUtility.ClearProgressBar();
+            }
+
+            return rewritten;
+        }
+
+        // Reverts one bulk fix: re-points its entries back to the original (now-missing) stored type, after a
+        // confirmation. Only the type line moves — the entries' data blocks are still on disk untouched — so this
+        // restores the exact broken state the group had before the fix. The reverted references reappear as a fixable
+        // group; only this fix's own receipt is dropped, so summaries for other still-applied fixes (and their Undo
+        // buttons) survive — unlike a full Rescan, which would clear the whole stack.
+        private void UndoGroupFix(IReadOnlyList<ProjectEntry> entries, ManagedTypeName originalType, string missingName, string appliedName, VisualElement receipt)
+        {
+            // The asset may have been opened in a scene / Prefab Mode since the fix; re-point only the still-writable
+            // entries, the same guard the forward fix applies.
+            var writable = FilterWritableEntries(entries, out var skipped);
+            if (writable.Count == 0)
+            {
+                EditorUtility.DisplayDialog(
+                    "Undo Repair",
+                    "These references now live in open scene(s) or Prefab Mode. Close them and try the undo again.",
+                    "OK");
+                return;
+            }
+
+            var files = writable.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
+            var skippedNote = skipped > 0
+                ? $"\n\n{skipped} reference(s) in open scene(s) or Prefab Mode will be skipped."
+                : string.Empty;
+
+            if (!EditorUtility.DisplayDialog(
+                    "Undo Repair",
+                    $"Re-point {writable.Count} reference(s) in {files} file(s) back to the missing '{missingName}'?\n\n" +
+                    $"This restores the broken state you had before replacing it with '{appliedName}', and edits the " +
+                    "asset files directly." + skippedNote,
+                    "Undo",
+                    "Cancel"))
+                return;
+
+            BatchRewriteEntries(writable, originalType, "Undoing Repair");
+
+            SerializeReferenceRepairSuggestions.ClearCache();
+
+            // Drop only this receipt — the other summaries describe fixes that are still applied, so they stay (and so
+            // do their own Undo buttons). Then re-render the group list (RenderGroups rebuilds only _list, never
+            // _summaries) so the reverted references reappear as a fixable group alongside the surviving receipts.
+            receipt?.RemoveFromHierarchy();
+            var groups = CollectProjectGroups(out var canceled);
+            RenderGroups(groups, canceled);
         }
 
         // Builds a compact old -> new line preview of the YAML the bulk fix will rewrite, using the same scan
@@ -682,13 +754,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Appends one receipt to the running stack rather than overwriting the previous: chaining a fix across several
         // groups leaves every earlier summary on screen, newest at the bottom (just above the list, where the lone
-        // summary used to sit). The stack is reset only by ClearSummaries on the next fresh scan.
-        private void ShowSummary(string title, string message)
+        // summary used to sit). The stack is reset only by ClearSummaries on the next fresh scan. The receipt carries a
+        // right-pinned Undo button (the help box is a row whose text container flex-grows, so the button rides the
+        // trailing edge) that reverts exactly this fix.
+        private void ShowSummary(string title, string message, Action<VisualElement> onUndo)
         {
             var summary = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))
                 .AddClass(SummaryClass);
             summary.Title = title;
             summary.Message = message;
+
+            if (onUndo is not null)
+                summary.AddChild(new AspidGradientButton("Undo", _ => onUndo(summary)).AddClass(SummaryUndoClass));
+
             _summaries.AddChild(summary);
         }
 
