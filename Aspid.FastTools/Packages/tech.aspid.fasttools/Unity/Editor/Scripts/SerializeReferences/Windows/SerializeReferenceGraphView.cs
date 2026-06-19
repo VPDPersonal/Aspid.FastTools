@@ -27,8 +27,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string RootClass = "aspid-fasttools-reference-graph";
         private const string ContentClass = RootClass + "__content";
         private const string CardClass = RootClass + "__card";
-        private const string CardHeaderClass = RootClass + "__card-header";
-        private const string FieldRowClass = RootClass + "__field-row";
+        private const string CardTitleClass = RootClass + "__card-title";
+        private const string CardDescriptionClass = RootClass + "__card-description";
         private const string AssetClass = RootClass + "__asset";
         private const string RescanClass = RootClass + "__rescan";
         private const string EmptyClass = RootClass + "__empty";
@@ -42,12 +42,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string DocumentClass = RootClass + "__document";
         private const string DocumentHeaderClass = RootClass + "__document-header";
+        private const string DocumentHeaderIssuesClass = DocumentHeaderClass + "--issues";
+        private const string DocumentHeaderRowClass = RootClass + "__document-header-row";
+        private const string DocumentTitleClass = RootClass + "__document-title";
+        private const string DocumentCountClass = RootClass + "__document-count";
+        private const string DocumentBodyClass = RootClass + "__document-body";
 
         private const string NodeClass = RootClass + "__node";
+        private const string NodeOrphanClass = NodeClass + "--orphan";
         private const string NodeBackEdgeClass = NodeClass + "--back-edge";
-        private const string NodeLabelClass = RootClass + "__node-label";
-        private const string NodeLabelMissingClass = NodeLabelClass + "--missing";
-        private const string NodeLabelOrphanClass = NodeLabelClass + "--orphan";
+        private const string NodePickingClass = NodeClass + "--picking";
+        private const string NodeBandClass = RootClass + "__node-band";
+        private const string NodeBandRowClass = RootClass + "__node-band-row";
+        private const string NodeHeaderClass = RootClass + "__node-header";
+        private const string NodeFooterClass = RootClass + "__node-footer";
         private const string NodeRootLabelClass = RootClass + "__node-root-label";
         private const string NodeTypeClass = RootClass + "__node-type";
         private const string NodeRidClass = RootClass + "__node-rid";
@@ -58,15 +66,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string BadgeSharedClass = BadgeClass + "--shared";
 
         private const string ChipClass = RootClass + "__chip";
-        private const string FixClass = RootClass + "__fix";
         private const string ClearOrphanClass = RootClass + "__clear-orphan";
         private const string OpenSourceClass = RootClass + "__open-source";
         private const string OrphanGroupClass = RootClass + "__orphan-group";
         private const string OrphanGroupHeaderClass = RootClass + "__orphan-group-header";
         private const string PickerClass = RootClass + "__picker";
+        private const string PickerAttachedClass = PickerClass + "--attached";
 
-        private const string FixCollapsedText = "Fix  ▼";
-        private const string FixExpandedText = "Fix  ▲";
+        private const string FixCollapsedText = "Fix Missing  ▼";
+        private const string FixExpandedText = "Fix Missing  ▲";
+
+        // The document header's collapse chevron: ▼ while the body is shown, ▶ once collapsed.
+        private const string DocumentChevronExpanded = "▼";
+        private const string DocumentChevronCollapsed = "▶";
 
         // Indentation step (px) applied per tree depth so nested cards read as a hierarchy.
         private const float IndentStep = 16f;
@@ -76,12 +88,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private Object _target;
         private ObjectField _assetField;
+        private AspidGradientButton _rescanButton;
         private VisualElement _empty;
         private ScrollView _scroll;
         private VisualElement _list;
 
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
+        private VisualElement _openPickerCard;
 
         public SerializeReferenceGraphView(Object target, Action<Color> onCanvasTone)
         {
@@ -90,15 +104,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var root = this;
             style.flexGrow = 1;
-            root.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+            root.AddAspidThemeStyleSheets()
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(RootClass);
 
-            var assetHeader = new AspidLabel("Asset", AspidLabelPreset.Default
+            // The asset-picker card mirrors the Project Audit "Find missing references" panel: a title and a one-line
+            // description of what the tab does, then a single control fusing the asset field with the Rescan action —
+            // so the two tabs' top panels read as one family (same translucent card, same title + description rhythm).
+            var cardTitle = new AspidLabel("Inspect asset", AspidLabelPreset.Default
                     .SetLabelTheme(ThemeStyle.Type.Lightness)
-                    .SetLabelSize(AspidLabelSizeStyle.Type.H4)
-                    .SetLineTheme(ThemeStyle.Type.Dark))
-                .AddClass(CardHeaderClass);
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                    .SetLineSize(AspidDividingLineSizeStyle.Type.None))
+                .AddClass(CardTitleClass);
+
+            var cardDescription = new Label(
+                    "Map a saved asset's [SerializeReference] graph and repair missing types inline.")
+                .AddClass(CardDescriptionClass);
 
             _assetField = new ObjectField
             {
@@ -109,18 +130,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _assetField.AddClass(AssetClass);
             _assetField.RegisterValueChangedCallback(evt => SetTarget(evt.newValue));
 
-            var rescan = new AspidGradientButton("Rescan", _ => Rescan())
-                .AddClass(RescanClass);
+            // The field is hosted *inside* the Rescan button (below), so its own clicks — opening the object picker,
+            // pinging, dragging an asset in — must not bubble to the button's Clickable and re-run Rescan on every
+            // interaction. Swallow the press at the field boundary; only clicks on the surrounding "Rescan" area reach
+            // the button. The field has already handled the event by the time it bubbles here, so its behaviour is intact.
+            _assetField.RegisterCallback<PointerDownEvent>(evt => evt.StopPropagation());
 
-            var fieldRow = new VisualElement()
-                .AddClass(FieldRowClass)
-                .AddChild(_assetField)
-                .AddChild(rescan);
+            // Rescan fuses with the field rather than stacking below it: the "Rescan" label leads at the row's left and
+            // the ObjectField rides as the button's trailing content, filling the row (FillWithTrailingContent yields the
+            // free space to it) — so picking an asset and re-reading it share one control. The label stays visible always,
+            // so the action reads the same whether or not an asset is set.
+            _rescanButton = new AspidGradientButton("Rescan", _ => Rescan())
+                .AddClass(RescanClass);
+            _rescanButton.AddTrailingContent(_assetField);
+            _rescanButton.FillWithTrailingContent();
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(CardClass)
-                .AddChild(assetHeader)
-                .AddChild(fieldRow);
+                .AddChild(cardTitle)
+                .AddChild(cardDescription)
+                .AddChild(_rescanButton);
 
             // The empty state (no asset / no managed references) shares one centred hero below the card — a large
             // dimmed info icon, a headline and a dimmed explanation; a successful scan swaps it for the per-document
@@ -198,9 +227,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Tint the canvas amber when the graph still needs attention (missing types or orphaned rids), green when
             // it is fully healthy — the same status-wash language the Project Audit view uses.
             var hasIssues = false;
+
+            // The per-document header only earns its place when there is more than one document to tell apart (a
+            // multi-component prefab); a single document drops it (see BuildDocument).
+            var showHeaders = documents.Count > 1;
             foreach (var document in documents)
             {
-                _list.AddChild(BuildDocument(assetPath, document));
+                _list.AddChild(BuildDocument(assetPath, document, showHeaders));
                 if (DocumentHasIssues(document)) hasIssues = true;
             }
 
@@ -218,6 +251,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!node.Resolves && !node.StoredType.IsEmpty) return true;
 
             return false;
+        }
+
+        // A root is "missing" when the node it points at has an unresolved (unloadable) stored type — the same
+        // predicate the MISSING badge and amber tint use. Drives the missing-first root ordering in BuildDocument.
+        private static bool RootIsMissing(ReferenceGraphDocument document, long rid)
+        {
+            var node = document.FindNode(rid);
+            return node is { Resolves: false } && !node.Value.StoredType.IsEmpty;
         }
 
         // Both empty states reuse one hero (mirroring the Project Audit view): a large dimmed info icon, a headline
@@ -248,92 +289,153 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _scroll.RemoveClass(ScrollHiddenClass);
         }
 
-        // One serialized object document: a header card naming the component / ScriptableObject, then each root's
-        // reference subtree, then a trailing "Orphaned" group for any rids no root reaches.
-        private VisualElement BuildDocument(string assetPath, ReferenceGraphDocument document)
+        // One serialized object document: a clickable header band (styled like the Project Audit group header — a
+        // gradient row carrying the component / ScriptableObject name, a reference count and a collapse chevron) over a
+        // collapsible body that holds each root's reference subtree as a stack of separate node cards (indented by
+        // depth) plus a trailing "Orphaned" group for any rids no root reaches. The header is dropped when the asset
+        // has a single document (see showHeader) — there it would only restate the ObjectField above it.
+        private VisualElement BuildDocument(string assetPath, ReferenceGraphDocument document, bool showHeader)
         {
-            var header = new AspidLabel(document.TypeName, AspidLabelPreset.Default
-                    .SetLabelTheme(ThemeStyle.Type.Lightness)
-                    .SetLabelSize(AspidLabelSizeStyle.Type.H4)
-                    .SetLineTheme(ThemeStyle.Type.Dark))
-                .AddClass(DocumentHeaderClass);
-            header.tooltip = $"fileId {document.FileId}";
+            var hasIssues = DocumentHasIssues(document);
 
-            var container = new VisualElement()
-                .AddClass(DocumentClass)
-                .AddChild(header);
+            // The collapsible body — every node card and the orphan group live here so the header chevron can hide
+            // them in one toggle.
+            var body = new VisualElement().AddClass(DocumentBodyClass);
+
+            // Surface the roots that need attention first: a root whose own stored type is missing renders above the
+            // healthy ones. Two passes over the asset's field order make this a stable partition — each group keeps
+            // its source order and the list does not reshuffle between rescans.
+            foreach (var root in document.Roots)
+            {
+                if (!RootIsMissing(document, root.Rid)) continue;
+                var visited = new HashSet<long>();
+                AppendNode(body, assetPath, document, root.Rid, root.Label, depth: 0, visited);
+            }
 
             foreach (var root in document.Roots)
             {
+                if (RootIsMissing(document, root.Rid)) continue;
                 var visited = new HashSet<long>();
-                container.AddChild(BuildNode(assetPath, document, root.Rid, root.Label, depth: 0, visited));
+                AppendNode(body, assetPath, document, root.Rid, root.Label, depth: 0, visited);
             }
 
             var orphans = BuildOrphanGroup(assetPath, document);
-            if (orphans is not null) container.AddChild(orphans);
+            if (orphans is not null) body.AddChild(orphans);
 
-            return container;
+            // Single-document asset: no header band. The asset is already named in the ObjectField above, so a type ·
+            // name title and its collapse chevron would only restate it. The body renders on its own, always expanded.
+            if (!showHeader)
+                return new VisualElement().AddClass(DocumentClass).AddChild(body);
+
+            // The header band: a gradient button (transparent fill, amber hover glow when the document has issues) whose
+            // Text is the collapse chevron and whose leading content is the title + reference count. The self-reference
+            // lets the click handler flip its own chevron alongside toggling the body.
+            AspidGradientButton header = null;
+            var collapsed = false;
+            header = new AspidGradientButton(DocumentChevronExpanded, _ =>
+            {
+                collapsed = !collapsed;
+                body.style.display = collapsed ? DisplayStyle.None : DisplayStyle.Flex;
+                header.Text = collapsed ? DocumentChevronCollapsed : DocumentChevronExpanded;
+            }).AddClass(DocumentHeaderClass);
+            if (hasIssues) header.AddClass(DocumentHeaderIssuesClass);
+            header.tooltip = $"fileId {document.FileId}";
+
+            // Title + dim count, docked into the band to the left of the chevron and ignored for picking so clicks fall
+            // through to the band's own handler.
+            header.AddLeadingContent(new VisualElement()
+                .AddClass(DocumentHeaderRowClass)
+                .SetPickingMode(PickingMode.Ignore)
+                .AddChild(new Label(document.TypeName)
+                    .AddClass(DocumentTitleClass)
+                    .SetPickingMode(PickingMode.Ignore))
+                .AddChild(new Label(BuildDocumentCountText(document))
+                    .AddClass(DocumentCountClass)
+                    .SetPickingMode(PickingMode.Ignore)));
+
+            return new VisualElement()
+                .AddClass(DocumentClass)
+                .AddChild(header)
+                .AddChild(body);
         }
 
-        // Renders a node and (recursively) its children as indented cards. The visited set makes the walk cycle-safe:
-        // a rid already on the current path renders as a back-edge leaf ("↩ rid N") instead of recursing forever.
-        private VisualElement BuildNode(string assetPath, ReferenceGraphDocument document, long rid, string rootLabel, int depth, HashSet<long> visited)
+        // The header's dim subtitle: total managed-reference count, annotated with the missing / orphaned tallies when
+        // present — the same "N · M" two-part shape the Project Audit group header uses.
+        private static string BuildDocumentCountText(ReferenceGraphDocument document)
         {
-            var node = document.FindNode(rid);
+            var total = document.Nodes.Count;
+            var missing = 0;
+            foreach (var node in document.Nodes)
+                if (!node.Resolves && !node.StoredType.IsEmpty) missing++;
 
+            var orphans = document.Orphans.Count;
+
+            var text = total == 1 ? "1 reference" : $"{total} references";
+            if (missing > 0) text += $" · {missing} missing";
+            if (orphans > 0) text += orphans == 1 ? " · 1 orphaned" : $" · {orphans} orphaned";
+            return text;
+        }
+
+        // Appends a node's card (indented by depth) and then, recursively, its children's cards as further-indented
+        // siblings — a flat, scannable stack rather than nested boxes. The visited set makes the walk cycle-safe: a rid
+        // already on the current path renders as a back-edge leaf ("↩ rid N") instead of recursing forever.
+        private void AppendNode(VisualElement container, string assetPath, ReferenceGraphDocument document, long rid, string rootLabel, int depth, HashSet<long> visited)
+        {
             if (!visited.Add(rid))
-                return BuildBackEdgeRow(depth, rid);
+            {
+                container.AddChild(BuildBackEdgeCard(depth, rid));
+                return;
+            }
 
-            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
-                .AddClass(NodeClass);
-            card.style.marginLeft = depth * IndentStep;
-
-            var row = BuildNodeRow(assetPath, document, node, rid, rootLabel);
-            card.AddChild(row);
+            var node = document.FindNode(rid);
+            container.AddChild(BuildNodeCard(assetPath, document, node, rid, rootLabel, depth, isOrphan: false));
 
             foreach (var childRid in document.ChildrenOf(rid))
-                card.AddChild(BuildNode(assetPath, document, childRid, rootLabel: null, depth + 1, visited));
+                AppendNode(container, assetPath, document, childRid, rootLabel: null, depth + 1, visited);
 
             // Leaving the recursion: drop the rid so a sibling subtree may legitimately reference it again (shared),
             // while a back-edge on the current path is still caught above.
             visited.Remove(rid);
-            return card;
         }
 
-        // The node row: an optional root field label, the type short name (yellow + tooltip when missing), the dim
-        // rid, the MISSING / SHARED badges and — for a missing reference — a trailing gradient Fix button that opens
-        // the inline type picker. A flat flex row keeps layout predictable; the Fix button is the only interactive part.
-        private VisualElement BuildNodeRow(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string rootLabel)
+        // A node card laid out over two lines, mirroring the Project Audit group header so a broken node reads the
+        // same way in both views. Top band: the stored type as an Aspid status label (an amber pill when the type is
+        // missing / orphaned, a quiet light label otherwise) with the MISSING / SHARED badges beside it and, for a
+        // missing reference, the inline Fix dropdown docked to the right — the whole band toggles the picker. Bottom
+        // line: the dim field path the reference sits under, then the rid; an orphan card adds a Clear action here.
+        // Indented by depth so the stack still reads as a tree. The Fix band and the Clear button are the only
+        // interactive parts.
+        private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string rootLabel, int depth, bool isOrphan)
         {
             var missing = node is { Resolves: false } && !node.Value.StoredType.IsEmpty;
 
-            var row = new VisualElement().AddClass(NodeLabelClass);
-            if (missing) row.AddClass(NodeLabelMissingClass);
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(NodeClass);
+            card.style.marginLeft = depth * IndentStep;
+            if (isOrphan) card.AddClass(NodeOrphanClass);
 
-            if (!string.IsNullOrEmpty(rootLabel))
-            {
-                row.AddChild(new Label($"{rootLabel}:")
-                    .AddClass(NodeRootLabelClass)
-                    .SetPickingMode(PickingMode.Ignore));
-            }
+            // Top band — type identity + status badges on the left, the Fix action docked right.
 
-            var typeLabel = new Label(node?.ShortName ?? $"rid {rid}")
+            // The type name drives its own colour through an Aspid status label: a missing / orphaned type wears the
+            // same amber pill the Project Audit group header uses; a healthy type stays a quiet light label.
+            var typePreset = AspidLabelPreset.Default
+                .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                .SetLineSize(AspidDividingLineSizeStyle.Type.None);
+            typePreset = missing || isOrphan
+                ? typePreset.SetLabelStatus(StatusStyle.Type.Warning)
+                : typePreset.SetLabelTheme(ThemeStyle.Type.Lightness);
+
+            var typeLabel = new AspidLabel(node?.ShortName ?? $"rid {rid}", typePreset)
                 .AddClass(NodeTypeClass)
                 .SetPickingMode(PickingMode.Ignore);
             if (node is not null && !node.Value.StoredType.IsEmpty)
                 typeLabel.tooltip = node.Value.FullName;
-            row.AddChild(typeLabel);
 
-            row.AddChild(new Label($"rid {rid}")
-                .AddClass(NodeRidClass)
-                .SetPickingMode(PickingMode.Ignore));
-
+            // Badges sit beside the type. The missing state is carried by the "Fix Missing" band action and the amber
+            // type pill, so no MISSING badge here; only SHARED (an alias cue, orthogonal to missing-ness) remains.
             var badges = new VisualElement()
                 .AddClass(NodeBadgesClass)
                 .SetPickingMode(PickingMode.Ignore);
-
-            if (missing)
-                badges.AddChild(new Label("MISSING").AddClass(BadgeClass).AddClass(BadgeMissingClass));
 
             if (document.Shared.Contains(rid))
             {
@@ -348,42 +450,78 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 badges.AddChild(shared);
             }
 
-            row.AddChild(badges);
+            var bandRow = new VisualElement()
+                .AddClass(NodeBandRowClass)
+                .AddChild(typeLabel)
+                .AddChild(badges);
+            bandRow.pickingMode = PickingMode.Ignore;
 
             if (missing)
             {
-                // Self-referencing capture matches the Repair window so the click handler can hand TogglePicker the
-                // button it lives on to anchor the inline picker directly below the row's card. The owning document's
-                // file id is captured too, so the rewrite targets exactly this document — not the first one whose rid
-                // collides with it.
+                // The band itself is the Fix dropdown: leading content (type + badges) hugs the left, the "Fix ▼" label
+                // pins right, and clicking anywhere on the band toggles the inline picker — the Project Audit group-
+                // header interaction. The self-referencing capture lets the handler anchor the picker below the card;
+                // the captured file id targets the rewrite at exactly this document's rid (rids collide across docs).
                 var fileId = document.FileId;
-                AspidGradientButton fixButton = null;
-                fixButton = new AspidGradientButton(FixCollapsedText, _ => TogglePicker(assetPath, fileId, rid, fixButton))
-                    .AddClass(FixClass);
-                row.AddChild(fixButton);
+                AspidGradientButton band = null;
+                band = new AspidGradientButton(FixCollapsedText, _ => TogglePicker(assetPath, fileId, rid, band))
+                    .AddClass(NodeBandClass);
+                band.AddLeadingContent(bandRow);
+                card.AddChild(band);
+            }
+            else
+            {
+                card.AddChild(bandRow);
             }
 
-            return row;
+            // Bottom line — the dim field path, the rid, and (for an orphan) the Clear action.
+            var meta = new VisualElement().AddClass(NodeFooterClass);
+
+            if (!string.IsNullOrEmpty(rootLabel))
+            {
+                meta.AddChild(new Label($"{rootLabel}:")
+                    .AddClass(NodeRootLabelClass)
+                    .SetPickingMode(PickingMode.Ignore));
+            }
+
+            meta.AddChild(new Label($"rid {rid}")
+                .AddClass(NodeRidClass)
+                .SetPickingMode(PickingMode.Ignore));
+
+            if (isOrphan)
+            {
+                // Drop a dangling RefIds entry no field points at. File edit, so it is confirmed and not undoable.
+                var fileId = document.FileId;
+                meta.AddChild(new AspidGradientButton("Clear", _ => ClearOrphan(assetPath, fileId, rid))
+                    .AddClass(ClearOrphanClass));
+            }
+
+            card.AddChild(meta);
+
+            return card;
         }
 
-        // A back-edge to a rid already on the current render path — shown as a dim leaf so cycles terminate visibly.
-        private static VisualElement BuildBackEdgeRow(int depth, long rid)
+        // A back-edge to a rid already on the current render path — a single dim, italic line (no footer) so cycles
+        // terminate visibly.
+        private static VisualElement BuildBackEdgeCard(int depth, long rid)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass)
                 .AddClass(NodeBackEdgeClass);
             card.style.marginLeft = depth * IndentStep;
 
-            card.AddChild(new Label($"↩ rid {rid}")
-                .AddClass(NodeLabelClass)
-                .SetPickingMode(PickingMode.Ignore));
+            card.AddChild(new VisualElement()
+                .AddClass(NodeHeaderClass)
+                .AddChild(new Label($"↩ rid {rid}")
+                    .AddClass(NodeTypeClass)
+                    .SetPickingMode(PickingMode.Ignore)));
 
             return card;
         }
 
-        // Trailing warning-tinted group listing rids no root reaches — leftover payloads from deleted fields or
-        // broken parents. Each orphan gets its own node card (so a missing orphan is still fixable and the inline
-        // picker anchors uniformly: Fix button → row → card), but without recursion into children.
+        // Trailing warning-tinted group listing rids no root reaches — leftover payloads from deleted fields or broken
+        // parents. Each orphan is a node card (so a missing orphan is still fixable — the inline picker anchors below
+        // the card) whose footer carries a Clear action to drop the dangling entry, without recursion into children.
         private VisualElement BuildOrphanGroup(string assetPath, ReferenceGraphDocument document)
         {
             if (document.Orphans.Count == 0) return null;
@@ -400,21 +538,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var node in document.Nodes)
             {
                 if (!document.Orphans.Contains(node.Rid)) continue;
-
-                var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
-                    .AddClass(NodeClass);
-
-                var row = BuildNodeRow(assetPath, document, node, node.Rid, rootLabel: null);
-                row.AddClass(NodeLabelOrphanClass);
-
-                card.AddChild(row);
-
-                // Drop a dangling RefIds entry no field points at. File edit, so it is confirmed and not undoable.
-                var rid = node.Rid;
-                card.AddChild(new AspidGradientButton("Clear", _ => ClearOrphan(assetPath, document.FileId, rid))
-                    .AddClass(ClearOrphanClass));
-
-                group.AddChild(card);
+                group.AddChild(BuildNodeCard(assetPath, document, node, node.Rid, rootLabel: null, depth: 0, isOrphan: true));
             }
 
             return group;
@@ -450,9 +574,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Rescan();
         }
 
-        // The picker expands inline as an accordion panel directly below the clicked row's card — the same selector
-        // view the dropdown window hosts, boxed in the window's dark style. One panel at a time; the Fix cue flips to
-        // ▲ while open and clicking it again collapses it. The candidate list is constrained to the rid's declared
+        // The picker expands inline as an accordion welded into the clicked node's card, directly under its Fix band —
+        // the same selector view the Project Audit group picker hosts, attached the same way (the card frames it). One
+        // panel at a time; the Fix cue flips to ▲ while open and clicking it again collapses it. The candidate list is
+        // constrained to the rid's declared
         // field type (recovered from the asset's managed-reference fields), so a repair cannot pick an incompatible
         // type that would null on import; a rid whose field type is unresolvable falls back to an unconstrained picker.
         private void TogglePicker(string assetPath, long fileId, long rid, AspidGradientButton fixButton)
@@ -481,11 +606,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _openPickerRow = fixButton;
             if (fixButton is not null) fixButton.Text = FixExpandedText;
 
-            // Anchor below the node's enclosing card (Fix button → row → card) so the panel reads as belonging to the
-            // whole row, not squeezed under the button. Fall back to the list when the chain is unexpectedly shallow.
-            var anchor = fixButton?.parent?.parent ?? _list;
-            var parent = anchor.parent ?? _list;
-            parent.InsertChild(parent.IndexOf(anchor) + 1, _openPicker);
+            // The Fix band is a direct child of the node card; drop the picker right below it inside the card — reading
+            // as a dropdown welded under the band, with the bottom meta line shifting beneath it — mirroring the Project
+            // Audit group picker. The ?? fallback keeps a sane target if the band is ever hosted outside a card.
+            var card = fixButton?.parent;
+            var container = card ?? _list;
+            container.InsertChild(container.IndexOf(fixButton) + 1, _openPicker);
+
+            // The whole card becomes the active surface: it lights an accent frame (see __node--picking) and the
+            // selector sheds its own box (see __picker--attached), so band, selector and meta line read as one active
+            // card rather than a button stacked over a separate dropdown — exactly the Project Audit group behaviour.
+            if (card is not null)
+            {
+                _openPickerCard = card;
+                _openPickerCard.AddClass(NodePickingClass);
+                _openPicker.AddClass(PickerAttachedClass);
+            }
+
             view.FocusPicker();
         }
 
@@ -493,9 +630,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             _openPicker?.RemoveFromHierarchy();
             if (_openPickerRow is not null) _openPickerRow.Text = FixCollapsedText;
+            _openPickerCard?.RemoveClass(NodePickingClass);
 
             _openPicker = null;
             _openPickerRow = null;
+            _openPickerCard = null;
         }
 
         private void ApplyFix(string assetPath, long fileId, long rid, string assemblyQualifiedName)

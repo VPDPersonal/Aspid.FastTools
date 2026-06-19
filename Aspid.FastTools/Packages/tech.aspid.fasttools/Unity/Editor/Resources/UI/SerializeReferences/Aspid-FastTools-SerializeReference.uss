@@ -183,7 +183,7 @@
     flex-direction:                                       column;
     flex-shrink:                                          0;
     margin-bottom:                                        12px;
-    padding:                                              12px;
+    padding:                                              10px;
     border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
@@ -191,25 +191,30 @@
 }
 
 .aspid-fasttools-repair-references__panel-title {
-    margin-bottom:                                        2px;
+    padding-left:                                           4px;
+    margin-bottom:                                          2px;
 }
 
 /* The description carries the gap above the button (margin-bottom), so the button-to-description spacing matches the
    button-to-panel-edge spacing (the panel's 12px bottom padding). Put on the plain Label here — not the button's
    margin-top — because the gradient button's own :root margin would override an equal-specificity rule. */
 .aspid-fasttools-repair-references__panel-description {
+    padding-left:                                           4px;
     color:                                                var(--aspid-colors-text-dark);
     white-space:                                          normal;
     margin-bottom:                                        12px;
 }
 
-/* Scan Project / Rescan sweeps every text asset under Assets/; full-width below the description. The descendant
-   selector outranks the gradient button's own :root, so the panel zeros the button's margin (spacing lives on the
-   description / panel padding) while keeping its natural 0 10px padding, so the label sits indented inside the pill
-   rather than hugging its left edge. */
+/* Scan Project / Rescan sweeps every text asset under Assets/; it is the panel's header action, styled to read like
+   the group cards' "Fix all" header rows rather than a separate pill floating over the panel. The descendant selector
+   outranks the gradient button's own :root, so the panel zeros the button's margin and left padding — the label's left
+   edge lines up with the panel title / description above and the group type names / entry paths below — and clears the
+   gradient_button bg to transparent so no pill stands on the panel fill. The bold label plus the gradient button's own
+   accent hover (label tint + glow) carry the affordance, matching the flat group headers. */
 .aspid-fasttools-repair-references__panel
     .aspid-fasttools-repair-references__scan-project {
     margin:                                               0;
+    padding-left:                                         4;
 }
 
 /* Centred hero for the two terminal states: package icon in the status colour, headline, dimmed explanation. */

@@ -48,8 +48,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
     /// <summary>
     /// A field pointer from a document's body into its <c>RefIds</c> block — a root of the reference tree. The
-    /// <see cref="Label"/> is the nearest mapping key on or above the <c>rid:</c> line (best effort), e.g. the
-    /// field name that holds the reference.
+    /// <see cref="Label"/> is the full field path that holds the reference (best effort), with list elements indexed,
+    /// e.g. <c>_weapon</c> or <c>_alternates[0]</c> or <c>_config._slots[2]</c>.
     /// </summary>
     internal readonly struct ReferenceGraphRoot
     {
@@ -221,9 +221,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Field pointers in the document body (everything before the "references:" block) are the tree roots. The
-        // label is the nearest mapping key on or above the pointer line — the field/element that holds the reference.
-        // Each pointer is kept (no rid de-duplication) so two fields aliasing one reference both render and the
-        // alias is counted as shared.
+        // label is the full field path the pointer sits under, with list elements indexed (see BuildRootPath). Each
+        // pointer is kept (no rid de-duplication) so two fields aliasing one reference both render and the alias is
+        // counted as shared.
         private static void CollectRoots(string[] lines, int start, int bodyEnd, HashSet<long> knownRids, ReferenceGraphDocument document)
         {
             for (var i = start + 1; i < bodyEnd; i++)
@@ -233,7 +233,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (!long.TryParse(match.Groups["id"].Value, out var rid)) continue;
                     if (!knownRids.Contains(rid)) continue; // a dangling pointer, not a graphed reference
 
-                    var label = NearestKey(lines, i, start);
+                    var label = BuildRootPath(lines, i, start);
                     document.Roots.Add(new ReferenceGraphRoot(rid, label));
                 }
             }
@@ -311,29 +311,91 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!children.Contains(child)) children.Add(child);
         }
 
-        // Walks up from line i to the first line whose indent is shallower and carries a mapping key, returning that
-        // key — the field/element name the pointer sits under. Falls back to the key on the pointer line itself.
-        private static string NearestKey(string[] lines, int i, int start)
+        // Builds the full field path from the document body down to the rid pointer on line i — the chain of mapping
+        // keys, joined by ".", with a "[index]" suffix on any list key the path crosses. The document's root wrapper
+        // key (the indent-0 "MonoBehaviour:" / "Transform:" / … line) is excluded — every real field nests under it —
+        // so a top-level field reads as "_weapon" and a list element as "_alternates[0]", never the wrapper name. Two
+        // YAML shapes are handled per ancestor:
+        // • a named value over two lines ("_weapon:\n  rid: N") — the owning key is the nearest strictly-shallower line.
+        // • a block-sequence item ("_alternates:\n  - rid: N") — Unity writes the dashes at the same column as the list
+        //   key, so the key sits at *equal* indent above the dash; the element's index is its position among the same-
+        //   indent "- …" siblings. An element that carries its own field key on the dash line ("- _weapon:") keeps it,
+        //   so the path reads "_slots[0]._weapon".
+        private static string BuildRootPath(string[] lines, int i, int start)
         {
-            var pointerIndent = IndentOf(lines[i]);
+            var segments = new List<string>();
+            var line = i;
 
-            var onLine = MappingKey.Match(lines[i]);
-            if (onLine.Success && !IsStructuralKey(onLine.Groups["key"].Value))
-                return onLine.Groups["key"].Value;
-
-            for (var j = i - 1; j >= start; j--)
+            // YAML nesting is finite; the counter only guards a malformed file from looping the walk forever.
+            for (var safety = 0; line > start && safety < 256; safety++)
             {
-                if (lines[j].Trim().Length == 0) continue;
-                if (IndentOf(lines[j]) >= pointerIndent) continue;
+                var indent = IndentOf(lines[line]);
+                int next;
 
-                var match = MappingKey.Match(lines[j]);
-                if (match.Success && !IsStructuralKey(match.Groups["key"].Value))
-                    return match.Groups["key"].Value;
+                if (lines[line].TrimStart().StartsWith("- "))
+                {
+                    // The element's own field key, if the dash line carries one ("- _weapon:"), is the deepest segment.
+                    var elementKey = MappingKey.Match(lines[line]);
+                    if (elementKey.Success && !IsStructuralKey(elementKey.Groups["key"].Value))
+                        segments.Add(elementKey.Groups["key"].Value);
 
-                pointerIndent = IndentOf(lines[j]);
+                    // The list key (first non-"- " mapping key at this indent above the dashes) and the element index
+                    // (its position among the same-indent "- …" siblings).
+                    var index = 0;
+                    var ownerLine = -1;
+                    for (var j = line - 1; j >= start; j--)
+                    {
+                        if (lines[j].Trim().Length == 0) continue;
+
+                        var jIndent = IndentOf(lines[j]);
+                        if (jIndent > indent) continue;                          // nested detail of an earlier sibling
+                        if (jIndent < indent) break;                             // dedented out of the list
+                        if (lines[j].TrimStart().StartsWith("- ")) { index++; continue; }
+
+                        ownerLine = j;
+                        break;
+                    }
+
+                    if (ownerLine < 0) break;
+
+                    var ownerKey = MappingKey.Match(lines[ownerLine]);
+                    if (!ownerKey.Success || IsStructuralKey(ownerKey.Groups["key"].Value)) break;
+
+                    segments.Add($"{ownerKey.Groups["key"].Value}[{index}]");
+                    next = ParentLine(lines, ownerLine, start, IndentOf(lines[ownerLine]));
+                }
+                else
+                {
+                    // A mapping line: record its key, or climb past a structural "rid:"/"data:" line that contributes
+                    // no path segment of its own.
+                    var match = MappingKey.Match(lines[line]);
+                    if (match.Success && !IsStructuralKey(match.Groups["key"].Value))
+                        segments.Add(match.Groups["key"].Value);
+
+                    next = ParentLine(lines, line, start, indent);
+                }
+
+                if (next < 0 || IndentOf(lines[next]) == 0) break; // reached the indent-0 document wrapper key
+                line = next;
             }
 
-            return onLine.Success ? onLine.Groups["key"].Value : "reference";
+            if (segments.Count == 0) return "reference";
+
+            segments.Reverse();
+            return string.Join(".", segments);
+        }
+
+        // The nearest non-empty line above `from` whose indent is strictly shallower than `indent` — the structural
+        // parent of the node at `from`. Returns -1 when none exists within the document.
+        private static int ParentLine(string[] lines, int from, int start, int indent)
+        {
+            for (var j = from - 1; j >= start; j--)
+            {
+                if (lines[j].Trim().Length == 0) continue;
+                if (IndentOf(lines[j]) < indent) return j;
+            }
+
+            return -1;
         }
 
         // YAML scaffolding keys that never make a meaningful root label.
