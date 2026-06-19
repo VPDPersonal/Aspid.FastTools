@@ -117,7 +117,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _container = new VisualElement().AddClass(ContainerClass);
             _container.style.flexGrow = 1;
 
-            root.AddChild(_background).AddChild(toolbar).AddChild(_container);
+            // The version/GitHub footer is owned by the window, not any single tab, so it stays pinned to the bottom
+            // across every mode. _container (flex-grow:1) takes the remaining height and pushes the footer down; the
+            // footer is transparent, so the shared dotted canvas reads continuously behind it.
+            root.AddChild(_background)
+                .AddChild(toolbar)
+                .AddChild(_container)
+                .AddChild(new AspidWindowFooter());
 
             SwitchMode(_mode);
         }
