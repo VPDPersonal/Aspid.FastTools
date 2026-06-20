@@ -103,10 +103,10 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         private List<WeaponSlot> _step7Slots = new();
 
         // STEP 8 — Required references.
-        // [SerializeReferenceRequired] flags an unset reference with an inline notice (and feeds the
+        // TypeSelector's Required flag marks an unset reference with an inline warning (and feeds the
         // build/CI gate). Leave it empty to see the warning; pick any type to clear it.
         [Header("STEP 8 — Required reference validation")]
-        [SerializeReference] [TypeSelector] [SerializeReferenceRequired]
+        [SerializeReference] [TypeSelector(Required = true)]
         [Tooltip("Empty → 'Required reference is not set' notice. Pick any IWeapon to satisfy it.")]
         private IWeapon _step8Required;
 

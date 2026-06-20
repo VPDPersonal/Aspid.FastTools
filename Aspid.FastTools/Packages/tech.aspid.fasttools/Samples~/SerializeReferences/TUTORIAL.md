@@ -166,22 +166,23 @@ is resolved is the closed type (`Modifier<string>` / `Modifier<float>`) construc
 
 ## Lesson 8 — Required references
 
-**Field:** `IWeapon _step8Required` · `[SerializeReference] [TypeSelector] [SerializeReferenceRequired]`
+**Field:** `IWeapon _step8Required` · `[SerializeReference] [TypeSelector(Required = true)]`
 
-Add `[SerializeReferenceRequired]` next to the usual two attributes to mark a reference as mandatory.
+Set `Required = true` on `[TypeSelector]` to mark a reference as mandatory.
 
 ```csharp
-[SerializeReference, TypeSelector, SerializeReferenceRequired]
+[SerializeReference, TypeSelector(Required = true)]
 private IWeapon _weapon;
 ```
 
 **Try it:**
-1. Leave the field empty — an inline **"Required reference is not set"** notice appears.
+1. Leave the field empty — an inline **"Required reference is not set"** warning appears.
 2. Pick any `IWeapon` — the notice clears.
 
 **Notice:**
-- `Message = "…"` — custom notice text.
-- `AllowMissingType = true` — treat only a *null* reference as a violation (a present-but-missing type keeps its own notice).
+- `RequiredMessage = "…"` — custom notice text.
+- The same `Required = true` works on a `[TypeSelector] string` type field — there "unset" means an empty type name.
+- A present-but-missing managed-reference type is never a *required* violation — it keeps its own missing-type notice.
 - Required references also feed the **build / CI gate** (see *Project settings & the build/CI gate* below).
 
 ---
@@ -253,7 +254,7 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 The same options are also available in the window's **Settings** tab (**`Tools → Aspid 🐍 → FastTools → Settings`**).
 
 For headless CI, `SerializeReferenceCiGate.RunCheck` (invoked via `-batchmode -executeMethod`) writes a report and
-exits non-zero when violations exist; `-srGateRequired` also flags unset `[SerializeReferenceRequired]` fields.
+exits non-zero when violations exist; `-srGateRequired` also flags unset `[TypeSelector(Required = true)]` fields.
 
 ---
 

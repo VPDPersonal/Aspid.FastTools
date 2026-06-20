@@ -52,7 +52,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public override string ToString()
         {
             var where = string.IsNullOrEmpty(FieldPath) ? $"rid {Rid}" : FieldPath;
-            var what = Kind == GateViolationKind.MissingType ? $"missing type {StoredType.Class}" : "required reference not set";
+            var what = Kind == GateViolationKind.MissingType ? $"missing type {StoredType.Class}" : "required value not set";
             return $"{AssetPath} : {where} -> {what}";
         }
     }
@@ -61,7 +61,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// Window-free, headless-safe project scanner for managed-reference gate violations, shared by the build gate and
     /// the CI entry point. Missing-type detection reuses the pure-YAML
     /// <see cref="SerializeReferenceYamlEditor.FindMissingReferences"/>; required-field detection loads each asset's
-    /// objects and checks <see cref="SerializeReferenceRequiredGate.IsViolation"/> per managed-reference property.
+    /// objects and checks <see cref="SerializeReferenceRequiredGate.IsViolation"/> per managed-reference and string
+    /// type property.
     /// </summary>
     internal static class SerializeReferenceGateScanner
     {
@@ -108,10 +109,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 do
                 {
-                    if (iterator.propertyType != SerializedPropertyType.ManagedReference) continue;
+                    // Required applies to a [SerializeReference] managed reference (empty == null) and a [TypeSelector]
+                    // string type field (empty == null-or-empty); IsViolation dispatches on the property kind.
+                    if (iterator.propertyType is not (SerializedPropertyType.ManagedReference or SerializedPropertyType.String)) continue;
                     if (!SerializeReferenceRequiredGate.IsViolation(iterator)) continue;
 
-                    violations.Add(new GateViolation(assetPath, fileId, iterator.managedReferenceId, default,
+                    var rid = iterator.propertyType == SerializedPropertyType.ManagedReference ? iterator.managedReferenceId : 0L;
+                    violations.Add(new GateViolation(assetPath, fileId, rid, default,
                         GateViolationKind.RequiredUnset, iterator.propertyPath));
                 }
                 while (iterator.Next(enterChildren: true));

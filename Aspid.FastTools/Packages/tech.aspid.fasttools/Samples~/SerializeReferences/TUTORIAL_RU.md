@@ -1,36 +1,30 @@
 # TypeSelector для SerializeReference — пошаговый туториал
 
-Практический разбор всего, что `[TypeSelector]` даёт полям `[SerializeReference]`. Проходите уроки по порядку:
-каждый опирается на предыдущий и соответствует одной секции компонента `TypeSelectorTutorial`.
+Практический разбор всего, что `[TypeSelector]` даёт полям `[SerializeReference]`. Проходите уроки по порядку: каждый опирается на предыдущий и соответствует одной секции компонента `TypeSelectorTutorial`.
 
-**Единственное правило:** ставьте `[SerializeReference]` **и** `[TypeSelector]` на одно и то же поле. Первое говорит
-Unity хранить полиморфный экземпляр, второе рисует выпадающий селектор типов с поиском.
+**Единственное правило:** ставьте `[SerializeReference]` **и** `[TypeSelector]` на одно и то же поле. Первое говорит Unity хранить полиморфный экземпляр, второе рисует выпадающий селектор типов с поиском.
 
 ```csharp
-[SerializeReference] [TypeSelector]
-private IWeapon _weapon;
+[TypeSelector]
+[SerializeReference] private IWeapon _weapon;
 ```
 
 ## Как открыть туториал
 
-1. Импортируйте этот пример: **Package Manager → Aspid.FastTools → Samples → SerializeReferences → Import**.
-2. Откройте **`Scenes/TypeSelectorTutorial.unity`** и выделите объект **TypeSelector Tutorial**.
-3. Inspector читается сверху вниз как **ШАГ 1 → ШАГ 8**. Несколько шагов уже предзаполнены, чтобы сразу видеть рабочие
-   примеры; остальные пустые — для самостоятельной практики.
+1. Откройте **`Scenes/TypeSelectorTutorial.unity`** и выделите объект **TypeSelector Tutorial**.
+2. Inspector читается сверху вниз как **ШАГ 1 → ШАГ 8**. Несколько шагов уже предзаполнены, чтобы сразу видеть рабочие примеры; остальные пустые — для самостоятельной практики.
 
 Хотите с чистого листа? Добавьте пустой GameObject и прикрепите компонент **TypeSelectorTutorial**.
 
-Каждый урок работает и в инспекторе **UIToolkit**, и в **IMGUI** — пакет поставляет drawer для каждого пути, и они на
-паритете по функциям. (Соседний компонент `IMGUILoadout` принудительно использует путь IMGUI, если хотите сравнить.)
+Каждый урок работает и в инспекторе **UIToolkit**, и в **IMGUI** — пакет поставляет drawer для каждого пути, и они на паритете по функциям. (Компонент `IMGUILoadout` принудительно использует IMGUI, если хотите сравнить.)
 
 ---
 
 ## Урок 1 — Ваш первый селектор
 
-**Поле:** `IWeapon _step1Single` · `[SerializeReference] [TypeSelector]`
+**Поле:** `[TypeSelector] [SerializeReference] IWeapon _step1Single`
 
-Кликните по выпадающему списку в заголовке поля. Откроется иерархическое окно с поиском, в котором перечислены все
-конкретные реализации `IWeapon`: `Sword`, `Pistol`, `Shotgun`, `Railgun`.
+Кликните по выпадающему списку в заголовке поля. Откроется иерархическое окно с поиском, в котором перечислены все конкретные реализации `IWeapon`: `Sword`, `Pistol`, `Shotgun`, `Railgun`.
 
 - **Выберите тип** → Unity создаёт экземпляр, а его сериализуемые поля появляются вложенно под foldout.
 - **`<None>`** (первая строка) → очищает ссылку обратно в `null`.
@@ -39,14 +33,13 @@ private IWeapon _weapon;
 - **Избранное и недавние** — наведитесь на строку и нажмите на звезду либо клавишу `Space`, чтобы закрепить тип в
   группе **Favorites**. Выбранные типы запоминаются в **Recent**. Обе группы сворачиваются.
 
-> В списке всегда только те типы, которые реально можно создать — конкретные, неабстрактные классы, не наследники
-> `UnityEngine.Object`. Эта фильтрация автоматическая; невалидного варианта вы никогда не увидите.
+> В списке всегда только те типы, которые реально можно создать — конкретные, неабстрактные классы, не наследники `UnityEngine.Object`. Эта фильтрация автоматическая; невалидного варианта вы никогда не увидите.
 
 ---
 
 ## Урок 2 — Списки и массивы
 
-**Поле:** `List<IWeapon> _step2List` · `[SerializeReference] [TypeSelector]`
+**Поле:** `[TypeSelector] [SerializeReference] List<IWeapon> _step2List`
 
 `List<T>` (или массив) поля `[SerializeReference]` превращает каждый элемент в собственный независимый селектор.
 
@@ -54,14 +47,13 @@ private IWeapon _weapon;
 2. Добавьте несколько элементов и задайте каждому своё оружие — это полностью независимые экземпляры.
 3. Меняйте порядок и удаляйте элементы как обычно.
 
-Это первое поведение, которое аттрибут *меняет* относительно стандартного Unity: родная «+» клонировала бы предыдущий
-элемент (и делила бы его данные), здесь «+» всегда добавляет новый типизированный экземпляр.
+Это первое поведение, которое аттрибут *меняет* относительно стандартного Unity: родная «+» клонировала бы предыдущий элемент (и делила бы его данные), здесь «+» всегда добавляет новый типизированный экземпляр.
 
 ---
 
 ## Урок 3 — Абстрактные базы и интерфейсы
 
-**Поле:** `StatusEffect _step3Abstract` · `[SerializeReference] [TypeSelector]`
+**Поле:** `[TypeSelector] [SerializeReference] StatusEffect _step3Abstract`
 
 `StatusEffect` — **абстрактный** класс, создать его через `new` нельзя.
 
@@ -81,13 +73,17 @@ private IWeapon _weapon;
 **Поля:** три поля `IWeapon` с разными аргументами аттрибута.
 
 ```csharp
-[SerializeReference] [TypeSelector(typeof(IRanged))]            private IWeapon _step4Ranged;
-[SerializeReference] [TypeSelector(typeof(IMelee))]             private IWeapon _step4Melee;
-[SerializeReference] [TypeSelector(typeof(IMelee), typeof(IRanged))] private IWeapon _step4MeleeOrRanged;
+[TypeSelector(typeof(IRanged))]
+[SerializeReference] private IWeapon _step4Ranged;
+
+[TypeSelector(typeof(IMelee))]
+[SerializeReference] private IWeapon _step4Melee;
+
+[TypeSelector(typeof(IMelee), typeof(IRanged))] 
+[SerializeReference] private IWeapon _step4MeleeOrRanged;
 ```
 
-Все три поля объявлены как `IWeapon`, но селектор показывает разные наборы. Базовые типы, переданные в
-`[TypeSelector(...)]`, работают как **дополнительный фильтр, применяемый ниже объявленного типа поля**:
+Все три поля объявлены как `IWeapon`, но селектор показывает разные наборы. Базовые типы, переданные в `[TypeSelector(...)]`, работают как **дополнительный фильтр, применяемый ниже объявленного типа поля**:
 
 | Аттрибут | Предлагаемые типы |
 |---|---|
@@ -98,22 +94,20 @@ private IWeapon _weapon;
 
 Так можно держать *тип* поля широким (чтобы код оставался обобщённым) и при этом ограничивать выбор для дизайнеров.
 
-> Базовые типы сужают **ниже** объявленного типа поля и никогда не расширяют его. `[TypeSelector(typeof(object))]` на
-> поле `IWeapon` всё равно покажет только реализации `IWeapon`.
+> Базовые типы сужают **ниже** объявленного типа поля и никогда не расширяют его. `[TypeSelector(typeof(object))]` на поле `IWeapon` всё равно покажет только реализации `IWeapon`.
 
 > **Важно — `TypeAllow` здесь не применяется.** Опция `Allow = TypeAllow.Abstract / Interface` аттрибута влияет только
-> на `[TypeSelector]` для поля **`string`** (где вы именуете тип, а не создаёте его). Для поля `[SerializeReference]`
-> она игнорируется — абстрактный класс или интерфейс выбрать нельзя, потому что нечего было бы инстанцировать.
+> на `[TypeSelector]` для поля **`string`** (где вы именуете тип, а не создаёте его). Для поля `[SerializeReference]` она игнорируется — абстрактный класс или интерфейс выбрать нельзя, потому что нечего было бы инстанцировать.
 
 ---
 
 ## Урок 5 — Вложенные ссылки (рекурсия)
 
-**Поле:** `IWeapon _step5Nested` · `[SerializeReference] [TypeSelector]`
+**Поле:** `[TypeSelector] [SerializeReference] IWeapon _step5Nested`
 
 **Попробуйте:**
 1. Выберите **`Railgun`** и разверните его foldout.
-2. Найдите его поле `Charge Effect` — это снова `[SerializeReference] [TypeSelector] StatusEffect`.
+2. Найдите его поле `Charge Effect` — это снова `[TypeSelector] [SerializeReference] StatusEffect`.
 3. Откройте *этот* селектор и присвойте `BurnEffect` или `FreezeEffect`.
 
 **Обратите внимание:**
@@ -134,23 +128,20 @@ private IWeapon _weapon;
 - три конкретных закрытых подтипа **и**
 - сам открытый generic **`Modifier<T>`**.
 
-Выберите `Modifier<T>` — откроется **вторая страница** для выбора аргумента `T`. Попробуйте `string`, затем `float` —
-закрытый тип (`Modifier<string>` / `Modifier<float>`) создаётся и присваивается только после того, как `T` определён.
+Выберите `Modifier<T>` — откроется **вторая страница** для выбора аргумента `T`. Попробуйте `string`, затем `float` — закрытый тип (`Modifier<string>` / `Modifier<float>`) создаётся и присваивается только после того, как `T` определён.
 
 **На поле `Modifier<float>`** (`_step6Closed`) `T` уже зафиксирован типом поля, поэтому:
 
-- кандидаты ограничены присваиваемостью — предлагаются только `DamageModifier` (это `Modifier<float>`) и сам
-  `Modifier<float>`; `AmmoModifier` (int) и `NameModifier` (string) исключены, а
+- кандидаты ограничены присваиваемостью — предлагаются только `DamageModifier` (это `Modifier<float>`) и сам `Modifier<float>`; `AmmoModifier` (int) и `NameModifier` (string) исключены, а
 - выбор `Modifier<…>` создаёт `Modifier<float>` **сразу**, без второй страницы.
 
 ---
 
-## Урок 7 — Ссылки внутри `[Serializable]`-контейнеров
+## Урок 7 — Ссылки внутри `[Serializable]`- контейнеров
 
 **Поля:** `WeaponSlot _step7Slot` и `List<WeaponSlot> _step7Slots`.
 
-`WeaponSlot` — обычный `[Serializable]`-класс (сам не managed-ссылка), содержащий `label`, `priority` и
-`[SerializeReference] [TypeSelector] IWeapon`.
+`WeaponSlot` — обычный `[Serializable]`-класс (сам не managed-ссылка), содержащий `label`, `priority` и `[TypeSelector] [SerializeReference] IWeapon`.
 
 **Попробуйте:**
 1. Разверните `_step7Slot` и выберите оружие для его внутреннего поля.
@@ -165,22 +156,23 @@ private IWeapon _weapon;
 
 ## Урок 8 — Обязательные ссылки
 
-**Поле:** `IWeapon _step8Required` · `[SerializeReference] [TypeSelector] [SerializeReferenceRequired]`
+**Поле:** `IWeapon _step8Required` · `[SerializeReference] [TypeSelector(Required = true)]`
 
-Добавьте `[SerializeReferenceRequired]` рядом с двумя обычными аттрибутами, чтобы пометить ссылку как обязательную.
+Установите `Required = true` у `[TypeSelector]`, чтобы пометить ссылку как обязательную.
 
 ```csharp
-[SerializeReference, TypeSelector, SerializeReferenceRequired]
+[SerializeReference, TypeSelector(Required = true)]
 private IWeapon _weapon;
 ```
 
 **Попробуйте:**
-1. Оставьте поле пустым — появится встроенная пометка **«Required reference is not set»**.
+1. Оставьте поле пустым — появится встроенное предупреждение **«Required reference is not set»**.
 2. Выберите любой `IWeapon` — пометка исчезнет.
 
 **Обратите внимание:**
-- `Message = "…"` — свой текст пометки.
-- `AllowMissingType = true` — считать нарушением только *null* (present-but-missing тип сохраняет собственную пометку).
+- `RequiredMessage = "…"` — свой текст пометки.
+- Тот же `Required = true` работает и на `[TypeSelector] string` поле — там «не задано» означает пустое имя типа.
+- Present-but-missing тип managed-ссылки никогда не считается нарушением *required* — у него собственная пометка о пропавшем типе.
 - Обязательные ссылки также учитываются **build / CI gate** (см. *Настройки проекта и build/CI gate* ниже).
 
 ---
@@ -253,7 +245,7 @@ drag-and-drop. Попробуйте их на полях из уроков 1–8
 
 Для headless-CI метод `SerializeReferenceCiGate.RunCheck` (через `-batchmode -executeMethod`) пишет отчёт и завершается
 с ненулевым кодом при наличии нарушений; флаг `-srGateRequired` дополнительно проверяет незаданные поля
-`[SerializeReferenceRequired]`.
+`[TypeSelector(Required = true)]`.
 
 ---
 
