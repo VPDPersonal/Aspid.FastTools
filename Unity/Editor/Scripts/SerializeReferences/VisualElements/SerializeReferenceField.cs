@@ -252,7 +252,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         "to edit its own fields.");
         }
 
-        // A field marked [SerializeReferenceRequired] but left empty shows a non-actionable notice (the dropdown right
+        // A field marked [TypeSelector(Required = true)] but left empty shows a non-actionable notice (the dropdown right
         // above is the fix). Suppressed under a multi-object selection and when the type is missing (its own notice).
         private void UpdateRequiredBox()
         {
@@ -265,12 +265,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _requiredNotice ??= new SerializeReferenceNotice();
             if (_requiredNotice.parent is null) this.AddChild(_requiredNotice);
 
-            SerializeReferenceRequiredGate.TryGetRequired(_property, out var required);
-            var message = string.IsNullOrEmpty(required?.Message) ? "Required reference is not set" : required.Message;
+            SerializeReferenceRequiredGate.TryGetRequired(_property, out var selector);
+            var message = string.IsNullOrEmpty(selector?.RequiredMessage) ? "Required reference is not set" : selector.RequiredMessage;
 
-            _requiredNotice.SetInfo(
+            // Warning palette (not the dim info one): an unset required field is a problem to fix, not a passive hint.
+            // Non-actionable — the empty action word keeps the dropdown above as the implied fix.
+            _requiredNotice.Set(
                 message: message,
-                detail: "This [SerializeReference] field is marked required but has no value. Pick a type from the dropdown.");
+                actionText: string.Empty,
+                detail: "This [SerializeReference] field is marked required but has no value. Pick a type from the dropdown.",
+                onAction: null);
         }
 
         private void UpdateMissingBox()

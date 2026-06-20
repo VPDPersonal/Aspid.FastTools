@@ -208,10 +208,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (noticesApply && SerializeReferenceRequiredGate.IsViolation(property))
             {
                 var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
-                SerializeReferenceRequiredGate.TryGetRequired(property, out var required);
-                var message = string.IsNullOrEmpty(required?.Message) ? "Required reference is not set" : required.Message;
+                SerializeReferenceRequiredGate.TryGetRequired(property, out var selector);
+                var message = string.IsNullOrEmpty(selector?.RequiredMessage) ? "Required reference is not set" : selector.RequiredMessage;
 
-                DrawInfoNotice(noticeRect, message, "This [SerializeReference] field is marked required but has no value.");
+                // Warning palette (not the dim info one): an unset required field is a problem to fix. The notice is
+                // non-actionable — the header dropdown above is the implied fix.
+                DrawRequiredNotice(noticeRect, message,
+                    "This [SerializeReference] field is marked required but has no value.");
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
@@ -473,6 +476,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!string.IsNullOrEmpty(suggestionText) && onSuggestion is not null)
                 DrawLink(actionEnd + 6f, rect, suggestionText, suggestionDetail, onSuggestion);
         }
+
+        /// <summary>
+        /// Draws the shared non-actionable "required" warning row (warning icon + yellow message). Reused by the string
+        /// <see cref="Aspid.FastTools.Types.Editors.TypeIMGUIPropertyDrawer"/> path so its required notice matches the
+        /// managed-reference one exactly.
+        /// </summary>
+        internal static void DrawRequiredNotice(Rect rect, string message, string detail) =>
+            DrawNotice(rect, message, actionText: string.Empty, detail: detail, onClick: null);
 
         // Draws one underlined, clickable, hover-tracking link word at x and returns its right edge, so the caller can
         // lay the next segment out after it. Shared by the Fix action and the trailing Smart Fix suggestion.

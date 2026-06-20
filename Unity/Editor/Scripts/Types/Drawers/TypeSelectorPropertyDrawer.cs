@@ -44,7 +44,7 @@ namespace Aspid.FastTools.Types.Editors
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
             property.propertyType == SerializedPropertyType.ManagedReference
                 ? SerializeReferenceIMGUIPropertyDrawer.GetHeight(property)
-                : EditorGUIUtility.singleLineHeight;
+                : TypeIMGUIPropertyDrawer.GetHeight(property);
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
