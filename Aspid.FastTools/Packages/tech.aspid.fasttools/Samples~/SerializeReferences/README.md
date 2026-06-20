@@ -64,6 +64,16 @@ Select either **in the Project window**. The missing field shows a `<Missing …
 >
 > Its **Project References** tab sweeps every asset under `Assets/` and groups the broken references by their stored type — so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into a single **GhostWeapon** group (`4 entries · 2 files`). One **Fix all** picks a single replacement and re-points every entry across both files at once.
 
+### Map a nested graph — `NestedLoadout.prefab`
+
+`Prefabs/NestedLoadout.prefab` is a three-level hierarchy — `NestedLoadout → WeaponSlot → BackupSlot` — with a `Loadout` on **every** object, so each child carries a broken reference the Inspector can't reach from outside Prefab Mode:
+
+- **NestedLoadout** (root) — `Primary Weapon = Railgun` (with a nested `BurnEffect` charge effect), `Sidearms = [GhostPistol (missing), <None> (empty slot)]`, `On Hit Effect = FreezeEffect`.
+- **WeaponSlot** (child) — `Primary Weapon = GhostBlade` (missing), `Sidearms[0] = Pistol`.
+- **BackupSlot** (grandchild) — `On Hit Effect = GhostAura` (missing), `Primary Weapon = Shotgun`.
+
+Select it **in the Project window** and open the **Asset References** tab of **`Tools → Aspid 🐍 → Managed References FastTools`**. The graph maps all three components at once (one document per object). Every reference is an inline dropdown: pick a type to assign / re-point it, or `<None>` to clear it; the missing `GhostPistol` / `GhostBlade` / `GhostAura` cards carry the amber **Fix Missing** action. Nesting is read from the field path (`_primaryWeapon._chargeEffect`), not from indentation, so the flat card stack stays scannable.
+
 ### Un-share an aliased reference — `LoadoutSharedRef.prefab`
 
 `Prefabs/LoadoutSharedRef.prefab` has both `Sidearms` elements backed by the **same** instance (a state you can also reach by duplicating an array element).
