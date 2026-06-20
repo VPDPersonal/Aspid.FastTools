@@ -60,7 +60,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 Чтобы установить конкретную preview-версию, укажите неизменяемый per-release тег (список доступных версий — на странице [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)):
 
 ```
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.2
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.5
 ```
 
 </details>

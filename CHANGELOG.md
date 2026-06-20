@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] — 2026-06-06
+
+First stable release. Consolidates everything from the `1.0.0-rc.*` cycle; the **ID System** graduates from Beta to a stable, supported API. No functional or API changes versus `1.0.0-rc.5`.
+
+### Highlights
+- **ProfilerMarkers** — `this.Marker()` extension backed by `ProfilerMarkersGenerator`, emitting one zero-cost `ProfilerMarker` per call-site (gated behind `#if ENABLE_PROFILER`).
+- **Serializable Type System** — `SerializableType` / `SerializableType<T>`, `[TypeSelector]`, `ComponentTypeSelector` and the `TypeSelectorWindow` picker (IMGUI + UI Toolkit drawers).
+- **Enum System** — `EnumValues<TValue>` enum-keyed dictionary (with `[Flags]` support) and `EnumValue<TKey, TValue>`, plus inline inspector drawers.
+- **ID System** — `IId` / `[UniqueId]` structs bound to `IdRegistry` assets for stable `int ↔ string` IDs, `IdStructGenerator` boilerplate, `AFID001`/`AFID002` diagnostics and the `RegistryEditorCore` editor UI.
+- **VisualElement fluent extensions** — extensive UI Toolkit fluent API (layout, sizing, style, borders, colors, transitions, callbacks, USS, child management) across all common element types, with conditional `*If` variants and per-type `SetLabel` overloads.
+- **Optional Mathematics integration** — satellite assembly adding `INotifyValueChanged` extensions for `Unity.Mathematics` types, compiled only when `com.unity.mathematics` is installed.
+- **Editor tooling** — `SerializedProperty` fluent helpers, IMGUI scopes, `MonoScript` name helpers, internal UI Toolkit component library and the `WelcomeWindow`.
+- **Samples & docs** — five installable samples (`Types`, `EnumValues`, `Ids`, `ProfilerMarkers`, `VisualElements`) and EN/RU READMEs with per-feature reference docs.
+
+See the `1.0.0-rc.1` … `1.0.0-rc.5` sections below for the full itemised history.
+
 ## [1.0.0-rc.5] — 2026-06-06
 
 Packaging-only release. No functional or API changes versus `1.0.0-rc.4`.
@@ -136,7 +152,8 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 [#38]: https://github.com/VPDPersonal/Aspid.FastTools/pull/38
 [#43]: https://github.com/VPDPersonal/Aspid.FastTools/pull/43
 [#44]: https://github.com/VPDPersonal/Aspid.FastTools/pull/44
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...HEAD
+[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...v1.0.0
 [1.0.0-rc.5]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...v1.0.0-rc.4
 [1.0.0-rc.3]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.2...v1.0.0-rc.3
