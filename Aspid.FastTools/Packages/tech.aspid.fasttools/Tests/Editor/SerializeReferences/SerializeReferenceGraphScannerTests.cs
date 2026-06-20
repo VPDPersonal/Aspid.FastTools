@@ -16,12 +16,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         private string _missingPath;
         private string _emptyPath;
+        private string _allUnassignedPath;
 
         [SetUp]
         public void SetUp()
         {
             _missingPath = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
             _emptyPath = YamlFixtures.WriteTemp(YamlFixtures.EmptyFieldsPrefab);
+            _allUnassignedPath = YamlFixtures.WriteTemp(YamlFixtures.AllUnassignedAsset);
         }
 
         [TearDown]
@@ -29,6 +31,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             YamlFixtures.Delete(_missingPath);
             YamlFixtures.Delete(_emptyPath);
+            YamlFixtures.Delete(_allUnassignedPath);
         }
 
         // The MonoBehaviour document is the one carrying the RefIds graph; the GameObject document has none and is
@@ -114,6 +117,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             // and the assigned references are all reachable, so there are no orphans either.
             Assert.IsEmpty(document.Shared, "The shared -2 null sentinel must not count as an aliased reference.");
             Assert.IsEmpty(document.Orphans, "Every assigned reference is reachable from a root.");
+        }
+
+        // --- An asset whose every managed-ref field is unassigned must still surface (regression) ------------------
+
+        [Test]
+        public void Build_AllFieldsUnassigned_KeepsDocumentWithEmptyRoot()
+        {
+            // The whole RefIds block is just Unity's null sentinel, so the document carries zero real nodes — yet its
+            // single unassigned field is a slot worth showing, so the scanner must keep the document (with one empty
+            // root) rather than dropping it as "no managed references". Regression: a Nodes.Count == 0 early-return
+            // used to drop these assets entirely so the Inspect Asset view showed its empty state.
+            var documents = SerializeReferenceGraphScanner.Build(_allUnassignedPath);
+            Assert.AreEqual(1, documents.Count, "An all-unassigned asset still has a slot to surface.");
+
+            var document = documents[0];
+            Assert.IsEmpty(document.Nodes, "The RefIds block holds only the null sentinel — no real nodes.");
+
+            var emptyRoots = document.Roots.Where(root => root.IsEmpty).Select(root => root.Label).ToList();
+            CollectionAssert.AreEquivalent(new[] { "_weapon" }, emptyRoots);
+
+            Assert.IsEmpty(document.Shared, "The shared -2 sentinel must not count as an aliased reference.");
+            Assert.IsEmpty(document.Orphans, "There are no real nodes, so nothing can be orphaned.");
         }
 
         private static string LabelOfRoot(ReferenceGraphDocument document, long rid)

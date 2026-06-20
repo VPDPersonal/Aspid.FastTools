@@ -200,7 +200,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Parses one document's RefIds block into nodes, then walks the body (field pointers = roots) and each
         // entry's data block (nested pointers = edges) to assemble edges, shared and orphan sets. Returns null when
-        // the document has no RefIds block (no managed references to graph).
+        // the document has no RefIds block (no managed references to graph) or when that block resolves to neither a
+        // real node nor a field pointer (every [SerializeReference] field is an empty list — nothing to graph).
         private static ReferenceGraphDocument BuildDocument(string[] lines, long fileId, int start, int end)
         {
             var referencesStart = FindKey(lines, ReferencesKey, start, end);
@@ -211,7 +212,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var document = new ReferenceGraphDocument { FileId = fileId };
             CollectNodes(lines, refIdsStart, end, document);
-            if (document.Nodes.Count == 0) return null;
 
             var knownRids = new HashSet<long>();
             foreach (var node in document.Nodes) knownRids.Add(node.Rid);
@@ -219,6 +219,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             CollectRoots(lines, start, bodyEnd, knownRids, document);
             CollectEdges(lines, refIdsStart, end, knownRids, document);
             ComputeSharedAndOrphans(document, knownRids);
+
+            // Keep the document if it carries any real node OR any field pointer — an asset whose every managed-ref
+            // field is unassigned still has slots to surface (each renders as a "<None>" leaf), so it must not drop out
+            // as "no managed references". Only a RefIds block backing neither (all fields empty lists) has nothing to
+            // show. Roots count here covers the null-sentinel pointers (rid < 0) too — those are the empty slots.
+            if (document.Nodes.Count == 0 && document.Roots.Count == 0) return null;
 
             return document;
         }
