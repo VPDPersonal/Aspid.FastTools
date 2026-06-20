@@ -62,7 +62,7 @@ Select either **in the Project window**. The missing field shows a `<Missing …
 >
 > When a missing reference is nested inside another value or sits on a child object the Inspector can't reach, use **`Tools → Aspid 🐍 → Repair Missing References FastTools`** instead: it scans the whole asset file and lists every missing reference (any depth, any child) with its own **Fix** picker.
 >
-> Its **Project Audit** tab sweeps every asset under `Assets/` and groups the broken references by their stored type — so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into a single **GhostWeapon** group (`4 entries · 2 files`). One **Fix all** picks a single replacement and re-points every entry across both files at once.
+> Its **Project References** tab sweeps every asset under `Assets/` and groups the broken references by their stored type — so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into a single **GhostWeapon** group (`4 entries · 2 files`). One **Fix all** picks a single replacement and re-points every entry across both files at once.
 
 ### Un-share an aliased reference — `LoadoutSharedRef.prefab`
 

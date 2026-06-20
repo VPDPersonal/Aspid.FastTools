@@ -208,9 +208,9 @@ rewrites the stored type in the asset file rather than recreating the instance.
 
 **Whole-asset & project-wide repair:** open **`Tools → Aspid 🐍 → Managed References FastTools`**.
 
-- The **Inspect Asset** tab maps a saved asset's entire `[SerializeReference]` graph and repairs any missing node
+- The **Asset References** tab maps a saved asset's entire `[SerializeReference]` graph and repairs any missing node
   inline (any depth, any child object the Inspector can't otherwise reach).
-- The **Project Audit** tab sweeps every asset under `Assets/` and groups broken references **by their stored type** —
+- The **Project References** tab sweeps every asset under `Assets/` and groups broken references **by their stored type** —
   so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into one **GhostWeapon** group
   (`4 entries · 2 files`). **Fix all** picks a single replacement and re-points every entry across both files at once.
 

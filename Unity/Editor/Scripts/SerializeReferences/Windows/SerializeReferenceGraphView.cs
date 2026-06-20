@@ -122,7 +122,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(RootClass);
 
-            // The asset-picker card mirrors the Project Audit "Find missing references" panel: a title and a one-line
+            // The asset-picker card mirrors the Project References "Find missing references" panel: a title and a one-line
             // description of what the tab does, then a single control fusing the asset field with the Rescan action —
             // so the two tabs' top panels read as one family (same translucent card, same title + description rhythm).
             var cardTitle = new AspidLabel("Inspect asset", AspidLabelPreset.Default
@@ -170,7 +170,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // tree list inside a scroll view.
             _empty = new VisualElement().AddClass(EmptyClass);
 
-            // Scan overview, mirroring the Project Audit results header: a status headline over a dim one-line
+            // Scan overview, mirroring the Project References results header: a status headline over a dim one-line
             // breakdown, sitting between the asset card and the document scroll. Amber "N missing references" when the
             // graph carries broken / orphaned references, green "No missing references" when every type resolves — the
             // same status read the dotted canvas wears. Hidden in the empty / prefab-instance states (see HideOverview /
@@ -265,7 +265,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Tally the whole asset's graph as the documents are built, so the overview header can headline the
             // missing / orphaned count (amber) or a clean bill of health (green) — the same status-wash language the
-            // Project Audit view uses, and the same read the dotted canvas wears below. Empty (unassigned) slots are
+            // Project References view uses, and the same read the dotted canvas wears below. Empty (unassigned) slots are
             // tallied separately: they are not broken, so they never tip the headline / canvas to amber — they are only
             // surfaced in the dim hint so a cleared field stays noticeable.
             var total = 0;
@@ -329,7 +329,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return node is { Resolves: false } && !node.Value.StoredType.IsEmpty;
         }
 
-        // Both empty states reuse one hero (mirroring the Project Audit view): a large dimmed info icon, a headline
+        // Both empty states reuse one hero (mirroring the Project References view): a large dimmed info icon, a headline
         // and a dimmed explanation, centred in the space below the asset card.
         private void ShowEmpty(string title, string message)
         {
@@ -362,7 +362,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _list.RemoveClass(ListHiddenClass);
         }
 
-        // The scan overview above the document scroll, mirroring the Project Audit results header. Headlines the
+        // The scan overview above the document scroll, mirroring the Project References results header. Headlines the
         // missing count first, then orphaned rids, falling back to a green all-clear; the label and its divider flip
         // between Warning (amber) and Success (green) in place, and the dim hint spells out the full breakdown.
         private void ShowOverview(int total, int missing, int orphans, int empties)
@@ -413,7 +413,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void HideOverview() => _overview?.AddClass(OverviewHiddenClass);
 
-        // One serialized object document: a clickable header band (styled like the Project Audit group header — a
+        // One serialized object document: a clickable header band (styled like the Project References group header — a
         // gradient row carrying the component / ScriptableObject name, a reference count and a collapse chevron) over a
         // collapsible body that holds each root's reference subtree as a stack of separate node cards (indented by
         // depth) plus a trailing "Orphaned" group for any rids no root reaches. The header is dropped when the asset
@@ -491,7 +491,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The header's dim subtitle: total managed-reference count, annotated with the missing / orphaned tallies when
-        // present — the same "N · M" two-part shape the Project Audit group header uses.
+        // present — the same "N · M" two-part shape the Project References group header uses.
         private static string BuildDocumentCountText(ReferenceGraphDocument document)
         {
             var total = document.Nodes.Count;
@@ -549,7 +549,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{parent}.{child}";
         }
 
-        // A node card laid out over two lines, mirroring the Project Audit group header so a broken node reads the
+        // A node card laid out over two lines, mirroring the Project References group header so a broken node reads the
         // same way in both views. Top band: the stored type as an Aspid status label (an amber pill when the type is
         // missing / orphaned, a quiet light label otherwise) with the MISSING / SHARED badges beside it and, for a
         // missing reference, the inline Fix dropdown docked to the right — the whole band toggles the picker. Bottom
@@ -568,7 +568,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Top band — type identity + status badges on the left, the Fix action docked right.
 
             // The type name drives its own colour through an Aspid status label: a missing / orphaned type wears the
-            // same amber pill the Project Audit group header uses; a healthy type stays a quiet light label.
+            // same amber pill the Project References group header uses; a healthy type stays a quiet light label.
             var typePreset = AspidLabelPreset.Default
                 .SetLabelSize(AspidLabelSizeStyle.Type.H5)
                 .SetLineSize(AspidDividingLineSizeStyle.Type.None);
@@ -610,7 +610,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (missing)
             {
                 // The band itself is the Fix dropdown: leading content (type + badges) hugs the left, the "Fix ▼" label
-                // pins right, and clicking anywhere on the band toggles the inline picker — the Project Audit group-
+                // pins right, and clicking anywhere on the band toggles the inline picker — the Project References group-
                 // header interaction. The self-referencing capture lets the handler anchor the picker below the card;
                 // the captured file id targets the rewrite at exactly this document's rid (rids collide across docs).
                 var fileId = document.FileId;
@@ -769,7 +769,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The picker expands inline as an accordion welded into the clicked node's card, directly under its Fix band —
-        // the same selector view the Project Audit group picker hosts, attached the same way (the card frames it). One
+        // the same selector view the Project References group picker hosts, attached the same way (the card frames it). One
         // panel at a time; the Fix cue flips to ▲ while open and clicking it again collapses it. The candidate list is
         // constrained to the rid's declared
         // field type (recovered from the asset's managed-reference fields), so a repair cannot pick an incompatible
@@ -809,7 +809,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // The whole card becomes the active surface: it lights an accent frame (see __node--picking) and the
             // selector sheds its own box (see __picker--attached), so band, selector and meta line read as one active
-            // card rather than a button stacked over a separate dropdown — exactly the Project Audit group behaviour.
+            // card rather than a button stacked over a separate dropdown — exactly the Project References group behaviour.
             if (card is not null)
             {
                 _openPickerCard = card;
