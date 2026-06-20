@@ -267,10 +267,11 @@
     -unity-font-style:                                    italic;
 }
 
-/* The top band of a missing node: the Fix dropdown styled as a flat row (transparent gradient fill, amber accent on
-   hover) — the type pill + badges hug the left as leading content, the "Fix Missing ▼" label pins right. Padding/height
-   match the Project Audit group header band (__group-fix-all) so the two read identically. Scoped under __node so these
-   props outrank the gradient button's own :root defaults (the layout overrides win on the class tie too). */
+/* The top band of an editable node: a type dropdown styled as a flat row (transparent gradient fill) — the type pill +
+   badges hug the left as leading content, the collapse chevron / label pins right. Neutral by default (a healthy / empty
+   card's plain "▼"); the --missing modifier repaints it amber for the missing card's "Fix Missing ▼". Padding/height
+   match the Project Audit group header band (__group-fix-all). Scoped under __node so these props outrank the gradient
+   button's own :root defaults (the layout overrides win on the class tie too). */
 .aspid-fasttools-reference-graph__node
     .aspid-fasttools-reference-graph__node-band {
     flex-direction:                                       row;
@@ -279,15 +280,27 @@
     margin:                                               0;
     padding:                                              4px 4px;
     --aspid-fasttools-colors-gradient_button-bg:          rgba(0, 0, 0, 0);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-shade-lightness);
+}
+
+/* A missing node's band wears the amber accent — it is a "fix this" call to action, not a routine value dropdown. Scoped
+   under __node to match (and override, by source order) the base band's accent at equal specificity. */
+.aspid-fasttools-reference-graph__node
+    .aspid-fasttools-reference-graph__node-band--missing {
     --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-warning-text-light);
 }
 
-/* The "Fix Missing ▼" label fills the gap left of it then right-aligns, pinning the action to the band's right edge.
-   Font size is left to the gradient button's default so it matches the Project Audit "Fix all" action (which likewise
-   sets no size) rather than reading smaller. */
+/* The band's right-pinned label (the chevron, or "Fix Missing ▼") fills the gap left of it then right-aligns, pinning it
+   to the band's right edge. Dim by default so a healthy / empty card's chevron reads as a quiet dropdown affordance.
+   Font size is left to the gradient button's default so a missing band matches the Project Audit "Fix all" action. */
 .aspid-fasttools-reference-graph__node-band .aspid-fasttools-gradient-button__label {
     flex-grow:                                            1;
     -unity-text-align:                                    middle-right;
+    color:                                                var(--aspid-colors-text-dark);
+}
+
+/* The missing band's "Fix Missing ▼" label takes the amber accent, completing its call-to-action read. */
+.aspid-fasttools-reference-graph__node-band--missing .aspid-fasttools-gradient-button__label {
     color:                                                var(--aspid-colors-status-warning-text-light);
 }
 
@@ -411,22 +424,6 @@
 }
 
 .aspid-fasttools-reference-graph__clear-orphan .aspid-fasttools-gradient-button__label {
-    flex-grow:                                            0;
-    font-size:                                            11px;
-    -unity-text-align:                                    middle-center;
-}
-
-/* A healthy reference's Clear (reset to <None>) action, sharing the orphan Clear's compact footer footprint but
-   neutral-tinted rather than amber — clearing an intact reference is a routine edit, not a warning, so it must not
-   wear the orphan zone's warm accent. */
-.aspid-fasttools-reference-graph__clear-reference {
-    margin:                                               0 0 0 8px;
-    padding:                                              2px 6px;
-    --aspid-fasttools-colors-gradient_button-bg:          var(--aspid-colors-bg-dark);
-    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-text-lightness);
-}
-
-.aspid-fasttools-reference-graph__clear-reference .aspid-fasttools-gradient-button__label {
     flex-grow:                                            0;
     font-size:                                            11px;
     -unity-text-align:                                    middle-center;
