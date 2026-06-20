@@ -34,7 +34,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                           $"({report.TypeCount} {typeWord}) — open Repair";
 
             ShowToast(message);
-            Debug.LogWarning($"[Aspid FastTools] {message}. Open Tools/Aspid \U0001F40D/Managed References FastTools.");
+            Debug.LogWarning($"[Aspid FastTools] {message}. Open Tools/Aspid \U0001F40D/FastTools/Project References.");
         }
 
         /// <summary>Public deep-link the user can wire to a button/menu — opens Repair straight into project-scan mode.</summary>
