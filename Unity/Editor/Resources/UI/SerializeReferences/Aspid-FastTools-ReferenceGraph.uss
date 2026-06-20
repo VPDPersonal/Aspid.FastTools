@@ -416,6 +416,22 @@
     -unity-text-align:                                    middle-center;
 }
 
+/* A healthy reference's Clear (reset to <None>) action, sharing the orphan Clear's compact footer footprint but
+   neutral-tinted rather than amber — clearing an intact reference is a routine edit, not a warning, so it must not
+   wear the orphan zone's warm accent. */
+.aspid-fasttools-reference-graph__clear-reference {
+    margin:                                               0 0 0 8px;
+    padding:                                              2px 6px;
+    --aspid-fasttools-colors-gradient_button-bg:          var(--aspid-colors-bg-dark);
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-text-lightness);
+}
+
+.aspid-fasttools-reference-graph__clear-reference .aspid-fasttools-gradient-button__label {
+    flex-grow:                                            0;
+    font-size:                                            11px;
+    -unity-text-align:                                    middle-center;
+}
+
 /* --- Inline type picker (mirrors the Project Audit picker exactly) ---
    The selector view expanded inline, welded into the card being fixed (see TogglePicker): translucent dark fill,
    neutral border, 8px radius and a fixed height (the ListView needs bounds to virtualize). padding:0 plus the header /

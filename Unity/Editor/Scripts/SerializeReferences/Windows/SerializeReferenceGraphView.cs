@@ -17,8 +17,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// Asset-level visualiser for <c>[SerializeReference]</c> managed-reference graphs. For each serialized object
     /// document in the asset it draws the reference tree — field-pointer roots, their nested children, shared
     /// (aliased) references and orphaned payloads — straight from the YAML, so it surfaces references at any nesting
-    /// depth and the orphans the Inspector cannot navigate to. The tree is read-only except that a missing reference
-    /// can be re-pointed in place through the same embedded type picker the Repair window uses.
+    /// depth and the orphans the Inspector cannot navigate to. The tree is read-only except for two in-place edits: a
+    /// missing reference can be re-pointed through the same embedded type picker the Repair window uses, and any
+    /// assigned reference can be cleared to <c>&lt;None&gt;</c> — through the picker's <c>&lt;None&gt;</c> option on a
+    /// missing card, or the footer <c>Clear</c> action on a healthy one — both nulling it straight in the YAML.
     /// </summary>
     internal sealed class SerializeReferenceGraphView : VisualElement
     {
@@ -74,6 +76,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string ChipClass = RootClass + "__chip";
         private const string ClearOrphanClass = RootClass + "__clear-orphan";
+        private const string ClearReferenceClass = RootClass + "__clear-reference";
         private const string OpenSourceClass = RootClass + "__open-source";
         private const string OrphanGroupClass = RootClass + "__orphan-group";
         private const string OrphanGroupHeaderClass = RootClass + "__orphan-group-header";
@@ -553,9 +556,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // same way in both views. Top band: the stored type as an Aspid status label (an amber pill when the type is
         // missing / orphaned, a quiet light label otherwise) with the MISSING / SHARED badges beside it and, for a
         // missing reference, the inline Fix dropdown docked to the right — the whole band toggles the picker. Bottom
-        // line: the dim field path the reference sits under, then the rid; an orphan card adds a Clear action here.
-        // Indented by depth so the stack still reads as a tree. The Fix band and the Clear button are the only
-        // interactive parts.
+        // line: the dim field path the reference sits under, then the rid; a healthy reference adds a Clear action (reset
+        // to <None>) and an orphan card a Clear action (drop the dangling entry) here. Indented by depth so the stack
+        // still reads as a tree. The Fix band and the Clear buttons are the only interactive parts.
         private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string pathLabel, int depth, bool isOrphan)
         {
             var missing = node is { Resolves: false } && !node.Value.StoredType.IsEmpty;
@@ -625,7 +628,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 card.AddChild(bandRow);
             }
 
-            // Bottom line — the dim field path, the rid, and (for an orphan) the Clear action.
+            // Bottom line — the dim field path, the rid, and a Clear action (reset to <None> on a healthy reference,
+            // drop the dangling entry on an orphan).
             var meta = new VisualElement().AddClass(NodeFooterClass);
 
             if (!string.IsNullOrEmpty(pathLabel))
@@ -645,6 +649,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var fileId = document.FileId;
                 meta.AddChild(new AspidGradientButton("Clear", _ => ClearOrphan(assetPath, fileId, rid))
                     .AddClass(ClearOrphanClass));
+            }
+            else if (!missing && node is not null)
+            {
+                // A healthy assigned reference can be reset to <None> from here — the graph's clear-everywhere
+                // affordance. A missing reference is cleared through its Fix band's <None> option instead, so it gets no
+                // separate button. File edit, so it is confirmed and not undoable: the reference's stored payload is
+                // dropped (nulling every field that points at this rid, shared aliases included).
+                var fileId = document.FileId;
+                meta.AddChild(new AspidGradientButton("Clear", _ => ClearReference(assetPath, fileId, rid))
+                    .AddClass(ClearReferenceClass));
             }
 
             card.AddChild(meta);
@@ -833,10 +847,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void ApplyFix(string assetPath, long fileId, long rid, string assemblyQualifiedName)
         {
-            var type = string.IsNullOrEmpty(assemblyQualifiedName)
-                ? null
-                : Type.GetType(assemblyQualifiedName, throwOnError: false);
+            // <None> in the picker emits an empty name: the user wants the reference cleared, not re-pointed at a type —
+            // so null it out (dropping the broken payload) instead of treating it as a no-op. Mirrors the Project
+            // References group picker, where <None> clears the group. (Before this, an empty name fell through to the
+            // null-type guard below and silently did nothing, so picking <None> on a missing card cleared nothing.)
+            if (string.IsNullOrEmpty(assemblyQualifiedName))
+            {
+                ClearReference(assetPath, fileId, rid);
+                return;
+            }
 
+            var type = Type.GetType(assemblyQualifiedName, throwOnError: false);
             if (type is null) return;
 
             // The missing entry lives in exactly one document — the one whose Fix button was clicked. Rewrite only that
@@ -847,6 +868,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
             SerializeReferenceRepairSuggestions.ClearCache();
+            Rescan();
+        }
+
+        // Resets a managed reference to <None>: nulls every field / array-element pointer to the rid (to Unity's null
+        // sentinel -2), drops the now-orphaned RefIds entry and adds the null sentinel entry when one is needed —
+        // exactly what Unity writes for a cleared [SerializeReference] field. Reached by picking <None> in a missing
+        // card's Fix picker (ApplyFix) or the Clear action on a healthy card (BuildNodeCard). Confirmed and not
+        // undoable: the reference's stored payload is discarded, mirroring ClearOrphan. A shared (aliased) reference
+        // nulls every field that points at it. The captured file id targets exactly this document's rid (rids collide
+        // across documents).
+        private void ClearReference(string assetPath, long fileId, long rid)
+        {
+            if (!EditorUtility.DisplayDialog(
+                    "Clear Reference",
+                    $"Reset this managed reference (rid {rid}) to <None> in\n{assetPath}?\n\n" +
+                    "This nulls every field pointing at it and discards its stored data. It edits the asset file " +
+                    "directly and cannot be undone.",
+                    "Clear", "Cancel"))
+                return;
+
+            if (!SerializeReferenceYamlEditor.TryNullReference(assetPath, fileId, rid)) return;
+
+            AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+            SerializeReferenceRepairSuggestions.ClearCache();
+            SerializeReferenceTypeUsageIndex.ClearCache();
             Rescan();
         }
 
