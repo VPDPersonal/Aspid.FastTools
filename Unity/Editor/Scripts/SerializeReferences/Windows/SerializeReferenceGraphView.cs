@@ -4,9 +4,11 @@ using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Types;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
+using System.Text.RegularExpressions;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using Object = UnityEngine.Object;
 
@@ -17,10 +19,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// Asset-level visualiser for <c>[SerializeReference]</c> managed-reference graphs. For each serialized object
     /// document in the asset it draws the reference tree — field-pointer roots, their nested children, shared
     /// (aliased) references and orphaned payloads — straight from the YAML, so it surfaces references at any nesting
-    /// depth and the orphans the Inspector cannot navigate to. The tree is read-only except for two in-place edits: a
-    /// missing reference can be re-pointed through the same embedded type picker the Repair window uses, and any
-    /// assigned reference can be cleared to <c>&lt;None&gt;</c> — through the picker's <c>&lt;None&gt;</c> option on a
-    /// missing card, or the footer <c>Clear</c> action on a healthy one — both nulling it straight in the YAML.
+    /// depth and the orphans the Inspector cannot navigate to. Every reference card is an inline type dropdown: the
+    /// same embedded picker the Repair window uses, anchored under the clicked card, where picking a type assigns /
+    /// re-points the reference and <c>&lt;None&gt;</c> clears it. Healthy and empty (unassigned) slots are edited
+    /// through Unity's live serialization (so the <c>RefIds</c> entry is created or removed exactly as the Inspector
+    /// would); a missing reference — which Unity cannot reassign through the API — is re-pointed / cleared by rewriting
+    /// the YAML in place, keeping its orphaned payload. Orphaned payloads no field reaches carry a <c>Clear</c> action.
     /// </summary>
     internal sealed class SerializeReferenceGraphView : VisualElement
     {
@@ -62,6 +66,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeEmptyClass = NodeClass + "--empty";
         private const string NodePickingClass = NodeClass + "--picking";
         private const string NodeBandClass = RootClass + "__node-band";
+        private const string NodeBandMissingClass = NodeBandClass + "--missing";
         private const string NodeBandRowClass = RootClass + "__node-band-row";
         private const string NodeHeaderClass = RootClass + "__node-header";
         private const string NodeFooterClass = RootClass + "__node-footer";
@@ -76,15 +81,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string ChipClass = RootClass + "__chip";
         private const string ClearOrphanClass = RootClass + "__clear-orphan";
-        private const string ClearReferenceClass = RootClass + "__clear-reference";
         private const string OpenSourceClass = RootClass + "__open-source";
         private const string OrphanGroupClass = RootClass + "__orphan-group";
         private const string OrphanGroupHeaderClass = RootClass + "__orphan-group-header";
         private const string PickerClass = RootClass + "__picker";
         private const string PickerAttachedClass = PickerClass + "--attached";
 
+        // Every reference card is an inline dropdown. The missing card's band keeps a descriptive "Fix Missing ▼" label;
+        // a healthy / empty card's band shows a lone chevron pinned right of its value label (the type name or "<None>"),
+        // reading like the Inspector's type dropdown. Both flip the chevron in place while their picker is open, so the
+        // collapse toggle (TogglePicker / ClosePicker) swaps the glyph alone and never needs to know the label.
         private const string FixCollapsedText = "Fix Missing  ▼";
-        private const string FixExpandedText = "Fix Missing  ▲";
+        private const string PickCollapsedText = "▼";
+        private const char BandChevronCollapsed = '▼';
+        private const char BandChevronExpanded = '▲';
 
         // An unassigned [SerializeReference] slot's placeholder label — single-sourced from the picker's own "<None>"
         // option, so an empty slot reads the same way in the graph as the cleared field does in the Inspector.
@@ -444,7 +454,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (root.IsEmpty)
                 {
-                    body.AddChild(BuildEmptySlotCard(root.Label, depth: 0));
+                    body.AddChild(BuildEmptySlotCard(assetPath, document.FileId, root.Label, depth: 0));
                     continue;
                 }
 
@@ -531,7 +541,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var childPath = CombinePath(pathLabel, edge.Label);
                 if (edge.IsEmpty)
-                    container.AddChild(BuildEmptySlotCard(childPath, depth + 1));
+                    container.AddChild(BuildEmptySlotCard(assetPath, document.FileId, childPath, depth + 1));
                 else
                     AppendNode(container, assetPath, document, edge.Rid, childPath, depth + 1, visited);
             }
@@ -554,11 +564,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A node card laid out over two lines, mirroring the Project References group header so a broken node reads the
         // same way in both views. Top band: the stored type as an Aspid status label (an amber pill when the type is
-        // missing / orphaned, a quiet light label otherwise) with the MISSING / SHARED badges beside it and, for a
-        // missing reference, the inline Fix dropdown docked to the right — the whole band toggles the picker. Bottom
-        // line: the dim field path the reference sits under, then the rid; a healthy reference adds a Clear action (reset
-        // to <None>) and an orphan card a Clear action (drop the dangling entry) here. Indented by depth so the stack
-        // still reads as a tree. The Fix band and the Clear buttons are the only interactive parts.
+        // missing / orphaned, a quiet light label otherwise) with the MISSING / SHARED badges beside it and a collapse
+        // chevron docked right — the whole band is a dropdown toggling the inline picker. A missing card's band carries
+        // the amber "Fix Missing ▼" cue and edits through the YAML; a healthy card's band is a plain "▼" dropdown that
+        // edits through the live serialization API. An orphan keeps a static band (no field points at it) plus a footer
+        // Clear. Bottom line: the dim field path the reference sits under, then the rid (an orphan adds its Clear here).
+        // Indented by depth so the stack still reads as a tree.
         private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string pathLabel, int depth, bool isOrphan)
         {
             var missing = node is { Resolves: false } && !node.Value.StoredType.IsEmpty;
@@ -616,20 +627,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // pins right, and clicking anywhere on the band toggles the inline picker — the Project References group-
                 // header interaction. The self-referencing capture lets the handler anchor the picker below the card;
                 // the captured file id targets the rewrite at exactly this document's rid (rids collide across docs).
+                // A missing reference cannot be reassigned through the serialization API, so its edit goes through the
+                // YAML (keeping the orphaned payload).
                 var fileId = document.FileId;
                 AspidGradientButton band = null;
-                band = new AspidGradientButton(FixCollapsedText, _ => TogglePicker(assetPath, fileId, rid, band))
+                band = new AspidGradientButton(FixCollapsedText, _ => OpenMissingPicker(assetPath, fileId, rid, band))
+                    .AddClass(NodeBandClass)
+                    .AddClass(NodeBandMissingClass);
+                band.AddLeadingContent(bandRow);
+                card.AddChild(band);
+            }
+            else if (!isOrphan)
+            {
+                // A healthy assigned reference is a dropdown too: clicking the band opens the same selector so its type
+                // can be changed or the reference reset to <None>. The edit goes through the live serialization API
+                // (keyed by the field path), so Unity rewrites — or, on <None>, removes — the RefIds entry exactly as
+                // the Inspector would. The plain "▼" label sits right of the type pill, reading as a value dropdown.
+                var fileId = document.FileId;
+                var graphPath = pathLabel;
+                AspidGradientButton band = null;
+                band = new AspidGradientButton(PickCollapsedText, _ => OpenLivePicker(assetPath, fileId, graphPath, band))
                     .AddClass(NodeBandClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
             }
             else
             {
+                // An orphan has no field pointing at it, so there is no live property to edit — its band stays static
+                // and the footer Clear (below) drops the dangling entry.
                 card.AddChild(bandRow);
             }
 
-            // Bottom line — the dim field path, the rid, and a Clear action (reset to <None> on a healthy reference,
-            // drop the dangling entry on an orphan).
+            // Bottom line — the dim field path, the rid, and (for an orphan) the Clear action. Healthy and empty slots
+            // are cleared through their band's picker (pick <None>), so they carry no separate button here.
             var meta = new VisualElement().AddClass(NodeFooterClass);
 
             if (!string.IsNullOrEmpty(pathLabel))
@@ -649,16 +679,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var fileId = document.FileId;
                 meta.AddChild(new AspidGradientButton("Clear", _ => ClearOrphan(assetPath, fileId, rid))
                     .AddClass(ClearOrphanClass));
-            }
-            else if (!missing && node is not null)
-            {
-                // A healthy assigned reference can be reset to <None> from here — the graph's clear-everywhere
-                // affordance. A missing reference is cleared through its Fix band's <None> option instead, so it gets no
-                // separate button. File edit, so it is confirmed and not undoable: the reference's stored payload is
-                // dropped (nulling every field that points at this rid, shared aliases included).
-                var fileId = document.FileId;
-                meta.AddChild(new AspidGradientButton("Clear", _ => ClearReference(assetPath, fileId, rid))
-                    .AddClass(ClearReferenceClass));
             }
 
             card.AddChild(meta);
@@ -687,9 +707,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // An unassigned [SerializeReference] slot — a field whose pointer is the null sentinel (rid -2). Rendered as a
         // quiet, dim leaf so a cleared or never-assigned reference is visible in the graph (you can see the field is
         // unset) instead of silently dropping out. Laid out like a node card — a top "<None>" label over the dim field
-        // path — but with no badges, no Fix and no recursion: there is nothing to repair here, only an empty field to
-        // fill in the Inspector. Indented by depth so it still reads in its tree position.
-        private static VisualElement BuildEmptySlotCard(string pathLabel, int depth)
+        // path — with no badges and no recursion, but its band is still a dropdown: clicking it opens the selector so a
+        // type can be assigned to the empty field straight from the graph (through the live serialization API, so Unity
+        // creates the RefIds entry). A slot whose field path could not be recovered stays static (nothing to target).
+        // Indented by depth so it still reads in its tree position.
+        private VisualElement BuildEmptySlotCard(string assetPath, long fileId, string pathLabel, int depth)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass)
@@ -706,7 +728,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(NodeBandRowClass)
                 .AddChild(typeLabel);
             bandRow.pickingMode = PickingMode.Ignore;
-            card.AddChild(bandRow);
+
+            if (string.IsNullOrEmpty(pathLabel))
+            {
+                // No recoverable field path to target — leave the slot a static "<None>" leaf.
+                card.AddChild(bandRow);
+            }
+            else
+            {
+                // The band is a dropdown: its picker assigns a type to the empty field through the live serialization
+                // API. <None> is a no-op here (the slot is already unset). The plain "▼" sits right of the "<None>" pill.
+                var graphPath = pathLabel;
+                AspidGradientButton band = null;
+                band = new AspidGradientButton(PickCollapsedText, _ => OpenLivePicker(assetPath, fileId, graphPath, band))
+                    .AddClass(NodeBandClass);
+                band.AddLeadingContent(bandRow);
+                card.AddChild(band);
+            }
 
             // Bottom line — the dim field path, then an "unassigned" note where a live node shows its rid.
             var meta = new VisualElement().AddClass(NodeFooterClass);
@@ -782,26 +820,53 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Rescan();
         }
 
-        // The picker expands inline as an accordion welded into the clicked node's card, directly under its Fix band —
-        // the same selector view the Project References group picker hosts, attached the same way (the card frames it). One
-        // panel at a time; the Fix cue flips to ▲ while open and clicking it again collapses it. The candidate list is
-        // constrained to the rid's declared
-        // field type (recovered from the asset's managed-reference fields), so a repair cannot pick an incompatible
-        // type that would null on import; a rid whose field type is unresolvable falls back to an unconstrained picker.
-        private void TogglePicker(string assetPath, long fileId, long rid, AspidGradientButton fixButton)
+        // Missing card: opens the YAML fix picker. Constrained to the rid's declared field type (recovered from the
+        // asset's managed-reference fields) so a repair cannot pick an incompatible type that would null on import; an
+        // unresolvable field type falls back to an unconstrained picker. A pick rewrites the stored type in place
+        // (keeping the broken payload) or, on <None>, nulls the reference — neither needs the live object, since Unity
+        // cannot reassign a missing reference through the serialization API.
+        private void OpenMissingPicker(string assetPath, long fileId, long rid, AspidGradientButton anchor) =>
+            TogglePicker(anchor, ResolveConstraint(assetPath, fileId, rid), currentAqn: string.Empty,
+                assemblyQualifiedName => ApplyFix(assetPath, fileId, rid, assemblyQualifiedName));
+
+        // Healthy / empty card: opens the live picker. The constraint and the pre-navigated current type are read from
+        // the live property at the field path; a pick assigns / re-points the reference and <None> clears it, all
+        // through Unity's own managed-reference serialization (see ApplyLive). A field the API cannot reach (e.g. an
+        // unrecoverable path) opens an unconstrained picker and surfaces the failure on apply.
+        private void OpenLivePicker(string assetPath, long fileId, string graphPath, AspidGradientButton anchor)
         {
-            var wasOpen = _openPickerRow == fixButton;
+            Type constraint = typeof(object);
+            var currentAqn = string.Empty;
+
+            if (TryResolveLiveProperty(assetPath, fileId, graphPath, out var serializedObject, out var property))
+                using (serializedObject)
+                {
+                    constraint = SerializeReferenceHelpers.GetFieldType(property);
+                    currentAqn = property.managedReferenceValue?.GetType().AssemblyQualifiedName ?? string.Empty;
+                }
+
+            TogglePicker(anchor, constraint, currentAqn,
+                assemblyQualifiedName => ApplyLive(assetPath, fileId, graphPath, assemblyQualifiedName));
+        }
+
+        // The picker expands inline as an accordion welded into the clicked card, directly under its band — the same
+        // selector view the Project References group picker hosts, attached the same way (the card frames it). One panel
+        // at a time; the band's chevron flips ▼→▲ while open and clicking it again collapses it. Generic over the source
+        // of truth: the caller supplies the candidate constraint, the type to pre-navigate to, and what a pick does
+        // (a YAML fix for a missing card, a live edit for a healthy / empty one).
+        private void TogglePicker(AspidGradientButton anchor, Type constraint, string currentAqn, Action<string> onSelected)
+        {
+            var wasOpen = _openPickerRow == anchor;
             ClosePicker();
             if (wasOpen) return;
 
-            var constraint = ResolveConstraint(assetPath, fileId, rid);
             var baseType = constraint ?? typeof(object);
 
             var view = new TypeSelectorView(
                 types: new[] { baseType },
-                currentAqn: string.Empty,
+                currentAqn: currentAqn ?? string.Empty,
                 allow: TypeAllow.None,
-                onSelected: assemblyQualifiedName => ApplyFix(assetPath, fileId, rid, assemblyQualifiedName),
+                onSelected: onSelected,
                 filter: SerializeReferenceHelpers.IsAssignableManagedReference,
                 additionalTypes: baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
                 argumentFilter: SerializeReferenceHelpers.IsValidGenericArgument,
@@ -811,15 +876,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(PickerClass)
                 .AddChild(view);
 
-            _openPickerRow = fixButton;
-            if (fixButton is not null) fixButton.Text = FixExpandedText;
+            _openPickerRow = anchor;
+            // Flip the band's collapse chevron to ▲ in place — glyph only, so the same swap works for the missing card's
+            // "Fix Missing ▼" and the plain "▼" healthy / empty bands.
+            if (anchor is not null) anchor.Text = anchor.Text.Replace(BandChevronCollapsed, BandChevronExpanded);
 
-            // The Fix band is a direct child of the node card; drop the picker right below it inside the card — reading
-            // as a dropdown welded under the band, with the bottom meta line shifting beneath it — mirroring the Project
+            // The band is a direct child of the card; drop the picker right below it inside the card — reading as a
+            // dropdown welded under the band, with the bottom meta line shifting beneath it — mirroring the Project
             // Audit group picker. The ?? fallback keeps a sane target if the band is ever hosted outside a card.
-            var card = fixButton?.parent;
+            var card = anchor?.parent;
             var container = card ?? _list;
-            container.InsertChild(container.IndexOf(fixButton) + 1, _openPicker);
+            container.InsertChild(container.IndexOf(anchor) + 1, _openPicker);
 
             // The whole card becomes the active surface: it lights an accent frame (see __node--picking) and the
             // selector sheds its own box (see __picker--attached), so band, selector and meta line read as one active
@@ -837,7 +904,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void ClosePicker()
         {
             _openPicker?.RemoveFromHierarchy();
-            if (_openPickerRow is not null) _openPickerRow.Text = FixCollapsedText;
+            // Restore the band's resting chevron (▲→▼) in place, so the label — "Fix Missing" or the lone glyph — is
+            // preserved across the swap.
+            if (_openPickerRow is not null)
+                _openPickerRow.Text = _openPickerRow.Text.Replace(BandChevronExpanded, BandChevronCollapsed);
             _openPickerCard?.RemoveClass(NodePickingClass);
 
             _openPicker = null;
@@ -871,13 +941,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Rescan();
         }
 
-        // Resets a managed reference to <None>: nulls every field / array-element pointer to the rid (to Unity's null
-        // sentinel -2), drops the now-orphaned RefIds entry and adds the null sentinel entry when one is needed —
+        // Resets a missing managed reference to <None>: nulls every field / array-element pointer to the rid (to Unity's
+        // null sentinel -2), drops the now-orphaned RefIds entry and adds the null sentinel entry when one is needed —
         // exactly what Unity writes for a cleared [SerializeReference] field. Reached by picking <None> in a missing
-        // card's Fix picker (ApplyFix) or the Clear action on a healthy card (BuildNodeCard). Confirmed and not
-        // undoable: the reference's stored payload is discarded, mirroring ClearOrphan. A shared (aliased) reference
-        // nulls every field that points at it. The captured file id targets exactly this document's rid (rids collide
-        // across documents).
+        // card's Fix picker (a missing reference cannot be cleared through the serialization API, so it is done in the
+        // YAML). Confirmed and not undoable: the reference's broken payload is discarded, mirroring ClearOrphan. A shared
+        // (aliased) reference nulls every field that points at it. The captured file id targets exactly this document's
+        // rid (rids collide across documents). Healthy / empty slots clear through the live path (see ApplyLive) instead.
         private void ClearReference(string assetPath, long fileId, long rid)
         {
             if (!EditorUtility.DisplayDialog(
@@ -896,6 +966,109 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Rescan();
         }
 
+        // Assigns / re-points / clears a healthy or empty slot through Unity's live serialization, keyed by the field
+        // path. Because the change goes through SerializedProperty.managedReferenceValue, Unity creates the RefIds entry
+        // for a freshly assigned type, rewrites it for a re-point (carrying over matching fields), or removes it (and any
+        // nested children) on <None> — exactly as the Inspector would, with none of the YAML hand-editing the missing /
+        // orphan paths need. The asset is saved to disk so the disk-read graph reflects the edit on rescan. A path the
+        // serialization API cannot reach (an orphan, a scene, or a field under a missing parent) is reported and skipped.
+        private void ApplyLive(string assetPath, long fileId, string graphPath, string assemblyQualifiedName)
+        {
+            var type = string.IsNullOrEmpty(assemblyQualifiedName)
+                ? null
+                : Type.GetType(assemblyQualifiedName, throwOnError: false);
+
+            // A non-empty name that fails to load is an unresolved pick, not a clear — leave the slot untouched rather
+            // than silently nulling it.
+            if (!string.IsNullOrEmpty(assemblyQualifiedName) && type is null) return;
+
+            if (!TryResolveLiveProperty(assetPath, fileId, graphPath, out var serializedObject, out var property))
+            {
+                EditorUtility.DisplayDialog(
+                    "Edit Reference",
+                    "This slot cannot be edited here — its field is not reachable through the serialization API " +
+                    "(it may be an orphan, live in a scene, or sit under a missing parent). Edit it in the Inspector " +
+                    "or repair its parent first.",
+                    "OK");
+                return;
+            }
+
+            using (serializedObject)
+            {
+                var previous = property.managedReferenceValue;
+                // type == null clears to <None>; a concrete type carries over the previous value's matching fields.
+                property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
+                property.isExpanded = type is not null;
+
+                var target = serializedObject.targetObject;
+                EditorUtility.SetDirty(target);
+                PersistEdit(assetPath, target);
+            }
+
+            SerializeReferenceRepairSuggestions.ClearCache();
+            SerializeReferenceTypeUsageIndex.ClearCache();
+            SerializeReferenceYamlProbeCache.ClearCache();
+            Rescan();
+        }
+
+        // Flushes a live edit to disk so the disk-read graph reflects it on the next rescan. A ScriptableObject (.asset)
+        // persists through SaveAssetIfDirty; a prefab asset's component edit does not reliably flush through the generic
+        // asset-dirty path (the prefab pipeline owns its serialization), so it goes through SavePrefabAsset on the
+        // prefab's in-memory root — the same cached object graph the edit was applied to — which the docs define as
+        // "save the version currently loaded in memory back to disk".
+        private static void PersistEdit(string assetPath, Object target)
+        {
+            var prefabRoot = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+            if (prefabRoot != null) PrefabUtility.SavePrefabAsset(prefabRoot);
+            else AssetDatabase.SaveAssetIfDirty(target);
+        }
+
+        // Resolves the live SerializedObject document anchored at fileId and the managed-reference property at graphPath,
+        // so a healthy / empty slot can be edited through Unity's serialization rather than a hand-rolled YAML rewrite.
+        // graphPath is the graph's field path ("_alternates[2]", "_weapon._chargeEffect"); list indices are expanded to
+        // Unity's ".Array.data[i]" form. The caller disposes the returned SerializedObject. Returns false for a path the
+        // API cannot reach (an empty path, a scene asset, or a field nested under a missing/null parent).
+        private static bool TryResolveLiveProperty(string assetPath, long fileId, string graphPath,
+            out SerializedObject serializedObject, out SerializedProperty property)
+        {
+            serializedObject = null;
+            property = null;
+
+            if (string.IsNullOrEmpty(graphPath)) return false;
+            // Scenes are not loadable through LoadAllAssetsAtPath (see SerializeReferenceHelpers.IsScene).
+            if (SerializeReferenceHelpers.IsScene(assetPath)) return false;
+
+            var propertyPath = ToSerializedPropertyPath(graphPath);
+
+            foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
+            {
+                if (obj == null) continue;
+                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out var id) || id != fileId) continue;
+
+                var serialized = new SerializedObject(obj);
+                var found = serialized.FindProperty(propertyPath);
+                if (found is { propertyType: SerializedPropertyType.ManagedReference })
+                {
+                    serializedObject = serialized;
+                    property = found;
+                    return true;
+                }
+
+                // The document matched but the path did not resolve to a managed reference — no other document shares
+                // this file id, so bail rather than scan on.
+                serialized.Dispose();
+                return false;
+            }
+
+            return false;
+        }
+
+        // Expands the graph's field path into a Unity SerializedProperty path: a list / array index "name[i]" becomes
+        // "name.Array.data[i]" (managed-reference and plain nested fields keep their dotted names). The inverse of the
+        // ".Array.data" stripping SerializeReferenceYamlEditor does when it normalises a property path.
+        private static string ToSerializedPropertyPath(string graphPath) =>
+            Regex.Replace(graphPath, @"\[(\d+)\]", ".Array.data[$1]");
+
         // Recovers the declared field type backing rid so the Fix picker is constrained the same way the Repair window
         // constrains its own. The asset's whole managed-reference constraint map (keyed by document file id + rid) is
         // built once and looked up by the owning document's exact (fileId, rid) key, so a rid that collides across
@@ -909,6 +1082,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Future work: a "Make unique" action on a SHARED node — cloning the aliased reference so the two fields no
         // longer affect each other (mirrors SerializeReferenceHelpers.MakeReferenceUnique, which operates on a live
-        // SerializedProperty). v1 is read-only except for the missing-type Fix above.
+        // SerializedProperty). Beyond that, the cards are editable in place: missing references via the YAML Fix, healthy
+        // and empty slots via the live picker (assign / re-point / clear to <None>).
     }
 }
