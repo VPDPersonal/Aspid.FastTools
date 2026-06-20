@@ -219,7 +219,7 @@
 .aspid-fasttools-repair-references__panel
     .aspid-fasttools-repair-references__scan-project {
     margin:                                               0;
-    padding-left:                                         4;
+    padding-left:                                         4px;
 }
 
 /* Centred hero for the two terminal states: package icon in the status colour, headline, dimmed explanation. */
@@ -440,7 +440,7 @@
     .unity-collection-view__item.aspid-fasttools-type-selector__item {
     border-radius: 8px;
     padding-left: 8px;
-    margin-bottom: 2;
+    margin-bottom: 2px;
 }
 
 /* --- Project-mode group cards ---
