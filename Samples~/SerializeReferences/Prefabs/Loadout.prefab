@@ -51,6 +51,11 @@ MonoBehaviour:
   - rid: 1003
   _onHitEffect:
     rid: 1004
+  _modifier:
+    rid: -2
+  _floatModifier:
+    rid: -2
+  _modifiers: []
   references:
     version: 2
     RefIds:

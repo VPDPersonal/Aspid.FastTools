@@ -94,6 +94,52 @@ MonoBehaviour:
         _damagePerSecond: 5
 ";
 
+        // RefIds present in the empty-fields fixture below.
+        public const long EmptyRailgunRid = 1001;  // _primaryWeapon  (resolvable, holds a cleared nested _chargeEffect)
+        public const long EmptyPistolRid = 1002;   // _sidearms[0]    (resolvable)
+
+        // A MonoBehaviour exercising unassigned (null-sentinel) [SerializeReference] slots written by Unity as
+        // "rid: -2" (ManagedReferenceUtility.RefIdNull): a cleared top-level field (_onHitEffect), a null list element
+        // (_sidearms[1]) and a cleared nested field (Railgun._chargeEffect), alongside assigned references so the
+        // RefIds block still exists. Same indentation / layout Unity emits, copied from the demo shape.
+        public const string EmptyFieldsPrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6500000000000000001
+GameObject:
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6500000000000000003}
+  m_Name: LoadoutEmptyFields
+--- !u!114 &6500000000000000003
+MonoBehaviour:
+  m_GameObject: {fileID: 6500000000000000001}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name:
+  _primaryWeapon:
+    rid: 1001
+  _sidearms:
+  - rid: 1002
+  - rid: -2
+  _onHitEffect:
+    rid: -2
+  references:
+    version: 2
+    RefIds:
+    - rid: 1001
+      type: {class: Railgun, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _chargeTime: 2
+        _chargeEffect:
+          rid: -2
+    - rid: 1002
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 15
+        _magazineSize: 12
+";
+
         /// <summary>Writes <paramref name="yaml"/> to a fresh temp file (never under <c>Assets/</c>) and returns its path.</summary>
         public static string WriteTemp(string yaml)
         {
