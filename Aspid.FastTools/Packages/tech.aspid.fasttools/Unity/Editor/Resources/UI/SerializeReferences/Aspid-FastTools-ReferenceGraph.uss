@@ -253,6 +253,20 @@
     background-color:                                     rgba(20, 20, 20, 0.35);
 }
 
+/* An unassigned slot (a [SerializeReference] field whose pointer is the null sentinel) reads as a quiet, dim leaf: the
+   same fainter fill and dimmer border as a back-edge sink it behind the live nodes, so a cleared / never-assigned field
+   is visible without competing with real references. */
+.aspid-fasttools-reference-graph__node--empty.aspid-fasttools-background {
+    border-color:                                         var(--aspid-colors-shade-dark);
+    background-color:                                     rgba(20, 20, 20, 0.35);
+}
+
+/* Its "<None>" placeholder type reads dim and italic — it is a placeholder, not a real stored type. */
+.aspid-fasttools-reference-graph__node--empty .aspid-fasttools-reference-graph__node-type {
+    color:                                                var(--aspid-colors-text-darkness);
+    -unity-font-style:                                    italic;
+}
+
 /* The top band of a missing node: the Fix dropdown styled as a flat row (transparent gradient fill, amber accent on
    hover) — the type pill + badges hug the left as leading content, the "Fix Missing ▼" label pins right. Padding/height
    match the Project Audit group header band (__group-fix-all) so the two read identically. Scoped under __node so these

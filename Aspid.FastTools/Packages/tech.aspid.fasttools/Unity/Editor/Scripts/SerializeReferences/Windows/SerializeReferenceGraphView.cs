@@ -57,6 +57,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeClass = RootClass + "__node";
         private const string NodeOrphanClass = NodeClass + "--orphan";
         private const string NodeBackEdgeClass = NodeClass + "--back-edge";
+        private const string NodeEmptyClass = NodeClass + "--empty";
         private const string NodePickingClass = NodeClass + "--picking";
         private const string NodeBandClass = RootClass + "__node-band";
         private const string NodeBandRowClass = RootClass + "__node-band-row";
@@ -81,6 +82,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string FixCollapsedText = "Fix Missing  ▼";
         private const string FixExpandedText = "Fix Missing  ▲";
+
+        // An unassigned [SerializeReference] slot's placeholder label — single-sourced from the picker's own "<None>"
+        // option, so an empty slot reads the same way in the graph as the cleared field does in the Inspector.
+        private const string EmptySlotText = TypeSelectorHelpers.NoneOption;
 
         // The document header's collapse chevron: ▼ while the body is shown, ▶ once collapsed.
         private const string DocumentChevronExpanded = "▼";
@@ -260,10 +265,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Tally the whole asset's graph as the documents are built, so the overview header can headline the
             // missing / orphaned count (amber) or a clean bill of health (green) — the same status-wash language the
-            // Project Audit view uses, and the same read the dotted canvas wears below.
+            // Project Audit view uses, and the same read the dotted canvas wears below. Empty (unassigned) slots are
+            // tallied separately: they are not broken, so they never tip the headline / canvas to amber — they are only
+            // surfaced in the dim hint so a cleared field stays noticeable.
             var total = 0;
             var missing = 0;
             var orphans = 0;
+            var empties = 0;
 
             // The per-document header only earns its place when there is more than one document to tell apart (a
             // multi-component prefab); a single document drops it (see BuildDocument).
@@ -276,13 +284,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var node in document.Nodes)
                     if (!node.Resolves && !node.StoredType.IsEmpty) missing++;
                 orphans += document.Orphans.Count;
+                empties += CountEmptySlots(document);
             }
 
-            ShowOverview(total, missing, orphans);
+            ShowOverview(total, missing, orphans, empties);
 
             _onCanvasTone?.Invoke(missing > 0 || orphans > 0
                 ? SerializeReferenceCanvasStyle.Warning
                 : SerializeReferenceCanvasStyle.Success);
+        }
+
+        // How many unassigned [SerializeReference] slots the document holds — empty field roots plus empty nested edges
+        // (each points at the null sentinel). Used only for the overview hint; empty slots are not "issues".
+        private static int CountEmptySlots(ReferenceGraphDocument document)
+        {
+            var count = 0;
+
+            foreach (var root in document.Roots)
+                if (root.IsEmpty) count++;
+
+            foreach (var pair in document.Edges)
+            foreach (var edge in pair.Value)
+                if (edge.IsEmpty) count++;
+
+            return count;
         }
 
         // A document has issues when it carries any orphaned rid or any unresolved (missing-type) node.
@@ -340,8 +365,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The scan overview above the document scroll, mirroring the Project Audit results header. Headlines the
         // missing count first, then orphaned rids, falling back to a green all-clear; the label and its divider flip
         // between Warning (amber) and Success (green) in place, and the dim hint spells out the full breakdown.
-        private void ShowOverview(int total, int missing, int orphans)
+        private void ShowOverview(int total, int missing, int orphans, int empties)
         {
+            // Only missing / orphaned references are "issues" that tip the headline and divider to amber; empty slots
+            // are unassigned, not broken, so a graph whose only annotation is empty slots still reads green.
             var status = missing > 0 || orphans > 0
                 ? StatusStyle.Type.Warning
                 : StatusStyle.Type.Success;
@@ -355,21 +382,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _overviewTitle.LabelStatus = status;
             _overviewTitle.LineStatus = status;
 
-            _overviewHint.text = BuildOverviewHint(total, missing, orphans);
+            _overviewHint.text = BuildOverviewHint(total, missing, orphans, empties);
             _overview.RemoveClass(OverviewHiddenClass);
         }
 
-        // The overview's dim subtitle: the mapped reference count, annotated with the missing / orphaned tallies and a
-        // one-line cue toward the matching inline action — or a clean bill of health when nothing is broken.
-        private static string BuildOverviewHint(int total, int missing, int orphans)
+        // The overview's dim subtitle: the mapped reference count, annotated with the missing / orphaned / unassigned
+        // tallies and a one-line cue toward the matching inline action — or a clean bill of health when nothing is
+        // broken (an unassigned-only graph still reads clean, with the empty count appended as a quiet note).
+        private static string BuildOverviewHint(int total, int missing, int orphans, int empties)
         {
             var references = total == 1 ? "1 managed reference" : $"{total} managed references";
-            if (missing == 0 && orphans == 0)
-                return $"{references} mapped — every [SerializeReference] type resolves.";
+            var emptyNote = empties == 0
+                ? string.Empty
+                : empties == 1 ? " · 1 unassigned field" : $" · {empties} unassigned fields";
 
-            var parts = new List<string>(2);
+            if (missing == 0 && orphans == 0)
+                return $"{references} mapped{emptyNote} — every [SerializeReference] type resolves.";
+
+            var parts = new List<string>(3);
             if (missing > 0) parts.Add(missing == 1 ? "1 missing type" : $"{missing} missing types");
             if (orphans > 0) parts.Add(orphans == 1 ? "1 orphaned rid" : $"{orphans} orphaned rids");
+            if (empties > 0) parts.Add(empties == 1 ? "1 unassigned field" : $"{empties} unassigned fields");
 
             var action = missing > 0
                 ? "Fix a missing type inline from its card."
@@ -395,16 +428,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Surface the roots that need attention first: a root whose own stored type is missing renders above the
             // healthy ones. Two passes over the asset's field order make this a stable partition — each group keeps
-            // its source order and the list does not reshuffle between rescans.
+            // its source order and the list does not reshuffle between rescans. Empty (unassigned) roots are not
+            // missing, so they fall to the second pass and render in field order as quiet "<None>" leaves.
             foreach (var root in document.Roots)
             {
-                if (!RootIsMissing(document, root.Rid)) continue;
+                if (root.IsEmpty || !RootIsMissing(document, root.Rid)) continue;
                 var visited = new HashSet<long>();
                 AppendNode(body, assetPath, document, root.Rid, root.Label, depth: 0, visited);
             }
 
             foreach (var root in document.Roots)
             {
+                if (root.IsEmpty)
+                {
+                    body.AddChild(BuildEmptySlotCard(root.Label, depth: 0));
+                    continue;
+                }
+
                 if (RootIsMissing(document, root.Rid)) continue;
                 var visited = new HashSet<long>();
                 AppendNode(body, assetPath, document, root.Rid, root.Label, depth: 0, visited);
@@ -468,9 +508,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Appends a node's card (indented by depth) and then, recursively, its children's cards as further-indented
-        // siblings — a flat, scannable stack rather than nested boxes. The visited set makes the walk cycle-safe: a rid
-        // already on the current path renders as a back-edge leaf ("↩ rid N") instead of recursing forever.
-        private void AppendNode(VisualElement container, string assetPath, ReferenceGraphDocument document, long rid, string rootLabel, int depth, HashSet<long> visited)
+        // siblings — a flat, scannable stack rather than nested boxes. The full field path is threaded down: each child
+        // joins its own field path (relative to the parent's data block) onto the parent's path, so a nested reference
+        // shows where it lives from the document root (e.g. "_primaryWeapon._chargeEffect"). An empty child slot renders
+        // as an "<None>" leaf and never recurses. The visited set makes the walk cycle-safe: a rid already on the
+        // current path renders as a back-edge leaf ("↩ rid N") instead of recursing forever.
+        private void AppendNode(VisualElement container, string assetPath, ReferenceGraphDocument document, long rid, string pathLabel, int depth, HashSet<long> visited)
         {
             if (!visited.Add(rid))
             {
@@ -479,14 +522,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             var node = document.FindNode(rid);
-            container.AddChild(BuildNodeCard(assetPath, document, node, rid, rootLabel, depth, isOrphan: false));
+            container.AddChild(BuildNodeCard(assetPath, document, node, rid, pathLabel, depth, isOrphan: false));
 
-            foreach (var childRid in document.ChildrenOf(rid))
-                AppendNode(container, assetPath, document, childRid, rootLabel: null, depth + 1, visited);
+            foreach (var edge in document.ChildrenOf(rid))
+            {
+                var childPath = CombinePath(pathLabel, edge.Label);
+                if (edge.IsEmpty)
+                    container.AddChild(BuildEmptySlotCard(childPath, depth + 1));
+                else
+                    AppendNode(container, assetPath, document, edge.Rid, childPath, depth + 1, visited);
+            }
 
             // Leaving the recursion: drop the rid so a sibling subtree may legitimately reference it again (shared),
             // while a back-edge on the current path is still caught above.
             visited.Remove(rid);
+        }
+
+        // Joins a parent reference's full field path with a child field's path relative to the parent's data block, so a
+        // nested reference shows the route from the document root down (e.g. "_primaryWeapon" + "_chargeEffect" =>
+        // "_primaryWeapon._chargeEffect"). Either side may be empty — a root whose label could not be recovered, or a
+        // child whose own relative path could not be built — in which case the non-empty side is used alone.
+        private static string CombinePath(string parent, string child)
+        {
+            if (string.IsNullOrEmpty(child)) return parent;
+            if (string.IsNullOrEmpty(parent)) return child;
+            return $"{parent}.{child}";
         }
 
         // A node card laid out over two lines, mirroring the Project Audit group header so a broken node reads the
@@ -496,7 +556,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // line: the dim field path the reference sits under, then the rid; an orphan card adds a Clear action here.
         // Indented by depth so the stack still reads as a tree. The Fix band and the Clear button are the only
         // interactive parts.
-        private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string rootLabel, int depth, bool isOrphan)
+        private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string pathLabel, int depth, bool isOrphan)
         {
             var missing = node is { Resolves: false } && !node.Value.StoredType.IsEmpty;
 
@@ -568,9 +628,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Bottom line — the dim field path, the rid, and (for an orphan) the Clear action.
             var meta = new VisualElement().AddClass(NodeFooterClass);
 
-            if (!string.IsNullOrEmpty(rootLabel))
+            if (!string.IsNullOrEmpty(pathLabel))
             {
-                meta.AddChild(new Label($"{rootLabel}:")
+                meta.AddChild(new Label($"{pathLabel}:")
                     .AddClass(NodeRootLabelClass)
                     .SetPickingMode(PickingMode.Ignore));
             }
@@ -610,6 +670,49 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
+        // An unassigned [SerializeReference] slot — a field whose pointer is the null sentinel (rid -2). Rendered as a
+        // quiet, dim leaf so a cleared or never-assigned reference is visible in the graph (you can see the field is
+        // unset) instead of silently dropping out. Laid out like a node card — a top "<None>" label over the dim field
+        // path — but with no badges, no Fix and no recursion: there is nothing to repair here, only an empty field to
+        // fill in the Inspector. Indented by depth so it still reads in its tree position.
+        private static VisualElement BuildEmptySlotCard(string pathLabel, int depth)
+        {
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(NodeClass)
+                .AddClass(NodeEmptyClass);
+            card.style.marginLeft = depth * IndentStep;
+
+            // The placeholder type label — a quiet dim "<None>". A plain Label (like a back-edge leaf), so the --empty
+            // USS rule tints it dim italic rather than an AspidLabel painting its own status colour.
+            var typeLabel = new Label(EmptySlotText)
+                .AddClass(NodeTypeClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            var bandRow = new VisualElement()
+                .AddClass(NodeBandRowClass)
+                .AddChild(typeLabel);
+            bandRow.pickingMode = PickingMode.Ignore;
+            card.AddChild(bandRow);
+
+            // Bottom line — the dim field path, then an "unassigned" note where a live node shows its rid.
+            var meta = new VisualElement().AddClass(NodeFooterClass);
+
+            if (!string.IsNullOrEmpty(pathLabel))
+            {
+                meta.AddChild(new Label($"{pathLabel}:")
+                    .AddClass(NodeRootLabelClass)
+                    .SetPickingMode(PickingMode.Ignore));
+            }
+
+            meta.AddChild(new Label("unassigned")
+                .AddClass(NodeRidClass)
+                .SetPickingMode(PickingMode.Ignore));
+
+            card.AddChild(meta);
+
+            return card;
+        }
+
         // Trailing warning-tinted group listing rids no root reaches — leftover payloads from deleted fields or broken
         // parents. Each orphan is a node card (so a missing orphan is still fixable — the inline picker anchors below
         // the card) whose footer carries a Clear action to drop the dangling entry, without recursion into children.
@@ -629,7 +732,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var node in document.Nodes)
             {
                 if (!document.Orphans.Contains(node.Rid)) continue;
-                group.AddChild(BuildNodeCard(assetPath, document, node, node.Rid, rootLabel: null, depth: 0, isOrphan: true));
+                group.AddChild(BuildNodeCard(assetPath, document, node, node.Rid, pathLabel: null, depth: 0, isOrphan: true));
             }
 
             return group;

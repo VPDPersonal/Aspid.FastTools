@@ -49,7 +49,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// <summary>
     /// A field pointer from a document's body into its <c>RefIds</c> block — a root of the reference tree. The
     /// <see cref="Label"/> is the full field path that holds the reference (best effort), with list elements indexed,
-    /// e.g. <c>_weapon</c> or <c>_alternates[0]</c> or <c>_config._slots[2]</c>.
+    /// e.g. <c>_weapon</c> or <c>_alternates[0]</c> or <c>_config._slots[2]</c>. A field that holds nothing (its
+    /// pointer is Unity's null sentinel) is kept as an <see cref="IsEmpty"/> root so an unassigned / cleared slot
+    /// stays visible in the graph rather than silently dropping out — it has no <c>RefIds</c> node behind it.
     /// </summary>
     internal readonly struct ReferenceGraphRoot
     {
@@ -61,6 +63,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Rid = rid;
             Label = label;
         }
+
+        /// <summary>True when the pointer is a null sentinel (rid &lt; 0) — an unassigned [SerializeReference] slot.</summary>
+        public bool IsEmpty => Rid < 0;
+    }
+
+    /// <summary>
+    /// A parent → child edge inside a document's nested graph: the child <c>RefIds</c> id and the field path that
+    /// holds it <i>relative to the parent's data block</i>, with list elements indexed (e.g. <c>_chargeEffect</c> or
+    /// <c>_slots[0].weapon</c>). The view joins this onto the parent's full path so a nested reference shows where it
+    /// lives from the document root down. A null child slot is kept as an <see cref="IsEmpty"/> edge (the rid is a null
+    /// sentinel) so a cleared nested field is visible too; it points at no node and never recurses.
+    /// </summary>
+    internal readonly struct ReferenceGraphEdge
+    {
+        public readonly long Rid;
+        public readonly string Label;
+
+        public ReferenceGraphEdge(long rid, string label)
+        {
+            Rid = rid;
+            Label = label;
+        }
+
+        /// <summary>True when the child pointer is a null sentinel (rid &lt; 0) — an unassigned nested slot.</summary>
+        public bool IsEmpty => Rid < 0;
     }
 
     /// <summary>
@@ -79,9 +106,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // two fields — both are kept, so the window renders each subtree and the shared set flags the alias.
         public readonly List<ReferenceGraphRoot> Roots = new();
 
-        // Parent rid → ordered, de-duplicated child rids of the nested graph (data-block pointers only; roots are
-        // tracked separately in Roots).
-        public readonly Dictionary<long, List<long>> Edges = new();
+        // Parent rid → ordered, de-duplicated child edges of the nested graph (data-block pointers only; roots are
+        // tracked separately in Roots). Each edge carries the child rid and the field path holding it relative to the
+        // parent's data block. Empty (null-sentinel) child slots are kept here too so a cleared nested field surfaces.
+        public readonly Dictionary<long, List<ReferenceGraphEdge>> Edges = new();
 
         // rids referenced by two or more parents in total (root pointers + nested edges) — aliased managed references.
         public readonly HashSet<long> Shared = new();
@@ -97,8 +125,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return null;
         }
 
-        public IReadOnlyList<long> ChildrenOf(long rid) =>
-            Edges.TryGetValue(rid, out var children) ? children : Array.Empty<long>();
+        public IReadOnlyList<ReferenceGraphEdge> ChildrenOf(long rid) =>
+            Edges.TryGetValue(rid, out var children) ? children : Array.Empty<ReferenceGraphEdge>();
     }
 
     /// <summary>
@@ -237,22 +265,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (Match match in RidPointer.Matches(lines[i]))
                 {
                     if (!long.TryParse(match.Groups["id"].Value, out var rid)) continue;
+
+                    // A null field pointer (rid -2 = RefIdNull, -1 = unknown): the [SerializeReference] slot exists but
+                    // holds nothing. Keep it as an empty root so a cleared / never-assigned field stays visible in the
+                    // graph — there is no RefIds node behind it, so the view renders it as an "<None>" leaf. ShortName /
+                    // shared / orphan computations skip these sentinels (see ComputeSharedAndOrphans).
+                    if (rid < 0)
+                    {
+                        document.Roots.Add(new ReferenceGraphRoot(rid, BuildRootPath(lines, i, start)));
+                        continue;
+                    }
+
                     if (!knownRids.Contains(rid)) continue; // a dangling pointer, not a graphed reference
 
-                    var label = BuildRootPath(lines, i, start);
-                    document.Roots.Add(new ReferenceGraphRoot(rid, label));
+                    document.Roots.Add(new ReferenceGraphRoot(rid, BuildRootPath(lines, i, start)));
                 }
             }
         }
 
-        // Within each RefIds entry's "data:" block, every "rid:" pointer is a parent → child edge. The entry's own
-        // "- rid:" header line is skipped so an entry is never recorded as its own child.
+        // Within each RefIds entry's "data:" block, every "rid:" pointer is a parent → child edge. Each edge records the
+        // field path holding the child relative to the parent's data block (BuildEdgePath), so the view can show a
+        // nested reference's full path. A null child slot (rid -2) is kept as an empty edge so a cleared nested field
+        // surfaces. The entry's own "- rid:" header line is skipped so an entry is never recorded as its own child.
         private static void CollectEdges(string[] lines, int refIdsStart, int end, HashSet<long> knownRids, ReferenceGraphDocument document)
         {
             for (var i = refIdsStart + 1; i < end; i++)
             {
                 var ridMatch = EntryRid.Match(lines[i]);
                 if (!ridMatch.Success || !long.TryParse(ridMatch.Groups["id"].Value, out var parent)) continue;
+                if (parent < 0) continue; // a sentinel entry carries no data block of its own
 
                 var entryIndent = ridMatch.Groups["indent"].Length;
                 var entryEnd = FindEntryEnd(lines, i + 1, end, entryIndent);
@@ -265,9 +306,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     foreach (Match match in RidPointer.Matches(lines[j]))
                     {
                         if (!long.TryParse(match.Groups["id"].Value, out var child)) continue;
-                        if (child == parent || !knownRids.Contains(child)) continue;
+                        if (child == parent) continue;
 
-                        AddEdge(document, parent, child);
+                        // A null nested slot (rid < 0): keep it as an empty edge so a cleared nested [SerializeReference]
+                        // field is visible, but it points at no node so it never recurses. A real child must be a known
+                        // RefIds node; a dangling pointer is dropped.
+                        if (child >= 0 && !knownRids.Contains(child)) continue;
+
+                        AddEdge(document, parent, new ReferenceGraphEdge(child, BuildEdgePath(lines, j, dataStart)));
                     }
                 }
             }
@@ -280,12 +326,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var parentCount = new Dictionary<long, int>();
 
+            // Null sentinels (empty roots / edges) are excluded throughout: every cleared field points at the same -2,
+            // so counting them would wrongly flag -2 as "shared", and -2 is not a node so it is never reachable/orphan.
             foreach (var root in document.Roots)
-                parentCount[root.Rid] = parentCount.GetValueOrDefault(root.Rid) + 1;
+                if (root.Rid >= 0) parentCount[root.Rid] = parentCount.GetValueOrDefault(root.Rid) + 1;
 
             foreach (var pair in document.Edges)
-            foreach (var child in pair.Value)
-                parentCount[child] = parentCount.GetValueOrDefault(child) + 1;
+            foreach (var edge in pair.Value)
+                if (edge.Rid >= 0) parentCount[edge.Rid] = parentCount.GetValueOrDefault(edge.Rid) + 1;
 
             foreach (var pair in parentCount)
                 if (pair.Value >= 2) document.Shared.Add(pair.Key);
@@ -293,47 +341,68 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var reachable = new HashSet<long>();
             var queue = new Queue<long>();
             foreach (var root in document.Roots)
-                if (reachable.Add(root.Rid)) queue.Enqueue(root.Rid);
+                if (root.Rid >= 0 && reachable.Add(root.Rid)) queue.Enqueue(root.Rid);
 
             while (queue.Count > 0)
             {
                 var rid = queue.Dequeue();
-                foreach (var child in document.ChildrenOf(rid))
-                    if (reachable.Add(child)) queue.Enqueue(child);
+                foreach (var edge in document.ChildrenOf(rid))
+                    if (edge.Rid >= 0 && reachable.Add(edge.Rid)) queue.Enqueue(edge.Rid);
             }
 
             foreach (var rid in knownRids)
                 if (!reachable.Contains(rid)) document.Orphans.Add(rid);
         }
 
-        private static void AddEdge(ReferenceGraphDocument document, long parent, long child)
+        private static void AddEdge(ReferenceGraphDocument document, long parent, ReferenceGraphEdge edge)
         {
             if (!document.Edges.TryGetValue(parent, out var children))
             {
-                children = new List<long>();
+                children = new List<ReferenceGraphEdge>();
                 document.Edges[parent] = children;
             }
 
-            if (!children.Contains(child)) children.Add(child);
+            // A real child rid de-dups (an alias within one parent's data block counts once); empty slots are distinct
+            // fields that happen to share the -2 sentinel, so they are always kept.
+            if (edge.Rid >= 0 && children.Exists(c => c.Rid == edge.Rid)) return;
+            children.Add(edge);
         }
 
-        // Builds the full field path from the document body down to the rid pointer on line i — the chain of mapping
-        // keys, joined by ".", with a "[index]" suffix on any list key the path crosses. The document's root wrapper
-        // key (the indent-0 "MonoBehaviour:" / "Transform:" / … line) is excluded — every real field nests under it —
-        // so a top-level field reads as "_weapon" and a list element as "_alternates[0]", never the wrapper name. Two
-        // YAML shapes are handled per ancestor:
+        // A root pointer's full field path from the document body down to the rid pointer on line i, e.g. "_weapon",
+        // "_alternates[0]" or "_config._slots[2]". Climbs to (but excludes) the indent-0 document wrapper key, so a
+        // top-level field reads as "_weapon", never the wrapper name. Falls back to "reference" when no key is found.
+        private static string BuildRootPath(string[] lines, int i, int start)
+        {
+            var path = BuildPath(lines, i, floor: start, stopIndent: 0);
+            return string.IsNullOrEmpty(path) ? "reference" : path;
+        }
+
+        // A nested edge's field path relative to its parent's "data:" block, e.g. "_chargeEffect" or "_slots[0].weapon".
+        // Climbs to (but excludes) the "data:" key by stopping at the data block's own indent, so the path is parent-
+        // relative; the view joins it onto the parent's full path. Empty when no key is found (the view then keeps the
+        // parent path alone).
+        private static string BuildEdgePath(string[] lines, int pointerLine, int dataStart) =>
+            BuildPath(lines, pointerLine, floor: dataStart, stopIndent: IndentOf(lines[dataStart]));
+
+        // Builds a dotted field path by walking up from the rid pointer on <paramref name="pointerLine"/>, collecting
+        // mapping keys (with a "[index]" suffix on any list key crossed), until it climbs out of the enclosing scope.
+        // <paramref name="floor"/> is the inclusive lowest line the walk may inspect (the document header for a body
+        // root, the "data:" line for a nested edge); <paramref name="stopIndent"/> is the indent at or below which the
+        // walk stops, so it never crosses the scope's own wrapper key (indent-0 wrapper for a root, the "data:" key for
+        // an edge). Returns the dotted path, or an empty string when no path segment is found. Two YAML shapes are
+        // handled per ancestor:
         // • a named value over two lines ("_weapon:\n  rid: N") — the owning key is the nearest strictly-shallower line.
         // • a block-sequence item ("_alternates:\n  - rid: N") — Unity writes the dashes at the same column as the list
         //   key, so the key sits at *equal* indent above the dash; the element's index is its position among the same-
         //   indent "- …" siblings. An element that carries its own field key on the dash line ("- _weapon:") keeps it,
         //   so the path reads "_slots[0]._weapon".
-        private static string BuildRootPath(string[] lines, int i, int start)
+        private static string BuildPath(string[] lines, int pointerLine, int floor, int stopIndent)
         {
             var segments = new List<string>();
-            var line = i;
+            var line = pointerLine;
 
             // YAML nesting is finite; the counter only guards a malformed file from looping the walk forever.
-            for (var safety = 0; line > start && safety < 256; safety++)
+            for (var safety = 0; line > floor && safety < 256; safety++)
             {
                 var indent = IndentOf(lines[line]);
                 int next;
@@ -349,7 +418,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // (its position among the same-indent "- …" siblings).
                     var index = 0;
                     var ownerLine = -1;
-                    for (var j = line - 1; j >= start; j--)
+                    for (var j = line - 1; j >= floor; j--)
                     {
                         if (lines[j].Trim().Length == 0) continue;
 
@@ -368,7 +437,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (!ownerKey.Success || IsStructuralKey(ownerKey.Groups["key"].Value)) break;
 
                     segments.Add($"{ownerKey.Groups["key"].Value}[{index}]");
-                    next = ParentLine(lines, ownerLine, start, IndentOf(lines[ownerLine]));
+                    next = ParentLine(lines, ownerLine, floor, IndentOf(lines[ownerLine]));
                 }
                 else
                 {
@@ -378,14 +447,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (match.Success && !IsStructuralKey(match.Groups["key"].Value))
                         segments.Add(match.Groups["key"].Value);
 
-                    next = ParentLine(lines, line, start, indent);
+                    next = ParentLine(lines, line, floor, indent);
                 }
 
-                if (next < 0 || IndentOf(lines[next]) == 0) break; // reached the indent-0 document wrapper key
+                if (next < 0 || IndentOf(lines[next]) <= stopIndent) break; // climbed out of the enclosing scope
                 line = next;
             }
 
-            if (segments.Count == 0) return "reference";
+            if (segments.Count == 0) return string.Empty;
 
             segments.Reverse();
             return string.Join(".", segments);
