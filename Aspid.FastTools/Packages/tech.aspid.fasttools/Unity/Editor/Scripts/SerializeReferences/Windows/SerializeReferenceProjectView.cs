@@ -170,18 +170,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             root.AddChild(scroll);
         }
 
-        // The tab-switch entry point. The project sweep's first pass is cold-built per session — the static usage
-        // index does not survive domain reloads — and parses every candidate asset's YAML behind a blocking bar,
-        // which is slow on large projects. So a plain switch to the Project References tab only auto-shows results when the
-        // index is already warm (a near-free in-memory filter); while cold it shows just the Scan panel over the idle
-        // canvas and waits for a deliberate Scan Project click, rather than freezing the editor on the tab switch. The
-        // breakage-notification deep-link bypasses this gate and forces a scan (the host window calls ScanProject
+        // The tab-switch entry point. Switching to the Project References tab never auto-scans: the project sweep
+        // parses every candidate asset's YAML behind a blocking bar (slow on large projects when the index is cold),
+        // and even a warm in-memory rescan is work the user didn't ask for on a plain tab switch. So the tab always
+        // opens on just the Scan panel over the idle canvas and waits for a deliberate Scan Project click. The
+        // breakage-notification deep-link bypasses this and forces a scan (the host window calls ScanProject
         // directly), because the user opened it specifically to see the broken references.
-        public void Initialize()
-        {
-            if (SerializeReferenceTypeUsageIndex.IsWarm) ScanProject();
-            else ShowIdle();
-        }
+        public void Initialize() => ShowIdle();
 
         // ---------------------------------------------------------------------------------------------------------
         // Project mode
