@@ -894,8 +894,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ? null
                 : Type.GetType(assemblyQualifiedName, throwOnError: false);
 
-        // Both terminal states reuse one hero: the package icon in the status colour, a headline and a dimmed
-        // explanation. Rebuilt per scan — the icon, accent and copy all differ between the two states.
+        // The idle and both terminal states reuse one hero: the package icon (the snake) in the status colour, a
+        // headline and a dimmed explanation. Rebuilt per call — the icon, accent and copy all differ between the idle
+        // "not scanned" info state and the "Project clean" / "Scan canceled" terminal states.
         private void ShowEmptyState(bool success, string title, string message)
         {
             _results.AddClass(ResultsHiddenClass);
@@ -919,15 +920,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(new Label(message).AddClass(EmptyMessageClass));
         }
 
-        // The cold-index idle state shown until the user triggers the first scan: just the Scan panel floating over
-        // the info-toned canvas, with neither the results list nor a terminal hero (the project is unscanned, so
-        // "clean" cannot be claimed yet). The button keeps its cold Scan Project label until ScanProject relabels it.
-        private void ShowIdle()
-        {
-            _results.AddClass(ResultsHiddenClass);
-            _empty.AddClass(EmptyHiddenClass);
-            OnCanvasTone?.Invoke(SerializeReferenceCanvasStyle.Info);
-        }
+        // The cold-index idle state shown until the user triggers the first scan: the Scan panel floats over an
+        // info-toned hero — the snake icon, a headline and a dimmed prompt — mirroring the Asset References tab's
+        // "No asset selected" hero, so an unscanned tab reads as a deliberate starting point rather than a blank
+        // canvas. No results list yet (the project is unscanned, so "clean" cannot be claimed). ShowEmptyState paints
+        // the info icon and tones the canvas Info; the button keeps its cold Scan Project label until ScanProject
+        // relabels it.
+        private void ShowIdle() => ShowEmptyState(
+            success: false,
+            title: "Project not scanned",
+            message: "Run Scan Project to map every broken [SerializeReference] type across your assets — then repair each missing type in bulk.");
 
         private void ShowResults(string headerText)
         {
