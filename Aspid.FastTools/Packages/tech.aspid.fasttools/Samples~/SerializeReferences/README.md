@@ -60,7 +60,7 @@ Select either **in the Project window**. The missing field shows a `<Missing …
 
 > The repair reads and rewrites the asset file directly — Unity does not expose a missing type through its serialization API (and on GameObjects/prefabs even drops it from the live object, UUM-129100), so the orphaned type and data are recovered straight from the YAML. It therefore needs a **saved asset file**: it works for ScriptableObjects and prefab assets selected in the Project, but not for objects edited in Prefab Mode or instances living in a scene (no backing asset to rewrite).
 >
-> When a missing reference is nested inside another value or sits on a child object the Inspector can't reach, use **`Tools → Aspid 🐍 → Managed References FastTools`** instead: it scans the whole asset file and lists every missing reference (any depth, any child) with its own **Fix** picker.
+> When a missing reference is nested inside another value or sits on a child object the Inspector can't reach, use **`Tools → Aspid 🐍 → FastTools → Asset References`** instead: it scans the whole asset file and lists every missing reference (any depth, any child) with its own **Fix** picker.
 >
 > Its **Project References** tab sweeps every asset under `Assets/` and groups the broken references by their stored type — so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into a single **GhostWeapon** group (`4 entries · 2 files`). One **Fix all** picks a single replacement and re-points every entry across both files at once.
 
@@ -72,7 +72,7 @@ Select either **in the Project window**. The missing field shows a `<Missing …
 - **WeaponSlot** (child) — `Primary Weapon = GhostBlade` (missing), `Sidearms[0] = Pistol`.
 - **BackupSlot** (grandchild) — `On Hit Effect = GhostAura` (missing), `Primary Weapon = Shotgun`.
 
-Select it **in the Project window** and open the **Asset References** tab of **`Tools → Aspid 🐍 → Managed References FastTools`**. The graph maps all three components at once (one document per object). Every reference is an inline dropdown: pick a type to assign / re-point it, or `<None>` to clear it; the missing `GhostPistol` / `GhostBlade` / `GhostAura` cards carry the amber **Fix Missing** action. Nesting is read from the field path (`_primaryWeapon._chargeEffect`), not from indentation, so the flat card stack stays scannable.
+Select it **in the Project window** and open the **Asset References** tab — **`Tools → Aspid 🐍 → FastTools → Asset References`**. The graph maps all three components at once (one document per object). Every reference is an inline dropdown: pick a type to assign / re-point it, or `<None>` to clear it; the missing `GhostPistol` / `GhostBlade` / `GhostAura` cards carry the amber **Fix Missing** action. Nesting is read from the field path (`_primaryWeapon._chargeEffect`), not from indentation, so the flat card stack stays scannable.
 
 ### Un-share an aliased reference — `LoadoutSharedRef.prefab`
 
