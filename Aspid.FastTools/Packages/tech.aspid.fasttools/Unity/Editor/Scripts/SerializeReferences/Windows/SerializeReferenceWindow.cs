@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditor.ShortcutManagement;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
@@ -32,12 +33,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ToolbarButtonActiveClass = ToolbarButtonClass + "--active";
         private const string ToolbarButtonSquareClass = ToolbarButtonClass + "--square";
         private const string TabUnderlineClass = RootClass + "__tab-underline";
+        private const string TabHintClass = RootClass + "__tab-hint";
         private const string TabIconClass = RootClass + "__tab-icon";
         private const string TabIconHomeClass = TabIconClass + "--home";
         private const string TabIconSettingsClass = TabIconClass + "--settings";
         private const string ContainerClass = RootClass + "__container";
 
         private const string WindowStyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
+
+        // ShortcutManager ids for the tab-switch bindings. They surface under this category in Edit > Shortcuts and are
+        // user-rebindable; the visible tab badges read the live binding back from these ids (see BindingLabel).
+        private const string ShortcutCategory = "Aspid FastTools/Managed References/";
+        private const string HomeShortcutId = ShortcutCategory + "Home";
+        private const string InspectShortcutId = ShortcutCategory + "Asset References";
+        private const string ProjectShortcutId = ShortcutCategory + "Project References";
+        private const string SettingsShortcutId = ShortcutCategory + "Settings";
 
         private AspidAnimatedDotsBackground _background;
         private VisualElement _container;
@@ -103,10 +113,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(BackgroundClass)
                 .SetPickingMode(PickingMode.Ignore);
 
-            _homeButton = SquareTabButton(Mode.Welcome, TabIconHomeClass);
-            _inspectButton = ModeButton("Asset References", Mode.Inspect);
-            _projectButton = ModeButton("Project References", Mode.Project);
-            _settingsButton = SquareTabButton(Mode.Settings, TabIconSettingsClass);
+            _homeButton = SquareTabButton(Mode.Welcome, TabIconHomeClass, BindingLabel(HomeShortcutId, 1));
+            _inspectButton = ModeButton("Asset References", Mode.Inspect, BindingLabel(InspectShortcutId, 2));
+            _projectButton = ModeButton("Project References", Mode.Project, BindingLabel(ProjectShortcutId, 3));
+            _settingsButton = SquareTabButton(Mode.Settings, TabIconSettingsClass, BindingLabel(SettingsShortcutId, 0));
 
             var toolbar = new VisualElement().AddClass(ToolbarClass);
             toolbar.AddChild(_homeButton)
@@ -128,10 +138,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SwitchMode(_mode);
         }
 
-        private Button ModeButton(string label, Mode mode)
+        private Button ModeButton(string label, Mode mode, string hint)
         {
-            var button = new Button(() => SwitchMode(mode)) { text = label };
+            var button = new Button(() => SwitchMode(mode)) { text = label, tooltip = hint };
             button.AddClass(ToolbarButtonClass);
+
+            // The tab's switch shortcut, shown as a small keyboard-cap badge pinned to the right of the centred label so
+            // the binding is discoverable on the tab itself. Absolutely positioned (like the underline below), so it
+            // floats over the button without disturbing its centred text.
+            button.AddChild(new Label(hint)
+                .AddClass(TabHintClass)
+                .SetPickingMode(PickingMode.Ignore));
 
             // The active underline is a child bar, not a border-bottom — flipping a child's background-color via the
             // parent's --active class repaints reliably (a border-color flip only showed up after a window resize).
@@ -146,9 +163,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // USS --square modifier overrides the flex sizing into a square; the inner __tab-icon (plus an --home/--settings
         // glyph modifier supplying the background-image) carries the tint. Each keeps the same bottom underline bar as
         // the mode tabs (grey baseline, green when active) for consistent feedback.
-        private Button SquareTabButton(Mode mode, string iconModifierClass)
+        private Button SquareTabButton(Mode mode, string iconModifierClass, string hint)
         {
-            var button = new Button(() => SwitchMode(mode));
+            var button = new Button(() => SwitchMode(mode)) { tooltip = hint };
             button.AddClass(ToolbarButtonClass).AddClass(ToolbarButtonSquareClass);
 
             button.AddChild(new VisualElement()
@@ -162,6 +179,56 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return button;
         }
+
+        // Tab-switch hotkeys, registered with the ShortcutManager against this window as the context. A context shortcut
+        // is dispatched at the editor level whenever the window is focused — unlike a panel KeyDownEvent, which only
+        // fires while some element *inside* the window holds keyboard focus, so it would go silent the moment the user
+        // clicked empty chrome. This way the bindings always work as long as the window is focused. Alt+digit is used
+        // because Unity reserves every primary-modifier digit combo globally (Cmd/Ctrl+digit, +Shift, +Alt — see the
+        // tab badges); Alt alone is otherwise only bound inside Scene View / Shader Graph, which are different contexts.
+        // The bindings appear under "Aspid FastTools/Managed References" in Edit > Shortcuts and are user-rebindable.
+        [Shortcut(HomeShortcutId, typeof(SerializeReferenceWindow), KeyCode.Alpha1, ShortcutModifiers.Alt)]
+        private static void OnHomeShortcut(ShortcutArguments args) => SwitchFrom(args, Mode.Welcome);
+
+        [Shortcut(InspectShortcutId, typeof(SerializeReferenceWindow), KeyCode.Alpha2, ShortcutModifiers.Alt)]
+        private static void OnInspectShortcut(ShortcutArguments args) => SwitchFrom(args, Mode.Inspect);
+
+        [Shortcut(ProjectShortcutId, typeof(SerializeReferenceWindow), KeyCode.Alpha3, ShortcutModifiers.Alt)]
+        private static void OnProjectShortcut(ShortcutArguments args) => SwitchFrom(args, Mode.Project);
+
+        [Shortcut(SettingsShortcutId, typeof(SerializeReferenceWindow), KeyCode.Alpha0, ShortcutModifiers.Alt)]
+        private static void OnSettingsShortcut(ShortcutArguments args) => SwitchFrom(args, Mode.Settings);
+
+        // The shortcut's context is the focused window instance, handed in via ShortcutArguments.
+        private static void SwitchFrom(ShortcutArguments args, Mode mode)
+        {
+            if (args.context is SerializeReferenceWindow window)
+                window.SwitchMode(mode);
+        }
+
+        // The badge / tooltip text for a tab: the shortcut's live binding read straight from the ShortcutManager, so it
+        // tracks any rebind the user makes in Edit > Shortcuts and renders the real per-platform glyph (⌥2 on macOS,
+        // Alt+2 elsewhere — the same string the Shortcuts window shows). Falls back to the default ⌥/Alt hint if the id
+        // isn't registered yet (e.g. first import before discovery) or its binding has been cleared.
+        private static string BindingLabel(string shortcutId, int number)
+        {
+            try
+            {
+                var binding = ShortcutManager.instance.GetShortcutBinding(shortcutId).ToString();
+                if (!string.IsNullOrEmpty(binding)) return binding;
+            }
+            catch (System.Exception)
+            {
+                // ShortcutManager not ready / unknown id — fall through to the static default below.
+            }
+
+            return ShortcutHint(number);
+        }
+
+        // The default tab-switch hint, used as BindingLabel's fallback: the ⌥ Option glyph on macOS (its own "icon"),
+        // spelled-out Alt+ elsewhere. Mirrors the [Shortcut] defaults above (ShortcutModifiers.Alt + the digit).
+        private static string ShortcutHint(int number) =>
+            (Application.platform == RuntimePlatform.OSXEditor ? "⌥" : "Alt+") + number;
 
         private void SwitchMode(Mode mode)
         {
