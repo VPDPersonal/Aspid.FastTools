@@ -62,7 +62,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // index, whereas a plain Project References tab click is warmth-gated inside the view. Consumed in SwitchMode.
         private bool _forceProjectScan;
 
-        [MenuItem("Tools/Aspid 🐍/Managed References FastTools", priority = 21)]
+        /// <summary>Opens the window on the Welcome home tab — the menu entry and the first-run auto-show.</summary>
+        [MenuItem("Tools/Aspid 🐍/FastTools/Welcome", priority = 0)]
+        public static void OpenWelcome()
+        {
+            var window = Reveal();
+            window.SwitchMode(Mode.Welcome);
+            WelcomeWindowStartup.MarkSeen();
+        }
+
+        // The priority gap (0 → 20 → 40) is wider than Unity's 10-step separator threshold, so the menu renders
+        // Welcome / [Asset + Project References] / Settings as three separated groups.
+        [MenuItem("Tools/Aspid 🐍/FastTools/Asset References", priority = 20)]
         private static void OpenMenu() => Open(Selection.activeObject);
 
         /// <summary>Opens the window in Inspect mode on <paramref name="target"/> (the deep-link for per-asset repair).</summary>
@@ -73,6 +84,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             window.SwitchMode(Mode.Inspect);
         }
 
+        /// <summary>Opens the window on the Project References tab (no auto-scan — the idle Scan panel shows first).</summary>
+        [MenuItem("Tools/Aspid 🐍/FastTools/Project References", priority = 21)]
+        private static void OpenProject() => Reveal().SwitchMode(Mode.Project);
+
         /// <summary>Opens the window straight into a project audit (the breakage-notification deep-link).</summary>
         public static void OpenProjectScan()
         {
@@ -81,14 +96,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             window.SwitchMode(Mode.Project);
         }
 
-        /// <summary>Opens the window on the Welcome home tab — the menu entry and the first-run auto-show.</summary>
-        [MenuItem("Tools/Aspid 🐍/Welcome FastTools", priority = 0)]
-        public static void OpenWelcome()
-        {
-            var window = Reveal();
-            window.SwitchMode(Mode.Welcome);
-            WelcomeWindowStartup.MarkSeen();
-        }
+        /// <summary>Opens the window on the Settings tab.</summary>
+        [MenuItem("Tools/Aspid 🐍/FastTools/Settings", priority = 40)]
+        private static void OpenSettings() => Reveal().SwitchMode(Mode.Settings);
 
         private static SerializeReferenceWindow Reveal()
         {
