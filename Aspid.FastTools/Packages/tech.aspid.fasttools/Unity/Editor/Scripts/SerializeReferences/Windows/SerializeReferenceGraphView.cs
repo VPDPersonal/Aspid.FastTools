@@ -105,9 +105,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string DocumentChevronExpanded = "▼";
         private const string DocumentChevronCollapsed = "▶";
 
-        // Indentation step (px) applied per tree depth so nested cards read as a hierarchy.
-        private const float IndentStep = 16f;
-
         // Reports this view's state-tone to the host window, which owns the shared dotted canvas behind every mode.
         private readonly Action<Color> _onCanvasTone;
 
@@ -429,9 +426,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // One serialized object document: a clickable header band (styled like the Project References group header — a
         // gradient row carrying the component / ScriptableObject name, a reference count and a collapse chevron) over a
-        // collapsible body that holds each root's reference subtree as a stack of separate node cards (indented by
-        // depth) plus a trailing "Orphaned" group for any rids no root reaches. The header is dropped when the asset
-        // has a single document (see showHeader) — there it would only restate the ObjectField above it.
+        // collapsible body that holds each root's reference subtree as a flat stack of separate node cards (nesting read
+        // from each card's field path, not indentation) plus a trailing "Orphaned" group for any rids no root reaches.
+        // The header is dropped when the asset has a single document (see showHeader) — there it would only restate the
+        // ObjectField above it.
         private VisualElement BuildDocument(string assetPath, ReferenceGraphDocument document, bool showHeader)
         {
             var hasIssues = DocumentHasIssues(document);
@@ -448,20 +446,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (root.IsEmpty || !RootIsMissing(document, root.Rid)) continue;
                 var visited = new HashSet<long>();
-                AppendNode(body, assetPath, document, root.Rid, root.Label, depth: 0, visited);
+                AppendNode(body, assetPath, document, root.Rid, root.Label, visited);
             }
 
             foreach (var root in document.Roots)
             {
                 if (root.IsEmpty)
                 {
-                    body.AddChild(BuildEmptySlotCard(assetPath, document.FileId, root.Label, depth: 0));
+                    body.AddChild(BuildEmptySlotCard(assetPath, document.FileId, root.Label));
                     continue;
                 }
 
                 if (RootIsMissing(document, root.Rid)) continue;
                 var visited = new HashSet<long>();
-                AppendNode(body, assetPath, document, root.Rid, root.Label, depth: 0, visited);
+                AppendNode(body, assetPath, document, root.Rid, root.Label, visited);
             }
 
             var orphans = BuildOrphanGroup(assetPath, document);
@@ -521,30 +519,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return text;
         }
 
-        // Appends a node's card (indented by depth) and then, recursively, its children's cards as further-indented
-        // siblings — a flat, scannable stack rather than nested boxes. The full field path is threaded down: each child
-        // joins its own field path (relative to the parent's data block) onto the parent's path, so a nested reference
-        // shows where it lives from the document root (e.g. "_primaryWeapon._chargeEffect"). An empty child slot renders
-        // as an "<None>" leaf and never recurses. The visited set makes the walk cycle-safe: a rid already on the
-        // current path renders as a back-edge leaf ("↩ rid N") instead of recursing forever.
-        private void AppendNode(VisualElement container, string assetPath, ReferenceGraphDocument document, long rid, string pathLabel, int depth, HashSet<long> visited)
+        // Appends a node's card and then, recursively, its children's cards as flat siblings — a flat, scannable stack
+        // rather than indented nested boxes. Nesting is read entirely from the field path, not the layout: the full field
+        // path is threaded down so each child joins its own field path (relative to the parent's data block) onto the
+        // parent's path, and a nested reference shows where it lives from the document root (e.g.
+        // "_primaryWeapon._chargeEffect"). An empty child slot renders as an "<None>" leaf and never recurses. The visited
+        // set makes the walk cycle-safe: a rid already on the current path renders as a back-edge leaf ("↩ rid N")
+        // instead of recursing forever.
+        private void AppendNode(VisualElement container, string assetPath, ReferenceGraphDocument document, long rid, string pathLabel, HashSet<long> visited)
         {
             if (!visited.Add(rid))
             {
-                container.AddChild(BuildBackEdgeCard(depth, rid));
+                container.AddChild(BuildBackEdgeCard(rid));
                 return;
             }
 
             var node = document.FindNode(rid);
-            container.AddChild(BuildNodeCard(assetPath, document, node, rid, pathLabel, depth, isOrphan: false));
+            container.AddChild(BuildNodeCard(assetPath, document, node, rid, pathLabel, isOrphan: false));
 
             foreach (var edge in document.ChildrenOf(rid))
             {
                 var childPath = CombinePath(pathLabel, edge.Label);
                 if (edge.IsEmpty)
-                    container.AddChild(BuildEmptySlotCard(assetPath, document.FileId, childPath, depth + 1));
+                    container.AddChild(BuildEmptySlotCard(assetPath, document.FileId, childPath));
                 else
-                    AppendNode(container, assetPath, document, edge.Rid, childPath, depth + 1, visited);
+                    AppendNode(container, assetPath, document, edge.Rid, childPath, visited);
             }
 
             // Leaving the recursion: drop the rid so a sibling subtree may legitimately reference it again (shared),
@@ -570,14 +569,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // the amber "Fix Missing ▼" cue and edits through the YAML; a healthy card's band is a plain "▼" dropdown that
         // edits through the live serialization API. An orphan keeps a static band (no field points at it) plus a footer
         // Clear. Bottom line: the dim field path the reference sits under, then the rid (an orphan adds its Clear here).
-        // Indented by depth so the stack still reads as a tree.
-        private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string pathLabel, int depth, bool isOrphan)
+        // Cards are not indented — the field path alone carries the nesting, so the stack stays a flat, scannable column.
+        private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string pathLabel, bool isOrphan)
         {
             var missing = node is { Resolves: false } && !node.Value.StoredType.IsEmpty;
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass);
-            card.style.marginLeft = depth * IndentStep;
             if (isOrphan) card.AddClass(NodeOrphanClass);
 
             // Top band — type identity + status badges on the left, the Fix action docked right.
@@ -689,12 +687,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A back-edge to a rid already on the current render path — a single dim, italic line (no footer) so cycles
         // terminate visibly.
-        private static VisualElement BuildBackEdgeCard(int depth, long rid)
+        private static VisualElement BuildBackEdgeCard(long rid)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass)
                 .AddClass(NodeBackEdgeClass);
-            card.style.marginLeft = depth * IndentStep;
 
             card.AddChild(new VisualElement()
                 .AddClass(NodeHeaderClass)
@@ -711,13 +708,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // path — with no badges and no recursion, but its band is still a dropdown: clicking it opens the selector so a
         // type can be assigned to the empty field straight from the graph (through the live serialization API, so Unity
         // creates the RefIds entry). A slot whose field path could not be recovered stays static (nothing to target).
-        // Indented by depth so it still reads in its tree position.
-        private VisualElement BuildEmptySlotCard(string assetPath, long fileId, string pathLabel, int depth)
+        // Not indented — its field path carries the nesting, like every other card.
+        private VisualElement BuildEmptySlotCard(string assetPath, long fileId, string pathLabel)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass)
                 .AddClass(NodeEmptyClass);
-            card.style.marginLeft = depth * IndentStep;
 
             // The placeholder type label — a quiet dim "<None>". A plain Label (like a back-edge leaf), so the --empty
             // USS rule tints it dim italic rather than an AspidLabel painting its own status colour.
@@ -785,7 +781,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var node in document.Nodes)
             {
                 if (!document.Orphans.Contains(node.Rid)) continue;
-                group.AddChild(BuildNodeCard(assetPath, document, node, node.Rid, pathLabel: null, depth: 0, isOrphan: true));
+                group.AddChild(BuildNodeCard(assetPath, document, node, node.Rid, pathLabel: null, isOrphan: true));
             }
 
             return group;
