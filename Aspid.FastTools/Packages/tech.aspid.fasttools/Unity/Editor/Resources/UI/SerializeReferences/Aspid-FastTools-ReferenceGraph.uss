@@ -52,13 +52,14 @@
     margin:                                               0;
 }
 
-/* Rescan hosts the asset field: a row sized to the field's natural height (height auto + centred) rather than the
-   gradient button's default 30px pill, the "Rescan" label flush left and the field filling the row to its right. Code
-   drops the label text when no asset is selected, keeping the field — and so the picker — reachable. Scoped under __card
-   so these layout overrides outrank the gradient button's own :root defaults (height / padding / margin) on the class tie. */
+/* Rescan hosts the asset field: a 30px row (the gradient button's own default height, so this panel's action matches the
+   Project References "Scan Project" button height exactly and the two tabs' top panels read at the same size), with the
+   "Rescan" label flush left, the centred field filling the row to its right. Code drops the label text when no asset is
+   selected, keeping the field — and so the picker — reachable. Scoped under __card so these layout overrides outrank the
+   gradient button's own :root defaults (padding / margin) on the class tie. */
 .aspid-fasttools-reference-graph__card
     .aspid-fasttools-reference-graph__rescan {
-    height:                                               auto;
+    height:                                               30px;
     align-items:                                          center;
     padding:                                              3px 8px 3px 6px;
     margin:                                               0;
