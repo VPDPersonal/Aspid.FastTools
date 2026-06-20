@@ -63,11 +63,16 @@ element (and alias its data); here "+" always appends a fresh, typed instance.
 
 **Field:** `StatusEffect _step3Abstract` · `[SerializeReference] [TypeSelector]`
 
-`StatusEffect` is an **abstract** class. Open the picker: it offers only the concrete subclasses `BurnEffect` and
-`FreezeEffect`. The abstract base itself is never listed — it cannot be instantiated.
+`StatusEffect` is an **abstract** class — you cannot `new` it.
 
-The same is true for an interface-typed field (Lesson 1's `IWeapon` is an interface). You declare the field as the
-broadest type that makes sense; the picker shows only the leaves you can actually create.
+**Try it:**
+1. Open the picker.
+2. Note that only the concrete subclasses `BurnEffect` and `FreezeEffect` are offered.
+
+**Notice:**
+- The abstract base itself is never listed — there would be nothing to instantiate.
+- An interface-typed field behaves identically (Lesson 1's `IWeapon` is an interface).
+- Declare the field as the broadest type that makes sense; the picker shows only the concrete leaves you can create.
 
 ---
 
@@ -107,11 +112,14 @@ Use this to keep a field's *type* broad (so your code stays generic) while const
 
 **Field:** `IWeapon _step5Nested` · `[SerializeReference] [TypeSelector]`
 
-Pick **`Railgun`** and expand it. `Railgun` has its own `[SerializeReference] [TypeSelector] StatusEffect
-_chargeEffect` field — so it gets its **own** picker, inline, under the weapon's foldout.
+**Try it:**
+1. Pick **`Railgun`** and expand its foldout.
+2. Find its `Charge Effect` field — itself a `[SerializeReference] [TypeSelector] StatusEffect`.
+3. Open *that* picker and assign a `BurnEffect` or `FreezeEffect`.
 
-The drawer is fully recursive: a managed reference can contain another managed reference, to any depth, each with its
-own picker, inline child fields, notices and context-menu actions.
+**Notice:**
+- A managed reference can contain another managed reference, to any depth.
+- Every nested level gets its own picker, inline child fields, notices and context-menu actions — the drawer is fully recursive.
 
 ---
 
@@ -142,12 +150,17 @@ is resolved is the closed type (`Modifier<string>` / `Modifier<float>`) construc
 
 **Fields:** `WeaponSlot _step7Slot` and `List<WeaponSlot> _step7Slots`.
 
-A managed reference does not have to sit directly on the component. `WeaponSlot` is a plain `[Serializable]` class
-(not a managed reference itself) holding a `label`, a `priority`, and a `[SerializeReference] [TypeSelector] IWeapon`.
+`WeaponSlot` is a plain `[Serializable]` class (not a managed reference itself) holding a `label`, a `priority`, and a
+`[SerializeReference] [TypeSelector] IWeapon`.
 
-Everything you learned still applies at this depth: the picker, the inline child fields, the missing-type warning and
-its inline **Fix**. A polymorphic reference works whether it is on the component, one level inside a container, or
-inside each element of a `List<WeaponSlot>` (`_step7Slots`).
+**Try it:**
+1. Expand `_step7Slot` and pick a weapon for its inner field.
+2. Add elements to `_step7Slots` — each element is a container whose weapon is its own picker.
+
+**Notice:**
+- A managed reference does **not** have to sit directly on the component.
+- Everything you learned still applies at this depth: the picker, inline child fields, the missing-type warning and its inline **Fix**.
+- It works on the component, one level inside a container, or inside each element of a `List<WeaponSlot>`.
 
 ---
 
@@ -155,17 +168,21 @@ inside each element of a `List<WeaponSlot>` (`_step7Slots`).
 
 **Field:** `IWeapon _step8Required` · `[SerializeReference] [TypeSelector] [SerializeReferenceRequired]`
 
-Add `[SerializeReferenceRequired]` next to the usual two attributes to mark a reference as mandatory. While it is
-empty, the field shows an inline **"Required reference is not set"** notice. Pick any `IWeapon` and the notice clears.
+Add `[SerializeReferenceRequired]` next to the usual two attributes to mark a reference as mandatory.
 
 ```csharp
 [SerializeReference, TypeSelector, SerializeReferenceRequired]
 private IWeapon _weapon;
 ```
 
-The attribute accepts options: `Message = "…"` for custom notice text, and `AllowMissingType = true` to treat only a
-*null* reference as a violation (leaving a present-but-missing type to its own notice). Required references also feed
-the **build / CI gate** (see *Power-user gestures* below).
+**Try it:**
+1. Leave the field empty — an inline **"Required reference is not set"** notice appears.
+2. Pick any `IWeapon` — the notice clears.
+
+**Notice:**
+- `Message = "…"` — custom notice text.
+- `AllowMissingType = true` — treat only a *null* reference as a violation (a present-but-missing type keeps its own notice).
+- Required references also feed the **build / CI gate** (see *Project settings & the build/CI gate* below).
 
 ---
 
@@ -189,37 +206,36 @@ context menu, header, or drag-and-drop. Try them on the fields from Lessons 1–
 
 ## Maintenance: repairing broken references
 
-When a managed-reference type is renamed, moved or deleted, the stored data is orphaned. The tutorial's sibling assets
-demonstrate the recovery flow — they ship **pre-broken** on purpose:
+When a managed-reference type is renamed, moved or deleted, its stored data is orphaned. The tutorial ships sibling
+assets **pre-broken** on purpose so you can practise the recovery flow:
 
-- `Presets/BrokenWeaponPreset.asset` and `Presets/BrokenArsenalPreset.asset` — `ScriptableObject`s referencing a
-  missing `GhostWeapon`.
+- `Presets/BrokenWeaponPreset.asset`, `Presets/BrokenArsenalPreset.asset` — `ScriptableObject`s referencing a missing `GhostWeapon`.
 - `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol`.
 
-**Inline repair:** select a broken asset **in the Project window**. The missing field shows a `<Missing …>` caption, a
-**Missing type** warning and a **Fix** button (often with a one-click **Smart Fix** suggestion of the likely new type).
-Click **Fix**, pick the replacement (e.g. `Pistol`), and the reference is rewritten **keeping its data** — the picker
-rewrites the stored type in the asset file rather than recreating the instance.
+### Inline repair (one field)
+
+1. Select a broken asset **in the Project window**.
+2. The missing field shows a `<Missing …>` caption, a **Missing type** warning and a **Fix** button (often with a one-click **Smart Fix** suggestion of the likely new type).
+3. Click **Fix**, pick the replacement (e.g. `Pistol`) — the reference is rewritten **keeping its data** (the picker rewrites the stored type in the asset file rather than recreating the instance).
 
 > Repair reads and rewrites the asset YAML directly, because Unity does not expose a missing type through its
 > serialization API (and on GameObjects/prefabs even drops it from the live object — UUM-129100). It therefore needs a
 > **saved asset file**: it works on ScriptableObjects and prefab assets selected in the Project, and on objects in
 > Prefab Mode / a clean saved scene, but not on a dirty scene or a prefab-instance override.
 
-**Whole-asset & project-wide repair:** open **`Tools → Aspid 🐍 → FastTools`**.
+### Whole-asset & project-wide repair
 
-- The **Asset References** tab maps a saved asset's entire `[SerializeReference]` graph and repairs any missing node
-  inline (any depth, any child object the Inspector can't otherwise reach).
-- The **Project References** tab sweeps every asset under `Assets/` and groups broken references **by their stored type** —
-  so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into one **GhostWeapon** group
-  (`4 entries · 2 files`). **Fix all** picks a single replacement and re-points every entry across both files at once.
+Open **`Tools → Aspid 🐍 → FastTools`**:
 
-**Guard rails** that work without you opening any window:
+| Tab | What it does |
+|---|---|
+| **Asset References** | Maps a saved asset's entire `[SerializeReference]` graph and repairs any missing node inline — any depth, any child object the Inspector can't otherwise reach. |
+| **Project References** | Sweeps every asset under `Assets/` and groups broken references **by stored type** — `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into one **GhostWeapon** group (`4 entries · 2 files`). **Fix all** re-points every entry across both files at once. |
 
-- **Delete guard** — deleting a `.cs` whose class is still used as a managed reference pops a confirm dialog listing
-  the affected assets before it lets the delete through.
-- **Breakage toast** — when references newly become missing after a recompile, a dismissable toast and one console
-  warning deep-link straight to the repair window.
+### Guard rails (no window needed)
+
+- **Delete guard** — deleting a `.cs` whose class is still used as a managed reference pops a confirm dialog listing the affected assets before it lets the delete through.
+- **Breakage toast** — when references newly become missing after a recompile, a dismissable toast and one console warning deep-link straight to the repair window.
 
 ---
 
@@ -233,6 +249,8 @@ rewrites the stored type in the asset file rather than recreating the instance.
 - **Build / CI gate** — `Off` / `Warn` / `Fail`: at player-build time, log or abort on missing (and, for CI,
   unset-required) managed references.
 - **Excluded scan folders** — paths skipped by every project scan.
+
+The same options are also available in the window's **Settings** tab (**`Tools → Aspid 🐍 → FastTools → Settings`**).
 
 For headless CI, `SerializeReferenceCiGate.RunCheck` (invoked via `-batchmode -executeMethod`) writes a report and
 exits non-zero when violations exist; `-srGateRequired` also flags unset `[SerializeReferenceRequired]` fields.
