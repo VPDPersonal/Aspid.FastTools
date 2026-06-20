@@ -140,6 +140,29 @@ MonoBehaviour:
         _magazineSize: 12
 ";
 
+        // A ScriptableObject whose only [SerializeReference] fields are all unassigned: a single null field (_weapon)
+        // and an empty list (_alternates), so the RefIds block holds nothing but Unity's shared null sentinel
+        // ("- rid: -2"). It carries zero real nodes yet one field pointer, so the scanner must still surface it (one
+        // "<None>" root) rather than dropping the whole document as "no managed references". Mirrors the demo's
+        // BrokenWeaponPreset after its broken reference is cleared to <None>.
+        public const string AllUnassignedAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: BrokenWeaponPreset
+  _weapon:
+    rid: -2
+  _alternates: []
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+";
+
         /// <summary>Writes <paramref name="yaml"/> to a fresh temp file (never under <c>Assets/</c>) and returns its path.</summary>
         public static string WriteTemp(string yaml)
         {
