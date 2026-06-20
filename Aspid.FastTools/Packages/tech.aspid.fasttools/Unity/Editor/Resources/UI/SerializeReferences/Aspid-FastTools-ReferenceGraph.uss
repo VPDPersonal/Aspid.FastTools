@@ -154,14 +154,15 @@
 }
 
 /* --- Per-document group --- */
-.aspid-fasttools-reference-graph__document {
-    margin-bottom:                                        12px;
-}
+/*.aspid-fasttools-reference-graph__document {*/
+/*    margin-bottom:                                        0px;*/
+/*}*/
 
-/* The document header band, styled like the Project Audit group header: a clickable gradient row with a transparent
-   static fill (only an amber hover glow when the document has issues, neutral otherwise) carrying the document title +
-   a reference count on the left and a collapse chevron on the right. Scoped under __document so the two custom
-   properties outrank the gradient button's own :root defaults (the layout overrides win on the class tie too). */
+/* The document header band, styled like the Project Audit group header: a clickable gradient row carrying the document
+   title + a reference count on the left and a collapse chevron on the right. It wears the same resting card surface as
+   the node cards below it (translucent dark fill + a hairline border) so the header reads at the same weight as its
+   group rather than floating transparent over the dotted canvas; an amber hover glow lights it when the document has
+   issues. Scoped under __document so these overrides outrank the gradient button's own :root defaults. */
 .aspid-fasttools-reference-graph__document
     .aspid-fasttools-reference-graph__document-header {
     flex-direction:                                       row;
@@ -170,7 +171,9 @@
     padding:                                              5px 8px;
     margin-bottom:                                        6px;
     border-radius:                                        6px;
-    --aspid-fasttools-colors-gradient_button-bg:          rgba(0, 0, 0, 0);
+    border-width:                                         1px;
+    border-color:                                         var(--aspid-colors-shade-darkness);
+    --aspid-fasttools-colors-gradient_button-bg:          rgba(20, 20, 20, 0.55);
     --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-text-lightness);
 }
 
