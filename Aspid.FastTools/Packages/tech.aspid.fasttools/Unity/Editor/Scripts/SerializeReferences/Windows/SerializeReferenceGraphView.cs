@@ -87,12 +87,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string PickerClass = RootClass + "__picker";
         private const string PickerAttachedClass = PickerClass + "--attached";
 
-        // Every reference card is an inline dropdown. The missing card's band keeps a descriptive "Fix Missing ▼" label;
-        // a healthy / empty card's band shows a lone chevron pinned right of its value label (the type name or "<None>"),
-        // reading like the Inspector's type dropdown. Both flip the chevron in place while their picker is open, so the
-        // collapse toggle (TogglePicker / ClosePicker) swaps the glyph alone and never needs to know the label.
+        // Every reference card is an inline dropdown, its band carrying a verb + collapse chevron pinned right of the
+        // value label: "Fix Missing ▼" on a broken card, "Change ▼" on a healthy one (re-point its type or clear it),
+        // "Assign ▼" on an empty slot (give the unset field a type). All flip the chevron in place while their picker is
+        // open, so the collapse toggle (TogglePicker / ClosePicker) swaps the glyph alone and never needs the label.
         private const string FixCollapsedText = "Fix Missing  ▼";
-        private const string PickCollapsedText = "▼";
+        private const string ChangeCollapsedText = "Change  ▼";
+        private const string AssignCollapsedText = "Assign  ▼";
         private const char BandChevronCollapsed = '▼';
         private const char BandChevronExpanded = '▲';
 
@@ -642,11 +643,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // A healthy assigned reference is a dropdown too: clicking the band opens the same selector so its type
                 // can be changed or the reference reset to <None>. The edit goes through the live serialization API
                 // (keyed by the field path), so Unity rewrites — or, on <None>, removes — the RefIds entry exactly as
-                // the Inspector would. The plain "▼" label sits right of the type pill, reading as a value dropdown.
+                // the Inspector would. The dim "Change ▼" label sits right of the type pill, reading as a value dropdown.
                 var fileId = document.FileId;
                 var graphPath = pathLabel;
                 AspidGradientButton band = null;
-                band = new AspidGradientButton(PickCollapsedText, _ => OpenLivePicker(assetPath, fileId, graphPath, band))
+                band = new AspidGradientButton(ChangeCollapsedText, _ => OpenLivePicker(assetPath, fileId, graphPath, band))
                     .AddClass(NodeBandClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
@@ -737,10 +738,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             else
             {
                 // The band is a dropdown: its picker assigns a type to the empty field through the live serialization
-                // API. <None> is a no-op here (the slot is already unset). The plain "▼" sits right of the "<None>" pill.
+                // API. <None> is a no-op here (the slot is already unset). The dim "Assign ▼" sits right of the "<None>".
                 var graphPath = pathLabel;
                 AspidGradientButton band = null;
-                band = new AspidGradientButton(PickCollapsedText, _ => OpenLivePicker(assetPath, fileId, graphPath, band))
+                band = new AspidGradientButton(AssignCollapsedText, _ => OpenLivePicker(assetPath, fileId, graphPath, band))
                     .AddClass(NodeBandClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
