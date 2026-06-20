@@ -694,7 +694,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Clears a missing managed reference (id <paramref name="rid"/>, stored type <paramref name="storedType"/>) to
         /// <see langword="null"/> on the live object of an asset open in Prefab Mode or a loaded scene — the in-memory
-        /// counterpart of the YAML clear. The Project Audit uses it when a direct file rewrite would be clobbered by the
+        /// counterpart of the YAML clear. The Project References uses it when a direct file rewrite would be clobbered by the
         /// open copy on save. Marks the owning scene dirty so the change is offered for save (the on-disk file, and so
         /// the audit listing, only updates once saved). Returns whether a matching live entry was found and cleared.
         /// </summary>

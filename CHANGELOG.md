@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The bulk `Fix all` confirmation now shows a **diff preview** of the exact YAML lines that will change (old → new) before the irreversible rewrite.
 
 ### Changed
-- The **Repair Missing References** and **Managed References** windows are merged into a single **Managed References** workbench (`Tools → Aspid 🐍 → Managed References FastTools`) with two modes: **Inspect Asset** (the reference graph with inline Fix / Clear / Open Source Prefab — which subsumes the old per-asset repair list) and **Project Audit** (the project-wide grouped bulk fix). A result in Project Audit links straight to that asset's Inspect graph.
+- The **Repair Missing References** and **Managed References** windows are merged into a single **Managed References** workbench (`Tools → Aspid 🐍 → Managed References FastTools`) with two modes: **Asset References** (the reference graph with inline Fix / Clear / Open Source Prefab — which subsumes the old per-asset repair list) and **Project References** (the project-wide grouped bulk fix). A result in Project References links straight to that asset's Inspect graph.
 - The per-property missing-type probe now caches the asset YAML by path + write-time, eliminating a `File.ReadAllLines` on every IMGUI repaint.
 
 ### Added (internal)

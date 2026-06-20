@@ -10,8 +10,8 @@ using Object = UnityEngine.Object;
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// The single managed-reference workbench. Two modes share one window: <b>Inspect Asset</b> maps a saved asset's
-    /// whole reference graph and repairs entries inline, and <b>Project Audit</b> sweeps the project for missing
+    /// The single managed-reference workbench. Two modes share one window: <b>Asset References</b> maps a saved asset's
+    /// whole reference graph and repairs entries inline, and <b>Project References</b> sweeps the project for missing
     /// references and bulk-fixes them grouped by broken type. The per-asset repair list of the old Repair window is
     /// subsumed by the richer Inspect graph; the project sweep keeps its grouped bulk-fix flow.
     /// </summary>
@@ -49,7 +49,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private Object _pendingTarget;
 
         // One-shot flag: the breakage-notification deep-link wants the project scanned immediately even from a cold
-        // index, whereas a plain Project Audit tab click is warmth-gated inside the view. Consumed in SwitchMode.
+        // index, whereas a plain Project References tab click is warmth-gated inside the view. Consumed in SwitchMode.
         private bool _forceProjectScan;
 
         [MenuItem("Tools/Aspid 🐍/Managed References FastTools", priority = 21)]
@@ -104,8 +104,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .SetPickingMode(PickingMode.Ignore);
 
             _homeButton = SquareTabButton(Mode.Welcome, TabIconHomeClass);
-            _inspectButton = ModeButton("Inspect Asset", Mode.Inspect);
-            _projectButton = ModeButton("Project Audit", Mode.Project);
+            _inspectButton = ModeButton("Asset References", Mode.Inspect);
+            _projectButton = ModeButton("Project References", Mode.Project);
             _settingsButton = SquareTabButton(Mode.Settings, TabIconSettingsClass);
 
             var toolbar = new VisualElement().AddClass(ToolbarClass);

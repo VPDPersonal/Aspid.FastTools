@@ -104,7 +104,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // A full-width translucent header panel gives the Scan Project action a purposeful home, stacked: a title
             // and a one-line description of what the audit does, then a full-width Scan Project button below. The
             // dotted canvas (owned by the host window) reads through the panel's semi-transparent fill. The title is
-            // phrased around the action rather than repeating the tab's "Project Audit" name.
+            // phrased around the action rather than repeating the tab's "Project References" name.
             var panelTitle = new AspidLabel("Find missing references", AspidLabelPreset.Default
                     .SetLabelTheme(ThemeStyle.Type.Lightness)
                     .SetLabelSize(AspidLabelSizeStyle.Type.H5)
@@ -142,7 +142,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // A running stack of help-boxes — one receipt per bulk Fix all, in the order they ran — so chaining fixes
             // across groups keeps every prior summary on screen instead of overwriting it; the stack is cleared only on
             // a fresh scan (Rescan / Initialize). Empty until the first Fix all, so the container has no footprint then.
-            // Each box is amber-toned (Warning) so it sits in the Project Audit view's warning family — the amber
+            // Each box is amber-toned (Warning) so it sits in the Project References view's warning family — the amber
             // results header, group cards and canvas tone — rather than reading as a foreign green block.
             _summaries = new VisualElement().AddClass(SummaryListClass);
 
@@ -172,7 +172,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The tab-switch entry point. The project sweep's first pass is cold-built per session — the static usage
         // index does not survive domain reloads — and parses every candidate asset's YAML behind a blocking bar,
-        // which is slow on large projects. So a plain switch to the Project Audit tab only auto-shows results when the
+        // which is slow on large projects. So a plain switch to the Project References tab only auto-shows results when the
         // index is already warm (a near-free in-memory filter); while cold it shows just the Scan panel over the idle
         // canvas and waits for a deliberate Scan Project click, rather than freezing the editor on the tab switch. The
         // breakage-notification deep-link bypasses this gate and forces a scan (the host window calls ScanProject
