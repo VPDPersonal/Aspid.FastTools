@@ -263,8 +263,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 };
                 _container.AddChild(project);
 
-                // A plain tab switch is warmth-gated inside Initialize (no cold-scan freeze on large projects); the
-                // breakage-notification deep-link forces the scan, since the user opened it to see the breakage.
+                // A plain tab switch never auto-scans (Initialize just shows the idle Scan panel — no scan freeze on
+                // large projects); only the breakage-notification deep-link forces the scan, since the user opened it
+                // specifically to see the breakage.
                 if (_forceProjectScan)
                 {
                     _forceProjectScan = false;
