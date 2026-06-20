@@ -206,7 +206,7 @@ rewrites the stored type in the asset file rather than recreating the instance.
 > **saved asset file**: it works on ScriptableObjects and prefab assets selected in the Project, and on objects in
 > Prefab Mode / a clean saved scene, but not on a dirty scene or a prefab-instance override.
 
-**Whole-asset & project-wide repair:** open **`Tools → Aspid 🐍 → Managed References FastTools`**.
+**Whole-asset & project-wide repair:** open **`Tools → Aspid 🐍 → FastTools`**.
 
 - The **Asset References** tab maps a saved asset's entire `[SerializeReference]` graph and repairs any missing node
   inline (any depth, any child object the Inspector can't otherwise reach).
