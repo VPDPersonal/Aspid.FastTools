@@ -86,7 +86,7 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid
     background-color:                                     var(--aspid-colors-status-success-text-light);
 }
 
-/* The tab-switch shortcut badge (⌘2 / Ctrl+2): a small keyboard-cap pinned to the tab's right edge. Absolutely
+/* The tab-switch shortcut hint (⌥2 / Alt+2): plain dim text pinned to the tab's right edge — no cap/frame. Absolutely
    positioned and vertically centred (top:50% + translate) so it floats over the button's centred label without
    shifting it — the same float-over-content approach as the underline bar. Dim at rest so it reads as a hint, not a
    competing label. picking-mode is set to ignore in code so it never intercepts the tab's clicks. */
@@ -95,21 +95,13 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid
     right:                                                8px;
     top:                                                  50%;
     translate:                                            0 -50%;
-    padding:                                              1px 5px;
-    border-width:                                         1px;
-    border-radius:                                        4px;
-    border-color:                                         rgba(255, 255, 255, 0.10);
-    background-color:                                     rgba(255, 255, 255, 0.06);
     color:                                                var(--aspid-colors-text-dark);
     font-size:                                            10px;
     -unity-text-align:                                    middle-center;
 }
 
-/* On the active tab the badge brightens in step with the label, so the keyboard-cap stays legible against the bolder
-   active text rather than fading into the background. */
+/* On the active tab the hint brightens in step with the label, so it stays legible against the bolder active text. */
 Button.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-hint {
-    border-color:                                         rgba(255, 255, 255, 0.18);
-    background-color:                                     rgba(255, 255, 255, 0.10);
     color:                                                var(--aspid-colors-text-light);
 }
 
