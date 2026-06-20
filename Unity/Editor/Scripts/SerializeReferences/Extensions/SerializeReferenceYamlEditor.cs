@@ -303,17 +303,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // The entry runs until the next list item at its own indent, or until the block dedents out of it —
                     // the same bounding rule the data-block reader uses.
                     var entryIndent = match.Groups["indent"].Length;
-                    var entryEnd = end;
-                    for (var j = i + 1; j < end; j++)
-                    {
-                        if (lines[j].Trim().Length == 0) continue;
-                        var indent = IndentOf(lines[j]);
-                        if (indent < entryIndent || (indent == entryIndent && lines[j].TrimStart().StartsWith("- ")))
-                        {
-                            entryEnd = j;
-                            break;
-                        }
-                    }
+                    var entryEnd = FindEntryEnd(lines, i, end, entryIndent);
 
                     var remaining = new List<string>(lines.Length - (entryEnd - i));
                     for (var k = 0; k < i; k++) remaining.Add(lines[k]);
@@ -331,6 +321,154 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Debug.LogError($"[Aspid FastTools] Failed to remove RefIds entry rid {rid} in '{assetPath}': {exception}");
                 return false;
             }
+        }
+
+        // The null managed-reference id Unity stores for an unassigned [SerializeReference] field
+        // (UnityEngine.Serialization.ManagedReferenceUtility.RefIdNull).
+        private const long NullRid = -2;
+
+        // The inline type mapping Unity writes for the null sentinel RefIds entry — an empty type identity.
+        private const string NullSentinelType = "type: {class: , ns: , asm: }";
+
+        /// <summary>
+        /// Nulls a managed reference in the document anchored at <paramref name="fileId"/>: every field / array-element
+        /// pointer that holds <paramref name="rid"/> is rewritten to the null id (<c>-2</c>), the now-orphaned
+        /// <c>RefIds</c> entry is removed, and — when a null pointer was introduced — the <c>RefIds</c> null sentinel
+        /// entry (<c>- rid: -2 / type: {class: , ns: , asm: }</c>) is added if absent. This reproduces exactly what Unity
+        /// writes when a <c>[SerializeReference]</c> field is set to <see langword="null"/>: an array element cannot be
+        /// dropped, so it must point at <c>-2</c>, and that pointer is only valid when the sentinel entry exists —
+        /// without it the load errors "serialized array … is missing entry for Refid -2". Removing the broken entry
+        /// clears the object's missing-types flag. Not undoable: the broken payload is discarded. Returns whether the
+        /// file was rewritten.
+        /// </summary>
+        public static bool TryNullReference(string assetPath, long fileId, long rid)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
+
+                var lines = File.ReadAllLines(assetPath);
+                var (start, end) = FindDocumentRange(lines, fileId);
+                if (start < 0) return false;
+
+                var refIdsStart = FindRefIdsStart(lines, start, end);
+                if (refIdsStart < 0) return false;
+
+                // RefIds entry headers sit at the shallowest "- rid:" indent under RefIds; a pointer to the rid lives
+                // anywhere else — a field/array element before "references:" or a nested reference inside another entry's
+                // data block. The header for this rid is removed; every pointer to it becomes the null id.
+                var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
+                if (entryIndent < 0) return false;
+
+                var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
+                var pointerToken = new Regex($@"\brid:\s*{rid}\b");
+
+                var headerIndex = -1;
+                var pointerNulled = false;
+
+                for (var i = start; i < end; i++)
+                {
+                    // This rid's own RefIds entry header (a "- rid: N" under RefIds at the entry indent) is removed
+                    // below, not nulled — skip it so it isn't rewritten to the null id.
+                    if (headerIndex < 0 && i > refIdsStart)
+                    {
+                        var header = headerPattern.Match(lines[i]);
+                        if (header.Success && header.Groups["indent"].Length == entryIndent)
+                        {
+                            headerIndex = i;
+                            continue;
+                        }
+                    }
+
+                    // Null every pointer to the rid — a "- rid: N" array element, a "rid: N" scalar field or an inline
+                    // "{rid: N}" — so no dangling pointer survives the entry's removal (which errors on array fields).
+                    if (pointerToken.IsMatch(lines[i]))
+                    {
+                        lines[i] = pointerToken.Replace(lines[i], $"rid: {NullRid}");
+                        pointerNulled = true;
+                    }
+                }
+
+                // Nothing referenced or stored this rid — leave the file untouched. (When an entry exists but is already
+                // unreferenced this still drops it; when only a dangling pointer remains this still nulls it.)
+                if (headerIndex < 0 && !pointerNulled) return false;
+
+                var blockStart = headerIndex;
+                var blockEnd = headerIndex >= 0 ? FindEntryEnd(lines, headerIndex, end, entryIndent) : -1;
+
+                // A "- rid: -2" pointer is valid only while the RefIds list carries Unity's null sentinel entry; add it
+                // when we just introduced a null pointer and the document does not already have one (a shared singleton).
+                var needsNullEntry = pointerNulled && !HasNullSentinelEntry(lines, refIdsStart, end, entryIndent);
+                var dash = new string(' ', entryIndent);
+                var typeIndent = new string(' ', entryIndent + 2);
+
+                var result = new List<string>(lines.Length + 2);
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    if (headerIndex >= 0 && i >= blockStart && i < blockEnd) continue; // drop the broken entry block
+
+                    result.Add(lines[i]);
+
+                    // Insert the sentinel as the RefIds list's first entry, mirroring where Unity writes it.
+                    if (needsNullEntry && i == refIdsStart)
+                    {
+                        result.Add($"{dash}- rid: {NullRid}");
+                        result.Add($"{typeIndent}{NullSentinelType}");
+                    }
+                }
+
+                File.WriteAllLines(assetPath, result);
+                SerializeReferenceYamlProbeCache.ClearCache();
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[Aspid FastTools] Failed to null managed-reference rid {rid} in '{assetPath}': {exception}");
+                return false;
+            }
+        }
+
+        // Whether the RefIds list already carries Unity's null sentinel entry ("- rid: -2"). The sentinel is a shared
+        // singleton — at most one per object — so a second null pointer reuses it rather than adding another.
+        private static bool HasNullSentinelEntry(string[] lines, int refIdsStart, int end, int entryIndent)
+        {
+            var sentinel = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{NullRid}\s*$");
+            for (var i = refIdsStart + 1; i < end; i++)
+            {
+                var match = sentinel.Match(lines[i]);
+                if (match.Success && match.Groups["indent"].Length == entryIndent) return true;
+            }
+
+            return false;
+        }
+
+        // The exclusive end line of a RefIds entry that begins at headerIndex: the entry runs until the next list item at
+        // its own indent, or until the block dedents out of it (blank lines are spanned). Shared by the entry removers.
+        private static int FindEntryEnd(string[] lines, int headerIndex, int end, int entryIndent)
+        {
+            for (var j = headerIndex + 1; j < end; j++)
+            {
+                if (lines[j].Trim().Length == 0) continue;
+                var indent = IndentOf(lines[j]);
+                if (indent < entryIndent || (indent == entryIndent && lines[j].TrimStart().StartsWith("- ")))
+                    return j;
+            }
+
+            return end;
+        }
+
+        // The indent of the RefIds list's entry headers: the first "- rid:" line under RefIds. Entries sit at this
+        // shallowest dash indent; nested reference pointers inside their data blocks are deeper. -1 when the block is empty.
+        private static int FindRefIdsEntryIndent(string[] lines, int refIdsStart, int end)
+        {
+            var entry = new Regex(@"^(?<indent>\s*)-\s+rid:\s*-?\d+\s*$");
+            for (var i = refIdsStart + 1; i < end; i++)
+            {
+                var match = entry.Match(lines[i]);
+                if (match.Success) return match.Groups["indent"].Length;
+            }
+
+            return -1;
         }
 
         /// <summary>

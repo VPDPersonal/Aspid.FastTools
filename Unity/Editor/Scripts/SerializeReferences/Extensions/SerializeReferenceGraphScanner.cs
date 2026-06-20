@@ -203,6 +203,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var ridMatch = EntryRid.Match(lines[i]);
                 if (!ridMatch.Success || !long.TryParse(ridMatch.Groups["id"].Value, out var rid)) continue;
 
+                // Negative rids are Unity's sentinels, not managed objects: -2 is the shared null entry
+                // (ManagedReferenceUtility.RefIdNull) Unity writes for any null [SerializeReference] field, -1 is unknown.
+                // They carry an empty type and no payload, so skip them — a field pointing at one is simply null and
+                // must not surface as a "rid -2" node (the pointers then read as dangling and drop out of the graph).
+                if (rid < 0) continue;
+
                 var type = default(ManagedTypeName);
                 for (var j = i + 1; j < end && j <= i + 4; j++)
                 {

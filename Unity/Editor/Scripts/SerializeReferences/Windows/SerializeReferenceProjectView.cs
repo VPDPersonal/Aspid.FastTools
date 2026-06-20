@@ -227,8 +227,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var entryCount = groups.Sum(group => group.Entries.Count);
             ShowResults(entryCount == 1 ? "1 missing reference" : $"{entryCount} missing references");
             _resultsHint.text = canceled
-                ? "Scan canceled — showing partial results. Each group is a broken type; Fix all re-points every entry across every file at once."
-                : "Each group is a broken stored type. Fix all picks one replacement and re-points every entry across every affected file at once.";
+                ? "Scan canceled — showing partial results. Each group is a broken type; Fix all re-points every entry (or pick <None> to clear them to null) across every file at once."
+                : "Each group is a broken stored type. Fix all picks one replacement and re-points every entry across every affected file at once — or pick <None> to clear them to null.";
 
             foreach (var group in groups)
                 _list.AddChild(BuildGroupCard(group));
@@ -380,6 +380,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var view = BuildPickerView(constraint, assemblyQualifiedName =>
             {
+                // <None> in the picker emits an empty name: the user wants the group cleared, not re-pointed at a type —
+                // so null every entry out (drop the broken payload) instead of treating it as a no-op.
+                if (string.IsNullOrEmpty(assemblyQualifiedName))
+                {
+                    ClearGroupToNull(group);
+                    return;
+                }
+
                 var type = ResolveType(assemblyQualifiedName);
                 if (type is not null) ApplyGroupFix(group, type);
             });
@@ -479,27 +487,209 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ShowSummary(summaryTitle, summaryBody, Undo);
         }
 
+        // Clears every entry in the group to null. References whose asset is closed are nulled in the YAML directly
+        // (TryNullReference: pointer → -2, broken payload dropped). References whose asset is open in Prefab Mode or a
+        // loaded scene cannot be rewritten on disk (the open copy would clobber it on save), so they are nulled on the
+        // live object in memory instead (TryClearMissingReferenceInMemory) and saved with the asset — until then they
+        // keep showing in the audit. Reached by picking <None> in the group's Fix all picker; mirrors ApplyGroupFix's
+        // confirm + receipt stack. NOT undoable: the broken payload is discarded, so the receipt carries no Undo button.
+        private void ClearGroupToNull(ProjectGroup group)
+        {
+            ClosePicker();
+
+            SplitWritableEntries(group.Entries, out var onDisk, out var inMemory);
+            if (onDisk.Count == 0 && inMemory.Count == 0) return;
+
+            var fileCount = onDisk.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
+            var total = onDisk.Count + inMemory.Count;
+
+            var openNote = inMemory.Count > 0
+                ? $"\n\n{inMemory.Count} reference(s) are open in Prefab Mode or a scene — those are nulled on the live " +
+                  "object and saved with the asset (the audit keeps listing them until you save)."
+                : string.Empty;
+            var diskNote = onDisk.Count > 0
+                ? $" {onDisk.Count} on disk in {fileCount} file(s) are edited directly."
+                : string.Empty;
+
+            if (!EditorUtility.DisplayDialog(
+                    "Clear Missing References",
+                    $"Clear {total} reference(s) to null?\n\n" +
+                    BuildClearPreview(group.Entries) +
+                    $"This nulls every field holding the broken '{group.DisplayName}' and discards its payload." +
+                    diskNote + " It cannot be undone." + openNote,
+                    "Clear",
+                    "Cancel"))
+                return;
+
+            var clearedOnDisk = BatchNullEntries(onDisk, "Clearing References");
+            var clearedInMemory = ClearOpenEntriesInMemory(inMemory, group.StoredType);
+            var cleared = clearedOnDisk + clearedInMemory;
+
+            SerializeReferenceRepairSuggestions.ClearCache();
+
+            // Nothing actually changed (every edit failed) — skip the receipt rather than claim a cleared count of 0.
+            if (cleared == 0)
+            {
+                if (_scanButton is not null) _scanButton.Text = RescanLabel;
+                RenderGroups(CollectProjectGroups(out var rescanCanceled), rescanCanceled);
+                return;
+            }
+
+            var summaryTitle = cleared == 1 ? "Cleared 1 reference" : $"Cleared {cleared} references";
+            var summaryBody = $"Set missing '{group.DisplayName}' to null.";
+            if (clearedInMemory > 0)
+                summaryBody += clearedInMemory == 1
+                    ? " 1 was nulled in memory — save the asset to persist it (still listed until saved)."
+                    : $" {clearedInMemory} were nulled in memory — save the assets to persist them (still listed until saved).";
+
+            if (_scanButton is not null) _scanButton.Text = RescanLabel;
+            var groups = CollectProjectGroups(out var canceled);
+
+            if (groups.Count == 0)
+            {
+                // Same came-back-clean handling as ApplyGroupFix: stay in the results region so this receipt survives as
+                // the record of the clear, rather than swapping to the "Project clean" hero which would hide it.
+                _list.Clear();
+                ShowResults("No missing references");
+                _resultsHint.text =
+                    "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+            }
+            else
+            {
+                RenderGroups(groups, canceled);
+            }
+
+            // No Undo: clearing discards the broken payload (see ClearGroupToNull). The receipt is a plain record.
+            ShowSummary(summaryTitle, summaryBody, onUndo: null);
+        }
+
+        // Splits a group's entries into those safe to rewrite on disk and those whose asset is open in Prefab Mode / a
+        // loaded scene (which must be repaired in memory). Same writable test FilterWritableEntries uses, but it keeps
+        // the open entries instead of only counting them, so the clear can null them on the live object.
+        private static void SplitWritableEntries(IReadOnlyList<ProjectEntry> source, out List<ProjectEntry> onDisk, out List<ProjectEntry> inMemory)
+        {
+            var prefabStagePath = CurrentPrefabStagePath();
+            onDisk = new List<ProjectEntry>(source.Count);
+            inMemory = new List<ProjectEntry>();
+
+            foreach (var entry in source)
+            {
+                if (IsEntryWritable(entry, prefabStagePath)) onDisk.Add(entry);
+                else inMemory.Add(entry);
+            }
+        }
+
+        // Nulls each open entry on its live object (the file rewrite is skipped for open assets). The file is unchanged,
+        // so these stay in the audit until the asset is saved. Returns how many were cleared.
+        private static int ClearOpenEntriesInMemory(IReadOnlyList<ProjectEntry> entries, ManagedTypeName storedType)
+        {
+            var cleared = 0;
+            foreach (var entry in entries)
+                if (SerializeReferenceHelpers.TryClearMissingReferenceInMemory(entry.AssetPath, entry.Entry.Rid, storedType))
+                    cleared++;
+
+            return cleared;
+        }
+
+        // Nulls every entry to the null managed-reference id and drops its payload, batched per file behind a cancel-free
+        // progress bar (StartAssetEditing defers each reimport to one pass at the end). Returns how many were cleared.
+        private static int BatchNullEntries(IReadOnlyList<ProjectEntry> entries, string progressTitle)
+        {
+            var byFile = entries
+                .GroupBy(entry => entry.AssetPath, StringComparer.Ordinal)
+                .ToArray();
+
+            var cleared = 0;
+
+            AssetDatabase.StartAssetEditing();
+            try
+            {
+                for (var i = 0; i < byFile.Length; i++)
+                {
+                    var file = byFile[i];
+                    EditorUtility.DisplayProgressBar(
+                        progressTitle,
+                        $"{file.Key}  ({i + 1}/{byFile.Length})",
+                        (float)i / byFile.Length);
+
+                    var changed = false;
+                    foreach (var entry in file)
+                    {
+                        if (!SerializeReferenceYamlEditor.TryNullReference(file.Key, entry.Entry.FileId, entry.Entry.Rid))
+                            continue;
+
+                        cleared++;
+                        changed = true;
+                    }
+
+                    if (changed) AssetDatabase.ImportAsset(file.Key, ImportAssetOptions.ForceUpdate);
+                }
+            }
+            finally
+            {
+                AssetDatabase.StopAssetEditing();
+                EditorUtility.ClearProgressBar();
+            }
+
+            return cleared;
+        }
+
+        // A compact "what gets cleared" list for the null-out confirmation: file + rid per entry, capped so the dialog
+        // stays readable. Unlike the type-fix diff there is no before/after line — the whole entry is being dropped.
+        private static string BuildClearPreview(List<ProjectEntry> entries)
+        {
+            const int maxShown = 8;
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("Clears:");
+
+            var shown = 0;
+            foreach (var entry in entries)
+            {
+                if (shown >= maxShown)
+                {
+                    builder.AppendLine($"  …and {entries.Count - shown} more");
+                    break;
+                }
+
+                builder.AppendLine($"  {System.IO.Path.GetFileName(entry.AssetPath)} (rid {entry.Entry.Rid})");
+                shown++;
+            }
+
+            builder.AppendLine();
+            return builder.ToString();
+        }
+
         // The skip filter both the fix and the undo share: a scene — or a prefab open in Prefab Mode — that is loaded in
         // the editor would race a file rewrite, since the in-memory copy wins on the next Ctrl+S and silently clobbers
         // the on-disk edit (the same hazard the per-property flow avoids in Prefab Mode by repairing in memory). Returns
         // the entries safe to write on disk; reports how many were held back.
         private static List<ProjectEntry> FilterWritableEntries(IReadOnlyList<ProjectEntry> source, out int skipped)
         {
-            var prefabStagePath = UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
+            var prefabStagePath = CurrentPrefabStagePath();
             var writable = new List<ProjectEntry>(source.Count);
             skipped = 0;
 
             foreach (var entry in source)
             {
-                var openInScene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(entry.AssetPath).isLoaded;
-                var openInPrefabMode = !string.IsNullOrEmpty(prefabStagePath) &&
-                                       string.Equals(prefabStagePath, entry.AssetPath, StringComparison.Ordinal);
-
-                if (openInScene || openInPrefabMode) skipped++;
-                else writable.Add(entry);
+                if (IsEntryWritable(entry, prefabStagePath)) writable.Add(entry);
+                else skipped++;
             }
 
             return writable;
+        }
+
+        private static string CurrentPrefabStagePath() =>
+            UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
+
+        // An entry is safe to rewrite on disk only when its asset is not loaded in a scene or open in Prefab Mode — the
+        // in-memory copy would otherwise win on the next save and clobber the file edit (see FilterWritableEntries).
+        private static bool IsEntryWritable(ProjectEntry entry, string prefabStagePath)
+        {
+            var openInScene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(entry.AssetPath).isLoaded;
+            var openInPrefabMode = !string.IsNullOrEmpty(prefabStagePath) &&
+                                   string.Equals(prefabStagePath, entry.AssetPath, StringComparison.Ordinal);
+
+            return !openInScene && !openInPrefabMode;
         }
 
         // Rewrites every entry's stored type to targetType, batched per file behind a cancel-free progress bar.

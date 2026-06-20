@@ -691,6 +691,61 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
+        /// <summary>
+        /// Clears a missing managed reference (id <paramref name="rid"/>, stored type <paramref name="storedType"/>) to
+        /// <see langword="null"/> on the live object of an asset open in Prefab Mode or a loaded scene — the in-memory
+        /// counterpart of the YAML clear. The Project Audit uses it when a direct file rewrite would be clobbered by the
+        /// open copy on save. Marks the owning scene dirty so the change is offered for save (the on-disk file, and so
+        /// the audit listing, only updates once saved). Returns whether a matching live entry was found and cleared.
+        /// </summary>
+        public static bool TryClearMissingReferenceInMemory(string assetPath, long rid, ManagedTypeName storedType)
+        {
+            if (string.IsNullOrEmpty(assetPath)) return false;
+
+            foreach (var target in EnumerateOpenMissingTypeTargets(assetPath))
+            {
+                var matched = false;
+                foreach (var entry in SerializationUtility.GetManagedReferencesWithMissingTypes(target))
+                {
+                    if (entry.referenceId != rid) continue;
+                    // Guard against a colliding rid on another live object: also match the stored class when it is known.
+                    if (!string.IsNullOrEmpty(storedType.Class) && entry.className != storedType.Class) continue;
+                    matched = true;
+                    break;
+                }
+
+                if (!matched) continue;
+
+                ClearMissingSubtree(target, rid);
+                EditorUtility.SetDirty(target);
+
+                var scene = (target as Component)?.gameObject.scene ?? default;
+                if (scene.IsValid()) EditorSceneManager.MarkSceneDirty(scene);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        // The live MonoBehaviours of an asset that is open and therefore unsafe to rewrite on disk: the components of a
+        // prefab open in Prefab Mode, or of a loaded scene at that path. Managed-reference missing types live on these,
+        // so the in-memory clear matches by missing-reference identity rather than by file id (which the open stage
+        // remaps). Only MonoBehaviours are probed — GetManagedReferencesWithMissingTypes errors on unsupported types.
+        private static IEnumerable<Object> EnumerateOpenMissingTypeTargets(string assetPath)
+        {
+            var stage = PrefabStageUtility.GetCurrentPrefabStage();
+            if (stage != null && string.Equals(stage.assetPath, assetPath, StringComparison.Ordinal) && stage.prefabContentsRoot != null)
+                foreach (var mb in stage.prefabContentsRoot.GetComponentsInChildren<MonoBehaviour>(true))
+                    if (mb != null) yield return mb;
+
+            var scene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(assetPath);
+            if (scene.IsValid() && scene.isLoaded)
+                foreach (var root in scene.GetRootGameObjects())
+                    foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
+                        if (mb != null) yield return mb;
+        }
+
         // Clears the fixed missing-type entry and any missing-type entries it transitively referenced. The in-memory
         // repair replaces the reference with a fresh instance, dropping the orphaned payload's nested references — so a
         // missing child it carried (e.g. a missing effect nested inside a missing weapon) would otherwise linger as an
