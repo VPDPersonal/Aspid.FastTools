@@ -38,11 +38,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - The **Repair Missing References** and **Managed References** windows are merged into a single workbench whose tabs are individual menu entries under `Tools → Aspid 🐍 → FastTools` — **Welcome**, **Asset References** (the reference graph with inline Fix / Clear / Open Source Prefab — which subsumes the old per-asset repair list), **Project References** (the project-wide grouped bulk fix), and **Settings**. A result in Project References links straight to that asset's Asset References graph.
 - The per-property missing-type probe now caches the asset YAML by path + write-time, eliminating a `File.ReadAllLines` on every IMGUI repaint.
+- The confirm dialog for clearing a missing managed reference now names how many fields it will null, so an aliased reference shared across several slots makes its all-pointer clear explicit before the irreversible YAML edit (the clear still nulls every aliased field — only the wording changed).
 
 ### Fixed
 - Hardened the asset-YAML managed-reference editor (`SerializeReferenceYamlEditor`) against non-Unity / oddly-indented files. Its indent measure now counts tabs so it stays aligned with the `- rid:` entry-bounding regexes (previously a tab read as indent 0 here but as a real indent in the regex, so an entry block could be mis-bounded), and the destructive writes (type rewrite, entry removal, reference null-out) now (a) refuse to touch a file that is not a Unity-serialized YAML asset — one lacking the `%TAG !u!` directive — and (b) bail before any write when the target `RefIds` entry uses unexpected tab / mixed indentation, rather than risk a mis-bounded, non-undoable edit. Unity always writes space-indented YAML with the directive preamble, so well-formed assets are unaffected.
 
 ### Added (internal)
+- First package test coverage: an `Aspid.FastTools.Unity.Editor.Tests` EditMode assembly exercising the `SerializeReferenceYamlEditor` parser (missing-type discovery, propertyPath → rid resolution incl. nested/list, stored-type reading, round-trip rewrite, entry removal, aliased-pointer nulling + the dialog pointer-count helper, diff-preview consistency) plus the YAML probe cache.
 - First package test coverage: an `Aspid.FastTools.Unity.Editor.Tests` EditMode assembly exercising the `SerializeReferenceYamlEditor` parser (missing-type discovery, propertyPath → rid resolution incl. nested/list, stored-type reading, round-trip rewrite, entry removal, diff-preview consistency) plus the YAML probe cache, and the write-path hardening (non-Unity-file refusal, tab-indent bail).
 
 ## [1.0.0-rc.5] — 2026-06-06

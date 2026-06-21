@@ -483,6 +483,64 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
+        /// <summary>
+        /// Counts how many field / array-element pointers in the document anchored at <paramref name="fileId"/> hold
+        /// <paramref name="rid"/> — the number of slots a <see cref="TryNullReference"/> would null. A missing reference
+        /// can be aliased across several slots (all sharing one rid); clearing it nulls every one of them, so the confirm
+        /// dialog calls this first to name the count before the irreversible rewrite. The rid's own <c>RefIds</c> entry
+        /// header is excluded (it is the entry, not a pointer to it). Returns <c>0</c> when the document / <c>RefIds</c>
+        /// list / entry indent cannot be located — the same guards <see cref="TryNullReference"/> uses — so a non-positive
+        /// result means "count unknown" and the caller can fall back to unnumbered wording.
+        /// </summary>
+        public static int CountPointersTo(string assetPath, long fileId, long rid)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return 0;
+
+                var lines = File.ReadAllLines(assetPath);
+                var (start, end) = FindDocumentRange(lines, fileId);
+                if (start < 0) return 0;
+
+                var refIdsStart = FindRefIdsStart(lines, start, end);
+                if (refIdsStart < 0) return 0;
+
+                var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
+                if (entryIndent < 0) return 0;
+
+                var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
+                var pointerToken = new Regex($@"\brid:\s*{rid}\b");
+
+                var headerSkipped = false;
+                var count = 0;
+
+                for (var i = start; i < end; i++)
+                {
+                    // Skip this rid's own RefIds entry header exactly once (the "- rid: N" at the entry indent under
+                    // RefIds): it is the entry being removed, not a pointer that gets nulled. Mirrors the header skip in
+                    // TryNullReference so the count equals the number of pointers that path would rewrite.
+                    if (!headerSkipped && i > refIdsStart)
+                    {
+                        var header = headerPattern.Match(lines[i]);
+                        if (header.Success && header.Groups["indent"].Length == entryIndent)
+                        {
+                            headerSkipped = true;
+                            continue;
+                        }
+                    }
+
+                    if (pointerToken.IsMatch(lines[i])) count++;
+                }
+
+                return count;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[Aspid FastTools] Failed to count managed-reference pointers to rid {rid} in '{assetPath}': {exception}");
+                return 0;
+            }
+        }
+
         // Whether the RefIds list already carries Unity's null sentinel entry ("- rid: -2"). The sentinel is a shared
         // singleton — at most one per object — so a second null pointer reuses it rather than adding another.
         private static bool HasNullSentinelEntry(string[] lines, int refIdsStart, int end, int entryIndent)
