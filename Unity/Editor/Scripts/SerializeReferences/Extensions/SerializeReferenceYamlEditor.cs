@@ -143,10 +143,58 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public bool IsValid => LineNumber >= 0 && !string.IsNullOrEmpty(AssetPath);
     }
 
+    /// <summary>
+    /// A serialized field that opts into the <c>[TypeSelector(Required = true)]</c> check, captured for the pure-YAML
+    /// scene scan: the YAML field key and whether it is a <c>string</c> type field (vs a <c>[SerializeReference]</c>
+    /// managed reference). Produced by reflection in <see cref="SerializeReferenceRequiredGate.GetRequiredFields"/> and
+    /// consumed by <see cref="SerializeReferenceYamlEditor.FindUnsetRequiredFields"/>, which stays reflection-free.
+    /// </summary>
+    internal readonly struct RequiredFieldDescriptor
+    {
+        public readonly string FieldName;
+        public readonly bool IsString;
+
+        public RequiredFieldDescriptor(string fieldName, bool isString)
+        {
+            FieldName = fieldName;
+            IsString = isString;
+        }
+    }
+
+    /// <summary>
+    /// One unset required field found by the pure-YAML scene scan: the owning object document (<see cref="FileId"/>),
+    /// the field's YAML key and — for a managed reference — the null id it read (<c>-2</c>); <c>0</c> for a string field.
+    /// </summary>
+    internal readonly struct RequiredViolationEntry
+    {
+        public readonly long FileId;
+        public readonly string FieldName;
+        public readonly long Rid;
+
+        public RequiredViolationEntry(long fileId, string fieldName, long rid)
+        {
+            FileId = fileId;
+            FieldName = fieldName;
+            Rid = rid;
+        }
+    }
+
     internal static class SerializeReferenceYamlEditor
     {
         // "--- !u!114 &11400000" — object document header carrying the local file id as its YAML anchor.
         private static readonly Regex DocumentHeader = new(@"^--- !u!\d+ &(\d+)", RegexOptions.Compiled);
+
+        // "--- !u!114 &11400000" — a MonoBehaviour document header (class id 114), the only kind that carries m_Script
+        // and serialized user fields, so the scene required-field scan iterates these alone.
+        private static readonly Regex MonoBehaviourHeader = new(@"^--- !u!114 &(\d+)", RegexOptions.Compiled);
+
+        // "  m_Script: {fileID: 11500000, guid: <guid>, type: 3}" — the script reference whose guid maps to the C# type;
+        // its indent is the document's top-level field indent (every direct field of the MonoBehaviour aligns with it).
+        private static readonly Regex ScriptGuidPattern =
+            new(@"^(?<indent>\s*)m_Script:\s*\{.*\bguid:\s*(?<guid>[0-9a-fA-F]+).*\}", RegexOptions.Compiled);
+
+        // "  references:" — the managed-reference block; the object's own serialized fields all precede it.
+        private static readonly Regex ReferencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
 
         /// <summary>
         /// Scans every object document in the asset and returns each <c>RefIds</c> entry whose stored type fails
@@ -209,6 +257,166 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Pure-YAML scan for unset <c>[TypeSelector(Required = true)]</c> fields — the scene-safe counterpart of the
+        /// object-load required check, which cannot read scene objects (<see cref="SerializeReferenceHelpers.IsScene"/>).
+        /// Walks every MonoBehaviour document, resolves its required fields through <paramref name="requiredFieldsForScript"/>
+        /// (keyed by the <c>m_Script</c> guid, so this method stays reflection-free), and reports each top-level required
+        /// field left unset: a managed reference at the null id (<c>-2</c>) or absent, or an empty/absent string field.
+        /// A present managed reference (<c>rid &gt;= 0</c>) counts as set even when its type is missing — that mirrors
+        /// <see cref="SerializeReferenceRequiredGate.IsViolation"/>, where a missing type is the missing-type gate's
+        /// concern, not a required violation. Required fields nested inside serializable containers are not covered here
+        /// (the field keys are read at the document's top level only).
+        /// </summary>
+        public static List<RequiredViolationEntry> FindUnsetRequiredFields(
+            string assetPath, Func<string, IReadOnlyList<RequiredFieldDescriptor>> requiredFieldsForScript)
+        {
+            var result = new List<RequiredViolationEntry>();
+            if (requiredFieldsForScript is null) return result;
+
+            try
+            {
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
+
+                // One-shot bulk read like FindMissingReferences — bypass the probe cache so large scene files don't evict
+                // the interactive per-property entries (see SerializeReferenceYamlProbeCache remarks).
+                var lines = File.ReadAllLines(assetPath);
+
+                for (var i = 0; i < lines.Length; i++)
+                {
+                    var header = MonoBehaviourHeader.Match(lines[i]);
+                    if (!header.Success || !long.TryParse(header.Groups[1].Value, out var fileId)) continue;
+
+                    var docEnd = NextDocumentStart(lines, i + 1);
+                    if (!TryReadScriptGuid(lines, i + 1, docEnd, out var guid, out var fieldIndent)) continue;
+
+                    var required = requiredFieldsForScript(guid);
+                    if (required is null || required.Count == 0) continue;
+
+                    var fieldsEnd = FindFieldsEnd(lines, i + 1, docEnd);
+
+                    foreach (var descriptor in required)
+                    {
+                        if (descriptor.IsString)
+                        {
+                            if (IsStringFieldUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName))
+                                result.Add(new RequiredViolationEntry(fileId, descriptor.FieldName, 0));
+                        }
+                        else if (IsManagedReferenceUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName, out var rid))
+                        {
+                            result.Add(new RequiredViolationEntry(fileId, descriptor.FieldName, rid));
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Best effort — a parse failure simply yields no violations (matches FindMissingReferences).
+            }
+
+            return result;
+        }
+
+        // The line index of the next "--- " document separator at or after `from`, or the line count when none follows.
+        private static int NextDocumentStart(string[] lines, int from)
+        {
+            for (var i = from; i < lines.Length; i++)
+                if (lines[i].StartsWith("--- ", StringComparison.Ordinal))
+                    return i;
+
+            return lines.Length;
+        }
+
+        // Reads the m_Script guid (and the document's top-level field indent) within [start, end). False for a stripped
+        // component or any document carrying no script reference.
+        private static bool TryReadScriptGuid(string[] lines, int start, int end, out string guid, out int fieldIndent)
+        {
+            guid = null;
+            fieldIndent = 0;
+
+            for (var i = start; i < end; i++)
+            {
+                var match = ScriptGuidPattern.Match(lines[i]);
+                if (!match.Success) continue;
+
+                guid = match.Groups["guid"].Value;
+                fieldIndent = match.Groups["indent"].Length;
+                return true;
+            }
+
+            return false;
+        }
+
+        // The exclusive end of a MonoBehaviour's own serialized fields: the "references:" line, or the document end when
+        // the object holds no managed references. Confines field lookups so a key inside a RefIds data block is never read.
+        private static int FindFieldsEnd(string[] lines, int start, int end)
+        {
+            for (var i = start; i < end; i++)
+                if (ReferencesKey.IsMatch(lines[i]))
+                    return i;
+
+            return end;
+        }
+
+        // True when the top-level managed-reference field `name` is unset: its pointer is the null id (-2), or the field
+        // is absent / carries no rid. A present rid (>= 0) is set. `rid` returns the read id (or -2 when unset/absent).
+        private static bool IsManagedReferenceUnset(string[] lines, int start, int end, int fieldIndent, string name, out long rid)
+        {
+            rid = NullRid;
+            var pattern = new Regex($@"^(?<indent>\s*){Regex.Escape(name)}:\s*(?<inline>.*)$");
+
+            for (var i = start; i < end; i++)
+            {
+                var field = pattern.Match(lines[i]);
+                if (!field.Success || field.Groups["indent"].Length != fieldIndent) continue;
+
+                // Inline pointer (e.g. "_weapon: {rid: 5}") — Unity writes the block form, but tolerate either.
+                var inline = Regex.Match(field.Groups["inline"].Value, @"rid:\s*(-?\d+)");
+                if (inline.Success && long.TryParse(inline.Groups[1].Value, out var inlineRid))
+                {
+                    rid = inlineRid;
+                    return inlineRid == NullRid;
+                }
+
+                // Block form: the rid scalar is the field's first indented child.
+                for (var j = i + 1; j < end; j++)
+                {
+                    if (lines[j].Trim().Length == 0) continue;
+                    if (IndentOf(lines[j]) <= fieldIndent) break; // dedented out of the field without a rid
+
+                    var child = Regex.Match(lines[j].Trim(), @"^rid:\s*(-?\d+)$");
+                    if (child.Success && long.TryParse(child.Groups[1].Value, out var childRid))
+                    {
+                        rid = childRid;
+                        return childRid == NullRid;
+                    }
+
+                    break; // first child is not a rid scalar — not a recognised managed-reference pointer
+                }
+
+                return true; // field present but no rid — treat as unset
+            }
+
+            return true; // field absent — unset (the issue's "absent = unset")
+        }
+
+        // True when the top-level string field `name` is unset: empty, an empty quoted scalar ('' / ""), or absent.
+        private static bool IsStringFieldUnset(string[] lines, int start, int end, int fieldIndent, string name)
+        {
+            var pattern = new Regex($@"^(?<indent>\s*){Regex.Escape(name)}:\s*(?<value>.*)$");
+
+            for (var i = start; i < end; i++)
+            {
+                var field = pattern.Match(lines[i]);
+                if (!field.Success || field.Groups["indent"].Length != fieldIndent) continue;
+
+                var value = field.Groups["value"].Value.Trim();
+                return value.Length == 0 || value == "''" || value == "\"\"";
+            }
+
+            return true; // field absent — unset
         }
 
         /// <summary>
@@ -280,6 +488,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
+                if (!LooksLikeUnityYaml(lines)) return false; // never offer (or apply) a rewrite on a non-Unity YAML file
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -330,6 +539,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
+                if (!LooksLikeUnityYaml(lines)) return false; // never rewrite a non-Unity YAML file
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -347,6 +557,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // the same bounding rule the data-block reader uses.
                     var entryIndent = match.Groups["indent"].Length;
                     var entryEnd = FindEntryEnd(lines, i, end, entryIndent);
+
+                    // Unexpected (tab / mixed) indentation in the entry block means IndentOf and the "- rid:" \s* regex
+                    // can disagree on where the block ends — bail rather than write a possibly mis-bounded deletion.
+                    if (!BlockIndentIsTrusted(lines, i, entryEnd)) return false;
 
                     var remaining = new List<string>(lines.Length - (entryEnd - i));
                     for (var k = 0; k < i; k++) remaining.Add(lines[k]);
@@ -391,6 +605,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
+                if (!LooksLikeUnityYaml(lines)) return false; // never rewrite a non-Unity YAML file
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -439,6 +654,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var blockStart = headerIndex;
                 var blockEnd = headerIndex >= 0 ? FindEntryEnd(lines, headerIndex, end, entryIndent) : -1;
 
+                // The entry block we're about to drop must use Unity's space-only indentation; a tab / mixed prefix can
+                // mis-bound it (IndentOf vs the "- rid:" \s* regex), so bail before this non-undoable rewrite. (Pointer
+                // nulling above is line-local and indent-agnostic, so no write has reached disk yet.)
+                if (headerIndex >= 0 && !BlockIndentIsTrusted(lines, blockStart, blockEnd)) return false;
+
                 // A "- rid: -2" pointer is valid only while the RefIds list carries Unity's null sentinel entry; add it
                 // when we just introduced a null pointer and the document does not already have one (a shared singleton).
                 var needsNullEntry = pointerNulled && !HasNullSentinelEntry(lines, refIdsStart, end, entryIndent);
@@ -468,6 +688,64 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 Debug.LogError($"[Aspid FastTools] Failed to null managed-reference rid {rid} in '{assetPath}': {exception}");
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Counts how many field / array-element pointers in the document anchored at <paramref name="fileId"/> hold
+        /// <paramref name="rid"/> — the number of slots a <see cref="TryNullReference"/> would null. A missing reference
+        /// can be aliased across several slots (all sharing one rid); clearing it nulls every one of them, so the confirm
+        /// dialog calls this first to name the count before the irreversible rewrite. The rid's own <c>RefIds</c> entry
+        /// header is excluded (it is the entry, not a pointer to it). Returns <c>0</c> when the document / <c>RefIds</c>
+        /// list / entry indent cannot be located — the same guards <see cref="TryNullReference"/> uses — so a non-positive
+        /// result means "count unknown" and the caller can fall back to unnumbered wording.
+        /// </summary>
+        public static int CountPointersTo(string assetPath, long fileId, long rid)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return 0;
+
+                var lines = File.ReadAllLines(assetPath);
+                var (start, end) = FindDocumentRange(lines, fileId);
+                if (start < 0) return 0;
+
+                var refIdsStart = FindRefIdsStart(lines, start, end);
+                if (refIdsStart < 0) return 0;
+
+                var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
+                if (entryIndent < 0) return 0;
+
+                var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
+                var pointerToken = new Regex($@"\brid:\s*{rid}\b");
+
+                var headerSkipped = false;
+                var count = 0;
+
+                for (var i = start; i < end; i++)
+                {
+                    // Skip this rid's own RefIds entry header exactly once (the "- rid: N" at the entry indent under
+                    // RefIds): it is the entry being removed, not a pointer that gets nulled. Mirrors the header skip in
+                    // TryNullReference so the count equals the number of pointers that path would rewrite.
+                    if (!headerSkipped && i > refIdsStart)
+                    {
+                        var header = headerPattern.Match(lines[i]);
+                        if (header.Success && header.Groups["indent"].Length == entryIndent)
+                        {
+                            headerSkipped = true;
+                            continue;
+                        }
+                    }
+
+                    if (pointerToken.IsMatch(lines[i])) count++;
+                }
+
+                return count;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[Aspid FastTools] Failed to count managed-reference pointers to rid {rid} in '{assetPath}': {exception}");
+                return 0;
             }
         }
 
@@ -788,12 +1066,65 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
+        // Leading-indentation width of a line, counting each space or tab as one unit. Unity always indents its YAML
+        // with spaces, but the "- rid:" / "type:" indent regexes capture leading whitespace with \s* (which counts
+        // tabs too). Counting tabs here keeps this measure aligned with those regexes: a tab-indented line would
+        // otherwise read as indent 0 here while a regex sees it as N, and FindEntryEnd would mis-bound the entry.
+        // Alignment, not visual tab width, is what matters — both measures count one unit per character.
         private static int IndentOf(string line)
         {
             var count = 0;
-            while (count < line.Length && line[count] == ' ') count++;
+            while (count < line.Length && (line[count] == ' ' || line[count] == '\t')) count++;
             return count;
         }
+
+        // A line whose leading indentation is spaces only — Unity's invariant for serialized YAML. Returns false when
+        // the indent begins with a tab or any other whitespace, the case where IndentOf and the "- rid:" \s* regexes
+        // can still measure the same nesting differently (a single tab vs a run of spaces). Callers about to delete a
+        // bounded block bail on such a line rather than risk a mis-bounded, non-undoable write.
+        private static bool IndentIsSpaceOnly(string line)
+        {
+            for (var i = 0; i < line.Length; i++)
+            {
+                if (line[i] == ' ') continue;            // a space is fine — keep scanning the indent
+                if (char.IsWhiteSpace(line[i])) return false; // a tab / other whitespace in the indent: untrusted
+                return true;                             // first content char reached: the indent was spaces only
+            }
+
+            return true;
+        }
+
+        // Whether every line in [start, end) is indented with spaces only — the precondition the block-removing writes
+        // verify before touching the file, so an asset with unexpected (tab / mixed) indentation is left untouched.
+        private static bool BlockIndentIsTrusted(string[] lines, int start, int end)
+        {
+            for (var i = Math.Max(start, 0); i < end && i < lines.Length; i++)
+                if (!IndentIsSpaceOnly(lines[i])) return false;
+
+            return true;
+        }
+
+        // Whether the text looks like a Unity-serialized YAML asset: its directive preamble (everything before the
+        // first document "---") must carry Unity's signature "%TAG !u! tag:unity3d.com,2011:" directive. Guards the
+        // destructive writes so a hand-authored or foreign YAML file — which this line-scanning parser was never
+        // designed for — can never be surgically rewritten.
+        private static bool LooksLikeUnityYaml(string[] lines)
+        {
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = (i == 0 ? StripByteOrderMark(lines[i]) : lines[i]).TrimStart();
+                if (line.Length == 0) continue;
+                if (line.StartsWith("%TAG !u!", StringComparison.Ordinal)) return true;
+                if (line.StartsWith("---", StringComparison.Ordinal)) return false; // first document reached without the %TAG marker
+            }
+
+            return false;
+        }
+
+        // File.ReadAllLines strips a UTF-8 BOM in practice, but guard the first line defensively so the %TAG sniff is
+        // never thrown off by a leading byte-order mark.
+        private static string StripByteOrderMark(string line) =>
+            line.Length > 0 && line[0] == '\uFEFF' ? line.Substring(1) : line;
 
         /// <summary>
         /// Reads the managed-reference id stored at <paramref name="propertyPath"/> and the type recorded for it in

@@ -94,6 +94,53 @@ MonoBehaviour:
         _damagePerSecond: 5
 ";
 
+        // A MonoBehaviour where the MISSING reference (GhostPistol, rid 1002) is ALIASED across two slots — both
+        // _primaryWeapon and _sidearms[0] point at the one rid — alongside a singly-pointed sibling (Shotgun, rid 1003,
+        // _sidearms[1]) and a healthy effect (rid 1004). Pins the all-pointer-null behaviour and the pointer-count helper:
+        // clearing rid 1002 must null BOTH aliased slots (count 2) while leaving the Shotgun slot intact. Same indentation
+        // and layout as MissingTypePrefab; reuses MonoBehaviourFileId / GhostPistolRid / ShotgunRid.
+        public const string AliasedMissingTypePrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6500000000000000001
+GameObject:
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6500000000000000003}
+  m_Name: LoadoutAliasedMissing
+--- !u!114 &6500000000000000003
+MonoBehaviour:
+  m_GameObject: {fileID: 6500000000000000001}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name:
+  _primaryWeapon:
+    rid: 1002
+  _sidearms:
+  - rid: 1002
+  - rid: 1003
+  _onHitEffect:
+    rid: 1004
+  references:
+    version: 2
+    RefIds:
+    - rid: 1002
+      type: {class: GhostPistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 15
+        _magazineSize: 12
+    - rid: 1003
+      type: {class: Shotgun, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _pellets: 8
+        _spreadAngle: 25
+    - rid: 1004
+      type: {class: FreezeEffect, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _duration: 2.5
+        _slowPercent: 40
+";
+
         // RefIds present in the empty-fields fixture below.
         public const long EmptyRailgunRid = 1001;  // _primaryWeapon  (resolvable, holds a cleared nested _chargeEffect)
         public const long EmptyPistolRid = 1002;   // _sidearms[0]    (resolvable)
@@ -224,6 +271,116 @@ MonoBehaviour:
       data:
         _pellets: 6
         _spreadAngle: 20
+";
+
+        // Script guids for the scene required-field fixtures below. The first maps (via the test's injected resolver) to
+        // RequiredTestObject's required fields; the second is an "unknown" script the resolver returns no fields for.
+        public const string RequiredSceneScriptGuid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+        public const string UnknownScriptGuid = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+
+        // MonoBehaviour document file ids in the scene fixtures (the "--- !u!114 &<fileID>" anchors).
+        public const long RequiredSceneMonoFileId = 101L;
+        public const long RequiredSceneOtherFileId = 201L;
+
+        // A scene with one MonoBehaviour whose required managed reference (requiredRef) and required string field
+        // (requiredString) are both left unset — the managed reference at Unity's null id (-2), the string empty. Exact
+        // .unity layout: a GameObject document followed by its MonoBehaviour, m_Script carrying the script guid.
+        public const string RequiredSceneUnset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+  requiredRef:
+    rid: -2
+  requiredString:
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+";
+
+        // The same scene with both required fields set: the managed reference points at a real rid, the string holds an
+        // assembly-qualified name. No violations expected.
+        public const string RequiredSceneSet =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+  requiredRef:
+    rid: 5001
+  requiredString: 'Aspid.FastTools.Samples.SerializeReferences.Pistol, Aspid.FastTools.Samples.SerializeReferences'
+  references:
+    version: 2
+    RefIds:
+    - rid: 5001
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 5
+";
+
+        // A two-MonoBehaviour scene: the first (guid aaaa…, fileID 101) has requiredRef SET but requiredString EMPTY
+        // (one violation); the second (guid bbbb…, fileID 201) leaves both unset but its script is unknown to the
+        // resolver, so it must be skipped entirely. Proves per-document resolution and the unknown-script skip.
+        public const string RequiredSceneMixedUnknownScript =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+  requiredRef:
+    rid: 5001
+  requiredString:
+  references:
+    version: 2
+    RefIds:
+    - rid: 5001
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 5
+--- !u!1 &200
+GameObject:
+  m_Component:
+  - component: {fileID: 201}
+  m_Name: Other
+--- !u!114 &201
+MonoBehaviour:
+  m_GameObject: {fileID: 200}
+  m_Script: {fileID: 11500000, guid: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, type: 3}
+  m_Name:
+  requiredRef:
+    rid: -2
+  requiredString:
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
 ";
 
         /// <summary>Writes <paramref name="yaml"/> to a fresh temp file (never under <c>Assets/</c>) and returns its path.</summary>
