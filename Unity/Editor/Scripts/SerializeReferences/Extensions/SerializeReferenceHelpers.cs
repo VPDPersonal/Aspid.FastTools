@@ -940,21 +940,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (property.managedReferenceValue is null) return false;
 
             var id = property.managedReferenceId;
-            var shared = false;
-            var path = property.propertyPath;
 
-            TraverseManagedReferences(property.serializedObject, other =>
+            // GetHeight and Draw each ask this for every managed-reference field, every IMGUI repaint, so a naive
+            // per-property full-object walk is 2·N walks per frame. Instead the object's managed-reference id → use-count
+            // is built once per object per frame and reused: an id used by more than one field is aliased.
+            return GetReferenceIdCounts(property.serializedObject).TryGetValue(id, out var count) && count > 1;
+        }
+
+        // Per-object, per-frame memo of how many managed-reference fields carry each id. Built by a single full-object
+        // walk and shared across every HasSharedReference call in the same repaint (keyed by the SerializedObject and the
+        // current IMGUI frame), collapsing the 2·N walks GetHeight + Draw would otherwise do into one walk per object.
+        private static int _aliasFrame = -1;
+        private static SerializedObject _aliasSerializedObject;
+        private static readonly Dictionary<long, int> AliasCounts = new();
+
+        private static Dictionary<long, int> GetReferenceIdCounts(SerializedObject serializedObject)
+        {
+            var frame = Time.frameCount;
+            if (_aliasFrame == frame && ReferenceEquals(_aliasSerializedObject, serializedObject))
+                return AliasCounts;
+
+            AliasCounts.Clear();
+            TraverseManagedReferences(serializedObject, other =>
             {
-                if (other.propertyPath != path && other.managedReferenceId == id)
-                {
-                    shared = true;
-                    return true;
-                }
-
+                var id = other.managedReferenceId;
+                AliasCounts.TryGetValue(id, out var count);
+                AliasCounts[id] = count + 1;
                 return false;
             });
 
-            return shared;
+            _aliasFrame = frame;
+            _aliasSerializedObject = serializedObject;
+            return AliasCounts;
         }
 
         /// <summary>

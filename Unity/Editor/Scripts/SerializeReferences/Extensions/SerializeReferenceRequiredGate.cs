@@ -97,6 +97,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Per-type memo for GetRequiredFields — the reflected field set is stable until a domain reload clears statics.
         private static readonly Dictionary<Type, IReadOnlyList<RequiredFieldDescriptor>> RequiredFieldCache = new();
 
+        // Memoises ResolveFieldInfo by (target type, property path): the reflected field is stable for a given type and
+        // path until a domain reload clears statics, so IsViolation/TryGetRequired — called from both GetHeight and Draw
+        // every IMGUI repaint — reflect each path only once instead of re-walking it on every frame.
+        private static readonly Dictionary<(Type, string), FieldInfo> ResolvedFieldCache = new();
+
         // Walks the property path against the target object's type to find the declared field (which carries the
         // attribute). For a list/array element the field is the collection itself, matching PropertyDrawer.fieldInfo.
         private static FieldInfo ResolveFieldInfo(SerializedProperty property)
@@ -104,8 +109,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var type = property.serializedObject?.targetObject?.GetType();
             if (type is null) return null;
 
+            var cacheKey = (type, property.propertyPath);
+            if (ResolvedFieldCache.TryGetValue(cacheKey, out var cachedField)) return cachedField;
+
+            var field = ResolveFieldInfoUncached(type, property.propertyPath);
+            ResolvedFieldCache[cacheKey] = field;
+            return field;
+        }
+
+        private static FieldInfo ResolveFieldInfoUncached(Type targetType, string propertyPath)
+        {
+            var type = targetType;
+
             // "_slots.Array.data[0]._weapon" -> "_slots[0]._weapon"
-            var path = property.propertyPath.Replace(".Array.data[", "[");
+            var path = propertyPath.Replace(".Array.data[", "[");
             FieldInfo field = null;
 
             foreach (var rawSegment in path.Split('.'))
