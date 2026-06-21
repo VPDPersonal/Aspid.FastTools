@@ -75,6 +75,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         internal static string StoredTypeKey(ManagedTypeName type) =>
             $"{type.Assembly}|{type.Namespace}|{type.Class}";
+
+        /// <summary>
+        /// Open-generic identity key for a stored type: class name with its backtick arity but <b>without</b> the
+        /// <c>[[…]]</c> closed-argument expansion, plus namespace and assembly. A script's open definition
+        /// (<c>Modifier`1[[T]]</c>, what <see cref="MonoScript.GetClass"/> yields) and the closed forms YAML stores
+        /// (<c>Modifier`1[[System.Single, …]]</c>) collapse to the same key, so the delete guard and usage index match
+        /// every closed instantiation of a generic type to its script. A non-generic type has no <c>[[…]]</c> suffix and
+        /// keys identically to <see cref="StoredTypeKey"/>.
+        /// </summary>
+        internal static string OpenTypeKey(ManagedTypeName type) =>
+            OpenTypeKey(StoredTypeKey(type));
+
+        /// <summary>
+        /// Reduces a <see cref="StoredTypeKey"/> string to its open-generic form by dropping the bracketed closed-argument
+        /// expansion (<c>Foo`1[[…]]</c> -> <c>Foo`1</c>). The bracket only appears inside the class segment and the
+        /// backtick arity is kept, so different arities never collapse and namespace/assembly stay intact.
+        /// </summary>
+        internal static string OpenTypeKey(string storedTypeKey)
+        {
+            if (string.IsNullOrEmpty(storedTypeKey)) return storedTypeKey ?? string.Empty;
+
+            var bracket = storedTypeKey.IndexOf('[');
+            return bracket >= 0 ? storedTypeKey[..bracket] : storedTypeKey;
+        }
         #endregion
 
         #region Multi-object editing
