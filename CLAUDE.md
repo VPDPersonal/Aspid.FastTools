@@ -120,7 +120,7 @@ All components use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet (lo
 
 **Editor Extensions** (`Unity/Editor/Scripts/Extensions/`): `GetScriptName()` and `GetScriptNameWithIndex()` on `MonoScript` — respects `[AddComponentMenu]` attribute and appends index suffix for duplicate components.
 
-**Welcome Window** (`Unity/Editor/Scripts/Welcome/`): `WelcomeWindow` (`EditorWindow`, menu `Tools/Aspid FastTools/Welcome`) + `WelcomeWindowStartup` (auto-show on first import). UXML/USS at `Resources/UI/Windows/Welcome/Aspid-FastTools-Welcome.{uxml,uss}`. Lists installable samples by reading `package.json`.
+**Welcome View** (`Unity/Editor/Scripts/Welcome/`): `WelcomeView` (a `VisualElement` hosted as the **Welcome** tab of `SerializeReferenceWindow`, menu `Tools/Aspid 🐍/FastTools/Welcome`) + `WelcomeWindowStartup` (auto-show on first import). UXML/USS at `Resources/UI/Windows/Welcome/Aspid-FastTools-Welcome.{uxml,uss}`. Lists installable samples by reading `package.json`.
 
 ### Editor Code Conventions
 

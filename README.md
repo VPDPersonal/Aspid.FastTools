@@ -302,7 +302,9 @@ namespace Aspid.FastTools.Types.Editors
             string currentAqn = "",
             TypeAllow allow = TypeAllow.None,
             Action<string> onSelected = null,
-            Func<Type, bool> filter = null);
+            Func<Type, bool> filter = null,
+            IEnumerable<Type> additionalTypes = null,
+            Func<Type, bool> argumentFilter = null);
     }
 }
 ```
@@ -315,6 +317,8 @@ namespace Aspid.FastTools.Types.Editors
 | `allow` | Which special type kinds (abstract classes, interfaces) are included in addition to concrete classes. Default: `TypeAllow.None`. |
 | `onSelected` | Callback invoked with the assembly-qualified name of the selected type, or `null` if the user chose `<None>`. |
 | `filter` | Optional predicate applied to each candidate type after the base-type and `allow` checks. Return `false` to hide a type. Pass `null` to keep every match. |
+| `additionalTypes` | Optional extra types appended to the list verbatim, bypassing the base-type and `allow` checks — used to inject entries the assignability scan cannot match, such as open generic definitions. |
+| `argumentFilter` | Optional predicate applied to candidate types offered for an open generic's type arguments (in addition to the parameter's own constraints) — e.g. to restrict arguments to Unity-serializable types. Pass `null` to accept any constraint-satisfying type. |
 
 ### ComponentTypeSelector
 
@@ -364,7 +368,7 @@ A drop-in dropdown for `[SerializeReference]` fields. Add `[TypeSelector]` next 
 - Picking a type instantiates it; `<None>` clears the reference.
 - The assigned instance's serialized fields are drawn inline under a foldout.
 - A stored type that no longer resolves (renamed or deleted) is surfaced as a missing-type warning instead of silently clearing.
-- Open generic implementations (e.g. `Modifier<T>`) are offered too: arguments are inferred from a closed-generic field, or picked in a follow-up window (validated against the field type) before instantiation.
+- Open generic implementations (e.g. `Modifier<T>`) are offered too: arguments are inferred from a closed-generic field, or picked on a second page inside the same picker (validated against the field type) before instantiation.
 - Switching the selected type preserves matching data — fields shared by the old and new implementation (by name and serialized shape) carry over instead of resetting to defaults.
 - Right-click the header for a Copy / Paste context menu: it copies the managed-reference value and pastes it as an independent instance into any compatible field (paste is disabled when the clipboard type is not assignable to the target).
 - A missing type can be repaired in place: the warning is a compact yellow notice whose underlined **Fix** word opens the type picker — choose the correct type and the reference is re-pointed while keeping its stored data; hover the notice for the full missing-type detail. Works for saved assets (ScriptableObjects and prefab assets) selected in the Project **and for objects open in Prefab Mode** — saved assets are rewritten in their YAML, while a Prefab Mode object is repaired on the live instance, recovering the data Unity still holds for the missing type. The repair also reaches nested references — through nested managed references and through plain `[Serializable]` containers (a struct/class field or a `List<T>` of them) — so a missing type buried in a slot or list element is fixed inline too.
