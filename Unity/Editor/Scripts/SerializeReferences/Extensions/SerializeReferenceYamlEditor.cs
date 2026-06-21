@@ -280,6 +280,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
+                if (!LooksLikeUnityYaml(lines)) return false; // never offer (or apply) a rewrite on a non-Unity YAML file
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -330,6 +331,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
+                if (!LooksLikeUnityYaml(lines)) return false; // never rewrite a non-Unity YAML file
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -347,6 +349,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // the same bounding rule the data-block reader uses.
                     var entryIndent = match.Groups["indent"].Length;
                     var entryEnd = FindEntryEnd(lines, i, end, entryIndent);
+
+                    // Unexpected (tab / mixed) indentation in the entry block means IndentOf and the "- rid:" \s* regex
+                    // can disagree on where the block ends — bail rather than write a possibly mis-bounded deletion.
+                    if (!BlockIndentIsTrusted(lines, i, entryEnd)) return false;
 
                     var remaining = new List<string>(lines.Length - (entryEnd - i));
                     for (var k = 0; k < i; k++) remaining.Add(lines[k]);
@@ -391,6 +397,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
+                if (!LooksLikeUnityYaml(lines)) return false; // never rewrite a non-Unity YAML file
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -438,6 +445,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var blockStart = headerIndex;
                 var blockEnd = headerIndex >= 0 ? FindEntryEnd(lines, headerIndex, end, entryIndent) : -1;
+
+                // The entry block we're about to drop must use Unity's space-only indentation; a tab / mixed prefix can
+                // mis-bound it (IndentOf vs the "- rid:" \s* regex), so bail before this non-undoable rewrite. (Pointer
+                // nulling above is line-local and indent-agnostic, so no write has reached disk yet.)
+                if (headerIndex >= 0 && !BlockIndentIsTrusted(lines, blockStart, blockEnd)) return false;
 
                 // A "- rid: -2" pointer is valid only while the RefIds list carries Unity's null sentinel entry; add it
                 // when we just introduced a null pointer and the document does not already have one (a shared singleton).
@@ -846,12 +858,65 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
+        // Leading-indentation width of a line, counting each space or tab as one unit. Unity always indents its YAML
+        // with spaces, but the "- rid:" / "type:" indent regexes capture leading whitespace with \s* (which counts
+        // tabs too). Counting tabs here keeps this measure aligned with those regexes: a tab-indented line would
+        // otherwise read as indent 0 here while a regex sees it as N, and FindEntryEnd would mis-bound the entry.
+        // Alignment, not visual tab width, is what matters — both measures count one unit per character.
         private static int IndentOf(string line)
         {
             var count = 0;
-            while (count < line.Length && line[count] == ' ') count++;
+            while (count < line.Length && (line[count] == ' ' || line[count] == '\t')) count++;
             return count;
         }
+
+        // A line whose leading indentation is spaces only — Unity's invariant for serialized YAML. Returns false when
+        // the indent begins with a tab or any other whitespace, the case where IndentOf and the "- rid:" \s* regexes
+        // can still measure the same nesting differently (a single tab vs a run of spaces). Callers about to delete a
+        // bounded block bail on such a line rather than risk a mis-bounded, non-undoable write.
+        private static bool IndentIsSpaceOnly(string line)
+        {
+            for (var i = 0; i < line.Length; i++)
+            {
+                if (line[i] == ' ') continue;            // a space is fine — keep scanning the indent
+                if (char.IsWhiteSpace(line[i])) return false; // a tab / other whitespace in the indent: untrusted
+                return true;                             // first content char reached: the indent was spaces only
+            }
+
+            return true;
+        }
+
+        // Whether every line in [start, end) is indented with spaces only — the precondition the block-removing writes
+        // verify before touching the file, so an asset with unexpected (tab / mixed) indentation is left untouched.
+        private static bool BlockIndentIsTrusted(string[] lines, int start, int end)
+        {
+            for (var i = Math.Max(start, 0); i < end && i < lines.Length; i++)
+                if (!IndentIsSpaceOnly(lines[i])) return false;
+
+            return true;
+        }
+
+        // Whether the text looks like a Unity-serialized YAML asset: its directive preamble (everything before the
+        // first document "---") must carry Unity's signature "%TAG !u! tag:unity3d.com,2011:" directive. Guards the
+        // destructive writes so a hand-authored or foreign YAML file — which this line-scanning parser was never
+        // designed for — can never be surgically rewritten.
+        private static bool LooksLikeUnityYaml(string[] lines)
+        {
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = (i == 0 ? StripByteOrderMark(lines[i]) : lines[i]).TrimStart();
+                if (line.Length == 0) continue;
+                if (line.StartsWith("%TAG !u!", StringComparison.Ordinal)) return true;
+                if (line.StartsWith("---", StringComparison.Ordinal)) return false; // first document reached without the %TAG marker
+            }
+
+            return false;
+        }
+
+        // File.ReadAllLines strips a UTF-8 BOM in practice, but guard the first line defensively so the %TAG sniff is
+        // never thrown off by a leading byte-order mark.
+        private static string StripByteOrderMark(string line) =>
+            line.Length > 0 && line[0] == '\uFEFF' ? line.Substring(1) : line;
 
         /// <summary>
         /// Reads the managed-reference id stored at <paramref name="propertyPath"/> and the type recorded for it in
