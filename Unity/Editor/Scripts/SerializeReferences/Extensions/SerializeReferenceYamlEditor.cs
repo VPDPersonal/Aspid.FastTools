@@ -459,7 +459,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static void WritePreservingNewlines(string assetPath, IReadOnlyList<string> lines)
         {
             var original = File.ReadAllText(assetPath);
-            var newline = original.IndexOf("\r\n", StringComparison.Ordinal) >= 0 ? "\r\n" : "\n";
+            var newline = DominantNewline(original);
 
             var builder = new StringBuilder(original.Length);
             for (var i = 0; i < lines.Count; i++)
@@ -472,6 +472,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (original.Length > 0 && original[original.Length - 1] == '\n') builder.Append(newline);
 
             File.WriteAllText(assetPath, builder.ToString());
+        }
+
+        // The newline to re-emit when rewriting an asset: the style that dominates the source by line count, not "any
+        // CRLF wins". Picking by majority keeps a one-line edit on a mixed- or lone-CR file from flipping every other
+        // line's terminator (a whole-file diff for a one-line change). CRLF wins ties only when it is the strict
+        // majority; otherwise LF — Unity's invariant terminator — is used. Counts CRLF and lone-LF (an LF not preceded
+        // by CR); a lone CR (classic Mac) maps to LF, since this writer only emits "\r\n" or "\n".
+        private static string DominantNewline(string text)
+        {
+            var crlf = 0;
+            var loneLf = 0;
+
+            for (var i = 0; i < text.Length; i++)
+            {
+                if (text[i] != '\n') continue;
+                if (i > 0 && text[i - 1] == '\r') crlf++;
+                else loneLf++;
+            }
+
+            return crlf > loneLf ? "\r\n" : "\n";
         }
 
         /// <summary>
