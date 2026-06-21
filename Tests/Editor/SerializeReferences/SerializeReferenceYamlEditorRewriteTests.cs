@@ -127,5 +127,51 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var after = File.ReadAllLines(_path);
             Assert.AreEqual(edit.NewLine, after[edit.LineNumber], "Applied line must equal the previewed NewLine.");
         }
+
+        [Test]
+        public void TryRewriteType_PreservesLfLineEndings()
+        {
+            // Unity writes its YAML with LF on every platform; a one-line rewrite must not introduce CR.
+            var lf = YamlFixtures.MissingTypePrefab.Replace("\r\n", "\n");
+            var path = YamlFixtures.WriteTemp(lf);
+            try
+            {
+                var newType = new ManagedTypeName(
+                    "Aspid.FastTools.Samples.SerializeReferences",
+                    "Aspid.FastTools.Samples.SerializeReferences",
+                    "Pistol");
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, newType));
+
+                StringAssert.DoesNotContain("\r", File.ReadAllText(path),
+                    "An LF asset must stay LF after a rewrite (no CRLF churn).");
+            }
+            finally { YamlFixtures.Delete(path); }
+        }
+
+        [Test]
+        public void TryRewriteType_PreservesCrlfLineEndings()
+        {
+            // A CRLF asset must keep CRLF — the writer must not collapse it to Environment.NewLine (LF on the dev box).
+            var crlf = YamlFixtures.MissingTypePrefab.Replace("\r\n", "\n").Replace("\n", "\r\n");
+            var path = YamlFixtures.WriteTemp(crlf);
+            try
+            {
+                var newType = new ManagedTypeName(
+                    "Aspid.FastTools.Samples.SerializeReferences",
+                    "Aspid.FastTools.Samples.SerializeReferences",
+                    "Pistol");
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
+                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, newType));
+
+                var raw = File.ReadAllText(path);
+                Assert.IsTrue(raw.Contains("\r\n"), "A CRLF asset must keep CRLF after a rewrite.");
+                Assert.IsFalse(raw.Replace("\r\n", "").Contains("\n"),
+                    "Every newline in a CRLF file must remain CRLF (no lone LF introduced).");
+            }
+            finally { YamlFixtures.Delete(path); }
+        }
     }
 }
