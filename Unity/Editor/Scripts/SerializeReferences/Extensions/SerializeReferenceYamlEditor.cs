@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEngine;
 using UnityEditor;
 using System.Collections.Generic;
@@ -39,7 +40,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (type is null) return default;
 
             var root = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
-            return new ManagedTypeName(root.Assembly.GetName().Name, root.Namespace, BuildClassName(type));
+            // Unity stores a nested type's class identity with its declaring types joined by '/' (e.g. Outer/Inner);
+            // reflection's Type.Name is only the leaf, so prefix the declaring chain here — the mirror of the read side's
+            // '/'->'+' mapping in SerializeReferenceHelpers.StoredTypeResolves. Without this, repairing a reference to a
+            // nested type would write `class: Inner`, which Unity cannot resolve (it re-breaks the reference).
+            return new ManagedTypeName(root.Assembly.GetName().Name, root.Namespace, NestedPrefix(type) + BuildClassName(type));
+        }
+
+        // The "Outer/" (or "Outer/Middle/") prefix Unity prepends to a nested type's class identity; empty for a
+        // top-level type. Walks the declaring-type chain from the outermost inward.
+        private static string NestedPrefix(Type type)
+        {
+            if (type.DeclaringType is null) return string.Empty;
+
+            var prefix = string.Empty;
+            for (var declaring = type.DeclaringType; declaring is not null; declaring = declaring.DeclaringType)
+                prefix = declaring.Name + "/" + prefix;
+
+            return prefix;
         }
 
         private static string BuildClassName(Type type)
@@ -211,7 +229,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return false; // the file changed since the edit was computed — abort rather than write a stale line
 
                 lines[edit.LineNumber] = edit.NewLine;
-                File.WriteAllLines(assetPath, lines);
+                WritePreservingNewlines(assetPath, lines);
                 // Same-tick writes can leave the modification-time key unchanged, so bust the probe cache explicitly.
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return true;
@@ -221,6 +239,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Debug.LogError($"[TypeSelector] Failed to rewrite managed-reference type in '{assetPath}': {exception}");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Writes <paramref name="lines"/> back to <paramref name="assetPath"/> preserving the file's original newline
+        /// style and trailing-newline state. <see cref="File.WriteAllLines(string,IEnumerable{string})"/> would re-emit
+        /// every line with <see cref="Environment.NewLine"/> (CRLF on Windows) — Unity writes its YAML with LF on every
+        /// platform, so that would churn the whole file LF→CRLF for a one-line edit. Sniffing the source newline keeps a
+        /// surgical edit to just the intended line(s).
+        /// </summary>
+        private static void WritePreservingNewlines(string assetPath, IReadOnlyList<string> lines)
+        {
+            var original = File.ReadAllText(assetPath);
+            var newline = original.IndexOf("\r\n", StringComparison.Ordinal) >= 0 ? "\r\n" : "\n";
+
+            var builder = new StringBuilder(original.Length);
+            for (var i = 0; i < lines.Count; i++)
+            {
+                builder.Append(lines[i]);
+                if (i < lines.Count - 1) builder.Append(newline);
+            }
+
+            // Re-add the trailing terminator only if the source had one (Unity assets always do).
+            if (original.Length > 0 && original[original.Length - 1] == '\n') builder.Append(newline);
+
+            File.WriteAllText(assetPath, builder.ToString());
         }
 
         /// <summary>
@@ -309,7 +352,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     for (var k = 0; k < i; k++) remaining.Add(lines[k]);
                     for (var k = entryEnd; k < lines.Length; k++) remaining.Add(lines[k]);
 
-                    File.WriteAllLines(assetPath, remaining);
+                    WritePreservingNewlines(assetPath, remaining);
                     SerializeReferenceYamlProbeCache.ClearCache();
                     return true;
                 }
@@ -417,7 +460,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     }
                 }
 
-                File.WriteAllLines(assetPath, result);
+                WritePreservingNewlines(assetPath, result);
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return true;
             }
