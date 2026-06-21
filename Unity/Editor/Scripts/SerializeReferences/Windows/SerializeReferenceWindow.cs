@@ -55,8 +55,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private Button _inspectButton;
         private Button _projectButton;
         private Button _settingsButton;
-        private Mode _mode = Mode.Inspect;
-        private Object _pendingTarget;
+        // Serialized so the active tab and the inspected asset survive a domain reload: EditorWindow persists
+        // [SerializeField] state across assembly reloads, whereas a plain field would reset to its initializer and
+        // CreateGUI → SwitchMode(_mode) would always revert to the Inspect tab on an empty asset.
+        [SerializeField] private Mode _mode = Mode.Inspect;
+        [SerializeField] private Object _pendingTarget;
 
         // One-shot flag: the breakage-notification deep-link wants the project scanned immediately even from a cold
         // index, whereas a plain Project References tab click is warmth-gated inside the view. Consumed in SwitchMode.
@@ -256,7 +259,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else if (mode == Mode.Inspect)
             {
-                _container.AddChild(new SerializeReferenceGraphView(_pendingTarget, SetCanvasTone));
+                // Track the in-view pick back onto _pendingTarget so a tab switch rebuilds the view on the asset the user
+                // actually has open, not the one Inspect first opened on.
+                _container.AddChild(new SerializeReferenceGraphView(_pendingTarget, SetCanvasTone, target => _pendingTarget = target));
             }
             else if (mode == Mode.Settings)
             {
