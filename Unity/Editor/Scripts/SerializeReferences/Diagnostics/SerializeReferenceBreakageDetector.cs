@@ -15,7 +15,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// The usage index is reset on every domain reload, so it cannot remember a prior state; the detector keeps its own
     /// baseline of resolvable stored-type keys in <see cref="SessionState"/>. The baseline is established silently on the
     /// first run of a session, so pre-existing breakages never alarm — only a key that WAS resolvable and is now missing
-    /// is reported. Driven by <see cref="SerializeReferenceBreakageHook"/> on relevant asset/script changes.
+    /// is reported. When the index is cold (an in-place rename forces a domain reload that resets it), the detector
+    /// re-resolves the baseline keys directly rather than warming the index, so the rename still alarms type-level.
+    /// Driven by <see cref="SerializeReferenceBreakageHook"/> on relevant asset/script changes.
     /// </remarks>
     internal static class SerializeReferenceBreakageDetector
     {
@@ -57,9 +59,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Never warm a cold index from the import / domain-reload path: that runs a modal full-project sweep on every
             // routine save (risk register 3/10). Detection is active only once the index is already warm (built by a
-            // deliberate Find Usages / Project References scan) and kept warm incrementally on import. When cold, the
-            // explicit Project References scan still finds everything; the proactive toast just stays quiet.
-            if (!SerializeReferenceTypeUsageIndex.IsWarm) return;
+            // deliberate Find Usages / Project References scan) and kept warm incrementally on import. When cold — e.g.
+            // after the domain reload an in-place class rename forces — fall back to re-resolving the prior baseline
+            // keys directly (no index, no modal sweep) so the headline rename case still alarms; the explicit Project
+            // References scan continues to find everything.
+            if (!SerializeReferenceTypeUsageIndex.IsWarm)
+            {
+                RunDetectionCold(report);
+                return;
+            }
 
             var resolvable = new HashSet<string>(StringComparer.Ordinal);
             var unresolved = new List<SerializeReferenceTypeUsageIndex.Usage>();
@@ -85,6 +93,62 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SessionState.SetBool(EstablishedKey, true);
 
             if (result.HasAny) BreakageDetected?.Invoke(result);
+        }
+
+        // Cold-index path (the index was reset by the domain reload an in-place rename forces): the index cannot be
+        // enumerated and must not be warmed here, but the per-session baseline of resolvable stored-type keys survives in
+        // SessionState. Each key is re-resolved directly via Type.GetType; a key that WAS resolvable and no longer
+        // resolves is a type that just broke. The report is type-level only (no asset/rid sites — those need the index);
+        // the toast/console warning still fire and the Repair window rebuilds the index to list the exact sites.
+        private static void RunDetectionCold(bool report)
+        {
+            // No baseline yet means this is the session's first run with a cold index: there is nothing to compare
+            // against, so establishing silently (no alarm for pre-existing breakages) waits for a warm scan.
+            if (!report || !SessionState.GetBool(EstablishedKey, false)) return;
+
+            var baseline = LoadBaseline();
+            if (baseline.Count == 0) return;
+
+            var entries = new List<BreakageEntry>();
+            var brokenTypes = new HashSet<string>(StringComparer.Ordinal);
+            var stillResolvable = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var key in baseline)
+            {
+                if (!TryParseStoredTypeKey(key, out var storedType)) continue;
+
+                if (SerializeReferenceHelpers.StoredTypeResolves(storedType))
+                {
+                    stillResolvable.Add(key);
+                    continue;
+                }
+
+                // Type-level entry: no asset path / file id / rid is available without the index. Consumers on this path
+                // (the toast + console warning) read only the count and StoredType, and the Repair window rescans.
+                entries.Add(new BreakageEntry(null, 0, 0, storedType, isRepairable: false, topSuggestion: null));
+                brokenTypes.Add(key);
+            }
+
+            // Advance the baseline to the keys that still resolve so a type that just broke drops out and is never
+            // re-alarmed on the next cold scan, mirroring the warm path.
+            SaveBaseline(stillResolvable);
+
+            if (entries.Count == 0) return;
+            BreakageDetected?.Invoke(new BreakageReport(entries, brokenTypes.Count));
+        }
+
+        // Parses a "Assembly|Namespace|Class" baseline key (see SerializeReferenceHelpers.StoredTypeKey) back into a
+        // ManagedTypeName for direct re-resolution. Returns false for a malformed key or one with no class identity.
+        private static bool TryParseStoredTypeKey(string key, out ManagedTypeName storedType)
+        {
+            storedType = default;
+            if (string.IsNullOrEmpty(key)) return false;
+
+            var parts = key.Split('|');
+            if (parts.Length != 3 || parts[2].Length == 0) return false;
+
+            storedType = new ManagedTypeName(parts[0], parts[1], parts[2]);
+            return true;
         }
 
         // Builds the report from the unresolved usages whose stored type was resolvable in the baseline (i.e. just broke).

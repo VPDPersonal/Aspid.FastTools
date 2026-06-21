@@ -8,8 +8,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
     /// Drives <see cref="SerializeReferenceBreakageDetector"/> when assets or scripts change: a renamed/deleted script
-    /// surfaces as a <c>.cs</c> in the deleted/moved lists, and a re-saved prefab/asset/scene as a candidate import. The
-    /// scan is debounced to one run per change burst via <see cref="EditorApplication.delayCall"/>.
+    /// surfaces as a <c>.cs</c> in the deleted/moved lists, an in-place class rename as an edited <c>.cs</c> in the
+    /// imported list, and a re-saved prefab/asset/scene as a candidate import. The scan is debounced to one run per
+    /// change burst via <see cref="EditorApplication.delayCall"/>.
     /// </summary>
     internal sealed class SerializeReferenceBreakageHook : AssetPostprocessor
     {
@@ -19,7 +20,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (Application.isBatchMode) return;
 
-            var relevant = HasScript(deleted) || HasScript(moved)
+            // An in-place class rename (edit the .cs, no file move, no [MovedFrom]) reimports the script, so the edited
+            // .cs lands in `imported` — not deleted/moved. That is the detector's headline case, so it must schedule a
+            // scan too, alongside the rename/delete (.cs in deleted/moved) and re-saved-asset (candidate import) paths.
+            var relevant = HasScript(imported) || HasScript(deleted) || HasScript(moved)
                            || HasCandidate(imported) || HasCandidate(deleted) || HasCandidate(moved);
             if (!relevant || _scheduled) return;
 
