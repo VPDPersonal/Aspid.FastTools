@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- A `null` element in a `Type[]` member referenced by a `string` / `SerializableType` `[TypeSelector]` field no longer throws `NullReferenceException` and aborts the type picker — null entries are now filtered out before building the candidate list. ([#51])
+
 ## [1.0.0-rc.5] — 2026-06-06
 
 Packaging-only release. No functional or API changes versus `1.0.0-rc.4`.
@@ -136,6 +139,7 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 [#38]: https://github.com/VPDPersonal/Aspid.FastTools/pull/38
 [#43]: https://github.com/VPDPersonal/Aspid.FastTools/pull/43
 [#44]: https://github.com/VPDPersonal/Aspid.FastTools/pull/44
+[#51]: https://github.com/VPDPersonal/Aspid.FastTools/pull/51
 [Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...HEAD
 [1.0.0-rc.5]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...v1.0.0-rc.4

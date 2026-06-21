@@ -111,7 +111,7 @@ namespace Aspid.FastTools.Types.Editors
                     return;
                 
                 case Type[] typeArray:
-                    types.AddRange(typeArray);
+                    types.AddRange(typeArray.Where(t => t is not null));
                     return;
                 
                 case string assemblyQualifiedName:
