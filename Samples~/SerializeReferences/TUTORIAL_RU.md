@@ -238,14 +238,19 @@ drag-and-drop. Попробуйте их на полях из уроков 1–8
 - **Auto de-alias duplicated list elements** — давать дублированному элементу списка собственный экземпляр вместо
   совместного использования id оригинала.
 - **Build / CI gate** — `Off` / `Warn` / `Fail`: при сборке плеера логировать или прерывать сборку на потерянных (а для
-  CI — и на незаданных обязательных) managed-ссылках.
+  CI — и на незаданных обязательных) managed-ссылках. В отличие от остальных настроек (per-machine), эта строгость
+  сохраняется в **коммитимый** asset `ProjectSettings/SerializeReferenceGateSettings.asset`, поэтому ваш выбор попадает
+  в систему контроля версий и доезжает до чистого CI-раннера вместо сброса в `Warn`. Закоммитьте этот asset после
+  изменения значения.
 - **Excluded scan folders** — пути, пропускаемые при всех проектных сканах.
 
 Те же опции доступны и во вкладке **Settings** окна (**`Tools → Aspid 🐍 → FastTools → Settings`**).
 
-Для headless-CI метод `SerializeReferenceCiGate.RunCheck` (через `-batchmode -executeMethod`) пишет отчёт и завершается
-с ненулевым кодом при наличии нарушений; флаг `-srGateRequired` дополнительно проверяет незаданные поля
-`[TypeSelector(Required = true)]`.
+Для headless-CI метод `SerializeReferenceCiGate.RunCheck` (через `-batchmode -executeMethod`) пишет отчёт и учитывает
+коммитимую строгость гейта: `Off` пропускает проверку, `Warn` логирует, но завершается с кодом 0, `Fail` завершается с
+ненулевым кодом при наличии нарушений. Флаг `-srGateRequired` дополнительно проверяет незаданные поля
+`[TypeSelector(Required = true)]`, а per-run флаги `-srGateWarnOnly` (форсировать код 0) / `-srGateFail` (форсировать
+падение при нарушениях) переопределяют коммитимую строгость.
 
 ---
 

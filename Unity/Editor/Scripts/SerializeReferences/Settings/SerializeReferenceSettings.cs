@@ -32,7 +32,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             public bool ridColors = true;
             public bool autoDeAlias = true;
             public string[] excludedFolders = Array.Empty<string>();
-            public int buildSeverity = (int)GateSeverity.Warn;
         }
 
         private static Store _cache;
@@ -58,10 +57,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             set { Data.excludedFolders = value ?? Array.Empty<string>(); Save(); }
         }
 
+        /// <summary>
+        /// Build/CI gate severity. Unlike every other setting here (per-machine <see cref="EditorPrefs"/>), this is
+        /// persisted in a committed <see cref="SerializeReferenceGateSettings"/> asset so it travels to a clean CI
+        /// runner instead of defaulting to <see cref="GateSeverity.Warn"/> there. Still fires <see cref="Changed"/>
+        /// so open inspectors repaint live.
+        /// </summary>
         public static GateSeverity BuildSeverity
         {
-            get => (GateSeverity)Data.buildSeverity;
-            set { Data.buildSeverity = (int)value; Save(); }
+            get => SerializeReferenceGateSettings.instance.BuildSeverity;
+            set
+            {
+                var gate = SerializeReferenceGateSettings.instance;
+                if (gate.BuildSeverity == value) return;
+
+                gate.BuildSeverity = value;
+                Changed?.Invoke();
+            }
         }
 
         /// <summary>True when <paramref name="path"/> lies under one of the excluded scan folders.</summary>

@@ -37,7 +37,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var severity = new EnumField("Build / CI gate", SerializeReferenceSettings.BuildSeverity)
             {
-                tooltip = "Off: never check. Warn: log missing / unset-required references at build time. Fail: abort the build.",
+                tooltip = "Off: never check. Warn: log missing / unset-required references. Fail: abort the build / fail the CI job.\n"
+                    + "Stored in a committed ProjectSettings asset, so it travels to a clean CI runner. "
+                    + "CLI flags -srGateWarnOnly / -srGateFail override it per run.",
             };
             severity.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BuildSeverity = (GateSeverity)evt.newValue);
             container.Add(severity);
