@@ -87,7 +87,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (scored.Count == 0) return Array.Empty<RepairCandidate>();
 
-            scored.Sort((a, b) => b.Score.CompareTo(a.Score));
+            // Sort by descending score, then break ties deterministically on the candidate's full name and assembly
+            // (both Ordinal) so equally-scored same-named types in different namespaces always order the same way —
+            // otherwise the surfaced one-click fix would depend on TypeCache order and could flip across domain reloads.
+            scored.Sort(static (a, b) =>
+            {
+                var byScore = b.Score.CompareTo(a.Score);
+                if (byScore != 0) return byScore;
+
+                var byName = string.CompareOrdinal(a.Type.FullName, b.Type.FullName);
+                if (byName != 0) return byName;
+
+                return string.CompareOrdinal(a.Type.Assembly.GetName().Name, b.Type.Assembly.GetName().Name);
+            });
             return scored.Count <= max ? scored : scored.GetRange(0, max);
         }
 
