@@ -24,6 +24,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>Raised whenever a setting changes.</summary>
         public static event Action Changed;
 
+        /// <summary>
+        /// Raised only when the <see cref="ExcludedFolders"/> set actually changes — the precise signal the usage index
+        /// listens for to drop its warm copy, since <see cref="IsExcluded"/> is consulted only while the index is
+        /// (re)built. Kept separate from <see cref="Changed"/> so an unrelated setting (rid colours, the gate) never
+        /// triggers a costly index rebuild.
+        /// </summary>
+        public static event Action ExcludedFoldersChanged;
+
         private const string KeyPrefix = "Aspid.FastTools.SerializeReference.Settings.";
 
         [Serializable]
@@ -55,7 +63,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static string[] ExcludedFolders
         {
             get => Data.excludedFolders ?? Array.Empty<string>();
-            set { Data.excludedFolders = value ?? Array.Empty<string>(); Save(); }
+            set
+            {
+                var next = value ?? Array.Empty<string>();
+                // Detect a genuine change before persisting so the index reset (and its lazy rebuild) only fires when
+                // the exclusion set really moved — re-assigning the same paths leaves the warm index untouched.
+                var changed = !FoldersEqual(Data.excludedFolders, next);
+                Data.excludedFolders = next;
+                Save();
+                if (changed) ExcludedFoldersChanged?.Invoke();
+            }
         }
 
         public static GateSeverity BuildSeverity
@@ -78,6 +95,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return false;
+        }
+
+        // Ordinal, order-sensitive set comparison (null treated as empty). A reorder counts as a change too — harmless,
+        // since it only drops the warm index, which the next scan rebuilds.
+        private static bool FoldersEqual(string[] a, string[] b)
+        {
+            if (ReferenceEquals(a, b)) return true;
+            var lengthA = a?.Length ?? 0;
+            var lengthB = b?.Length ?? 0;
+            if (lengthA != lengthB) return false;
+
+            for (var i = 0; i < lengthA; i++)
+                if (!string.Equals(a[i], b[i], StringComparison.Ordinal)) return false;
+
+            return true;
         }
 
         private static Store Load()
