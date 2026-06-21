@@ -56,11 +56,11 @@
     background-image:                                       resource("d_FolderOpened Icon");
 }
 
-/* --- Shared-reference rid colour stripe ---
-   A 3 px absolutely-positioned bar on the left edge of the field root, coloured per-rid so aliased fields
-   can be matched at a glance. Hidden (zero width) by default; the --active modifier reveals it when a shared
-   reference is detected. The colour is always set inline from code; only geometry lives here. */
-.aspid-fasttools-serialize-reference__rid-stripe {
+/* --- Status stripe ---
+   A 3 px absolutely-positioned bar on the left edge of the field root, flagging the field at a glance. Hidden
+   (zero width) by default; the --active modifier reveals it. For a shared reference the colour is set inline from
+   code (per-rid, so aliased fields match); the --warning modifier paints it the warning amber for a missing type. */
+.aspid-fasttools-serialize-reference__stripe {
     position:                                              absolute;
     left:                                                  0;
     top:                                                   0;
@@ -68,8 +68,12 @@
     width:                                                 0;
 }
 
-.aspid-fasttools-serialize-reference__rid-stripe--active {
+.aspid-fasttools-serialize-reference__stripe--active {
     width:                                                 3px;
+}
+
+.aspid-fasttools-serialize-reference__stripe--warning {
+    background-color:                                      var(--aspid-colors-status-warning-text-light);
 }
 
 /* --- Compact inline notice (missing type / shared reference) ---
@@ -79,7 +83,8 @@
     flex-direction:                                        row;
     align-items:                                           center;
     flex-wrap:                                             wrap;
-    margin:                                                2px 0 1px 0;
+    /* Left inset clears the 3 px rid stripe on the field's left edge so the warning icon never overlaps it. */
+    margin:                                                2px 0 1px 5px;
 }
 
 .aspid-fasttools-serialize-reference-notice__icon {
@@ -134,22 +139,6 @@
 .aspid-fasttools-serialize-reference-notice__suggestion:hover {
     color:                                                 var(--aspid-colors-status-warning-text-lightness);
     border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
-}
-
-/* Small round rid colour chip appended after the action word on the shared-reference notice. Its background
-   colour is set inline from code so the same rid always renders the same colour. Hidden by default; the
-   --visible modifier reveals it when a shared reference is detected. */
-.aspid-fasttools-serialize-reference-notice__rid-chip {
-    width:                                                 8px;
-    height:                                               8px;
-    min-width:                                            8px;
-    margin-left:                                          5px;
-    border-radius:                                        4px;
-    display:                                              none;
-}
-
-.aspid-fasttools-serialize-reference-notice__rid-chip--visible {
-    display:                                               flex;
 }
 
 /* Info variant — a non-actionable, dim hint (the multi-object "different types" notice that stands in for the
