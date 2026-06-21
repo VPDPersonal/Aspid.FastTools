@@ -63,7 +63,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var contextEvent = Event.current;
             if (contextEvent.type == EventType.ContextClick && line.Contains(contextEvent.mousePosition))
             {
-                ShowContextMenu(property, fieldType);
+                ShowContextMenu(property, fieldType, baseTypes);
                 contextEvent.Use();
             }
 
@@ -299,9 +299,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        private static void ShowContextMenu(SerializedProperty property, Type fieldType)
+        private static void ShowContextMenu(SerializedProperty property, Type fieldType, Type[] baseTypes)
         {
             var persistent = property.Persistent();
+            var filter = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes);
             var menu = new GenericMenu();
 
             // Copy reads the first target's value (Unity's convention for a multi-selection menu). Paste then applies an
@@ -310,7 +311,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 () => SerializeReferenceClipboard.Copy(persistent.managedReferenceValue));
 
             var pasteLabel = new GUIContent("Paste Serialize Reference");
-            if (SerializeReferenceClipboard.CanPasteInto(fieldType))
+            if (SerializeReferenceClipboard.CanPasteInto(fieldType, filter))
                 menu.AddItem(pasteLabel, false, () => Paste(persistent));
             else
                 menu.AddDisabledItem(pasteLabel);
@@ -357,6 +358,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var template in SerializeReferenceTemplates.LoadResolved())
             {
                 if (fieldType != null && !fieldType.IsAssignableFrom(template.Type)) continue;
+                if (!filter(template.Type)) continue;
                 var name = template.Name;
                 menu.AddItem(new GUIContent($"Paste Template/{name}"), false, () => ApplyTemplate(property, name));
             }
