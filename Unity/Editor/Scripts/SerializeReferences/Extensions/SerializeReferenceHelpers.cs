@@ -392,12 +392,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// Human-readable <c>Namespace.Class</c> of this property's missing type, for the dropdown caption and the
         /// warning message, or an empty string when the property is not a recognised missing reference.
         /// </summary>
-        public static string GetMissingTypeDisplayName(SerializedProperty property)
-        {
-            var name = GetMissingTypeName(property);
-            if (name.IsEmpty) return string.Empty;
-            return string.IsNullOrEmpty(name.Namespace) ? name.Class : $"{name.Namespace}.{name.Class}";
-        }
+        public static string GetMissingTypeDisplayName(SerializedProperty property) =>
+            GetMissingTypeName(property).DisplayName;
 
         /// <summary>
         /// Computes the best <b>Smart Fix</b> repair suggestion for this property's missing managed reference: the
