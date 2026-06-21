@@ -996,9 +996,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             public int FileCount => _files.Count;
 
-            public string DisplayName => string.IsNullOrEmpty(StoredType.Namespace)
-                ? StoredType.Class
-                : $"{StoredType.Namespace}.{StoredType.Class}";
+            public string DisplayName => StoredType.DisplayName;
 
             public void Add(string assetPath, MissingReferenceEntry entry)
             {

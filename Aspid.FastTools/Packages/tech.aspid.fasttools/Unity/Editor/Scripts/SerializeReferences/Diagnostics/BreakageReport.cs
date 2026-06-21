@@ -33,7 +33,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             TopSuggestion = topSuggestion;
         }
 
-        public string TypeName => StoredType.Class;
+        public string TypeName => StoredType.DisplayName;
     }
 
     /// <summary>The set of managed references that became missing since the last scan, grouped count metadata included.</summary>
