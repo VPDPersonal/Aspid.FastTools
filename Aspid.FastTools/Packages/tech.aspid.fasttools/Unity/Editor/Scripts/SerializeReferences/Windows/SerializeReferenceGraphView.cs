@@ -127,6 +127,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private AspidGradientButton _openPickerRow;
         private VisualElement _openPickerCard;
 
+        // Per-asset constraint map cache, mirroring SerializeReferenceProjectView: BuildConstraintMap does a
+        // LoadAllAssetsAtPath + full SerializedObject walk, so without this each Fix-Missing picker open would re-scan
+        // the whole asset. Keyed by asset path (the graph maps one asset at a time, but a multi-document asset still
+        // shares one map across its cards). Cleared on every Rescan / apply so a fix's rewritten YAML is re-read.
+        private readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _constraintCache = new(StringComparer.Ordinal);
+
         public SerializeReferenceGraphView(Object target, Action<Color> onCanvasTone, Action<Object> onTargetChanged = null)
         {
             _target = target;
@@ -245,6 +251,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_list is null) return;
 
             ClosePicker();
+            // Drop the per-asset constraint maps so a rescan after a fix / clear re-reads the rewritten YAML rather than
+            // a stale map. Every apply path (ApplyFix / ClearReference / ApplyLive / ClearOrphan) funnels through here.
+            _constraintCache.Clear();
             _list.Clear();
 
             var assetPath = _target ? AssetDatabase.GetAssetPath(_target) : null;
@@ -1092,12 +1101,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Recovers the declared field type backing rid so the Fix picker is constrained the same way the Repair window
         // constrains its own. The asset's whole managed-reference constraint map (keyed by document file id + rid) is
-        // built once and looked up by the owning document's exact (fileId, rid) key, so a rid that collides across
-        // documents resolves to this document's field type rather than another's. Returns null (unconstrained) when no
-        // field points at the rid (an orphaned payload) or the field type is unresolvable.
-        private static Type ResolveConstraint(string assetPath, long fileId, long rid)
+        // built once, cached per asset path (so K missing cards on one asset share a single scan rather than re-scanning
+        // per picker open) and looked up by the owning document's exact (fileId, rid) key, so a rid that collides across
+        // documents resolves to this document's field type rather than another's. The cache is dropped on every Rescan /
+        // apply so a fix's rewritten YAML is re-read. Returns null (unconstrained) when no field points at the rid (an
+        // orphaned payload) or the field type is unresolvable.
+        private Type ResolveConstraint(string assetPath, long fileId, long rid)
         {
-            var map = SerializeReferenceHelpers.BuildConstraintMap(assetPath);
+            if (!_constraintCache.TryGetValue(assetPath, out var map))
+            {
+                map = SerializeReferenceHelpers.BuildConstraintMap(assetPath);
+                _constraintCache[assetPath] = map;
+            }
+
             return map.TryGetValue((fileId, rid), out var constraint) ? constraint : null;
         }
 
