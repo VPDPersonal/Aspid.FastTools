@@ -33,13 +33,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Returns <see langword="true"/> when the clipboard holds content that can be pasted into a field whose
         /// declared managed-reference type is <paramref name="fieldType"/> (an empty reference always pastes —
-        /// it clears the field).
+        /// it clears the field). The optional <paramref name="filter"/> applies the same <c>[TypeSelector]</c>
+        /// base-type narrowing the picker, drag-drop and Smart-Fix enforce, so paste cannot assign a type the
+        /// dropdown would hide.
         /// </summary>
-        public static bool CanPasteInto(Type fieldType)
+        public static bool CanPasteInto(Type fieldType, Func<Type, bool> filter = null)
         {
             if (!_hasContent) return false;
             if (_type is null) return true;
-            return fieldType is null || fieldType.IsAssignableFrom(_type);
+            if (fieldType is not null && !fieldType.IsAssignableFrom(_type)) return false;
+            return filter is null || filter(_type);
         }
 
         /// <summary>
