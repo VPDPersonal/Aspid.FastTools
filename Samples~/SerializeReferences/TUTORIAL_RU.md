@@ -247,7 +247,8 @@ drag-and-drop. Попробуйте их на полях из уроков 1–8
 
 Для headless-CI метод `SerializeReferenceCiGate.RunCheck` (через `-batchmode -executeMethod`) пишет отчёт и завершается
 с ненулевым кодом при наличии нарушений; флаг `-srGateRequired` дополнительно проверяет незаданные поля
-`[TypeSelector(Required = true)]`.
+`[TypeSelector(Required = true)]` в префабах, ScriptableObject и сценах (сцены проверяются на required-поля верхнего
+уровня через чистый YAML-проход).
 
 ---
 
