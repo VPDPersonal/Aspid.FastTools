@@ -4,6 +4,8 @@ using System.Text;
 using System.Linq;
 using UnityEditor;
 using System.Reflection;
+using System.Collections.Generic;
+using System.Globalization;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -32,6 +34,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (string.IsNullOrEmpty(path)) return false;
 
             var className = Path.GetFileNameWithoutExtension(path);
+            if (!IsValidClassName(className))
+            {
+                EditorUtility.DisplayDialog(
+                    "Invalid Class Name",
+                    $"\"{className}\" is not a valid C# class name. Use a name that starts with a letter or " +
+                    "underscore, contains only letters, digits and underscores, and is not a C# keyword.",
+                    "OK");
+                return false;
+            }
+
             var nspace = baseType.Namespace;
 
             File.WriteAllText(path, GenerateStub(className, nspace, baseType));
@@ -102,11 +114,72 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     yield return member;
         }
 
-        // A best-effort C# type name for the stub. Handles void and nested types; generic edge cases fall back to a
-        // form the author can refine in the opened file.
+        // C# reserved keywords that cannot be used verbatim as a type name (a leading '@' would be needed).
+        private static readonly HashSet<string> _csharpKeywords = new()
+        {
+            "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class",
+            "const", "continue", "decimal", "default", "delegate", "do", "double", "else", "enum", "event",
+            "explicit", "extern", "false", "finally", "fixed", "float", "for", "foreach", "goto", "if",
+            "implicit", "in", "int", "interface", "internal", "is", "lock", "long", "namespace", "new",
+            "null", "object", "operator", "out", "override", "params", "private", "protected", "public",
+            "readonly", "ref", "return", "sbyte", "sealed", "short", "sizeof", "stackalloc", "static",
+            "string", "struct", "switch", "this", "throw", "true", "try", "typeof", "uint", "ulong",
+            "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while",
+        };
+
+        // Validates that the file name is usable as a C# class identifier (rejects digits-first, spaces, keywords, …).
+        // Implemented without System.CodeDom / Microsoft.CSharp.CSharpCodeProvider, which Unity's .NET Standard API
+        // profile does not ship — mirrors the regex-based check used by IdRegistryValidator.
+        private static bool IsValidClassName(string className)
+        {
+            if (string.IsNullOrEmpty(className)) return false;
+            if (_csharpKeywords.Contains(className)) return false;
+
+            var first = className[0];
+            if (first != '_' && !char.IsLetter(first)) return false;
+
+            for (var i = 1; i < className.Length; i++)
+            {
+                var c = className[i];
+                if (c == '_' || char.IsLetterOrDigit(c)) continue;
+
+                // Allow Unicode combining/formatting marks permitted in C# identifiers.
+                var category = CharUnicodeInfo.GetUnicodeCategory(c);
+                if (category is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark
+                    or UnicodeCategory.ConnectorPunctuation or UnicodeCategory.Format) continue;
+
+                return false;
+            }
+
+            return true;
+        }
+
+        // A recursive, generic-aware C# type name for the stub. Handles void, nested types and generic arguments so the
+        // emitted base type / member signatures compile instead of leaking mangled `Name`1[[…]]` reflection strings.
         private static string TypeName(Type type)
         {
             if (type == typeof(void)) return "void";
+
+            if (type.IsArray)
+                return $"{TypeName(type.GetElementType())}[{new string(',', type.GetArrayRank() - 1)}]";
+
+            if (type.IsByRef || type.IsPointer)
+                return TypeName(type.GetElementType());
+
+            if (type.IsGenericParameter) return type.Name;
+
+            if (type.IsGenericType)
+            {
+                var definition = type.GetGenericTypeDefinition();
+                var rawName = (definition.FullName ?? definition.Name).Replace('+', '.');
+
+                var tick = rawName.IndexOf('`');
+                if (tick >= 0) rawName = rawName.Substring(0, tick);
+
+                var arguments = string.Join(", ", type.GetGenericArguments().Select(TypeName));
+                return $"{rawName}<{arguments}>";
+            }
+
             var name = type.FullName ?? type.Name;
             return name.Replace('+', '.');
         }
