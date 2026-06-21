@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using UnityEditor;
-using UnityEngine;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -61,9 +60,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// <summary>
     /// Window-free, headless-safe project scanner for managed-reference gate violations, shared by the build gate and
     /// the CI entry point. Missing-type detection reuses the pure-YAML
-    /// <see cref="SerializeReferenceYamlEditor.FindMissingReferences"/>; required-field detection loads each asset's
-    /// objects and checks <see cref="SerializeReferenceRequiredGate.IsViolation"/> per managed-reference and string
-    /// type property.
+    /// <see cref="SerializeReferenceYamlEditor.FindMissingReferences"/>. Required-field detection loads each saved
+    /// asset's objects and checks <see cref="SerializeReferenceRequiredGate.IsViolation"/> per managed-reference and
+    /// string type property; scenes — which cannot be read through <see cref="AssetDatabase.LoadAllAssetsAtPath"/> — go
+    /// through the pure-YAML <see cref="SerializeReferenceYamlEditor.FindUnsetRequiredFields"/> instead, so a <c>.unity</c>
+    /// is covered for top-level required fields too.
     /// </summary>
     internal static class SerializeReferenceGateScanner
     {
@@ -75,7 +76,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var violations = new List<GateViolation>();
             var paths = AssetDatabase.GetAllAssetPaths().Where(SerializeReferenceHelpers.IsScanCandidate).ToArray();
-            var requiredScenesSkipped = 0;
+
+            // The scan resolves each scene MonoBehaviour's required fields by its m_Script guid; memoise the resolution
+            // for the run (many objects share a script), cleared up front so a recompile between runs is never served stale.
+            ScriptRequiredFieldsCache.Clear();
 
             for (var i = 0; i < paths.Length; i++)
             {
@@ -88,30 +92,50 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (options.ScanRequiredFields)
                 {
-                    // Required detection loads objects + walks SerializedObjects, which cannot read scene objects, so
-                    // scenes are not covered. Count them and warn once below rather than silently passing — a CI author
-                    // must know an unset required value inside a .unity scene is NOT caught by this gate.
-                    if (SerializeReferenceHelpers.IsScene(path)) requiredScenesSkipped++;
-                    else CollectRequiredViolations(path, violations);
+                    // Scenes cannot be object-loaded, so they take the pure-YAML required scan; saved assets keep the
+                    // object-load path, which also covers required fields nested inside serializable containers.
+                    if (SerializeReferenceHelpers.IsScene(path))
+                        CollectSceneRequiredViolations(path, violations);
+                    else
+                        CollectRequiredViolations(path, violations);
                 }
             }
 
-            if (requiredScenesSkipped > 0)
-                Debug.LogWarning(
-                    $"[Aspid FastTools] Required-field gate does not cover scenes: {requiredScenesSkipped} scene(s) were " +
-                    "not checked for unset required references (missing-type checks still cover them). Track required " +
-                    "values in prefabs / ScriptableObjects, or verify scenes in-editor.");
-
             return violations;
+        }
+
+        // Per-run memo: a script guid -> the required field descriptors of the C# type it resolves to. Keyed by guid so
+        // an unresolvable script (deleted / non-MonoBehaviour) caches an empty set once instead of re-probing every object.
+        private static readonly Dictionary<string, IReadOnlyList<RequiredFieldDescriptor>> ScriptRequiredFieldsCache =
+            new(StringComparer.Ordinal);
+
+        // Scenes are scanned for unset required fields straight from YAML — LoadAllAssetsAtPath cannot read scene objects.
+        private static void CollectSceneRequiredViolations(string assetPath, List<GateViolation> violations)
+        {
+            foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(assetPath, RequiredFieldsForScript))
+                violations.Add(new GateViolation(assetPath, entry.FileId, entry.Rid, default,
+                    GateViolationKind.RequiredUnset, entry.FieldName));
+        }
+
+        // Resolves a MonoBehaviour script guid to the required fields of its C# type (via MonoScript), memoised per run.
+        private static IReadOnlyList<RequiredFieldDescriptor> RequiredFieldsForScript(string guid)
+        {
+            if (string.IsNullOrEmpty(guid)) return Array.Empty<RequiredFieldDescriptor>();
+            if (ScriptRequiredFieldsCache.TryGetValue(guid, out var cached)) return cached;
+
+            var path = AssetDatabase.GUIDToAssetPath(guid);
+            var monoScript = string.IsNullOrEmpty(path) ? null : AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+            var required = SerializeReferenceRequiredGate.GetRequiredFields(monoScript != null ? monoScript.GetClass() : null);
+
+            ScriptRequiredFieldsCache[guid] = required;
+            return required;
         }
 
         private static void CollectRequiredViolations(string assetPath, List<GateViolation> violations)
         {
             // Loading objects + walking SerializedObjects is heavier than the pure-YAML missing scan, so this check is
-            // opt-in (off by default for the fast build-time mode). Scenes cannot be read through LoadAllAssetsAtPath
-            // (see SerializeReferenceHelpers.IsScene), so the required-fields check skips them.
-            if (SerializeReferenceHelpers.IsScene(assetPath)) return;
-
+            // opt-in (off by default for the fast build-time mode). Caller dispatches scenes to the YAML path, so this
+            // only ever sees saved assets (ScriptableObjects, prefabs) that LoadAllAssetsAtPath can read.
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
                 if (asset == null) continue;
