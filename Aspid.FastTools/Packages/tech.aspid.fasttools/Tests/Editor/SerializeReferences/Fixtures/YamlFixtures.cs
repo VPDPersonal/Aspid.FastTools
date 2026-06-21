@@ -94,6 +94,53 @@ MonoBehaviour:
         _damagePerSecond: 5
 ";
 
+        // A MonoBehaviour where the MISSING reference (GhostPistol, rid 1002) is ALIASED across two slots — both
+        // _primaryWeapon and _sidearms[0] point at the one rid — alongside a singly-pointed sibling (Shotgun, rid 1003,
+        // _sidearms[1]) and a healthy effect (rid 1004). Pins the all-pointer-null behaviour and the pointer-count helper:
+        // clearing rid 1002 must null BOTH aliased slots (count 2) while leaving the Shotgun slot intact. Same indentation
+        // and layout as MissingTypePrefab; reuses MonoBehaviourFileId / GhostPistolRid / ShotgunRid.
+        public const string AliasedMissingTypePrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6500000000000000001
+GameObject:
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6500000000000000003}
+  m_Name: LoadoutAliasedMissing
+--- !u!114 &6500000000000000003
+MonoBehaviour:
+  m_GameObject: {fileID: 6500000000000000001}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name:
+  _primaryWeapon:
+    rid: 1002
+  _sidearms:
+  - rid: 1002
+  - rid: 1003
+  _onHitEffect:
+    rid: 1004
+  references:
+    version: 2
+    RefIds:
+    - rid: 1002
+      type: {class: GhostPistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 15
+        _magazineSize: 12
+    - rid: 1003
+      type: {class: Shotgun, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _pellets: 8
+        _spreadAngle: 25
+    - rid: 1004
+      type: {class: FreezeEffect, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _duration: 2.5
+        _slowPercent: 40
+";
+
         // RefIds present in the empty-fields fixture below.
         public const long EmptyRailgunRid = 1001;  // _primaryWeapon  (resolvable, holds a cleared nested _chargeEffect)
         public const long EmptyPistolRid = 1002;   // _sidearms[0]    (resolvable)

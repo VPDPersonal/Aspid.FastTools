@@ -946,15 +946,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // exactly what Unity writes for a cleared [SerializeReference] field. Reached by picking <None> in a missing
         // card's Fix picker (a missing reference cannot be cleared through the serialization API, so it is done in the
         // YAML). Confirmed and not undoable: the reference's broken payload is discarded, mirroring ClearOrphan. A shared
-        // (aliased) reference nulls every field that points at it. The captured file id targets exactly this document's
-        // rid (rids collide across documents). Healthy / empty slots clear through the live path (see ApplyLive) instead.
+        // (aliased) reference nulls every field that points at it, so the confirm dialog names that count up front (the
+        // rid is unrecoverable, so a per-slot detach isn't offered here). The captured file id targets exactly this
+        // document's rid (rids collide across documents). Healthy / empty slots clear through the live path (see ApplyLive).
         private void ClearReference(string assetPath, long fileId, long rid)
         {
+            // Name how many fields the clear will null so an aliased reference doesn't silently take down siblings the
+            // user didn't realize shared the rid. A non-positive count means the pointers couldn't be located — fall
+            // back to the unnumbered wording rather than print "0 fields".
+            var fieldCount = SerializeReferenceYamlEditor.CountPointersTo(assetPath, fileId, rid);
+            var pointerLine = fieldCount switch
+            {
+                1 => "This nulls the 1 field pointing at it",
+                > 1 => $"This reference is aliased across {fieldCount} fields — clearing it nulls every one of them",
+                _ => "This nulls every field pointing at it",
+            };
+
             if (!EditorUtility.DisplayDialog(
                     "Clear Reference",
                     $"Reset this managed reference (rid {rid}) to <None> in\n{assetPath}?\n\n" +
-                    "This nulls every field pointing at it and discards its stored data. It edits the asset file " +
-                    "directly and cannot be undone.",
+                    $"{pointerLine} and discards its stored data. It edits the asset file directly and cannot be undone.",
                     "Clear", "Cancel"))
                 return;
 

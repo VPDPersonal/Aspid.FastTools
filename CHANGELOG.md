@@ -38,9 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - The **Repair Missing References** and **Managed References** windows are merged into a single workbench whose tabs are individual menu entries under `Tools → Aspid 🐍 → FastTools` — **Welcome**, **Asset References** (the reference graph with inline Fix / Clear / Open Source Prefab — which subsumes the old per-asset repair list), **Project References** (the project-wide grouped bulk fix), and **Settings**. A result in Project References links straight to that asset's Asset References graph.
 - The per-property missing-type probe now caches the asset YAML by path + write-time, eliminating a `File.ReadAllLines` on every IMGUI repaint.
+- The confirm dialog for clearing a missing managed reference now names how many fields it will null, so an aliased reference shared across several slots makes its all-pointer clear explicit before the irreversible YAML edit (the clear still nulls every aliased field — only the wording changed).
 
 ### Added (internal)
-- First package test coverage: an `Aspid.FastTools.Unity.Editor.Tests` EditMode assembly exercising the `SerializeReferenceYamlEditor` parser (missing-type discovery, propertyPath → rid resolution incl. nested/list, stored-type reading, round-trip rewrite, entry removal, diff-preview consistency) plus the YAML probe cache.
+- First package test coverage: an `Aspid.FastTools.Unity.Editor.Tests` EditMode assembly exercising the `SerializeReferenceYamlEditor` parser (missing-type discovery, propertyPath → rid resolution incl. nested/list, stored-type reading, round-trip rewrite, entry removal, aliased-pointer nulling + the dialog pointer-count helper, diff-preview consistency) plus the YAML probe cache.
 
 ## [1.0.0-rc.5] — 2026-06-06
 
