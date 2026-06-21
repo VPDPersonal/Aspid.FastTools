@@ -35,7 +35,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// </summary>
         public AspidWindowFooter()
         {
-            this.AddStyleSheetsFromResource(StyleSheetPath)
+            this.AddAspidThemeStyleSheets()
+                .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(RootClass);
 
             var version = ReadPackageVersion();
