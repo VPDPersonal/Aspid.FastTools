@@ -92,6 +92,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void FindUnsetRequiredFields_AbsentKeys_ReportsNone()
+        {
+            // Both required keys are missing from the document (object saved before the fields were added / stripped doc).
+            // An absent key needs a reserialize, not a build failure, so it must not be reported as a violation.
+            _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneAbsentKeys);
+
+            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, Resolve);
+
+            Assert.AreEqual(0, violations.Count, "An absent required key is not a violation — it needs a reserialize.");
+        }
+
+        [Test]
         public void FindUnsetRequiredFields_MixedAndUnknownScript_ReportsOnlyKnownUnset()
         {
             _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneMixedUnknownScript);
