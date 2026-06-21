@@ -74,11 +74,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (property is null || string.IsNullOrEmpty(sourcePath)) return false;
 
-            var source = property.serializedObject.FindProperty(sourcePath);
-            var value = source?.managedReferenceValue;
+            // Read AND write through the SAME SerializedObject and apply once. Unity only keeps two fields on a single
+            // managedReferenceId when the SAME instance is assigned within the SAME SerializedObject; assigning a value
+            // pulled into a separate SerializedObject (e.g. property.Persistent()) deserialises a fresh copy that gets a
+            // NEW rid on apply — which would defeat the whole point of linking (no shared rid, no shared-reference notice).
+            var serializedObject = property.serializedObject;
+            var value = serializedObject.FindProperty(sourcePath)?.managedReferenceValue;
             if (value is null) return false;
 
-            property.Persistent().SetManagedReferenceAndApply(value);
+            property.managedReferenceValue = value;
+            serializedObject.ApplyModifiedProperties();
             return true;
         }
 
