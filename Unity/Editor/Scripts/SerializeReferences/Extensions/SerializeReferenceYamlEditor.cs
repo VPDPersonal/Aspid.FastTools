@@ -181,8 +181,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
     internal static class SerializeReferenceYamlEditor
     {
-        // "--- !u!114 &11400000" — object document header carrying the local file id as its YAML anchor.
-        private static readonly Regex DocumentHeader = new(@"^--- !u!\d+ &(\d+)", RegexOptions.Compiled);
+        // The object document header ("--- !u!114 &11400000") and the RefIds-block lookup are single-sourced in
+        // SerializeReferenceYaml so this repair flow and the graph scanner read Unity's RefIds shape identically.
+        private static Regex DocumentHeader => SerializeReferenceYaml.DocumentHeader;
 
         // "--- !u!114 &11400000" — a MonoBehaviour document header (class id 114), the only kind that carries m_Script
         // and serialized user fields, so the scene required-field scan iterates these alone.
@@ -215,7 +216,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 for (var i = 0; i < lines.Length; i++)
                 {
                     var match = DocumentHeader.Match(lines[i]);
-                    if (match.Success && long.TryParse(match.Groups[1].Value, out var fileId))
+                    if (match.Success && long.TryParse(match.Groups["id"].Value, out var fileId))
                         headers.Add((fileId, i));
                 }
 
@@ -763,20 +764,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // The exclusive end line of a RefIds entry that begins at headerIndex: the entry runs until the next list item at
-        // its own indent, or until the block dedents out of it (blank lines are spanned). Shared by the entry removers.
-        private static int FindEntryEnd(string[] lines, int headerIndex, int end, int entryIndent)
-        {
-            for (var j = headerIndex + 1; j < end; j++)
-            {
-                if (lines[j].Trim().Length == 0) continue;
-                var indent = IndentOf(lines[j]);
-                if (indent < entryIndent || (indent == entryIndent && lines[j].TrimStart().StartsWith("- ")))
-                    return j;
-            }
-
-            return end;
-        }
+        // The exclusive end line of a RefIds entry that begins at headerIndex (see SerializeReferenceYaml.FindEntryEnd).
+        private static int FindEntryEnd(string[] lines, int headerIndex, int end, int entryIndent) =>
+            SerializeReferenceYaml.FindEntryEnd(lines, headerIndex, end, entryIndent);
 
         // The indent of the RefIds list's entry headers: the first "- rid:" line under RefIds. Entries sit at this
         // shallowest dash indent; nested reference pointers inside their data blocks are deeper. -1 when the block is empty.
@@ -1066,17 +1056,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // Leading-indentation width of a line, counting each space or tab as one unit. Unity always indents its YAML
-        // with spaces, but the "- rid:" / "type:" indent regexes capture leading whitespace with \s* (which counts
-        // tabs too). Counting tabs here keeps this measure aligned with those regexes: a tab-indented line would
-        // otherwise read as indent 0 here while a regex sees it as N, and FindEntryEnd would mis-bound the entry.
-        // Alignment, not visual tab width, is what matters — both measures count one unit per character.
-        private static int IndentOf(string line)
-        {
-            var count = 0;
-            while (count < line.Length && (line[count] == ' ' || line[count] == '\t')) count++;
-            return count;
-        }
+        // Leading-indentation width of a line, counting each space or tab as one unit (see SerializeReferenceYaml.IndentOf).
+        private static int IndentOf(string line) => SerializeReferenceYaml.IndentOf(line);
 
         // A line whose leading indentation is spaces only — Unity's invariant for serialized YAML. Returns false when
         // the indent begins with a tab or any other whitespace, the case where IndentOf and the "- rid:" \s* regexes
@@ -1174,20 +1155,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Parses the inline "class: X, ns: Y, asm: Z" body of a RefIds type mapping, honouring single-quoted values
-        // (Unity quotes generic class names such as 'Modifier`1[[…]]').
-        private static bool TryParseInlineType(string body, out ManagedTypeName type)
-        {
-            type = default;
-
-            var match = Regex.Match(body,
-                @"class:\s*(?:'(?<class>(?:[^']|'')*)'|(?<class>[^,}]*?))\s*,\s*ns:\s*(?<ns>[^,}]*?)\s*,\s*asm:\s*(?<asm>[^,}]*?)\s*$");
-            if (!match.Success) return false;
-
-            var className = match.Groups["class"].Value.Replace("''", "'");
-            type = new ManagedTypeName(match.Groups["asm"].Value, match.Groups["ns"].Value, className);
-            return !type.IsEmpty;
-        }
+        // Parses the inline "class: X, ns: Y, asm: Z" body of a RefIds type mapping (see SerializeReferenceYaml.TryParseInlineType).
+        private static bool TryParseInlineType(string body, out ManagedTypeName type) =>
+            SerializeReferenceYaml.TryParseInlineType(body, out type);
 
         // Returns the [start, end) line range of the document whose anchor equals fileId. Falls back to the single
         // document of a one-object asset (the common ScriptableObject case) when the anchor cannot be matched.
@@ -1212,7 +1182,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     break;
                 }
 
-                if (long.TryParse(match.Groups[1].Value, out var anchor) && anchor == fileId)
+                if (long.TryParse(match.Groups["id"].Value, out var anchor) && anchor == fileId)
                     start = i;
             }
 
@@ -1221,16 +1191,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return (-1, -1);
         }
 
-        // Index of the "RefIds:" key line within [start, end), or -1 when the document has no managed references.
-        private static int FindRefIdsStart(string[] lines, int start, int end)
-        {
-            var refIds = new Regex(@"^\s*RefIds:\s*$");
-            for (var i = start; i < end; i++)
-                if (refIds.IsMatch(lines[i]))
-                    return i;
-
-            return -1;
-        }
+        // Index of the "RefIds:" key line within [start, end) (see SerializeReferenceYaml.FindRefIdsStart).
+        private static int FindRefIdsStart(string[] lines, int start, int end) =>
+            SerializeReferenceYaml.FindRefIdsStart(lines, start, end);
 
         /// <summary>
         /// Reads the top-level serialized field names recorded for the managed reference <paramref name="rid"/> within
