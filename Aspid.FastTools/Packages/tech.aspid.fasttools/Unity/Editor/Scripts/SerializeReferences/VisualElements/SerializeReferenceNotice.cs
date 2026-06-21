@@ -1,6 +1,7 @@
 using System;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -17,7 +18,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </summary>
     internal sealed class SerializeReferenceNotice : VisualElement
     {
-        private const string NoticeClass = "aspid-fasttools-serialize-reference-notice";
+        // Self-contained component (reused on the [SerializeReference] field AND the string [TypeSelector(Required)]
+        // path), so it loads its own stylesheet rather than depending on a host having added it.
+        private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";
+
+        // Own BEM block (a reusable notice, not an element of the serialize-reference field block).
+        private const string NoticeClass = "aspid-fasttools-reference-notice";
         private const string IconClass = NoticeClass + "__icon";
         private const string MessageClass = NoticeClass + "__message";
         private const string ActionClass = NoticeClass + "__action";
@@ -37,7 +43,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public SerializeReferenceNotice()
         {
-            this.AddClass(NoticeClass);
+            // Base palette first (via the theme helper), then the feature sheet, then the block class.
+            this.AddAspidThemeStyleSheets()
+                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddClass(NoticeClass);
 
             var icon = new VisualElement()
                 .AddClass(IconClass)

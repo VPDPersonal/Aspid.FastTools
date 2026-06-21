@@ -79,7 +79,7 @@
 /* --- Compact inline notice (missing type / shared reference) ---
    Replaces the bulky help-box + button: a small warning icon, a terse yellow message and an
    underlined, clickable action word. The full explanation rides the element's tooltip on hover. */
-.aspid-fasttools-serialize-reference-notice {
+.aspid-fasttools-reference-notice {
     flex-direction:                                        row;
     align-items:                                           center;
     flex-wrap:                                             wrap;
@@ -87,7 +87,7 @@
     margin:                                                2px 0 1px 5px;
 }
 
-.aspid-fasttools-serialize-reference-notice__icon {
+.aspid-fasttools-reference-notice__icon {
     width:                                                 14px;
     height:                                                14px;
     min-width:                                             14px;
@@ -99,13 +99,13 @@
 }
 
 /* Both states use the same yellow text per the design — warning, not info. */
-.aspid-fasttools-serialize-reference-notice__message {
+.aspid-fasttools-reference-notice__message {
     color:                                                 var(--aspid-colors-status-warning-text-light);
     -unity-font-style:                                     normal;
     white-space:                                           normal;
 }
 
-.aspid-fasttools-serialize-reference-notice__action {
+.aspid-fasttools-reference-notice__action {
     margin-left:                                           4px;
     color:                                                 var(--aspid-colors-status-warning-text-light);
     -unity-font-style:                                     bold;
@@ -114,7 +114,7 @@
     cursor:                                                link;
 }
 
-.aspid-fasttools-serialize-reference-notice__action:hover {
+.aspid-fasttools-reference-notice__action:hover {
     color:                                                 var(--aspid-colors-status-warning-text-lightness);
     border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
 }
@@ -122,7 +122,7 @@
 /* Trailing Smart Fix suggestion ("· → Pistol?"): a second underlined clickable word after Fix, same warning
    palette, sitting a touch further to the right so the two actions read as separate affordances. Hidden by
    default; the --visible modifier reveals it when a suggestion is set. */
-.aspid-fasttools-serialize-reference-notice__suggestion {
+.aspid-fasttools-reference-notice__suggestion {
     margin-left:                                           6px;
     color:                                                 var(--aspid-colors-status-warning-text-light);
     -unity-font-style:                                     bold;
@@ -132,11 +132,11 @@
     display:                                               none;
 }
 
-.aspid-fasttools-serialize-reference-notice__suggestion--visible {
+.aspid-fasttools-reference-notice__suggestion--visible {
     display:                                               flex;
 }
 
-.aspid-fasttools-serialize-reference-notice__suggestion:hover {
+.aspid-fasttools-reference-notice__suggestion:hover {
     color:                                                 var(--aspid-colors-status-warning-text-lightness);
     border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
 }
@@ -144,13 +144,13 @@
 /* Info variant — a non-actionable, dim hint (the multi-object "different types" notice that stands in for the
    suppressed per-instance child fields). Swaps the warning icon for the info icon and the yellow text for the
    generic dim shade, so it reads as informational rather than something to fix. */
-.aspid-fasttools-serialize-reference-notice--info
-    .aspid-fasttools-serialize-reference-notice__icon {
+.aspid-fasttools-reference-notice--info
+    .aspid-fasttools-reference-notice__icon {
     background-image:                                      resource("d_console.infoicon");
 }
 
-.aspid-fasttools-serialize-reference-notice--info
-    .aspid-fasttools-serialize-reference-notice__message {
+.aspid-fasttools-reference-notice--info
+    .aspid-fasttools-reference-notice__message {
     color:                                                 var(--aspid-colors-text-dark);
 }
 
