@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The **Repair Missing References** and **Managed References** windows are merged into a single workbench whose tabs are individual menu entries under `Tools → Aspid 🐍 → FastTools` — **Welcome**, **Asset References** (the reference graph with inline Fix / Clear / Open Source Prefab — which subsumes the old per-asset repair list), **Project References** (the project-wide grouped bulk fix), and **Settings**. A result in Project References links straight to that asset's Asset References graph.
 - The per-property missing-type probe now caches the asset YAML by path + write-time, eliminating a `File.ReadAllLines` on every IMGUI repaint.
 
+### Fixed
+- The UIToolkit `[TypeSelector]` managed-reference drawer now renders its missing / shared / required notices **above** the assigned instance's child fields when the foldout is expanded, matching the IMGUI drawer (the notices previously appeared *below* the children because they were appended to the field root after the foldout). They are now hosted between the foldout toggle and its content, so collapsed-state behaviour is unchanged.
+
 ### Added (internal)
 - First package test coverage: an `Aspid.FastTools.Unity.Editor.Tests` EditMode assembly exercising the `SerializeReferenceYamlEditor` parser (missing-type discovery, propertyPath → rid resolution incl. nested/list, stored-type reading, round-trip rewrite, entry removal, diff-preview consistency) plus the YAML probe cache.
 
