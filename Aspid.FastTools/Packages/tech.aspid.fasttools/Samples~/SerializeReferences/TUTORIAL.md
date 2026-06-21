@@ -256,7 +256,8 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 The same options are also available in the window's **Settings** tab (**`Tools → Aspid 🐍 → FastTools → Settings`**).
 
 For headless CI, `SerializeReferenceCiGate.RunCheck` (invoked via `-batchmode -executeMethod`) writes a report and
-exits non-zero when violations exist; `-srGateRequired` also flags unset `[TypeSelector(Required = true)]` fields.
+exits non-zero when violations exist; `-srGateRequired` also flags unset `[TypeSelector(Required = true)]` fields across
+prefabs, ScriptableObjects and scenes (scenes are checked for top-level required fields via a pure-YAML pass).
 
 ---
 

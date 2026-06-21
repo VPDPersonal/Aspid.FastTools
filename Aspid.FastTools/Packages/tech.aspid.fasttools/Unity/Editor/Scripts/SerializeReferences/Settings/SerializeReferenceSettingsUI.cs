@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -25,6 +26,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 tooltip = "Colour-code shared managed references by rid in the inspector stripe/chip and the graph window.",
             };
             ridColors.RegisterValueChangedCallback(evt => SerializeReferenceSettings.RidColorsEnabled = evt.newValue);
+            SyncFromSettings(ridColors, () => SerializeReferenceSettings.RidColorsEnabled);
             container.Add(ridColors);
 
             var autoDeAlias = new Toggle("Auto de-alias duplicated list elements")
@@ -33,6 +35,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 tooltip = "Give a duplicated list element its own independent instance instead of sharing the original's rid.",
             };
             autoDeAlias.RegisterValueChangedCallback(evt => SerializeReferenceSettings.AutoDeAliasEnabled = evt.newValue);
+            SyncFromSettings(autoDeAlias, () => SerializeReferenceSettings.AutoDeAliasEnabled);
             container.Add(autoDeAlias);
 
             var breakageDetection = new Toggle("Breakage detection")
@@ -49,6 +52,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 tooltip = "Off: never check. Warn: log missing / unset-required references at build time. Fail: abort the build.",
             };
             severity.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BuildSeverity = (GateSeverity)evt.newValue);
+            SyncFromSettings<EnumField, Enum>(severity, () => SerializeReferenceSettings.BuildSeverity);
             container.Add(severity);
 
             container.Add(new Label("Excluded scan folders (one path per line)")
@@ -63,7 +67,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .Select(line => line.Trim())
                 .Where(line => line.Length > 0)
                 .ToArray());
+            SyncFromSettings(folders, () => string.Join("\n", SerializeReferenceSettings.ExcludedFolders));
             container.Add(folders);
+        }
+
+        /// <summary>
+        /// Keeps <paramref name="control"/> in lock-step with the shared <see cref="SerializeReferenceSettings"/> store so
+        /// the in-window Settings tab and the Project Settings page reflect each other live: on every
+        /// <see cref="SerializeReferenceSettings.Changed"/> the control re-reads its backing value through
+        /// <paramref name="read"/> <i>without notifying</i>, so it never writes back or loops. The control the user is
+        /// actively editing is skipped, so an in-progress edit (e.g. typing a path into the multiline folders field) is
+        /// never normalized out from under the cursor. The subscription is released on
+        /// <see cref="DetachFromPanelEvent"/> so a closed surface leaks nothing.
+        /// </summary>
+        private static void SyncFromSettings<TControl, TValue>(TControl control, Func<TValue> read)
+            where TControl : VisualElement, INotifyValueChanged<TValue>
+        {
+            void Handler()
+            {
+                // Don't clobber the surface the user is typing into; the other (unfocused) surface still syncs, and the
+                // focused one re-reads the (already-correct) value on its next change or re-attach.
+                if (control.focusController?.focusedElement == control) return;
+                control.SetValueWithoutNotify(read());
+            }
+
+            SerializeReferenceSettings.Changed += Handler;
+            control.RegisterCallback<DetachFromPanelEvent>(_ => SerializeReferenceSettings.Changed -= Handler);
         }
     }
 }
