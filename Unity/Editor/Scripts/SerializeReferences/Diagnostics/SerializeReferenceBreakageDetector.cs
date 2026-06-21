@@ -47,6 +47,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (Application.isBatchMode) return;
 
+            // Type resolution flaps while scripts recompile / the AssetDatabase updates, which would falsely alarm and
+            // corrupt the baseline; defer until the editor is settled.
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
+
+            // Never warm a cold index from the import / domain-reload path: that runs a modal full-project sweep on every
+            // routine save (risk register 3/10). Detection is active only once the index is already warm (built by a
+            // deliberate Find Usages / Project References scan) and kept warm incrementally on import. When cold, the
+            // explicit Project References scan still finds everything; the proactive toast just stays quiet.
+            if (!SerializeReferenceTypeUsageIndex.IsWarm) return;
+
             var resolvable = new HashSet<string>(StringComparer.Ordinal);
             var unresolved = new List<SerializeReferenceTypeUsageIndex.Usage>();
 

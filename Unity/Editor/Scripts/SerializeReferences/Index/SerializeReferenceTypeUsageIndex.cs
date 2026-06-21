@@ -52,6 +52,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // null = cold sentinel; rebuilt lazily on first lookup, exactly like the Id indices.
         private static Dictionary<string, HashSet<Usage>> _index;
 
+        /// <summary>
+        /// Whether the index is already built (warm). Consumers on the import / domain-reload path (the breakage
+        /// detector, the delete guard) must check this and NOT warm a cold index — warming runs a modal full-project
+        /// YAML sweep, which must never be triggered by a routine import (risk register items 3 and 10).
+        /// </summary>
+        public static bool IsWarm => _index is not null;
+
         /// <summary>Every use site of the type identified by <paramref name="storedTypeKey"/> (warms the index if cold).</summary>
         public static IReadOnlyCollection<Usage> FindUsages(string storedTypeKey)
         {
