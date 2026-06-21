@@ -110,6 +110,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var targets = property.serializedObject.targetObjects;
             if (targets.Length < 2) return false;
 
+            // The per-target probe below allocates a SerializedObject per selected object and is called from both
+            // GetHeight and Draw on every IMGUI repaint. Memoise its result per selection: the all-missing state it
+            // measures is stable until the backing assets change, which rebuilds the inspector's SerializedObject anyway.
+            if (MixedCacheMatches(property.propertyPath, first, targets)) return _mixedResult;
+
+            var result = false;
             foreach (var target in targets)
             {
                 if (target == null) continue;
@@ -117,10 +123,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 using var single = new SerializedObject(target);
                 var other = single.FindProperty(property.propertyPath);
                 if (other is null) continue;
-                if (other.managedReferenceFullTypename != first) return true;
+                if (other.managedReferenceFullTypename != first) { result = true; break; }
             }
 
-            return false;
+            StoreMixedCache(property.propertyPath, first, targets, result);
+            return result;
+        }
+
+        // Per-selection memo backing HasMixedTypes' expensive all-missing multi-select probe (collision-free: the cache
+        // hits only when the path, the agreed type name and every target object reference match the last computation).
+        private static string _mixedPath;
+        private static string _mixedFirst;
+        private static UnityEngine.Object[] _mixedTargets;
+        private static bool _mixedResult;
+
+        private static bool MixedCacheMatches(string path, string first, UnityEngine.Object[] targets)
+        {
+            if (_mixedTargets is null || _mixedTargets.Length != targets.Length) return false;
+            if (_mixedPath != path || _mixedFirst != first) return false;
+
+            for (var i = 0; i < targets.Length; i++)
+                if (!ReferenceEquals(_mixedTargets[i], targets[i])) return false;
+
+            return true;
+        }
+
+        private static void StoreMixedCache(string path, string first, UnityEngine.Object[] targets, bool result)
+        {
+            _mixedPath = path;
+            _mixedFirst = first;
+            _mixedTargets = (UnityEngine.Object[])targets.Clone(); // snapshot the references so a reused array can't alias
+            _mixedResult = result;
         }
 
         /// <summary>

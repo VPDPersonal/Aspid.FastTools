@@ -230,7 +230,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_list is not null) Rescan();
         }
 
-        private void Rescan()
+        private void Rescan(List<ReferenceGraphDocument> prebuilt = null)
         {
             if (_list is null) return;
 
@@ -263,7 +263,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            var documents = SerializeReferenceGraphScanner.Build(assetPath);
+            var documents = prebuilt ?? SerializeReferenceGraphScanner.Build(assetPath);
             if (documents.Count == 0)
             {
                 ShowEmpty(
@@ -799,13 +799,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
 
             // Guard against a stale graph: confirm the rid is still an orphan against a fresh scan before deleting.
+            var fresh = SerializeReferenceGraphScanner.Build(assetPath);
             var stillOrphan = false;
-            foreach (var document in SerializeReferenceGraphScanner.Build(assetPath))
+            foreach (var document in fresh)
                 if (document.FileId == fileId && document.Orphans.Contains(rid)) { stillOrphan = true; break; }
 
             if (!stillOrphan)
             {
-                Rescan();
+                // The on-screen graph was stale (the rid is no longer an orphan); re-render from the scan we just built
+                // instead of reading the unchanged file a second time.
+                Rescan(fresh);
                 return;
             }
 
