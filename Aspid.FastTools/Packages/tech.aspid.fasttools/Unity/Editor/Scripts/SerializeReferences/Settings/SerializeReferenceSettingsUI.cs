@@ -38,6 +38,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SyncFromSettings(autoDeAlias, () => SerializeReferenceSettings.AutoDeAliasEnabled);
             container.Add(autoDeAlias);
 
+            var breakageDetection = new Toggle("Breakage detection")
+            {
+                value = SerializeReferenceSettings.BreakageDetectionEnabled,
+                tooltip = "Watch for managed references that just became missing (renamed/deleted scripts) and surface a " +
+                          "toast pointing at Repair. Turn off to silence the domain-reload / import-time detection entirely.",
+            };
+            breakageDetection.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BreakageDetectionEnabled = evt.newValue);
+            container.Add(breakageDetection);
+
             var severity = new EnumField("Build / CI gate", SerializeReferenceSettings.BuildSeverity)
             {
                 tooltip = "Off: never check. Warn: log missing / unset-required references at build time. Fail: abort the build.",
