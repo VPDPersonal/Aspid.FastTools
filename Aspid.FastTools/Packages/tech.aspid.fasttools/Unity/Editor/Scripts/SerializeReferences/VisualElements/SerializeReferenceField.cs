@@ -625,7 +625,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (value is null) return;
 
             SerializeReferenceNamePrompt.Show("Save Template", SerializeReferenceTemplates.SuggestName(type),
-                name => SerializeReferenceTemplates.Save(name, value));
+                name => SerializeReferenceTemplates.SaveConfirmed(name, value));
         }
 
         private void ApplyTemplate(string name)

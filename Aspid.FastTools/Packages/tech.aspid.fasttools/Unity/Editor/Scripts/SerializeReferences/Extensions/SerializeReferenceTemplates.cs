@@ -49,6 +49,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static string Key => KeyPrefix + PlayerSettings.productGUID;
 
+        /// <summary>Whether a template with <paramref name="name"/> already exists.</summary>
+        public static bool Contains(string name) => Load().entries.Exists(entry => entry.name == name);
+
+        /// <summary>
+        /// Saves <paramref name="value"/> under <paramref name="name"/>, asking for confirmation first when a template
+        /// with that name already exists (the existing one would be overwritten).
+        /// </summary>
+        public static void SaveConfirmed(string name, object value)
+        {
+            if (Contains(name) && !EditorUtility.DisplayDialog("Overwrite Template?",
+                    $"A template named \"{name}\" already exists. Overwrite it?", "Overwrite", "Cancel")) return;
+
+            Save(name, value);
+        }
+
         /// <summary>Saves <paramref name="value"/> under <paramref name="name"/> (replacing an existing one).</summary>
         public static void Save(string name, object value)
         {
