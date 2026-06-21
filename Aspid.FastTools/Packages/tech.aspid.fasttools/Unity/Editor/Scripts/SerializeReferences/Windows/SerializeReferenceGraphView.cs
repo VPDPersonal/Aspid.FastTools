@@ -108,6 +108,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Reports this view's state-tone to the host window, which owns the shared dotted canvas behind every mode.
         private readonly Action<Color> _onCanvasTone;
 
+        // Reports a target change back to the host window so its cached target follows an in-view pick. The host rebuilds
+        // this view from that cached target on every tab switch, so without this an asset picked here (or the Open Source
+        // Prefab retarget) would be dropped the next time the user returns to this tab.
+        private readonly Action<Object> _onTargetChanged;
+
         private Object _target;
         private ObjectField _assetField;
         private AspidGradientButton _rescanButton;
@@ -122,10 +127,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private AspidGradientButton _openPickerRow;
         private VisualElement _openPickerCard;
 
-        public SerializeReferenceGraphView(Object target, Action<Color> onCanvasTone)
+        public SerializeReferenceGraphView(Object target, Action<Color> onCanvasTone, Action<Object> onTargetChanged = null)
         {
             _target = target;
             _onCanvasTone = onCanvasTone;
+            _onTargetChanged = onTargetChanged;
 
             var root = this;
             style.flexGrow = 1;
@@ -224,6 +230,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void SetTarget(Object target)
         {
             _target = target;
+            // Mirror the pick back to the host window so its cached target follows. A tab switch rebuilds this view from
+            // that cached target, so without this an in-view pick (or the Open Source Prefab retarget) would be dropped
+            // the next time the user returns to this tab. The host just stores it (no rebuild), so this never re-enters.
+            _onTargetChanged?.Invoke(target);
             // Open() retargets an already-open window, so the field must follow the new target — without notifying,
             // or the change callback would trigger a second scan.
             _assetField?.SetValueWithoutNotify(target);
