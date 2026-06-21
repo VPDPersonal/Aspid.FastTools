@@ -95,33 +95,69 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var entries = new List<BreakageEntry>();
             var types = new HashSet<string>(StringComparer.Ordinal);
 
+            // Group the just-broke usages by their owning asset so the constraint map (LoadAllAssetsAtPath + full
+            // SerializedObject walk) is built once per asset instead of once per broken reference — a single deleted
+            // script can break dozens of refs in the same asset, which otherwise re-loads/walks it on every entry.
+            var byPath = new Dictionary<string, List<SerializeReferenceTypeUsageIndex.Usage>>(StringComparer.Ordinal);
+
             foreach (var usage in unresolved)
             {
                 var key = SerializeReferenceHelpers.StoredTypeKey(usage.StoredType);
                 if (!baseline.Contains(key)) continue; // was already broken (or never resolved) — not new
 
-                entries.Add(BuildEntry(usage));
+                var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
+                if (!byPath.TryGetValue(path, out var usages))
+                {
+                    usages = new List<SerializeReferenceTypeUsageIndex.Usage>();
+                    byPath.Add(path, usages);
+                }
+
+                usages.Add(usage);
                 types.Add(key);
+            }
+
+            foreach (var pair in byPath)
+            {
+                var path = pair.Key;
+                var repairable = !string.IsNullOrEmpty(path) && !path.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
+
+                // Build the per-asset constraint map once and share it across every broken reference in this asset.
+                Dictionary<(long fileId, long rid), Type> constraints = null;
+                if (repairable)
+                {
+                    try
+                    {
+                        constraints = SerializeReferenceHelpers.BuildConstraintMap(path);
+                    }
+                    catch (Exception)
+                    {
+                        // Suggestion priming is best-effort; a parse miss must not suppress the breakage notice itself.
+                    }
+                }
+
+                foreach (var usage in pair.Value)
+                    entries.Add(BuildEntry(usage, path, repairable, constraints));
             }
 
             return entries.Count == 0 ? default : new BreakageReport(entries, types.Count);
         }
 
-        // Resolves the asset path, decides repairability and pre-ranks the best fix (priming the shared suggestion cache
-        // so the Repair window shows Smart Fix without a delay).
-        private static BreakageEntry BuildEntry(SerializeReferenceTypeUsageIndex.Usage usage)
+        // Decides repairability and pre-ranks the best fix (priming the shared suggestion cache so the Repair window shows
+        // Smart Fix without a delay), reusing the per-asset constraint map built once by the caller.
+        private static BreakageEntry BuildEntry(
+            SerializeReferenceTypeUsageIndex.Usage usage,
+            string path,
+            bool repairable,
+            Dictionary<(long fileId, long rid), Type> constraints)
         {
-            var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
-            var repairable = !string.IsNullOrEmpty(path) && !path.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
-
             SerializeReferenceRepairSuggestions.RepairCandidate? top = null;
             if (repairable)
             {
                 try
                 {
                     var fieldNames = SerializeReferenceYamlEditor.GetReferenceFieldNames(path, usage.FileId, usage.Rid);
-                    var constraints = SerializeReferenceHelpers.BuildConstraintMap(path);
-                    constraints.TryGetValue((usage.FileId, usage.Rid), out var constraint);
+                    Type constraint = null;
+                    constraints?.TryGetValue((usage.FileId, usage.Rid), out constraint);
 
                     var ranked = SerializeReferenceRepairSuggestions.GetCached(path, usage.FileId, usage.Rid,
                         () => SerializeReferenceRepairSuggestions.Rank(usage.StoredType, fieldNames, constraint ?? typeof(object), 5));
