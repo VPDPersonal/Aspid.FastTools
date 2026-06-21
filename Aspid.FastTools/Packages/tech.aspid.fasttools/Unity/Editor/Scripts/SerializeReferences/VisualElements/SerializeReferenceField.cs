@@ -31,8 +31,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string BlockClass = "aspid-fasttools-serialize-reference";
         private const string EmptyClass = BlockClass + "--empty";
         private const string DropdownClass = BlockClass + "__dropdown";
-        private const string RidStripeClass = BlockClass + "__rid-stripe";
-        private const string RidStripeActiveClass = RidStripeClass + "--active";
+
+        // A single 3 px stripe on the field's left edge flags it at a glance. The --active modifier gives it width;
+        // the colour is either set inline from code (the per-rid shared-reference colour) or, for the --warning
+        // modifier (a missing type), pulled from the warning palette in USS.
+        private const string StripeClass = BlockClass + "__stripe";
+        private const string StripeActiveClass = StripeClass + "--active";
+        private const string StripeWarningClass = StripeClass + "--warning";
 
         // Applied to the header while a compatible MonoScript is dragged over the field.
         private const string DropTargetClass = BlockClass + "--drop-target";
@@ -65,10 +70,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private SerializeReferenceNotice _sharedNotice;
         private SerializeReferenceNotice _mixedNotice;
         private SerializeReferenceNotice _requiredNotice;
-        private VisualElement _ridStripe;
+        private VisualElement _stripe;
         private Type _currentType;
         private bool _contentBuilt;
         private bool _mixedTypes;
+
+        // Stripe inputs, written by the notice updates and consumed by UpdateStripe: the shared-reference rid colour
+        // (null when not shared or rid colours are off) takes priority over a missing type's warning stripe.
+        private bool _isMissing;
+        private Color? _sharedStripeColor;
         private float _arrowInset = float.NaN;
 
         public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null)
@@ -189,6 +199,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             UpdateSharedBox();
             UpdateMixedBox(mixedTypes);
             UpdateRequiredBox();
+            UpdateStripe();
 
             // A mixed selection never renders child fields — Unity's per-field multi-edit cannot merge fields of
             // different types — so the content is cleared and rebuilt only when the (shared) type actually changes.
@@ -281,8 +292,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             // Missing-type detection reads the first target's backing asset YAML and its repair rewrites that one file,
             // so the notice is meaningless (and potentially misleading) under a multi-object selection — suppress it.
-            if (!SerializeReferenceHelpers.NoticesApply(_property) ||
-                !SerializeReferenceHelpers.IsMissingType(_property))
+            // Cached for UpdateStripe so the YAML probe runs once per refresh.
+            _isMissing = SerializeReferenceHelpers.NoticesApply(_property) &&
+                         SerializeReferenceHelpers.IsMissingType(_property);
+
+            if (!_isMissing)
             {
                 _missingNotice?.RemoveFromHierarchy();
                 return;
@@ -344,19 +358,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!isShared)
             {
                 _sharedNotice?.RemoveFromHierarchy();
-                RemoveRidStripe();
+                _sharedStripeColor = null;
                 return;
             }
 
             // Rid colours are an opt-out via Project Settings; the shared notice itself always shows, only its colour
-            // stripe/chip is suppressed.
+            // stripe is suppressed. The actual stripe is painted by UpdateStripe, which connects the aliased fields by
+            // their rid colour and takes priority over a missing type's warning stripe.
             var ridColorsEnabled = SerializeReferenceSettings.RidColorsEnabled;
-            var ridColor = ridColorsEnabled ? SerializeReferenceRidColor.ForRid(rid) : Color.clear;
-
-            // Left stripe: a 3 px coloured bar absolutely positioned along the full height of the field root,
-            // giving an at-a-glance visual that connects the aliased fields before the user reads the notice.
-            if (ridColorsEnabled) ApplyRidStripe(ridColor);
-            else RemoveRidStripe();
+            _sharedStripeColor = ridColorsEnabled ? SerializeReferenceRidColor.ForRid(rid) : null;
 
             _sharedNotice ??= new SerializeReferenceNotice();
             if (_sharedNotice.parent is null) this.AddChild(_sharedNotice);
@@ -367,31 +377,55 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 detail: "This reference is shared with another field — editing one changes both.\n" +
                         "Click Make unique to give this field its own independent copy.",
                 onAction: MakeUnique);
-
-            // Color chip on the notice row so the rid colour is visible right next to the action text.
-            _sharedNotice.SetRidChip(ridColor);
         }
 
+        // Picks the left-edge stripe from the inputs cached by the notice updates: a shared reference paints it the
+        // rid colour (so aliased fields match) when rid colours are enabled, otherwise a missing type paints it the
+        // warning amber. Nothing else shows a stripe.
+        private void UpdateStripe()
+        {
+            if (_sharedStripeColor.HasValue) ApplyRidStripe(_sharedStripeColor.Value);
+            else if (_isMissing) ApplyWarningStripe();
+            else RemoveStripe();
+        }
+
+        // The rid stripe colour is unique per reference, so it is set inline; the --warning modifier is cleared so the
+        // inline colour wins.
         private void ApplyRidStripe(Color color)
         {
-            if (_ridStripe is null)
-            {
-                _ridStripe = new VisualElement()
-                    .AddClass(RidStripeClass)
-                    .SetPickingMode(PickingMode.Ignore);
-                // Insert as the first child so it renders behind everything else.
-                Insert(0, _ridStripe);
-            }
-
-            _ridStripe.style.backgroundColor = color;
-            _ridStripe.EnableInClassList(RidStripeActiveClass, true);
+            EnsureStripe();
+            _stripe.style.backgroundColor = color;
+            _stripe.EnableInClassList(StripeWarningClass, false);
+            _stripe.EnableInClassList(StripeActiveClass, true);
         }
 
-        private void RemoveRidStripe()
+        // The warning stripe is always the same amber, so its colour comes from the palette via the --warning class;
+        // the inline colour is cleared so the USS value applies.
+        private void ApplyWarningStripe()
         {
-            if (_ridStripe is null) return;
-            _ridStripe.EnableInClassList(RidStripeActiveClass, false);
-            _ridStripe.style.backgroundColor = StyleKeyword.Null;
+            EnsureStripe();
+            _stripe.style.backgroundColor = StyleKeyword.Null;
+            _stripe.EnableInClassList(StripeWarningClass, true);
+            _stripe.EnableInClassList(StripeActiveClass, true);
+        }
+
+        private void EnsureStripe()
+        {
+            if (_stripe is not null) return;
+
+            _stripe = new VisualElement()
+                .AddClass(StripeClass)
+                .SetPickingMode(PickingMode.Ignore);
+            // Insert as the first child so it renders behind everything else.
+            Insert(0, _stripe);
+        }
+
+        private void RemoveStripe()
+        {
+            if (_stripe is null) return;
+            _stripe.EnableInClassList(StripeActiveClass, false);
+            _stripe.EnableInClassList(StripeWarningClass, false);
+            _stripe.style.backgroundColor = StyleKeyword.Null;
         }
 
         private void OpenFixSelector()
