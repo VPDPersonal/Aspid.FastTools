@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -74,6 +75,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var violations = new List<GateViolation>();
             var paths = AssetDatabase.GetAllAssetPaths().Where(SerializeReferenceHelpers.IsScanCandidate).ToArray();
+            var requiredScenesSkipped = 0;
 
             for (var i = 0; i < paths.Length; i++)
             {
@@ -85,8 +87,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         violations.Add(new GateViolation(path, entry.FileId, entry.Rid, entry.StoredType, GateViolationKind.MissingType, string.Empty));
 
                 if (options.ScanRequiredFields)
-                    CollectRequiredViolations(path, violations);
+                {
+                    // Required detection loads objects + walks SerializedObjects, which cannot read scene objects, so
+                    // scenes are not covered. Count them and warn once below rather than silently passing — a CI author
+                    // must know an unset required value inside a .unity scene is NOT caught by this gate.
+                    if (SerializeReferenceHelpers.IsScene(path)) requiredScenesSkipped++;
+                    else CollectRequiredViolations(path, violations);
+                }
             }
+
+            if (requiredScenesSkipped > 0)
+                Debug.LogWarning(
+                    $"[Aspid FastTools] Required-field gate does not cover scenes: {requiredScenesSkipped} scene(s) were " +
+                    "not checked for unset required references (missing-type checks still cover them). Track required " +
+                    "values in prefabs / ScriptableObjects, or verify scenes in-editor.");
 
             return violations;
         }
