@@ -236,7 +236,7 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 ### Guard rails (no window needed)
 
 - **Delete guard** — deleting a `.cs` whose class is still used as a managed reference pops a confirm dialog listing the affected assets before it lets the delete through.
-- **Breakage toast** — when references newly become missing after a recompile, a dismissable toast and one console warning deep-link straight to the repair window.
+- **Breakage toast** — when references newly become missing after a recompile, a dismissable toast and one console warning deep-link straight to the repair window. Switch it off via **Breakage detection** in Project settings (below) if you find it intrusive.
 
 ---
 
@@ -247,6 +247,8 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 - **Rid colours** — colour-code shared references by id in the inspector and graph window.
 - **Auto de-alias duplicated list elements** — give a duplicated list element its own instance instead of sharing the
   original's id.
+- **Breakage detection** — toggle the proactive missing-reference toast on or off; turn it off to silence the
+  domain-reload / import-time detection entirely.
 - **Build / CI gate** — `Off` / `Warn` / `Fail`: at player-build time, log or abort on missing (and, for CI,
   unset-required) managed references.
 - **Excluded scan folders** — paths skipped by every project scan.
