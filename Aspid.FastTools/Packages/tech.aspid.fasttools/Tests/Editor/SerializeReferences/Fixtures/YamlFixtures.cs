@@ -163,6 +163,69 @@ MonoBehaviour:
       type: {class: , ns: , asm: }
 ";
 
+        // The single-object document file id, the rid and the exact (un-quoted) class identity of the generic fixture below.
+        public const long QuotedGenericFileId = 11400000L;
+        public const long QuotedGenericRid = 2001L;
+        public const string QuotedGenericClass = "Modifier`1[[System.Single, mscorlib]]";
+
+        // A ScriptableObject whose single [SerializeReference] field stores a CLOSED GENERIC type, written by Unity with
+        // a single-quoted `Name`N[[arg, asm]]` class identity (the form Unity emits for generics like Foo`1[[...]]).
+        // Exercises the quoted-class parse branch of the reader — the generic round-trip the risk register calls out.
+        public const string QuotedGenericAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: GenericModifierAsset
+  _modifier:
+    rid: 2001
+  references:
+    version: 2
+    RefIds:
+    - rid: 2001
+      type: {class: 'Modifier`1[[System.Single, mscorlib]]', ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _value: 1.5
+";
+
+        // The single-object document file id of the List-of-struct fixture below.
+        public const long ListOfStructFileId = 7700000000000000003L;
+
+        // A MonoBehaviour with a List of a PLAIN serializable struct (a "slot") that itself holds a [SerializeReference]
+        // managed reference. Exercises ResolveSequenceItem's container branch — descending a sequence-of-mappings element
+        // into a nested managed reference (`_slots.Array.data[i]._weapon`), the List<Struct> path the reader advertises.
+        public const string ListOfStructAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &7700000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name: SlottedLoadoutAsset
+  _slots:
+  - _weapon:
+      rid: 3001
+    label: primary
+  - _weapon:
+      rid: 3002
+    label: backup
+  references:
+    version: 2
+    RefIds:
+    - rid: 3001
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 10
+        _magazineSize: 7
+    - rid: 3002
+      type: {class: Shotgun, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _pellets: 6
+        _spreadAngle: 20
+";
+
         /// <summary>Writes <paramref name="yaml"/> to a fresh temp file (never under <c>Assets/</c>) and returns its path.</summary>
         public static string WriteTemp(string yaml)
         {
