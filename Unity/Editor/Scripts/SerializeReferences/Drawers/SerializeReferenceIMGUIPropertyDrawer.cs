@@ -334,7 +334,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     var path = candidate.Path;
                     menu.AddItem(new GUIContent($"Link to Existing/{candidate.Type.Name}  ({path})"), false,
-                        () => SerializeReferenceLinker.LinkTo(property, path));
+                        () => SerializeReferenceLinker.LinkTo(persistent, path));
                 }
 
             // Generate a new subclass of the field's type and assign it once it compiles.
@@ -342,7 +342,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 menu.AddItem(new GUIContent("Create New Script…"), false, () =>
                 {
                     if (SerializeReferenceScriptCreator.TryCreateSubclassStub(fieldType, out _, out var fullTypeName))
-                        SerializeReferencePendingAssignment.Enqueue(property.serializedObject.targetObject, property.propertyPath, fullTypeName);
+                        SerializeReferencePendingAssignment.Enqueue(persistent.serializedObject.targetObject, persistent.propertyPath, fullTypeName);
                 });
 
             // Save the current instance as a durable named template, and paste any assignable saved template.
@@ -358,7 +358,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (fieldType != null && !fieldType.IsAssignableFrom(template.Type)) continue;
                 var name = template.Name;
-                menu.AddItem(new GUIContent($"Paste Template/{name}"), false, () => ApplyTemplate(property, name));
+                menu.AddItem(new GUIContent($"Paste Template/{name}"), false, () => ApplyTemplate(persistent, name));
             }
 
             menu.ShowAsContext();
