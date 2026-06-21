@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using UnityEngine;
 using System.Reflection;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     internal static class SerializeReferenceRequiredGate
     {
         private const BindingFlags FieldFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        private const BindingFlags DeclaredFieldFlags = FieldFlags | BindingFlags.DeclaredOnly;
 
         /// <summary>
         /// Resolves the <c>[TypeSelector]</c> attribute on this property's declared field when it opts in with
@@ -52,6 +54,48 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _ => false,
             };
         }
+
+        /// <summary>
+        /// Reflects the top-level serialized fields of <paramref name="type"/> that opt into the required check
+        /// (<c>[TypeSelector(Required = true)]</c>), classifying each as a <c>string</c> field or a
+        /// <c>[SerializeReference]</c> managed reference. Drives the pure-YAML scene scan, which needs the field keys and
+        /// kinds without a live <see cref="SerializedObject"/>. Cached per type (stable until a domain reload). Fields
+        /// nested inside serializable containers are out of scope — only the type's own declared fields are returned,
+        /// matching the scene scan's top-level reach.
+        /// </summary>
+        public static IReadOnlyList<RequiredFieldDescriptor> GetRequiredFields(Type type)
+        {
+            if (type is null) return Array.Empty<RequiredFieldDescriptor>();
+            if (RequiredFieldCache.TryGetValue(type, out var cached)) return cached;
+
+            var result = new List<RequiredFieldDescriptor>();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            // Walk the hierarchy declared-only per level so a base field is read once; a `new`-shadowed name (one YAML
+            // key) is de-duplicated so it is never reported twice.
+            for (var current = type; current is not null && current != typeof(object); current = current.BaseType)
+            {
+                foreach (var field in current.GetFields(DeclaredFieldFlags))
+                {
+                    var selector = field.GetCustomAttribute<TypeSelectorAttribute>();
+                    if (selector is null || !selector.Required) continue;
+                    if (!seen.Add(field.Name)) continue;
+
+                    if (field.FieldType == typeof(string))
+                        result.Add(new RequiredFieldDescriptor(field.Name, isString: true));
+                    else if (field.IsDefined(typeof(SerializeReference), inherit: false))
+                        result.Add(new RequiredFieldDescriptor(field.Name, isString: false));
+                    // A required [TypeSelector] on any other shape is a misuse the analyzer flags; skip it here.
+                }
+            }
+
+            IReadOnlyList<RequiredFieldDescriptor> readOnly = result;
+            RequiredFieldCache[type] = readOnly;
+            return readOnly;
+        }
+
+        // Per-type memo for GetRequiredFields — the reflected field set is stable until a domain reload clears statics.
+        private static readonly Dictionary<Type, IReadOnlyList<RequiredFieldDescriptor>> RequiredFieldCache = new();
 
         // Walks the property path against the target object's type to find the declared field (which carries the
         // attribute). For a list/array element the field is the collection itself, matching PropertyDrawer.fieldInfo.
