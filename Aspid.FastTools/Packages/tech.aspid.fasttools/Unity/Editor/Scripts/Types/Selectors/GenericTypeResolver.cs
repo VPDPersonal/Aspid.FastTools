@@ -231,8 +231,16 @@ namespace Aspid.FastTools.Types.Editors
                     yield return contract.GetGenericTypeDefinition();
         }
 
-        private static IEnumerable<Type> EnumerateDomainTypes()
+        // Cached once per domain: the open-generic flow sweeps every domain type per parameter page (twice, with the
+        // candidate scan), which stalls large projects. Static state is cleared on every domain reload, so the cache is
+        // implicitly invalidated whenever assemblies could change.
+        private static List<Type> _domainTypes;
+
+        private static IReadOnlyList<Type> EnumerateDomainTypes()
         {
+            if (_domainTypes is not null) return _domainTypes;
+
+            var all = new List<Type>();
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 Type[] types;
@@ -246,9 +254,11 @@ namespace Aspid.FastTools.Types.Editors
                     types = ex.Types.Where(type => type is not null).ToArray();
                 }
 
-                foreach (var type in types)
-                    yield return type;
+                all.AddRange(types);
             }
+
+            _domainTypes = all;
+            return _domainTypes;
         }
     }
 }
