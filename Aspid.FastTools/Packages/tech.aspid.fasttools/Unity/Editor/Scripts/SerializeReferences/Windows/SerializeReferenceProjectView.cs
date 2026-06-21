@@ -220,7 +220,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             var entryCount = groups.Sum(group => group.Entries.Count);
-            ShowResults(entryCount == 1 ? "1 missing reference" : $"{entryCount} missing references");
+            ShowResults(entryCount == 1 ? "1 missing reference" : $"{entryCount} missing references",
+                SerializeReferenceCanvasStyle.Warning);
             _resultsHint.text = canceled
                 ? "Scan canceled — showing partial results. Each group is a broken type; Fix all re-points every entry (or pick <None> to clear them to null) across every file at once."
                 : "Each group is a broken stored type. Fix all picks one replacement and re-points every entry across every affected file at once — or pick <None> to clear them to null.";
@@ -470,7 +471,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // for an explicit Rescan (which the hint invites), so the user reads "what just happened" before the
                 // view resets to clean.
                 _list.Clear();
-                ShowResults("No missing references");
+                ShowResults("No missing references", SerializeReferenceCanvasStyle.Success);
                 _resultsHint.text =
                     "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
             }
@@ -545,7 +546,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Same came-back-clean handling as ApplyGroupFix: stay in the results region so this receipt survives as
                 // the record of the clear, rather than swapping to the "Project clean" hero which would hide it.
                 _list.Clear();
-                ShowResults("No missing references");
+                ShowResults("No missing references", SerializeReferenceCanvasStyle.Success);
                 _resultsHint.text =
                     "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
             }
@@ -931,12 +932,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             title: "Project not scanned",
             message: "Run Scan Project to map every broken [SerializeReference] type across your assets — then repair each missing type in bulk.");
 
-        private void ShowResults(string headerText)
+        // Reveals the results region with a header and tones the canvas. The tone is explicit per call site because the
+        // region is reused for two opposite states: the missing-references sweep tones Warning (something to repair),
+        // while the came-back-clean receipt (last broken type just fixed/cleared) tones Success — matching the
+        // "Project clean" hero a fresh Rescan would show, instead of leaving a clean state on an amber backdrop.
+        private void ShowResults(string headerText, Color tone)
         {
             _empty.AddClass(EmptyHiddenClass);
             _results.RemoveClass(ResultsHiddenClass);
             _resultsHeader.Text = headerText;
-            OnCanvasTone?.Invoke(SerializeReferenceCanvasStyle.Warning);
+            OnCanvasTone?.Invoke(tone);
         }
 
         // Appends one receipt to the running stack rather than overwriting the previous: chaining a fix across several

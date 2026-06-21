@@ -236,7 +236,7 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 ### Guard rails (no window needed)
 
 - **Delete guard** — deleting a `.cs` whose class is still used as a managed reference pops a confirm dialog listing the affected assets before it lets the delete through.
-- **Breakage toast** — when references newly become missing after a recompile, a dismissable toast and one console warning deep-link straight to the repair window.
+- **Breakage toast** — when references newly become missing after a recompile, a dismissable toast and one console warning deep-link straight to the repair window. Switch it off via **Breakage detection** in Project settings (below) if you find it intrusive.
 
 ---
 
@@ -247,6 +247,8 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 - **Rid colours** — colour-code shared references by id in the inspector and graph window.
 - **Auto de-alias duplicated list elements** — give a duplicated list element its own instance instead of sharing the
   original's id.
+- **Breakage detection** — toggle the proactive missing-reference toast on or off; turn it off to silence the
+  domain-reload / import-time detection entirely.
 - **Build / CI gate** — `Off` / `Warn` / `Fail`: at player-build time, log or abort on missing (and, for CI,
   unset-required) managed references. Unlike the other settings (per-machine), this severity is saved to a
   **committed** `ProjectSettings/SerializeReferenceGateSettings.asset`, so your choice is checked into version control
@@ -257,8 +259,9 @@ The same options are also available in the window's **Settings** tab (**`Tools �
 
 For headless CI, `SerializeReferenceCiGate.RunCheck` (invoked via `-batchmode -executeMethod`) writes a report and
 honours the committed gate severity: `Off` skips the check, `Warn` logs but exits 0, `Fail` exits non-zero when
-violations exist. `-srGateRequired` also flags unset `[TypeSelector(Required = true)]` fields, and the per-run flags
-`-srGateWarnOnly` (force exit 0) / `-srGateFail` (force fail on violations) override the committed severity.
+violations exist. `-srGateRequired` also flags unset `[TypeSelector(Required = true)]` fields across prefabs,
+ScriptableObjects and scenes (scenes are checked for top-level required fields via a pure-YAML pass), and the per-run
+flags `-srGateWarnOnly` (force exit 0) / `-srGateFail` (force fail on violations) override the committed severity.
 
 ---
 

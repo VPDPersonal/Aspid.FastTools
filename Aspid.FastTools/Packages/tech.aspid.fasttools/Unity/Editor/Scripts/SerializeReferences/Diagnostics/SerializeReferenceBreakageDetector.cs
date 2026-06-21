@@ -47,6 +47,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (Application.isBatchMode) return;
 
+            // Opt-out: when the user disables breakage detection, never establish a baseline or scan. Re-enabling
+            // re-arms it on the next change — the first run silently re-baselines, so a pre-existing miss never alarms.
+            if (!SerializeReferenceSettings.BreakageDetectionEnabled) return;
+
             // Type resolution flaps while scripts recompile / the AssetDatabase updates, which would falsely alarm and
             // corrupt the baseline; defer until the editor is settled.
             if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;

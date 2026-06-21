@@ -23,6 +23,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static void OnBreakageDetected(BreakageReport report)
         {
             if (!report.HasAny || Application.isBatchMode) return;
+            if (!SerializeReferenceSettings.BreakageDetectionEnabled) return;
 
             var shownKey = ShownPrefix + ProjectId() + "." + ContentHash(report);
             if (SessionState.GetBool(shownKey, false)) return;
