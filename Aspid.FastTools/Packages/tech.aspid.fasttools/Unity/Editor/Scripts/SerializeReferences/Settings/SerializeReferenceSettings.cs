@@ -31,6 +31,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             public bool ridColors = true;
             public bool autoDeAlias = true;
+            public bool breakageDetection = true;
             public string[] excludedFolders = Array.Empty<string>();
             public int buildSeverity = (int)GateSeverity.Warn;
         }
@@ -50,6 +51,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             get => Data.autoDeAlias;
             set { Data.autoDeAlias = value; Save(); }
+        }
+
+        public static bool BreakageDetectionEnabled
+        {
+            get => Data.breakageDetection;
+            set { Data.breakageDetection = value; Save(); }
         }
 
         public static string[] ExcludedFolders
