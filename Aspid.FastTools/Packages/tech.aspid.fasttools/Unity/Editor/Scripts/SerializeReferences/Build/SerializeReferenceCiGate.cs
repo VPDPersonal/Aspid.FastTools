@@ -12,8 +12,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// Headless CI entry point. Invoke with
     /// <c>Unity -batchmode -quit -projectPath . -executeMethod Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck</c>.
     /// Scans the project, writes a report, logs each violation, and exits non-zero when violations exist so a pipeline
-    /// can fail the job. Flags: <c>-srGateReport &lt;path&gt;</c> (report file), <c>-srGateRequired</c> (also scan
-    /// unset-required fields), <c>-srGateWarnOnly</c> (always exit 0).
+    /// can fail the job. The effective behaviour is driven by the committed Project Settings gate severity
+    /// (<see cref="SerializeReferenceGateSettings"/>) — <c>Off</c> skips the check, <c>Warn</c> logs but exits 0,
+    /// <c>Fail</c> exits 1 on violations — so a clean CI runner enforces the developer's checked-in choice rather than
+    /// the default. Flags: <c>-srGateReport &lt;path&gt;</c> (report file), <c>-srGateRequired</c> (also scan
+    /// unset-required fields), <c>-srGateWarnOnly</c> (force exit 0, overrides severity), <c>-srGateFail</c> (force exit
+    /// 1 on violations, overrides severity; <c>-srGateWarnOnly</c> wins if both are passed).
     /// </summary>
     internal static class SerializeReferenceCiGate
     {
@@ -35,16 +39,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var reportPath = GetArgValue(args, "-srGateReport") ?? DefaultReportPath;
                 var scanRequired = HasFlag(args, "-srGateRequired");
                 var warnOnly = HasFlag(args, "-srGateWarnOnly");
+                var failOverride = HasFlag(args, "-srGateFail");
 
-                var options = scanRequired ? GateOptions.Full : GateOptions.MissingOnly;
-                var violations = SerializeReferenceGateScanner.Scan(options);
+                var severity = ResolveSeverity(SerializeReferenceSettings.BuildSeverity, warnOnly, failOverride);
+                if (severity == GateSeverity.Off)
+                {
+                    Debug.Log("[Aspid FastTools] SerializeReference gate severity is Off; CI check skipped.");
+                    exitCode = 0;
+                }
+                else
+                {
+                    var options = scanRequired ? GateOptions.Full : GateOptions.MissingOnly;
+                    var violations = SerializeReferenceGateScanner.Scan(options);
 
-                File.WriteAllText(reportPath, BuildReport(violations));
-                foreach (var violation in violations)
-                    Debug.LogError($"[Aspid FastTools] {violation}");
+                    File.WriteAllText(reportPath, BuildReport(violations));
+                    foreach (var violation in violations)
+                        Debug.LogError($"[Aspid FastTools] {violation}");
 
-                exitCode = ComputeExitCode(violations.Count, warnOnly);
-                Debug.Log($"[Aspid FastTools] Gate check complete: {violations.Count} violation(s), exit code {exitCode}. Report: {reportPath}");
+                    exitCode = ComputeExitCode(violations.Count, severity);
+                    Debug.Log($"[Aspid FastTools] Gate check complete: {violations.Count} violation(s), severity {severity}, exit code {exitCode}. Report: {reportPath}");
+                }
             }
             catch (Exception exception)
             {
@@ -55,9 +69,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             EditorApplication.Exit(exitCode);
         }
 
-        /// <summary>0 when clean or warn-only; 1 when violations exist. Extracted so it is unit-testable without exiting.</summary>
-        internal static int ComputeExitCode(int violationCount, bool warnOnly) =>
-            warnOnly || violationCount == 0 ? 0 : 1;
+        /// <summary>
+        /// Resolves the effective gate severity: the committed Project Settings value, overridable per run by CLI flags.
+        /// <c>-srGateWarnOnly</c> forces <see cref="GateSeverity.Warn"/> (log but never fail) and wins over
+        /// <c>-srGateFail</c>, which forces <see cref="GateSeverity.Fail"/>. Extracted so it is unit-testable.
+        /// </summary>
+        internal static GateSeverity ResolveSeverity(GateSeverity committed, bool warnOnly, bool failOverride)
+        {
+            if (warnOnly) return GateSeverity.Warn;
+            if (failOverride) return GateSeverity.Fail;
+            return committed;
+        }
+
+        /// <summary>
+        /// 0 when clean or when severity is anything but <see cref="GateSeverity.Fail"/>; 1 only when violations exist
+        /// and severity is <see cref="GateSeverity.Fail"/>. Extracted so it is unit-testable without exiting.
+        /// </summary>
+        internal static int ComputeExitCode(int violationCount, GateSeverity severity) =>
+            violationCount > 0 && severity == GateSeverity.Fail ? 1 : 0;
 
         internal static string BuildReport(IReadOnlyList<GateViolation> violations)
         {
