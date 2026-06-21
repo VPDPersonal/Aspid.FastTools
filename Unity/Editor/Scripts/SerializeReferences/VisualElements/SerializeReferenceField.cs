@@ -32,6 +32,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EmptyClass = BlockClass + "--empty";
         private const string DropdownClass = BlockClass + "__dropdown";
 
+        // Wrapper that hosts the per-asset notices (missing / shared / required / mixed) between the foldout toggle and
+        // its content, so an expanded field shows the notices ABOVE its child fields — matching the IMGUI drawer.
+        private const string NoticesClass = BlockClass + "__notices";
+
         // A single 3 px stripe on the field's left edge flags it at a glance. The --active modifier gives it width;
         // the colour is either set inline from code (the per-rid shared-reference colour) or, for the --warning
         // modifier (a missing type), pulled from the warning palette in USS.
@@ -61,6 +65,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly VisualElement _dropdown;
         private readonly Button _openButton;
         private readonly VisualElement _content;
+        private readonly VisualElement _notices;
         private readonly SerializedProperty _property;
         private readonly Type _fieldType;
         private readonly Type[] _baseTypes;
@@ -96,6 +101,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _foldout = new Foldout();
             _foldout.RegisterValueChangedCallback(OnFoldoutToggled);
             _content = _foldout.contentContainer;
+
+            // Host the per-asset notices between the foldout toggle and its content. When the foldout is expanded the
+            // notices then render ABOVE the child fields — matching the IMGUI drawer, which draws the same notices after
+            // the header row and before the children. Appended straight to `this` (after the foldout) they would instead
+            // sit BELOW the children. As a sibling of the content container — not inside it — the host carries no child
+            // indent and stays visible while the foldout is collapsed, exactly like the IMGUI path.
+            _notices = new VisualElement().AddClass(NoticesClass);
+            _foldout.hierarchy.Insert(_foldout.hierarchy.IndexOf(_content), _notices);
 
             _caption = new TextElement()
                 .AddClass(EnumField.textUssClassName)
@@ -251,7 +264,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             _mixedNotice ??= new SerializeReferenceNotice();
-            if (_mixedNotice.parent is null) this.AddChild(_mixedNotice);
+            if (_mixedNotice.parent is null) _notices.AddChild(_mixedNotice);
 
             // Stands in for the per-instance child fields, which cannot be merged across different types. Keep it
             // terse and non-actionable: selecting a single object restores its own field, or picking a type from the
@@ -274,7 +287,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             _requiredNotice ??= new SerializeReferenceNotice();
-            if (_requiredNotice.parent is null) this.AddChild(_requiredNotice);
+            if (_requiredNotice.parent is null) _notices.AddChild(_requiredNotice);
 
             SerializeReferenceRequiredGate.TryGetRequired(_property, out var selector);
             var message = string.IsNullOrEmpty(selector?.RequiredMessage) ? "Required reference is not set" : selector.RequiredMessage;
@@ -303,7 +316,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             _missingNotice ??= new SerializeReferenceNotice();
-            if (_missingNotice.parent is null) this.AddChild(_missingNotice);
+            if (_missingNotice.parent is null) _notices.AddChild(_missingNotice);
 
             var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(_property);
 
@@ -369,7 +382,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _sharedStripeColor = ridColorsEnabled ? SerializeReferenceRidColor.ForRid(rid) : null;
 
             _sharedNotice ??= new SerializeReferenceNotice();
-            if (_sharedNotice.parent is null) this.AddChild(_sharedNotice);
+            if (_sharedNotice.parent is null) _notices.AddChild(_sharedNotice);
 
             _sharedNotice.Set(
                 message: "Shared reference —",
