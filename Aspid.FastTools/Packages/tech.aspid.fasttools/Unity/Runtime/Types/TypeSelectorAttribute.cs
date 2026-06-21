@@ -90,6 +90,7 @@ namespace Aspid.FastTools.Types
         public TypeSelectorAttribute(params Type[] types)
         {
             AssemblyQualifiedNames = types
+                .Where(type => type is not null)
                 .Select(type => type.AssemblyQualifiedName)
                 .ToArray();
         }
