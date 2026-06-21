@@ -28,12 +28,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var type = script != null ? script.GetClass() : null;
             if (type is null) return AssetDeleteResult.DidNotDelete;
 
-            var count = SerializeReferenceTypeUsageIndex.CountUsages(type);
+            var sample = GatherUsageSample(type, out var count);
             if (count <= 0) return AssetDeleteResult.DidNotDelete;
 
             var message =
                 $"\"{type.Name}\" is used as a [SerializeReference] managed reference in {count} place(s):\n\n" +
-                $"{BuildSample(type)}\n\n" +
+                $"{string.Join("\n", sample)}\n\n" +
                 "Deleting the script will leave those references missing.";
 
             var proceed = EditorUtility.DisplayDialog("Delete Script", message, "Delete Anyway", "Cancel");
@@ -42,17 +42,50 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
         }
 
-        private static string BuildSample(Type type)
+        // The use-site count plus a sample of affected asset paths. Uses the warm index when available; when the index is
+        // cold we do NOT warm it (a modal full-project build) just to answer one delete — instead we run a targeted,
+        // no-modal scan for this single type, so deletion protection stays active without freezing the editor behind a bar.
+        private static SortedSet<string> GatherUsageSample(Type type, out int count)
         {
             var paths = new SortedSet<string>(StringComparer.Ordinal);
-            foreach (var usage in SerializeReferenceTypeUsageIndex.FindUsages(type))
+            count = 0;
+
+            if (SerializeReferenceTypeUsageIndex.IsWarm)
             {
-                var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
-                if (!string.IsNullOrEmpty(path)) paths.Add(path);
-                if (paths.Count >= SamplePathCount) break;
+                foreach (var usage in SerializeReferenceTypeUsageIndex.FindUsages(type))
+                {
+                    count++;
+                    if (paths.Count >= SamplePathCount) continue;
+
+                    var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
+                    if (!string.IsNullOrEmpty(path)) paths.Add(path);
+                }
+
+                return paths;
             }
 
-            return string.Join("\n", paths);
+            var key = SerializeReferenceHelpers.StoredTypeKey(ManagedTypeName.FromType(type));
+            foreach (var path in AssetDatabase.GetAllAssetPaths())
+            {
+                if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
+
+                var usedHere = false;
+                foreach (var document in SerializeReferenceGraphScanner.Build(path))
+                {
+                    foreach (var node in document.Nodes)
+                    {
+                        if (node.StoredType.IsEmpty) continue;
+                        if (!string.Equals(SerializeReferenceHelpers.StoredTypeKey(node.StoredType), key, StringComparison.Ordinal)) continue;
+
+                        count++;
+                        usedHere = true;
+                    }
+                }
+
+                if (usedHere && paths.Count < SamplePathCount) paths.Add(path);
+            }
+
+            return paths;
         }
     }
 }
