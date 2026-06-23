@@ -64,7 +64,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return paths;
             }
 
-            var key = SerializeReferenceHelpers.StoredTypeKey(ManagedTypeName.FromType(type));
+            // Match on the open-generic identity: a script resolves to the open definition (Modifier`1[[T]]), while YAML
+            // stores each closed instantiation (Modifier`1[[System.Single, …]]) under its own key — comparing the closed
+            // stored key would never match a generic type's script and the delete would slip through unwarned.
+            var key = SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(type));
             foreach (var path in AssetDatabase.GetAllAssetPaths())
             {
                 if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
@@ -75,7 +78,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     foreach (var node in document.Nodes)
                     {
                         if (node.StoredType.IsEmpty) continue;
-                        if (!string.Equals(SerializeReferenceHelpers.StoredTypeKey(node.StoredType), key, StringComparison.Ordinal)) continue;
+                        if (!string.Equals(SerializeReferenceHelpers.OpenTypeKey(node.StoredType), key, StringComparison.Ordinal)) continue;
 
                         count++;
                         usedHere = true;
