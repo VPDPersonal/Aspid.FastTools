@@ -67,9 +67,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return _index.TryGetValue(storedTypeKey, out var set) ? set : Array.Empty<Usage>();
         }
 
-        /// <summary>Every use site of <paramref name="type"/> by its concrete stored-type identity.</summary>
+        /// <summary>
+        /// Every use site of <paramref name="type"/> by its open-generic stored-type identity. A generic type's script
+        /// resolves to the open definition (<c>Modifier`1[[T]]</c>), while YAML stores each closed instantiation
+        /// (<c>Modifier`1[[System.Single, …]]</c>) under its own key — so the lookup keys on the open identity to gather
+        /// every closed form. A non-generic type has a single key and behaves exactly as a direct lookup.
+        /// </summary>
         public static IReadOnlyCollection<Usage> FindUsages(Type type) =>
-            type is null ? Array.Empty<Usage>() : FindUsages(SerializeReferenceHelpers.StoredTypeKey(ManagedTypeName.FromType(type)));
+            type is null ? Array.Empty<Usage>() : FindUsagesByOpenKey(SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(type)));
+
+        /// <summary>
+        /// Every use site whose stored type shares the open-generic identity <paramref name="openTypeKey"/> (warms the
+        /// index if cold). Aggregates across the closed-form keys a generic type splits into; for a non-generic identity
+        /// the open key equals the stored key and at most one entry contributes.
+        /// </summary>
+        public static IReadOnlyCollection<Usage> FindUsagesByOpenKey(string openTypeKey)
+        {
+            if (string.IsNullOrEmpty(openTypeKey)) return Array.Empty<Usage>();
+            EnsureBuilt();
+
+            HashSet<Usage> result = null;
+            foreach (var (key, set) in _index)
+            {
+                if (!string.Equals(SerializeReferenceHelpers.OpenTypeKey(key), openTypeKey, StringComparison.Ordinal))
+                    continue;
+
+                (result ??= new HashSet<Usage>()).UnionWith(set);
+            }
+
+            return (IReadOnlyCollection<Usage>)result ?? Array.Empty<Usage>();
+        }
 
         /// <summary>Number of use sites of <paramref name="type"/>.</summary>
         public static int CountUsages(Type type) => FindUsages(type).Count;
