@@ -13,8 +13,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// Adds <see cref="AspidStyles.DefaultStyleSheet"/> to the element and, when the user has
         /// configured one, layers <see cref="AspidThemeSettings.OverrideStyleSheet"/> on top of it.
         /// The override is added to the same element as the base palette so its <c>:root</c> tokens
-        /// take precedence. The element re-applies the override live whenever
-        /// <see cref="AspidThemeSettings.Changed"/> fires and unsubscribes when it leaves the panel.
+        /// take precedence. The element subscribes to <see cref="AspidThemeSettings.Changed"/> while
+        /// attached to a panel (re-applying the current override on attach) and unsubscribes when it
+        /// leaves the panel, so live updates survive detach/reattach and never leak when never attached.
         /// </summary>
         /// <param name="element">The element that receives the theme style sheets.</param>
         /// <returns>The element, for chaining.</returns>
@@ -34,7 +35,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 if (applied != null) element.AddStyleSheets(applied);
             }
 
-            AspidThemeSettings.Changed += OnThemeChanged;
+            element.RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                OnThemeChanged();
+                AspidThemeSettings.Changed += OnThemeChanged;
+            });
             element.RegisterCallback<DetachFromPanelEvent>(_ => AspidThemeSettings.Changed -= OnThemeChanged);
 
             return element;
