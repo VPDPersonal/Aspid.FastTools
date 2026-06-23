@@ -120,23 +120,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// <summary>
     /// Builds, per asset path, a document-per-component managed-reference graph from the raw YAML — independent of
     /// the live serialization API, so it sees nested, orphaned and missing references the Inspector cannot navigate
-    /// to. Parsing is local to this scanner: it reuses <see cref="ManagedTypeName"/> /
-    /// <see cref="SerializeReferenceHelpers.StoredTypeResolves"/> for type identity only, and does not depend on the
-    /// repair-flow helpers in <see cref="SerializeReferenceYamlEditor"/>.
+    /// to. The low-level YAML-scan primitives (document headers, the <c>RefIds</c> lookup, the inline-type grammar,
+    /// indentation and entry bounding) are shared with the repair flow through <see cref="SerializeReferenceYaml"/>,
+    /// so the graph window and <see cref="SerializeReferenceYamlEditor"/> cannot disagree about Unity's RefIds shape;
+    /// type identity reuses <see cref="ManagedTypeName"/> / <see cref="SerializeReferenceHelpers.StoredTypeResolves"/>.
     /// </summary>
     internal static class SerializeReferenceGraphScanner
     {
-        // "--- !u!114 &11400000" — object document header carrying the local file id as its YAML anchor and the
-        // class id ("!u!114") used as a best-effort fallback label when the live type name is unavailable.
-        private static readonly Regex DocumentHeader = new(@"^--- !u!(?<class>\d+) &(?<id>\d+)", RegexOptions.Compiled);
+        // Document headers, the RefIds-key lookup and the inline-type grammar are single-sourced in
+        // SerializeReferenceYaml so this scanner and the repair flow read Unity's RefIds shape identically.
         private static readonly Regex ReferencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
-        private static readonly Regex RefIdsKey = new(@"^\s*RefIds:\s*$", RegexOptions.Compiled);
         private static readonly Regex EntryRid = new(@"^(?<indent>\s*)-\s+rid:\s*(?<id>-?\d+)\s*$", RegexOptions.Compiled);
         private static readonly Regex TypeLine = new(@"^\s*type:\s*\{(?<body>.*)\}\s*$", RegexOptions.Compiled);
         private static readonly Regex DataKey = new(@"^\s*data:\s*$", RegexOptions.Compiled);
-        private static readonly Regex InlineType = new(
-            @"class:\s*(?:'(?<class>(?:[^']|'')*)'|(?<class>[^,}]*?))\s*,\s*ns:\s*(?<ns>[^,}]*?)\s*,\s*asm:\s*(?<asm>[^,}]*?)\s*$",
-            RegexOptions.Compiled);
 
         // A "rid:" pointer anywhere in a body/data line (inline "{rid: N}", "- rid: N", or a bare "rid: N" scalar).
         // The leading non-word lookbehind keeps a field whose name ends in "rid" (e.g. "_hybrid: 5") from matching;
@@ -195,7 +191,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var referencesStart = FindKey(lines, ReferencesKey, start, end);
             var bodyEnd = referencesStart >= 0 ? referencesStart : end;
 
-            var refIdsStart = FindKey(lines, RefIdsKey, start, end);
+            var refIdsStart = SerializeReferenceYaml.FindRefIdsStart(lines, start, end);
             if (refIdsStart < 0) return null;
 
             var document = new ReferenceGraphDocument { FileId = fileId };
@@ -238,7 +234,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (!typeMatch.Success) continue;
 
                     // On a parse failure type stays default/empty (and the node renders as just "rid N").
-                    if (!TryParseInlineType(typeMatch.Groups["body"].Value, out type))
+                    if (!SerializeReferenceYaml.TryParseInlineType(typeMatch.Groups["body"].Value, out type))
                         type = default;
                     break;
                 }
@@ -290,7 +286,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (parent < 0) continue; // a sentinel entry carries no data block of its own
 
                 var entryIndent = ridMatch.Groups["indent"].Length;
-                var entryEnd = FindEntryEnd(lines, i + 1, end, entryIndent);
+                var entryEnd = SerializeReferenceYaml.FindEntryEnd(lines, i, end, entryIndent);
 
                 var dataStart = FindKey(lines, DataKey, i + 1, entryEnd);
                 if (dataStart < 0) continue;
@@ -376,7 +372,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // relative; the view joins it onto the parent's full path. Empty when no key is found (the view then keeps the
         // parent path alone).
         private static string BuildEdgePath(string[] lines, int pointerLine, int dataStart) =>
-            BuildPath(lines, pointerLine, floor: dataStart, stopIndent: IndentOf(lines[dataStart]));
+            BuildPath(lines, pointerLine, floor: dataStart, stopIndent: SerializeReferenceYaml.IndentOf(lines[dataStart]));
 
         // Builds a dotted field path by walking up from the rid pointer on <paramref name="pointerLine"/>, collecting
         // mapping keys (with a "[index]" suffix on any list key crossed), until it climbs out of the enclosing scope.
@@ -398,7 +394,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // YAML nesting is finite; the counter only guards a malformed file from looping the walk forever.
             for (var safety = 0; line > floor && safety < 256; safety++)
             {
-                var indent = IndentOf(lines[line]);
+                var indent = SerializeReferenceYaml.IndentOf(lines[line]);
                 int next;
 
                 if (lines[line].TrimStart().StartsWith("- "))
@@ -416,7 +412,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     {
                         if (lines[j].Trim().Length == 0) continue;
 
-                        var jIndent = IndentOf(lines[j]);
+                        var jIndent = SerializeReferenceYaml.IndentOf(lines[j]);
                         if (jIndent > indent) continue;                          // nested detail of an earlier sibling
                         if (jIndent < indent) break;                             // dedented out of the list
                         if (lines[j].TrimStart().StartsWith("- ")) { index++; continue; }
@@ -431,7 +427,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (!ownerKey.Success || IsStructuralKey(ownerKey.Groups["key"].Value)) break;
 
                     segments.Add($"{ownerKey.Groups["key"].Value}[{index}]");
-                    next = ParentLine(lines, ownerLine, floor, IndentOf(lines[ownerLine]));
+                    next = ParentLine(lines, ownerLine, floor, SerializeReferenceYaml.IndentOf(lines[ownerLine]));
                 }
                 else
                 {
@@ -444,7 +440,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     next = ParentLine(lines, line, floor, indent);
                 }
 
-                if (next < 0 || IndentOf(lines[next]) <= stopIndent) break; // climbed out of the enclosing scope
+                if (next < 0 || SerializeReferenceYaml.IndentOf(lines[next]) <= stopIndent) break; // climbed out of the enclosing scope
                 line = next;
             }
 
@@ -461,7 +457,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             for (var j = from - 1; j >= start; j--)
             {
                 if (lines[j].Trim().Length == 0) continue;
-                if (IndentOf(lines[j]) < indent) return j;
+                if (SerializeReferenceYaml.IndentOf(lines[j]) < indent) return j;
             }
 
             return -1;
@@ -476,7 +472,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var headers = new List<(long, int, int)>();
             for (var i = 0; i < lines.Length; i++)
             {
-                var match = DocumentHeader.Match(lines[i]);
+                var match = SerializeReferenceYaml.DocumentHeader.Match(lines[i]);
                 if (match.Success &&
                     long.TryParse(match.Groups["id"].Value, out var fileId) &&
                     int.TryParse(match.Groups["class"].Value, out var classId))
@@ -529,43 +525,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (key.IsMatch(lines[i])) return i;
 
             return -1;
-        }
-
-        // A RefIds entry runs until the next list item at its own indent, or until the block dedents out of it.
-        private static int FindEntryEnd(string[] lines, int from, int end, int entryIndent)
-        {
-            for (var j = from; j < end; j++)
-            {
-                if (lines[j].Trim().Length == 0) continue;
-
-                var indent = IndentOf(lines[j]);
-                if (indent < entryIndent) return j;
-                if (indent == entryIndent && lines[j].TrimStart().StartsWith("- ")) return j;
-            }
-
-            return end;
-        }
-
-        private static int IndentOf(string line)
-        {
-            var count = 0;
-            while (count < line.Length && line[count] == ' ') count++;
-            return count;
-        }
-
-        // Parses the inline "class: X, ns: Y, asm: Z" body of a RefIds type mapping, honouring the single-quoted
-        // class names Unity writes for closed generics (e.g. 'Modifier`1[[…]]'). Mirrors the parser in
-        // SerializeReferenceYamlEditor but kept local so the scanner owns its parsing.
-        private static bool TryParseInlineType(string body, out ManagedTypeName type)
-        {
-            type = default;
-
-            var match = InlineType.Match(body);
-            if (!match.Success) return false;
-
-            var className = match.Groups["class"].Value.Replace("''", "'");
-            type = new ManagedTypeName(match.Groups["asm"].Value, match.Groups["ns"].Value, className);
-            return !type.IsEmpty;
         }
     }
 }
