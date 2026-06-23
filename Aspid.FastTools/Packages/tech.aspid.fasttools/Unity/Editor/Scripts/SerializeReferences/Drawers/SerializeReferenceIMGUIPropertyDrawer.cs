@@ -341,8 +341,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (fieldType != null)
                 menu.AddItem(new GUIContent("Create New Script…"), false, () =>
                 {
-                    if (SerializeReferenceScriptCreator.TryCreateSubclassStub(fieldType, out _, out var fullTypeName))
-                        SerializeReferencePendingAssignment.Enqueue(property.serializedObject.targetObject, property.propertyPath, fullTypeName);
+                    if (!SerializeReferenceScriptCreator.TryCreateSubclassStub(fieldType, out _, out var fullTypeName)) return;
+
+                    // Multi-object: enqueue one pending assignment PER target so every selected object gets the new type
+                    // after the script compiles — each entry carries its own GlobalObjectId, so the (GlobalId, path)-keyed
+                    // queue keeps them apart. Enqueuing only targetObject (singular) would leave objects 2..N untouched.
+                    foreach (var target in property.serializedObject.targetObjects)
+                        SerializeReferencePendingAssignment.Enqueue(target, property.propertyPath, fullTypeName);
                 });
 
             // Save the current instance as a durable named template, and paste any assignable saved template.
