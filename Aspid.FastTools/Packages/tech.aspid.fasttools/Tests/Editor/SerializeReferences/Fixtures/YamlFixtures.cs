@@ -337,6 +337,26 @@ MonoBehaviour:
         _damage: 5
 ";
 
+        // The same scene where BOTH required keys are ABSENT from the MonoBehaviour — the shape Unity writes when the
+        // object was last saved before the [TypeSelector(Required = true)] fields were added (also stripped / nested-prefab
+        // docs). Reserializing fills the defaults; until then the gate must NOT flag the missing keys, so no violations
+        // are expected. Same .unity layout as RequiredSceneUnset, minus the requiredRef / requiredString lines.
+        public const string RequiredSceneAbsentKeys =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+";
+
         // A two-MonoBehaviour scene: the first (guid aaaa…, fileID 101) has requiredRef SET but requiredString EMPTY
         // (one violation); the second (guid bbbb…, fileID 201) leaves both unset but its script is unknown to the
         // resolver, so it must be skipped entirely. Proves per-document resolution and the unknown-script skip.

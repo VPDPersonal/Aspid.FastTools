@@ -293,11 +293,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// object-load required check, which cannot read scene objects (<see cref="SerializeReferenceHelpers.IsScene"/>).
         /// Walks every MonoBehaviour document, resolves its required fields through <paramref name="requiredFieldsForScript"/>
         /// (keyed by the <c>m_Script</c> guid, so this method stays reflection-free), and reports each top-level required
-        /// field left unset: a managed reference at the null id (<c>-2</c>) or absent, or an empty/absent string field.
+        /// field that is <em>present but empty</em>: a managed reference at the null id (<c>-2</c>), or an empty string field.
         /// A present managed reference (<c>rid &gt;= 0</c>) counts as set even when its type is missing — that mirrors
         /// <see cref="SerializeReferenceRequiredGate.IsViolation"/>, where a missing type is the missing-type gate's
-        /// concern, not a required violation. Required fields nested inside serializable containers are not covered here
-        /// (the field keys are read at the document's top level only).
+        /// concern, not a required violation. A field whose key is <em>absent</em> from the document is NOT a violation:
+        /// Unity omits a serialized field from YAML when the object was last saved before the field was added (and for
+        /// stripped / nested-prefab docs), so flagging it would fail a project that is valid once reopened/reserialized.
+        /// Required fields nested inside serializable containers are not covered here (the field keys are read at the
+        /// document's top level only).
         /// </summary>
         public static List<RequiredViolationEntry> FindUnsetRequiredFields(
             string assetPath, Func<string, IReadOnlyList<RequiredFieldDescriptor>> requiredFieldsForScript)
@@ -328,12 +331,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     foreach (var descriptor in required)
                     {
+                        // An absent key is not a violation — the field was added after the last save (or this is a
+                        // stripped / nested-prefab doc); reserializing fills its default and the object-load path judges
+                        // it. Only a key that is present but empty is reported here.
                         if (descriptor.IsString)
                         {
-                            if (IsStringFieldUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName))
+                            if (IsStringFieldUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName) == FieldState.PresentUnset)
                                 result.Add(new RequiredViolationEntry(fileId, descriptor.FieldName, 0));
                         }
-                        else if (IsManagedReferenceUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName, out var rid))
+                        else if (IsManagedReferenceUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName, out var rid) == FieldState.PresentUnset)
                         {
                             result.Add(new RequiredViolationEntry(fileId, descriptor.FieldName, rid));
                         }
@@ -389,9 +395,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return end;
         }
 
-        // True when the top-level managed-reference field `name` is unset: its pointer is the null id (-2), or the field
-        // is absent / carries no rid. A present rid (>= 0) is set. `rid` returns the read id (or -2 when unset/absent).
-        private static bool IsManagedReferenceUnset(string[] lines, int start, int end, int fieldIndent, string name, out long rid)
+        // Whether a required field key was found in the document and, if so, whether it carries a value. An absent key is
+        // distinguished from a present-but-empty one so the gate never flags a field Unity simply hasn't written yet
+        // (object saved before the field was added, or a stripped / nested-prefab doc) — that needs a reserialize, not a
+        // build failure.
+        private enum FieldState { Absent, PresentSet, PresentUnset }
+
+        // Classifies the top-level managed-reference field `name`: PresentUnset when its pointer is the null id (-2) or it
+        // carries no rid, PresentSet when a real rid (>= 0) points at a reference, Absent when the key is not in the doc.
+        // `rid` returns the read id (or -2 when present-unset/absent).
+        private static FieldState IsManagedReferenceUnset(string[] lines, int start, int end, int fieldIndent, string name, out long rid)
         {
             rid = NullRid;
             var pattern = new Regex($@"^(?<indent>\s*){Regex.Escape(name)}:\s*(?<inline>.*)$");
@@ -406,7 +419,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (inline.Success && long.TryParse(inline.Groups[1].Value, out var inlineRid))
                 {
                     rid = inlineRid;
-                    return inlineRid == NullRid;
+                    return inlineRid == NullRid ? FieldState.PresentUnset : FieldState.PresentSet;
                 }
 
                 // Block form: the rid scalar is the field's first indented child.
@@ -419,20 +432,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (child.Success && long.TryParse(child.Groups[1].Value, out var childRid))
                     {
                         rid = childRid;
-                        return childRid == NullRid;
+                        return childRid == NullRid ? FieldState.PresentUnset : FieldState.PresentSet;
                     }
 
                     break; // first child is not a rid scalar — not a recognised managed-reference pointer
                 }
 
-                return true; // field present but no rid — treat as unset
+                return FieldState.PresentUnset; // field present but no rid — treat as unset
             }
 
-            return true; // field absent — unset (the issue's "absent = unset")
+            return FieldState.Absent; // field absent — not a violation (needs reserialize)
         }
 
-        // True when the top-level string field `name` is unset: empty, an empty quoted scalar ('' / ""), or absent.
-        private static bool IsStringFieldUnset(string[] lines, int start, int end, int fieldIndent, string name)
+        // Classifies the top-level string field `name`: PresentUnset when empty or an empty quoted scalar ('' / ""),
+        // PresentSet when it holds a value, Absent when the key is not in the doc.
+        private static FieldState IsStringFieldUnset(string[] lines, int start, int end, int fieldIndent, string name)
         {
             var pattern = new Regex($@"^(?<indent>\s*){Regex.Escape(name)}:\s*(?<value>.*)$");
 
@@ -442,10 +456,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!field.Success || field.Groups["indent"].Length != fieldIndent) continue;
 
                 var value = field.Groups["value"].Value.Trim();
-                return value.Length == 0 || value == "''" || value == "\"\"";
+                return value.Length == 0 || value == "''" || value == "\"\""
+                    ? FieldState.PresentUnset
+                    : FieldState.PresentSet;
             }
 
-            return true; // field absent — unset
+            return FieldState.Absent; // field absent — not a violation (needs reserialize)
         }
 
         /// <summary>
