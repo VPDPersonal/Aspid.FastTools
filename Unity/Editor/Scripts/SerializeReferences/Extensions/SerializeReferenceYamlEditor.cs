@@ -648,7 +648,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (entryIndent < 0) return false;
 
                 var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
-                var pointerToken = new Regex($@"\brid:\s*{rid}\b");
+                var pointerToken = BuildPointerPattern(rid);
 
                 var headerIndex = -1;
                 var pointerNulled = false;
@@ -669,9 +669,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     // Null every pointer to the rid — a "- rid: N" array element, a "rid: N" scalar field or an inline
                     // "{rid: N}" — so no dangling pointer survives the entry's removal (which errors on array fields).
+                    // The anchored pattern preserves each pointer's structural prefix/suffix and only rewrites the id.
                     if (pointerToken.IsMatch(lines[i]))
                     {
-                        lines[i] = pointerToken.Replace(lines[i], $"rid: {NullRid}");
+                        lines[i] = pointerToken.Replace(lines[i], $"${{prefix}}rid: {NullRid}${{suffix}}");
                         pointerNulled = true;
                     }
                 }
@@ -746,7 +747,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (entryIndent < 0) return 0;
 
                 var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
-                var pointerToken = new Regex($@"\brid:\s*{rid}\b");
+                var pointerToken = BuildPointerPattern(rid);
 
                 var headerSkipped = false;
                 var count = 0;
@@ -777,6 +778,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return 0;
             }
         }
+
+        // An anchored matcher for a real "rid: N" pointer to a specific id — never a bare "rid: N" substring buried in a
+        // string field value (e.g. _note: 'see rid: 5'). Only Unity's three pointer shapes match: a line-anchored
+        // "- rid: N" sequence item, a line-anchored "rid: N" scalar child, or an inline "{rid: N}" mapping. The
+        // structural prefix/suffix (indent + dash, or the surrounding braces) are captured so a null-rewrite can keep
+        // them and replace only the id — mirroring the reader's knownRids validation, which is what keeps its same
+        // "rid:" scan from corrupting unrelated data.
+        private static Regex BuildPointerPattern(long rid) => new(
+            $@"(?<prefix>^\s*(?:-\s+)?)rid:\s*{rid}(?<suffix>\s*$)|(?<prefix>\{{\s*)rid:\s*{rid}(?<suffix>\s*\}})");
 
         // Whether the RefIds list already carries Unity's null sentinel entry ("- rid: -2"). The sentinel is a shared
         // singleton — at most one per object — so a second null pointer reuses it rather than adding another.
