@@ -351,7 +351,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var value = persistent.managedReferenceValue;
                 menu.AddItem(new GUIContent("Save as Template…"), false,
                     () => SerializeReferenceNamePrompt.Show("Save Template",
-                        SerializeReferenceTemplates.SuggestName(usagesType), name => SerializeReferenceTemplates.Save(name, value)));
+                        SerializeReferenceTemplates.SuggestName(usagesType),
+                        name => SerializeReferenceTemplates.SaveConfirmed(name, value)));
             }
 
             foreach (var template in SerializeReferenceTemplates.LoadResolved())
