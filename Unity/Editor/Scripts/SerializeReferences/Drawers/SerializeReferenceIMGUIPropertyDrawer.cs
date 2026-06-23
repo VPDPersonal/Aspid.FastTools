@@ -335,7 +335,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     var path = candidate.Path;
                     menu.AddItem(new GUIContent($"Link to Existing/{candidate.Type.Name}  ({path})"), false,
-                        () => SerializeReferenceLinker.LinkTo(property, path));
+                        () => SerializeReferenceLinker.LinkTo(persistent, path));
                 }
 
             // Generate a new subclass of the field's type and assign it once it compiles.
@@ -347,8 +347,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     // Multi-object: enqueue one pending assignment PER target so every selected object gets the new type
                     // after the script compiles — each entry carries its own GlobalObjectId, so the (GlobalId, path)-keyed
                     // queue keeps them apart. Enqueuing only targetObject (singular) would leave objects 2..N untouched.
-                    foreach (var target in property.serializedObject.targetObjects)
-                        SerializeReferencePendingAssignment.Enqueue(target, property.propertyPath, fullTypeName);
+                    // Read from the persistent property: the transient `property` may be disposed by the time this
+                    // deferred context-menu callback runs.
+                    foreach (var target in persistent.serializedObject.targetObjects)
+                        SerializeReferencePendingAssignment.Enqueue(target, persistent.propertyPath, fullTypeName);
                 });
 
             // Save the current instance as a durable named template, and paste any assignable saved template.
@@ -366,7 +368,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (fieldType != null && !fieldType.IsAssignableFrom(template.Type)) continue;
                 if (!filter(template.Type)) continue;
                 var name = template.Name;
-                menu.AddItem(new GUIContent($"Paste Template/{name}"), false, () => ApplyTemplate(property, name));
+                menu.AddItem(new GUIContent($"Paste Template/{name}"), false, () => ApplyTemplate(persistent, name));
             }
 
             menu.ShowAsContext();
