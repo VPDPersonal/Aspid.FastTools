@@ -533,7 +533,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             evt.menu.AppendAction("Copy Serialize Reference",
                 _ => SerializeReferenceClipboard.Copy(_property.managedReferenceValue));
 
-            var canPaste = SerializeReferenceClipboard.CanPasteInto(_fieldType);
+            var canPaste = SerializeReferenceClipboard.CanPasteInto(_fieldType, _filter);
 
             evt.menu.AppendAction("Paste Serialize Reference",
                 _ => PasteFromClipboard(),
@@ -570,6 +570,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var template in SerializeReferenceTemplates.LoadResolved())
             {
                 if (_fieldType != null && !_fieldType.IsAssignableFrom(template.Type)) continue;
+                if (!_filter(template.Type)) continue;
                 var name = template.Name;
                 evt.menu.AppendAction($"Paste Template/{name}", _ => ApplyTemplate(name));
             }
