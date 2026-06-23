@@ -31,19 +31,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             string.IsNullOrEmpty(StoredType.Class) ? $"rid {Rid}" : StoredType.Class;
 
         /// <summary>Full <c>Namespace.Class, Assembly</c> identity, for the row tooltip.</summary>
-        public string FullName
-        {
-            get
-            {
-                if (StoredType.IsEmpty) return string.Empty;
-
-                var name = string.IsNullOrEmpty(StoredType.Namespace)
-                    ? StoredType.Class
-                    : $"{StoredType.Namespace}.{StoredType.Class}";
-
-                return string.IsNullOrEmpty(StoredType.Assembly) ? name : $"{name}, {StoredType.Assembly}";
-            }
-        }
+        public string FullName => StoredType.FullName;
     }
 
     /// <summary>

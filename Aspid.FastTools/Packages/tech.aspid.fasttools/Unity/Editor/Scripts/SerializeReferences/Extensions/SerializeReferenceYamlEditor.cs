@@ -32,6 +32,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             string.IsNullOrEmpty(Assembly) && string.IsNullOrEmpty(Namespace) && string.IsNullOrEmpty(Class);
 
         /// <summary>
+        /// Human-readable <c>Namespace.Class</c> identity (the class alone when there is no namespace), or an empty
+        /// string when this is the empty type. The single source of truth for the missing-type caption shown in the
+        /// repair dialog, the project audit list and the graph header, so nested (<c>Outer/Inner</c>) or generic
+        /// class-name display fixes land in one place.
+        /// </summary>
+        public string DisplayName
+        {
+            get
+            {
+                if (IsEmpty) return string.Empty;
+                return string.IsNullOrEmpty(Namespace) ? Class : $"{Namespace}.{Class}";
+            }
+        }
+
+        /// <summary>
+        /// Full <c>Namespace.Class, Assembly</c> identity built on top of <see cref="DisplayName"/>, for tooltips that
+        /// need the assembly too. Empty for the empty type.
+        /// </summary>
+        public string FullName
+        {
+            get
+            {
+                if (IsEmpty) return string.Empty;
+                return string.IsNullOrEmpty(Assembly) ? DisplayName : $"{DisplayName}, {Assembly}";
+            }
+        }
+
+        /// <summary>
         /// Builds the YAML type identity for a resolved <see cref="Type"/>, including the
         /// <c>Name`N[[arg, asm],…]</c> shape Unity uses for closed generics.
         /// </summary>
