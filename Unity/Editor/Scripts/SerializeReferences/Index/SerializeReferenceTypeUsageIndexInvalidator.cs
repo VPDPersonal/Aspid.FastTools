@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using UnityEditor;
 
@@ -21,7 +22,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
         {
-            if (HasCandidate(deleted) || HasCandidate(moved))
+            // An in-place class rename reimports the script (an edited .cs in `imported`, no file move). It changes which
+            // stored types resolve without touching any asset YAML, so a surgical per-asset patch would never run and the
+            // warm index would keep serving stale Resolves==true entries for the old type. A coarse reset is the only fix
+            // that re-evaluates resolution across every cached usage; the next lookup rebuilds.
+            if (HasCandidate(deleted) || HasCandidate(moved) || HasScript(imported))
             {
                 SerializeReferenceTypeUsageIndex.Reset();
                 return;
@@ -34,5 +39,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static bool HasCandidate(string[] paths) =>
             paths.Any(SerializeReferenceHelpers.IsScanCandidate);
+
+        private static bool HasScript(string[] paths) =>
+            paths.Any(path => path.EndsWith(".cs", StringComparison.OrdinalIgnoreCase));
     }
 }
