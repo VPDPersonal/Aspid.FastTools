@@ -89,12 +89,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var array = serializedObject.FindProperty(arrayPath);
             if (array is null || !array.isArray) return;
 
+            // Grow the array and assign the fresh instance before a single apply. arraySize++ copies the previous last
+            // element's managedReferenceId, but assigning a fresh instance overwrites it in the same modification —
+            // collapsing both into one Undo step and leaving no rid-aliased duplicate behind.
             var index = array.arraySize;
             array.arraySize = index + 1;
+            array.GetArrayElementAtIndex(index).SetManagedReference(SerializeReferenceHelpers.CreateInstance(type));
             serializedObject.ApplyModifiedProperties();
-            serializedObject.Update();
-
-            array.GetArrayElementAtIndex(index).SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstance(type));
         }
     }
 }
