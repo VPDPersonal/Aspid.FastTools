@@ -19,6 +19,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         private static bool HasCandidate(string[] paths) =>
-            paths.Any(SerializeReferenceHelpers.IsScanCandidate);
+            paths.Any(SerializeReferenceYaml.IsCandidateAssetPath);
     }
 }
