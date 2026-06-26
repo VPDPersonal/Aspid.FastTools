@@ -10,7 +10,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// (single managed ref, list of managed refs, nested managed ref). The strings are written at column 0 inside the
     /// verbatim literal — their leading whitespace IS the YAML indentation and must not be reflowed.
     /// </summary>
-    internal static class YamlFixtures
+    // Public (not internal) because the SerializeReference editor test assembly references this test assembly to reuse
+    // these fixtures in its SR+YAML integration tests, which live outside Aspid.FastTools.Unity.Editor.Yaml.Tests.
+    public static class YamlFixtures
     {
         // The MonoBehaviour document's local file id (its "--- !u!114 &<fileID>" anchor).
         public const long MonoBehaviourFileId = 6500000000000000003L;
