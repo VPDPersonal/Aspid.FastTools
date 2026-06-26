@@ -1,3 +1,4 @@
+using System;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -86,6 +87,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var count = 0;
             while (count < line.Length && (line[count] == ' ' || line[count] == '\t')) count++;
             return count;
+        }
+
+        // The project-asset extensions whose Unity-YAML text can host managed references (RefIds). Single source of
+        // truth: SerializeReference's own scanners layer settings-based folder exclusion on top of this set.
+        public static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
+
+        /// <summary>
+        /// Returns <see langword="true"/> when <paramref name="path"/> is a project asset (under <c>Assets/</c>) whose
+        /// extension can host managed references. This is the engine-level, settings-agnostic candidate test; callers
+        /// that must honour the user's excluded-folder settings combine it with their own exclusion check.
+        /// </summary>
+        public static bool IsCandidateAssetPath(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !path.StartsWith("Assets/", StringComparison.Ordinal))
+                return false;
+
+            foreach (var extension in ScanExtensions)
+                if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+            return false;
         }
     }
 }
