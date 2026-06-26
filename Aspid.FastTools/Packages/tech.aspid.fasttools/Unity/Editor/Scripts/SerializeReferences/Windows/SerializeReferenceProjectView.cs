@@ -170,13 +170,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             root.AddChild(scroll);
         }
 
-        // The tab-switch entry point. Switching to the Project References tab never auto-scans: the project sweep
-        // parses every candidate asset's YAML behind a blocking bar (slow on large projects when the index is cold),
-        // and even a warm in-memory rescan is work the user didn't ask for on a plain tab switch. So the tab always
-        // opens on just the Scan panel over the idle canvas and waits for a deliberate Scan Project click. The
-        // breakage-notification deep-link bypasses this and forces a scan (the host window calls ScanProject
-        // directly), because the user opened it specifically to see the broken references.
-        public void Initialize() => ShowIdle();
+        // The tab-switch entry point. On a cold index the tab opens idle and waits for a deliberate Scan Project
+        // click: the cold sweep parses every candidate asset's YAML behind a blocking bar (slow on large projects),
+        // so it must never run unasked. Once the index is warm, though — the user already scanned this session, so
+        // the data is already in memory — re-deriving the groups is a cheap in-memory filter with no YAML sweep, so
+        // we re-render them here. That is what makes the results survive a plain tab switch instead of resetting to
+        // idle every time the user leaves and comes back; the warm index is the source of truth and Rescan refreshes
+        // it. The breakage-notification deep-link still bypasses this and forces a scan (the host window calls
+        // ScanProject directly), because the user opened it specifically to see the broken references.
+        public void Initialize()
+        {
+            if (SerializeReferenceTypeUsageIndex.IsWarm) RenderWarmGroups();
+            else ShowIdle();
+        }
 
         // ---------------------------------------------------------------------------------------------------------
         // Project mode
@@ -189,12 +195,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (_list is null) return;
 
-            // A scan always warms the index, so the button is a refresh affordance from here on — whether this is the
-            // first cold scan the user triggered or a warm rescan.
-            if (_scanButton is not null) _scanButton.Text = RescanLabel;
-
+            // Rescan starts from a clean slate: drop any open picker and the running summary stack the previous scan
+            // left behind, then re-collect. RenderWarmGroups does the collect/render and the refresh-label flip — the
+            // same path Initialize takes when it restores results on a warm index.
             ClosePicker();
             ClearSummaries();
+            RenderWarmGroups();
+        }
+
+        // Collects the current unresolved set from the (now warm) index and paints it. Shared by the Scan/Rescan
+        // button and Initialize's warm-restore path. A scan always warms the index, so the button is a refresh
+        // affordance from here on — whether this is the first cold scan the user triggered or a warm rescan.
+        private void RenderWarmGroups()
+        {
+            if (_list is null) return;
+            if (_scanButton is not null) _scanButton.Text = RescanLabel;
 
             var groups = CollectProjectGroups(out var canceled);
             RenderGroups(groups, canceled);
