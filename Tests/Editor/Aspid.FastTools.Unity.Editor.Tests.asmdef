@@ -6,7 +6,9 @@
         "UnityEditor.TestRunner",
         "Aspid.FastTools.Unity.Editor",
         "Aspid.FastTools.Unity",
-        "Aspid.FastTools"
+        "Aspid.FastTools",
+        "Aspid.FastTools.Unity.Editor.Yaml",
+        "Aspid.FastTools.Unity.Editor.Yaml.Tests"
     ],
     "includePlatforms": [
         "Editor"
