@@ -40,26 +40,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             property.managedReferenceValue?.GetType();
 
         #region Project scan helpers
-        // File kinds that can carry SerializeReference managed-reference documents. Single-sourced here so the Repair
-        // window, the usage index, the breakage detector and the build/CI gate all scan the same candidate set.
-        internal static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
-
         /// <summary>
-        /// Returns <see langword="true"/> when <paramref name="path"/> is a project asset (under <c>Assets/</c>) whose
-        /// extension can host managed references. Promoted from the Repair window so every project-wide scanner shares
-        /// one definition.
+        /// Returns <see langword="true"/> when <paramref name="path"/> is a project asset whose extension can host
+        /// managed references AND is not under a user-excluded folder. Layers SerializeReference's settings-based
+        /// exclusion on top of the engine-level candidate test
+        /// (<see cref="SerializeReferenceYaml.IsCandidateAssetPath"/>), which single-sources the .prefab/.asset/.unity
+        /// set so the Repair window, the usage index, the breakage detector and the build/CI gate scan the same set.
         /// </summary>
-        internal static bool IsScanCandidate(string path)
-        {
-            if (string.IsNullOrEmpty(path) || !path.StartsWith("Assets/", StringComparison.Ordinal)) return false;
-            if (SerializeReferenceSettings.IsExcluded(path)) return false;
-
-            foreach (var extension in ScanExtensions)
-                if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
-                    return true;
-
-            return false;
-        }
+        internal static bool IsScanCandidate(string path) =>
+            SerializeReferenceYaml.IsCandidateAssetPath(path) && !SerializeReferenceSettings.IsExcluded(path);
 
         /// <summary>
         /// Returns <see langword="true"/> when <paramref name="path"/> is a Unity scene. Scenes cannot be read through
