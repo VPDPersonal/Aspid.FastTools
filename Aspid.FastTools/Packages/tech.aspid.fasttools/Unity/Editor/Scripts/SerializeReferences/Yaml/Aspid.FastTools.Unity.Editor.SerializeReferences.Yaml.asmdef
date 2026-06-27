@@ -1,5 +1,5 @@
 {
-    "name": "Aspid.FastTools.Unity.Editor.Yaml",
+    "name": "Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml",
     "rootNamespace": "",
     "references": [],
     "includePlatforms": [
