@@ -84,7 +84,7 @@ namespace Aspid.FastTools.Ids.Editors
 
             rootVisualElement
                 .AddStyleSheetsFromResource(StyleSheetPath)
-                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+                .AddAspidThemeStyleSheets()
                 .AddChild(_searchField)
                 .AddChild(_errorLabel)
                 .AddChild(_listView);
