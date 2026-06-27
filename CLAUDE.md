@@ -168,43 +168,6 @@ All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this 
 - **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase), `open-pr` (project conventions for opening pull requests — see *Pull request conventions* below).
 - **Project subagents** (`.claude/agents/`): `code-reviewer` (Unity/Editor boundary + generator + package convention review), `uss-bem-checker` (validates USS class names + `--aspid-*` variables against the BEM/positional grammars above).
 
-## C# Code Style
-
-`.editorconfig` is the source of truth for the **machine-enforceable** rules (Rider / VS / `dotnet format`): Allman braces, 4-space indent, `var` for locals, no `this.` qualification, expression-bodied one-liners, pattern matching, `_camelCase` private fields, PascalCase constants, `I`/`T` prefixes, namespace style. Two files: repo-root `.editorconfig` (Unity defaults) + `Aspid.FastTools.Generators/.editorconfig` (file-scoped-namespace override). This section covers only what `.editorconfig` **can't** express — follow it when writing or reviewing C#.
-
-### Unity side vs Generators
-
-| Dimension | Unity (Runtime + Editor) | Generators |
-|---|---|---|
-| Namespace | block-scoped | file-scoped |
-| `// ReSharper disable once CheckNamespace` banner above `namespace` | yes, on nearly every file (namespaces don't mirror folders) | no |
-| Nullable | per-file `#nullable enable` (rare); bracket serialized fields with `#pragma warning disable CS8618 … restore` | project-wide via `.csproj` `<Nullable>enable</Nullable>` |
-| Default visibility | `public sealed` for API, `internal sealed` for editor impl | `internal sealed` |
-| XML docs | rich (`<summary>/<remarks>/<param>/<returns>/<typeparam>/<example><code>`, inline `<see cref/>`, `<c>`) | sparse — mostly plain `//` "why" comments |
-
-Everything below is shared across all three assemblies.
-
-### House conventions (not expressible in `.editorconfig`)
-
-- **Named arguments, liberally** — the distinctive house style. Used even for single/obvious args: `Type.GetType(_aqn, throwOnError: false)`, `[Conditional(conditionString: "UNITY_EDITOR")]`, `[InternalsVisibleTo(assemblyName: "…")]`, drawer calls (`Draw(position: position, label: label, …)`), and constructor chaining (`: this(types: type)`).
-- **`using` directives sorted by ascending line length**, not alphabetically; System is **not** forced first. Always outside the namespace, above the `CheckNamespace` banner.
-- **`sealed` by default** for leaf classes. Leave a class unsealed only when it's designed for inheritance (exposes `protected virtual`, like `IdRegistry`).
-- **`internal` for implementation detail, `public` for API surface.** Open internals to test/SR assemblies via `[assembly: InternalsVisibleTo(…)]` in `AssemblyInfo.cs`.
-- **`readonly struct` for generator pipeline data** — all public fields `readonly`, explicit `IEquatable<T>`, the `397` hash-combine idiom; never store `ISymbol`/`SyntaxNode` (breaks the incremental cache).
-
-### Layout
-
-- **Attributes:** field-level inline on the same line (`[SerializeField] private string _key;`); type/method/property attributes stacked on their own lines; `[field: …]` on its own line above an auto-property.
-- **Member order:** const fields → instance fields → properties → constructors → methods. `#region` only to group related members in large files; small files use none.
-- **Wrapping:** long signatures/calls go one argument per line (closing paren on the last arg's line); generic `where` constraints on their own line. Fluent chains: receiver on the first line, then one call per line with a leading dot:
-  ```csharp
-  this.AddStyleSheetsFromResource(StyleSheetPath)
-      .AddChild(_label)
-      .AddChild(_line);
-  ```
-- **No file headers / license banners** — first line is `#nullable enable`, the first `using`, or the `CheckNamespace` banner.
-- **Discards** are `_` (`CancellationToken _`, `using var _ = this.Marker();`).
-
 ## Pull request conventions
 
 When opening a PR — manually or via `@claude` — invoke the `open-pr` skill (`.claude/skills/open-pr/SKILL.md`) for the full procedure. Quick reference:
