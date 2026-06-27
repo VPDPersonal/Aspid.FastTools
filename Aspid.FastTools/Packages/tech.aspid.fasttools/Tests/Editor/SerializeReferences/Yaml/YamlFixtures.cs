@@ -144,6 +144,40 @@ MonoBehaviour:
         _slowPercent: 40
 ";
 
+        // The single-object document file id of the nested-list-pointer fixture below.
+        public const long NestedListPointerFileId = 8800000000000000003L;
+
+        // A MonoBehaviour whose one managed reference (WeaponRack, rid 1001) holds a List<IWeapon> _weapons with a single
+        // element pointing at a MISSING entry (GhostPistol, rid 1002). The nested "- rid: 1002" list element sits DEEPER
+        // than the RefIds entry headers and is immediately followed (inside the 4-line type lookahead) by rid 1002's own
+        // "type: {class: GhostPistol …}". FindMissingReferences must treat only the entry-indent "- rid:" lines as entries,
+        // so rid 1002 is reported exactly once — never doubled by also reading the nested pointer as a phantom entry.
+        public const string NestedListPointerPrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &8800000000000000003
+MonoBehaviour:
+  m_GameObject: {fileID: 8800000000000000001}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name:
+  _loadout:
+    rid: 1001
+  references:
+    version: 2
+    RefIds:
+    - rid: 1001
+      type: {class: WeaponRack, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _weapons:
+        - rid: 1002
+    - rid: 1002
+      type: {class: GhostPistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 15
+        _magazineSize: 12
+";
+
         // RefIds present in the empty-fields fixture below.
         public const long EmptyRailgunRid = 1001;  // _primaryWeapon  (resolvable, holds a cleared nested _chargeEffect)
         public const long EmptyPistolRid = 1002;   // _sidearms[0]    (resolvable)
