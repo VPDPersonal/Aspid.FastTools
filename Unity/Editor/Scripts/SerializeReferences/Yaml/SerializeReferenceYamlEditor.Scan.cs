@@ -43,7 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         headers.Add((fileId, i));
                 }
 
-                var ridPattern = new Regex(@"^\s*-\s+rid:\s*(-?\d+)\s*$");
+                var ridPattern = new Regex(@"^(?<indent>\s*)-\s+rid:\s*(?<rid>-?\d+)\s*$");
                 var typePattern = new Regex(@"^\s*type:\s*\{(?<body>.*)\}\s*$");
 
                 for (var h = 0; h < headers.Count; h++)
@@ -54,10 +54,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var refIdsStart = FindRefIdsStart(lines, start, end);
                     if (refIdsStart < 0) continue;
 
+                    // Entry headers sit at the shallowest "- rid:" indent under RefIds; a deeper "- rid:" is a nested
+                    // array-element pointer inside an entry's own data block, not an entry. Matching at any indent would
+                    // read such a pointer (whose following lines can resemble a type mapping) as a phantom missing entry
+                    // and then aim a repair at the wrong line. Same entry-indent discrimination TryNullReference uses.
+                    var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
+                    if (entryIndent < 0) continue;
+
                     for (var i = refIdsStart + 1; i < end; i++)
                     {
                         var ridMatch = ridPattern.Match(lines[i]);
-                        if (!ridMatch.Success || !long.TryParse(ridMatch.Groups[1].Value, out var rid)) continue;
+                        if (!ridMatch.Success || ridMatch.Groups["indent"].Length != entryIndent ||
+                            !long.TryParse(ridMatch.Groups["rid"].Value, out var rid)) continue;
 
                         for (var j = i + 1; j < end && j <= i + 4; j++)
                         {

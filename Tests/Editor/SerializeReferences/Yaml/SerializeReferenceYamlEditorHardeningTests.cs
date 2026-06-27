@@ -59,6 +59,30 @@ MonoBehaviour:
             "\t\t  data:\n" +
             "\t\t\t_damage: 10\n";
 
+        // A genuine, space-indented Unity asset whose rid 1001 entry block contains a blank line that holds nothing but a
+        // stray TAB (built with explicit \t / \n so it is unambiguous in source). Such a line carries no indentation to
+        // measure — FindEntryEnd spans it — so the space-only-indent guard must NOT mistake the tab for tab-indentation
+        // and abort: a removal must still run. The negative control above proves a tab in a CONTENT line still bails.
+        private const string BlankTabLineInsideEntryAsset =
+            "%YAML 1.1\n" +
+            "%TAG !u! tag:unity3d.com,2011:\n" +
+            "--- !u!114 &11400000\n" +
+            "MonoBehaviour:\n" +
+            "  m_ObjectHideFlags: 0\n" +
+            "  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}\n" +
+            "  m_Name: BlankTabLineAsset\n" +
+            "  _weapon:\n" +
+            "    rid: 1001\n" +
+            "  references:\n" +
+            "    version: 2\n" +
+            "    RefIds:\n" +
+            "    - rid: 1001\n" +
+            "      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}\n" +
+            "      data:\n" +
+            "        _damage: 10\n" +
+            "\t\n" +
+            "        _magazineSize: 7\n";
+
         private static readonly ManagedTypeName SomeType = new ManagedTypeName(
             "Aspid.FastTools.Samples.SerializeReferences",
             "Aspid.FastTools.Samples.SerializeReferences",
@@ -160,6 +184,20 @@ MonoBehaviour:
                     path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid),
                     "A canonical Unity asset (%TAG present, space-indented) must still be editable after hardening.");
                 StringAssert.DoesNotContain("Shotgun", File.ReadAllText(path));
+            }
+            finally { YamlFixtures.Delete(path); }
+        }
+
+        [Test]
+        public void TryRemoveEntry_BlankLineWithStrayTabInsideEntry_StillRemoves_LeavesNoEntry()
+        {
+            var path = YamlFixtures.WriteTemp(BlankTabLineInsideEntryAsset);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryRemoveEntry(path, FileId, Rid),
+                    "A blank line that merely contains a stray tab carries no indentation — it must not abort the removal.");
+                StringAssert.DoesNotContain("Pistol", File.ReadAllText(path),
+                    "The rid 1001 entry must be gone once the blank-line guard no longer falsely mistrusts the block.");
             }
             finally { YamlFixtures.Delete(path); }
         }

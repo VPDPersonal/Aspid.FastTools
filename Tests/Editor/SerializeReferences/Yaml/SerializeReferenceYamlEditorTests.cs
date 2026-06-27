@@ -45,6 +45,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void FindMissingReferences_NestedListPointer_ReportsEntryOnce()
+        {
+            // A nested "- rid:" array element (a List<IWeapon> pointer) sits deeper than the RefIds entry headers and is
+            // followed within the 4-line type lookahead by the missing entry's own type line. The scan must key entries
+            // off the entry indent, so rid 1002 is reported once — not doubled by also reading the nested pointer.
+            var path = YamlFixtures.WriteTemp(YamlFixtures.NestedListPointerPrefab);
+            try
+            {
+                var missing = SerializeReferenceYamlEditor.FindMissingReferences(path, Resolves);
+
+                Assert.AreEqual(1, missing.Count,
+                    "A nested '- rid:' list element must not be read as a second, phantom RefIds entry.");
+                Assert.AreEqual(YamlFixtures.GhostPistolRid, missing[0].Rid);
+                Assert.AreEqual("GhostPistol", missing[0].StoredType.Class);
+            }
+            finally { YamlFixtures.Delete(path); }
+        }
+
+        [Test]
         public void TryReadReferenceId_SingleField_ResolvesRid()
         {
             Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(

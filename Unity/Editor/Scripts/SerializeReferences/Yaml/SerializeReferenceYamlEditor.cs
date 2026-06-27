@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -141,9 +140,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // bounded block bail on such a line rather than risk a mis-bounded, non-undoable write.
         private static bool IndentIsSpaceOnly(string line)
         {
-            foreach (var l in line.Where(l => l != ' '))
+            // A blank / whitespace-only line carries no indentation to measure — FindEntryEnd spans blank lines inside
+            // an entry, so a stray tab in such a line must not abort an otherwise valid (space-indented) block removal.
+            if (string.IsNullOrWhiteSpace(line)) return true;
+
+            // The leading run of a non-blank line is its indentation; the first non-space character ends it. A tab (or
+            // any non-space whitespace) there means tab / mixed indentation — the case IndentOf and the regexes disagree
+            // on — so the block is untrusted. Whitespace after the first content character is not indentation.
+            foreach (var character in line)
             {
-                return !char.IsWhiteSpace(l);
+                if (character == ' ') continue;
+                return !char.IsWhiteSpace(character);
             }
 
             return true;
