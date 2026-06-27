@@ -11,7 +11,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// verbatim literal — their leading whitespace IS the YAML indentation and must not be reflowed.
     /// </summary>
     // Public (not internal) because the SerializeReference editor test assembly references this test assembly to reuse
-    // these fixtures in its SR+YAML integration tests, which live outside Aspid.FastTools.Unity.Editor.Yaml.Tests.
+    // these fixtures in its SR+YAML integration tests, which live outside Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml.Tests.
     public static class YamlFixtures
     {
         // The MonoBehaviour document's local file id (its "--- !u!114 &<fileID>" anchor).
