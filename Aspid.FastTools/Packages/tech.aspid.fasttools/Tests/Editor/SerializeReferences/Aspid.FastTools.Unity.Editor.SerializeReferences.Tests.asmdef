@@ -1,10 +1,10 @@
 {
-    "name": "Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml.Tests",
+    "name": "Aspid.FastTools.Unity.Editor.SerializeReferences.Tests",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml"
+        "Aspid.FastTools.Unity.Editor.SerializeReferences"
     ],
     "includePlatforms": [
         "Editor"

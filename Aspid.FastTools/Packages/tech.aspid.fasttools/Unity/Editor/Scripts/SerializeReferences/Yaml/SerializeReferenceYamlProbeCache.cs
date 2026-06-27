@@ -22,10 +22,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private const int CacheCapacity = 64;
 
-        private static readonly Dictionary<string, (DateTime writeTimeUtc, string[] lines)> Cache =
-            new(StringComparer.Ordinal);
-
-        private static readonly Queue<string> CacheOrder = new();
+        private static readonly Queue<string> _cacheOrder = new();
+        private static readonly Dictionary<string, (DateTime writeTimeUtc, string[] lines)> _cache = new(StringComparer.Ordinal);
 
         /// <summary>
         /// Returns the asset's lines from the cache when the file's last-write-time is unchanged, otherwise reads them
@@ -37,20 +35,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return Array.Empty<string>();
 
             var writeTimeUtc = File.GetLastWriteTimeUtc(assetPath);
-            if (Cache.TryGetValue(assetPath, out var cached) && cached.writeTimeUtc == writeTimeUtc)
+            if (_cache.TryGetValue(assetPath, out var cached) && cached.writeTimeUtc == writeTimeUtc)
                 return cached.lines;
 
             var lines = File.ReadAllLines(assetPath);
 
             // A re-read at a newer write-time replaces the entry in place without re-enqueuing it; only a genuinely new
             // key grows the FIFO order, so the cap counts distinct assets, not reads.
-            if (!Cache.ContainsKey(assetPath)) CacheOrder.Enqueue(assetPath);
-            Cache[assetPath] = (writeTimeUtc, lines);
+            if (!_cache.ContainsKey(assetPath)) _cacheOrder.Enqueue(assetPath);
+            _cache[assetPath] = (writeTimeUtc, lines);
 
-            while (CacheOrder.Count > CacheCapacity)
+            while (_cacheOrder.Count > CacheCapacity)
             {
-                var evicted = CacheOrder.Dequeue();
-                Cache.Remove(evicted);
+                var evicted = _cacheOrder.Dequeue();
+                _cache.Remove(evicted);
             }
 
             return lines;
@@ -59,8 +57,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>Drops every cached file — called after a rewrite and from the import post-processor.</summary>
         public static void ClearCache()
         {
-            Cache.Clear();
-            CacheOrder.Clear();
+            _cache.Clear();
+            _cacheOrder.Clear();
         }
     }
 }

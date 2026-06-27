@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -13,18 +14,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </summary>
     internal static class SerializeReferenceYaml
     {
-        // "--- !u!114 &11400000" — object document header carrying the local file id as its YAML anchor and the
-        // class id ("!u!114") used as a best-effort fallback label when the live type name is unavailable.
+        /// <summary>
+        /// Matches an object document header (e.g. <c>--- !u!114 &amp;11400000</c>): captures the local file id as the
+        /// YAML anchor and the class id (<c>!u!114</c>) used as a best-effort fallback label when the live type name is
+        /// unavailable.
+        /// </summary>
         public static readonly Regex DocumentHeader = new(@"^--- !u!(?<class>\d+) &(?<id>\d+)", RegexOptions.Compiled);
 
-        // "  RefIds:" — the managed-reference id list of an object document.
+        /// <summary>
+        /// Matches the <c>RefIds:</c> key line that opens the managed-reference id list of an object document.
+        /// </summary>
         public static readonly Regex RefIdsKey = new(@"^\s*RefIds:\s*$", RegexOptions.Compiled);
 
-        // The inline "class: X, ns: Y, asm: Z" body of a RefIds type mapping, honouring the single-quoted class names
-        // Unity writes for closed generics (e.g. 'Modifier`1[[…]]').
+        /// <summary>
+        /// Matches the inline <c>class: X, ns: Y, asm: Z</c> body of a <c>RefIds</c> type mapping, honouring the
+        /// single-quoted class names Unity writes for closed generics (e.g. <c>'Modifier`1[[…]]'</c>).
+        /// </summary>
         public static readonly Regex InlineType = new(
             @"class:\s*(?:'(?<class>(?:[^']|'')*)'|(?<class>[^,}]*?))\s*,\s*ns:\s*(?<ns>[^,}]*?)\s*,\s*asm:\s*(?<asm>[^,}]*?)\s*$",
             RegexOptions.Compiled);
+
+        /// <summary>
+        /// The project-asset extensions whose Unity-YAML text can host managed references (<c>RefIds</c>). Single source
+        /// of truth: SerializeReference's own scanners layer settings-based folder exclusion on top of this set.
+        /// </summary>
+        public static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
 
         /// <summary>
         /// Parses the inline <c>class: X, ns: Y, asm: Z</c> body of a <c>RefIds</c> type mapping into a
@@ -36,10 +50,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             type = default;
 
             var match = InlineType.Match(body);
-            if (!match.Success) return false;
+
+            if (!match.Success)
+                return false;
 
             var className = match.Groups["class"].Value.Replace("''", "'");
             type = new ManagedTypeName(match.Groups["asm"].Value, match.Groups["ns"].Value, className);
+
             return !type.IsEmpty;
         }
 
@@ -50,8 +67,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static int FindRefIdsStart(string[] lines, int start, int end)
         {
             for (var i = start; i < end; i++)
+            {
                 if (RefIdsKey.IsMatch(lines[i]))
                     return i;
+            }
 
             return -1;
         }
@@ -64,7 +83,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             for (var j = headerIndex + 1; j < end; j++)
             {
-                if (lines[j].Trim().Length == 0) continue;
+                if (lines[j].Trim().Length == 0)
+                    continue;
 
                 var indent = IndentOf(lines[j]);
                 if (indent < entryIndent || (indent == entryIndent && lines[j].TrimStart().StartsWith("- ")))
@@ -85,13 +105,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static int IndentOf(string line)
         {
             var count = 0;
-            while (count < line.Length && (line[count] == ' ' || line[count] == '\t')) count++;
+            while (count < line.Length && (line[count] == ' ' || line[count] == '\t'))
+            {
+                count++;
+            }
+
             return count;
         }
-
-        // The project-asset extensions whose Unity-YAML text can host managed references (RefIds). Single source of
-        // truth: SerializeReference's own scanners layer settings-based folder exclusion on top of this set.
-        public static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
 
         /// <summary>
         /// Returns <see langword="true"/> when <paramref name="path"/> is a project asset (under <c>Assets/</c>) whose
@@ -103,11 +123,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (string.IsNullOrEmpty(path) || !path.StartsWith("Assets/", StringComparison.Ordinal))
                 return false;
 
-            foreach (var extension in ScanExtensions)
-                if (path.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
-                    return true;
-
-            return false;
+            return ScanExtensions.Any(extension => path.EndsWith(extension, StringComparison.OrdinalIgnoreCase));
         }
     }
 }

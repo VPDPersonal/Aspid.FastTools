@@ -1,6 +1,7 @@
 using System;
 using NUnit.Framework;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     /// <summary>
