@@ -1,0 +1,10 @@
+# Aspid.FastTools.Generators — C# code style override.
+#
+# Intentionally NOT `root = true`: this file inherits every formatting & naming
+# rule from the repo-root .editorconfig and overrides only what differs on the
+# Generators side. Keep the prose counterpart in sync with CLAUDE.md → "C# Code
+# Style" → "Unity side vs Generators".
+
+[*.cs]
+#### Namespaces — file-scoped on the Generators side (Unity uses block-scoped).
+csharp_style_namespace_declarations = file_scoped:warning
