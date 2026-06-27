@@ -1,0 +1,302 @@
+.aspid-fasttools-type-selector {
+    padding:                5px 2px;
+    flex-grow:              1;
+    flex-direction:         column;
+}
+
+/* ---------------------------------------------------- Header ------------------------------------------------------ */
+/* Header strip: one neutral bar that carries either the breadcrumb trail + magnifier (resting) or the search field
+   (active). It bleeds to the box edges in the embedding hosts (the host stylesheet cancels the surrounding padding);
+   here it only owns its own fill and spacing. The mode swap is driven from code (display). */
+.aspid-fasttools-type-selector__header {
+    min-height:             20px;
+    flex-direction:         row;
+    align-items:            center;
+    flex-wrap:              nowrap;
+    overflow:               hidden;
+    padding:                2px 5px;
+    border-radius:          8px 8px 0 0;
+    margin:                 -5px -2px 5px;
+    background-color:       var(--aspid-colors-bg-dark);
+    border-width:           1px;
+    border-color:           var(--aspid-colors-bg-dark);
+}
+
+/* The breadcrumb trail fills the strip and shrinks/ellipsises under pressure, leaving the magnifier pinned right.
+   Clicking anywhere on it but a navigable crumb opens the search field, so the strip carries the text caret cursor as
+   the "click to search" cue; the link crumbs override it back to the link cursor. */
+.aspid-fasttools-type-selector__trail {
+    flex-grow:              1;
+    flex-shrink:            1;
+    min-height:             16px;
+    flex-direction:         row;
+    align-items:            center;
+    flex-wrap:              nowrap;
+    overflow:               hidden;
+    cursor:                 text;
+}
+
+/* Magnifier button: the only search affordance in the resting header. Pinned to the left edge, ahead of the breadcrumb
+   trail. Flat and transparent so it reads as chrome, it lifts a step on hover; clicking it (or typing) swaps the trail
+   for the search field. */
+.aspid-fasttools-type-selector__search-button {
+    width:                  11px;
+    height:                 11px;
+    margin:                 0 4px 0 2px;
+    padding:                0;
+    flex-shrink:            0;
+    align-items:            center;
+    border-width:           0;
+    border-radius:          3px;
+    background-color:       rgba(0, 0, 0, 0);
+}
+
+.aspid-fasttools-type-selector__search-button:hover {
+    -unity-background-image-tint-color:  var(--aspid-colors-status-info-text-light);
+}
+
+/* The search field overlays the same header strip when active and fills it on every edge. Unity's ToolbarSearchField
+   otherwise keeps an intrinsic max-width that leaves the field narrower than the strip, so it is cleared and the field
+   grows into the whole row. align-self:stretch makes it span the header's full height (the header otherwise centers a
+   shorter field, leaving a gap above and below), and the negative margin cancels the header's 2px/8px padding so the
+   field bleeds flush to all four header edges (overflow:hidden trims it exactly at the border). */
+/* The field bleeds flush to the header edges; its own 1px rounded border would then sit right on the header's
+   overflow:hidden clip line and paint unevenly (clipped corners, half-pixel edges). So the field drops its frame and
+   fill entirely and blends into the header strip — the header itself becomes the search input (magnifier + caret +
+   text), command-palette style. Focus is conveyed by the caret; no separate box is drawn. */
+.aspid-fasttools-type-selector__search-field {
+    width:                  auto;
+    max-width:              none;
+    flex-grow:              1;
+    flex-shrink:            1;
+    align-self:             stretch;
+    margin:                 0;
+    border-width:           0;
+    border-radius:          0;
+    background-color:       rgba(0, 0, 0, 0);
+}
+
+/* The inner text input stretches to fill the field so the typing area spans the strip, not just the field's frame. */
+.aspid-fasttools-type-selector__search-field
+    .unity-search-field-base__text-field {
+    flex-grow:              1;
+    max-width:              none;
+}
+
+/* Match the input to the frameless field: no border/radius/fill of its own, so the header background shows through. */
+.aspid-fasttools-type-selector__search-field .unity-base-text-field__input {
+    font-size:              12;
+    border-width:           0;
+    border-radius:          0;
+    background-color:       rgba(0, 0, 0, 0);
+}
+
+/* The built-in magnifier renders tiny (8x8) and hugs the left edge. Enlarge it and give it a left inset so it sits
+   with breathing room and reads at the weight of the list-row icons. */
+.aspid-fasttools-type-selector__search-field
+    .unity-search-field-base__search-button {
+    width:                  11px;
+    height:                 11px;
+}
+
+ToolbarSearchField TextElement {
+    font-size:      12px;
+    -unity-font-style:      bold;
+}
+
+/* A breadcrumb crumb. Ancestors are dim and shrink/ellipsis under pressure; the current crumb is bright and pinned. */
+.aspid-fasttools-type-selector__breadcrumb {
+    font-size:              12px;
+    -unity-font-style:      bold;
+    color:                  var(--aspid-colors-text-dark);
+    flex-shrink:            1;
+    overflow:               hidden;
+    text-overflow:          ellipsis;
+    white-space:            nowrap;
+}
+
+/* The current crumb is bright; it still ellipsises under pressure (a flattened single-child namespace chain can be
+   very long) — its full text rides the tooltip so nothing is lost. */
+.aspid-fasttools-type-selector__breadcrumb--current {
+    color:                  var(--aspid-colors-text-lightness);
+}
+
+.aspid-fasttools-type-selector__breadcrumb--link {
+    cursor:                 link;
+}
+
+.aspid-fasttools-type-selector__breadcrumb--link:hover {
+    color:                  var(--aspid-colors-status-info-text-light);
+}
+
+.aspid-fasttools-type-selector__breadcrumb-separator {
+    margin:                 0 4px;
+    flex-shrink:            0;
+    color:                  var(--aspid-colors-text-darkness);
+}
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+/* The list fills the space between the header and the footer hint; the empty-state hint takes its place when the
+   list is empty (both flex-grow, only one is shown at a time). */
+.aspid-fasttools-type-selector .unity-list-view {
+    flex-grow:              1;
+}
+
+/* Inline error (e.g. a generic-argument constraint violation). Visibility is toggled in code; only the
+   error palette and spacing live here. */
+.aspid-fasttools-type-selector__error {
+    margin:                 2px 4px;
+    white-space:            normal;
+    color:                  var(--aspid-colors-status-error-text-light);
+}
+
+/* Centred stand-in shown when the list is empty (most often a search miss). */
+.aspid-fasttools-type-selector__empty-hint {
+    flex-grow:              1;
+    padding:                20px;
+    white-space:            normal;
+    -unity-text-align:      middle-center;
+    color:                  var(--aspid-colors-text-dark);
+}
+
+/* Static keyboard affordance pinned to the bottom edge; bleeds to the box edges in embedding hosts. */
+.aspid-fasttools-type-selector__footer-hint {
+    margin:                 5px -2px -5px;
+    padding:                3px 8px;
+    font-size: 12px;
+    color:                  var(--aspid-colors-text-darkness);
+    background-color:       var(--aspid-colors-bg-dark);
+    border-top-width:       1px;
+    border-top-color:       var(--aspid-colors-shade-darkness);
+}
+
+/* ------------------------------------------------------ Item ------------------------------------------------------ */
+/* Every row reserves a 2 px transparent left rail so the selection accent bar can colour it in without shifting the
+   row's content. The padding-left is kept tight so the rows sit close to the picker's left edge. Hover lifts the
+   surface a step; the selected row lifts one more and lights its rail in the signature green — a single restrained
+   accent rather than a full gradient wash. */
+.aspid-fasttools-type-selector .unity-collection-view__item {
+    height:                 22px;
+    align-items:            center;
+    flex-direction:         row;
+    padding-left:           1px;
+    padding-right:          5px;
+}
+
+.aspid-fasttools-type-selector .unity-collection-view__item:hover {
+    background-color:       var(--aspid-colors-bg-light);
+}
+
+.aspid-fasttools-type-selector .unity-collection-view__item--selected,
+.aspid-fasttools-type-selector .unity-collection-view__item--selected:hover {
+    background-color:       var(--aspid-colors-bg-lightness);
+}
+
+.aspid-fasttools-type-selector__item {
+    flex-grow:              1;
+    align-items:            center;
+    flex-direction:         row;
+}
+
+.aspid-fasttools-type-selector__item-icon {
+    width:                  14px;
+    height:                 14px;
+    margin-right:           4px;
+    flex-shrink:            0;
+}
+
+/* A collapsed section's identity icon (star / history clock) is dimmed; expanded it is full strength. With the foldout
+   arrow gone, this brightness shift is the open/closed cue for the group. */
+.aspid-fasttools-type-selector__item-icon--collapsed {
+    opacity:                0.4;
+}
+
+/* Text-glyph alternative to the image icon (the <None> circle, the section chevron). It mirrors the image icon's box
+   exactly — the same 14x14 leading slot, the glyph middle-centered inside it — so a font glyph centres by its box like
+   the icon does, instead of by a taller text line-box that left it riding above the caption. A font glyph stays crisp
+   at any size, so the font is sized up a touch to read at the icons' weight while the fixed box keeps it aligned. */
+.aspid-fasttools-type-selector__item-glyph {
+    width:                  14px;
+    height:                 14px;
+    margin-right:           4px;
+    flex-shrink:            0;
+    font-size:              16px;
+    -unity-text-align:      middle-center;
+    color:                  var(--aspid-colors-text-light);
+}
+
+.aspid-fasttools-type-selector__item-title {
+    color:                  var(--aspid-colors-text-lightness);
+    flex-grow:              1;
+}
+
+.aspid-fasttools-type-selector__item-arrow {
+    color:                  var(--aspid-colors-text-dark);
+}
+
+/* <None> is a plain leaf row like any type — same label colour, same icon rail — distinguished only by its minus
+   glyph (bound in code) and its label, so it sits with the list instead of reading as a different kind of element. */
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+/* ----------------------------------------------- Favorites & Recents ---------------------------------------------- */
+.aspid-fasttools-type-selector__favorite-toggle {
+    margin:                 0;
+    padding:                0;
+    width:                  16px;
+    height:                 16px;
+    flex-shrink:            0;
+    border-width:           0;
+    font-size:              13px;
+    -unity-text-align:      middle-center;
+    background-color:       rgba(0, 0, 0, 0);
+    color:                  var(--aspid-colors-text-darkness);
+    opacity:                0;
+}
+
+/* Reveal the star on row hover (or whenever the type is already favorited). */
+.aspid-fasttools-type-selector__item:hover
+    .aspid-fasttools-type-selector__favorite-toggle {
+    opacity:                1;
+}
+
+/* Reveal it on the keyboard-selected row too, so a keyboard user sees the star state and the Space-to-toggle target. */
+.aspid-fasttools-type-selector
+    .unity-collection-view__item--selected
+    .aspid-fasttools-type-selector__favorite-toggle {
+    opacity:                1;
+}
+
+/* The gold star is the one place amber survives in the picker chrome — it is a favourite marker, not a warning. */
+.aspid-fasttools-type-selector__favorite-toggle--favorite-on {
+    opacity:                1;
+    color:                  var(--aspid-colors-status-warning-text-light);
+}
+
+.aspid-fasttools-type-selector__favorite-toggle:hover {
+    color:                  var(--aspid-colors-status-warning-text-lightness);
+}
+
+/* Section header (Favorites / Recents) reads as a normal row — same height, font size and background as the rest of
+   the list — set apart only by its leading collapse chevron, a bold weight and a slightly dimmer caption. No caps, no
+   shrunken font, no special fill, so the list stays visually uniform. */
+.aspid-fasttools-type-selector__section-title {
+    align-items:            center;
+    flex-direction:         row;
+    background-color:       rgba(0, 0, 0, 0);
+    cursor:                 link;
+}
+
+/* Same caption colour as the rest of the list — the section is set apart only by its chevron and bold weight, not a
+   different hue. (It is navigable/selectable too; the wrapper carries the green accent bar when it is the active row.) */
+.aspid-fasttools-type-selector__section-title
+    .aspid-fasttools-type-selector__item-title {
+    color:                  var(--aspid-colors-text-lightness);
+    -unity-font-style:      bold;
+}
+
+/* Favorites/Recents item rows: a small indent so they read as nested under their header. The selection accent bar
+   (on the collection-view wrapper) is the only vertical line, so the rows carry no left rule of their own. */
+.aspid-fasttools-type-selector__item--in-section {
+    margin-left:            6px;
+}
+/* ------------------------------------------------------------------------------------------------------------------ */
