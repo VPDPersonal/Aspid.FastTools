@@ -3,7 +3,7 @@
     "references": [
         "Aspid.FastTools",
         "Aspid.FastTools.Unity",
-        "Aspid.FastTools.Unity.Editor.Yaml"
+        "Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml"
     ],
     "includePlatforms": [
         "Editor"

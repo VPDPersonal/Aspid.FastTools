@@ -4,7 +4,10 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Aspid.FastTools.Unity.Editor.SerializeReferences"
+        "Aspid.FastTools",
+        "Aspid.FastTools.Unity",
+        "Aspid.FastTools.Unity.Editor",
+        "Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml"
     ],
     "includePlatforms": [
         "Editor"
