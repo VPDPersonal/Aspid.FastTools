@@ -27,14 +27,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var applied = AspidThemeSettings.OverrideStyleSheet;
             if (applied != null) element.AddStyleSheets(applied);
 
-            void OnThemeChanged()
-            {
-                if (applied != null) element.RemoveStyleSheets(applied);
-
-                applied = AspidThemeSettings.OverrideStyleSheet;
-                if (applied != null) element.AddStyleSheets(applied);
-            }
-
             element.RegisterCallback<AttachToPanelEvent>(_ =>
             {
                 OnThemeChanged();
@@ -43,6 +35,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             element.RegisterCallback<DetachFromPanelEvent>(_ => AspidThemeSettings.Changed -= OnThemeChanged);
 
             return element;
+
+            void OnThemeChanged()
+            {
+                if (applied != null) element.RemoveStyleSheets(applied);
+
+                applied = AspidThemeSettings.OverrideStyleSheet;
+                if (applied != null) element.AddStyleSheets(applied);
+            }
         }
     }
 }
