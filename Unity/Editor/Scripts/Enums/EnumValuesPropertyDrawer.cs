@@ -36,7 +36,7 @@ namespace Aspid.FastTools.Enums.Editors
             return new VisualElement()
                 .SetName($"enum-values-{property.displayName}")
                 .AddStyleSheetsFromResource(StylesheetPath)
-                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+                .AddAspidThemeStyleSheets()
                 .AddManipulatorSelf(EnumValuesPropertyDrawerHelper.CreatePopulateMenuManipulator(
                     values: serializedObject.FindProperty(valuesPath),
                     enumType: serializedObject.FindProperty(enumTypePath),
