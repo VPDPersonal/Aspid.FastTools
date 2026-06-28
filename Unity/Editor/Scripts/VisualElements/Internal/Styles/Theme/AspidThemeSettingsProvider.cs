@@ -56,23 +56,16 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             // Apply the theme to the settings UI itself so the help box reflects the active palette.
             root.AddAspidThemeStyleSheets();
 
-            var container = new VisualElement();
-            container.style.marginTop = 6;
-            container.style.marginLeft = 8;
-            container.style.marginRight = 8;
-
-            var title = new Label("Editor Theme");
-            title.style.unityFontStyleAndWeight = UnityEngine.FontStyle.Bold;
-            title.style.marginBottom = 6;
-            container.Add(title);
+            var title = new Label("Editor Theme")
+                .AddBoldUnityFontStyleAndWeight()
+                .SetMarginBottom(6);
 
             var help = new HelpBox(
-                "Select a USS style sheet to override the default Aspid editor palette. " +
-                "Redefine any --aspid-colors-* / --aspid-icons-* token inside a :root { } block; " +
-                "your sheet is layered on top of the built-in Default-Dark palette and applies live.",
-                HelpBoxMessageType.Info);
-            help.style.marginBottom = 8;
-            container.Add(help);
+                    "Select a USS style sheet to override the default Aspid editor palette. " +
+                    "Redefine any --aspid-colors-* / --aspid-icons-* token inside a :root { } block; " +
+                    "your sheet is layered on top of the built-in Default-Dark palette and applies live.",
+                    HelpBoxMessageType.Info)
+                .SetMarginBottom(8);
 
             var field = new ObjectField("Override Style Sheet")
             {
@@ -82,21 +75,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             };
             field.RegisterValueChangedCallback(evt =>
                 AspidThemeSettings.OverrideStyleSheet = evt.newValue as StyleSheet);
-            container.Add(field);
-
-            var buttons = new VisualElement();
-            buttons.style.flexDirection = FlexDirection.Row;
-            buttons.style.marginTop = 8;
 
             var createButton = new Button(() => CreateTemplate(field)) { text = "Create Template" };
             var resetButton = new Button(() => field.value = null) { text = "Reset to Default" };
-            resetButton.style.marginLeft = 4;
 
-            buttons.Add(createButton);
-            buttons.Add(resetButton);
-            container.Add(buttons);
+            var buttons = new VisualElement()
+                .SetFlexDirection(FlexDirection.Row)
+                .SetMarginTop(8)
+                .AddChildren(createButton, resetButton.SetMarginLeft(4));
 
-            root.Add(container);
+            root.AddChild(new VisualElement()
+                .SetMargin(top: 6, right: 8, left: 8)
+                .AddChildren(title, help, field, buttons));
         }
 
         private static void CreateTemplate(ObjectField field)

@@ -21,25 +21,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public static event Action Changed;
 
         /// <summary>
-        /// GUID of the user override style sheet asset, or an empty string when none is set.
-        /// Setting this value persists it to <see cref="EditorPrefs"/> and raises <see cref="Changed"/>.
-        /// </summary>
-        private static string OverrideStyleSheetGuid
-        {
-            get => EditorPrefs.GetString(OverrideStyleSheetGuidKey, string.Empty);
-            set
-            {
-                value ??= string.Empty;
-                if (OverrideStyleSheetGuid == value) return;
-
-                if (string.IsNullOrEmpty(value)) EditorPrefs.DeleteKey(OverrideStyleSheetGuidKey);
-                else EditorPrefs.SetString(OverrideStyleSheetGuidKey, value);
-
-                Changed?.Invoke();
-            }
-        }
-
-        /// <summary>
         /// The resolved user override style sheet, or <c>null</c> when none is set or the asset is missing.
         /// </summary>
         public static StyleSheet OverrideStyleSheet
@@ -55,6 +36,23 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => OverrideStyleSheetGuid = value == null
                 ? string.Empty
                 : AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(value));
+        }
+
+        // Backing storage for OverrideStyleSheet, persisted in EditorPrefs as the asset GUID
+        // (empty when none). Setting it raises Changed; callers go through the typed property.
+        private static string OverrideStyleSheetGuid
+        {
+            get => EditorPrefs.GetString(OverrideStyleSheetGuidKey, string.Empty);
+            set
+            {
+                value ??= string.Empty;
+                if (OverrideStyleSheetGuid == value) return;
+
+                if (string.IsNullOrEmpty(value)) EditorPrefs.DeleteKey(OverrideStyleSheetGuidKey);
+                else EditorPrefs.SetString(OverrideStyleSheetGuidKey, value);
+
+                Changed?.Invoke();
+            }
         }
     }
 }
