@@ -107,7 +107,6 @@ namespace Aspid.FastTools.Types.Editors
                             node.Caption)
                         {
                             Tooltip = node.Tooltip,
-                            Order = node.Order,
                             Icon = node.Icon,
                             SearchName = node.SearchName,
                         });
@@ -234,7 +233,6 @@ namespace Aspid.FastTools.Types.Editors
                 rows.Add(new TreeNode(source.DisplayName, source.AssemblyQualifiedName, source.Caption)
                 {
                     Tooltip = source.Tooltip,
-                    Order = source.Order,
                     Icon = source.Icon,
                     SearchName = source.SearchName,
                     SectionKey = title,

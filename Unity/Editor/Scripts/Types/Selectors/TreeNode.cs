@@ -29,13 +29,6 @@ namespace Aspid.FastTools.Types.Editors
         public string AssemblyQualifiedName { get; set; }
 
         /// <summary>
-        /// Ordering hint sourced from <see cref="TypeSelectorItemAttribute.Order"/>; lower values sort
-        /// first, ties broken alphabetically by <see cref="DisplayName"/>. Category nodes keep the
-        /// default <c>0</c>.
-        /// </summary>
-        public int Order { get; set; }
-
-        /// <summary>
         /// Raw editor icon identifier sourced from <see cref="TypeSelectorItemAttribute.Icon"/>;
         /// <see langword="null"/> when the node has no icon.
         /// </summary>
@@ -43,8 +36,8 @@ namespace Aspid.FastTools.Types.Editors
 
         /// <summary>
         /// The real (short) type name, kept separately from <see cref="DisplayName"/> so search keeps
-        /// matching the original type name even when a <see cref="TypeSelectorItemAttribute"/> renames
-        /// the leaf. <see langword="null"/> for non-type nodes.
+        /// matching the original type name even when the displayed label is disambiguated with its
+        /// assembly. <see langword="null"/> for non-type nodes.
         /// </summary>
         public string SearchName { get; set; }
 
@@ -82,7 +75,6 @@ namespace Aspid.FastTools.Types.Editors
             AssemblyQualifiedName = assemblyQualifiedName;
             Caption = caption ?? displayName;
             Tooltip = string.Empty;
-            Order = 0;
             Icon = null;
             SearchName = null;
             Kind = TreeNodeKind.Default;
@@ -100,7 +92,7 @@ namespace Aspid.FastTools.Types.Editors
             if (Caption?.ToLowerInvariant().Contains(filter) == true)
                 return true;
 
-            // Keep matching the real type name even after a [TypeSelectorItem] renames the leaf.
+            // Keep matching the real type name even when the displayed label is disambiguated.
             if (SearchName?.ToLowerInvariant().Contains(filter) == true)
                 return true;
 
