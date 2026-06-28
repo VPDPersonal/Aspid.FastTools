@@ -63,7 +63,7 @@ namespace Aspid.FastTools.Ids.Editors
             _groupMode = (RegistryGroupMode)SessionState.GetInt(GroupKey, (int)RegistryGroupMode.None);
 
             var root = new VisualElement()
-                .AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet)
+                .AddAspidThemeStyleSheets()
                 .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
                 .AddClass("aspid-fasttools-inspector-container");
 
