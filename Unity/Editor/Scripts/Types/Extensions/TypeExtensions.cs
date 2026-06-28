@@ -65,15 +65,6 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         /// <summary>
-        /// Searches the Asset Database for the <see cref="MonoScript"/> that defines the given type
-        /// and also determines the 1-based line number of the type declaration within that script.
-        /// </summary>
-        /// <param name="type">The type to locate.</param>
-        /// <returns>
-        /// A tuple of the matched <see cref="MonoScript"/> and the 1-based line number of the type declaration.
-        /// If no script is found, returns <c>(null, 0)</c>.
-        /// </returns>
-        /// <summary>
         /// Opens the script that defines <paramref name="type"/> in the configured external
         /// editor at the line of the type declaration. Logs a warning and is a no-op when
         /// no <see cref="MonoScript"/> can be located.
@@ -92,6 +83,15 @@ namespace Aspid.FastTools.Types.Editors
             AssetDatabase.OpenAsset(monoScript, lineNumber);
         }
 
+        /// <summary>
+        /// Searches the Asset Database for the <see cref="MonoScript"/> that defines the given type
+        /// and also determines the 1-based line number of the type declaration within that script.
+        /// </summary>
+        /// <param name="type">The type to locate.</param>
+        /// <returns>
+        /// A tuple of the matched <see cref="MonoScript"/> and the 1-based line number of the type declaration.
+        /// If no script is found, returns <c>(null, 0)</c>.
+        /// </returns>
         public static (MonoScript script, int line) FindMonoScriptWithLine(this Type type)
         {
             var script = type.FindMonoScript();

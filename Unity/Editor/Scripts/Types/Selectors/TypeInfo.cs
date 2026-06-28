@@ -12,13 +12,12 @@ namespace Aspid.FastTools.Types.Editors
     {
         public readonly string Name;
         public readonly string Assembly;
-        public readonly string FullName;
         public readonly string Namespace;
         public readonly string AssemblyQualifiedName;
 
         /// <summary>
         /// Tooltip override from <see cref="TypeSelectorItemAttribute.Tooltip"/>; falls back to
-        /// <see cref="FullName"/> when no override is supplied.
+        /// <see cref="Type.FullName"/> when no override is supplied.
         /// </summary>
         public readonly string Tooltip;
 
@@ -31,7 +30,6 @@ namespace Aspid.FastTools.Types.Editors
         public TypeInfo(Type type)
         {
             Name = FormatName(type);
-            FullName = type.FullName;
             Assembly = type.Assembly.GetName().Name;
             AssemblyQualifiedName = type.AssemblyQualifiedName;
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
