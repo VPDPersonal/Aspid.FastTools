@@ -24,7 +24,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// GUID of the user override style sheet asset, or an empty string when none is set.
         /// Setting this value persists it to <see cref="EditorPrefs"/> and raises <see cref="Changed"/>.
         /// </summary>
-        public static string OverrideStyleSheetGuid
+        private static string OverrideStyleSheetGuid
         {
             get => EditorPrefs.GetString(OverrideStyleSheetGuidKey, string.Empty);
             set

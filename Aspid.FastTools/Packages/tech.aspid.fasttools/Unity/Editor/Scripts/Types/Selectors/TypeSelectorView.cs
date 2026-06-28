@@ -76,9 +76,6 @@ namespace Aspid.FastTools.Types.Editors
         private const string RecentCollapsedIcon = "d_UnityEditor.HistoryWindow";
         private const string RecentExpandedIcon = "d_UnityEditor.HistoryWindow";
 
-        // Unity's built-in magnifier, used for the header's search affordance (dark-skin variant to match the picker).
-        private const string SearchIcon = "d_Search Icon";
-
         private VisualElement _header;
         private VisualElement _breadcrumbBar;
         private Button _searchButton;
