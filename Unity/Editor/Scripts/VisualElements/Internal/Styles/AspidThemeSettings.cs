@@ -38,11 +38,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 : AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(value));
         }
 
-        /// <summary>
-        /// GUID of the user override style sheet asset, or an empty string when none is set.
-        /// Setting this value persists it to <see cref="EditorPrefs"/> and raises <see cref="Changed"/>.
-        /// Backing storage for <see cref="OverrideStyleSheet"/>; callers go through that typed property.
-        /// </summary>
+        // Backing storage for OverrideStyleSheet, persisted in EditorPrefs as the asset GUID
+        // (empty when none). Setting it raises Changed; callers go through the typed property.
         private static string OverrideStyleSheetGuid
         {
             get => EditorPrefs.GetString(OverrideStyleSheetGuidKey, string.Empty);
