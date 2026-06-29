@@ -6,7 +6,7 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// Resolves the <see cref="TypeSelectorItemAttribute.Icon"/> string to a <see cref="Texture"/>. A plain name is
+    /// Resolves the <see cref="TypeSelectorDisplayAttribute.Icon"/> string to a <see cref="Texture"/>. A plain name is
     /// tried as an editor built-in icon (<see cref="EditorGUIUtility.IconContent"/>) first and a <c>Resources</c>
     /// texture path second; a path-shaped value (one containing <c>/</c>) reverses that order, so probing a Resources
     /// path through <see cref="EditorGUIUtility.IconContent"/> does not spam the console with "Unable to load icon"

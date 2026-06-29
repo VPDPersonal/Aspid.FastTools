@@ -29,7 +29,7 @@ namespace Aspid.FastTools.Types.Editors
         public string AssemblyQualifiedName { get; set; }
 
         /// <summary>
-        /// Raw editor icon identifier sourced from <see cref="TypeSelectorItemAttribute.Icon"/>;
+        /// Raw editor icon identifier sourced from <see cref="TypeSelectorDisplayAttribute.Icon"/>;
         /// <see langword="null"/> when the node has no icon.
         /// </summary>
         public string Icon { get; set; }

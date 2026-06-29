@@ -15,13 +15,13 @@ namespace Aspid.FastTools.Types
     /// <example>
     /// Give the type a tooltip and an icon:
     /// <code>
-    /// [TypeSelectorItem(Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
+    /// [TypeSelectorDisplay(Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
     /// public sealed class DamageModifier { }
     /// </code>
     /// </example>
     [Conditional(conditionString: "UNITY_EDITOR")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
-    public sealed class TypeSelectorItemAttribute : Attribute
+    public sealed class TypeSelectorDisplayAttribute : Attribute
     {
         /// <summary>
         /// Tooltip shown when hovering the type's row. <see langword="null"/> means no tooltip override.
