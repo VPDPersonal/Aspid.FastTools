@@ -251,28 +251,20 @@ public sealed class AbilitySelector : MonoBehaviour
 
 > Полный сэмпл — `Ability` / `AbilitySelector` / `EnemyBase` и их наследники — поставляется в сэмпле `Types` (Package Manager → Aspid.FastTools → Samples).
 
-Пометьте тип-кандидат атрибутом `[TypeSelectorItem]`, чтобы настроить, как он показывается в селекторе — это editor-only атрибут (`[Conditional("UNITY_EDITOR")]`) в `Aspid.FastTools.Types`, не несущий стоимости в рантайме:
+Пометьте тип-кандидат атрибутом `[TypeSelectorDisplay]`, чтобы настроить, как он показывается в селекторе — это editor-only атрибут (`[Conditional("UNITY_EDITOR")]`) в `Aspid.FastTools.Types`, не несущий стоимости в рантайме:
 
 ```csharp
 using Aspid.FastTools.Types;
 
-// Перенести тип под категорию и задать tooltip и подсказку порядка:
-[TypeSelectorItem("Combat/Damage Modifier", Tooltip = "Scales incoming damage", Order = 10)]
+// Задать типу tooltip и иконку:
+[TypeSelectorDisplay(Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
 public sealed class DamageModifier { }
-
-// Простое имя (без '/') лишь переименовывает лист на месте, сохраняя расположение по namespace:
-[TypeSelectorItem("Damage Modifier")]
-public sealed class DamageModifierAlt { }
 ```
 
 | Член | Описание |
 |------|----------|
-| `DisplayPath` | Значение `"Category/Name"` переносит тип под эти узлы-категории; простое значение переименовывает лист на месте. `null`/пустое сохраняет имя типа по умолчанию. |
-| `Tooltip` | Tooltip, показываемый при наведении на строку типа. |
-| `Order` | Подсказка порядка внутри группы — меньшие значения выше; ничьи разрешаются по алфавиту. По умолчанию `0`. |
-| `Icon` | Иконка редактора слева от лейбла — имя `EditorGUIUtility.IconContent` или путь к текстуре в `Resources`. |
-
-> Поиск по-прежнему сопоставляет реальное имя типа, поэтому перенесённая или переименованная запись остаётся находимой по исходному имени.
+| `Tooltip` | Tooltip, показываемый при наведении на строку типа. `null` — без переопределения tooltip. |
+| `Icon` | Иконка редактора слева от лейбла — имя `EditorGUIUtility.IconContent`, путь к ассету в проекте с расширением (загружается через `AssetDatabase`) или путь к текстуре в `Resources` без расширения. `null` — без иконки. |
 
 ---
 
@@ -298,13 +290,9 @@ namespace Aspid.FastTools.Types.Editors
     {
         public static void Show(
             Rect screenRect,
-            Type[] types = null,
+            TypeSelectorFilter filter = default,
             string currentAqn = "",
-            TypeAllow allow = TypeAllow.None,
-            Action<string> onSelected = null,
-            Func<Type, bool> filter = null,
-            IEnumerable<Type> additionalTypes = null,
-            Func<Type, bool> argumentFilter = null);
+            Action<string> onSelected = null);
     }
 }
 ```
@@ -312,13 +300,9 @@ namespace Aspid.FastTools.Types.Editors
 | Параметр | Описание |
 |----------|----------|
 | `screenRect` | Прямоугольник в экранных координатах, к которому привязывается dropdown. |
-| `types` | Базовые типы, по которым фильтруются видимые элементы. В списке остаются только типы, совместимые со **всеми** записями. По умолчанию — `typeof(object)`. |
+| `filter` | Объединяет, какие типы предлагает селектор: базовые типы (`Types`, в списке остаются только типы, совместимые со **всеми** записями; по умолчанию — `typeof(object)`), включаемые категории (`Allow`), необязательный предикат `Predicate`, дополнительные записи `AdditionalTypes` и предикат аргументов открытых генериков `ArgumentFilter`. |
 | `currentAqn` | Assembly-qualified имя текущего выбранного типа: окно сразу откроется на его уровне иерархии. Передайте `null` или пустую строку, чтобы стартовать с корня. |
-| `allow` | Какие специальные категории (абстрактные классы, интерфейсы) включаются в список в дополнение к конкретным классам. По умолчанию: `TypeAllow.None`. |
 | `onSelected` | Callback с assembly-qualified именем выбранного типа или `null`, если пользователь выбрал `<None>`. |
-| `filter` | Необязательный предикат, применяемый к каждому типу-кандидату после проверок базового типа и `allow`. Верните `false`, чтобы скрыть тип. Передайте `null`, чтобы оставить все совпадения. |
-| `additionalTypes` | Необязательные дополнительные типы, добавляемые в список как есть, в обход проверок базового типа и `allow` — для внедрения записей, которые не находит скан присваиваемости (например, открытых generic-определений). |
-| `argumentFilter` | Необязательный предикат для типов-кандидатов, предлагаемых как аргументы открытого generic (в дополнение к ограничениям самого параметра) — например, чтобы ограничить аргументы Unity-сериализуемыми типами. Передайте `null`, чтобы принимать любой подходящий по ограничениям тип. |
 
 ### ComponentTypeSelector
 

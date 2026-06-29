@@ -631,9 +631,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                types: new[] { fieldType },
+                filter: new TypeSelectorFilter
+                {
+                    Types = new[] { fieldType },
+                    Predicate = BuildAssignableFilter(baseTypes),
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes),
+                    ArgumentFilter = IsValidGenericArgument,
+                },
                 currentAqn: string.Empty,
-                allow: TypeAllow.None,
                 onSelected: assemblyQualifiedName =>
                 {
                     var type = string.IsNullOrEmpty(assemblyQualifiedName)
@@ -642,10 +647,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     if (type is not null && TryFixMissingType(property, type))
                         onFixed?.Invoke();
-                },
-                filter: BuildAssignableFilter(baseTypes),
-                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes),
-                argumentFilter: IsValidGenericArgument);
+                });
         }
 
         /// <summary>

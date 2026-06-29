@@ -69,13 +69,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                types: new[] { elementType },
+                filter: new TypeSelectorFilter
+                {
+                    Types = new[] { elementType },
+                    Predicate = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes),
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(elementType, baseTypes),
+                    ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
+                },
                 currentAqn: string.Empty,
-                allow: TypeAllow.None,
-                onSelected: aqn => Append(target, arrayPath, aqn),
-                filter: SerializeReferenceHelpers.BuildAssignableFilter(baseTypes),
-                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(elementType, baseTypes),
-                argumentFilter: SerializeReferenceHelpers.IsValidGenericArgument);
+                onSelected: aqn => Append(target, arrayPath, aqn));
         }
 
         private static void Append(Object target, string arrayPath, string assemblyQualifiedName)

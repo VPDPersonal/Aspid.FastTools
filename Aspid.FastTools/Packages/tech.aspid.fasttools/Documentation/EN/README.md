@@ -248,28 +248,20 @@ public sealed class AbilitySelector : MonoBehaviour
 
 > The complete sample — `Ability` / `AbilitySelector` / `EnemyBase` and their subclasses — ships in the `Types` sample (Package Manager → Aspid.FastTools → Samples).
 
-Decorate a candidate type with `[TypeSelectorItem]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost:
+Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost:
 
 ```csharp
 using Aspid.FastTools.Types;
 
-// Re-home the type under a category and give it a tooltip and ordering hint:
-[TypeSelectorItem("Combat/Damage Modifier", Tooltip = "Scales incoming damage", Order = 10)]
+// Give the type a tooltip and an icon:
+[TypeSelectorDisplay(Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
 public sealed class DamageModifier { }
-
-// A plain name (no '/') just renames the leaf in place, keeping its namespace location:
-[TypeSelectorItem("Damage Modifier")]
-public sealed class DamageModifierAlt { }
 ```
 
 | Member | Description |
 |--------|-------------|
-| `DisplayPath` | A `"Category/Name"` value re-homes the type under those category nodes; a plain value renames the leaf in place. `null`/empty keeps the default type name. |
-| `Tooltip` | Tooltip shown when hovering the type's row. |
-| `Order` | Ordering hint within the group — lower values appear higher; ties are broken alphabetically. Default `0`. |
-| `Icon` | Editor icon shown left of the label — an `EditorGUIUtility.IconContent` name or a `Resources` texture path. |
-
-> Search still matches the real type name, so a re-homed or renamed entry stays findable by its original name.
+| `Tooltip` | Tooltip shown when hovering the type's row. `null` means no tooltip override. |
+| `Icon` | Editor icon shown left of the label — an `EditorGUIUtility.IconContent` name, a project-relative asset path with extension (loaded via `AssetDatabase`), or a `Resources` texture path without extension. `null` means no icon. |
 
 ---
 
@@ -295,13 +287,9 @@ namespace Aspid.FastTools.Types.Editors
     {
         public static void Show(
             Rect screenRect,
-            Type[] types = null,
+            TypeSelectorFilter filter = default,
             string currentAqn = "",
-            TypeAllow allow = TypeAllow.None,
-            Action<string> onSelected = null,
-            Func<Type, bool> filter = null,
-            IEnumerable<Type> additionalTypes = null,
-            Func<Type, bool> argumentFilter = null);
+            Action<string> onSelected = null);
     }
 }
 ```
@@ -309,13 +297,9 @@ namespace Aspid.FastTools.Types.Editors
 | Parameter | Description |
 |-----------|-------------|
 | `screenRect` | Screen-space rectangle the dropdown is anchored to. |
-| `types` | Base types used to filter visible items. Only types assignable to **all** entries are listed. Defaults to `typeof(object)`. |
+| `filter` | Bundles which types the selector offers: base types (`Types`, only types assignable to **all** entries are listed; defaults to `typeof(object)`), the included kinds (`Allow`), an optional per-type `Predicate`, verbatim `AdditionalTypes`, and the open-generic `ArgumentFilter`. |
 | `currentAqn` | Assembly-qualified name of the currently selected type, used to pre-navigate to its location. Pass `null` or empty to start at the root. |
-| `allow` | Which special type kinds (abstract classes, interfaces) are included in addition to concrete classes. Default: `TypeAllow.None`. |
 | `onSelected` | Callback invoked with the assembly-qualified name of the selected type, or `null` if the user chose `<None>`. |
-| `filter` | Optional predicate applied to each candidate type after the base-type and `allow` checks. Return `false` to hide a type. Pass `null` to keep every match. |
-| `additionalTypes` | Optional extra types appended to the list verbatim, bypassing the base-type and `allow` checks — used to inject entries the assignability scan cannot match, such as open generic definitions. |
-| `argumentFilter` | Optional predicate applied to candidate types offered for an open generic's type arguments (in addition to the parameter's own constraints) — e.g. to restrict arguments to Unity-serializable types. Pass `null` to accept any constraint-satisfying type. |
 
 ### ComponentTypeSelector
 

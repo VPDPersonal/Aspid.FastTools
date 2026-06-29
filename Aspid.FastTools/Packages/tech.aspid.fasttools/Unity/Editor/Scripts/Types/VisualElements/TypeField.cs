@@ -132,12 +132,17 @@ namespace Aspid.FastTools.Types.Editors
                 : EditorWindow.mouseOverWindow;
             
             if (!window) return;
-            
+
+            var filter = new TypeSelectorFilter
+            {
+                Types = Types,
+                Allow = Allow,
+            };
+
             TypeSelectorWindow.Show(
                 screenRect: GetScreenRect(),
-                types: Types,
+                filter: filter,
                 currentAqn: value?.AssemblyQualifiedName ?? _missingAssemblyQualifiedName ?? string.Empty,
-                allow: Allow,
                 onSelected: assemblyQualifiedName =>
                 {
                     this.SetValue(string.IsNullOrEmpty(assemblyQualifiedName)

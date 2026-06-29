@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
@@ -6,12 +7,14 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// Resolves the <see cref="TypeSelectorItemAttribute.Icon"/> string to a <see cref="Texture"/>. A plain name is
-    /// tried as an editor built-in icon (<see cref="EditorGUIUtility.IconContent"/>) first and a <c>Resources</c>
-    /// texture path second; a path-shaped value (one containing <c>/</c>) reverses that order, so probing a Resources
-    /// path through <see cref="EditorGUIUtility.IconContent"/> does not spam the console with "Unable to load icon"
-    /// warnings on every miss. Results (including misses) are cached for the lifetime of the domain to keep row
-    /// binding cheap.
+    /// Resolves the <see cref="TypeSelectorDisplayAttribute.Icon"/> string to a <see cref="Texture"/>. A project-relative
+    /// asset path (starting with <c>Assets/</c> or <c>Packages/</c>) is loaded straight through the
+    /// <see cref="AssetDatabase"/>, so an icon may live anywhere — not only inside a <c>Resources</c> folder. Otherwise a
+    /// plain name is tried as an editor built-in icon (<see cref="EditorGUIUtility.IconContent"/>) first and a
+    /// <c>Resources</c> texture path second; a path-shaped value (one containing <c>/</c>) reverses that order, so probing
+    /// a Resources path through <see cref="EditorGUIUtility.IconContent"/> does not spam the console with "Unable to load
+    /// icon" warnings on every miss. Successful lookups are cached for the lifetime of the domain to keep row binding
+    /// cheap; misses are not cached, so an icon whose asset is imported or renamed later is picked up on the next bind.
     /// </summary>
     internal static class TypeSelectorIconResolver
     {
@@ -25,12 +28,24 @@ namespace Aspid.FastTools.Types.Editors
                 return cached;
 
             var texture = LoadIcon(icon);
-            Cache[icon] = texture;
+
+            // Only cache hits: a miss may be a not-yet-imported / freshly-renamed asset, so leave it uncached and
+            // retry on the next bind instead of pinning a null for the whole domain lifetime.
+            if (texture is not null)
+                Cache[icon] = texture;
+
             return texture;
         }
 
         private static Texture LoadIcon(string icon)
         {
+            // A project-relative asset path (e.g. "Assets/Art/Icons/MyIcon.png") is loaded straight through the
+            // AssetDatabase, so the icon can live anywhere in the project — not only inside a Resources folder. The path
+            // must carry its file extension, exactly as the AssetDatabase expects.
+            if (icon.StartsWith("Assets/", StringComparison.Ordinal) ||
+                icon.StartsWith("Packages/", StringComparison.Ordinal))
+                return AssetDatabase.LoadAssetAtPath<Texture>(icon);
+
             // A slash signals a Resources path (e.g. "Icons/MyIcon") rather than a built-in editor icon name. Probing
             // such a string through IconContent first logs a "Unable to load icon" warning to the console on every
             // miss, so for path-shaped strings the Resources load is tried first and IconContent is only the fallback.

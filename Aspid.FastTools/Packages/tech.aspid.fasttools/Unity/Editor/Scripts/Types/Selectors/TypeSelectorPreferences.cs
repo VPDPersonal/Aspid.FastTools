@@ -9,7 +9,9 @@ namespace Aspid.FastTools.Types.Editors
     /// <summary>
     /// Per-project persistence for the type selector's Favorites and Recents, stored as JSON in
     /// <see cref="EditorPrefs"/> under project-scoped keys. Entries that no longer resolve to a
-    /// <see cref="Type"/> are dropped silently on load.
+    /// <see cref="Type"/> are hidden from the loaded lists but kept in storage, so a type that is only
+    /// transiently unresolvable (e.g. its assembly has not finished loading after a domain reload) reappears
+    /// once it resolves again instead of being lost.
     /// </summary>
     internal static class TypeSelectorPreferences
     {
@@ -18,16 +20,16 @@ namespace Aspid.FastTools.Types.Editors
         private const string FavoritesKeyPrefix = "Aspid.FastTools.TypeSelector.Favorites.";
         private const string RecentsKeyPrefix = "Aspid.FastTools.TypeSelector.Recents.";
 
-        [Serializable]
-        private sealed class Store
-        {
-            public List<string> entries = new();
-        }
-
         private static string ProjectId => PlayerSettings.productGUID.ToString();
 
         private static string FavoritesKey => FavoritesKeyPrefix + ProjectId;
         private static string RecentsKey => RecentsKeyPrefix + ProjectId;
+
+        // Membership cache for the favorites set, read once and reused across the many per-row IsFavorite calls a
+        // single refresh fires. Invalidated whenever ToggleFavorite rewrites the store (the only writer in-session).
+        private static HashSet<string> _favorites;
+
+        private static HashSet<string> Favorites => _favorites ??= new HashSet<string>(LoadRaw(FavoritesKey));
 
         /// <summary>
         /// Returns the favorited assembly-qualified names that still resolve to a loadable type,
@@ -44,7 +46,7 @@ namespace Aspid.FastTools.Types.Editors
         public static bool IsFavorite(string assemblyQualifiedName)
         {
             if (string.IsNullOrEmpty(assemblyQualifiedName)) return false;
-            return LoadRaw(FavoritesKey).Contains(assemblyQualifiedName);
+            return Favorites.Contains(assemblyQualifiedName);
         }
 
         /// <summary>
@@ -69,6 +71,7 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             Save(FavoritesKey, entries);
+            _favorites = null;
             return isFavorite;
         }
 
@@ -94,18 +97,12 @@ namespace Aspid.FastTools.Types.Editors
         {
             var raw = LoadRaw(key);
             var resolved = new List<string>(raw.Count);
-            var changed = false;
 
             foreach (var aqn in raw)
             {
                 if (!string.IsNullOrEmpty(aqn) && Type.GetType(aqn, throwOnError: false) is not null)
                     resolved.Add(aqn);
-                else
-                    changed = true;
             }
-
-            // Prune unresolved entries so the store self-heals over time.
-            if (changed) Save(key, resolved);
 
             return resolved;
         }
@@ -130,6 +127,12 @@ namespace Aspid.FastTools.Types.Editors
         {
             var store = new Store { entries = entries };
             EditorPrefs.SetString(key, JsonUtility.ToJson(store));
+        }
+
+        [Serializable]
+        private sealed class Store
+        {
+            public List<string> entries = new();
         }
     }
 }
