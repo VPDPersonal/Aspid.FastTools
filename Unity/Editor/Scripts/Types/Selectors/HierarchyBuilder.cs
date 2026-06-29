@@ -167,11 +167,9 @@ namespace Aspid.FastTools.Types.Editors
             };
         }
 
-        /// <summary>
-        /// Sorts each node's children alphabetically by display name, while keeping the
-        /// <c>&lt;None&gt;</c> option pinned to the top. Applied recursively so every hierarchy level
-        /// honours the same ordering.
-        /// </summary>
+        // Sorts each node's children alphabetically by display name, while keeping the <None>
+        // option pinned to the top. Applied recursively so every hierarchy level honours the
+        // same ordering.
         private static void SortNode(TreeNode node)
         {
             node.Children.Sort(CompareNodes);

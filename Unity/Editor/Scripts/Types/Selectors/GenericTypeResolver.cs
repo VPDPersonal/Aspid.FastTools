@@ -32,11 +32,9 @@ namespace Aspid.FastTools.Types.Editors
             !typeof(Delegate).IsAssignableFrom(type) &&
             !IsCompilerGenerated(type);
 
-        /// <summary>
-        /// Returns <see langword="true"/> for compiler-emitted types that should never surface in the
-        /// selector: those marked <see cref="CompilerGeneratedAttribute"/> or whose name carries the
-        /// angle-bracket marker of an anonymous type / closure display class.
-        /// </summary>
+        // Returns true for compiler-emitted types that should never surface in the selector:
+        // those marked CompilerGeneratedAttribute or whose name carries the angle-bracket marker
+        // of an anonymous type / closure display class.
         private static bool IsCompilerGenerated(Type type) =>
             type.IsDefined(typeof(CompilerGeneratedAttribute), false) ||
             type.Name.Contains('<') ||
@@ -211,10 +209,8 @@ namespace Aspid.FastTools.Types.Editors
             return false;
         }
 
-        /// <summary>
-        /// Enumerates the generic-type-definition view of <paramref name="openDefinition"/> itself, its base
-        /// class chain, and its interfaces (only the generic ones, reduced to their definitions).
-        /// </summary>
+        // Enumerates the generic-type-definition view of openDefinition itself, its base class
+        // chain, and its interfaces (only the generic ones, reduced to their definitions).
         private static IEnumerable<Type> GenericBaseDefinitions(Type openDefinition)
         {
             if (openDefinition.IsGenericType)

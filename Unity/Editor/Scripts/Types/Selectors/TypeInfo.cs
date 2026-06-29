@@ -98,11 +98,9 @@ namespace Aspid.FastTools.Types.Editors
             return result;
         }
 
-        /// <summary>
-        /// Short display name for a type. Open generic definitions are rendered with angle-bracket
-        /// parameters (<c>Modifier&lt;T&gt;</c>) instead of Unity's raw arity form (<c>Modifier`1</c>);
-        /// generic arguments are formatted recursively so nested closed generics render fully.
-        /// </summary>
+        // Short display name for a type. Open generic definitions are rendered with angle-bracket
+        // parameters (Modifier<T>) instead of Unity's raw arity form (Modifier`1); generic
+        // arguments are formatted recursively so nested closed generics render fully.
         private static string FormatName(Type type)
         {
             if (!type.IsGenericType) return type.Name;

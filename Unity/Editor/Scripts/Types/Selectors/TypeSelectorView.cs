@@ -718,12 +718,10 @@ namespace Aspid.FastTools.Types.Editors
         private bool IsListFocused(Focusable focused) =>
             focused == _listView || IsDescendantOf(focused as VisualElement, _listView);
 
-        /// <summary>
-        /// Returns the nearest navigable item index starting at <paramref name="start"/> and walking by
-        /// <paramref name="step"/>. Every visible row is navigable — type leaves, namespace/category containers and
-        /// collapsible section headers alike — so the arrow keys step one row at a time without skipping. Returns
-        /// <c>-1</c> when none is found.
-        /// </summary>
+        // Returns the nearest navigable item index starting at start and walking by step. Every
+        // visible row is navigable — type leaves, namespace/category containers and collapsible
+        // section headers alike — so the arrow keys step one row at a time without skipping.
+        // Returns -1 when none is found.
         private int FindSelectableIndex(int start, int step)
         {
             var items = _pages.Count > 0 ? Nav.CurrentItems : null;
@@ -1274,11 +1272,9 @@ namespace Aspid.FastTools.Types.Editors
         }
         #endregion
 
-        /// <summary>
-        /// One step of the selector: a navigable candidate hierarchy plus what to do when a concrete type is
-        /// chosen on it. The base page emits the selection through <see cref="_onSelected"/>; argument pages
-        /// record the chosen type and advance to the next parameter (or construct the closed type).
-        /// </summary>
+        // One step of the selector: a navigable candidate hierarchy plus what to do when a concrete
+        // type is chosen on it. The base page emits the selection through _onSelected; argument pages
+        // record the chosen type and advance to the next parameter (or construct the closed type).
         private sealed class PickerPage
         {
             public NavigationController Navigation;
