@@ -95,15 +95,12 @@ namespace Aspid.FastTools.Types.Editors
 
             var node = new TreeNode(trieNode.Segment, null, nextDisplay);
 
-            // Add types at this namespace level
             if (trieNode.IsTerminal && nsToTypes.TryGetValue(nextNamespace, out var typeInfos))
                 AddTypesWithDisambiguation(node, typeInfos, includeNamespace: true, nextNamespace);
 
-            // Add child namespaces
             foreach (var child in trieNode.Children.Values.OrderBy(n => n.Segment))
                 node.Children.Add(BuildNamespaceNode(child, nextDisplay, nextNamespace, nsToTypes));
 
-            // Flatten single-child chains
             return FlattenSingleChildChain(node);
         }
 

@@ -696,7 +696,6 @@ namespace Aspid.FastTools.Types.Editors
 
                 _listView.Focus();
 
-                // Land on the first navigable row.
                 var first = FindSelectableIndex(0, step: 1);
                 if (first >= 0) SetSelectedIndex(first);
 
@@ -705,7 +704,6 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!IsListFocused(focused)) return false;
 
-            // Step down one row.
             var target = FindSelectableIndex(_listView.selectedIndex + 1, step: 1);
             if (target >= 0) SetSelectedIndex(target);
 
