@@ -17,7 +17,7 @@ namespace Aspid.FastTools.Types.Editors
     /// window) add it inline and collapse it through the dismiss callback.
     /// </summary>
     /// <remarks>
-    /// Selecting an open generic definition (injected via <c>additionalTypes</c>) is not a final selection;
+    /// Selecting an open generic definition (injected via <see cref="TypeSelectorFilter.AdditionalTypes"/>) is not a final selection;
     /// instead it drills into an argument-selection flow — one hierarchical page per type parameter,
     /// reusing the same search/keyboard/navigation — and emits the constructed closed type once every argument
     /// is resolved. The argument flow stays dormant unless open generics are present, so the ordinary
@@ -107,35 +107,27 @@ namespace Aspid.FastTools.Types.Editors
         /// <summary>
         /// Creates a type selector view.
         /// </summary>
-        /// <param name="types">Base types used to filter which concrete types are shown. Only types assignable to all entries are listed.</param>
+        /// <param name="filter">Defines which types the selector offers: base types, kind constraints, the per-type predicate, extra entries and the open-generic argument predicate. See <see cref="TypeSelectorFilter"/>.</param>
         /// <param name="currentAqn">Assembly-qualified name of the currently selected type, used to pre-navigate to that type's location. Pass <c>null</c> or empty to start at the root.</param>
-        /// <param name="allow">Which type kinds are included in the list.</param>
         /// <param name="onSelected">Callback invoked with the assembly-qualified name of the selected type, or <c>null</c> if the user chose <c>&lt;None&gt;</c>. When an open generic is resolved, the assembly-qualified name of the constructed closed type is passed.</param>
-        /// <param name="filter">Optional predicate applied to each candidate type after the base-type and <paramref name="allow"/> checks. Return <c>false</c> to hide a type. Pass <c>null</c> to keep every matching type.</param>
-        /// <param name="additionalTypes">Optional extra types appended to the list verbatim, bypassing the base-type and <paramref name="allow"/> checks — used to inject entries the assignability scan cannot match, such as open generic definitions.</param>
-        /// <param name="argumentFilter">Optional predicate applied to candidate types offered for an open generic's type arguments (in addition to the parameter's own constraints). Pass <c>null</c> to accept any constraint-satisfying type.</param>
         /// <param name="onDismiss">Invoked when the selector is done — after a selection is emitted, or when the user cancels with Escape. The host closes its window or collapses the inline panel here.</param>
         public TypeSelectorView(
-            Type[] types = null,
+            TypeSelectorFilter filter = default,
             string currentAqn = "",
-            TypeAllow allow = TypeAllow.None,
             Action<string> onSelected = null,
-            Func<Type, bool> filter = null,
-            IEnumerable<Type> additionalTypes = null,
-            Func<Type, bool> argumentFilter = null,
             Action onDismiss = null)
         {
-            types ??= new[] { typeof(object) };
+            var types = filter.Types ?? new[] { typeof(object) };
 
             _onDismiss = onDismiss;
             _onSelected = onSelected;
-            _argumentFilter = argumentFilter;
+            _argumentFilter = filter.ArgumentFilter;
             _currentAqn = currentAqn ?? string.Empty;
             _fieldTypes = types;
 
             BuildUI();
 
-            var hierarchy = HierarchyBuilder.Build(types, allow, filter, additionalTypes);
+            var hierarchy = HierarchyBuilder.Build(types, filter.Allow, filter.Predicate, filter.AdditionalTypes);
 
             // Only the base page composes the Favorites/Recents sections; generic-argument pages do not.
             var navigation = new NavigationController(hierarchy, composeSections: true);

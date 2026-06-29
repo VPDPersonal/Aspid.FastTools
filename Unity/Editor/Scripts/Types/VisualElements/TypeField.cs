@@ -135,9 +135,8 @@ namespace Aspid.FastTools.Types.Editors
             
             TypeSelectorWindow.Show(
                 screenRect: GetScreenRect(),
-                types: Types,
+                filter: new TypeSelectorFilter { Types = Types, Allow = Allow },
                 currentAqn: value?.AssemblyQualifiedName ?? _missingAssemblyQualifiedName ?? string.Empty,
-                allow: Allow,
                 onSelected: assemblyQualifiedName =>
                 {
                     this.SetValue(string.IsNullOrEmpty(assemblyQualifiedName)

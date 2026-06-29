@@ -23,7 +23,7 @@ namespace Aspid.FastTools.Types.Editors
             {
                 TypeSelectorWindow.Show(
                     GUIUtility.GUIToScreenRect(dropdownRect),
-                    types: new[] { fieldInfo.DeclaringType },
+                    new TypeSelectorFilter { Types = new[] { fieldInfo.DeclaringType } },
                     currentType.AssemblyQualifiedName,
                     onSelected: aqn => ReplaceComponentScript(property, currentType, Type.GetType(aqn)));
             }
