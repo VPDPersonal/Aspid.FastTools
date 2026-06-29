@@ -60,9 +60,8 @@ namespace Aspid.FastTools.Types.Editors
 
                 TypeSelectorWindow.Show(
                     screenRect: screenRect,
-                    types: types,
+                    filter: new TypeSelectorFilter { Types = types, Allow = allow },
                     currentAqn: current,
-                    allow: allow,
                     onSelected: assemblyQualifiedName =>
                     {
                         persistent.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
