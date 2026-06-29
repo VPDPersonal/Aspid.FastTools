@@ -50,9 +50,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             if (!value.IsGenericType) return value.Name;
 
-            var name = value.Name;
-            var tick = name.IndexOf('`');
-            var baseName = tick >= 0 ? name[..tick] : name;
+            var baseName = TypeExtensions.StripArity(value.Name);
 
             var arguments = value.GetGenericArguments();
             var argumentNames = new string[arguments.Length];

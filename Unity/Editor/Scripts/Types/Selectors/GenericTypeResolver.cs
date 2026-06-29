@@ -189,9 +189,7 @@ namespace Aspid.FastTools.Types.Editors
         /// </summary>
         public static string FormatDefinitionName(Type definition)
         {
-            var name = definition.Name;
-            var tick = name.IndexOf('`');
-            var baseName = tick >= 0 ? name[..tick] : name;
+            var baseName = TypeExtensions.StripArity(definition.Name);
             var arguments = string.Join(", ", definition.GetGenericArguments().Select(argument => argument.Name));
             return $"{baseName}<{arguments}>";
         }
