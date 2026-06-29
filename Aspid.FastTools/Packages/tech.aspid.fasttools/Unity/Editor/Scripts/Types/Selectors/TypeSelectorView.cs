@@ -118,6 +118,26 @@ namespace Aspid.FastTools.Types.Editors
             });
 
             RefreshView();
+            PreselectCurrent();
+        }
+
+        // Highlights the row for the currently selected type on open — the view has pre-navigated to that type's
+        // namespace, so its row is in view and an immediate Enter re-confirms the same value. Leaves no selection when
+        // the current value is <None> or its type is absent, keeping Enter inert (it must not overwrite the field with
+        // an arbitrary first row). FocusPicker scrolls the selection into view once the list is laid out.
+        private void PreselectCurrent()
+        {
+            if (string.IsNullOrEmpty(_currentAqn)) return;
+
+            var items = Nav.CurrentItems;
+            for (var i = 0; i < items.Count; i++)
+            {
+                if (items[i].IsType && items[i].AssemblyQualifiedName == _currentAqn)
+                {
+                    _listView.selectedIndex = i;
+                    return;
+                }
+            }
         }
 
         /// <summary>
@@ -130,12 +150,14 @@ namespace Aspid.FastTools.Types.Editors
             {
                 // A just-shown ListView silently refuses Focus() until its display resolves on the next layout pass
                 // (the same constraint OpenSearch documents for the search field), so defer the focus to that pass.
-                // No row is pre-selected: an immediate Enter must stay inert rather than overwrite the field with
-                // whatever happens to be the first selectable row (<None> at the root, or an arbitrary sibling type).
+                // The current value's row is pre-selected in PreselectCurrent (no arbitrary first-row selection that an
+                // immediate Enter could commit); scroll it into view once the list is laid out.
                 _listView.schedule.Execute(() =>
                 {
-                    if (_listView.panel is not null)
-                        _listView.Focus();
+                    if (_listView.panel is null) return;
+
+                    _listView.Focus();
+                    if (_listView.selectedIndex >= 0) _listView.ScrollToItem(_listView.selectedIndex);
                 });
 
                 return;
