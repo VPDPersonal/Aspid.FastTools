@@ -29,9 +29,11 @@ namespace Aspid.FastTools.Types
         public string Tooltip { get; set; }
 
         /// <summary>
-        /// Editor icon to show left of the label. Either an <c>EditorGUIUtility.IconContent</c> name
-        /// (e.g. <c>"d_ScriptableObject Icon"</c>) or a <c>Resources</c> texture path. The editor resolves
-        /// the value lazily; <see langword="null"/> means no icon.
+        /// Editor icon to show left of the label. One of: an <c>EditorGUIUtility.IconContent</c> name
+        /// (e.g. <c>"d_ScriptableObject Icon"</c>); a project-relative asset path with extension
+        /// (e.g. <c>"Assets/Art/Icons/Damage.png"</c>, loaded via <c>AssetDatabase</c>); or a <c>Resources</c>
+        /// texture path without extension (e.g. <c>"Icons/Damage"</c>). The editor resolves the value lazily;
+        /// <see langword="null"/> means no icon.
         /// </summary>
         public string Icon { get; set; }
     }
