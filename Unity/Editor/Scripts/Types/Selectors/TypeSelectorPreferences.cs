@@ -18,12 +18,6 @@ namespace Aspid.FastTools.Types.Editors
         private const string FavoritesKeyPrefix = "Aspid.FastTools.TypeSelector.Favorites.";
         private const string RecentsKeyPrefix = "Aspid.FastTools.TypeSelector.Recents.";
 
-        [Serializable]
-        private sealed class Store
-        {
-            public List<string> entries = new();
-        }
-
         private static string ProjectId => PlayerSettings.productGUID.ToString();
 
         private static string FavoritesKey => FavoritesKeyPrefix + ProjectId;
@@ -130,6 +124,12 @@ namespace Aspid.FastTools.Types.Editors
         {
             var store = new Store { entries = entries };
             EditorPrefs.SetString(key, JsonUtility.ToJson(store));
+        }
+
+        [Serializable]
+        private sealed class Store
+        {
+            public List<string> entries = new();
         }
     }
 }
