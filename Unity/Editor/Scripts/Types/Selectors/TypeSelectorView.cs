@@ -54,7 +54,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string StarFilledGlyph = "★";
         private const string StarEmptyGlyph = "☆";
 
-        // A type leaf with no explicit [TypeSelectorItem] icon falls back to the C# script glyph; a namespace /
+        // A type leaf with no explicit [TypeSelectorDisplay] icon falls back to the C# script glyph; a namespace /
         // category container falls back to a folder glyph, so every row carries an icon and the list reads as a rhythm.
         private const string TypeFallbackIcon = "d_cs Script Icon";
         private const string ContainerFallbackIcon = "d_Folder Icon";
@@ -429,7 +429,7 @@ namespace Aspid.FastTools.Types.Editors
                 }
                 else
                 {
-                    // Types/containers use their explicit [TypeSelectorItem] icon or a uniform fallback. A fallback-folder
+                    // Types/containers use their explicit [TypeSelectorDisplay] icon or a uniform fallback. A fallback-folder
                     // container opens while its row is selected; containers with an explicit icon keep it unchanged.
                     texture = TypeSelectorIconResolver.Resolve(node.Icon);
 

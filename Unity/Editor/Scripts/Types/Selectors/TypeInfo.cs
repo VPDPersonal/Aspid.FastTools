@@ -16,13 +16,13 @@ namespace Aspid.FastTools.Types.Editors
         public readonly string AssemblyQualifiedName;
 
         /// <summary>
-        /// Tooltip override from <see cref="TypeSelectorItemAttribute.Tooltip"/>; falls back to
+        /// Tooltip override from <see cref="TypeSelectorDisplayAttribute.Tooltip"/>; falls back to
         /// <see cref="Type.FullName"/> when no override is supplied.
         /// </summary>
         public readonly string Tooltip;
 
         /// <summary>
-        /// Raw icon identifier from <see cref="TypeSelectorItemAttribute.Icon"/>; <see langword="null"/>
+        /// Raw icon identifier from <see cref="TypeSelectorDisplayAttribute.Icon"/>; <see langword="null"/>
         /// when no icon was requested.
         /// </summary>
         public readonly string Icon;
@@ -34,7 +34,7 @@ namespace Aspid.FastTools.Types.Editors
             AssemblyQualifiedName = type.AssemblyQualifiedName;
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
 
-            var item = type.GetCustomAttribute<TypeSelectorItemAttribute>(inherit: false);
+            var item = type.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false);
 
             Tooltip = type.FullName;
             Icon = null;
