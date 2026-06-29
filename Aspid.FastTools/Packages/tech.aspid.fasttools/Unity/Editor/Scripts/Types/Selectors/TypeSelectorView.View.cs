@@ -25,7 +25,7 @@ namespace Aspid.FastTools.Types.Editors
 
             var items = Nav.CurrentItems;
             _listView.itemsSource = items;
-            _listView.Rebuild();
+            _listView.RefreshItems();
 
             var hasItems = items.Count > 0;
             _listView.SetDisplay(hasItems ? DisplayStyle.Flex : DisplayStyle.None);

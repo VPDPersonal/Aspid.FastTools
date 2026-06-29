@@ -17,8 +17,12 @@ namespace Aspid.FastTools.Types.Editors
     {
         private void BeginResolveGeneric(Type openDefinition, Type primaryFieldType, Type[] validationFieldTypes, Action<Type> onClosed)
         {
-            // A closed-generic field already fixes the arguments — skip the picker and construct directly.
-            if (GenericTypeResolver.TryInferFromFieldType(primaryFieldType, openDefinition, out var inferred))
+            // A closed-generic field already fixes the arguments — skip the picker and construct directly. Inference
+            // only checks the primary field type, so re-validate the result against every field type (as the manual
+            // PickParam -> TryConstruct path does); if it is not assignable to all of them, fall through to the picker
+            // rather than emitting a value Unity would drop.
+            if (GenericTypeResolver.TryInferFromFieldType(primaryFieldType, openDefinition, out var inferred) &&
+                GenericTypeResolver.IsAssignableToFieldTypes(inferred, validationFieldTypes))
             {
                 onClosed(inferred);
                 return;

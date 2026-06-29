@@ -128,13 +128,15 @@ namespace Aspid.FastTools.Types.Editors
         {
             if (Nav.CurrentItems.Count > 0)
             {
-                _listView.Focus();
-
-                if (_listView.selectedIndex < 0)
+                // A just-shown ListView silently refuses Focus() until its display resolves on the next layout pass
+                // (the same constraint OpenSearch documents for the search field), so defer the focus to that pass.
+                // No row is pre-selected: an immediate Enter must stay inert rather than overwrite the field with
+                // whatever happens to be the first selectable row (<None> at the root, or an arbitrary sibling type).
+                _listView.schedule.Execute(() =>
                 {
-                    var first = FindSelectableIndex(0, step: 1);
-                    if (first >= 0) SetSelectedIndex(first);
-                }
+                    if (_listView.panel is not null)
+                        _listView.Focus();
+                });
 
                 return;
             }

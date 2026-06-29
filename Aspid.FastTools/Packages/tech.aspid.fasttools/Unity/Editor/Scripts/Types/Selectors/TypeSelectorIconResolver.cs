@@ -13,8 +13,8 @@ namespace Aspid.FastTools.Types.Editors
     /// plain name is tried as an editor built-in icon (<see cref="EditorGUIUtility.IconContent"/>) first and a
     /// <c>Resources</c> texture path second; a path-shaped value (one containing <c>/</c>) reverses that order, so probing
     /// a Resources path through <see cref="EditorGUIUtility.IconContent"/> does not spam the console with "Unable to load
-    /// icon" warnings on every miss. Results (including misses) are cached for the lifetime of the domain to keep row
-    /// binding cheap.
+    /// icon" warnings on every miss. Successful lookups are cached for the lifetime of the domain to keep row binding
+    /// cheap; misses are not cached, so an icon whose asset is imported or renamed later is picked up on the next bind.
     /// </summary>
     internal static class TypeSelectorIconResolver
     {
@@ -28,7 +28,12 @@ namespace Aspid.FastTools.Types.Editors
                 return cached;
 
             var texture = LoadIcon(icon);
-            Cache[icon] = texture;
+
+            // Only cache hits: a miss may be a not-yet-imported / freshly-renamed asset, so leave it uncached and
+            // retry on the next bind instead of pinning a null for the whole domain lifetime.
+            if (texture is not null)
+                Cache[icon] = texture;
+
             return texture;
         }
 

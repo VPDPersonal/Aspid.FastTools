@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
@@ -29,7 +28,7 @@ namespace Aspid.FastTools.Types.Editors
 
         public TypeInfo(Type type)
         {
-            Name = FormatName(type);
+            Name = TypeExtensions.FormatGenericName(type);
             Assembly = type.Assembly.GetName().Name;
             AssemblyQualifiedName = type.AssemblyQualifiedName;
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
@@ -61,30 +60,15 @@ namespace Aspid.FastTools.Types.Editors
         {
             var result = new List<TypeInfo>();
 
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                Type[] types;
-
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    Debug.LogWarning($"[TypeSelector] Skipped assembly '{assembly.GetName().Name}': {ex.Message}");
-                    types = ex.Types.Where(t => t is not null).ToArray();
-                }
-
-                result.AddRange(types
-                    .Where(t => baseTypes.All(baseType => baseType.IsAssignableFrom(t)) &&
-                        !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
-                        !t.Name.Contains("<") &&
-                        !t.Name.Contains(">") &&
-                        (allow.HasFlag(TypeAllow.Abstract) || !t.IsAbstract) &&
-                        (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
-                        (filter is null || filter(t)))
-                    .Select(type => new TypeInfo(type)));
-            }
+            result.AddRange(TypeExtensions.EnumerateDomainTypes()
+                .Where(t => baseTypes.All(baseType => baseType.IsAssignableFrom(t)) &&
+                    !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
+                    !t.Name.Contains("<") &&
+                    !t.Name.Contains(">") &&
+                    (allow.HasFlag(TypeAllow.Abstract) || !t.IsAbstract) &&
+                    (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
+                    (filter is null || filter(t)))
+                .Select(type => new TypeInfo(type)));
 
             if (additionalTypes is not null)
             {
@@ -96,18 +80,6 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             return result;
-        }
-
-        // Short display name for a type. Open generic definitions are rendered with angle-bracket
-        // parameters (Modifier<T>) instead of Unity's raw arity form (Modifier`1); generic
-        // arguments are formatted recursively so nested closed generics render fully.
-        private static string FormatName(Type type)
-        {
-            if (!type.IsGenericType) return type.Name;
-
-            var baseName = TypeExtensions.StripArity(type.Name);
-            var arguments = string.Join(", ", type.GetGenericArguments().Select(FormatName));
-            return $"{baseName}<{arguments}>";
         }
     }
 }
