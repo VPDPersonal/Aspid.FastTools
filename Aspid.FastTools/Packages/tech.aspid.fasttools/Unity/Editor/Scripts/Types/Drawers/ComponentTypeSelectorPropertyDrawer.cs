@@ -21,9 +21,14 @@ namespace Aspid.FastTools.Types.Editors
 
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(currentType.Name), FocusType.Passive))
             {
+                var filter = new TypeSelectorFilter
+                {
+                    Types = new[] { fieldInfo.DeclaringType },
+                };
+
                 TypeSelectorWindow.Show(
                     GUIUtility.GUIToScreenRect(dropdownRect),
-                    new TypeSelectorFilter { Types = new[] { fieldInfo.DeclaringType } },
+                    filter,
                     currentType.AssemblyQualifiedName,
                     onSelected: aqn => ReplaceComponentScript(property, currentType, Type.GetType(aqn)));
             }
