@@ -10,9 +10,6 @@ namespace Aspid.FastTools.Types.Editors
     /// candidate-defining inputs of <see cref="TypeSelectorWindow.Show"/> and the <see cref="TypeSelectorView"/>
     /// constructor into a single value so they travel together.
     /// </summary>
-    // A plain (non-readonly) struct with settable auto-properties: object-initializer ergonomics at the call site
-    // without an `init` accessor, which Unity's Mono runtime cannot compile (it lacks System.Runtime.CompilerServices.
-    // IsExternalInit). The value is built once and consumed immediately, so mutability is not a concern here.
     public struct TypeSelectorFilter
     {
         /// <summary>
