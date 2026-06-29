@@ -270,9 +270,8 @@ namespace Aspid.FastTools.Types.Editors
     {
         public static void Show(
             Rect screenRect,
-            Type[] types = null,
+            TypeSelectorFilter filter = default,
             string currentAqn = "",
-            TypeAllow allow = TypeAllow.None,
             Action<string> onSelected = null);
     }
 }
@@ -281,9 +280,8 @@ namespace Aspid.FastTools.Types.Editors
 | Parameter | Description |
 |-----------|-------------|
 | `screenRect` | Screen-space rectangle the dropdown is anchored to. |
-| `types` | Base types used to filter visible items. Only types assignable to **all** entries are listed. Defaults to `typeof(object)`. |
+| `filter` | Bundles which types the selector offers: base types (`Types`, only types assignable to **all** entries are listed; defaults to `typeof(object)`), the included kinds (`Allow`), an optional per-type `Predicate`, verbatim `AdditionalTypes`, and the open-generic `ArgumentFilter`. |
 | `currentAqn` | Assembly-qualified name of the currently selected type, used to pre-navigate to its location. Pass `null` or empty to start at the root. |
-| `allow` | Which special type kinds (abstract classes, interfaces) are included in addition to concrete classes. Default: `TypeAllow.None`. |
 | `onSelected` | Callback invoked with the assembly-qualified name of the selected type, or `null` if the user chose `<None>`. |
 
 ### ComponentTypeSelector

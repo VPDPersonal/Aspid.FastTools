@@ -105,9 +105,9 @@ namespace Aspid.FastTools.Types.Editors
                     break;
 
                 case KeyCode.Space:
-                    if (!IsSearchFocused(focusController?.focusedElement) && HandleToggleFavoriteKey())
+                    if (!IsSearchFocused(focusController?.focusedElement))
                     {
-                        // Disarm the submit this same Space raises, so the row toggles favorite without being chosen.
+                        HandleToggleFavoriteKey();
                         _suppressNextSubmit = true;
                         evt.StopPropagation();
                     }

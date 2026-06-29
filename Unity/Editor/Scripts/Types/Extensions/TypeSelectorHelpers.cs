@@ -33,28 +33,11 @@ namespace Aspid.FastTools.Types.Editors
         /// </param>
         public static string GetTypeSelectorTitle(Type value, string assemblyQualifiedName = null)
         {
-            if (value is not null) return FormatName(value);
+            if (value is not null) return TypeExtensions.FormatGenericName(value);
 
             return string.IsNullOrWhiteSpace(assemblyQualifiedName)
                 ? NoneOption
                 : $"<Missing {assemblyQualifiedName}>";
-        }
-
-        // Short type name with angle-bracket generic arguments (Modifier<Single>) instead of
-        // the raw arity form (Modifier`1). Generic arguments are formatted recursively, so a nested
-        // closed generic renders fully (Modifier<Modifier<Int32>>). Non-generic types are returned unchanged.
-        private static string FormatName(Type value)
-        {
-            if (!value.IsGenericType) return value.Name;
-
-            var baseName = TypeExtensions.StripArity(value.Name);
-
-            var arguments = value.GetGenericArguments();
-            var argumentNames = new string[arguments.Length];
-            for (var i = 0; i < arguments.Length; i++)
-                argumentNames[i] = FormatName(arguments[i]);
-
-            return $"{baseName}<{string.Join(", ", argumentNames)}>";
         }
     }
 }

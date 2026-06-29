@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -110,6 +111,46 @@ namespace Aspid.FastTools.Types.Editors
         {
             var tick = name.IndexOf('`');
             return tick >= 0 ? name[..tick] : name;
+        }
+
+        /// <summary>
+        /// Short display name for a type: open generic definitions and closed generics are rendered with
+        /// angle-bracket arguments (<c>Modifier&lt;Single&gt;</c>) instead of the raw arity form (<c>Modifier`1</c>),
+        /// recursing into the arguments so nested generics render fully (<c>Modifier&lt;Modifier&lt;Int32&gt;&gt;</c>).
+        /// Non-generic types are returned unchanged. Shared by the type-selector display formatters.
+        /// </summary>
+        internal static string FormatGenericName(Type type)
+        {
+            if (!type.IsGenericType) return type.Name;
+
+            var baseName = StripArity(type.Name);
+            var arguments = string.Join(", ", type.GetGenericArguments().Select(FormatGenericName));
+            return $"{baseName}<{arguments}>";
+        }
+
+        /// <summary>
+        /// Enumerates every type across all currently loaded assemblies, dropping the entries that fail to load in a
+        /// partially-loadable assembly (<see cref="ReflectionTypeLoadException"/>). Shared by the type-selector
+        /// candidate scan and the open-generic resolver so both walk the domain the same way.
+        /// </summary>
+        internal static IEnumerable<Type> EnumerateDomainTypes()
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                Type[] types;
+
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException exception)
+                {
+                    types = exception.Types.Where(type => type is not null).ToArray();
+                }
+
+                foreach (var type in types)
+                    yield return type;
+            }
         }
         
         private static int FindTypeLineNumber(string text, string typeName, bool isEnum)

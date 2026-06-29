@@ -30,7 +30,10 @@ namespace Aspid.FastTools.Types.Editors
                     GUIUtility.GUIToScreenRect(dropdownRect),
                     filter,
                     currentType.AssemblyQualifiedName,
-                    onSelected: aqn => ReplaceComponentScript(property, currentType, Type.GetType(aqn)));
+                    onSelected: aqn => ReplaceComponentScript(
+                        property,
+                        currentType,
+                        string.IsNullOrEmpty(aqn) ? null : Type.GetType(aqn, throwOnError: false)));
             }
 
             TypeIMGUIPropertyDrawer.DrawOpenScriptButton(openButtonRect, currentType);
