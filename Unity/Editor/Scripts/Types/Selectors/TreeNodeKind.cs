@@ -7,10 +7,14 @@ namespace Aspid.FastTools.Types.Editors
     /// </summary>
     internal enum TreeNodeKind
     {
-        /// <summary>A regular hierarchy node (type leaf, namespace or category container).</summary>
+        /// <summary>
+        /// A regular hierarchy node (type leaf, namespace or category container).
+        /// </summary>
         Default,
 
-        /// <summary>A non-selectable header that introduces the Favorites or Recents section.</summary>
+        /// <summary>
+        /// A non-selectable header that introduces the Favorites or Recents section.
+        /// </summary>
         SectionTitle,
     }
 }
