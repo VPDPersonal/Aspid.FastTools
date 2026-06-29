@@ -40,12 +40,9 @@ namespace Aspid.FastTools.Types.Editors
                 : $"<Missing {assemblyQualifiedName}>";
         }
 
-        /// <summary>
-        /// Short type name with angle-bracket generic arguments (<c>Modifier&lt;Single&gt;</c>) instead of
-        /// the raw arity form (<c>Modifier`1</c>). Generic arguments are formatted recursively, so a nested
-        /// closed generic renders fully (<c>Modifier&lt;Modifier&lt;Int32&gt;&gt;</c>). Non-generic types
-        /// are returned unchanged.
-        /// </summary>
+        // Short type name with angle-bracket generic arguments (Modifier<Single>) instead of
+        // the raw arity form (Modifier`1). Generic arguments are formatted recursively, so a nested
+        // closed generic renders fully (Modifier<Modifier<Int32>>). Non-generic types are returned unchanged.
         private static string FormatName(Type value)
         {
             if (!value.IsGenericType) return value.Name;
