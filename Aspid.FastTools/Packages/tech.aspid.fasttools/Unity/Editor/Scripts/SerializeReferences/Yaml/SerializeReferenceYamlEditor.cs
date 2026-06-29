@@ -77,13 +77,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static bool TryParseInlineType(string body, out ManagedTypeName type) =>
             SerializeReferenceYaml.TryParseInlineType(body, out type);
 
-        /// <summary>
-        /// Writes <paramref name="lines"/> back to <paramref name="assetPath"/> preserving the file's original newline
-        /// style and trailing-newline state. <see cref="File.WriteAllLines(string,IEnumerable{string})"/> would re-emit
-        /// every line with <see cref="Environment.NewLine"/> (CRLF on Windows) — Unity writes its YAML with LF on every
-        /// platform, so that would churn the whole file LF→CRLF for a one-line edit. Sniffing the source newline keeps a
-        /// surgical edit to just the intended line(s).
-        /// </summary>
+        // Writes lines back to assetPath preserving the file's original newline style and
+        // trailing-newline state. File.WriteAllLines would re-emit every line with
+        // Environment.NewLine (CRLF on Windows) — Unity writes its YAML with LF on every platform,
+        // so that would churn the whole file LF→CRLF for a one-line edit. Sniffing the source
+        // newline keeps a surgical edit to just the intended line(s).
         private static void WritePreservingNewlines(string assetPath, IReadOnlyList<string> lines)
         {
             var original = File.ReadAllText(assetPath);

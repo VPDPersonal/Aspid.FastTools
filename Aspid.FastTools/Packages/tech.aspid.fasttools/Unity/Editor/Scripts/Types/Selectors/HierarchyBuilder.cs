@@ -7,15 +7,25 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class HierarchyBuilder
     {
-        public static TreeNode Build(Type[] types, TypeAllow allow)
+        public static TreeNode Build(
+            Type[] types,
+            TypeAllow allow,
+            Func<Type, bool> filter = null,
+            IEnumerable<Type> additionalTypes = null,
+            bool includeNoneOption = true)
         {
-            var allTypes = TypeInfo.GetAllTypeInfos(types, allow);
+            var allTypes = TypeInfo.GetAllTypeInfos(types, allow, filter, additionalTypes);
 
             var root = new TreeNode("/");
-            root.Children.Add(new TreeNode(TypeSelectorHelpers.NoneOption, null, TypeSelectorHelpers.NoneOption));
+
+            // Generic-argument pages must yield a concrete type, so they omit the <None> entry.
+            if (includeNoneOption)
+                root.Children.Add(new TreeNode(TypeSelectorHelpers.NoneOption, null, TypeSelectorHelpers.NoneOption));
 
             AddGlobalNamespaceGroup(root, allTypes);
             AddNamespaceHierarchy(root, allTypes);
+
+            SortNode(root);
 
             return root;
         }
@@ -24,7 +34,6 @@ namespace Aspid.FastTools.Types.Editors
         {
             var globals = types
                 .Where(type => type.Namespace == TypeSelectorHelpers.GlobalNamespace)
-                .OrderBy(type => type.Name)
                 .ToList();
 
             if (globals.Count is 0) return;
@@ -86,15 +95,12 @@ namespace Aspid.FastTools.Types.Editors
 
             var node = new TreeNode(trieNode.Segment, null, nextDisplay);
 
-            // Add types at this namespace level
             if (trieNode.IsTerminal && nsToTypes.TryGetValue(nextNamespace, out var typeInfos))
                 AddTypesWithDisambiguation(node, typeInfos, includeNamespace: true, nextNamespace);
 
-            // Add child namespaces
             foreach (var child in trieNode.Children.Values.OrderBy(n => n.Segment))
                 node.Children.Add(BuildNamespaceNode(child, nextDisplay, nextNamespace, nsToTypes));
 
-            // Flatten single-child chains
             return FlattenSingleChildChain(node);
         }
 
@@ -117,6 +123,8 @@ namespace Aspid.FastTools.Types.Editors
                 node.AssemblyQualifiedName = onlyChild.AssemblyQualifiedName;
                 node.Caption = onlyChild.Caption;
                 node.Tooltip = onlyChild.Tooltip;
+                node.Icon = onlyChild.Icon;
+                node.SearchName = onlyChild.SearchName;
                 node.Children.Clear();
             }
 
@@ -133,7 +141,7 @@ namespace Aspid.FastTools.Types.Editors
                 .GroupBy(type => type.Name)
                 .ToDictionary(g => g.Key, g => g.Count());
 
-            foreach (var type in types.OrderBy(type => type.Name))
+            foreach (var type in types)
             {
                 var needsAssembly = nameCounts[type.Name] > 1;
                 var displayName = needsAssembly ? $"{type.Name} ({type.Assembly})" : type.Name;
@@ -142,13 +150,40 @@ namespace Aspid.FastTools.Types.Editors
                     ? $"{namespacePath}.{displayName}"
                     : displayName;
 
-                var leaf = new TreeNode(displayName, type.AssemblyQualifiedName, caption)
-                {
-                    Tooltip = type.FullName
-                };
-
-                parent.Children.Add(leaf);
+                parent.Children.Add(CreateLeaf(type, displayName, caption));
             }
+        }
+
+        private static TreeNode CreateLeaf(TypeInfo type, string displayName, string caption = null)
+        {
+            return new TreeNode(displayName, type.AssemblyQualifiedName, caption ?? displayName)
+            {
+                Tooltip = type.Tooltip,
+                Icon = type.Icon,
+                SearchName = type.Name,
+            };
+        }
+
+        // Sorts each node's children alphabetically by display name, while keeping the <None>
+        // option pinned to the top. Applied recursively so every hierarchy level honours the
+        // same ordering.
+        private static void SortNode(TreeNode node)
+        {
+            node.Children.Sort(CompareNodes);
+
+            foreach (var child in node.Children)
+                SortNode(child);
+        }
+
+        private static int CompareNodes(TreeNode left, TreeNode right)
+        {
+            // Keep <None> pinned to the top of the root list.
+            var leftNone = left.DisplayName == TypeSelectorHelpers.NoneOption;
+            var rightNone = right.DisplayName == TypeSelectorHelpers.NoneOption;
+
+            if (leftNone != rightNone) return leftNone ? -1 : 1;
+
+            return string.Compare(left.DisplayName, right.DisplayName, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

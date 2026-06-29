@@ -54,7 +54,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return lines;
         }
 
-        /// <summary>Drops every cached file — called after a rewrite and from the import post-processor.</summary>
+        /// <summary>
+        /// Drops every cached file — called after a rewrite and from the import post-processor.
+        /// </summary>
         public static void ClearCache()
         {
             _cache.Clear();

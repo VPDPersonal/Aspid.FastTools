@@ -33,7 +33,7 @@ namespace Aspid.FastTools.Types.Editors
         /// </param>
         public static string GetTypeSelectorTitle(Type value, string assemblyQualifiedName = null)
         {
-            if (value is not null) return value.Name;
+            if (value is not null) return TypeExtensions.FormatGenericName(value);
 
             return string.IsNullOrWhiteSpace(assemblyQualifiedName)
                 ? NoneOption

@@ -270,9 +270,8 @@ namespace Aspid.FastTools.Types.Editors
     {
         public static void Show(
             Rect screenRect,
-            Type[] types = null,
+            TypeSelectorFilter filter = default,
             string currentAqn = "",
-            TypeAllow allow = TypeAllow.None,
             Action<string> onSelected = null);
     }
 }
@@ -281,9 +280,8 @@ namespace Aspid.FastTools.Types.Editors
 | Параметр | Описание |
 |----------|----------|
 | `screenRect` | Прямоугольник в экранных координатах, к которому привязывается dropdown. |
-| `types` | Базовые типы, по которым фильтруются видимые элементы. В списке остаются только типы, совместимые со **всеми** записями. По умолчанию — `typeof(object)`. |
+| `filter` | Объединяет, какие типы предлагает селектор: базовые типы (`Types`, в списке остаются только типы, совместимые со **всеми** записями; по умолчанию — `typeof(object)`), включаемые категории (`Allow`), необязательный предикат `Predicate`, дополнительные записи `AdditionalTypes` и предикат аргументов открытых генериков `ArgumentFilter`. |
 | `currentAqn` | Assembly-qualified имя текущего выбранного типа: окно сразу откроется на его уровне иерархии. Передайте `null` или пустую строку, чтобы стартовать с корня. |
-| `allow` | Какие специальные категории (абстрактные классы, интерфейсы) включаются в список в дополнение к конкретным классам. По умолчанию: `TypeAllow.None`. |
 | `onSelected` | Callback с assembly-qualified именем выбранного типа или `null`, если пользователь выбрал `<None>`. |
 
 ### ComponentTypeSelector

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using System.Reflection;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -28,9 +29,14 @@ namespace Aspid.FastTools.Types.Editors
         /// </returns>
         public static MonoScript FindMonoScript(this Type type)
         {
-            var isEnum = type.IsEnum;
-            var typeName = type.Name;
-            var typeNamespace = type.Namespace;
+            if (type is null) return null;
+
+            // A closed generic (e.g. Modifier<Modifier<int>>) has no script of its own — the source file
+            // declares the open definition, so look that up and match by its arity-stripped name.
+            var lookupType = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+            var isEnum = lookupType.IsEnum;
+            var typeName = StripArity(lookupType.Name);
+            var typeNamespace = lookupType.Namespace;
 
             var scripts = AssetDatabase.FindAssets(filter: $"t:MonoScript {typeName}")
                 .Select(AssetDatabase.GUIDToAssetPath)
@@ -42,7 +48,7 @@ namespace Aspid.FastTools.Types.Editors
 
             foreach (var script in scripts)
             {
-                if (script.GetClass() != type) continue;
+                if (script.GetClass() != lookupType) continue;
                 return script;
             }
 
@@ -59,15 +65,6 @@ namespace Aspid.FastTools.Types.Editors
             return null;
         }
 
-        /// <summary>
-        /// Searches the Asset Database for the <see cref="MonoScript"/> that defines the given type
-        /// and also determines the 1-based line number of the type declaration within that script.
-        /// </summary>
-        /// <param name="type">The type to locate.</param>
-        /// <returns>
-        /// A tuple of the matched <see cref="MonoScript"/> and the 1-based line number of the type declaration.
-        /// If no script is found, returns <c>(null, 0)</c>.
-        /// </returns>
         /// <summary>
         /// Opens the script that defines <paramref name="type"/> in the configured external
         /// editor at the line of the type declaration. Logs a warning and is a no-op when
@@ -87,13 +84,73 @@ namespace Aspid.FastTools.Types.Editors
             AssetDatabase.OpenAsset(monoScript, lineNumber);
         }
 
+        /// <summary>
+        /// Searches the Asset Database for the <see cref="MonoScript"/> that defines the given type
+        /// and also determines the 1-based line number of the type declaration within that script.
+        /// </summary>
+        /// <param name="type">The type to locate.</param>
+        /// <returns>
+        /// A tuple of the matched <see cref="MonoScript"/> and the 1-based line number of the type declaration.
+        /// If no script is found, returns <c>(null, 0)</c>.
+        /// </returns>
         public static (MonoScript script, int line) FindMonoScriptWithLine(this Type type)
         {
             var script = type.FindMonoScript();
             if (script is null) return (script: null, line: 0);
 
-            var line = FindTypeLineNumber(script.text, type.Name, type.IsEnum);
+            var lookupType = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+            var line = FindTypeLineNumber(script.text, StripArity(lookupType.Name), lookupType.IsEnum);
             return (script, line);
+        }
+
+        /// <summary>
+        /// Removes the CLR generic-arity suffix (<c>Modifier`1</c> → <c>Modifier</c>) from a raw type name.
+        /// Names without a backtick are returned unchanged. Shared by the type-name formatters.
+        /// </summary>
+        internal static string StripArity(string name)
+        {
+            var tick = name.IndexOf('`');
+            return tick >= 0 ? name[..tick] : name;
+        }
+
+        /// <summary>
+        /// Short display name for a type: open generic definitions and closed generics are rendered with
+        /// angle-bracket arguments (<c>Modifier&lt;Single&gt;</c>) instead of the raw arity form (<c>Modifier`1</c>),
+        /// recursing into the arguments so nested generics render fully (<c>Modifier&lt;Modifier&lt;Int32&gt;&gt;</c>).
+        /// Non-generic types are returned unchanged. Shared by the type-selector display formatters.
+        /// </summary>
+        internal static string FormatGenericName(Type type)
+        {
+            if (!type.IsGenericType) return type.Name;
+
+            var baseName = StripArity(type.Name);
+            var arguments = string.Join(", ", type.GetGenericArguments().Select(FormatGenericName));
+            return $"{baseName}<{arguments}>";
+        }
+
+        /// <summary>
+        /// Enumerates every type across all currently loaded assemblies, dropping the entries that fail to load in a
+        /// partially-loadable assembly (<see cref="ReflectionTypeLoadException"/>). Shared by the type-selector
+        /// candidate scan and the open-generic resolver so both walk the domain the same way.
+        /// </summary>
+        internal static IEnumerable<Type> EnumerateDomainTypes()
+        {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                Type[] types;
+
+                try
+                {
+                    types = assembly.GetTypes();
+                }
+                catch (ReflectionTypeLoadException exception)
+                {
+                    types = exception.Types.Where(type => type is not null).ToArray();
+                }
+
+                foreach (var type in types)
+                    yield return type;
+            }
         }
         
         private static int FindTypeLineNumber(string text, string typeName, bool isEnum)

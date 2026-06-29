@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using UnityEngine;
 using System.Linq;
@@ -48,6 +47,23 @@ namespace Aspid.FastTools.Types
         public TypeAllow Allow { get; set; } = TypeAllow.None;
 
         /// <summary>
+        /// When <see langword="true"/>, an unset field is flagged: a <c>[SerializeReference]</c> managed reference left
+        /// null, or a <c>string</c> field left empty, shows an inline "required" warning in the inspector and counts as a
+        /// violation for the build/CI gate. A present-but-missing managed-reference type is not a required violation here —
+        /// it has its own missing-type notice/gate. Defaults to <see langword="false"/>.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// [SerializeReference, TypeSelector(typeof(IWeapon), Required = true)]
+        /// private IWeapon _weapon;
+        ///
+        /// [TypeSelector(typeof(MonoBehaviour), Required = true)]
+        /// [SerializeField] private string _behaviourType;
+        /// </code>
+        /// </example>
+        public bool Required { get; set; }
+
+        /// <summary>
         /// Creates an unconstrained attribute (base type is <see cref="object"/>).
         ///</summary>
         public TypeSelectorAttribute()
@@ -67,6 +83,7 @@ namespace Aspid.FastTools.Types
         public TypeSelectorAttribute(params Type[] types)
         {
             AssemblyQualifiedNames = types
+                .Where(type => type is not null)
                 .Select(type => type.AssemblyQualifiedName)
                 .ToArray();
         }
