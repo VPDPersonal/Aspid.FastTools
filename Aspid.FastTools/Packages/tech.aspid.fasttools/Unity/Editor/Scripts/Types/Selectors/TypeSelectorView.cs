@@ -1070,9 +1070,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             var parameters = openDefinition.GetGenericArguments();
 
-            var name = openDefinition.Name;
-            var tick = name.IndexOf('`');
-            var baseName = tick >= 0 ? name[..tick] : name;
+            var baseName = TypeExtensions.StripArity(openDefinition.Name);
 
             var parts = new string[parameters.Length];
             for (var k = 0; k < parameters.Length; k++)

@@ -107,9 +107,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             if (!type.IsGenericType) return type.Name;
 
-            var name = type.Name;
-            var tick = name.IndexOf('`');
-            var baseName = tick >= 0 ? name[..tick] : name;
+            var baseName = TypeExtensions.StripArity(type.Name);
             var arguments = string.Join(", ", type.GetGenericArguments().Select(FormatName));
             return $"{baseName}<{arguments}>";
         }

@@ -102,7 +102,11 @@ namespace Aspid.FastTools.Types.Editors
             return (script, line);
         }
 
-        private static string StripArity(string name)
+        /// <summary>
+        /// Removes the CLR generic-arity suffix (<c>Modifier`1</c> → <c>Modifier</c>) from a raw type name.
+        /// Names without a backtick are returned unchanged. Shared by the type-name formatters.
+        /// </summary>
+        internal static string StripArity(string name)
         {
             var tick = name.IndexOf('`');
             return tick >= 0 ? name[..tick] : name;
