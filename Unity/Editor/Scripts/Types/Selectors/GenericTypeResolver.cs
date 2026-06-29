@@ -32,11 +32,9 @@ namespace Aspid.FastTools.Types.Editors
             !typeof(Delegate).IsAssignableFrom(type) &&
             !IsCompilerGenerated(type);
 
-        /// <summary>
-        /// Returns <see langword="true"/> for compiler-emitted types that should never surface in the
-        /// selector: those marked <see cref="CompilerGeneratedAttribute"/> or whose name carries the
-        /// angle-bracket marker of an anonymous type / closure display class.
-        /// </summary>
+        // Returns true for compiler-emitted types that should never surface in the selector:
+        // those marked CompilerGeneratedAttribute or whose name carries the angle-bracket marker
+        // of an anonymous type / closure display class.
         private static bool IsCompilerGenerated(Type type) =>
             type.IsDefined(typeof(CompilerGeneratedAttribute), false) ||
             type.Name.Contains('<') ||
@@ -185,13 +183,31 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> when <paramref name="closed"/> is assignable to every meaningful entry of
+        /// <paramref name="fieldTypes"/> (nulls and the unconstrained <see cref="object"/> sentinel impose no
+        /// restriction). Mirrors the assignability guard <see cref="TryConstruct"/> applies, for callers that already
+        /// hold a constructed closed type and only need to validate it.
+        /// </summary>
+        public static bool IsAssignableToFieldTypes(Type closed, Type[] fieldTypes)
+        {
+            if (closed is null) return false;
+            if (fieldTypes is null) return true;
+
+            foreach (var fieldType in fieldTypes)
+            {
+                if (fieldType is null || fieldType == typeof(object)) continue;
+                if (!fieldType.IsAssignableFrom(closed)) return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Short display form of an open definition with its parameter names (<c>Modifier&lt;T&gt;</c>).
         /// </summary>
         public static string FormatDefinitionName(Type definition)
         {
-            var name = definition.Name;
-            var tick = name.IndexOf('`');
-            var baseName = tick >= 0 ? name[..tick] : name;
+            var baseName = TypeExtensions.StripArity(definition.Name);
             var arguments = string.Join(", ", definition.GetGenericArguments().Select(argument => argument.Name));
             return $"{baseName}<{arguments}>";
         }
@@ -213,10 +229,8 @@ namespace Aspid.FastTools.Types.Editors
             return false;
         }
 
-        /// <summary>
-        /// Enumerates the generic-type-definition view of <paramref name="openDefinition"/> itself, its base
-        /// class chain, and its interfaces (only the generic ones, reduced to their definitions).
-        /// </summary>
+        // Enumerates the generic-type-definition view of openDefinition itself, its base class
+        // chain, and its interfaces (only the generic ones, reduced to their definitions).
         private static IEnumerable<Type> GenericBaseDefinitions(Type openDefinition)
         {
             if (openDefinition.IsGenericType)
@@ -236,29 +250,7 @@ namespace Aspid.FastTools.Types.Editors
         // implicitly invalidated whenever assemblies could change.
         private static List<Type> _domainTypes;
 
-        private static IReadOnlyList<Type> EnumerateDomainTypes()
-        {
-            if (_domainTypes is not null) return _domainTypes;
-
-            var all = new List<Type>();
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                Type[] types;
-
-                try
-                {
-                    types = assembly.GetTypes();
-                }
-                catch (ReflectionTypeLoadException ex)
-                {
-                    types = ex.Types.Where(type => type is not null).ToArray();
-                }
-
-                all.AddRange(types);
-            }
-
-            _domainTypes = all;
-            return _domainTypes;
-        }
+        private static IReadOnlyList<Type> EnumerateDomainTypes() =>
+            _domainTypes ??= TypeExtensions.EnumerateDomainTypes().ToList();
     }
 }

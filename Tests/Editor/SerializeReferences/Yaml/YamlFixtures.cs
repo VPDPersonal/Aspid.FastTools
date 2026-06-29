@@ -440,7 +440,9 @@ MonoBehaviour:
       type: {class: , ns: , asm: }
 ";
 
-        /// <summary>Writes <paramref name="yaml"/> to a fresh temp file (never under <c>Assets/</c>) and returns its path.</summary>
+        /// <summary>
+        /// Writes <paramref name="yaml"/> to a fresh temp file (never under <c>Assets/</c>) and returns its path.
+        /// </summary>
         public static string WriteTemp(string yaml)
         {
             var dir = Path.Combine(Path.GetTempPath(), "aspid-sr-tests");
@@ -450,7 +452,9 @@ MonoBehaviour:
             return path;
         }
 
-        /// <summary>Deletes a temp fixture file if present.</summary>
+        /// <summary>
+        /// Deletes a temp fixture file if present.
+        /// </summary>
         public static void Delete(string path)
         {
             try

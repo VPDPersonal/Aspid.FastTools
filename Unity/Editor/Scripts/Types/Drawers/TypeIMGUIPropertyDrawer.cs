@@ -74,11 +74,16 @@ namespace Aspid.FastTools.Types.Editors
                 var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(dropdownRect.x, dropdownRect.y));
                 var screenRect = new Rect(screenPosition.x, screenPosition.y, dropdownRect.width, dropdownRect.height);
 
+                var filter = new TypeSelectorFilter
+                {
+                    Types = types,
+                    Allow = allow,
+                };
+
                 TypeSelectorWindow.Show(
                     screenRect: screenRect,
-                    types: types,
+                    filter: filter,
                     currentAqn: current,
-                    allow: allow,
                     onSelected: assemblyQualifiedName =>
                     {
                         persistent.SetStringAndApply(assemblyQualifiedName ?? string.Empty);

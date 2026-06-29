@@ -852,13 +852,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var baseType = constraint ?? typeof(object);
 
             return new TypeSelectorView(
-                types: new[] { baseType },
+                filter: new TypeSelectorFilter
+                {
+                    Types = new[] { baseType },
+                    Predicate = SerializeReferenceHelpers.IsAssignableManagedReference,
+                    AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
+                    ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
+                },
                 currentAqn: string.Empty,
-                allow: TypeAllow.None,
                 onSelected: onSelected,
-                filter: SerializeReferenceHelpers.IsAssignableManagedReference,
-                additionalTypes: baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
-                argumentFilter: SerializeReferenceHelpers.IsValidGenericArgument,
                 onDismiss: ClosePicker);
         }
 

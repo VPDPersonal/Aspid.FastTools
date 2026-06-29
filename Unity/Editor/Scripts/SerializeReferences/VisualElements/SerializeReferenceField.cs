@@ -482,15 +482,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
-                types: new[] { _fieldType },
+                filter: new TypeSelectorFilter
+                {
+                    Types = new[] { _fieldType },
+                    Predicate = _filter,
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(_fieldType, _baseTypes),
+                    ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
+                },
                 currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
-                allow: TypeAllow.None,
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
                     ? null
-                    : Type.GetType(assemblyQualifiedName, throwOnError: false)),
-                filter: _filter,
-                additionalTypes: GenericTypeResolver.GetAssignableGenericDefinitions(_fieldType, _baseTypes),
-                argumentFilter: SerializeReferenceHelpers.IsValidGenericArgument);
+                    : Type.GetType(assemblyQualifiedName, throwOnError: false)));
 
             evt.StopPropagation();
             return;
