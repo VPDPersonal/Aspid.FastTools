@@ -10,36 +10,39 @@ namespace Aspid.FastTools.Types.Editors
     /// candidate-defining inputs of <see cref="TypeSelectorWindow.Show"/> and the <see cref="TypeSelectorView"/>
     /// constructor into a single value so they travel together.
     /// </summary>
-    public readonly struct TypeSelectorFilter
+    // A plain (non-readonly) struct with settable auto-properties: object-initializer ergonomics at the call site
+    // without an `init` accessor, which Unity's Mono runtime cannot compile (it lacks System.Runtime.CompilerServices.
+    // IsExternalInit). The value is built once and consumed immediately, so mutability is not a concern here.
+    public struct TypeSelectorFilter
     {
         /// <summary>
         /// Base types used to filter which concrete types are shown. Only types assignable to all entries are listed.
         /// Defaults to <see cref="object"/> when left <c>null</c>.
         /// </summary>
-        public Type[] Types { get; init; }
+        public Type[] Types { get; set; }
 
         /// <summary>
         /// Which type kinds are included in the list.
         /// </summary>
-        public TypeAllow Allow { get; init; }
+        public TypeAllow Allow { get; set; }
 
         /// <summary>
         /// Optional predicate applied to each candidate type after the base-type and <see cref="Allow"/> checks.
         /// Return <c>false</c> to hide a type. Leave <c>null</c> to keep every matching type.
         /// </summary>
-        public Func<Type, bool> Predicate { get; init; }
+        public Func<Type, bool> Predicate { get; set; }
 
         /// <summary>
         /// Optional extra types appended to the list verbatim, bypassing the base-type and <see cref="Allow"/> checks —
         /// used to inject entries the assignability scan cannot match, such as open generic definitions.
         /// </summary>
-        public IEnumerable<Type> AdditionalTypes { get; init; }
+        public IEnumerable<Type> AdditionalTypes { get; set; }
 
         /// <summary>
         /// Optional predicate applied to candidate types offered for an open generic's type arguments (in addition to
         /// the parameter's own constraints). Used to restrict arguments to, e.g., Unity-serializable types. Leave
         /// <c>null</c> to accept any constraint-satisfying type.
         /// </summary>
-        public Func<Type, bool> ArgumentFilter { get; init; }
+        public Func<Type, bool> ArgumentFilter { get; set; }
     }
 }
