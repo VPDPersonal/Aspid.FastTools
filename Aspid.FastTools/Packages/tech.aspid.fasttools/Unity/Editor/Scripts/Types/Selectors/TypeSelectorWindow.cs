@@ -29,7 +29,6 @@ namespace Aspid.FastTools.Types.Editors
             Action<string> onSelected = null)
         {
             var window = CreateInstance<TypeSelectorWindow>();
-
             var view = new TypeSelectorView(filter, currentAqn, onSelected, onDismiss: window.Close);
 
             window.rootVisualElement.AddChild(view);
