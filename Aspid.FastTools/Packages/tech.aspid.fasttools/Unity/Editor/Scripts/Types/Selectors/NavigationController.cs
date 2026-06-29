@@ -50,7 +50,9 @@ namespace Aspid.FastTools.Types.Editors
         /// </summary>
         public IReadOnlyList<TreeNode> Breadcrumbs => _breadcrumbs;
 
-        /// <summary>The node whose children are currently listed (the deepest opened level).</summary>
+        /// <summary>
+        /// The node whose children are currently listed (the deepest opened level).
+        /// </summary>
         public TreeNode CurrentNode => _currentNode;
 
         public List<TreeNode> CurrentItems
@@ -167,7 +169,9 @@ namespace Aspid.FastTools.Types.Editors
             if (_composeSections) RebuildRootItems();
         }
 
-        /// <summary>Whether the section identified by <paramref name="sectionKey"/> is currently collapsed.</summary>
+        /// <summary>
+        /// Whether the section identified by <paramref name="sectionKey"/> is currently collapsed.
+        /// </summary>
         public bool IsSectionCollapsed(string sectionKey) =>
             sectionKey is not null && _collapsedSections.Contains(sectionKey);
 
