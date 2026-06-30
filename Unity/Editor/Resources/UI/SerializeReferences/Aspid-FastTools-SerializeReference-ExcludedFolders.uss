@@ -24,7 +24,6 @@
 .aspid-fasttools-excluded-folders__title {
     height:                                               24px;
     padding:                                              0 6px;
-    margin-bottom:                                        3px;
     color:                                                var(--aspid-colors-text-light);
     -unity-font-style:                                    bold;
     -unity-text-align:                                    middle-left;
@@ -51,23 +50,39 @@
     background-color:                                     rgba(0, 0, 0, 0.18);
 }
 
-/* The folder row carries the path + remove; hovering it lifts the whole row above its zebra wash. */
-.aspid-fasttools-excluded-folders__row:hover {
+/* Full-row hover tints, toggled from code (USS can't repaint a row from a child's hover state). Exactly one is ever
+   set at a time, so single-class selectors suffice — no specificity juggling against a :hover. Neutral lift signals a
+   folder row is editable; the whole row turns red when its ✕ is hovered (delete intent) and green over the add row
+   (add intent). */
+.aspid-fasttools-excluded-folders__entry--hover {
     background-color:                                     var(--aspid-colors-bg-lightness);
 }
 
-/* min-width:0 lets a long path shrink and ellipsize instead of shoving the remove button off the row. */
+.aspid-fasttools-excluded-folders__entry--danger {
+    background-color:                                     var(--aspid-colors-status-error-dark);
+}
+
+.aspid-fasttools-excluded-folders__entry--add {
+    background-color:                                     var(--aspid-colors-status-success-dark);
+}
+
+/* min-width:0 lets a long path shrink and ellipsize instead of shoving the remove button off the row; stretching it to
+   the full row height (with the text kept vertically centred) makes the whole left of the row a click target for
+   editing, with no dead band above or below the caption. */
 .aspid-fasttools-excluded-folders__path {
     flex-grow:                                            1;
     flex-shrink:                                          1;
     min-width:                                            0;
+    align-self:                                           stretch;
     color:                                                var(--aspid-colors-text-light);
     text-overflow:                                        ellipsis;
     overflow:                                             hidden;
     white-space:                                          nowrap;
+    -unity-text-align:                                    middle-left;
 }
 
-/* The ✕ remove: a small flat square, dim at rest, turning the error tone on hover so the destructive cue reads. */
+/* The ✕ remove: a small flat square, dim at rest; it brightens to the error tone while its row is in the delete state
+   (see the --danger descendant rule below). */
 .aspid-fasttools-excluded-folders__remove {
     flex-shrink:                                          0;
     width:                                                18px;
@@ -82,8 +97,10 @@
     -unity-text-align:                                    middle-center;
 }
 
-.aspid-fasttools-excluded-folders__remove:hover {
-    background-color:                                     var(--aspid-colors-status-error-dark);
+/* While the row is in its delete state (its ✕ hovered), the cross brightens to a hotter red box than the row wash,
+   marking it as the focal delete target. */
+.aspid-fasttools-excluded-folders__entry--danger .aspid-fasttools-excluded-folders__remove {
+    background-color:                                     var(--aspid-colors-status-error-light);
     color:                                                var(--aspid-colors-status-error-text-light);
 }
 
@@ -111,7 +128,13 @@
     -unity-text-align:                                    middle-center;
 }
 
+/* Hovering the "+" directly boxes it in a brighter green than the row wash — the add-side mirror of the ✕'s red box. */
 .aspid-fasttools-excluded-folders__add:hover {
-    background-color:                                     var(--aspid-colors-bg-lightness);
+    background-color:                                     var(--aspid-colors-status-success-light);
+}
+
+/* While the add row is in its add state (hovered anywhere), the "+" brightens to the signature green so the glyph leads
+   the row's green wash. */
+.aspid-fasttools-excluded-folders__entry--add .aspid-fasttools-excluded-folders__add {
     color:                                                var(--aspid-colors-status-success-text-light);
 }
