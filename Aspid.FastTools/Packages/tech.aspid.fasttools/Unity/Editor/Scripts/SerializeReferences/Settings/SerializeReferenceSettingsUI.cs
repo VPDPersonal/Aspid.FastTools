@@ -13,20 +13,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     internal static class SerializeReferenceSettingsUI
     {
         /// <summary>
-        /// Appends the rid-colour, auto-de-alias, breakage-detection, build-gate and excluded-folder controls to
-        /// <paramref name="container"/>, each wired straight to <see cref="SerializeReferenceSettings"/>.
+        /// Appends the auto-de-alias, breakage-detection, build-gate and excluded-folder controls to
+        /// <paramref name="container"/>, each wired straight to <see cref="SerializeReferenceSettings"/>. Rid colours
+        /// are not configurable — they always identify a shared reference, so there is no control for them here.
         /// </summary>
         public static void BuildControls(VisualElement container)
         {
-            var ridColors = new AspidSwitch("Rid colours")
-            {
-                value = SerializeReferenceSettings.RidColorsEnabled,
-                tooltip = "Colour-code shared managed references by rid in the inspector stripe/chip and the graph window.",
-            };
-            ridColors.RegisterValueChangedCallback(evt => SerializeReferenceSettings.RidColorsEnabled = evt.newValue);
-            SyncFromSettings(ridColors, () => SerializeReferenceSettings.RidColorsEnabled);
-            container.Add(ridColors);
-
             var autoDeAlias = new AspidSwitch("Auto de-alias duplicated list elements")
             {
                 value = SerializeReferenceSettings.AutoDeAliasEnabled,

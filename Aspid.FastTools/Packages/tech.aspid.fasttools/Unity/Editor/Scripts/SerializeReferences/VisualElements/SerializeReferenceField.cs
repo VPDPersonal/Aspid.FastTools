@@ -81,7 +81,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private bool _mixedTypes;
 
         // Stripe inputs, written by the notice updates and consumed by UpdateStripe: the shared-reference rid colour
-        // (null when not shared or rid colours are off) takes priority over a missing type's warning stripe.
+        // (null when not shared) takes priority over a missing type's warning stripe.
         private bool _isMissing;
         private Color? _sharedStripeColor;
         private float _arrowInset = float.NaN;
@@ -374,11 +374,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            // Rid colours are an opt-out via Project Settings; the shared notice itself always shows, only its colour
-            // stripe is suppressed. The actual stripe is painted by UpdateStripe, which connects the aliased fields by
-            // their rid colour and takes priority over a missing type's warning stripe.
-            var ridColorsEnabled = SerializeReferenceSettings.RidColorsEnabled;
-            _sharedStripeColor = ridColorsEnabled ? SerializeReferenceRidColor.ForRid(rid) : null;
+            // The stripe is painted by UpdateStripe, which connects the aliased fields by their rid colour and takes
+            // priority over a missing type's warning stripe. The same colour also tints the notice text below, so a
+            // field can be matched to the others sharing its instance by colour alone.
+            var color = SerializeReferenceRidColor.ForRid(rid);
+            _sharedStripeColor = color;
 
             _sharedNotice ??= new SerializeReferenceNotice();
             if (_sharedNotice.parent is null) _notices.AddChild(_sharedNotice);
@@ -388,7 +388,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 actionText: "Make unique",
                 detail: "This reference is shared with another field — editing one changes both.\n" +
                         "Click Make unique to give this field its own independent copy.",
-                onAction: MakeUnique);
+                onAction: MakeUnique,
+                accentColor: color);
         }
 
         // Picks the left-edge stripe from the inputs cached by the notice updates: a shared reference paints it the

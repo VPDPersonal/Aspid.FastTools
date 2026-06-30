@@ -80,3 +80,12 @@ Select it **in the Project window** and open the **Asset References** tab — **
 
 1. Open it — both elements show a **shared reference** notice; editing one changes the other.
 2. **Right-click** one element → **Make Unique Reference**. It gets its own copy of the data and the two fields become independent.
+
+### Tell two shared groups apart by colour — `LoadoutTwoSharedGroups.prefab`
+
+`Prefabs/LoadoutTwoSharedGroups.prefab` has **two independent** shared-reference pairs on the same object, so the rid-colour stripe/notice actually earns its keep:
+
+- `Sidearms[0]` and `Sidearms[1]` both back the same `Pistol` — one colour.
+- `Primary Weapon → Charge Effect` and `On Hit Effect` both back the same `BurnEffect` — a different colour, even though one is nested three levels deep and the other is a top-level field.
+
+Open it and compare the stripe/notice colour on each pair — matching colour means matching instance, regardless of where the field sits in the hierarchy.

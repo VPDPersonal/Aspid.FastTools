@@ -14,5 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Aspid.FastTools.Unity.Editor::Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceGateSettings
   _buildSeverity: 1
   _autoDeAlias: 1
-  _excludedFolders:
-  - Assets/Samples
+  _excludedFolders: []
