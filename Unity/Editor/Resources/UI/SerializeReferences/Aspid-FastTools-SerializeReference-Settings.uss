@@ -9,9 +9,20 @@
     flex-grow:                                            1;
 }
 
-/* Breathing room between rows so the switches, the dropdown and the folder list don't crowd each other. */
+/* Each control row (caption + switch / dropdown) gets a faint rounded backing so the eye can trace a wide row from its
+   caption on the left to its control pinned on the right; the inset keeps the content off the row's edges and the
+   margin spaces the rows apart. Hover lifts the row a touch more. */
 .aspid-fasttools-serialize-reference-settings .unity-base-field {
-    margin-bottom:                                        6px;
+    margin-bottom:                                        4px;
+    padding:                                              4px 8px;
+    border-width:                                         1px;
+    border-radius:                                        8px;
+    border-color:                                         var(--aspid-colors-shade-darkness);
+    background-color:                                     rgba(20, 20, 20, 0.55);
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-base-field:hover {
+    background-color:                                     rgba(255, 255, 255, 0.14);
 }
 
 /* Field captions read in the palette's light text tone, matching the window's other labels. */
