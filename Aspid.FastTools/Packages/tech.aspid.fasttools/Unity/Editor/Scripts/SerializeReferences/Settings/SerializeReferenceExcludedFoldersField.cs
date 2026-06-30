@@ -10,12 +10,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
     /// Editable list of scan-excluded project folders, replacing the free-text "one path per line" field with a proper
-    /// add/remove list. A compact translucent panel carries its own "Excluded scan folders" header, then stacks one row
-    /// per excluded folder (path on the left, an ✕ remove on the right) over a single add row whose "+" sits at the
-    /// right edge; while empty the add row carries the "No excluded folders" hint instead. "+" opens a folder picker and
-    /// stores the project-relative path. Reads and writes <see cref="SerializeReferenceSettings.ExcludedFolders"/> and
-    /// rebuilds on <see cref="SerializeReferenceSettings.ExcludedFoldersChanged"/>, so the in-window Settings tab and the
-    /// Project Settings page stay mirrored. Self-contained styling (palette + own USS) so it renders on both surfaces.
+    /// add/remove list. A compact translucent panel carries its own "Excluded scan folders" header, then stacks one
+    /// zebra-striped entry per excluded folder (path on the left, an ✕ remove on the right) over a matching add-row
+    /// entry whose "+" sits at the right edge; while empty the add row carries the "No excluded folders" hint instead.
+    /// Folder rows and the add row are the same entry element, and their light/dark wash alternates down the list so
+    /// adjacent rows read as separate elements. "+" opens a folder picker and stores the project-relative path. Reads
+    /// and writes <see cref="SerializeReferenceSettings.ExcludedFolders"/> and rebuilds on
+    /// <see cref="SerializeReferenceSettings.ExcludedFoldersChanged"/>, so the in-window Settings tab and the Project
+    /// Settings page stay mirrored. Self-contained styling (palette + own USS) so it renders on both surfaces.
     /// </summary>
     internal sealed class SerializeReferenceExcludedFoldersField : VisualElement
     {
@@ -25,7 +27,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string RootClass = "aspid-fasttools-excluded-folders";
         private const string TitleClass = "aspid-fasttools-excluded-folders__title";
         private const string ListClass = "aspid-fasttools-excluded-folders__list";
-        private const string AddRowClass = "aspid-fasttools-excluded-folders__add-row";
+        private const string EntryClass = "aspid-fasttools-excluded-folders__entry";
+        private const string EntryEvenClass = "aspid-fasttools-excluded-folders__entry--even";
+        private const string EntryOddClass = "aspid-fasttools-excluded-folders__entry--odd";
         private const string HintClass = "aspid-fasttools-excluded-folders__hint";
         private const string RowClass = "aspid-fasttools-excluded-folders__row";
         private const string PathClass = "aspid-fasttools-excluded-folders__path";
@@ -33,6 +37,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string AddButtonClass = "aspid-fasttools-excluded-folders__add";
 
         private readonly VisualElement _list;
+        private readonly VisualElement _addRow;
         private readonly Label _hint;
 
         public SerializeReferenceExcludedFoldersField()
@@ -42,18 +47,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddAspidThemeStyleSheets();
 
             // The control itself is the panel: its own header sits above the folder rows, which stack over one
-            // persistent add row whose "+" is pinned right; the add row's left carries the empty hint when there is
-            // nothing to list.
+            // persistent add row. Every row — each folder and the add row — is the same zebra-striped entry element; the
+            // add row's "+" is pinned right and its left carries the empty hint when there is nothing to list.
             var title = new Label("Excluded scan folders").AddClass(TitleClass);
             _list = new VisualElement().AddClass(ListClass);
             _hint = new Label().AddClass(HintClass);
-            var addRow = new VisualElement().AddClass(AddRowClass)
+            _addRow = new VisualElement().AddClass(EntryClass)
                 .AddChild(_hint)
                 .AddChild(new Button(AddFolder) { text = "+", tooltip = "Add folder" }.AddClass(AddButtonClass));
 
             Add(title);
             Add(_list);
-            Add(addRow);
+            Add(_addRow);
 
             Rebuild();
 
@@ -70,13 +75,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var folders = SerializeReferenceSettings.ExcludedFolders;
             _hint.text = folders.Length == 0 ? "No excluded folders" : string.Empty;
 
-            foreach (var folder in folders)
+            for (var i = 0; i < folders.Length; i++)
             {
-                var path = folder;
-                _list.Add(new VisualElement().AddClass(RowClass)
+                var path = folders[i];
+                var row = new VisualElement().AddClass(EntryClass).AddClass(RowClass)
                     .AddChild(new Label(path) { tooltip = path }.AddClass(PathClass))
-                    .AddChild(new Button(() => Remove(path)) { text = "✕", tooltip = "Remove" }.AddClass(RemoveClass)));
+                    .AddChild(new Button(() => Remove(path)) { text = "✕", tooltip = "Remove" }.AddClass(RemoveClass));
+                ApplyStripe(row, i);
+                _list.Add(row);
             }
+
+            // The add row continues the zebra right after the last folder row.
+            ApplyStripe(_addRow, folders.Length);
+        }
+
+        // Alternates an entry's background wash by its position in the visible list, so adjacent rows read as separate
+        // elements (zebra: even rows a faint light wash, odd rows a faint dark one).
+        private static void ApplyStripe(VisualElement entry, int index)
+        {
+            var even = index % 2 == 0;
+            entry.EnableInClassList(EntryEvenClass, even);
+            entry.EnableInClassList(EntryOddClass, !even);
         }
 
         private void AddFolder()

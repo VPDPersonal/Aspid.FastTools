@@ -5,9 +5,11 @@
    styled from the Aspid palette so it reads the same on the in-window Settings tab and the bare Project Settings page. */
 
 /* The panel: a translucent dark surface framed like the other settings inputs, sized to its content (the folder rows
-   plus the one add row) rather than a tall fixed box. */
+   plus the one add row) rather than a tall fixed box. No inner padding, so the zebra entries fill the frame edge to
+   edge; overflow:hidden clips their square corners to the panel's rounded frame. */
 .aspid-fasttools-excluded-folders {
-    padding:                                              2px;
+    padding:                                              0;
+    overflow:                                             hidden;
     border-width:                                         1px;
     border-radius:                                        8px;
     border-color:                                         var(--aspid-colors-shade-dark);
@@ -30,14 +32,26 @@
     border-bottom-color:                                  var(--aspid-colors-shade-darkness);
 }
 
-/* One folder row: path label filling the row, the remove button pinned right. */
-.aspid-fasttools-excluded-folders__row {
+/* Every list entry — each folder row and the persistent add row — is the same shell: a flat full-width element with a
+   min-height so short and tall entries line up and a left inset matching the header caption. Entries sit flush (no
+   margin / radius) so their alternating light / dark wash (zebra, applied per-index in code) fills the panel edge to
+   edge as one continuous stripe block over the dotted canvas. */
+.aspid-fasttools-excluded-folders__entry {
     flex-direction:                                       row;
     align-items:                                          center;
-    padding:                                              2px 2px 2px 6px;
-    border-radius:                                        3px;
+    min-height:                                           24px;
+    padding:                                              2px 6px;
 }
 
+.aspid-fasttools-excluded-folders__entry--even {
+    background-color:                                     rgba(255, 255, 255, 0.05);
+}
+
+.aspid-fasttools-excluded-folders__entry--odd {
+    background-color:                                     rgba(0, 0, 0, 0.18);
+}
+
+/* The folder row carries the path + remove; hovering it lifts the whole row above its zebra wash. */
 .aspid-fasttools-excluded-folders__row:hover {
     background-color:                                     var(--aspid-colors-bg-lightness);
 }
@@ -73,14 +87,6 @@
     color:                                                var(--aspid-colors-status-error-text-light);
 }
 
-/* The add row: a single row holding the empty hint (left, grows) and the "+" button (right). It is the one persistent
-   row, so an empty panel is exactly one row tall with the "+" at its right edge. */
-.aspid-fasttools-excluded-folders__add-row {
-    flex-direction:                                       row;
-    align-items:                                          center;
-    padding-left:                                         6px;
-}
-
 /* Dim hint shown in the add row while no folder is excluded; it grows to fill the row left of the "+". */
 .aspid-fasttools-excluded-folders__hint {
     flex-grow:                                            1;
@@ -89,11 +95,12 @@
 }
 
 /* The "+" add button, pinned to the right of the add row: a small flat square (just the plus glyph) that picks up the
-   signature green on hover. */
+   signature green on hover. Same box size and right margin as the ✕ remove so the "+" lines up directly under the
+   column of remove crosses above it. */
 .aspid-fasttools-excluded-folders__add {
     flex-shrink:                                          0;
-    width:                                                22px;
-    height:                                               20px;
+    width:                                                18px;
+    height:                                               18px;
     margin:                                               0 2px 0 4px;
     padding:                                              0;
     border-width:                                         0;
