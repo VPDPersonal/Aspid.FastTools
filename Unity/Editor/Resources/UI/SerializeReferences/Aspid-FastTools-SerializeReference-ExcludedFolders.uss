@@ -1,0 +1,85 @@
+/* --- Excluded scan folders list ---
+   Replaces the multiline "one path per line" TextField with an add/remove list. A dark bordered box holds one row per
+   excluded folder (path on the left, an ✕ remove on the right) or a dim "No excluded folders" hint while empty; an
+   "Add folder" button below opens the folder picker. Self-styled from the Aspid palette so it reads the same on the
+   in-window Settings tab and the bare Project Settings page. */
+
+/* The list box: a dark field on the canvas, framed like the other settings inputs. min-height keeps an empty list a
+   clear drop-zone-sized box rather than collapsing to the hint's single line. */
+.aspid-fasttools-excluded-folders__list {
+    min-height:                                           48px;
+    padding:                                              3px;
+    border-width:                                         1px;
+    border-radius:                                        4px;
+    border-color:                                         var(--aspid-colors-shade-dark);
+    background-color:                                     var(--aspid-colors-bg-dark);
+}
+
+/* Dim centred hint shown while no folder is excluded. */
+.aspid-fasttools-excluded-folders__empty {
+    flex-grow:                                            1;
+    padding:                                              8px;
+    color:                                                var(--aspid-colors-text-darkness);
+    -unity-text-align:                                    middle-center;
+}
+
+/* One folder row: path label filling the row, the remove button pinned right. */
+.aspid-fasttools-excluded-folders__row {
+    flex-direction:                                       row;
+    align-items:                                          center;
+    padding:                                              2px 2px 2px 6px;
+    border-radius:                                        3px;
+}
+
+.aspid-fasttools-excluded-folders__row:hover {
+    background-color:                                     var(--aspid-colors-bg-lightness);
+}
+
+/* min-width:0 lets a long path shrink and ellipsize instead of shoving the remove button off the row. */
+.aspid-fasttools-excluded-folders__path {
+    flex-grow:                                            1;
+    flex-shrink:                                          1;
+    min-width:                                            0;
+    color:                                                var(--aspid-colors-text-light);
+    text-overflow:                                        ellipsis;
+    overflow:                                             hidden;
+    white-space:                                          nowrap;
+}
+
+/* The ✕ remove: a small flat square, dim at rest, turning the error tone on hover so the destructive cue reads. */
+.aspid-fasttools-excluded-folders__remove {
+    flex-shrink:                                          0;
+    width:                                                18px;
+    height:                                               18px;
+    margin:                                               0 0 0 4px;
+    padding:                                              0;
+    border-width:                                         0;
+    border-radius:                                        3px;
+    background-color:                                     rgba(0, 0, 0, 0);
+    color:                                                var(--aspid-colors-text-dark);
+    font-size:                                            12px;
+    -unity-text-align:                                    middle-center;
+}
+
+.aspid-fasttools-excluded-folders__remove:hover {
+    background-color:                                     var(--aspid-colors-status-error-dark);
+    color:                                                var(--aspid-colors-status-error-text-light);
+}
+
+/* The Add-folder button: a flat dark pill aligned left under the list, with the signature-green accent on hover. */
+.aspid-fasttools-excluded-folders__add {
+    align-self:                                           flex-start;
+    height:                                               22px;
+    margin:                                               6px 0 0 0;
+    padding:                                              0 12px;
+    border-width:                                         1px;
+    border-radius:                                        4px;
+    border-color:                                         var(--aspid-colors-shade-dark);
+    background-color:                                     var(--aspid-colors-bg-dark);
+    color:                                                var(--aspid-colors-text-light);
+}
+
+.aspid-fasttools-excluded-folders__add:hover {
+    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    color:                                                var(--aspid-colors-status-success-text-light);
+}

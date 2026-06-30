@@ -1,8 +1,7 @@
 using System;
-using System.Linq;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -20,7 +19,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         public static void BuildControls(VisualElement container)
         {
-            var ridColors = new Toggle("Rid colours")
+            var ridColors = new AspidSwitch("Rid colours")
             {
                 value = SerializeReferenceSettings.RidColorsEnabled,
                 tooltip = "Colour-code shared managed references by rid in the inspector stripe/chip and the graph window.",
@@ -29,7 +28,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SyncFromSettings(ridColors, () => SerializeReferenceSettings.RidColorsEnabled);
             container.Add(ridColors);
 
-            var autoDeAlias = new Toggle("Auto de-alias duplicated list elements")
+            var autoDeAlias = new AspidSwitch("Auto de-alias duplicated list elements")
             {
                 value = SerializeReferenceSettings.AutoDeAliasEnabled,
                 tooltip = "Give a duplicated list element its own independent instance instead of sharing the original's rid.",
@@ -38,7 +37,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SyncFromSettings(autoDeAlias, () => SerializeReferenceSettings.AutoDeAliasEnabled);
             container.Add(autoDeAlias);
 
-            var breakageDetection = new Toggle("Breakage detection")
+            var breakageDetection = new AspidSwitch("Breakage detection")
             {
                 value = SerializeReferenceSettings.BreakageDetectionEnabled,
                 tooltip = "Watch for managed references that just became missing (renamed/deleted scripts) and surface a " +
@@ -58,20 +57,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SyncFromSettings<EnumField, Enum>(severity, () => SerializeReferenceSettings.BuildSeverity);
             container.Add(severity);
 
-            container.Add(new Label("Excluded scan folders (one path per line)")
+            container.Add(new Label("Excluded scan folders")
             {
                 style = { marginTop = 10, marginBottom = 2, unityFontStyleAndWeight = FontStyle.Bold },
             });
 
-            var folders = new TextField { multiline = true, value = string.Join("\n", SerializeReferenceSettings.ExcludedFolders) };
-            folders.style.minHeight = 64;
-            folders.RegisterValueChangedCallback(evt => SerializeReferenceSettings.ExcludedFolders = evt.newValue
-                .Split('\n')
-                .Select(line => line.Trim())
-                .Where(line => line.Length > 0)
-                .ToArray());
-            SyncFromSettings(folders, () => string.Join("\n", SerializeReferenceSettings.ExcludedFolders));
-            container.Add(folders);
+            container.Add(new SerializeReferenceExcludedFoldersField());
         }
 
         /// <summary>
