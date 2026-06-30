@@ -22,15 +22,20 @@
     border-radius:                                        8px;
     border-color:                                         var(--aspid-colors-shade-darkness);
     background-color:                                     rgba(20, 20, 20, 0.55);
+    /* Centre every row's caption against its control so the captions sit at one height across all rows. The switches
+       already centre via inline styles; this brings the EnumField row (which has none) onto the same baseline. */
+    align-items:                                          center;
 }
 
 .aspid-fasttools-serialize-reference-settings .unity-base-field:hover {
     background-color:                                     rgba(255, 255, 255, 0.14);
 }
 
-/* Field captions read in the palette's light text tone, matching the window's other labels. */
+/* Field captions read in the palette's light text tone, matching the window's other labels, and align to the row's
+   vertical centre so every caption — switch or dropdown — sits on the same height. */
 .aspid-fasttools-serialize-reference-settings .unity-base-field__label {
     color:                                                var(--aspid-colors-text-light);
+    -unity-text-align:                                    middle-left;
 }
 
 /* The Build / CI gate EnumField, branded to the window: a dark field framed by a neutral shade border with the
