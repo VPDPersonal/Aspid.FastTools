@@ -42,7 +42,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string WindowStyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
 
         // The Aspid brand mark (green snake), shown beside the window title in its tab.
-        private const string WindowIconPath = "Icons/aspid_icon_medium_green_1022x1011";
+        // Uses a padded variant (not the full-bleed status icon) so it doesn't dominate the tab next to the title text.
+        private const string WindowIconPath = "Icons/aspid_icon_window_tab_green_1022x1011";
 
         // ShortcutManager ids for the tab-switch bindings. They surface under this category in Edit > Shortcuts and are
         // user-rebindable; the visible tab badges read the live binding back from these ids (see BindingLabel).
