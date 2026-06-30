@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using UnityEngine;
 using System.Linq;
@@ -63,12 +62,6 @@ namespace Aspid.FastTools.Types
         /// </code>
         /// </example>
         public bool Required { get; set; }
-
-        /// <summary>
-        /// Optional custom text shown in the inline "required" warning instead of the default message.
-        /// Only used when <see cref="Required"/> is <see langword="true"/>.
-        /// </summary>
-        public string? RequiredMessage { get; set; }
 
         /// <summary>
         /// Creates an unconstrained attribute (base type is <see cref="object"/>).
