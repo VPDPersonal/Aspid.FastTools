@@ -41,6 +41,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string WindowStyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
 
+        // The Aspid brand mark (green snake), shown beside the window title in its tab.
+        private const string WindowIconPath = "Icons/aspid_icon_medium_green_1022x1011";
+
         // ShortcutManager ids for the tab-switch bindings. They surface under this category in Edit > Shortcuts and are
         // user-rebindable; the visible tab badges read the live binding back from these ids (see BindingLabel).
         private const string ShortcutCategory = "Aspid FastTools/Managed References/";
@@ -106,7 +109,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static SerializeReferenceWindow Reveal()
         {
             var window = GetWindow<SerializeReferenceWindow>();
-            window.titleContent = new GUIContent("Aspid FastTools");
+            window.titleContent = new GUIContent("Aspid FastTools", Resources.Load<Texture2D>(WindowIconPath));
             window.minSize = new Vector2(480f, 360f);
             window.Show();
             return window;

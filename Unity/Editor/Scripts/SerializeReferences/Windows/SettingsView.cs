@@ -1,6 +1,5 @@
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
-using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -25,15 +24,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             style.paddingRight = 14;
             style.paddingTop = 10;
 
-            // Repaint the plain Unity fields (EnumField popup / multiline TextField / Toggles) into the window's dark
-            // palette so they don't read as Unity's bright default inputs floating over the black dotted canvas.
+            // Repaint the plain Unity fields (EnumField popup / Toggles) into the window's dark palette so they don't
+            // read as Unity's bright default inputs floating over the black dotted canvas.
             this.AddStyleSheetsFromResource(StyleSheetPath).AddClass(RootClass);
 
-            Add(new AspidLabel("Settings") { LabelSize = AspidLabelSizeStyle.Type.H2 });
+            // No in-content "Settings" heading: the active gear tab already names the mode, so a title here just reads
+            // as a foreign block the other tabs don't carry.
 
             // A vertical scroll guards the controls against the window's 360px min-height — the toolbar and footer
             // already claim a slice, so the excluded-folders field can overflow on a short window.
-            var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1, marginTop = 8 } };
+            var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1 } };
             SerializeReferenceSettingsUI.BuildControls(scroll.contentContainer);
             Add(scroll);
         }

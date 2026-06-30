@@ -10,8 +10,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
     /// Editable list of scan-excluded project folders, replacing the free-text "one path per line" field with a proper
-    /// add/remove list. "Add folder" opens a folder picker and stores the project-relative path; each row shows a path
-    /// with a remove button. Reads and writes <see cref="SerializeReferenceSettings.ExcludedFolders"/> and rebuilds on
+    /// add/remove list. A compact translucent panel stacks one row per excluded folder (path on the left, an ✕ remove
+    /// on the right) over a single add row whose "+" sits at the right edge; while empty the add row carries the "No
+    /// excluded folders" hint instead. "+" opens a folder picker and stores the project-relative path. Reads and writes
+    /// <see cref="SerializeReferenceSettings.ExcludedFolders"/> and rebuilds on
     /// <see cref="SerializeReferenceSettings.ExcludedFoldersChanged"/>, so the in-window Settings tab and the Project
     /// Settings page stay mirrored. Self-contained styling (palette + own USS) so it renders on both surfaces.
     /// </summary>
@@ -22,13 +24,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string RootClass = "aspid-fasttools-excluded-folders";
         private const string ListClass = "aspid-fasttools-excluded-folders__list";
-        private const string EmptyClass = "aspid-fasttools-excluded-folders__empty";
+        private const string AddRowClass = "aspid-fasttools-excluded-folders__add-row";
+        private const string HintClass = "aspid-fasttools-excluded-folders__hint";
         private const string RowClass = "aspid-fasttools-excluded-folders__row";
         private const string PathClass = "aspid-fasttools-excluded-folders__path";
         private const string RemoveClass = "aspid-fasttools-excluded-folders__remove";
         private const string AddButtonClass = "aspid-fasttools-excluded-folders__add";
 
         private readonly VisualElement _list;
+        private readonly Label _hint;
 
         public SerializeReferenceExcludedFoldersField()
         {
@@ -36,9 +40,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddAspidThemeStyleSheets();
 
+            // The control itself is the panel: the folder rows stack over one persistent add row whose "+" is pinned
+            // right; the add row's left carries the empty hint when there is nothing to list.
             _list = new VisualElement().AddClass(ListClass);
+            _hint = new Label().AddClass(HintClass);
+            var addRow = new VisualElement().AddClass(AddRowClass)
+                .AddChild(_hint)
+                .AddChild(new Button(AddFolder) { text = "+", tooltip = "Add folder" }.AddClass(AddButtonClass));
+
             Add(_list);
-            Add(new Button(AddFolder) { text = "+  Add folder" }.AddClass(AddButtonClass));
+            Add(addRow);
 
             Rebuild();
 
@@ -53,11 +64,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _list.Clear();
 
             var folders = SerializeReferenceSettings.ExcludedFolders;
-            if (folders.Length == 0)
-            {
-                _list.Add(new Label("No excluded folders").AddClass(EmptyClass));
-                return;
-            }
+            _hint.text = folders.Length == 0 ? "No excluded folders" : string.Empty;
 
             foreach (var folder in folders)
             {

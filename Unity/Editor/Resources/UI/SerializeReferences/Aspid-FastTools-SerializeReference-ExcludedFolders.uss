@@ -1,26 +1,17 @@
 /* --- Excluded scan folders list ---
-   Replaces the multiline "one path per line" TextField with an add/remove list. A dark bordered box holds one row per
-   excluded folder (path on the left, an ✕ remove on the right) or a dim "No excluded folders" hint while empty; an
-   "Add folder" button below opens the folder picker. Self-styled from the Aspid palette so it reads the same on the
-   in-window Settings tab and the bare Project Settings page. */
+   Replaces the multiline "one path per line" TextField with a compact add/remove list. The whole control is a
+   translucent dark panel (the window's dotted canvas reads through it): folder rows stack over a single add row whose
+   "+" is pinned to the right edge; while empty the add row carries a dim "No excluded folders" hint instead. Self-
+   styled from the Aspid palette so it reads the same on the in-window Settings tab and the bare Project Settings page. */
 
-/* The list box: a dark field on the canvas, framed like the other settings inputs. min-height keeps an empty list a
-   clear drop-zone-sized box rather than collapsing to the hint's single line. */
-.aspid-fasttools-excluded-folders__list {
-    min-height:                                           48px;
-    padding:                                              3px;
+/* The panel: a translucent dark surface framed like the other settings inputs, sized to its content (the folder rows
+   plus the one add row) rather than a tall fixed box. */
+.aspid-fasttools-excluded-folders {
+    padding:                                              2px;
     border-width:                                         1px;
-    border-radius:                                        4px;
+    border-radius:                                        8px;
     border-color:                                         var(--aspid-colors-shade-dark);
-    background-color:                                     var(--aspid-colors-bg-dark);
-}
-
-/* Dim centred hint shown while no folder is excluded. */
-.aspid-fasttools-excluded-folders__empty {
-    flex-grow:                                            1;
-    padding:                                              8px;
-    color:                                                var(--aspid-colors-text-darkness);
-    -unity-text-align:                                    middle-center;
+    background-color:                                     rgba(20, 20, 20, 0.55);
 }
 
 /* One folder row: path label filling the row, the remove button pinned right. */
@@ -51,7 +42,7 @@
     flex-shrink:                                          0;
     width:                                                18px;
     height:                                               18px;
-    margin:                                               0 0 0 4px;
+    margin:                                               0 2px 0 4px;
     padding:                                              0;
     border-width:                                         0;
     border-radius:                                        3px;
@@ -66,20 +57,38 @@
     color:                                                var(--aspid-colors-status-error-text-light);
 }
 
-/* The Add-folder button: a flat dark pill aligned left under the list, with the signature-green accent on hover. */
+/* The add row: a single row holding the empty hint (left, grows) and the "+" button (right). It is the one persistent
+   row, so an empty panel is exactly one row tall with the "+" at its right edge. */
+.aspid-fasttools-excluded-folders__add-row {
+    flex-direction:                                       row;
+    align-items:                                          center;
+    padding-left:                                         6px;
+}
+
+/* Dim hint shown in the add row while no folder is excluded; it grows to fill the row left of the "+". */
+.aspid-fasttools-excluded-folders__hint {
+    flex-grow:                                            1;
+    color:                                                var(--aspid-colors-text-darkness);
+    -unity-text-align:                                    middle-center;
+}
+
+/* The "+" add button, pinned to the right of the add row: a small flat square (just the plus glyph) that picks up the
+   signature green on hover. */
 .aspid-fasttools-excluded-folders__add {
-    align-self:                                           flex-start;
-    height:                                               22px;
-    margin:                                               6px 0 0 0;
-    padding:                                              0 12px;
-    border-width:                                         1px;
-    border-radius:                                        4px;
-    border-color:                                         var(--aspid-colors-shade-dark);
-    background-color:                                     var(--aspid-colors-bg-dark);
+    flex-shrink:                                          0;
+    width:                                                22px;
+    height:                                               20px;
+    margin:                                               0 2px 0 4px;
+    padding:                                              0;
+    border-width:                                         0;
+    border-radius:                                        3px;
+    background-color:                                     rgba(0, 0, 0, 0);
     color:                                                var(--aspid-colors-text-light);
+    font-size:                                            16px;
+    -unity-text-align:                                    middle-center;
 }
 
 .aspid-fasttools-excluded-folders__add:hover {
-    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    background-color:                                     var(--aspid-colors-bg-lightness);
     color:                                                var(--aspid-colors-status-success-text-light);
 }
