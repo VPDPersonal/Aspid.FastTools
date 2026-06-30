@@ -15,8 +15,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     internal static class SerializeReferenceSettingsUI
     {
         /// <summary>
-        /// Appends the rid-colour, auto-de-alias, build-gate and excluded-folder controls to <paramref name="container"/>,
-        /// each wired straight to <see cref="SerializeReferenceSettings"/>.
+        /// Appends the rid-colour, auto-de-alias, breakage-detection, build-gate and excluded-folder controls to
+        /// <paramref name="container"/>, each wired straight to <see cref="SerializeReferenceSettings"/>.
         /// </summary>
         public static void BuildControls(VisualElement container)
         {
@@ -45,6 +45,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                           "toast pointing at Repair. Turn off to silence the domain-reload / import-time detection entirely.",
             };
             breakageDetection.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BreakageDetectionEnabled = evt.newValue);
+            SyncFromSettings(breakageDetection, () => SerializeReferenceSettings.BreakageDetectionEnabled);
             container.Add(breakageDetection);
 
             var severity = new EnumField("Build / CI gate", SerializeReferenceSettings.BuildSeverity)

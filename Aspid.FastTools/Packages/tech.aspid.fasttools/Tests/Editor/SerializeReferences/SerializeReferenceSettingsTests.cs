@@ -117,6 +117,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             SerializeReferenceSettings.RidColorsEnabled = true;
             SerializeReferenceSettings.AutoDeAliasEnabled = true;
+            SerializeReferenceSettings.BreakageDetectionEnabled = true;
             SerializeReferenceSettings.BuildSeverity = GateSeverity.Warn;
             SerializeReferenceSettings.ExcludedFolders = Array.Empty<string>();
 
@@ -124,9 +125,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             SerializeReferenceSettingsUI.BuildControls(container);
 
             var toggles = container.Query<Toggle>().ToList();
-            Assert.AreEqual(2, toggles.Count, "BuildControls must emit the rid-colours and auto-de-alias toggles.");
+            Assert.AreEqual(3, toggles.Count, "BuildControls must emit the rid-colours, auto-de-alias and breakage-detection toggles.");
             var ridColors = toggles[0];
             var autoDeAlias = toggles[1];
+            var breakageDetection = toggles[2];
             var severity = container.Q<EnumField>();
             var folders = container.Q<TextField>();
             Assert.IsNotNull(severity, "BuildControls must emit the build-gate EnumField.");
@@ -136,11 +138,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             // each control re-reads its backing value off SerializeReferenceSettings.Changed.
             SerializeReferenceSettings.RidColorsEnabled = false;
             SerializeReferenceSettings.AutoDeAliasEnabled = false;
+            SerializeReferenceSettings.BreakageDetectionEnabled = false;
             SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
             SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/", "Assets/Generated/" };
 
             Assert.IsFalse(ridColors.value, "The rid-colours toggle must mirror Settings live.");
             Assert.IsFalse(autoDeAlias.value, "The auto-de-alias toggle must mirror Settings live.");
+            Assert.IsFalse(breakageDetection.value, "The breakage-detection toggle must mirror Settings live.");
             Assert.AreEqual(GateSeverity.Fail, (GateSeverity)severity.value, "The build-gate field must mirror Settings live.");
             Assert.AreEqual("Assets/Plugins/\nAssets/Generated/", folders.value, "The folders field must mirror Settings live.");
         }
