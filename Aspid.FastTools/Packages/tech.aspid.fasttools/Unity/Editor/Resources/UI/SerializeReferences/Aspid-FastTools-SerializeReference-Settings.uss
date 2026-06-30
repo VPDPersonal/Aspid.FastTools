@@ -10,6 +10,25 @@
     flex-grow:                                            1;
 }
 
+/* Section title — groups the tab's controls under a named heading (the first is "References"). The tab is meant to grow
+   more sections (TypeSelector and other package areas); each is introduced by one of these. A bold bright caption over a
+   hairline divider, with no side margin so its left edge and the full-width divider line up with the control cards. */
+.aspid-fasttools-serialize-reference-settings__section-title {
+    margin-top:                                           2px;
+    margin-bottom:                                        8px;
+    padding-bottom:                                       5px;
+    font-size:                                            13px;
+    color:                                                var(--aspid-colors-text-lightness);
+    -unity-font-style:                                    bold;
+    border-bottom-width:                                  1px;
+    border-bottom-color:                                  var(--aspid-colors-shade-dark);
+}
+
+/* Section body — wraps one section's controls; the bottom margin spaces it from the next section's title. */
+.aspid-fasttools-serialize-reference-settings__section-content {
+    margin-bottom:                                        10px;
+}
+
 /* Each control row (caption + switch / dropdown) gets a faint rounded backing so the eye can trace a wide row from its
    caption on the left to its control pinned on the right; the inset keeps the content off the row's edges and the
    margin spaces the rows apart. Hover lifts the row a touch more. */
