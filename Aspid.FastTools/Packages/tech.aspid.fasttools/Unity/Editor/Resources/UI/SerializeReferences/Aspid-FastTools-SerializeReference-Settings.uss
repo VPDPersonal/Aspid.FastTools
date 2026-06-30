@@ -1,0 +1,44 @@
+/* --- In-window Settings tab ---
+   The SerializeReference settings controls (built by SerializeReferenceSettingsUI) are the branded AspidSwitch and
+   excluded-folders list (both self-styled) plus one plain Unity EnumField — the Build / CI gate. On the Project
+   Settings page the EnumField's native bright-grey fill reads correctly, but inside this window it floats over the
+   black dotted canvas where that default fill "sticks out". This sheet is loaded only by SettingsView (the Project
+   Settings provider keeps the native look), and every rule is scoped under the block class, so it repaints the
+   EnumField into the window's dark palette and gives the rows breathing room and a consistent caption tone. */
+.aspid-fasttools-serialize-reference-settings {
+    flex-grow:                                            1;
+}
+
+/* Breathing room between rows so the switches, the dropdown and the folder list don't crowd each other. */
+.aspid-fasttools-serialize-reference-settings .unity-base-field {
+    margin-bottom:                                        6px;
+}
+
+/* Field captions read in the palette's light text tone, matching the window's other labels. */
+.aspid-fasttools-serialize-reference-settings .unity-base-field__label {
+    color:                                                var(--aspid-colors-text-light);
+}
+
+/* The Build / CI gate EnumField box: swap Unity's bright default fill for a dark field that sits a touch above the
+   black canvas, framed by a neutral shade border with the package's small radius. EnumField derives from BaseField,
+   not BasePopupField, so its input box is `.unity-enum-field__input` — the base-popup class is listed alongside so
+   the rule holds across Unity versions. */
+.aspid-fasttools-serialize-reference-settings .unity-enum-field__input,
+.aspid-fasttools-serialize-reference-settings .unity-base-popup-field__input {
+    background-color:                                     var(--aspid-colors-bg-dark);
+    border-width:                                         1px;
+    border-color:                                         var(--aspid-colors-shade-dark);
+    border-radius:                                        4px;
+}
+
+/* Hover brightens the border so the dropdown reads as interactive without a fill change. */
+.aspid-fasttools-serialize-reference-settings .unity-enum-field__input:hover,
+.aspid-fasttools-serialize-reference-settings .unity-base-popup-field__input:hover {
+    border-color:                                         var(--aspid-colors-shade-light);
+}
+
+/* Focus pulls in the window's signature green (the same accent as the active-tab underline) so the open dropdown is
+   clearly the live one. */
+.aspid-fasttools-serialize-reference-settings .unity-enum-field:focus .unity-enum-field__input {
+    border-color:                                         var(--aspid-colors-status-success-text-dark);
+}
