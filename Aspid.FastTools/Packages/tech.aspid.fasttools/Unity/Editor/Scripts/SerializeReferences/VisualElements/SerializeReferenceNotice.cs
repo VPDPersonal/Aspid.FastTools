@@ -31,6 +31,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string SuggestionClass = NoticeClass + "__suggestion";
         private const string SuggestionVisibleClass = SuggestionClass + "--visible";
 
+        // Trailing rid dot — the only per-rid coloured element; the rest of the row keeps the warning palette.
+        private const string DotClass = NoticeClass + "__dot";
+        private const string DotVisibleClass = DotClass + "--visible";
+
         // Info variant — a non-actionable, dim blue hint (e.g. the multi-object "different types" notice) rather than
         // the default actionable yellow warning. Swaps the icon and palette through the modifier class only.
         private const string InfoModifierClass = NoticeClass + "--info";
@@ -39,10 +43,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly Label _message;
         private readonly Label _action;
         private readonly Label _suggestion;
+        private readonly VisualElement _dot;
 
         private Action _onAction;
         private Action _onSuggestion;
-        private Color? _accentColor;
 
         public SerializeReferenceNotice()
         {
@@ -61,29 +65,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _action = new Label().AddClass(ActionClass);
             _action.RegisterCallback<ClickEvent>(_ => _onAction?.Invoke());
-            // The accent colour (when set) replaces the USS hover rule, which an inline colour would otherwise shadow —
-            // so the hover-lighten effect is reproduced here for the accented case only.
-            _action.RegisterCallback<PointerEnterEvent>(_ => ApplyActionAccent(hover: true));
-            _action.RegisterCallback<PointerLeaveEvent>(_ => ApplyActionAccent(hover: false));
 
             _suggestion = new Label().AddClass(SuggestionClass);
             _suggestion.RegisterCallback<ClickEvent>(_ => _onSuggestion?.Invoke());
 
+            // Trailing rid dot: a small colour-coded circle after the action word; its colour is set inline from code.
+            _dot = new VisualElement()
+                .AddClass(DotClass)
+                .SetPickingMode(PickingMode.Ignore);
+
             this.AddChild(_icon)
                 .AddChild(_message)
                 .AddChild(_action)
-                .AddChild(_suggestion);
+                .AddChild(_suggestion)
+                .AddChild(_dot);
         }
 
         /// <summary>
         /// Updates the notice content. The <paramref name="actionText"/> word is the only clickable part;
         /// pass an empty string to hide it (e.g. when the action is unavailable for unsaved targets). Setting the
         /// notice also clears any previously shown <see cref="SetSuggestion"/> segment.
-        /// <paramref name="accentColor"/>, when given, tints the message and action text with that colour instead of
-        /// the default warning yellow — used by the shared-reference notice to match its rid-colour stripe, so the
-        /// text itself (not just the stripe) identifies which other fields share the same instance.
+        /// <paramref name="dotColor"/>, when given, shows a small colour-coded dot trailing the action word in that
+        /// colour — used by the shared-reference notice to carry its per-rid colour, so aliased fields can be matched at
+        /// a glance while the row's text and left stripe stay the warning palette. Omit it (the missing-type notice) to
+        /// hide the dot.
         /// </summary>
-        public void Set(string message, string actionText, string detail, Action onAction, Color? accentColor = null)
+        public void Set(string message, string actionText, string detail, Action onAction, Color? dotColor = null)
         {
             EnableInClassList(InfoModifierClass, false);
 
@@ -94,7 +101,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _action.text = actionText;
             _action.SetDisplay(hasAction ? DisplayStyle.Flex : DisplayStyle.None);
 
-            ApplyAccentColor(accentColor);
+            ApplyDotColor(dotColor);
 
             tooltip = detail;
             ClearSuggestion();
@@ -114,38 +121,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _action.text = string.Empty;
             _action.SetDisplay(DisplayStyle.None);
 
-            ApplyAccentColor(null);
+            ApplyDotColor(null);
 
             tooltip = detail;
             ClearSuggestion();
         }
 
-        private void ApplyAccentColor(Color? color)
+        // Shows (with a colour) or hides the trailing rid dot — the only element tinted per-rid. The colour is set inline
+        // since it is unique per reference; the --visible modifier reveals the dot, and clearing it leaves the USS default.
+        private void ApplyDotColor(Color? color)
         {
-            _accentColor = color;
-
             if (color.HasValue)
             {
-                _message.style.color = color.Value;
-                ApplyActionAccent(hover: false);
+                _dot.EnableInClassList(DotVisibleClass, true);
+                _dot.style.backgroundColor = color.Value;
             }
             else
             {
-                _message.style.color = StyleKeyword.Null;
-                _action.style.color = StyleKeyword.Null;
-                _action.style.borderBottomColor = StyleKeyword.Null;
+                _dot.EnableInClassList(DotVisibleClass, false);
+                _dot.style.backgroundColor = StyleKeyword.Null;
             }
-        }
-
-        // Mirrors the USS :hover rule's lighten effect for the accented case, where an inline colour would otherwise
-        // shadow that rule. A no-op while unaccented, so the default warning palette keeps its normal USS hover.
-        private void ApplyActionAccent(bool hover)
-        {
-            if (!_accentColor.HasValue) return;
-
-            var color = hover ? Color.Lerp(_accentColor.Value, Color.white, 0.35f) : _accentColor.Value;
-            _action.style.color = color;
-            _action.style.borderBottomColor = color;
         }
 
         /// <summary>

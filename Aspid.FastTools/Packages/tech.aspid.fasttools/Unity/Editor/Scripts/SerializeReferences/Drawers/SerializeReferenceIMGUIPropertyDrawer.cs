@@ -182,15 +182,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (noticesApply && SerializeReferenceHelpers.HasSharedReference(property))
             {
                 var rid = property.managedReferenceId;
-                Color? accentColor = null;
+                Color? dotColor = null;
                 if (rid >= 0)
                 {
-                    // Draw a 3 px deterministic-colour stripe at the left edge of the header row so the aliased
-                    // fields are visually identifiable by colour before the user reads the notice text; the same
-                    // colour also tints the notice text below.
-                    accentColor = SerializeReferenceRidColor.ForRid(rid);
+                    // Draw a 3 px warning-amber stripe at the left edge of the header row flagging the field; the
+                    // per-rid colour rides a small dot trailing the "Make unique" link instead, so aliased fields can
+                    // still be identified by colour without tinting the whole row.
+                    dotColor = SerializeReferenceRidColor.ForRid(rid);
                     var stripeRect = new Rect(position.x, line.y, 3f, line.height);
-                    EditorGUI.DrawRect(stripeRect, accentColor.Value);
+                    EditorGUI.DrawRect(stripeRect, NoticeColor);
                 }
 
                 var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
@@ -203,7 +203,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "This reference is shared with another field — editing one changes both.\n" +
                     "Click Make unique to give this field its own independent copy.",
                     () => SerializeReferenceHelpers.MakeReferenceUnique(persistent),
-                    accentColor: accentColor);
+                    dotColor: dotColor);
 
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
@@ -466,18 +466,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// Draws a compact single-row warning: a small warning icon, a terse yellow message, an optional underlined,
         /// clickable action word and — for a missing-type notice with a Smart Fix candidate — an optional trailing
         /// suggestion word ("· → Pistol?"). The full <paramref name="detail"/> rides each segment's hover tooltip,
-        /// mirroring the UIToolkit <see cref="SerializeReferenceNotice"/>. <paramref name="accentColor"/>, when given,
-        /// tints the message and action text with that colour instead of the warning yellow — used by the
-        /// shared-reference notice to match its rid-colour stripe (the warning icon stays the standard yellow triangle,
-        /// since tinting that bitmap with an arbitrary hue would muddy rather than recolour it).
+        /// mirroring the UIToolkit <see cref="SerializeReferenceNotice"/>. <paramref name="dotColor"/>, when given, draws
+        /// a small colour-coded dot trailing the action word — used by the shared-reference notice to carry its per-rid
+        /// colour, so aliased fields can be matched at a glance while the message, link and left stripe all keep the
+        /// warning palette (the warning icon also stays the standard yellow triangle).
         /// </summary>
         private static void DrawNotice(Rect rect, string message, string actionText, string detail, Action onClick,
             string suggestionText = null, string suggestionDetail = null, Action onSuggestion = null,
-            Color? accentColor = null)
+            Color? dotColor = null)
         {
             _messageStyle ??= new GUIStyle(EditorStyles.label) { wordWrap = false };
             _actionStyle ??= new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold };
-            _messageStyle.normal.textColor = accentColor ?? NoticeColor;
+            _messageStyle.normal.textColor = NoticeColor;
 
             const float iconSize = 16f;
             var iconRect = new Rect(rect.x, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize);
@@ -490,10 +490,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (string.IsNullOrEmpty(actionText) || onClick is null) return;
 
-            var actionEnd = DrawLink(messageRect.xMax + 4f, rect, actionText, detail, onClick, accentColor);
+            var lastEnd = DrawLink(messageRect.xMax + 4f, rect, actionText, detail, onClick);
 
             if (!string.IsNullOrEmpty(suggestionText) && onSuggestion is not null)
-                DrawLink(actionEnd + 6f, rect, suggestionText, suggestionDetail, onSuggestion, accentColor);
+                lastEnd = DrawLink(lastEnd + 6f, rect, suggestionText, suggestionDetail, onSuggestion);
+
+            if (dotColor.HasValue)
+                DrawDot(lastEnd + 6f, rect, dotColor.Value);
         }
 
         /// <summary>
@@ -505,19 +508,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             DrawNotice(rect, message, actionText: string.Empty, detail: detail, onClick: null);
 
         // Draws one underlined, clickable, hover-tracking link word at x and returns its right edge, so the caller can
-        // lay the next segment out after it. Shared by the Fix action and the trailing Smart Fix suggestion.
-        // accentColor, when given (the shared-reference notice), replaces the warning palette with a lightened
-        // variant on hover so the link matches its rid-colour stripe in both states.
-        private static float DrawLink(float x, Rect rect, string text, string detail, Action onClick, Color? accentColor = null)
+        // lay the next segment out after it. Shared by the Fix action and the trailing Smart Fix suggestion; always the
+        // warning palette (the shared-reference notice's per-rid colour rides the trailing dot, not the link).
+        private static float DrawLink(float x, Rect rect, string text, string detail, Action onClick)
         {
             var content = new GUIContent(text, detail);
             var width = _actionStyle.CalcSize(content).x;
             var linkRect = new Rect(x, rect.y, width, rect.height);
 
             var hover = linkRect.Contains(Event.current.mousePosition);
-            var color = accentColor.HasValue
-                ? (hover ? Color.Lerp(accentColor.Value, Color.white, 0.35f) : accentColor.Value)
-                : (hover ? NoticeColorHover : NoticeColor);
+            var color = hover ? NoticeColorHover : NoticeColor;
             _actionStyle.normal.textColor = color;
             _actionStyle.hover.textColor = color;
 
@@ -530,6 +530,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (clicked) onClick();
             return linkRect.xMax;
+        }
+
+        // Draws the small rid-coloured dot trailing the shared-reference notice — the only per-rid coloured element, so
+        // aliased fields can be matched by colour while the rest of the row keeps the warning palette. IMGUI has no
+        // rounded primitive, so it is a small filled square, mirroring the UIToolkit notice's __dot.
+        private static void DrawDot(float x, Rect rect, Color color)
+        {
+            const float size = 8f;
+            var dotRect = new Rect(x, rect.y + (rect.height - size) * 0.5f, size, size);
+            EditorGUI.DrawRect(dotRect, color);
         }
     }
 }

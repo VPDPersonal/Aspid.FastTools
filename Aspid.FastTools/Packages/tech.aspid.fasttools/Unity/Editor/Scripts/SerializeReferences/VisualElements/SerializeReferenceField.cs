@@ -80,10 +80,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private bool _contentBuilt;
         private bool _mixedTypes;
 
-        // Stripe inputs, written by the notice updates and consumed by UpdateStripe: the shared-reference rid colour
-        // (null when not shared) takes priority over a missing type's warning stripe.
+        // Stripe inputs, written by the notice updates and consumed by UpdateStripe: a shared reference or a missing
+        // type both paint the warning amber stripe (the shared reference's per-rid colour rides a dot in its notice).
         private bool _isMissing;
-        private Color? _sharedStripeColor;
+        private bool _isShared;
         private float _arrowInset = float.NaN;
 
         public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null)
@@ -363,22 +363,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // The shared-reference scan compares managedReferenceId only within the first target's SerializedObject and
             // Make-unique rewrites that one object, so neither generalises to a multi-object selection — suppress it.
             var rid = _property.managedReferenceId;
-            var isShared = SerializeReferenceHelpers.NoticesApply(_property) &&
-                           SerializeReferenceHelpers.HasSharedReference(_property) &&
-                           rid >= 0;
+            _isShared = SerializeReferenceHelpers.NoticesApply(_property) &&
+                        SerializeReferenceHelpers.HasSharedReference(_property) &&
+                        rid >= 0;
 
-            if (!isShared)
+            if (!_isShared)
             {
                 _sharedNotice?.RemoveFromHierarchy();
-                _sharedStripeColor = null;
                 return;
             }
 
-            // The stripe is painted by UpdateStripe, which connects the aliased fields by their rid colour and takes
-            // priority over a missing type's warning stripe. The same colour also tints the notice text below, so a
-            // field can be matched to the others sharing its instance by colour alone.
-            var color = SerializeReferenceRidColor.ForRid(rid);
-            _sharedStripeColor = color;
+            // The left stripe is the warning amber (painted by UpdateStripe); the per-rid colour rides a small dot
+            // trailing the "Make unique" link instead, so aliased fields can still be matched by colour alone without
+            // tinting the whole row.
+            var dotColor = SerializeReferenceRidColor.ForRid(rid);
 
             _sharedNotice ??= new SerializeReferenceNotice();
             if (_sharedNotice.parent is null) _notices.AddChild(_sharedNotice);
@@ -389,27 +387,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 detail: "This reference is shared with another field — editing one changes both.\n" +
                         "Click Make unique to give this field its own independent copy.",
                 onAction: MakeUnique,
-                accentColor: color);
+                dotColor: dotColor);
         }
 
-        // Picks the left-edge stripe from the inputs cached by the notice updates: a shared reference paints it the
-        // rid colour (so aliased fields match) when rid colours are enabled, otherwise a missing type paints it the
-        // warning amber. Nothing else shows a stripe.
+        // Picks the left-edge stripe from the inputs cached by the notice updates: a shared reference or a missing type
+        // both paint it the warning amber (the shared reference's per-rid colour rides a dot in its notice instead).
+        // Nothing else shows a stripe.
         private void UpdateStripe()
         {
-            if (_sharedStripeColor.HasValue) ApplyRidStripe(_sharedStripeColor.Value);
-            else if (_isMissing) ApplyWarningStripe();
+            if (_isShared || _isMissing) ApplyWarningStripe();
             else RemoveStripe();
-        }
-
-        // The rid stripe colour is unique per reference, so it is set inline; the --warning modifier is cleared so the
-        // inline colour wins.
-        private void ApplyRidStripe(Color color)
-        {
-            EnsureStripe();
-            _stripe.style.backgroundColor = color;
-            _stripe.EnableInClassList(StripeWarningClass, false);
-            _stripe.EnableInClassList(StripeActiveClass, true);
         }
 
         // The warning stripe is always the same amber, so its colour comes from the palette via the --warning class;
