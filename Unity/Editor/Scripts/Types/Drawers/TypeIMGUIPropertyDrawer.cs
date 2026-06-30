@@ -100,8 +100,7 @@ namespace Aspid.FastTools.Types.Editors
             // the managed-reference required notice; the dropdown above is the implied fix.
             if (!SerializeReferenceRequiredGate.IsViolation(property)) return;
 
-            SerializeReferenceRequiredGate.TryGetRequired(property, out var selector);
-            var message = string.IsNullOrEmpty(selector?.RequiredMessage) ? "Required type is not set" : selector.RequiredMessage;
+            var message = "Required type is not set";
             var noticeRect = new Rect(position.x, rowRect.yMax + EditorGUIUtility.standardVerticalSpacing,
                 position.width, EditorGUIUtility.singleLineHeight);
             SerializeReferenceIMGUIPropertyDrawer.DrawRequiredNotice(noticeRect, message,

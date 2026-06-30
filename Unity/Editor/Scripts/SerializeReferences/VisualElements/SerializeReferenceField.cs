@@ -289,8 +289,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _requiredNotice ??= new SerializeReferenceNotice();
             if (_requiredNotice.parent is null) _notices.AddChild(_requiredNotice);
 
-            SerializeReferenceRequiredGate.TryGetRequired(_property, out var selector);
-            var message = string.IsNullOrEmpty(selector?.RequiredMessage) ? "Required reference is not set" : selector.RequiredMessage;
+            var message = "Required reference is not set";
 
             // Warning palette (not the dim info one): an unset required field is a problem to fix, not a passive hint.
             // Non-actionable — the empty action word keeps the dropdown above as the implied fix.

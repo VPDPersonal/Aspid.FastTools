@@ -208,8 +208,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (noticesApply && SerializeReferenceRequiredGate.IsViolation(property))
             {
                 var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
-                SerializeReferenceRequiredGate.TryGetRequired(property, out var selector);
-                var message = string.IsNullOrEmpty(selector?.RequiredMessage) ? "Required reference is not set" : selector.RequiredMessage;
+                var message = "Required reference is not set";
 
                 // Warning palette (not the dim info one): an unset required field is a problem to fix. The notice is
                 // non-actionable — the header dropdown above is the implied fix.

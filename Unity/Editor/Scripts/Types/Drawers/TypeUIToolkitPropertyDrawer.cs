@@ -45,8 +45,7 @@ namespace Aspid.FastTools.Types.Editors
                     return;
                 }
 
-                SerializeReferenceRequiredGate.TryGetRequired(property, out var selector);
-                var message = string.IsNullOrEmpty(selector?.RequiredMessage) ? "Required type is not set" : selector.RequiredMessage;
+                var message = "Required type is not set";
 
                 notice.Set(
                     message: message,

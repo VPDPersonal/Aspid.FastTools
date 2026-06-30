@@ -180,7 +180,6 @@ private IWeapon _weapon;
 2. Pick any `IWeapon` — the notice clears.
 
 **Notice:**
-- `RequiredMessage = "…"` — custom notice text.
 - The same `Required = true` works on a `[TypeSelector] string` type field — there "unset" means an empty type name.
 - A present-but-missing managed-reference type is never a *required* violation — it keeps its own missing-type notice.
 - Required references also feed the **build / CI gate** (see *Project settings & the build/CI gate* below).
