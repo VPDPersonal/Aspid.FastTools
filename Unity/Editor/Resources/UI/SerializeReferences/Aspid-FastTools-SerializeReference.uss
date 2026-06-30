@@ -58,8 +58,9 @@
 
 /* --- Status stripe ---
    A 3 px absolutely-positioned bar on the left edge of the field root, flagging the field at a glance. Hidden
-   (zero width) by default; the --active modifier reveals it. For a shared reference the colour is set inline from
-   code (per-rid, so aliased fields match); the --warning modifier paints it the warning amber for a missing type. */
+   (zero width) by default; the --active modifier reveals it. Both a shared reference and a missing type paint it the
+   warning amber via the --warning modifier; the shared reference's per-rid colour rides a small dot in its notice
+   instead (see __dot). */
 .aspid-fasttools-serialize-reference__stripe {
     position:                                              absolute;
     left:                                                  0;
@@ -139,6 +140,23 @@
 .aspid-fasttools-reference-notice__suggestion:hover {
     color:                                                 var(--aspid-colors-status-warning-text-lightness);
     border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
+}
+
+/* Trailing rid dot: a small colour-coded circle after the action word. The notice text, icon and left stripe all stay
+   the warning palette; this dot is the only element tinted per-rid, so aliased fields can still be matched by colour at
+   a glance. Its colour is set inline from code (unique per reference); hidden by default, the --visible modifier
+   reveals it when a colour is supplied (the shared-reference notice). */
+.aspid-fasttools-reference-notice__dot {
+    width:                                                 8px;
+    height:                                                8px;
+    min-width:                                             8px;
+    margin-left:                                           6px;
+    border-radius:                                         4px;
+    display:                                               none;
+}
+
+.aspid-fasttools-reference-notice__dot--visible {
+    display:                                               flex;
 }
 
 /* Info variant — a non-actionable, dim hint (the multi-object "different types" notice that stands in for the
