@@ -19,11 +19,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public SettingsView()
         {
-            style.flexGrow = 1;
-            style.paddingLeft = 14;
-            style.paddingRight = 14;
-            style.paddingTop = 10;
-
             // Repaint the plain Unity fields (EnumField popup / Toggles) into the window's dark palette so they don't
             // read as Unity's bright default inputs floating over the black dotted canvas.
             this.AddStyleSheetsFromResource(StyleSheetPath).AddClass(RootClass);

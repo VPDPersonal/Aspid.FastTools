@@ -6,6 +6,7 @@
    Settings provider keeps the native look), and every rule is scoped under the block class, so it repaints the
    EnumField into the window's dark palette and gives the rows breathing room and a consistent caption tone. */
 .aspid-fasttools-serialize-reference-settings {
+    padding:                                              12px 12px 0 12px;
     flex-grow:                                            1;
 }
 
@@ -13,6 +14,8 @@
    caption on the left to its control pinned on the right; the inset keeps the content off the row's edges and the
    margin spaces the rows apart. Hover lifts the row a touch more. */
 .aspid-fasttools-serialize-reference-settings .unity-base-field {
+    margin-left:                                          0;
+    margin-right:                                         0;
     margin-bottom:                                        4px;
     padding:                                              4px 8px;
     border-width:                                         1px;
