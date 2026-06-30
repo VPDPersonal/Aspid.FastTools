@@ -345,25 +345,7 @@ public sealed class TankEnemy : EnemyBase
 
 ## SerializeReference Selector
 
-A drop-in dropdown for `[SerializeReference]` fields. Add `[TypeSelector]` next to `[SerializeReference]` and the Inspector replaces the default managed-reference UI with the same searchable, hierarchical type picker used by `SerializableType` — letting you choose which concrete implementation of the field's declared type is instantiated.
-
-- Lists every concrete, non-`UnityEngine.Object` class assignable to the field's declared interface / base type.
-- Passing base types narrows the candidates below the field's declared type — `[TypeSelector(typeof(IMelee))]` on an `IWeapon` field offers only `IMelee` implementations.
-- Picking a type instantiates it; `<None>` clears the reference.
-- The assigned instance's serialized fields are drawn inline under a foldout.
-- A stored type that no longer resolves (renamed or deleted) is surfaced as a missing-type warning instead of silently clearing.
-- Open generic implementations (e.g. `Modifier<T>`) are offered too: arguments are inferred from a closed-generic field, or picked on a second page inside the same picker (validated against the field type) before instantiation.
-- Switching the selected type preserves matching data — fields shared by the old and new implementation (by name and serialized shape) carry over instead of resetting to defaults.
-- Right-click the header for a Copy / Paste context menu: it copies the managed-reference value and pastes it as an independent instance into any compatible field (paste is disabled when the clipboard type is not assignable to the target).
-- A missing type can be repaired in place: the warning is a compact yellow notice whose underlined **Fix** word opens the type picker — choose the correct type and the reference is re-pointed while keeping its stored data; hover the notice for the full missing-type detail. Works for saved assets (ScriptableObjects and prefab assets) selected in the Project **and for objects open in Prefab Mode** — saved assets are rewritten in their YAML, while a Prefab Mode object is repaired on the live instance, recovering the data Unity still holds for the missing type. The repair also reaches nested references — through nested managed references and through plain `[Serializable]` containers (a struct/class field or a `List<T>` of them) — so a missing type buried in a slot or list element is fixed inline too.
-- The notice can also surface a **Smart Fix** suggestion — a second clickable segment next to **Fix** (e.g. `· → Pistol?`) that ranks the most likely replacement (a declared `[MovedFrom]` rename, the same class name in a different namespace/assembly, a casing-only rename, or a near-miss name backed by a matching field shape) and applies it in one click. The suggestion is only ever a type the picker would offer, and is never auto-applied — you always click.
-- The **Asset References** tab (`Tools → Aspid 🐍 → FastTools → Asset References`) maps a selected asset's whole managed-reference graph from the YAML: a per-component tree of field-pointer roots, nested children (each labelled with its full field path, e.g. `_primaryWeapon._chargeEffect`), shared references and orphaned payloads, with `MISSING` / `SHARED` badges, deterministic per-rid colours, and an inline type dropdown on every card — assigned, empty and missing alike — where picking a type assigns or re-points the reference and `<None>` clears it (orphaned payloads carry a **Clear** instead). It reaches the missing references the Inspector cannot surface in the moment — at any nesting depth and on child objects, with no Prefab Mode required — shows unassigned `[SerializeReference]` fields as dim `<None>` slots so a cleared or never-set reference stays visible, and surfaces the orphans the Inspector cannot navigate to.
-- The **Project References** tab (`Tools → Aspid 🐍 → FastTools → Project References`) extends the repair project-wide: a `Scan Project` button sweeps every `.prefab` / `.asset` / `.unity` file under `Assets/`, groups the broken references by their stored type, and rewrites every entry across every affected file with a single `Fix all` (plus a Smart Fix quick-apply) per group — entries in currently open scenes are skipped during a bulk apply. A result links straight to that asset's **Asset References** graph.
-- An aliased reference (two fields sharing one instance, e.g. after duplicating a list element) is flagged by the same compact notice, whose underlined **Make unique** word (also a right-click → **Make Unique Reference** action) splits it into an independent copy; the shared fields are tinted with a deterministic per-rid colour stripe and chip that matches the **Asset References** tab.
-- Duplicating a list element (Duplicate / Ctrl+D, or `+`-appending a copy of the last element) no longer aliases the reference in the first place — the copy silently becomes an independent instance in a single Undo step. Intentional cross-field sharing is left untouched and keeps the **Make unique** notice.
-- Multi-object editing is supported: a mixed selection shows a mixed-type dropdown, and picking a type (or pasting) applies an independent instance to each selected object in one Undo group; per-asset notices are suppressed under a multi-object selection.
-- Usage is validated at compile time by the Roslyn analyzer: `AFT0004` (error) flags a `[SerializeReference]` + `[TypeSelector]` field whose type derives from `UnityEngine.Object`, and `AFT0005` (warning) flags a constraint no visible concrete type can satisfy — the picker would be empty.
-- Works on single fields, arrays, and `List<T>`, in both IMGUI and UIToolkit inspectors.
+A drop-in type-picker dropdown for `[SerializeReference]` fields. Add `[TypeSelector]` next to `[SerializeReference]` and the Inspector replaces the default managed-reference UI with the same searchable, hierarchical picker used by `SerializableType`. You choose which concrete implementation of the field's type is instantiated, right in the Inspector; `<None>` clears the reference.
 
 ```csharp
 using System;
@@ -402,7 +384,36 @@ public sealed class Loadout : MonoBehaviour
 }
 ```
 
-The attribute is editor-only (`[Conditional("UNITY_EDITOR")]`) and carries no runtime cost.
+The attribute is editor-only (`[Conditional("UNITY_EDITOR")]`) and carries no runtime cost. It works on single fields, arrays, and `List<T>`, in both IMGUI and UIToolkit inspectors.
+
+### Capabilities
+
+| Capability | What it does |
+|---|---|
+| **Pick an implementation** | The list shows the concrete, non-`UnityEngine.Object` classes assignable to the field's type. `[TypeSelector(typeof(IMelee))]` narrows it to `IMelee` implementations. |
+| **Inline inspector** | The selected instance's serialized fields are drawn under a foldout. |
+| **Open generics** | `Modifier<T>` and the like: arguments are inferred from a closed-generic field, or picked on a second page inside the picker. |
+| **Data preserved** | Switching type carries over fields shared by name and serialized shape instead of resetting them to defaults. |
+| **Copy / Paste** | Right-click the header to copy the value and paste it as an independent instance into any compatible field. |
+| **Multi-object editing** | A mixed selection shows a mixed dropdown; picking a type or pasting applies an independent instance to each object in one Undo group. |
+| **Compile-time checks** | Roslyn analyzer: `AFT0004` (error) — the type derives from `UnityEngine.Object`; `AFT0005` (warning) — the picker would be empty. |
+
+### Repairing broken references
+
+| Case | Fix |
+|---|---|
+| **Missing type** (renamed or deleted) | A yellow notice instead of a silent clear. The underlined **Fix** opens the picker and re-points the type while keeping its data — at any depth, in saved assets and live in Prefab Mode. |
+| **Smart Fix** | Next to **Fix**, suggests the most likely replacement (`[MovedFrom]`, a different namespace/assembly, casing, a near-miss name) and applies it in one click — never automatically. |
+| **Shared reference** (two fields share one instance) | Flagged with a notice; **Make unique** splits it into an independent copy. Duplicating a list element (Ctrl+D, `+`) no longer aliases the reference. |
+
+Bulk repair lives in two dedicated tabs:
+
+| Tab | Purpose |
+|---|---|
+| **Asset References** (`Tools → Aspid 🐍 → FastTools → Asset References`) | Maps an asset's whole managed-reference graph from its YAML — a per-component tree with field paths, shared and orphaned references, `MISSING` / `SHARED` badges, and an inline type dropdown on every card. Surfaces the missing references the Inspector cannot show. |
+| **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` sweeps every `.prefab` / `.asset` / `.unity` under `Assets/`, groups broken references by stored type, and rewrites a whole group with a single `Fix all` (plus Smart Fix). |
+
+> The full sample — `Loadout` / `IWeapon` / `Modifier<T>` and the missing-reference repair scenarios — ships in the `SerializeReferences` sample (Package Manager → Aspid.FastTools → Samples). A step-by-step walkthrough lives in that sample's `TUTORIAL.md`.
 
 ---
 
