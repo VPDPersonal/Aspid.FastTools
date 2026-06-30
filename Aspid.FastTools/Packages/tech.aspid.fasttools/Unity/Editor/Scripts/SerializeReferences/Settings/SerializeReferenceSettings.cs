@@ -14,10 +14,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     }
 
     /// <summary>
-    /// The single source of truth for the SerializeReference toolset's configurable behaviors, persisted as JSON in
-    /// project-scoped <see cref="EditorPrefs"/> (keyed by <see cref="PlayerSettings.productGUID"/>, the established
-    /// package pattern). Edited through the Project Settings page; read by the rid-colour drawers, the de-alias guard,
-    /// the project scanners and the build/CI gate. Fires <see cref="Changed"/> so open inspectors can repaint live.
+    /// The single source of truth for the SerializeReference toolset's configurable behaviors. The purely cosmetic,
+    /// per-developer settings (rid colours, breakage detection) are persisted as JSON in project-scoped
+    /// <see cref="EditorPrefs"/> (keyed by <see cref="PlayerSettings.productGUID"/>, the established package pattern);
+    /// the settings that must be identical for every teammate and for CI (auto-de-alias, excluded scan folders, the
+    /// build/CI gate) live in the committed <see cref="SerializeReferenceSharedSettings"/> asset instead. Edited
+    /// through the Project Settings page; read by the rid-colour drawers, the de-alias guard, the project scanners
+    /// and the build/CI gate. Fires <see cref="Changed"/> so open inspectors can repaint live.
     /// </summary>
     internal static class SerializeReferenceSettings
     {
@@ -38,9 +41,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private sealed class Store
         {
             public bool ridColors = true;
-            public bool autoDeAlias = true;
             public bool breakageDetection = true;
-            public string[] excludedFolders = Array.Empty<string>();
         }
 
         private static Store _cache;
@@ -54,10 +55,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             set { Data.ridColors = value; Save(); }
         }
 
+        /// <summary>
+        /// Persisted in <see cref="SerializeReferenceSharedSettings"/> (committed asset), not <see cref="EditorPrefs"/>
+        /// — duplicating a list element must behave the same for every teammate, regardless of who set this.
+        /// </summary>
         public static bool AutoDeAliasEnabled
         {
-            get => Data.autoDeAlias;
-            set { Data.autoDeAlias = value; Save(); }
+            get => SerializeReferenceSharedSettings.instance.AutoDeAlias;
+            set
+            {
+                var shared = SerializeReferenceSharedSettings.instance;
+                if (shared.AutoDeAlias == value) return;
+
+                shared.AutoDeAlias = value;
+                Changed?.Invoke();
+            }
         }
 
         public static bool BreakageDetectionEnabled
@@ -66,36 +78,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             set { Data.breakageDetection = value; Save(); }
         }
 
+        /// <summary>
+        /// Persisted in <see cref="SerializeReferenceSharedSettings"/> (committed asset), not <see cref="EditorPrefs"/>
+        /// — the usage index and the build/CI gate must scan the same folders for every teammate and on CI.
+        /// </summary>
         public static string[] ExcludedFolders
         {
-            get => Data.excludedFolders ?? Array.Empty<string>();
+            get => SerializeReferenceSharedSettings.instance.ExcludedFolders;
             set
             {
                 var next = value ?? Array.Empty<string>();
+                var shared = SerializeReferenceSharedSettings.instance;
                 // Detect a genuine change before persisting so the index reset (and its lazy rebuild) only fires when
                 // the exclusion set really moved — re-assigning the same paths leaves the warm index untouched.
-                var changed = !FoldersEqual(Data.excludedFolders, next);
-                Data.excludedFolders = next;
-                Save();
-                if (changed) ExcludedFoldersChanged?.Invoke();
+                if (FoldersEqual(shared.ExcludedFolders, next)) return;
+
+                shared.ExcludedFolders = next;
+                Changed?.Invoke();
+                ExcludedFoldersChanged?.Invoke();
             }
         }
 
         /// <summary>
-        /// Build/CI gate severity. Unlike every other setting here (per-machine <see cref="EditorPrefs"/>), this is
-        /// persisted in a committed <see cref="SerializeReferenceGateSettings"/> asset so it travels to a clean CI
-        /// runner instead of defaulting to <see cref="GateSeverity.Warn"/> there. Still fires <see cref="Changed"/>
-        /// so open inspectors repaint live.
+        /// Build/CI gate severity. Persisted in <see cref="SerializeReferenceSharedSettings"/> (committed asset) so it
+        /// travels to a clean CI runner instead of defaulting to <see cref="GateSeverity.Warn"/> there. Still fires
+        /// <see cref="Changed"/> so open inspectors repaint live.
         /// </summary>
         public static GateSeverity BuildSeverity
         {
-            get => SerializeReferenceGateSettings.instance.BuildSeverity;
+            get => SerializeReferenceSharedSettings.instance.BuildSeverity;
             set
             {
-                var gate = SerializeReferenceGateSettings.instance;
-                if (gate.BuildSeverity == value) return;
+                var shared = SerializeReferenceSharedSettings.instance;
+                if (shared.BuildSeverity == value) return;
 
-                gate.BuildSeverity = value;
+                shared.BuildSeverity = value;
                 Changed?.Invoke();
             }
         }
@@ -103,7 +120,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>True when <paramref name="path"/> lies under one of the excluded scan folders.</summary>
         public static bool IsExcluded(string path)
         {
-            var folders = Data.excludedFolders;
+            var folders = SerializeReferenceSharedSettings.instance.ExcludedFolders;
             if (folders is null || folders.Length == 0 || string.IsNullOrEmpty(path)) return false;
 
             foreach (var folder in folders)

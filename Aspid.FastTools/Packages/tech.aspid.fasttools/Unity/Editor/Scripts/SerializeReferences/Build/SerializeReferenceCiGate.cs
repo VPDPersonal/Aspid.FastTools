@@ -13,7 +13,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// <c>Unity -batchmode -quit -projectPath . -executeMethod Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck</c>.
     /// Scans the project, writes a report, logs each violation, and exits non-zero when violations exist so a pipeline
     /// can fail the job. The effective behaviour is driven by the committed Project Settings gate severity
-    /// (<see cref="SerializeReferenceGateSettings"/>) — <c>Off</c> skips the check, <c>Warn</c> logs but exits 0,
+    /// (<see cref="SerializeReferenceSharedSettings"/>) — <c>Off</c> skips the check, <c>Warn</c> logs but exits 0,
     /// <c>Fail</c> exits 1 on violations — so a clean CI runner enforces the developer's checked-in choice rather than
     /// the default. Flags: <c>-srGateReport &lt;path&gt;</c> (report file), <c>-srGateRequired</c> (also scan
     /// unset-required fields), <c>-srGateWarnOnly</c> (force exit 0, overrides severity), <c>-srGateFail</c> (force exit
