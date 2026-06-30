@@ -243,16 +243,21 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 
 **`Project Settings → Aspid FastTools → SerializeReference`** exposes:
 
-- **Rid colours** — colour-code shared references by id in the inspector and graph window.
+- **Breakage detection** — toggle the proactive missing-reference toast on or off; turn it off to silence the
+  domain-reload / import-time detection entirely. Per-machine.
 - **Auto de-alias duplicated list elements** — give a duplicated list element its own instance instead of sharing the
   original's id.
-- **Breakage detection** — toggle the proactive missing-reference toast on or off; turn it off to silence the
-  domain-reload / import-time detection entirely.
 - **Build / CI gate** — `Off` / `Warn` / `Fail`: at player-build time, log or abort on missing (and, for CI,
-  unset-required) managed references. Unlike the other settings (per-machine), this severity is saved to a
-  **committed** `ProjectSettings/SerializeReferenceGateSettings.asset`, so your choice is checked into version control
-  and reaches a clean CI runner instead of resetting to `Warn` there. Commit that asset after changing the value.
+  unset-required) managed references.
 - **Excluded scan folders** — paths skipped by every project scan.
+
+Rid colours are not a setting — a shared reference is always colour-coded by id (in the inspector stripe/notice and
+the graph window's chip), since it is the whole point of the feature: matching colours is what lets you tell which
+fields share an instance at a glance.
+
+Auto de-alias, the build/CI gate and the excluded folders must behave the same for every teammate and for CI, so
+unlike breakage detection (per-machine `EditorPrefs`) they are saved to a **committed**
+`ProjectSettings/SerializeReferenceSharedSettings.asset`. Commit that asset after changing any of these three values.
 
 The same options are also available in the window's **Settings** tab (**`Tools → Aspid 🐍 → FastTools → Settings`**).
 

@@ -17,7 +17,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceSettingsTests
     {
-        private bool _ridColors;
         private bool _autoDeAlias;
         private string[] _excludedFolders;
         private GateSeverity _buildSeverity;
@@ -26,7 +25,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void SetUp()
         {
             // Snapshot the project's real settings so the assertions below can mutate them freely and restore on teardown.
-            _ridColors = SerializeReferenceSettings.RidColorsEnabled;
             _autoDeAlias = SerializeReferenceSettings.AutoDeAliasEnabled;
             _excludedFolders = SerializeReferenceSettings.ExcludedFolders;
             _buildSeverity = SerializeReferenceSettings.BuildSeverity;
@@ -35,7 +33,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [TearDown]
         public void TearDown()
         {
-            SerializeReferenceSettings.RidColorsEnabled = _ridColors;
             SerializeReferenceSettings.AutoDeAliasEnabled = _autoDeAlias;
             SerializeReferenceSettings.ExcludedFolders = _excludedFolders;
             SerializeReferenceSettings.BuildSeverity = _buildSeverity;
@@ -86,7 +83,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             SerializeReferenceSettings.ExcludedFoldersChanged += Handler;
             try
             {
-                SerializeReferenceSettings.RidColorsEnabled = !SerializeReferenceSettings.RidColorsEnabled;
+                SerializeReferenceSettings.BreakageDetectionEnabled = !SerializeReferenceSettings.BreakageDetectionEnabled;
                 SerializeReferenceSettings.AutoDeAliasEnabled = !SerializeReferenceSettings.AutoDeAliasEnabled;
                 SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
                 Assert.AreEqual(0, fired, "Toggling an unrelated setting must never raise ExcludedFoldersChanged (the index stays warm).");
@@ -102,7 +99,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             SerializeReferenceSettings.Changed += Handler;
             try
             {
-                SerializeReferenceSettings.RidColorsEnabled = !SerializeReferenceSettings.RidColorsEnabled;
+                SerializeReferenceSettings.BreakageDetectionEnabled = !SerializeReferenceSettings.BreakageDetectionEnabled;
                 Assert.GreaterOrEqual(fired, 1, "Every setter must still raise the general Changed for repaint and live-sync.");
             }
             finally { SerializeReferenceSettings.Changed -= Handler; }
@@ -115,7 +112,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void BuildControls_LiveSyncsControlsFromSettings()
         {
-            SerializeReferenceSettings.RidColorsEnabled = true;
             SerializeReferenceSettings.AutoDeAliasEnabled = true;
             SerializeReferenceSettings.BreakageDetectionEnabled = true;
             SerializeReferenceSettings.BuildSeverity = GateSeverity.Warn;
@@ -125,10 +121,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             SerializeReferenceSettingsUI.BuildControls(container);
 
             var toggles = container.Query<Toggle>().ToList();
-            Assert.AreEqual(3, toggles.Count, "BuildControls must emit the rid-colours, auto-de-alias and breakage-detection toggles.");
-            var ridColors = toggles[0];
-            var autoDeAlias = toggles[1];
-            var breakageDetection = toggles[2];
+            Assert.AreEqual(2, toggles.Count, "BuildControls must emit the auto-de-alias and breakage-detection toggles.");
+            var autoDeAlias = toggles[0];
+            var breakageDetection = toggles[1];
             var severity = container.Q<EnumField>();
             var folders = container.Q<TextField>();
             Assert.IsNotNull(severity, "BuildControls must emit the build-gate EnumField.");
@@ -136,13 +131,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             // Mutating the shared store (as the other surface would) must reach these controls without a manual refresh:
             // each control re-reads its backing value off SerializeReferenceSettings.Changed.
-            SerializeReferenceSettings.RidColorsEnabled = false;
             SerializeReferenceSettings.AutoDeAliasEnabled = false;
             SerializeReferenceSettings.BreakageDetectionEnabled = false;
             SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
             SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/", "Assets/Generated/" };
 
-            Assert.IsFalse(ridColors.value, "The rid-colours toggle must mirror Settings live.");
             Assert.IsFalse(autoDeAlias.value, "The auto-de-alias toggle must mirror Settings live.");
             Assert.IsFalse(breakageDetection.value, "The breakage-detection toggle must mirror Settings live.");
             Assert.AreEqual(GateSeverity.Fail, (GateSeverity)severity.value, "The build-gate field must mirror Settings live.");

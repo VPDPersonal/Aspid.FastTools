@@ -15,12 +15,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
     /// <summary>
     /// The single source of truth for the SerializeReference toolset's configurable behaviors. The purely cosmetic,
-    /// per-developer settings (rid colours, breakage detection) are persisted as JSON in project-scoped
-    /// <see cref="EditorPrefs"/> (keyed by <see cref="PlayerSettings.productGUID"/>, the established package pattern);
-    /// the settings that must be identical for every teammate and for CI (auto-de-alias, excluded scan folders, the
-    /// build/CI gate) live in the committed <see cref="SerializeReferenceSharedSettings"/> asset instead. Edited
-    /// through the Project Settings page; read by the rid-colour drawers, the de-alias guard, the project scanners
-    /// and the build/CI gate. Fires <see cref="Changed"/> so open inspectors can repaint live.
+    /// per-developer breakage-detection toggle is persisted as JSON in project-scoped <see cref="EditorPrefs"/> (keyed
+    /// by <see cref="PlayerSettings.productGUID"/>, the established package pattern); the settings that must be
+    /// identical for every teammate and for CI (auto-de-alias, excluded scan folders, the build/CI gate) live in the
+    /// committed <see cref="SerializeReferenceSharedSettings"/> asset instead. Rid colours are not configurable —
+    /// they always identify a shared reference by colour, so there is nothing to opt out of. Edited through the
+    /// Project Settings page; read by the de-alias guard, the project scanners and the build/CI gate. Fires
+    /// <see cref="Changed"/> so open inspectors can repaint live.
     /// </summary>
     internal static class SerializeReferenceSettings
     {
@@ -30,8 +31,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Raised only when the <see cref="ExcludedFolders"/> set actually changes — the precise signal the usage index
         /// listens for to drop its warm copy, since <see cref="IsExcluded"/> is consulted only while the index is
-        /// (re)built. Kept separate from <see cref="Changed"/> so an unrelated setting (rid colours, the gate) never
-        /// triggers a costly index rebuild.
+        /// (re)built. Kept separate from <see cref="Changed"/> so an unrelated setting (the gate) never triggers a
+        /// costly index rebuild.
         /// </summary>
         public static event Action ExcludedFoldersChanged;
 
@@ -40,7 +41,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         [Serializable]
         private sealed class Store
         {
-            public bool ridColors = true;
             public bool breakageDetection = true;
         }
 
@@ -48,12 +48,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static string Key => KeyPrefix + PlayerSettings.productGUID;
         private static Store Data => _cache ??= Load();
-
-        public static bool RidColorsEnabled
-        {
-            get => Data.ridColors;
-            set { Data.ridColors = value; Save(); }
-        }
 
         /// <summary>
         /// Persisted in <see cref="SerializeReferenceSharedSettings"/> (committed asset), not <see cref="EditorPrefs"/>

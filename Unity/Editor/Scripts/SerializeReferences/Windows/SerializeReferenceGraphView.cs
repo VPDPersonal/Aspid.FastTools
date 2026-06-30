@@ -623,12 +623,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (document.Shared.Contains(rid))
             {
                 var shared = new Label("SHARED").AddClass(BadgeClass).AddClass(BadgeSharedClass);
-                if (SerializeReferenceSettings.RidColorsEnabled)
-                {
-                    var chip = new VisualElement().AddClass(ChipClass);
-                    chip.style.backgroundColor = SerializeReferenceRidColor.ForRid(rid);
-                    shared.AddChild(chip);
-                }
+                var chip = new VisualElement().AddClass(ChipClass);
+                chip.style.backgroundColor = SerializeReferenceRidColor.ForRid(rid);
+                shared.AddChild(chip);
 
                 badges.AddChild(shared);
             }

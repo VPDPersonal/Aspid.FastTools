@@ -1,4 +1,5 @@
 using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
@@ -34,12 +35,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // the default actionable yellow warning. Swaps the icon and palette through the modifier class only.
         private const string InfoModifierClass = NoticeClass + "--info";
 
+        private readonly VisualElement _icon;
         private readonly Label _message;
         private readonly Label _action;
         private readonly Label _suggestion;
 
         private Action _onAction;
         private Action _onSuggestion;
+        private Color? _accentColor;
 
         public SerializeReferenceNotice()
         {
@@ -48,7 +51,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(NoticeClass);
 
-            var icon = new VisualElement()
+            _icon = new VisualElement()
                 .AddClass(IconClass)
                 .SetPickingMode(PickingMode.Ignore);
 
@@ -58,11 +61,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _action = new Label().AddClass(ActionClass);
             _action.RegisterCallback<ClickEvent>(_ => _onAction?.Invoke());
+            // The accent colour (when set) replaces the USS hover rule, which an inline colour would otherwise shadow —
+            // so the hover-lighten effect is reproduced here for the accented case only.
+            _action.RegisterCallback<PointerEnterEvent>(_ => ApplyActionAccent(hover: true));
+            _action.RegisterCallback<PointerLeaveEvent>(_ => ApplyActionAccent(hover: false));
 
             _suggestion = new Label().AddClass(SuggestionClass);
             _suggestion.RegisterCallback<ClickEvent>(_ => _onSuggestion?.Invoke());
 
-            this.AddChild(icon)
+            this.AddChild(_icon)
                 .AddChild(_message)
                 .AddChild(_action)
                 .AddChild(_suggestion);
@@ -72,8 +79,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// Updates the notice content. The <paramref name="actionText"/> word is the only clickable part;
         /// pass an empty string to hide it (e.g. when the action is unavailable for unsaved targets). Setting the
         /// notice also clears any previously shown <see cref="SetSuggestion"/> segment.
+        /// <paramref name="accentColor"/>, when given, tints the message and action text with that colour instead of
+        /// the default warning yellow — used by the shared-reference notice to match its rid-colour stripe, so the
+        /// text itself (not just the stripe) identifies which other fields share the same instance.
         /// </summary>
-        public void Set(string message, string actionText, string detail, Action onAction)
+        public void Set(string message, string actionText, string detail, Action onAction, Color? accentColor = null)
         {
             EnableInClassList(InfoModifierClass, false);
 
@@ -83,6 +93,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var hasAction = !string.IsNullOrEmpty(actionText) && onAction is not null;
             _action.text = actionText;
             _action.SetDisplay(hasAction ? DisplayStyle.Flex : DisplayStyle.None);
+
+            ApplyAccentColor(accentColor);
 
             tooltip = detail;
             ClearSuggestion();
@@ -102,8 +114,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _action.text = string.Empty;
             _action.SetDisplay(DisplayStyle.None);
 
+            ApplyAccentColor(null);
+
             tooltip = detail;
             ClearSuggestion();
+        }
+
+        private void ApplyAccentColor(Color? color)
+        {
+            _accentColor = color;
+
+            if (color.HasValue)
+            {
+                _message.style.color = color.Value;
+                ApplyActionAccent(hover: false);
+            }
+            else
+            {
+                _message.style.color = StyleKeyword.Null;
+                _action.style.color = StyleKeyword.Null;
+                _action.style.borderBottomColor = StyleKeyword.Null;
+            }
+        }
+
+        // Mirrors the USS :hover rule's lighten effect for the accented case, where an inline colour would otherwise
+        // shadow that rule. A no-op while unaccented, so the default warning palette keeps its normal USS hover.
+        private void ApplyActionAccent(bool hover)
+        {
+            if (!_accentColor.HasValue) return;
+
+            var color = hover ? Color.Lerp(_accentColor.Value, Color.white, 0.35f) : _accentColor.Value;
+            _action.style.color = color;
+            _action.style.borderBottomColor = color;
         }
 
         /// <summary>
