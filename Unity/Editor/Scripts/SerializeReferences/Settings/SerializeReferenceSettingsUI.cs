@@ -30,7 +30,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var autoDeAlias = new AspidSwitch("Auto de-alias duplicated list elements")
             {
                 value = SerializeReferenceSettings.AutoDeAliasEnabled,
-                tooltip = "Give a duplicated list element its own independent instance instead of sharing the original's rid.",
+                tooltip = "Give a duplicated list element its own independent instance instead of sharing the original's rid.\n"
+                    + "Stored in a committed ProjectSettings asset, so every teammate (and CI) sees the same behaviour.",
             };
             autoDeAlias.RegisterValueChangedCallback(evt => SerializeReferenceSettings.AutoDeAliasEnabled = evt.newValue);
             SyncFromSettings(autoDeAlias, () => SerializeReferenceSettings.AutoDeAliasEnabled);
