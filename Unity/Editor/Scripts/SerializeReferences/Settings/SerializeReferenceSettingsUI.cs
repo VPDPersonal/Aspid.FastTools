@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
@@ -57,11 +56,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SyncFromSettings<EnumField, Enum>(severity, () => SerializeReferenceSettings.BuildSeverity);
             container.Add(severity);
 
-            container.Add(new Label("Excluded scan folders")
-            {
-                style = { marginTop = 10, marginBottom = 2, unityFontStyleAndWeight = FontStyle.Bold },
-            });
-
+            // The excluded-folders panel carries its own "Excluded scan folders" header inside its frame.
             container.Add(new SerializeReferenceExcludedFoldersField());
         }
 
