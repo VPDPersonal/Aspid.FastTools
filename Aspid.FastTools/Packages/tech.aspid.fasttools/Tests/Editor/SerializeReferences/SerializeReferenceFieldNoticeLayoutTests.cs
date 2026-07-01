@@ -8,9 +8,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     /// <summary>
     /// Guards the cross-drawer notice-position contract (ASP-24): the UIToolkit <see cref="SerializeReferenceField"/>
-    /// must render a per-asset notice ABOVE the assigned instance's child fields, exactly like the IMGUI drawer, which
-    /// draws notices after the header row and before the children. The regression was that the notices were appended to
-    /// the field root after the foldout, so when expanded they sat BELOW the children.
+    /// must render the shared-reference notice BELOW the assigned instance's child fields, exactly like the IMGUI
+    /// drawer, which draws that notice after the children. A shared reference is the only notice that coexists with
+    /// children (missing / required / mixed render no value, so no children), so it sits at the very bottom of the
+    /// field. The notice host is a sibling placed after the foldout content, so it never inherits the child indent.
     /// </summary>
     /// <remarks>
     /// Reuses <c>LinkerTestObject</c> / <c>TestSword</c> from <see cref="SerializeReferenceInspectorTests"/>: linking two
@@ -21,7 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     internal sealed class SerializeReferenceFieldNoticeLayoutTests
     {
         [Test]
-        public void SharedNotice_RendersAboveChildFields()
+        public void SharedNotice_RendersBelowChildFields()
         {
             var obj = ScriptableObject.CreateInstance<LinkerTestObject>();
             try
@@ -46,15 +47,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 var content = FindFirstWithClass(field, Foldout.contentUssClassName);
                 Assert.IsNotNull(content, "The foldout content container (which hosts the child fields) must exist.");
 
-                // The notice must NOT live inside the content container — it is a sibling that precedes it, so it never
-                // inherits the child indent and always renders above the children.
+                // The notice must NOT live inside the content container — it is a sibling that follows it, so it never
+                // inherits the child indent and always renders below the children.
                 Assert.IsFalse(IsAncestorOf(content, notice),
                     "The notice must not be nested inside the foldout content (the children container).");
 
-                Assert.Less(
+                Assert.Greater(
                     PreOrderIndex(field, notice),
                     PreOrderIndex(field, content),
-                    "The notice must render above (before) the foldout content/children, matching the IMGUI drawer.");
+                    "The notice must render below (after) the foldout content/children, matching the IMGUI drawer.");
             }
             finally
             {
@@ -62,8 +63,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
-        // Pre-order (document-order) position of an element in the real visual tree, so "renders above" reduces to a
-        // smaller index. Walks the hierarchy (not the contentContainer view) so the toggle, the notices host and the
+        // Pre-order (document-order) position of an element in the real visual tree, so "renders below" reduces to a
+        // larger index. Walks the hierarchy (not the contentContainer view) so the toggle, the notices host and the
         // content container are all visited as siblings of the foldout.
         private static int PreOrderIndex(VisualElement root, VisualElement target)
         {

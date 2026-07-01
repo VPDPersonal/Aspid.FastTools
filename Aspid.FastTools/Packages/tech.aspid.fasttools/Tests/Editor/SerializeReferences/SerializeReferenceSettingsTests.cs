@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using NUnit.Framework;
 using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -120,26 +122,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var container = new VisualElement();
             SerializeReferenceSettingsUI.BuildControls(container);
 
-            var toggles = container.Query<Toggle>().ToList();
-            Assert.AreEqual(2, toggles.Count, "BuildControls must emit the auto-de-alias and breakage-detection toggles.");
-            var autoDeAlias = toggles[0];
-            var breakageDetection = toggles[1];
+            // The two boolean settings render as iOS-style AspidSwitch fields (BaseField<bool>), not plain Toggles.
+            var switches = container.Query<AspidSwitch>().ToList();
+            Assert.AreEqual(2, switches.Count, "BuildControls must emit the auto-de-alias and breakage-detection switches.");
+            var autoDeAlias = switches[0];
+            var breakageDetection = switches[1];
             var severity = container.Q<EnumField>();
-            var folders = container.Q<TextField>();
+            var folders = container.Q<SerializeReferenceExcludedFoldersField>();
             Assert.IsNotNull(severity, "BuildControls must emit the build-gate EnumField.");
-            Assert.IsNotNull(folders, "BuildControls must emit the excluded-folders TextField.");
+            Assert.IsNotNull(folders, "BuildControls must emit the excluded-folders field.");
 
             // Mutating the shared store (as the other surface would) must reach these controls without a manual refresh:
-            // each control re-reads its backing value off SerializeReferenceSettings.Changed.
+            // the switches and the gate re-read their value off SerializeReferenceSettings.Changed, and the folders list
+            // rebuilds off the dedicated ExcludedFoldersChanged signal.
             SerializeReferenceSettings.AutoDeAliasEnabled = false;
             SerializeReferenceSettings.BreakageDetectionEnabled = false;
             SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
             SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/", "Assets/Generated/" };
 
-            Assert.IsFalse(autoDeAlias.value, "The auto-de-alias toggle must mirror Settings live.");
-            Assert.IsFalse(breakageDetection.value, "The breakage-detection toggle must mirror Settings live.");
+            Assert.IsFalse(autoDeAlias.value, "The auto-de-alias switch must mirror Settings live.");
+            Assert.IsFalse(breakageDetection.value, "The breakage-detection switch must mirror Settings live.");
             Assert.AreEqual(GateSeverity.Fail, (GateSeverity)severity.value, "The build-gate field must mirror Settings live.");
-            Assert.AreEqual("Assets/Plugins/\nAssets/Generated/", folders.value, "The folders field must mirror Settings live.");
+
+            // The list-based folders field renders one path Label per excluded folder; both new paths must appear live.
+            var listedPaths = folders.Query<Label>().ToList().Select(label => label.text).ToList();
+            Assert.Contains("Assets/Plugins/", listedPaths, "The folders field must list every excluded path live.");
+            Assert.Contains("Assets/Generated/", listedPaths, "The folders field must list every excluded path live.");
         }
     }
 }
