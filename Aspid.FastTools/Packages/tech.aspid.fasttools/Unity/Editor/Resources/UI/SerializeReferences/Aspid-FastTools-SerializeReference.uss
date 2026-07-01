@@ -60,8 +60,9 @@
    with breathing room on both sides instead of flush against the arrow and the notice text. Padding (not margin) so it
    stacks on top of Unity's margin-based foldout nesting indent rather than overriding it — otherwise nested fields and
    list elements lose their indent and their arrow slides back under the stripe. The stripe is an absolutely-positioned
-   sibling of the foldout, so this padding shifts only the content, not the stripe. */
-.aspid-fasttools-serialize-reference > .unity-foldout {
+   sibling of the foldout, so this padding shifts only the content, not the stripe. Gated by --striped (set from code
+   only while a stripe is shown), so a field with no stripe keeps its natural position instead of a needless indent. */
+.aspid-fasttools-serialize-reference--striped > .unity-foldout {
     padding-left:                                         8px;
 }
 
@@ -81,7 +82,7 @@
 }
 
 .aspid-fasttools-serialize-reference__stripe--active {
-    margin-left:                                           -8px;
+    margin-left:                                           -11px;
     width:                                                 2px;
 }
 
@@ -89,7 +90,9 @@
     background-color:                                      var(--aspid-colors-status-warning-text-light);
 }
 
-.aspid-fasttools-serialize-reference__notices {
+/* Pull the notices back into the stripe gutter to align with it — only meaningful while the gutter exists, so it is
+   gated by --striped too. Without a stripe (a required-only or plain field) the notices keep their natural position. */
+.aspid-fasttools-serialize-reference--striped .aspid-fasttools-serialize-reference__notices {
     margin-left:                                           -14px;
 }
 
