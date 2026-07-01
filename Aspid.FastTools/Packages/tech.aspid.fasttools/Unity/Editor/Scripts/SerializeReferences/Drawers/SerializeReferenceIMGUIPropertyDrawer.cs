@@ -58,11 +58,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var hasValue = currentType is not null && !mixedTypes;
             var fieldType = SerializeReferenceHelpers.GetFieldType(property);
 
-            // Reserve a fixed left gutter (StripeGutter) for the status stripe by shifting the whole field body right, so
-            // the stripe always has clear room and never rides on the foldout arrow (to its right) or a list drag handle
-            // (to its left) — mirrors the UIToolkit field's padding-left. Every field reserves the gutter whether or not
-            // a stripe is currently shown, so sibling fields stay aligned and toggling a notice never shifts the layout.
-            var body = new Rect(position.x + StripeGutter, position.y, position.width - StripeGutter, position.height);
+            // Per-asset notices (missing type / shared reference / required) read/write a single backing asset, so they
+            // are suppressed under a multi-object selection. Computed up front because whether the field shows any of
+            // them decides whether it reserves the stripe gutter below.
+            var noticesApply = !mixedTypes && SerializeReferenceHelpers.NoticesApply(property);
+            var showMissing = noticesApply && SerializeReferenceHelpers.IsMissingType(property);
+            var showShared = noticesApply && SerializeReferenceHelpers.HasSharedReference(property);
+            var showRequired = noticesApply && SerializeReferenceRequiredGate.IsViolation(property);
+
+            // Reserve a left gutter (StripeGutter) for the status stripe ONLY on a field that actually shows one, by
+            // shifting that field's body right — the bar then sits in the reserved space and never rides on the foldout
+            // arrow (to its right) or a list drag handle (to its left), mirroring the UIToolkit field's padding-left. A
+            // field with no stripe keeps its natural position, so plain foldouts get no needless indent.
+            var gutter = showMissing || showShared || showRequired ? StripeGutter : 0f;
+            var body = new Rect(position.x + gutter, position.y, position.width - gutter, position.height);
 
             var line = new Rect(body.x, body.y, body.width, EditorGUIUtility.singleLineHeight);
 
@@ -143,12 +152,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "to edit its own fields.");
                 return;
             }
-
-            // Per-asset notices read/write a single backing asset, so they are suppressed under a multi-object selection.
-            var noticesApply = SerializeReferenceHelpers.NoticesApply(property);
-            var showMissing = noticesApply && SerializeReferenceHelpers.IsMissingType(property);
-            var showShared = noticesApply && SerializeReferenceHelpers.HasSharedReference(property);
-            var showRequired = noticesApply && SerializeReferenceRequiredGate.IsViolation(property);
 
             // Indented content rect (of the gutter-shifted body): the header foldout arrow, label and child fields all
             // sit at this x (Unity shifts it right by EditorGUI.indentLevel), so anchoring the notices and the stripe
