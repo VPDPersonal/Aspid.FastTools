@@ -43,6 +43,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string StripeActiveClass = StripeClass + "--active";
         private const string StripeWarningClass = StripeClass + "--warning";
 
+        // Root modifier toggled while the field shows a stripe (missing type / shared reference). It gates the foldout's
+        // left padding — the stripe gutter — so a field with no stripe keeps its natural position instead of a needless
+        // indent (matching the IMGUI drawer). A required-only notice carries no stripe, so it does not set this.
+        private const string StripedClass = BlockClass + "--striped";
+
         // Applied to the header while a compatible MonoScript is dragged over the field.
         private const string DropTargetClass = BlockClass + "--drop-target";
 
@@ -425,6 +430,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // warning (the more urgent). Nothing else shows a stripe.
         private void UpdateStripe()
         {
+            // Reserve the stripe gutter (the foldout's left padding, via --striped) only while a stripe is actually
+            // shown, so a plain or required-only field keeps its natural position.
+            EnableInClassList(StripedClass, _isMissing || _isShared);
+
             if (_isMissing) ApplyWarningStripe();
             else if (_isShared) ApplySharedStripe(_sharedColor);
             else RemoveStripe();
