@@ -12,16 +12,26 @@ Look at:
 - `Scripts/Modifiers/` — generic hierarchy: a non-abstract `Modifier<T>` generic class (`IModifier`) with closed-generic subclasses `DamageModifier : Modifier<float>`, `AmmoModifier : Modifier<int>`, `NameModifier : Modifier<string>`. An `IModifier` field offers all three subclasses **and** the open generic `Modifier<T>` — picking `Modifier<T>` opens a second page inside the same picker to choose the argument `T`. A `Modifier<float>` field offers only the candidates assignable to it (`DamageModifier`, and `Modifier<T>` with `T` inferred to `float`).
 - `Scripts/WeaponPreset.cs` + `Presets/BrokenWeaponPreset.asset` — a `ScriptableObject` whose `_weapon` points at a type that no longer exists, used to demonstrate the missing-type repair flow (see *Maintenance features* below).
 
-The drawer ships both a UIToolkit and an IMGUI rendering path. The `IMGUILoadout` variant forces the IMGUI path so you can compare them or migrate IMGUI-only projects:
+The drawer ships both a UIToolkit and an IMGUI rendering path, at full feature parity. **Every demo prefab ships an `IMGUI…` twin** that carries the same data but forces the IMGUI path, so you can compare the two renderers — or migrate an IMGUI-only project — for every scenario below:
 
-- `Scripts/IMGUILoadout.cs` + `Scripts/Editor/IMGUILoadoutEditor.cs` — the same fields rendered via `OnInspectorGUI` (`SerializeReferenceIMGUIPropertyDrawer`).
+| UIToolkit prefab | IMGUI twin |
+|---|---|
+| `Loadout.prefab` | `IMGUILoadout.prefab` |
+| `SlottedLoadout.prefab` | `IMGUISlottedLoadout.prefab` |
+| `LoadoutMissingType.prefab` | `IMGUILoadoutMissingType.prefab` |
+| `NestedLoadout.prefab` | `IMGUINestedLoadout.prefab` |
+| `LoadoutSharedRef.prefab` | `IMGUILoadoutSharedRef.prefab` |
+
+The twin swaps in a sibling component (`IMGUILoadout` / `IMGUISlottedLoadout`) whose companion editor overrides `OnInspectorGUI` without `CreateInspectorGUI` — that alone routes every nested `[TypeSelector]` field through `SerializeReferenceIMGUIPropertyDrawer` instead of the UIToolkit `CreatePropertyGUI`. See `Scripts/IMGUILoadout.cs` + `Scripts/Editor/IMGUILoadoutEditor.cs` for the pattern.
 
 ## How to run
 
-Two ready-made prefabs live in `Prefabs/` — double-click to open in Prefab Mode, or drag either into any scene:
+Ready-made prefabs live in `Prefabs/` — double-click to open in Prefab Mode, or drag either into any scene. Start with the **Loadout** pair:
 
 - **Loadout** (`Prefabs/Loadout.prefab`) — UIToolkit path. Pre-filled: `Primary Weapon = Railgun` (with a nested `BurnEffect` charge effect), `Sidearms = [Pistol, Shotgun]`, `On Hit Effect = FreezeEffect`.
-- **IMGUILoadout** (`Prefabs/IMGUILoadout.prefab`) — IMGUI path. Pre-filled: `Primary Weapon = Pistol`, `On Hit Effect = BurnEffect`.
+- **IMGUILoadout** (`Prefabs/IMGUILoadout.prefab`) — IMGUI path. Same data as **Loadout**, rendered through the IMGUI drawer so you can compare the two paths side by side.
+
+Each scenario prefab in **Maintenance features** below (`SlottedLoadout`, `LoadoutMissingType`, `NestedLoadout`, `LoadoutSharedRef`) ships an `IMGUI…` twin too — open either renderer to see the same data both ways.
 
 Then experiment with the dropdowns:
 
@@ -51,7 +61,7 @@ Three assets ship pre-broken, pointing at classes that do not exist:
 
 - `Presets/BrokenWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` references a missing `GhostWeapon`.
 - `Presets/BrokenArsenalPreset.asset` — a second `ScriptableObject` that also references the missing `GhostWeapon`, three times over (`Weapon` plus two of its `Alternates`), so it shares a broken type with `BrokenWeaponPreset.asset`.
-- `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol`.
+- `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol` (its IMGUI twin `Prefabs/IMGUILoadoutMissingType.prefab` breaks the same slot through the IMGUI renderer).
 
 Select either **in the Project window**. The missing field shows a `<Missing …>` caption, a **Missing type** warning, and a **Fix** button:
 
@@ -74,18 +84,16 @@ Select either **in the Project window**. The missing field shows a `<Missing …
 
 Select it **in the Project window** and open the **Asset References** tab — **`Tools → Aspid 🐍 → FastTools → Asset References`**. The graph maps all three components at once (one document per object). Every reference is an inline dropdown: pick a type to assign / re-point it, or `<None>` to clear it; the missing `GhostPistol` / `GhostBlade` / `GhostAura` cards carry the amber **Fix Missing** action. Nesting is read from the field path (`_primaryWeapon._chargeEffect`), not from indentation, so the flat card stack stays scannable.
 
-### Un-share an aliased reference — `LoadoutSharedRef.prefab`
+Its IMGUI twin `Prefabs/IMGUINestedLoadout.prefab` mirrors the same three-level graph — the **Asset References** window is renderer-agnostic, so it maps both identically, while the twin's root inspector is forced through the IMGUI path.
 
-`Prefabs/LoadoutSharedRef.prefab` has both `Sidearms` elements backed by the **same** instance (a state you can also reach by duplicating an array element).
+### Un-share aliased references & tell groups apart by colour — `LoadoutSharedRef.prefab`
 
-1. Open it — both elements show a **shared reference** notice; editing one changes the other.
-2. **Right-click** one element → **Make Unique Reference**. It gets its own copy of the data and the two fields become independent.
-
-### Tell two shared groups apart by colour — `LoadoutTwoSharedGroups.prefab`
-
-`Prefabs/LoadoutTwoSharedGroups.prefab` has **two independent** shared-reference pairs on the same object, so the rid-colour stripe/notice actually earns its keep:
+`Prefabs/LoadoutSharedRef.prefab` carries **two independent** shared-reference pairs on one object (each pair is a state you can also reach by duplicating an array element), so the rid-colour stripe/notice actually earns its keep:
 
 - `Sidearms[0]` and `Sidearms[1]` both back the same `Pistol` — one colour.
 - `Primary Weapon → Charge Effect` and `On Hit Effect` both back the same `BurnEffect` — a different colour, even though one is nested three levels deep and the other is a top-level field.
 
-Open it and compare the stripe/notice colour on each pair — matching colour means matching instance, regardless of where the field sits in the hierarchy.
+1. Open it — each pair shows a **shared reference** notice and editing one member changes its partner. Matching stripe/notice colour means matching instance regardless of where the field sits in the hierarchy, so the two pairs read as two distinct colours.
+2. **Right-click** a member → **Make Unique Reference**. It gets its own copy of the data and the two fields become independent — its notice clears, and so does its former partner's, since nothing is shared any more.
+
+Its IMGUI twin `Prefabs/IMGUILoadoutSharedRef.prefab` shows the same two pairs through the IMGUI renderer.

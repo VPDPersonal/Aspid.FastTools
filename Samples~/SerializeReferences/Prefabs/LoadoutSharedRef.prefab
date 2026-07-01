@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &6500000000000000001
+--- !u!1 &6500000000000000101
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,8 +8,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 6500000000000000002}
-  - component: {fileID: 6500000000000000003}
+  - component: {fileID: 6500000000000000102}
+  - component: {fileID: 6500000000000000103}
   m_Layer: 0
   m_Name: LoadoutSharedRef
   m_TagString: Untagged
@@ -17,13 +17,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &6500000000000000002
+--- !u!4 &6500000000000000102
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6500000000000000001}
+  m_GameObject: {fileID: 6500000000000000101}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -32,13 +32,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6500000000000000003
+--- !u!114 &6500000000000000103
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6500000000000000001}
+  m_GameObject: {fileID: 6500000000000000101}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
@@ -50,7 +50,7 @@ MonoBehaviour:
   - rid: 1002
   - rid: 1002
   _onHitEffect:
-    rid: 1004
+    rid: 1005
   references:
     version: 2
     RefIds:
@@ -65,11 +65,6 @@ MonoBehaviour:
       data:
         _damage: 15
         _magazineSize: 12
-    - rid: 1004
-      type: {class: FreezeEffect, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
-      data:
-        _duration: 2.5
-        _slowPercent: 40
     - rid: 1005
       type: {class: BurnEffect, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
       data:
