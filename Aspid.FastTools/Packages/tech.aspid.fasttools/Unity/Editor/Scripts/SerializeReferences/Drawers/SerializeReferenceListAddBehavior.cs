@@ -61,12 +61,40 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var window = EditorWindow.mouseOverWindow != null ? EditorWindow.mouseOverWindow : EditorWindow.focusedWindow;
             if (window == null) return;
 
+            // Anchor the picker to the ListView (spanning its width) rather than the small, right-aligned "+" button, so
+            // it opens as a wide dropdown flush below the add row — like the field dropdown — instead of a narrow popup
+            // hanging off the button. Fall back to the button when the ListView is unreachable.
+            var reference = anchor.GetFirstAncestorOfType<ListView>() ?? anchor;
+
+            // Match TypeSelectorWindow.Show's minimum width so the clamp below reflects the picker's real footprint.
+            var width = Mathf.Max(350f, reference.worldBound.width);
+
+            // x: clamp so the picker's right edge never crosses the inspector window's right edge — a picker anchored at
+            // the narrow button's own left would spill off to the right of the window.
+            var x = Mathf.Max(
+                window.position.x,
+                Mathf.Min(window.position.x + reference.worldBound.xMin, window.position.xMax - width));
+
+            // y: anchor from the "+" button's TOP + its height, so ShowAsDropDown opens flush below the button's bottom
+            // edge. Anchoring from yMax double-counted the button height and dropped the picker a full row lower — a
+            // visible gap (mirrors the field dropdown, which anchors from yMin).
             var screenRect = new Rect(
-                window.position.x + anchor.worldBound.xMin,
-                window.position.y + anchor.worldBound.yMax,
-                Mathf.Max(anchor.worldBound.width, 240f),
+                x,
+                window.position.y + anchor.worldBound.yMin,
+                width,
                 anchor.worldBound.height);
 
+            ShowAppendPicker(target, arrayPath, elementType, baseTypes, screenRect);
+        }
+
+        /// <summary>
+        /// Opens the type picker anchored to <paramref name="screenRect"/> and appends the chosen type (or an empty
+        /// <c>&lt;None&gt;</c> element) to the array at <paramref name="arrayPath"/>. Shared by the UIToolkit ListView add
+        /// override and the IMGUI list drawer (<see cref="SerializeReferenceIMGUIList"/>), whose only difference is how
+        /// each computes the anchor rect — so both add paths offer the same picker and the same de-aliased append.
+        /// </summary>
+        internal static void ShowAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, Rect screenRect)
+        {
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
                 filter: new TypeSelectorFilter
@@ -82,8 +110,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void Append(Object target, string arrayPath, string assemblyQualifiedName)
         {
+            if (target == null) return;
+
+            // A <None> pick is a valid choice: the "+" always grows the list, appending an empty (null) element the user
+            // can type later — so type is left null here rather than aborting the add.
             var type = string.IsNullOrEmpty(assemblyQualifiedName) ? null : Type.GetType(assemblyQualifiedName, throwOnError: false);
-            if (type is null || target == null) return;
 
             // A fresh SerializedObject avoids any stale-binding hazard from a captured one; the bound inspector ListView
             // refreshes from the changed target on its next update.
@@ -91,12 +122,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var array = serializedObject.FindProperty(arrayPath);
             if (array is null || !array.isArray) return;
 
-            // Grow the array and assign the fresh instance before a single apply. arraySize++ copies the previous last
-            // element's managedReferenceId, but assigning a fresh instance overwrites it in the same modification —
-            // collapsing both into one Undo step and leaving no rid-aliased duplicate behind.
+            // Grow the array and assign the new value before a single apply. arraySize++ copies the previous last
+            // element's managedReferenceId, so overwrite it in the same modification — with a fresh instance for a picked
+            // type, or an explicit null for <None> — collapsing both into one Undo step and leaving no rid-aliased
+            // duplicate behind (a bare arraySize++ on a <None> pick would alias the previous element).
             var index = array.arraySize;
             array.arraySize = index + 1;
-            array.GetArrayElementAtIndex(index).SetManagedReference(SerializeReferenceHelpers.CreateInstance(type));
+            array.GetArrayElementAtIndex(index).SetManagedReference(type is null ? null : SerializeReferenceHelpers.CreateInstance(type));
             serializedObject.ApplyModifiedProperties();
         }
     }
