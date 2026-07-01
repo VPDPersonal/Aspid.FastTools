@@ -32,8 +32,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EmptyClass = BlockClass + "--empty";
         private const string DropdownClass = BlockClass + "__dropdown";
 
-        // Wrapper that hosts the per-asset notices (missing / shared / required / mixed) between the foldout toggle and
-        // its content, so an expanded field shows the notices ABOVE its child fields — matching the IMGUI drawer.
+        // Wrapper that hosts the per-asset notices (missing / shared / required / mixed) as a sibling placed AFTER the
+        // foldout's content, so an expanded field shows the shared notice BELOW its child fields — matching the IMGUI
+        // drawer, which draws that notice after the children.
         private const string NoticesClass = BlockClass + "__notices";
 
         // A single 2 px stripe on the field's left edge flags it at a glance. The --active modifier gives it width; a
