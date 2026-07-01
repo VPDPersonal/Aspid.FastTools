@@ -66,11 +66,11 @@
 }
 
 /* --- Status stripe ---
-   A 3 px absolutely-positioned bar near the left edge of the field root, flagging the field at a glance. Inset 2 px
-   from the edge and sitting in the gutter opened by the foldout's left margin above, so it clears both the inspector
-   edge and the content. Hidden (zero width) by default; the --active modifier reveals it. Both a shared reference and
-   a missing type paint it the warning amber via the --warning modifier; the shared reference's per-rid colour rides a
-   small dot in its notice instead (see __dot). */
+   A 2 px absolutely-positioned bar near the left edge of the field root, flagging the field at a glance. Inset a little
+   from the edge and sitting in the gutter opened by the foldout's left padding above, so it clears both the inspector
+   edge and the content. Hidden (zero width) by default; the --active modifier reveals it. A missing type paints it the
+   warning amber via the --warning class; a shared reference paints it inline from code in that reference's per-rid
+   colour, matching the notice's swatch and tinted message (see __dot). */
 .aspid-fasttools-serialize-reference__stripe {
     margin-left:                                           0;
     position:                                              absolute;
@@ -81,12 +81,16 @@
 }
 
 .aspid-fasttools-serialize-reference__stripe--active {
-    margin-left:                                           7px;
+    margin-left:                                           -8px;
     width:                                                 2px;
 }
 
 .aspid-fasttools-serialize-reference__stripe--warning {
     background-color:                                      var(--aspid-colors-status-warning-text-light);
+}
+
+.aspid-fasttools-serialize-reference__notices {
+    margin-left:                                           -14px;
 }
 
 /* --- Compact inline notice (missing type / shared reference) ---
@@ -154,21 +158,41 @@
     border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
 }
 
-/* Trailing rid dot: a small colour-coded circle after the action word. The notice text, icon and left stripe all stay
-   the warning palette; this dot is the only element tinted per-rid, so aliased fields can still be matched by colour at
-   a glance. Its colour is set inline from code (unique per reference); hidden by default, the --visible modifier
-   reveals it when a colour is supplied (the shared-reference notice). */
+/* Leading rid swatch: a small colour-coded circle at the head of the shared row. It shares its per-rid colour inline
+   with the message text and the field's left stripe, so the whole field reads in one colour and aliased fields match at
+   a glance by their lined-up swatches. Its colour is set inline from code (unique per reference); hidden by default,
+   the --visible modifier reveals it when a colour is supplied (the shared notice). */
 .aspid-fasttools-reference-notice__dot {
     width:                                                 8px;
     height:                                                8px;
     min-width:                                             8px;
-    margin-left:                                           6px;
+    margin-right:                                          6px;
     border-radius:                                         4px;
     display:                                               none;
 }
 
 .aspid-fasttools-reference-notice__dot--visible {
     display:                                               flex;
+}
+
+/* --- Shared-reference variant ---
+   A shared reference is not an error but a "these two fields point at the same object" state, so it drops the warning
+   amber for a calm treatment carried by the reference's per-rid colour: the leading swatch, the message text, the
+   Make-unique action and the field's left stripe are all tinted that one colour (set inline from code), with no icon.
+   Make-unique pins to the right and gains an underline on hover — its colour is the inline rid colour throughout. */
+.aspid-fasttools-reference-notice--shared
+    .aspid-fasttools-reference-notice__icon {
+    display:                                              none;
+}
+
+/* margin-left:auto eats the free space between the message and the action, pinning Make-unique to the right edge of the
+   row so it reads as a separate, deliberate affordance rather than trailing the sentence. No underline (here or on
+   hover) — its colour is the inline rid colour, and the hover feedback lightens that colour from code. */
+.aspid-fasttools-reference-notice--shared
+    .aspid-fasttools-reference-notice__action {
+    margin-left:                                          auto;
+    -unity-font-style:                                    bold;
+    border-bottom-width:                                  0;
 }
 
 /* Info variant — a non-actionable, dim hint (the multi-object "different types" notice that stands in for the
