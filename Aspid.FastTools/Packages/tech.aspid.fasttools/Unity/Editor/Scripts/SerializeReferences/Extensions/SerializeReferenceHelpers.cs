@@ -986,6 +986,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
+        /// Drops the per-frame managed-reference-id alias memo (see <see cref="HasSharedReference"/>) so the next call
+        /// rebuilds it from the current object. Call after a same-frame reassignment (Make unique, type pick, paste, …):
+        /// the memo is keyed by frame, so a synchronous re-query right after the mutation would otherwise return this
+        /// frame's pre-mutation snapshot and still report the just-broken alias as shared.
+        /// </summary>
+        public static void InvalidateSharedReferenceCache() => _aliasFrame = -1;
+
+        /// <summary>
         /// Breaks an aliased managed reference by replacing it with an independent clone that carries the same data
         /// (a fresh instance gets a new <see cref="SerializedProperty.managedReferenceId"/> on assignment), so the
         /// two formerly shared fields no longer affect each other.
