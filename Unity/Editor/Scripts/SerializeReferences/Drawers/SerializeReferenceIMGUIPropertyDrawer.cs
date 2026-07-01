@@ -58,7 +58,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var hasValue = currentType is not null && !mixedTypes;
             var fieldType = SerializeReferenceHelpers.GetFieldType(property);
 
-            var line = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+            // Reserve a fixed left gutter (StripeGutter) for the status stripe by shifting the whole field body right, so
+            // the stripe always has clear room and never rides on the foldout arrow (to its right) or a list drag handle
+            // (to its left) — mirrors the UIToolkit field's padding-left. Every field reserves the gutter whether or not
+            // a stripe is currently shown, so sibling fields stay aligned and toggling a notice never shifts the layout.
+            var body = new Rect(position.x + StripeGutter, position.y, position.width - StripeGutter, position.height);
+
+            var line = new Rect(body.x, body.y, body.width, EditorGUIUtility.singleLineHeight);
 
             var contextEvent = Event.current;
             if (contextEvent.type == EventType.ContextClick && line.Contains(contextEvent.mousePosition))
@@ -128,7 +134,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // line, and skip the per-asset notices entirely.
             if (mixedTypes)
             {
-                var hintRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                var hintRect = new Rect(body.x, y, body.width, EditorGUIUtility.singleLineHeight);
                 DrawInfoNotice(
                     hintRect,
                     "Different types selected",
@@ -140,10 +146,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Per-asset notices read/write a single backing asset, so they are suppressed under a multi-object selection.
             var noticesApply = SerializeReferenceHelpers.NoticesApply(property);
+            var showMissing = noticesApply && SerializeReferenceHelpers.IsMissingType(property);
+            var showShared = noticesApply && SerializeReferenceHelpers.HasSharedReference(property);
+            var showRequired = noticesApply && SerializeReferenceRequiredGate.IsViolation(property);
 
-            if (noticesApply && SerializeReferenceHelpers.IsMissingType(property))
+            // Indented content rect (of the gutter-shifted body): the header foldout arrow, label and child fields all
+            // sit at this x (Unity shifts it right by EditorGUI.indentLevel), so anchoring the notices and the stripe
+            // here keeps their offset from the foldout arrow the SAME at every nesting depth. GUI.Label/DrawRect ignore
+            // indentLevel, so we apply it explicitly.
+            var content = EditorGUI.IndentedRect(body);
+
+            // Left status stripe spanning the whole field — header, notices and any expanded children — so a shared
+            // group reads as one continuous colour down through its value's fields, mirroring the UIToolkit field's
+            // full-height __stripe (top:0 bottom:0). The reference's per-rid colour for a shared reference, else the
+            // warning amber for a missing-type / required violation. Offset into the left gutter (StripeOffset) so it
+            // clears the foldout arrow / label, and inset top and bottom (StripeInsetY) so adjacent stripes stay apart.
             {
-                var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                var stripeRid = property.managedReferenceId;
+                Color? stripeColor = null;
+                if (showShared && stripeRid >= 0)
+                    stripeColor = SerializeReferenceRidColor.ForRid(stripeRid);
+                else if (showMissing || showRequired)
+                    stripeColor = NoticeColor;
+
+                if (stripeColor.HasValue)
+                    EditorGUI.DrawRect(
+                        new Rect(content.x - StripeOffset, position.y + StripeInsetY,
+                            StripeWidth, position.height - 2f * StripeInsetY),
+                        stripeColor.Value);
+            }
+
+            if (showMissing)
+            {
+                var noticeRect = new Rect(content.x, y, content.width, EditorGUIUtility.singleLineHeight);
                 var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(property);
                 var canFix = SerializeReferenceHelpers.TryGetRepairLocation(property, out _, out _, out _);
 
@@ -157,7 +192,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 DrawNotice(
                     noticeRect,
-                    "Missing type —",
+                    "Missing type",
                     canFix ? "Fix" : null,
                     canFix
                         ? $"Missing type: {typeName}.\nClick Fix to re-point this reference to an existing type, keeping its data."
@@ -182,39 +217,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
-            if (noticesApply && SerializeReferenceHelpers.HasSharedReference(property))
+            if (showShared)
             {
+                // The per-rid colour tints the whole notice — leading swatch, message and Make-unique action — and the
+                // header stripe drawn above, so aliased fields read as one colour and match at a glance (mirrors the
+                // UIToolkit --shared notice: no warning icon, since a shared reference is attention, not an error).
                 var rid = property.managedReferenceId;
-                Color? dotColor = null;
-                if (rid >= 0)
-                {
-                    // Draw a 3 px warning-amber stripe at the left edge of the header row flagging the field; the
-                    // per-rid colour rides a small dot trailing the "Make unique" link instead, so aliased fields can
-                    // still be identified by colour without tinting the whole row.
-                    dotColor = SerializeReferenceRidColor.ForRid(rid);
-                    var stripeRect = new Rect(position.x, line.y, 3f, line.height);
-                    EditorGUI.DrawRect(stripeRect, NoticeColor);
-                }
+                Color? ridColor = rid >= 0 ? SerializeReferenceRidColor.ForRid(rid) : null;
 
-                var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                var noticeRect = new Rect(content.x, y, content.width, EditorGUIUtility.singleLineHeight);
                 var persistent = property.Persistent();
 
                 DrawNotice(
                     noticeRect,
-                    "Shared reference —",
+                    "Shared reference",
                     "Make unique",
                     "This reference is shared with another field — editing one changes both.\n" +
                     "Click Make unique to give this field its own independent copy.",
                     () => SerializeReferenceHelpers.MakeReferenceUnique(persistent),
-                    dotColor: dotColor);
+                    ridColor: ridColor);
 
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
             // A required-but-empty reference shows a non-actionable notice; the header dropdown above is the fix.
-            if (noticesApply && SerializeReferenceRequiredGate.IsViolation(property))
+            if (showRequired)
             {
-                var noticeRect = new Rect(position.x, y, position.width, EditorGUIUtility.singleLineHeight);
+                var noticeRect = new Rect(content.x, y, content.width, EditorGUIUtility.singleLineHeight);
                 var message = "Required reference is not set";
 
                 // Warning palette (not the dim info one): an unset required field is a problem to fix. The notice is
@@ -227,7 +256,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!hasValue || !property.isExpanded) return;
 
             EditorGUI.indentLevel++;
-            DrawChildren(property, position.x, position.width, spacing, ref y);
+            DrawChildren(property, body.x, body.width, spacing, ref y);
             EditorGUI.indentLevel--;
         }
 
@@ -439,6 +468,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Color NoticeColor = new(245f / 255f, 185f / 255f, 85f / 255f);
         private static readonly Color NoticeColorHover = new(255f / 255f, 235f / 255f, 175f / 255f);
 
+        // How far the shared action's rid colour lightens toward white on hover — mirrors the UIToolkit notice's
+        // ActionHoverLighten, the hover feedback in place of a static USS brighten (the rid colour is dynamic).
+        private const float ActionHoverLighten = 0.35f;
+
+        // Leading rid swatch size on the shared-reference notice — mirrors the UIToolkit __dot (8px), drawn as a filled
+        // circle via GUI.DrawTexture's borderRadius.
+        private const float DotSize = 8f;
+
+        // Left status stripe. StripeGutter is the left padding the whole field body is shifted by, reserving a clear
+        // gutter for the stripe so it never rides on the foldout arrow (to its right) or a list drag handle (to its
+        // left) — mirroring the UIToolkit field's padding-left. StripeOffset places the bar inside that gutter, measured
+        // left from the indented content (so its gap from the arrow is the same at every nesting depth); keep it below
+        // StripeGutter. StripeInsetY trims the top and bottom so adjacent full-height stripes (e.g. two shared list
+        // elements) read as separate bars with a small gap instead of one merged line.
+        private const float StripeGutter = 6f;
+        private const float StripeWidth = 2f;
+        private const float StripeOffset = 16f;
+        private const float StripeInsetY = 2f;
+
         // Dim grey for the non-actionable mixed-types info hint, mirroring the UIToolkit info notice's --aspid-colors-text-dark.
         private static readonly Color InfoNoticeColor = new(150f / 255f, 150f / 255f, 150f / 255f);
 
@@ -466,40 +514,67 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
-        /// Draws a compact single-row warning: a small warning icon, a terse yellow message, an optional underlined,
-        /// clickable action word and — for a missing-type notice with a Smart Fix candidate — an optional trailing
-        /// suggestion word ("· → Pistol?"). The full <paramref name="detail"/> rides each segment's hover tooltip,
-        /// mirroring the UIToolkit <see cref="SerializeReferenceNotice"/>. <paramref name="dotColor"/>, when given, draws
-        /// a small colour-coded dot trailing the action word — used by the shared-reference notice to carry its per-rid
-        /// colour, so aliased fields can be matched at a glance while the message, link and left stripe all keep the
-        /// warning palette (the warning icon also stays the standard yellow triangle).
+        /// Draws a compact single-row notice, mirroring the UIToolkit <see cref="SerializeReferenceNotice"/>: a terse
+        /// message, then a bold, right-pinned clickable action word (no underline; it lightens on hover) and — for a
+        /// missing-type notice with a Smart Fix candidate — an optional trailing suggestion word ("· → Pistol?")
+        /// clustered just after it at the right edge. The full <paramref name="detail"/> rides each segment's hover
+        /// tooltip. Without <paramref name="ridColor"/> the row is a warning: a yellow triangle icon and the warning
+        /// amber palette (missing-type / required). With <paramref name="ridColor"/> it is the shared-reference variant:
+        /// no icon, a leading rid-coloured swatch, and the message plus action both tinted that per-rid colour — so
+        /// aliased fields read as one colour and match at a glance.
         /// </summary>
         private static void DrawNotice(Rect rect, string message, string actionText, string detail, Action onClick,
             string suggestionText = null, string suggestionDetail = null, Action onSuggestion = null,
-            Color? dotColor = null)
+            Color? ridColor = null)
         {
+            var shared = ridColor.HasValue;
+            var baseColor = shared ? ridColor.Value : NoticeColor;
+            var hoverColor = shared ? Color.Lerp(baseColor, Color.white, ActionHoverLighten) : NoticeColorHover;
+
             _messageStyle ??= new GUIStyle(EditorStyles.label) { wordWrap = false };
             _actionStyle ??= new GUIStyle(EditorStyles.label) { fontStyle = FontStyle.Bold };
-            _messageStyle.normal.textColor = NoticeColor;
+            _messageStyle.normal.textColor = baseColor;
 
-            const float iconSize = 16f;
-            var iconRect = new Rect(rect.x, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize);
-            GUI.Label(iconRect, EditorGUIUtility.IconContent("console.warnicon"));
+            float messageX;
+            if (shared)
+            {
+                // Shared-reference variant: no warning icon; lead the row with the rid-coloured swatch instead.
+                DrawDot(rect.x, rect, baseColor);
+                messageX = rect.x + DotSize + 6f;
+            }
+            else
+            {
+                const float iconSize = 16f;
+                var iconRect = new Rect(rect.x, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize);
+                GUI.Label(iconRect, EditorGUIUtility.IconContent("console.warnicon"));
+                messageX = iconRect.xMax + 4f;
+            }
 
             var messageContent = new GUIContent(message, detail);
             var messageWidth = _messageStyle.CalcSize(messageContent).x;
-            var messageRect = new Rect(iconRect.xMax + 4f, rect.y, messageWidth, rect.height);
+            var messageRect = new Rect(messageX, rect.y, messageWidth, rect.height);
             GUI.Label(messageRect, messageContent, _messageStyle);
 
             if (string.IsNullOrEmpty(actionText) || onClick is null) return;
 
-            var lastEnd = DrawLink(messageRect.xMax + 4f, rect, actionText, detail, onClick);
+            // Right-align the action cluster (mirrors the UIToolkit margin-left:auto): measure the action and any
+            // trailing Smart Fix suggestion, then pin them flush to the row's right edge — never overlapping the message.
+            var actionContent = new GUIContent(actionText, detail);
+            var actionWidth = _actionStyle.CalcSize(actionContent).x;
 
-            if (!string.IsNullOrEmpty(suggestionText) && onSuggestion is not null)
-                lastEnd = DrawLink(lastEnd + 6f, rect, suggestionText, suggestionDetail, onSuggestion);
+            var hasSuggestion = !string.IsNullOrEmpty(suggestionText) && onSuggestion is not null;
+            var suggestionContent = hasSuggestion ? new GUIContent(suggestionText, suggestionDetail) : null;
+            var suggestionWidth = hasSuggestion ? _actionStyle.CalcSize(suggestionContent).x : 0f;
+            const float suggestionGap = 6f;
 
-            if (dotColor.HasValue)
-                DrawDot(lastEnd + 6f, rect, dotColor.Value);
+            var clusterWidth = actionWidth + (hasSuggestion ? suggestionGap + suggestionWidth : 0f);
+            var actionX = Mathf.Max(messageRect.xMax + 6f, rect.xMax - clusterWidth);
+
+            DrawLink(new Rect(actionX, rect.y, actionWidth, rect.height), actionContent, baseColor, hoverColor, onClick);
+
+            if (hasSuggestion)
+                DrawLink(new Rect(actionX + actionWidth + suggestionGap, rect.y, suggestionWidth, rect.height),
+                    suggestionContent, baseColor, hoverColor, onSuggestion);
         }
 
         /// <summary>
@@ -510,39 +585,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static void DrawRequiredNotice(Rect rect, string message, string detail) =>
             DrawNotice(rect, message, actionText: string.Empty, detail: detail, onClick: null);
 
-        // Draws one underlined, clickable, hover-tracking link word at x and returns its right edge, so the caller can
-        // lay the next segment out after it. Shared by the Fix action and the trailing Smart Fix suggestion; always the
-        // warning palette (the shared-reference notice's per-rid colour rides the trailing dot, not the link).
-        private static float DrawLink(float x, Rect rect, string text, string detail, Action onClick)
+        // Draws one bold, clickable, hover-tracking link word in the given rect (no underline — it lightens on hover),
+        // mirroring the UIToolkit notice action. Shared by the Fix action, the trailing Smart Fix suggestion and the
+        // shared-reference Make-unique action; the caller supplies the resting and hover colours (warning amber, or the
+        // per-rid colour lightened toward white for the shared notice).
+        private static void DrawLink(Rect linkRect, GUIContent content, Color color, Color hoverColor, Action onClick)
         {
-            var content = new GUIContent(text, detail);
-            var width = _actionStyle.CalcSize(content).x;
-            var linkRect = new Rect(x, rect.y, width, rect.height);
-
             var hover = linkRect.Contains(Event.current.mousePosition);
-            var color = hover ? NoticeColorHover : NoticeColor;
-            _actionStyle.normal.textColor = color;
-            _actionStyle.hover.textColor = color;
+            var drawColor = hover ? hoverColor : color;
+            _actionStyle.normal.textColor = drawColor;
+            _actionStyle.hover.textColor = drawColor;
 
             EditorGUIUtility.AddCursorRect(linkRect, MouseCursor.Link);
-            var clicked = GUI.Button(linkRect, content, _actionStyle);
-
-            // Underline the word — IMGUI styles have no text-decoration, so draw the rule manually.
-            var underline = new Rect(linkRect.x, linkRect.center.y + EditorGUIUtility.singleLineHeight * 0.35f, width, 1f);
-            EditorGUI.DrawRect(underline, color);
-
-            if (clicked) onClick();
-            return linkRect.xMax;
+            if (GUI.Button(linkRect, content, _actionStyle)) onClick();
         }
 
-        // Draws the small rid-coloured dot trailing the shared-reference notice — the only per-rid coloured element, so
-        // aliased fields can be matched by colour while the rest of the row keeps the warning palette. IMGUI has no
-        // rounded primitive, so it is a small filled square, mirroring the UIToolkit notice's __dot.
+        // Draws the small rid-coloured swatch leading the shared-reference notice — its colour is shared with the tinted
+        // message, action and header stripe, so aliased fields match at a glance. Drawn as a filled circle to mirror the
+        // UIToolkit notice's rounded __dot: IMGUI has no circle primitive, so the 1×1 white texture is tinted and
+        // rounded fully (borderRadius = half the size) via GUI.DrawTexture.
         private static void DrawDot(float x, Rect rect, Color color)
         {
-            const float size = 8f;
-            var dotRect = new Rect(x, rect.y + (rect.height - size) * 0.5f, size, size);
-            EditorGUI.DrawRect(dotRect, color);
+            var dotRect = new Rect(x, rect.y + (rect.height - DotSize) * 0.5f, DotSize, DotSize);
+            GUI.DrawTexture(dotRect, Texture2D.whiteTexture, ScaleMode.StretchToFill,
+                alphaBlend: true, imageAspect: 0f, color: color, borderWidth: 0f, borderRadius: DotSize * 0.5f);
         }
     }
 }
