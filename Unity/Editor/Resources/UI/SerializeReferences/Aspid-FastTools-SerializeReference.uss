@@ -56,21 +56,33 @@
     background-image:                                       resource("d_FolderOpened Icon");
 }
 
+/* Indent the foldout content (header arrow, notice, child fields) so the status stripe sits in a small left gutter
+   with breathing room on both sides instead of flush against the arrow and the notice text. Padding (not margin) so it
+   stacks on top of Unity's margin-based foldout nesting indent rather than overriding it — otherwise nested fields and
+   list elements lose their indent and their arrow slides back under the stripe. The stripe is an absolutely-positioned
+   sibling of the foldout, so this padding shifts only the content, not the stripe. */
+.aspid-fasttools-serialize-reference > .unity-foldout {
+    padding-left:                                         8px;
+}
+
 /* --- Status stripe ---
-   A 3 px absolutely-positioned bar on the left edge of the field root, flagging the field at a glance. Hidden
-   (zero width) by default; the --active modifier reveals it. Both a shared reference and a missing type paint it the
-   warning amber via the --warning modifier; the shared reference's per-rid colour rides a small dot in its notice
-   instead (see __dot). */
+   A 3 px absolutely-positioned bar near the left edge of the field root, flagging the field at a glance. Inset 2 px
+   from the edge and sitting in the gutter opened by the foldout's left margin above, so it clears both the inspector
+   edge and the content. Hidden (zero width) by default; the --active modifier reveals it. Both a shared reference and
+   a missing type paint it the warning amber via the --warning modifier; the shared reference's per-rid colour rides a
+   small dot in its notice instead (see __dot). */
 .aspid-fasttools-serialize-reference__stripe {
+    margin-left:                                           0;
     position:                                              absolute;
-    left:                                                  0;
+    left:                                                  2px;
     top:                                                   0;
     bottom:                                                0;
     width:                                                 0;
 }
 
 .aspid-fasttools-serialize-reference__stripe--active {
-    width:                                                 3px;
+    margin-left:                                           7px;
+    width:                                                 2px;
 }
 
 .aspid-fasttools-serialize-reference__stripe--warning {
@@ -84,7 +96,7 @@
     flex-direction:                                        row;
     align-items:                                           center;
     flex-wrap:                                             wrap;
-    /* Left inset clears the 3 px rid stripe on the field's left edge so the warning icon never overlaps it. */
+    /* No left inset of its own — the foldout's left margin already clears the stripe gutter for the whole content. */
     margin:                                                2px 0 1px 5px;
 }
 
