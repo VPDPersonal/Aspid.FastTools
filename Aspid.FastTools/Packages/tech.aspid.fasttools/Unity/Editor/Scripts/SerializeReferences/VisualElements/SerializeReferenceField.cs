@@ -36,9 +36,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // its content, so an expanded field shows the notices ABOVE its child fields — matching the IMGUI drawer.
         private const string NoticesClass = BlockClass + "__notices";
 
-        // A single 3 px stripe on the field's left edge flags it at a glance. The --active modifier gives it width;
-        // the colour is either set inline from code (the per-rid shared-reference colour) or, for the --warning
-        // modifier (a missing type), pulled from the warning palette in USS.
+        // A single 2 px stripe on the field's left edge flags it at a glance. The --active modifier gives it width; a
+        // missing type paints it the warning amber from USS (--warning), while a shared reference paints it inline from
+        // code in that reference's per-rid colour, matching the notice's swatch and tinted message.
         private const string StripeClass = BlockClass + "__stripe";
         private const string StripeActiveClass = StripeClass + "--active";
         private const string StripeWarningClass = StripeClass + "--warning";
@@ -80,10 +80,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private bool _contentBuilt;
         private bool _mixedTypes;
 
-        // Stripe inputs, written by the notice updates and consumed by UpdateStripe: a shared reference or a missing
-        // type both paint the warning amber stripe (the shared reference's per-rid colour rides a dot in its notice).
+        // Stripe inputs, written by the notice updates and consumed by UpdateStripe: a missing type paints the warning
+        // amber stripe; a shared reference paints it in its per-rid colour (cached in _sharedColor).
         private bool _isMissing;
         private bool _isShared;
+        private Color _sharedColor;
         private float _arrowInset = float.NaN;
 
         public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null)
@@ -102,13 +103,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _foldout.RegisterValueChangedCallback(OnFoldoutToggled);
             _content = _foldout.contentContainer;
 
-            // Host the per-asset notices between the foldout toggle and its content. When the foldout is expanded the
-            // notices then render ABOVE the child fields — matching the IMGUI drawer, which draws the same notices after
-            // the header row and before the children. Appended straight to `this` (after the foldout) they would instead
-            // sit BELOW the children. As a sibling of the content container — not inside it — the host carries no child
-            // indent and stays visible while the foldout is collapsed, exactly like the IMGUI path.
+            // Host the per-asset notices as a sibling of the foldout's content, placed AFTER it, so the shared-reference
+            // notice (the only one that coexists with child fields — missing / required / mixed render no children)
+            // sits at the very bottom of the field, under its nested properties. As a sibling of the content container —
+            // not inside it — the host carries no child indent and stays visible while the foldout is collapsed.
             _notices = new VisualElement().AddClass(NoticesClass);
-            _foldout.hierarchy.Insert(_foldout.hierarchy.IndexOf(_content), _notices);
+            _foldout.hierarchy.Insert(_foldout.hierarchy.IndexOf(_content) + 1, _notices);
 
             _caption = new TextElement()
                 .AddClass(EnumField.textUssClassName)
@@ -373,39 +373,51 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            // The left stripe is the warning amber (painted by UpdateStripe); the per-rid colour rides a small dot
-            // trailing the "Make unique" link instead, so aliased fields can still be matched by colour alone without
-            // tinting the whole row.
-            var dotColor = SerializeReferenceRidColor.ForRid(rid);
+            // The per-rid colour is the field's shared-reference signal: it fills the notice's leading swatch, tints its
+            // message, and (cached here for UpdateStripe) paints the left stripe — so the whole field reads in that one
+            // colour and aliased fields match at a glance.
+            var ridColor = SerializeReferenceRidColor.ForRid(rid);
+            _sharedColor = ridColor;
 
             _sharedNotice ??= new SerializeReferenceNotice();
             if (_sharedNotice.parent is null) _notices.AddChild(_sharedNotice);
 
+            // Passing the rid colour also flips the notice to its shared treatment (see SerializeReferenceNotice).
             _sharedNotice.Set(
-                message: "Shared reference —",
+                message: "Shared reference",
                 actionText: "Make unique",
                 detail: "This reference is shared with another field — editing one changes both.\n" +
                         "Click Make unique to give this field its own independent copy.",
                 onAction: MakeUnique,
-                dotColor: dotColor);
+                dotColor: ridColor);
         }
 
-        // Picks the left-edge stripe from the inputs cached by the notice updates: a shared reference or a missing type
-        // both paint it the warning amber (the shared reference's per-rid colour rides a dot in its notice instead).
-        // Nothing else shows a stripe.
+        // Picks the left-edge stripe from the inputs cached by the notice updates: a missing type paints it the warning
+        // amber (from USS), a shared reference the cached per-rid colour (inline); a field that is both takes the
+        // warning (the more urgent). Nothing else shows a stripe.
         private void UpdateStripe()
         {
-            if (_isShared || _isMissing) ApplyWarningStripe();
+            if (_isMissing) ApplyWarningStripe();
+            else if (_isShared) ApplySharedStripe(_sharedColor);
             else RemoveStripe();
         }
 
-        // The warning stripe is always the same amber, so its colour comes from the palette via the --warning class;
-        // the inline colour is cleared so the USS value applies.
+        // Missing type: the fixed warning amber, from the palette via the --warning class (inline colour cleared).
         private void ApplyWarningStripe()
         {
             EnsureStripe();
             _stripe.style.backgroundColor = StyleKeyword.Null;
             _stripe.EnableInClassList(StripeWarningClass, true);
+            _stripe.EnableInClassList(StripeActiveClass, true);
+        }
+
+        // Shared reference: the reference's per-rid colour, set inline (unique per reference) so the stripe matches the
+        // notice's swatch and tinted message down the field's left edge.
+        private void ApplySharedStripe(Color color)
+        {
+            EnsureStripe();
+            _stripe.EnableInClassList(StripeWarningClass, false);
+            _stripe.style.backgroundColor = color;
             _stripe.EnableInClassList(StripeActiveClass, true);
         }
 
