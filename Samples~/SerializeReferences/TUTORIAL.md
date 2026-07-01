@@ -57,6 +57,11 @@ A `List<T>` (or array) of a `[SerializeReference]` type turns every element into
 This is the first behaviour the attribute *changes* versus stock Unity: the native "+" would clone the previous
 element (and alias its data); here "+" always appends a fresh, typed instance.
 
+> **IMGUI note.** The UIToolkit field manages the list "+" automatically. In an IMGUI inspector Unity applies the
+> `[TypeSelector]` drawer to each *element*, so it cannot reach the list's "+" — draw such lists with
+> `SerializeReferenceIMGUIList.Draw(listProperty, label, elementType)` to get the same picker-backed "+" (see
+> `Editor/IMGUILoadoutEditor.cs`). The per-element dropdowns need no special handling.
+
 ---
 
 ## Lesson 3 — Abstract bases and interfaces
