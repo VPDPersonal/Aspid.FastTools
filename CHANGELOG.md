@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added a **Project Settings** page (`Project Settings → Aspid FastTools → SerializeReference`) to toggle auto de-alias, breakage detection, the build/CI gate severity, and excluded scan folders. Breakage detection is per-machine `EditorPrefs`; auto de-alias, the build/CI gate severity and excluded scan folders must behave the same for every teammate and for CI, so they are stored in a committed `ProjectSettings/SerializeReferenceSharedSettings.asset` instead.
 - Added a **build / CI gate**: an `IPreprocessBuildWithReport` that warns or fails a player build on missing managed references, and a headless `-executeMethod Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck` entry point that scans the project, writes a report, and exits non-zero for CI. The gate severity (`Off` / `Warn` / `Fail`, Warn by default) is stored in the committed `ProjectSettings/SerializeReferenceSharedSettings.asset` — not per-machine `EditorPrefs` — so the developer's choice travels to a clean CI runner: `Off` skips the check, `Warn` logs but exits 0, `Fail` exits 1 on violations. The `-srGateRequired` check covers prefabs, ScriptableObjects **and scenes** — a `.unity` is read through a pure-YAML pass (resolving each MonoBehaviour's required fields by its `m_Script` guid) for top-level required fields, since scene objects cannot be loaded for inspection. Flags: `-srGateReport <path>`, `-srGateRequired`, `-srGateWarnOnly` (force exit 0) and `-srGateFail` (force exit 1 on violations) override the committed severity per run.
 - The bulk `Fix all` confirmation now shows a **diff preview** of the exact YAML lines that will change (old → new) before the irreversible rewrite.
+- A new installable **SerializeReferences** sample (imported via Package Manager) demonstrating the `[TypeSelector]` managed-reference picker across single fields, `List<T>`, abstract bases, narrowing, nested references, generics and `Required`, in both UIToolkit and IMGUI inspectors, with a step-by-step `TUTORIAL` and a guided `TypeSelectorTutorial` scene.
 
 ### Changed
 - The **Repair Missing References** and **Managed References** windows are merged into a single workbench whose tabs are individual menu entries under `Tools → Aspid 🐍 → FastTools` — **Welcome**, **Asset References** (the reference graph with inline Fix / Clear / Open Source Prefab — which subsumes the old per-asset repair list), **Project References** (the project-wide grouped bulk fix), and **Settings**. A result in Project References links straight to that asset's Asset References graph.
@@ -43,13 +44,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - A `null` element in a `Type[]` member referenced by a `string` / `SerializableType` `[TypeSelector]` field no longer throws `NullReferenceException` and aborts the type picker — null entries are now filtered out before building the candidate list. ([#51])
 - Hardened the asset-YAML managed-reference editor (`SerializeReferenceYamlEditor`) against non-Unity / oddly-indented files. Its indent measure now counts tabs so it stays aligned with the `- rid:` entry-bounding regexes (previously a tab read as indent 0 here but as a real indent in the regex, so an entry block could be mis-bounded), and the destructive writes (type rewrite, entry removal, reference null-out) now (a) refuse to touch a file that is not a Unity-serialized YAML asset — one lacking the `%TAG !u!` directive — and (b) bail before any write when the target `RefIds` entry uses unexpected tab / mixed indentation, rather than risk a mis-bounded, non-undoable edit. Unity always writes space-indented YAML with the directive preamble, so well-formed assets are unaffected.
-
-### Fixed
 - The UIToolkit `[TypeSelector]` managed-reference drawer now renders its missing / shared / required notices **above** the assigned instance's child fields when the foldout is expanded, matching the IMGUI drawer (the notices previously appeared *below* the children because they were appended to the field root after the foldout). They are now hosted between the foldout toggle and its content, so collapsed-state behaviour is unchanged.
 
 ### Added (internal)
-- First package test coverage: an `Aspid.FastTools.Unity.Editor.Tests` EditMode assembly exercising the `SerializeReferenceYamlEditor` parser (missing-type discovery, propertyPath → rid resolution incl. nested/list, stored-type reading, round-trip rewrite, entry removal, aliased-pointer nulling + the dialog pointer-count helper, diff-preview consistency) plus the YAML probe cache.
-- First package test coverage: an `Aspid.FastTools.Unity.Editor.Tests` EditMode assembly exercising the `SerializeReferenceYamlEditor` parser (missing-type discovery, propertyPath → rid resolution incl. nested/list, stored-type reading, round-trip rewrite, entry removal, diff-preview consistency) plus the YAML probe cache, and the write-path hardening (non-Unity-file refusal, tab-indent bail).
+- First package test coverage: an `Aspid.FastTools.Unity.Editor.Tests` EditMode assembly exercising the `SerializeReferenceYamlEditor` parser (missing-type discovery, propertyPath → rid resolution incl. nested/list, stored-type reading, round-trip rewrite, entry removal, aliased-pointer nulling + the dialog pointer-count helper, diff-preview consistency) plus the YAML probe cache, and the write-path hardening (non-Unity-file refusal, tab-indent bail).
+- `AspidSwitch` — a branded iOS-style on/off toggle (`BaseField<bool>`) internal editor component, used by the SerializeReference **Settings** tab.
 
 ## [1.0.0-rc.5] — 2026-06-06
 
@@ -180,6 +179,7 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 [#38]: https://github.com/VPDPersonal/Aspid.FastTools/pull/38
 [#43]: https://github.com/VPDPersonal/Aspid.FastTools/pull/43
 [#44]: https://github.com/VPDPersonal/Aspid.FastTools/pull/44
+[#51]: https://github.com/VPDPersonal/Aspid.FastTools/pull/51
 [Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...HEAD
 [1.0.0-rc.5]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...v1.0.0-rc.4
