@@ -406,23 +406,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            // The per-rid colour is the field's shared-reference signal: it fills the notice's leading swatch, tints its
-            // message, and (cached here for UpdateStripe) paints the left stripe — so the whole field reads in that one
-            // colour and aliased fields match at a glance.
-            var ridColor = SerializeReferenceRidColor.ForRid(rid);
-            _sharedColor = ridColor;
+            // The badge number identifies the shared group: every field aliasing this rid shows the same "(n)", so two
+            // like-numbered fields are the same reference at a glance. The colour is keyed to that badge number (not a
+            // rid hash), so consecutive badges are maximally separated and the number and colour always agree.
+            var index = SerializeReferenceHelpers.GetSharedReferenceIndex(_property);
+
+            // The per-index colour is the field's shared-reference signal: it fills the notice's leading swatch, tints
+            // its message, and (cached here for UpdateStripe) paints the left stripe — so the whole field reads in that
+            // one colour and aliased fields match at a glance.
+            var sharedColor = SerializeReferenceRidColor.ForIndex(index);
+            _sharedColor = sharedColor;
 
             _sharedNotice ??= new SerializeReferenceNotice();
             if (_sharedNotice.parent is null) _notices.AddChild(_sharedNotice);
 
-            // Passing the rid colour also flips the notice to its shared treatment (see SerializeReferenceNotice).
+            // Passing the colour also flips the notice to its shared treatment (see SerializeReferenceNotice).
             _sharedNotice.Set(
-                message: "Shared reference",
+                message: index > 0 ? $"Shared reference ({index})" : "Shared reference",
                 actionText: "Make unique",
                 detail: "This reference is shared with another field — editing one changes both.\n" +
                         "Click Make unique to give this field its own independent copy.",
                 onAction: MakeUnique,
-                dotColor: ridColor);
+                dotColor: sharedColor);
         }
 
         // Picks the left-edge stripe from the inputs cached by the notice updates: a missing type paints it the warning
