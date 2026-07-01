@@ -185,8 +185,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // -= before += so a recycled ListView item (detach → re-attach) never double-subscribes.
                 ManagedReferencesChanged -= OnManagedReferencesChanged;
                 ManagedReferencesChanged += OnManagedReferencesChanged;
+                // Undo/redo reverts the object outside every mutation path, so ManagedReferencesChanged never fires and
+                // only the field whose OWN value changed gets a value-tracking callback — a sibling that re-gained (or
+                // lost) an alias would stay stale until reselect. So each field also re-evaluates itself on undo/redo.
+                Undo.undoRedoPerformed -= OnUndoRedo;
+                Undo.undoRedoPerformed += OnUndoRedo;
             });
-            RegisterCallback<DetachFromPanelEvent>(_ => ManagedReferencesChanged -= OnManagedReferencesChanged);
+            RegisterCallback<DetachFromPanelEvent>(_ =>
+            {
+                ManagedReferencesChanged -= OnManagedReferencesChanged;
+                Undo.undoRedoPerformed -= OnUndoRedo;
+            });
         }
 
         // The arrow sits in-flow before the aligned label, so the label (and the dropdown that
@@ -700,6 +709,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (!IsPropertyAlive()) return;
             _property.serializedObject.Update();
+            Refresh(forceRebuild: false);
+        }
+
+        // Undo/redo changed the object; re-evaluate this field's notice with fresh data — the reverted managed reference
+        // may have re-aliased or un-aliased this field. Same freshness dance as ApplyReferenceChange (live-object Update
+        // + drop the per-frame alias memo) since undo bypasses that path entirely.
+        private void OnUndoRedo()
+        {
+            if (!IsPropertyAlive()) return;
+            _property.serializedObject.Update();
+            SerializeReferenceHelpers.InvalidateSharedReferenceCache();
             Refresh(forceRebuild: false);
         }
 
