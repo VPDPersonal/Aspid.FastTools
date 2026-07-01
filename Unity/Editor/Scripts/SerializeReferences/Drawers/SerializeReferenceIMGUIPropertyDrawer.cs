@@ -66,6 +66,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var showShared = noticesApply && SerializeReferenceHelpers.HasSharedReference(property);
             var showRequired = noticesApply && SerializeReferenceRequiredGate.IsViolation(property);
 
+            // The shared group's 1-based badge number (0 when not shared) drives BOTH the stripe colour and the notice,
+            // so a badge's colour tracks its number — (1),(2),(3) always read as distinct colours — instead of a rid
+            // hash that could alias two unrelated groups onto a similar hue.
+            var sharedIndex = showShared ? SerializeReferenceHelpers.GetSharedReferenceIndex(property) : 0;
+
             // Reserve a left gutter (StripeGutter) for the status stripe ONLY on a field that shows one, by shifting the
             // body right — the bar then sits in the reserved space, mirroring the UIToolkit field's padding-left. A field
             // with no stripe keeps its natural position, so plain foldouts get no needless indent. Missing / required
@@ -173,14 +178,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Left status stripe spanning the whole field — header, notices and any expanded children — so a shared
             // group reads as one continuous colour down through its value's fields, mirroring the UIToolkit field's
-            // full-height __stripe (top:0 bottom:0). The reference's per-rid colour for a shared reference, else the
+            // full-height __stripe (top:0 bottom:0). The badge's per-index colour for a shared reference, else the
             // warning amber for a missing-type / required violation. Offset into the left gutter (StripeOffset) so it
             // clears the foldout arrow / label, and inset top and bottom (StripeInsetY) so adjacent stripes stay apart.
             {
-                var stripeRid = property.managedReferenceId;
                 Color? stripeColor = null;
-                if (showShared && stripeRid >= 0)
-                    stripeColor = SerializeReferenceRidColor.ForRid(stripeRid);
+                if (showShared && sharedIndex > 0)
+                    stripeColor = SerializeReferenceRidColor.ForIndex(sharedIndex);
                 else if (showMissing || showRequired)
                     stripeColor = NoticeColor;
 
@@ -261,11 +265,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // coexists with children (missing / required render no value, so no children), so only it moves down here.
             if (showShared)
             {
-                // The per-rid colour tints the whole notice — leading swatch, message and Make-unique action — and the
-                // full-height stripe, so aliased fields read as one colour and match at a glance (mirrors the UIToolkit
-                // --shared notice: no warning icon, since a shared reference is attention, not an error).
-                var rid = property.managedReferenceId;
-                Color? ridColor = rid >= 0 ? SerializeReferenceRidColor.ForRid(rid) : null;
+                // The badge's per-index colour tints the whole notice — leading swatch, message and Make-unique action —
+                // and the full-height stripe, so aliased fields read as one colour and the "(n)" badge and its colour
+                // always agree (mirrors the UIToolkit --shared notice: no warning icon, since a shared reference is
+                // attention, not an error).
+                Color? indexColor = sharedIndex > 0 ? SerializeReferenceRidColor.ForIndex(sharedIndex) : null;
 
                 // Pull the notice left by the foldout arrow's reserved width so its leading swatch lines up under the
                 // header's arrow (the value is always a foldout here); widen to match so "Make unique" stays right-pinned.
@@ -275,12 +279,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 DrawNotice(
                     noticeRect,
-                    "Shared reference",
+                    sharedIndex > 0 ? $"Shared reference ({sharedIndex})" : "Shared reference",
                     "Make unique",
                     "This reference is shared with another field — editing one changes both.\n" +
                     "Click Make unique to give this field its own independent copy.",
                     () => SerializeReferenceHelpers.MakeReferenceUnique(persistent),
-                    ridColor: ridColor);
+                    ridColor: indexColor);
 
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }

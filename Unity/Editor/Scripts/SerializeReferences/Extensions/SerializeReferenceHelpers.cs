@@ -958,12 +958,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return GetReferenceIdCounts(property.serializedObject).TryGetValue(id, out var count) && count > 1;
         }
 
+        /// <summary>
+        /// The 1-based ordinal of this property's shared-reference group within its object — a small, stable badge
+        /// number ("Shared reference (1)", "(2)", …) so two fields aliasing the same instance show the same number and
+        /// two distinct shared groups show different numbers. Numbering follows each rid's first appearance in document
+        /// order and is shared by the IMGUI and UIToolkit notices, so the same reference reads the same on both. Returns
+        /// <c>0</c> when the property is empty or not part of a shared group.
+        /// </summary>
+        public static int GetSharedReferenceIndex(SerializedProperty property)
+        {
+            if (property.managedReferenceValue is null) return 0;
+
+            var id = property.managedReferenceId;
+            return GetSharedReferenceIndices(property.serializedObject).TryGetValue(id, out var index) ? index : 0;
+        }
+
         // Per-object, per-frame memo of how many managed-reference fields carry each id. Built by a single full-object
         // walk and shared across every HasSharedReference call in the same repaint (keyed by the SerializedObject and the
         // current IMGUI frame), collapsing the 2·N walks GetHeight + Draw would otherwise do into one walk per object.
         private static int _aliasFrame = -1;
         private static SerializedObject _aliasSerializedObject;
         private static readonly Dictionary<long, int> AliasCounts = new();
+
+        // Each id's first-sighting order during the walk above, so the shared-reference badge numbers follow document
+        // order (first shared group in the inspector → (1)) rather than the dictionary's incidental iteration order.
+        private static readonly List<long> AliasOrder = new();
 
         private static Dictionary<long, int> GetReferenceIdCounts(SerializedObject serializedObject)
         {
@@ -972,17 +991,46 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return AliasCounts;
 
             AliasCounts.Clear();
+            AliasOrder.Clear();
             TraverseManagedReferences(serializedObject, other =>
             {
                 var id = other.managedReferenceId;
-                AliasCounts.TryGetValue(id, out var count);
+                if (!AliasCounts.TryGetValue(id, out var count)) AliasOrder.Add(id); // first sighting → record its order
                 AliasCounts[id] = count + 1;
                 return false;
             });
 
+            _sharedIndicesFrame = -1; // the counts (and their order) were rebuilt — the derived index map is now stale
             _aliasFrame = frame;
             _aliasSerializedObject = serializedObject;
             return AliasCounts;
+        }
+
+        // Per-object, per-frame memo mapping each shared (count > 1) id to its 1-based badge number, derived from the
+        // counts memo above. Kept separate so it is built only when a notice actually asks for a badge, and reused
+        // across the several fields of one shared group in the same repaint.
+        private static int _sharedIndicesFrame = -1;
+        private static SerializedObject _sharedIndicesObject;
+        private static readonly Dictionary<long, int> SharedIndices = new();
+
+        private static Dictionary<long, int> GetSharedReferenceIndices(SerializedObject serializedObject)
+        {
+            // Refresh the counts/order for this frame first (this also resets _sharedIndicesFrame when it rebuilds).
+            var counts = GetReferenceIdCounts(serializedObject);
+
+            var frame = Time.frameCount;
+            if (_sharedIndicesFrame == frame && ReferenceEquals(_sharedIndicesObject, serializedObject))
+                return SharedIndices;
+
+            SharedIndices.Clear();
+            var next = 1;
+            foreach (var id in AliasOrder)
+                if (counts.TryGetValue(id, out var count) && count > 1)
+                    SharedIndices[id] = next++;
+
+            _sharedIndicesFrame = frame;
+            _sharedIndicesObject = serializedObject;
+            return SharedIndices;
         }
 
         /// <summary>
@@ -991,7 +1039,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// the memo is keyed by frame, so a synchronous re-query right after the mutation would otherwise return this
         /// frame's pre-mutation snapshot and still report the just-broken alias as shared.
         /// </summary>
-        public static void InvalidateSharedReferenceCache() => _aliasFrame = -1;
+        public static void InvalidateSharedReferenceCache()
+        {
+            _aliasFrame = -1;
+            _sharedIndicesFrame = -1;
+        }
 
         /// <summary>
         /// Breaks an aliased managed reference by replacing it with an independent clone that carries the same data
