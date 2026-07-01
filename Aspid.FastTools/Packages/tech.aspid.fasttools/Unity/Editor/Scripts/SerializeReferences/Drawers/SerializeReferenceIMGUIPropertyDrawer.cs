@@ -220,29 +220,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
-            if (showShared)
-            {
-                // The per-rid colour tints the whole notice — leading swatch, message and Make-unique action — and the
-                // header stripe drawn above, so aliased fields read as one colour and match at a glance (mirrors the
-                // UIToolkit --shared notice: no warning icon, since a shared reference is attention, not an error).
-                var rid = property.managedReferenceId;
-                Color? ridColor = rid >= 0 ? SerializeReferenceRidColor.ForRid(rid) : null;
-
-                var noticeRect = new Rect(content.x, y, content.width, EditorGUIUtility.singleLineHeight);
-                var persistent = property.Persistent();
-
-                DrawNotice(
-                    noticeRect,
-                    "Shared reference",
-                    "Make unique",
-                    "This reference is shared with another field — editing one changes both.\n" +
-                    "Click Make unique to give this field its own independent copy.",
-                    () => SerializeReferenceHelpers.MakeReferenceUnique(persistent),
-                    ridColor: ridColor);
-
-                y += EditorGUIUtility.singleLineHeight + spacing;
-            }
-
             // A required-but-empty reference shows a non-actionable notice; the header dropdown above is the fix.
             if (showRequired)
             {
@@ -256,11 +233,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
-            if (!hasValue || !property.isExpanded) return;
+            if (hasValue && property.isExpanded)
+            {
+                EditorGUI.indentLevel++;
+                DrawChildren(property, body.x, body.width, spacing, ref y);
+                EditorGUI.indentLevel--;
+            }
 
-            EditorGUI.indentLevel++;
-            DrawChildren(property, body.x, body.width, spacing, ref y);
-            EditorGUI.indentLevel--;
+            // Shared-reference notice sits at the very bottom of the field — under its nested properties — mirroring the
+            // UIToolkit field, where the notice is a sibling placed after the foldout content. It is the only notice that
+            // coexists with children (missing / required render no value, so no children), so only it moves down here.
+            if (showShared)
+            {
+                // The per-rid colour tints the whole notice — leading swatch, message and Make-unique action — and the
+                // full-height stripe, so aliased fields read as one colour and match at a glance (mirrors the UIToolkit
+                // --shared notice: no warning icon, since a shared reference is attention, not an error).
+                var rid = property.managedReferenceId;
+                Color? ridColor = rid >= 0 ? SerializeReferenceRidColor.ForRid(rid) : null;
+
+                // Pull the notice left by the foldout arrow's reserved width so its leading swatch lines up under the
+                // header's arrow (the value is always a foldout here); widen to match so "Make unique" stays right-pinned.
+                var noticeRect = new Rect(content.x - FoldoutArrowIndent, y,
+                    content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
+                var persistent = property.Persistent();
+
+                DrawNotice(
+                    noticeRect,
+                    "Shared reference",
+                    "Make unique",
+                    "This reference is shared with another field — editing one changes both.\n" +
+                    "Click Make unique to give this field its own independent copy.",
+                    () => SerializeReferenceHelpers.MakeReferenceUnique(persistent),
+                    ridColor: ridColor);
+
+                y += EditorGUIUtility.singleLineHeight + spacing;
+            }
         }
 
         private static void DrawChildren(SerializedProperty property, float x, float width, float spacing, ref float y)
@@ -479,13 +486,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // circle via GUI.DrawTexture's borderRadius.
         private const float DotSize = 8f;
 
+        // The shared-reference notice sits under a foldout header, whose arrow reserves this much space to the left of
+        // the value's inline label. Pull the notice's leading swatch back by it so the swatch lines up under the foldout
+        // arrow rather than the label to its right.
+        private const float FoldoutArrowIndent = 11f;
+
         // Left status stripe. StripeGutter is the left padding the whole field body is shifted by, reserving a clear
         // gutter for the stripe so it never rides on the foldout arrow (to its right) or a list drag handle (to its
         // left) — mirroring the UIToolkit field's padding-left. StripeOffset places the bar inside that gutter, measured
         // left from the indented content (so its gap from the arrow is the same at every nesting depth); keep it below
         // StripeGutter. StripeInsetY trims the top and bottom so adjacent full-height stripes (e.g. two shared list
         // elements) read as separate bars with a small gap instead of one merged line.
-        private const float StripeGutter = 6f;
+        private const float StripeGutter = 5f;
         private const float StripeWidth = 2f;
         private const float StripeOffset = 16f;
         private const float StripeInsetY = 2f;
