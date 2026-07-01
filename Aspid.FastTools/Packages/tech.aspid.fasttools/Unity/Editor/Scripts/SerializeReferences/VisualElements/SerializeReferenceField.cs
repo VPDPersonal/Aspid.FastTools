@@ -447,10 +447,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : EditorWindow.mouseOverWindow;
             if (!window) return;
 
+            // Anchor the picker to the notice itself (top-left + its own size) so ShowAsDropDown opens flush below the
+            // notice's bottom edge. Passing yMax as the anchor top double-counted the height and dropped the picker a
+            // full notice-row lower, leaving a visible gap — mirror the dropdown path, which anchors from yMin.
             var bound = _missingNotice.worldBound;
             var screenRect = new Rect(
                 window.position.x + bound.xMin,
-                window.position.y + bound.yMax,
+                window.position.y + bound.yMin,
                 bound.width,
                 bound.height);
 
