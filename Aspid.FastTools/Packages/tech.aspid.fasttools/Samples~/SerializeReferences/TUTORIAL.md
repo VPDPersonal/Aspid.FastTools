@@ -21,8 +21,8 @@ private IWeapon _weapon;
 Prefer a clean slate? Add an empty GameObject and attach the **TypeSelectorTutorial** component.
 
 Every lesson below works in both the default **UIToolkit** inspector and the **IMGUI** inspector — the package
-ships a drawer for each path and they are at feature parity. (The sibling `IMGUILoadout` component forces the IMGUI
-path if you want to compare.)
+ships a drawer for each path and they are at feature parity. (Every sample prefab ships an `IMGUI…` twin — via the
+sibling `IMGUILoadout` / `IMGUISlottedLoadout` components — that forces the IMGUI path if you want to compare.)
 
 ---
 
@@ -277,6 +277,6 @@ flags `-srGateWarnOnly` (force exit 0) / `-srGateFail` (force fail on violations
 | `Scripts/Weapons/` | `IWeapon` + `IMelee`/`IRanged` branches and `Sword`/`Pistol`/`Shotgun`/`Railgun` |
 | `Scripts/Effects/` | abstract `StatusEffect` + `BurnEffect`/`FreezeEffect` |
 | `Scripts/Modifiers/` | the `Modifier<T>` generic hierarchy |
-| `Scripts/SlottedLoadout.cs` | references nested in containers (Lesson 7, standalone) |
+| `Scripts/SlottedLoadout.cs` | references nested in containers (Lesson 7, standalone) — its `IMGUISlottedLoadout` twin forces the IMGUI path |
 | `Scripts/WeaponPreset.cs` + `Presets/Broken*.asset` | the missing-type repair flow |
-| `Scripts/IMGUILoadout.cs` + `Scripts/Editor/IMGUILoadoutEditor.cs` | the same fields forced through the IMGUI path |
+| `Scripts/IMGUILoadout.cs` / `Scripts/IMGUISlottedLoadout.cs` (+ their `Editor/` companions) | the same fields forced through the IMGUI path; every demo prefab has an `IMGUI…` twin |
