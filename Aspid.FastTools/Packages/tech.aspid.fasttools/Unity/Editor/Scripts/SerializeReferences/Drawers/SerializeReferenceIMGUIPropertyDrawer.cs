@@ -66,10 +66,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var showShared = noticesApply && SerializeReferenceHelpers.HasSharedReference(property);
             var showRequired = noticesApply && SerializeReferenceRequiredGate.IsViolation(property);
 
-            // Reserve a left gutter (StripeGutter) for the status stripe ONLY on a field that actually shows one, by
-            // shifting that field's body right — the bar then sits in the reserved space and never rides on the foldout
-            // arrow (to its right) or a list drag handle (to its left), mirroring the UIToolkit field's padding-left. A
-            // field with no stripe keeps its natural position, so plain foldouts get no needless indent.
+            // Reserve a left gutter (StripeGutter) for the status stripe ONLY on a field that shows one, by shifting the
+            // body right — the bar then sits in the reserved space, mirroring the UIToolkit field's padding-left. A field
+            // with no stripe keeps its natural position, so plain foldouts get no needless indent. Missing / required
+            // fields keep the same gutter (so the bar stays put), but pull their arrow-less label + notice left by
+            // FoldoutArrowIndent — onto the foldout-arrow spot — so they hug the bar instead of trailing to its right.
+            var flat = showMissing || showRequired;
             var gutter = showMissing || showShared || showRequired ? StripeGutter : 0f;
             var body = new Rect(position.x + gutter, position.y, position.width - gutter, position.height);
 
@@ -104,8 +106,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             var labelRect = new Rect(line.x, line.y, EditorGUIUtility.labelWidth, line.height);
-            if (hasValue) property.isExpanded = EditorGUI.Foldout(labelRect, property.isExpanded, label, toggleOnLabelClick: true);
-            else EditorGUI.LabelField(labelRect, label);
+            if (hasValue)
+            {
+                property.isExpanded = EditorGUI.Foldout(labelRect, property.isExpanded, label, toggleOnLabelClick: true);
+            }
+            else
+            {
+                // A flat (missing / required) field has no foldout arrow, so pull its label left onto the arrow's spot —
+                // hugging the stripe and lining up with a foldout sibling's arrow instead of trailing an empty slot.
+                var labelPull = flat ? FoldoutArrowIndent : 0f;
+                EditorGUI.LabelField(new Rect(labelRect.x - labelPull, labelRect.y,
+                    labelRect.width + labelPull, labelRect.height), label);
+            }
 
             var dropdownRect = new Rect(
                 line.x + EditorGUIUtility.labelWidth + 2f,
@@ -181,7 +193,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (showMissing)
             {
-                var noticeRect = new Rect(content.x, y, content.width, EditorGUIUtility.singleLineHeight);
+                // Flat field (no arrow): pull the notice left onto the arrow's spot so it lines up with the label above.
+                var noticeRect = new Rect(content.x - FoldoutArrowIndent, y,
+                    content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
                 var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(property);
                 var canFix = SerializeReferenceHelpers.TryGetRepairLocation(property, out _, out _, out _);
 
@@ -223,7 +237,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // A required-but-empty reference shows a non-actionable notice; the header dropdown above is the fix.
             if (showRequired)
             {
-                var noticeRect = new Rect(content.x, y, content.width, EditorGUIUtility.singleLineHeight);
+                // Flat field (no arrow): pull the notice left onto the arrow's spot so it lines up with the label above.
+                var noticeRect = new Rect(content.x - FoldoutArrowIndent, y,
+                    content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
                 var message = "Required reference is not set";
 
                 // Warning palette (not the dim info one): an unset required field is a problem to fix. The notice is
