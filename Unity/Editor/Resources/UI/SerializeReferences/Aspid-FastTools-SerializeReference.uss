@@ -29,11 +29,13 @@
     margin-left:                                            0;
 }
 
-/* Hide the expand arrow when the reference is empty — there is nothing to expand. */
+/* Collapse the expand arrow when the reference is empty — there is nothing to expand. display:none (not just
+   visibility:hidden) so the arrow reserves NO space either, letting the label slide left to hug the status stripe
+   instead of trailing behind an empty arrow slot (matches the IMGUI drawer's flat missing / required layout). */
 .aspid-fasttools-serialize-reference--empty
     .unity-foldout__toggle
     .unity-foldout__checkmark {
-    visibility:                                             hidden;
+    display:                                                none;
 }
 
 /* Open-script button mirrors the SerializableType drawer affordance. */
@@ -104,7 +106,7 @@
     align-items:                                           center;
     flex-wrap:                                             wrap;
     /* No left inset of its own — the foldout's left margin already clears the stripe gutter for the whole content. */
-    margin:                                                2px 0 1px 5px;
+    margin:                                                2px 0 1px 2px;
 }
 
 .aspid-fasttools-reference-notice__icon {
