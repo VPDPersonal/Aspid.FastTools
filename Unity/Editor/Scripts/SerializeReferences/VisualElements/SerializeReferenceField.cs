@@ -87,6 +87,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private Color _sharedColor;
         private float _arrowInset = float.NaN;
 
+        // Raised after any field reassigns its managed reference (Make unique, type pick, paste, link, drop, template,
+        // missing-type fix). Every live field re-evaluates its shared-reference notice on it, since "shared" depends on
+        // the other fields' rids and cannot be observed through value tracking (see the constructor subscription).
+        private static event Action ManagedReferencesChanged;
+
         public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null)
         {
             _property = property;
@@ -168,6 +173,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             Refresh(forceRebuild: true);
             this.TrackPropertyValue(_property, _ => Refresh(forceRebuild: false));
+
+            // "Shared" is a cross-field property — it depends on the OTHER fields' managed-reference ids — which no
+            // value-tracking can observe: Make unique clones the reference to a NEW rid with the SAME data, so the
+            // object's value hash is unchanged and TrackPropertyValue / TrackSerializedObjectValue never fire (this is
+            // why the sibling's notice looked stale "sometimes" — whenever the shared instances held identical data). So
+            // sibling fields are told explicitly: every reference-reassigning action raises ManagedReferencesChanged (see
+            // ApplyReferenceChange), and each live field re-evaluates its notice on it.
+            RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                // -= before += so a recycled ListView item (detach → re-attach) never double-subscribes.
+                ManagedReferencesChanged -= OnManagedReferencesChanged;
+                ManagedReferencesChanged += OnManagedReferencesChanged;
+            });
+            RegisterCallback<DetachFromPanelEvent>(_ => ManagedReferencesChanged -= OnManagedReferencesChanged);
         }
 
         // The arrow sits in-flow before the aligned label, so the label (and the dropdown that
@@ -355,7 +374,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void ApplySuggestion(Type suggestedType)
         {
             if (SerializeReferenceHelpers.TryFixMissingType(_property, suggestedType))
-                Refresh(forceRebuild: true);
+                ApplyReferenceChange();
         }
 
         private void UpdateSharedBox()
@@ -457,7 +476,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 bound.width,
                 bound.height);
 
-            SerializeReferenceHelpers.ShowFixTypeSelector(_property, screenRect, () => Refresh(forceRebuild: true), _baseTypes);
+            SerializeReferenceHelpers.ShowFixTypeSelector(_property, screenRect, () => ApplyReferenceChange(), _baseTypes);
         }
 
         private void OnFoldoutToggled(ChangeEvent<bool> evt)
@@ -520,7 +539,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     _property.isExpanded = type is not null;
                 }
 
-                Refresh(forceRebuild: true);
+                ApplyReferenceChange();
             }
 
             Rect GetScreenRect() => new(
@@ -610,12 +629,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             DragAndDrop.AcceptDrag();
             SerializeReferenceDropHandler.Assign(_property, type);
-            Refresh(forceRebuild: true);
+            ApplyReferenceChange();
         }
 
         private void LinkToExisting(string sourcePath)
         {
-            if (SerializeReferenceLinker.LinkTo(_property, sourcePath)) Refresh(forceRebuild: true);
+            if (SerializeReferenceLinker.LinkTo(_property, sourcePath)) ApplyReferenceChange();
         }
 
         private void CreateNewScript()
@@ -651,13 +670,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _property.SetManagedReferenceAndApply(instance);
             }
 
-            Refresh(forceRebuild: true);
+            ApplyReferenceChange();
         }
 
         private void MakeUnique()
         {
             SerializeReferenceHelpers.MakeReferenceUnique(_property);
+            ApplyReferenceChange();
+        }
+
+        // Refreshes this field after it reassigned its managed reference, then notifies sibling fields so they can re-
+        // evaluate their own shared-reference notice (see ManagedReferencesChanged).
+        private void ApplyReferenceChange()
+        {
+            // MakeReferenceUnique (and the other mutations) apply through a throwaway "persistent" SerializedObject, so
+            // this field's LIVE object is left stale. Pull the change in, then drop the per-frame alias memo (keyed by
+            // frame + object instance, not content, so it survives the Update) — otherwise the re-query below AND the
+            // siblings read the pre-mutation snapshot and still report the just-broken alias as shared.
+            _property.serializedObject.Update();
+            SerializeReferenceHelpers.InvalidateSharedReferenceCache();
             Refresh(forceRebuild: true);
+            ManagedReferencesChanged?.Invoke();
+        }
+
+        // A field somewhere reassigned its managed reference; this field may have started or stopped sharing a rid with
+        // it, so its notice is re-evaluated. Pull the mutation into this field's live object first (a sibling may hold a
+        // separate SerializedObject instance) so the re-query sees the current ids. Guarded — the property may be gone.
+        private void OnManagedReferencesChanged()
+        {
+            if (!IsPropertyAlive()) return;
+            _property.serializedObject.Update();
+            Refresh(forceRebuild: false);
         }
 
         private void PasteFromClipboard()
@@ -682,7 +725,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _property.isExpanded = value is not null;
             }
 
-            Refresh(forceRebuild: true);
+            ApplyReferenceChange();
         }
 
         private string GetCaption(Type currentType)
