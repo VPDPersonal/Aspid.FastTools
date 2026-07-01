@@ -94,8 +94,8 @@
 }
 
 /* --- Compact inline notice (missing type / shared reference) ---
-   Replaces the bulky help-box + button: a small warning icon, a terse yellow message and an
-   underlined, clickable action word. The full explanation rides the element's tooltip on hover. */
+   Replaces the bulky help-box + button: a small warning icon, a terse yellow message and a bold, right-aligned
+   clickable action word that lightens on hover. The full explanation rides the element's tooltip on hover. */
 .aspid-fasttools-reference-notice {
     flex-direction:                                        row;
     align-items:                                           center;
@@ -122,29 +122,28 @@
     white-space:                                           normal;
 }
 
+/* The clickable action word (Fix / Make unique): bold, pinned to the right of the row — margin-left:auto eats the free
+   space so it reads as a deliberate affordance rather than a word trailing the message — with no underline; it just
+   lightens on hover. Missing type keeps the warning amber here; the shared notice overrides the colour inline with its
+   per-rid colour (and lightens on hover from code, since that colour is dynamic). */
 .aspid-fasttools-reference-notice__action {
-    margin-left:                                           4px;
+    margin-left:                                           auto;
     color:                                                 var(--aspid-colors-status-warning-text-light);
     -unity-font-style:                                     bold;
-    border-bottom-width:                                   1px;
-    border-bottom-color:                                   var(--aspid-colors-status-warning-text-light);
     cursor:                                                link;
 }
 
 .aspid-fasttools-reference-notice__action:hover {
     color:                                                 var(--aspid-colors-status-warning-text-lightness);
-    border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
 }
 
-/* Trailing Smart Fix suggestion ("· → Pistol?"): a second underlined clickable word after Fix, same warning
-   palette, sitting a touch further to the right so the two actions read as separate affordances. Hidden by
-   default; the --visible modifier reveals it when a suggestion is set. */
+/* Trailing Smart Fix suggestion ("· → Pistol?"): a second clickable word riding just after Fix (a 6px gap, so the two
+   actions cluster together at the right edge), same warning palette, no underline — it lightens on hover like Fix.
+   Hidden by default; the --visible modifier reveals it when a suggestion is set. */
 .aspid-fasttools-reference-notice__suggestion {
     margin-left:                                           6px;
     color:                                                 var(--aspid-colors-status-warning-text-light);
     -unity-font-style:                                     bold;
-    border-bottom-width:                                   1px;
-    border-bottom-color:                                   var(--aspid-colors-status-warning-text-light);
     cursor:                                                link;
     display:                                               none;
 }
@@ -155,7 +154,6 @@
 
 .aspid-fasttools-reference-notice__suggestion:hover {
     color:                                                 var(--aspid-colors-status-warning-text-lightness);
-    border-bottom-color:                                   var(--aspid-colors-status-warning-text-lightness);
 }
 
 /* Leading rid swatch: a small colour-coded circle at the head of the shared row. It shares its per-rid colour inline
@@ -179,20 +177,11 @@
    A shared reference is not an error but a "these two fields point at the same object" state, so it drops the warning
    amber for a calm treatment carried by the reference's per-rid colour: the leading swatch, the message text, the
    Make-unique action and the field's left stripe are all tinted that one colour (set inline from code), with no icon.
-   Make-unique pins to the right and gains an underline on hover — its colour is the inline rid colour throughout. */
+   The Make-unique action keeps the base action treatment (bold, pinned right, no underline, lightens on hover) — only
+   its colour differs: the inline rid colour (its hover lighten comes from code, since that colour is dynamic). */
 .aspid-fasttools-reference-notice--shared
     .aspid-fasttools-reference-notice__icon {
     display:                                              none;
-}
-
-/* margin-left:auto eats the free space between the message and the action, pinning Make-unique to the right edge of the
-   row so it reads as a separate, deliberate affordance rather than trailing the sentence. No underline (here or on
-   hover) — its colour is the inline rid colour, and the hover feedback lightens that colour from code. */
-.aspid-fasttools-reference-notice--shared
-    .aspid-fasttools-reference-notice__action {
-    margin-left:                                          auto;
-    -unity-font-style:                                    bold;
-    border-bottom-width:                                  0;
 }
 
 /* Info variant — a non-actionable, dim hint (the multi-object "different types" notice that stands in for the

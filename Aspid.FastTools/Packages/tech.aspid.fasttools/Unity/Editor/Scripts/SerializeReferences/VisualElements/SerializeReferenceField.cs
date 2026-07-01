@@ -324,7 +324,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var canFix = SerializeReferenceHelpers.TryGetRepairLocation(_property, out _, out _, out _);
 
             _missingNotice.Set(
-                message: "Missing type —",
+                message: "Missing type",
                 actionText: canFix ? "Fix" : string.Empty,
                 detail: canFix
                     ? $"Missing type: {typeName}.\nClick Fix to re-point this reference to an existing type, keeping its data."
