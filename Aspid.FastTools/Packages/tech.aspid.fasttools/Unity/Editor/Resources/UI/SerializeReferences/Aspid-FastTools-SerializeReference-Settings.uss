@@ -1,0 +1,115 @@
+/* --- In-window Settings tab ---
+   The SerializeReference settings controls (built by SerializeReferenceSettingsUI) are the branded AspidSwitch and
+   excluded-folders list (both self-styled) plus one plain Unity EnumField — the Build / CI gate. On the Project
+   Settings page the EnumField's native bright-grey fill reads correctly, but inside this window it floats over the
+   black dotted canvas where that default fill "sticks out". This sheet is loaded only by SettingsView (the Project
+   Settings provider keeps the native look), and every rule is scoped under the block class, so it repaints the
+   EnumField into the window's dark palette and gives the rows breathing room and a consistent caption tone. */
+.aspid-fasttools-serialize-reference-settings {
+    padding:                                              12px 12px 0 12px;
+    flex-grow:                                            1;
+}
+
+/* Section title — groups the tab's controls under a named heading (the first is "References"). The tab is meant to grow
+   more sections (TypeSelector and other package areas); each is introduced by one of these. A bold bright caption over a
+   hairline divider, with no side margin so its left edge and the full-width divider line up with the control cards. */
+.aspid-fasttools-serialize-reference-settings__section-title {
+    margin-top:                                           2px;
+    margin-bottom:                                        8px;
+    padding-bottom:                                       5px;
+    font-size:                                            13px;
+    color:                                                var(--aspid-colors-text-lightness);
+    -unity-font-style:                                    bold;
+    border-bottom-width:                                  1px;
+    border-bottom-color:                                  var(--aspid-colors-shade-dark);
+}
+
+/* Section body — wraps one section's controls; the bottom margin spaces it from the next section's title. */
+.aspid-fasttools-serialize-reference-settings__section-content {
+    margin-bottom:                                        10px;
+}
+
+/* Each control row (caption + switch / dropdown) gets a faint rounded backing so the eye can trace a wide row from its
+   caption on the left to its control pinned on the right; the inset keeps the content off the row's edges and the
+   margin spaces the rows apart. Hover lifts the row a touch more. */
+.aspid-fasttools-serialize-reference-settings .unity-base-field {
+    margin-left:                                          0;
+    margin-right:                                         0;
+    margin-bottom:                                        4px;
+    padding:                                              4px 4px 4px 8px;
+    border-width:                                         1px;
+    border-radius:                                        8px;
+    border-color:                                         var(--aspid-colors-shade-darkness);
+    background-color:                                     rgba(20, 20, 20, 0.55);
+    /* Centre every row's caption against its control so the captions sit at one height across all rows. The switches
+       already centre via inline styles; this brings the EnumField row (which has none) onto the same baseline. */
+    align-items:                                          center;
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-base-field:hover {
+    background-color:                                     rgba(255, 255, 255, 0.14);
+}
+
+/* Field captions read in the palette's light text tone, matching the window's other labels, and align to the row's
+   vertical centre so every caption — switch or dropdown — sits on the same height. */
+.aspid-fasttools-serialize-reference-settings .unity-base-field__label {
+    color:                                                var(--aspid-colors-text-light);
+    -unity-text-align:                                    middle-left;
+}
+
+/* The Build / CI gate EnumField, branded to the window: a dark field framed by a neutral shade border with the
+   package's small radius, the caption text in the light palette tone, and the signature green washing in on hover and
+   when the popup is open — the same accent family as the switches and the folder list. EnumField derives from
+   BaseField, not BasePopupField, so its input box is `.unity-enum-field__input` — the base-popup class is listed
+   alongside so the rule holds across Unity versions. */
+.aspid-fasttools-serialize-reference-settings .unity-enum-field__input,
+.aspid-fasttools-serialize-reference-settings .unity-base-popup-field__input {
+    min-height:                                           24px;
+    padding:                                              1px 6px;
+    background-color:                                     rgba(20, 20, 20, 0.55);
+    border-width:                                         1px;
+    border-color:                                         var(--aspid-colors-shade-dark);
+    border-radius:                                        8px;
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-enum-field__text {
+    color:                                                var(--aspid-colors-text-lightness);
+}
+
+/* Split the row evenly: the caption takes the left half, the dropdown the right half (flex-grow:1 + flex-basis:0 on
+   both shares the width 50/50) instead of the dropdown stretching the whole row. */
+.aspid-fasttools-serialize-reference-settings .unity-enum-field .unity-base-field__label {
+    flex-grow:                                            1;
+    flex-basis:                                           0;
+    min-width:                                            auto;
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-enum-field__input {
+    flex-grow:                                            1;
+    flex-shrink:                                          1;
+    flex-basis:                                           0;
+}
+
+/* The dropdown chevron rides in the dim palette tone at rest instead of Unity's bright default arrow. */
+.aspid-fasttools-serialize-reference-settings .unity-enum-field__arrow,
+.aspid-fasttools-serialize-reference-settings .unity-base-popup-field__arrow {
+    -unity-background-image-tint-color:                  var(--aspid-colors-text-dark);
+}
+
+/* Hover washes the border to the muted signature green and brightens the chevron — the dropdown joins the same
+   green-accent family as the switches and the folder list. */
+.aspid-fasttools-serialize-reference-settings .unity-enum-field:hover .unity-enum-field__input,
+.aspid-fasttools-serialize-reference-settings .unity-base-popup-field:hover .unity-base-popup-field__input {
+    border-color:                                         var(--aspid-colors-status-success-shade-light);
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-enum-field:hover .unity-enum-field__arrow,
+.aspid-fasttools-serialize-reference-settings .unity-base-popup-field:hover .unity-base-popup-field__arrow {
+    -unity-background-image-tint-color:                  var(--aspid-colors-status-success-text-light);
+}
+
+/* Open / focused: the border pulls in the bright signature green (the same accent as the active-tab underline) so the
+   live dropdown reads clearly. */
+.aspid-fasttools-serialize-reference-settings .unity-enum-field:focus .unity-enum-field__input {
+    border-color:                                         var(--aspid-colors-status-success-text-light);
+}

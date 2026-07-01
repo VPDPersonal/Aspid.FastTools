@@ -143,6 +143,50 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
         }
 
+        /// <summary>
+        /// Inserts <paramref name="content"/> ahead of the text label in the button's child order, so it leads the
+        /// label — to its left in the default row layout, or above it when the button is switched to a column
+        /// flex-direction. Lets the button carry a richer body (e.g. a header line) alongside its
+        /// <see cref="Text"/> action label.
+        /// </summary>
+        /// <typeparam name="T">The content element type.</typeparam>
+        /// <param name="content">The element to insert ahead of the label.</param>
+        /// <returns>The same <paramref name="content"/>, for fluent chaining.</returns>
+        public T AddLeadingContent<T>(T content) where T : VisualElement
+        {
+            Insert(IndexOf(_label), content);
+            return content;
+        }
+
+        /// <summary>
+        /// Inserts <paramref name="content"/> just after the text label in the button's child order, so it trails the
+        /// label — to its right in the default row layout, or below it when the button is switched to a column
+        /// flex-direction. The mirror of <see cref="AddLeadingContent{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The content element type.</typeparam>
+        /// <param name="content">The element to insert after the label.</param>
+        /// <returns>The same <paramref name="content"/>, for fluent chaining.</returns>
+        public T AddTrailingContent<T>(T content) where T : VisualElement
+        {
+            Insert(IndexOf(_label) + 1, content);
+            return content;
+        }
+
+        /// <summary>
+        /// Hands the row's free space to a flex-grow <see cref="AddLeadingContent"/> element instead of the text label:
+        /// the <see cref="Text"/> label stops growing and shrinks to its own text, so the leading content fills the row
+        /// and the label merely pins after it. Without this the label claims the free space and the leading content
+        /// sits at its natural width. Affects only this instance.
+        /// </summary>
+        public void FillWithLeadingContent() => _label.style.flexGrow = 0f;
+
+        /// <summary>
+        /// Hands the row's free space to a flex-grow <see cref="AddTrailingContent"/> element instead of the text label:
+        /// the <see cref="Text"/> label stops growing and shrinks to its own text, so the trailing content fills the row
+        /// and the label merely pins before it. The mirror of <see cref="FillWithLeadingContent"/>.
+        /// </summary>
+        public void FillWithTrailingContent() => _label.style.flexGrow = 0f;
+
         private void OnMouseEnter(MouseEnterEvent _)
         {
             _overlay.SetTarget(1f);

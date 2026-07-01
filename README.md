@@ -20,6 +20,7 @@
 - **Features**
   - [ProfilerMarker](#profilermarker)
   - [Serializable Type System](#serializable-type-system)
+  - [SerializeReference Selector](#serializereference-selector)
   - [Enum System](#enum-system)
   - [ID System (Beta)](#id-system-beta)
   - [SerializedProperty Extensions](#serializedproperty-extensions)
@@ -250,6 +251,21 @@ public sealed class AbilitySelector : MonoBehaviour
 
 > The complete sample — `Ability` / `AbilitySelector` / `EnemyBase` and their subclasses — ships in the `Types` sample (Package Manager → Aspid.FastTools → Samples).
 
+Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost:
+
+```csharp
+using Aspid.FastTools.Types;
+
+// Give the type a tooltip and an icon:
+[TypeSelectorDisplay(Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
+public sealed class DamageModifier { }
+```
+
+| Member | Description |
+|--------|-------------|
+| `Tooltip` | Tooltip shown when hovering the type's row. `null` means no tooltip override. |
+| `Icon` | Editor icon shown left of the label — an `EditorGUIUtility.IconContent` name, a project-relative asset path with extension (loaded via `AssetDatabase`), or a `Resources` texture path without extension. `null` means no icon. |
+
 ---
 
 ### Type Selector Window
@@ -261,6 +277,7 @@ The Inspector shows a button that opens a searchable popup window with:
 - Keyboard navigation (Arrow keys, Enter, Escape)
 - Navigation history (back button)
 - Assembly disambiguation for types with identical names
+- **Favorites** and **Recent** sections on the root page: a hover-revealed ★ toggle pins a type to Favorites, and the last 8 picked types are kept under Recent (both persisted per project, hidden while searching)
 
 ![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_type_selector_window.png)
 
@@ -323,6 +340,80 @@ public sealed class TankEnemy : EnemyBase
 ```
 
 ![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
+
+---
+
+## SerializeReference Selector
+
+A drop-in type-picker dropdown for `[SerializeReference]` fields. Add `[TypeSelector]` next to `[SerializeReference]` and the Inspector replaces the default managed-reference UI with the same searchable, hierarchical picker used by `SerializableType`. You choose which concrete implementation of the field's type is instantiated, right in the Inspector; `<None>` clears the reference.
+
+```csharp
+using System;
+using UnityEngine;
+using System.Collections.Generic;
+using Aspid.FastTools.Types;
+
+public interface IWeapon
+{
+    void Fire();
+}
+
+[Serializable]
+public sealed class Pistol : IWeapon
+{
+    [SerializeField] [Min(0)] private int _damage = 10;
+
+    public void Fire() => Debug.Log($"Pistol: {_damage} dmg");
+}
+
+[Serializable]
+public sealed class Railgun : IWeapon
+{
+    [SerializeField] [Min(0)] private float _chargeTime = 1.5f;
+
+    public void Fire() => Debug.Log($"Railgun charged for {_chargeTime}s");
+}
+
+public sealed class Loadout : MonoBehaviour
+{
+    [SerializeReference] [TypeSelector]
+    private IWeapon _primary;
+
+    [SerializeReference] [TypeSelector]
+    private List<IWeapon> _sidearms;
+}
+```
+
+The attribute is editor-only (`[Conditional("UNITY_EDITOR")]`) and carries no runtime cost. It works on single fields, arrays, and `List<T>`, in both IMGUI and UIToolkit inspectors.
+
+### Capabilities
+
+| Capability | What it does |
+|---|---|
+| **Pick an implementation** | The list shows the concrete, non-`UnityEngine.Object` classes assignable to the field's type. `[TypeSelector(typeof(IMelee))]` narrows it to `IMelee` implementations. |
+| **Inline inspector** | The selected instance's serialized fields are drawn under a foldout. |
+| **Open generics** | `Modifier<T>` and the like: arguments are inferred from a closed-generic field, or picked on a second page inside the picker. |
+| **Data preserved** | Switching type carries over fields shared by name and serialized shape instead of resetting them to defaults. |
+| **Copy / Paste** | Right-click the header to copy the value and paste it as an independent instance into any compatible field. |
+| **Multi-object editing** | A mixed selection shows a mixed dropdown; picking a type or pasting applies an independent instance to each object in one Undo group. |
+| **Compile-time checks** | Roslyn analyzer: `AFT0004` (error) — the type derives from `UnityEngine.Object`; `AFT0005` (warning) — the picker would be empty. |
+
+### Repairing broken references
+
+| Case | Fix |
+|---|---|
+| **Missing type** (renamed or deleted) | A yellow notice instead of a silent clear. The underlined **Fix** opens the picker and re-points the type while keeping its data — at any depth, in saved assets and live in Prefab Mode. |
+| **Smart Fix** | Next to **Fix**, suggests the most likely replacement (`[MovedFrom]`, a different namespace/assembly, casing, a near-miss name) and applies it in one click — never automatically. |
+| **Shared reference** (two fields share one instance) | Flagged with a notice; **Make unique** splits it into an independent copy. Duplicating a list element (Ctrl+D, `+`) no longer aliases the reference. |
+
+Bulk repair lives in two dedicated tabs:
+
+| Tab | Purpose |
+|---|---|
+| **Asset References** (`Tools → Aspid 🐍 → FastTools → Asset References`) | Maps an asset's whole managed-reference graph from its YAML — a per-component tree with field paths, shared and orphaned references, `MISSING` / `SHARED` badges, and an inline type dropdown on every card. Surfaces the missing references the Inspector cannot show. |
+| **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` sweeps every `.prefab` / `.asset` / `.unity` under `Assets/`, groups broken references by stored type, and rewrites a whole group with a single `Fix all` (plus Smart Fix). |
+
+> The full sample — `Loadout` / `IWeapon` / `Modifier<T>` and the missing-reference repair scenarios — ships in the `SerializeReferences` sample (Package Manager → Aspid.FastTools → Samples). A step-by-step walkthrough lives in that sample's `TUTORIAL.md`.
 
 ---
 

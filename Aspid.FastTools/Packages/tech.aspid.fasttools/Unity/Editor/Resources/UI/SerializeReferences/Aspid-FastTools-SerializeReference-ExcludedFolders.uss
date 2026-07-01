@@ -1,0 +1,140 @@
+/* --- Excluded scan folders list ---
+   Replaces the multiline "one path per line" TextField with a compact add/remove list. The whole control is a
+   translucent dark panel (the window's dotted canvas reads through it): folder rows stack over a single add row whose
+   "+" is pinned to the right edge; while empty the add row carries a dim "No excluded folders" hint instead. Self-
+   styled from the Aspid palette so it reads the same on the in-window Settings tab and the bare Project Settings page. */
+
+/* The panel: a translucent dark surface framed like the other settings inputs, sized to its content (the folder rows
+   plus the one add row) rather than a tall fixed box. No inner padding, so the zebra entries fill the frame edge to
+   edge; overflow:hidden clips their square corners to the panel's rounded frame. */
+.aspid-fasttools-excluded-folders {
+    padding:                                              0;
+    overflow:                                             hidden;
+    border-width:                                         1px;
+    border-radius:                                        8px;
+    border-color:                                         var(--aspid-colors-shade-dark);
+    background-color:                                     rgba(20, 20, 20, 0.55);
+}
+
+/* The panel's own header, pulled inside the frame so the caption rides with the list instead of floating above it. A
+   bold light caption over a hairline divider so it reads as the panel title rather than another list row; its left
+   inset lines up with the folder paths below. A fixed band height plus middle-left alignment centres the caption
+   vertically, so the gap above the text matches the gap below it (relying on padding alone leaves the text top-aligned
+   in its line box and the divider drifts low). */
+.aspid-fasttools-excluded-folders__title {
+    height:                                               24px;
+    padding:                                              0 6px;
+    color:                                                var(--aspid-colors-text-light);
+    -unity-font-style:                                    bold;
+    -unity-text-align:                                    middle-left;
+    border-bottom-width:                                  1px;
+    border-bottom-color:                                  var(--aspid-colors-shade-darkness);
+}
+
+/* Every list entry — each folder row and the persistent add row — is the same shell: a flat full-width element with a
+   min-height so short and tall entries line up and a left inset matching the header caption. Entries sit flush (no
+   margin / radius) so their alternating light / dark wash (zebra, applied per-index in code) fills the panel edge to
+   edge as one continuous stripe block over the dotted canvas. */
+.aspid-fasttools-excluded-folders__entry {
+    flex-direction:                                       row;
+    align-items:                                          center;
+    min-height:                                           24px;
+    padding:                                              2px 6px;
+}
+
+.aspid-fasttools-excluded-folders__entry--even {
+    background-color:                                     rgba(255, 255, 255, 0.05);
+}
+
+.aspid-fasttools-excluded-folders__entry--odd {
+    background-color:                                     rgba(0, 0, 0, 0.18);
+}
+
+/* Full-row hover tints, toggled from code (USS can't repaint a row from a child's hover state). Exactly one is ever
+   set at a time, so single-class selectors suffice — no specificity juggling against a :hover. Neutral lift signals a
+   folder row is editable; the whole row turns red when its ✕ is hovered (delete intent) and green over the add row
+   (add intent). */
+.aspid-fasttools-excluded-folders__entry--hover {
+    background-color:                                     var(--aspid-colors-bg-lightness);
+}
+
+.aspid-fasttools-excluded-folders__entry--danger {
+    background-color:                                     var(--aspid-colors-status-error-dark);
+}
+
+.aspid-fasttools-excluded-folders__entry--add {
+    background-color:                                     var(--aspid-colors-status-success-dark);
+}
+
+/* min-width:0 lets a long path shrink and ellipsize instead of shoving the remove button off the row; stretching it to
+   the full row height (with the text kept vertically centred) makes the whole left of the row a click target for
+   editing, with no dead band above or below the caption. */
+.aspid-fasttools-excluded-folders__path {
+    flex-grow:                                            1;
+    flex-shrink:                                          1;
+    min-width:                                            0;
+    align-self:                                           stretch;
+    color:                                                var(--aspid-colors-text-light);
+    text-overflow:                                        ellipsis;
+    overflow:                                             hidden;
+    white-space:                                          nowrap;
+    -unity-text-align:                                    middle-left;
+}
+
+/* The ✕ remove: a small flat square, dim at rest; it brightens to the error tone while its row is in the delete state
+   (see the --danger descendant rule below). */
+.aspid-fasttools-excluded-folders__remove {
+    flex-shrink:                                          0;
+    width:                                                18px;
+    height:                                               18px;
+    margin:                                               0 2px 0 4px;
+    padding:                                              0;
+    border-width:                                         0;
+    border-radius:                                        3px;
+    background-color:                                     rgba(0, 0, 0, 0);
+    color:                                                var(--aspid-colors-text-dark);
+    font-size:                                            12px;
+    -unity-text-align:                                    middle-center;
+}
+
+/* While the row is in its delete state (its ✕ hovered), the cross brightens to a hotter red box than the row wash,
+   marking it as the focal delete target. */
+.aspid-fasttools-excluded-folders__entry--danger .aspid-fasttools-excluded-folders__remove {
+    background-color:                                     var(--aspid-colors-status-error-light);
+    color:                                                var(--aspid-colors-status-error-text-light);
+}
+
+/* Dim hint shown in the add row while no folder is excluded; it grows to fill the row left of the "+". */
+.aspid-fasttools-excluded-folders__hint {
+    flex-grow:                                            1;
+    color:                                                var(--aspid-colors-text-darkness);
+    -unity-text-align:                                    middle-center;
+}
+
+/* The "+" add button, pinned to the right of the add row: a small flat square (just the plus glyph) that picks up the
+   signature green on hover. Same box size and right margin as the ✕ remove so the "+" lines up directly under the
+   column of remove crosses above it. */
+.aspid-fasttools-excluded-folders__add {
+    flex-shrink:                                          0;
+    width:                                                18px;
+    height:                                               18px;
+    margin:                                               0 2px 0 4px;
+    padding:                                              0;
+    border-width:                                         0;
+    border-radius:                                        3px;
+    background-color:                                     rgba(0, 0, 0, 0);
+    color:                                                var(--aspid-colors-text-light);
+    font-size:                                            16px;
+    -unity-text-align:                                    middle-center;
+}
+
+/* Hovering the "+" directly boxes it in a brighter green than the row wash — the add-side mirror of the ✕'s red box. */
+.aspid-fasttools-excluded-folders__add:hover {
+    background-color:                                     var(--aspid-colors-status-success-light);
+}
+
+/* While the add row is in its add state (hovered anywhere), the "+" brightens to the signature green so the glyph leads
+   the row's green wash. */
+.aspid-fasttools-excluded-folders__entry--add .aspid-fasttools-excluded-folders__add {
+    color:                                                var(--aspid-colors-status-success-text-light);
+}

@@ -17,6 +17,7 @@
 - **Features**
   - [ProfilerMarker](#profilermarker)
   - [Serializable Type System](#serializable-type-system)
+  - [SerializeReference Selector](#serializereference-selector)
   - [Enum System](#enum-system)
   - [ID System (Beta)](#id-system-beta)
   - [SerializedProperty Extensions](#serializedproperty-extensions)
@@ -247,6 +248,21 @@ public sealed class AbilitySelector : MonoBehaviour
 
 > Полный сэмпл — `Ability` / `AbilitySelector` / `EnemyBase` и их наследники — поставляется в сэмпле `Types` (Package Manager → Aspid.FastTools → Samples).
 
+Пометьте тип-кандидат атрибутом `[TypeSelectorDisplay]`, чтобы настроить, как он показывается в селекторе — это editor-only атрибут (`[Conditional("UNITY_EDITOR")]`) в `Aspid.FastTools.Types`, не несущий стоимости в рантайме:
+
+```csharp
+using Aspid.FastTools.Types;
+
+// Задать типу tooltip и иконку:
+[TypeSelectorDisplay(Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
+public sealed class DamageModifier { }
+```
+
+| Член | Описание |
+|------|----------|
+| `Tooltip` | Tooltip, показываемый при наведении на строку типа. `null` — без переопределения tooltip. |
+| `Icon` | Иконка редактора слева от лейбла — имя `EditorGUIUtility.IconContent`, путь к ассету в проекте с расширением (загружается через `AssetDatabase`) или путь к текстуре в `Resources` без расширения. `null` — без иконки. |
+
 ---
 
 ### Type Selector Window
@@ -258,6 +274,7 @@ public sealed class AbilitySelector : MonoBehaviour
 - Навигацию с клавиатуры (стрелки, Enter, Escape)
 - Историю навигации (кнопка «назад»)
 - Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
+- Секции **Favorites** и **Recent** на корневой странице: появляющийся при наведении переключатель ★ закрепляет тип в Favorites, а последние 8 выбранных типов хранятся в Recent (оба сохраняются на проект и скрыты во время поиска)
 
 ![aspid_fasttools_type_selector_window.png](../Images/aspid_fasttools_type_selector_window.png)
 
@@ -320,6 +337,80 @@ public sealed class TankEnemy : EnemyBase
 ```
 
 ![aspid_fasttools_component_type_selector.gif](../Images/aspid_fasttools_component_type_selector.gif)
+
+---
+
+## SerializeReference Selector
+
+Готовый выпадающий список выбора типа для полей `[SerializeReference]`. Добавьте `[TypeSelector]` рядом с `[SerializeReference]` — Inspector заменит стандартный UI managed-ссылки тем же иерархическим селектором с поиском, что и `SerializableType`. Вы прямо в инспекторе выбираете, какая конкретная реализация типа поля будет создана; `<None>` очищает ссылку.
+
+```csharp
+using System;
+using UnityEngine;
+using System.Collections.Generic;
+using Aspid.FastTools.Types;
+
+public interface IWeapon
+{
+    void Fire();
+}
+
+[Serializable]
+public sealed class Pistol : IWeapon
+{
+    [SerializeField] [Min(0)] private int _damage = 10;
+
+    public void Fire() => Debug.Log($"Pistol: {_damage} dmg");
+}
+
+[Serializable]
+public sealed class Railgun : IWeapon
+{
+    [SerializeField] [Min(0)] private float _chargeTime = 1.5f;
+
+    public void Fire() => Debug.Log($"Railgun charged for {_chargeTime}s");
+}
+
+public sealed class Loadout : MonoBehaviour
+{
+    [SerializeReference] [TypeSelector]
+    private IWeapon _primary;
+
+    [SerializeReference] [TypeSelector]
+    private List<IWeapon> _sidearms;
+}
+```
+
+Атрибут существует только в редакторе (`[Conditional("UNITY_EDITOR")]`) и не несёт стоимости в рантайме. Работает с одиночными полями, массивами и `List<T>`, в инспекторах IMGUI и UIToolkit.
+
+### Возможности
+
+| Возможность | Что делает |
+|---|---|
+| **Выбор реализации** | В списке — конкретные не-`UnityEngine.Object` классы, совместимые с типом поля. `[TypeSelector(typeof(IMelee))]` сужает его до реализаций `IMelee`. |
+| **Вложенный inspector** | Сериализуемые поля выбранного экземпляра рисуются под foldout. |
+| **Open generics** | `Modifier<T>` и подобные: аргументы выводятся из закрытого generic-поля либо выбираются на второй странице селектора. |
+| **Сохранение данных** | При смене типа поля, совпадающие по имени и сериализуемой форме, переносятся, а не сбрасываются в значения по умолчанию. |
+| **Copy / Paste** | Правый клик по заголовку копирует значение и вставляет его независимым экземпляром в любое совместимое поле. |
+| **Мультивыделение** | Смешанное выделение показывает смешанное состояние dropdown; выбор или вставка применяется к каждому объекту в одной группе Undo. |
+| **Проверка компилятором** | Анализатор Roslyn: `AFT0004` (ошибка) — тип наследует `UnityEngine.Object`; `AFT0005` (предупреждение) — селектор оказался бы пустым. |
+
+### Починка сломанных ссылок
+
+| Случай | Решение |
+|---|---|
+| **Потерянный тип** (переименован или удалён) | Жёлтое предупреждение вместо молчаливой очистки. Подчёркнутое **Fix** открывает селектор и переназначает тип с сохранением данных — на любой глубине, в сохранённых ассетах и прямо в Prefab Mode. |
+| **Smart Fix** | Рядом с **Fix** предлагает наиболее вероятную замену (`[MovedFrom]`, другой namespace/сборка, регистр, близкое имя) и применяет в один клик — никогда не автоматически. |
+| **Общая ссылка** (два поля делят экземпляр) | Помечается лейблом; **Make unique** расщепляет её в независимую копию. Дублирование элемента списка (Ctrl+D, `+`) больше не создаёт алиас. |
+
+Массовая починка вынесена в отдельные вкладки:
+
+| Вкладка | Назначение |
+|---|---|
+| **Asset References** (`Tools → Aspid 🐍 → FastTools → Asset References`) | Строит весь граф managed-ссылок ассета прямо из YAML — дерево по компонентам с путями полей, общими и осиротевшими ссылками, значками `MISSING` / `SHARED` и инлайн-выбором типа на каждой карточке. Достаёт потерянные ссылки, которые инспектор не показывает. |
+| **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` обходит каждый `.prefab` / `.asset` / `.unity` под `Assets/`, группирует сломанные ссылки по сохранённому типу и чинит всю группу одним `Fix all` (плюс Smart Fix). |
+
+> Полный сэмпл — `Loadout` / `IWeapon` / `Modifier<T>` и сценарии починки потерянных ссылок — поставляется в сэмпле `SerializeReferences` (Package Manager → Aspid.FastTools → Samples). Пошаговый разбор — в `TUTORIAL.md` этого сэмпла.
 
 ---
 

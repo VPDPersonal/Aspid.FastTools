@@ -50,8 +50,52 @@ AspidAnimatedTitle {
     border-radius: 10px;
 }
 
-.aspid-fasttools-welcome__footer-link:hover {
-    color: var(--aspid-colors-status-success-text-light);
+/* Scoped under __card so it outranks the gradient button's own :root height/padding on the class tie,
+   letting a sample row grow past one line to fit its wrapped description. */
+.aspid-fasttools-welcome__card .aspid-fasttools-welcome__sample {
+    height: auto;
+    min-height: 36px;
+    padding: 8px 10px;
+    align-items: center;
+}
+
+.aspid-fasttools-welcome__sample-body {
+    flex-grow: 1;
+}
+
+.aspid-fasttools-welcome__sample-header {
+    flex-direction: row;
+    align-items: center;
+}
+
+.aspid-fasttools-welcome__sample-title {
+    flex-grow: 1;
+    font-size: 14px;
+    -unity-font-style: bold;
+    color: var(--aspid-colors-text-light);
+}
+
+.aspid-fasttools-welcome__sample-action {
+    flex-shrink: 0;
+    margin-left: 10px;
+    font-size: 14px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-right;
+    color: var(--aspid-colors-text-light);
+}
+
+.aspid-fasttools-welcome__sample-divider {
+    flex-grow: 0;
+    margin-top: 4px;
+    margin-bottom: 2px;
+}
+
+.aspid-fasttools-welcome__sample-description {
+    margin-top: 2px;
+    font-size: 12px;
+    white-space: normal;
+    -unity-font-style: normal;
+    color: var(--aspid-colors-text-dark);
 }
 
 .aspid-fasttools-welcome__card-header {
@@ -61,24 +105,6 @@ AspidAnimatedTitle {
 
 AspidDividingLine {
     opacity: 0.5;
-}
-
-.aspid-fasttools-welcome__footer {
-}
-
-.aspid-fasttools-welcome__footer-link {
-    color: var(--aspid-colors-status-success-text-dark);
-    font-size: 14px;
-    -unity-font-style: bold;
-}
-
-.aspid-fasttools-welcome__footer-version {
-    color: var(--aspid-colors-text-darkness);
-    font-size: 14px;
-}
-
-.aspid-fasttools-welcome__footer-version:hover {
-    color: var(--aspid-colors-text-light);
 }
 
 .aspid-fasttools-welcome__toast {

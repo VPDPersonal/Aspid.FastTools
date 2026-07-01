@@ -1,7 +1,10 @@
 {
-    "name": "Aspid.FastTools.Unity.Editor.SerializeReferences",
+    "name": "Aspid.FastTools.Samples.SerializeReferences.Editor",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "Aspid.FastTools.Samples.SerializeReferences",
+        "Aspid.FastTools.Unity.Editor"
+    ],
     "includePlatforms": [
         "Editor"
     ],

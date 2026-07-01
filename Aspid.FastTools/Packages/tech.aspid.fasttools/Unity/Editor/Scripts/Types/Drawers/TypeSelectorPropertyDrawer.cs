@@ -5,16 +5,33 @@ using UnityEngine;
 using System.Reflection;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
+    /// <summary>
+    /// Property drawer for <see cref="TypeSelectorAttribute"/>. Dispatches on the property kind: a
+    /// <c>[SerializeReference]</c> managed reference gets the hierarchical instance selector (the attribute's
+    /// base types optionally narrow the candidates below the declared field type), while a <c>string</c> field
+    /// gets the assembly-qualified-name picker constrained by the attribute's base types and <see cref="TypeAllow"/>.
+    /// </summary>
     [CustomPropertyDrawer(typeof(TypeSelectorAttribute))]
     internal sealed class TypeSelectorPropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             ThrowExceptionIfInvalidProperty(property);
+
+            if (property.propertyType == SerializedPropertyType.ManagedReference)
+            {
+                SerializeReferenceIMGUIPropertyDrawer.Draw(
+                    position: position,
+                    label: label,
+                    property: property,
+                    baseTypes: GetTypesFromAttribute(property));
+                return;
+            }
 
             TypeIMGUIPropertyDrawer.Draw(
                 position: position,
@@ -24,9 +41,20 @@ namespace Aspid.FastTools.Types.Editors
                 types: GetTypesFromAttribute(property));
         }
 
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
+            property.propertyType == SerializedPropertyType.ManagedReference
+                ? SerializeReferenceIMGUIPropertyDrawer.GetHeight(property)
+                : TypeIMGUIPropertyDrawer.GetHeight(property);
+
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             ThrowExceptionIfInvalidProperty(property);
+
+            if (property.propertyType == SerializedPropertyType.ManagedReference)
+                return SerializeReferenceUIToolkitPropertyDrawer.Draw(
+                    label: preferredLabel,
+                    property: property,
+                    baseTypes: GetTypesFromAttribute(property));
 
             return TypeUIToolkitPropertyDrawer.Draw(
                 label: preferredLabel,
@@ -139,8 +167,10 @@ namespace Aspid.FastTools.Types.Editors
         
         private static void ThrowExceptionIfInvalidProperty(SerializedProperty property)
         {
-            if (property.propertyType != SerializedPropertyType.String)
-                throw new ArgumentException("Property must be of type String", nameof(property));
+            if (property.propertyType is not (SerializedPropertyType.String or SerializedPropertyType.ManagedReference))
+                throw new ArgumentException(
+                    "[TypeSelector] can only be applied to a string field or a [SerializeReference] managed-reference field.",
+                    nameof(property));
         }
     }
 }
