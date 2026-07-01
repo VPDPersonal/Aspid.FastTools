@@ -32,6 +32,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // the picker's true footprint.
         private const float PickerWidth = 350f;
 
+        // Unity's default array UI (ReorderableListWrapper) flags its list with the internal m_HasPropertyDrawer, which
+        // makes GetContentRect inset the element rect by Defaults.propertyDrawerPadding (8) past the drag handle. That
+        // flag is unreachable from package code, so the same inset is applied manually in drawElementCallback — without
+        // it every row starts 8px further left than the geometry SerializeReferenceIMGUIPropertyDrawer is tuned for:
+        // the foldout arrow crowds the drag handle and the shared/missing stripe (content.x - StripeOffset) lands ON it.
+        private const float PropertyDrawerPadding = 8f;
+
         /// <summary>
         /// Draws <paramref name="listProperty"/> (a <c>[SerializeReference]</c> list/array) with a picker-backed "+".
         /// </summary>
@@ -84,6 +91,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             list.drawElementCallback = (rect, index, _, _) =>
             {
                 var element = list.serializedProperty.GetArrayElementAtIndex(index);
+                rect.xMin += PropertyDrawerPadding;
                 rect.y += EditorGUIUtility.standardVerticalSpacing;
                 rect.height = EditorGUI.GetPropertyHeight(element, includeChildren: true);
                 // Drawn through the standard field, so the element still routes through the [TypeSelector] drawer.
