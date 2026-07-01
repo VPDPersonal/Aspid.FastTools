@@ -165,7 +165,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     canFix
                         ? () =>
                         {
-                            var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(noticeRect.x, noticeRect.yMax));
+                            // Anchor from the notice's top (yMin), not its bottom: ShowAsDropDown opens below the
+                            // anchor rect, so a top-anchored one-line rect ends flush at the notice's bottom. Anchoring
+                            // from yMax added the rect's own height on top, dropping the picker a full line lower.
+                            var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(noticeRect.x, noticeRect.y));
                             var screenRect = new Rect(screenPosition.x, screenPosition.y, noticeRect.width, EditorGUIUtility.singleLineHeight);
                             SerializeReferenceHelpers.ShowFixTypeSelector(property.Persistent(), screenRect, null, baseTypes);
                         }
