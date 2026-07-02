@@ -322,6 +322,23 @@
     -unity-text-align:                                    middle-center;
 }
 
+/* Smart Fix quick-apply on a missing card: success-tinted one-click suggestion, mirroring the Project Audit
+   __group-suggest row — the heuristic guess stays green-with-a-question while the authoritative migrate is blue. */
+.aspid-fasttools-reference-graph__node-suggest {
+    margin:                                               2px 0 4px 0;
+    --aspid-fasttools-colors-gradient_button-bg: var(
+        --aspid-colors-status-success-darkness
+    );
+    --aspid-fasttools-colors-gradient_button-accent: var(
+        --aspid-colors-status-success-text-light
+    );
+}
+
+.aspid-fasttools-reference-graph__node-suggest
+    .aspid-fasttools-gradient-button__label {
+    -unity-text-align:                                    middle-center;
+}
+
 /* The band's leading content (and the non-missing top row): the type pill + badges hugging the left, shrinkable so a
    long type ellipsises rather than shoving the Fix action off the band. */
 .aspid-fasttools-reference-graph__node-band-row {
