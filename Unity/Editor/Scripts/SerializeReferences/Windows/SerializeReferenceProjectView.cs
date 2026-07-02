@@ -62,6 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string GroupCountClass = RootClass + "__group-count";
         private const string GroupFixAllClass = RootClass + "__group-fix-all";
         private const string GroupSuggestClass = RootClass + "__group-suggest";
+        private const string GroupMigrateClass = RootClass + "__group-migrate";
         private const string GroupEntryClass = RootClass + "__group-entry";
         private const string GroupEntryPathClass = RootClass + "__group-entry-path";
         private const string GroupEntryRidClass = RootClass + "__group-entry-rid";
@@ -291,6 +292,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var constraint = group.ResolveConstraint();
             var displayName = group.DisplayName;
 
+            // An authoritative [MovedFrom] rename: these entries are not really broken — Unity migrates them in
+            // memory at load; only the files still store the old name. The card keeps the same layout but reads as a
+            // calm migration (info header, "Migrate all" instead of the heuristic Smart Fix suggestion below).
+            // The target must also fit the group's field constraint: Migrate all hands the type straight to
+            // ApplyGroupFix, bypassing the picker's assignability guarantee — a rename that also changed the type's
+            // bases would rewrite files into references Unity nulls at load, hiding a listed breakage. Such a group
+            // falls through to the ordinary warning card, where Rank's constraint-filtered pool refuses the target.
+            var isMigration = SerializeReferenceMovedFromResolver.TryResolve(group.StoredType, out var migrationTarget) &&
+                (constraint == typeof(object) || constraint.IsAssignableFrom(migrationTarget));
+
             // The header button. Built first so the type name + count can be docked into its body to the left of the
             // action label; the click handler toggles the inline picker (the captured local is assigned before use).
             AspidGradientButton fixAll = null;
@@ -303,7 +314,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // The type name + count line, ignored for picking so clicks fall through to the button's own handler.
             var header = new AspidLabel(group.StoredType.Class, AspidLabelPreset.Default
-                    .SetLabelStatus(StatusStyle.Type.Warning)
+                    .SetLabelStatus(isMigration ? StatusStyle.Type.Info : StatusStyle.Type.Warning)
                     .SetLabelSize(AspidLabelSizeStyle.Type.H5)
                     .SetLineSize(AspidDividingLineSizeStyle.Type.None))
                 .AddClass(GroupHeaderClass)
@@ -322,7 +333,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             fixAll.AddLeadingContent(info);
             card.AddChild(fixAll);
 
-            if (TryGetGroupSuggestion(group, constraint, out var suggestion))
+            if (isMigration)
+            {
+                // Migration is not a guess, so it replaces the heuristic Smart Fix row: one click bakes the rename
+                // into every entry through the same confirm + diff preview + Undo flow as a picked fix, after which
+                // the [MovedFrom] attribute can be deleted from the code.
+                var migrate = new AspidGradientButton(
+                        $"Migrate all ({group.Entries.Count}) → {migrationTarget.Name}",
+                        _ => ApplyGroupFix(group, migrationTarget))
+                    .AddClass(GroupMigrateClass);
+                migrate.tooltip =
+                    $"Every entry resolves to {migrationTarget.FullName} via its declared [MovedFrom] — Unity already " +
+                    "migrates them in memory when the asset loads. Migrating rewrites the stored type name in the " +
+                    "files so they match the code; the attribute can be removed once no file stores the old name.";
+                card.AddChild(migrate);
+            }
+            else if (TryGetGroupSuggestion(group, constraint, out var suggestion))
             {
                 // Reuse the shared label/detail builders so the Smart Fix copy never drifts from the inspector notice.
                 var suggest = new AspidGradientButton(SerializeReferenceHelpers.GetSuggestionLabel(suggestion),

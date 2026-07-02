@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -17,13 +18,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>The top Smart-Fix suggestion (e.g. a declared <c>[MovedFrom]</c> rename), pre-ranked at detection time.</summary>
         public readonly SerializeReferenceRepairSuggestions.RepairCandidate? TopSuggestion;
 
+        /// <summary>
+        /// The authoritative <c>[MovedFrom]</c> rename target of the stored type (see
+        /// <see cref="SerializeReferenceMovedFromResolver"/>), or <see langword="null"/>. Non-null means the
+        /// reference is not really broken — Unity migrates it in memory at load; only the file is stale.
+        /// </summary>
+        public readonly Type MigrationTarget;
+
         public BreakageEntry(
             string assetPath,
             long fileId,
             long rid,
             ManagedTypeName storedType,
             bool isRepairable,
-            SerializeReferenceRepairSuggestions.RepairCandidate? topSuggestion)
+            SerializeReferenceRepairSuggestions.RepairCandidate? topSuggestion,
+            Type migrationTarget)
         {
             AssetPath = assetPath;
             FileId = fileId;
@@ -31,6 +40,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             StoredType = storedType;
             IsRepairable = isRepairable;
             TopSuggestion = topSuggestion;
+            MigrationTarget = migrationTarget;
         }
 
         public string TypeName => StoredType.DisplayName;

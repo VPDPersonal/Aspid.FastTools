@@ -124,8 +124,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
 
                 // Type-level entry: no asset path / file id / rid is available without the index. Consumers on this path
-                // (the toast + console warning) read only the count and StoredType, and the Repair window rescans.
-                entries.Add(new BreakageEntry(null, 0, 0, storedType, isRepairable: false, topSuggestion: null));
+                // (the toast + console warning) read only the count, StoredType and MigrationTarget — the resolver
+                // needs no index, so even the cold path can tell a [MovedFrom] rename from a real breakage.
+                SerializeReferenceMovedFromResolver.TryResolve(storedType, out var migrationTarget);
+                entries.Add(new BreakageEntry(null, 0, 0, storedType, isRepairable: false, topSuggestion: null,
+                    migrationTarget));
                 brokenTypes.Add(key);
             }
 
@@ -234,7 +237,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
             }
 
-            return new BreakageEntry(path, usage.FileId, usage.Rid, usage.StoredType, repairable, top);
+            SerializeReferenceMovedFromResolver.TryResolve(usage.StoredType, out var migrationTarget);
+            return new BreakageEntry(path, usage.FileId, usage.Rid, usage.StoredType, repairable, top, migrationTarget);
         }
 
         private static HashSet<string> LoadBaseline()
