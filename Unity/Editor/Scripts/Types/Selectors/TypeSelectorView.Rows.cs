@@ -99,9 +99,10 @@ namespace Aspid.FastTools.Types.Editors
             element.EnableInClass(ItemInSectionClass, !isSectionTitle && node.SectionKey is not null);
             element.EnableInClass(ItemCurrentModifier, isCurrent);
 
-            // The divider lives on the ListView's row wrapper so the line spans the full row and the
-            // 22px grid of the rows below stays intact.
-            element.parent?.EnableInClass(RowAfterPinnedModifier, IsFirstRowAfterPinnedBlock(items, index));
+            // The row root itself is the collection-view item (a non-reorderable ListView adds the class
+            // straight onto the makeItem element, no per-row wrapper), so the divider goes here; the parent
+            // is the content container shared by every row.
+            element.EnableInClass(RowAfterPinnedModifier, IsFirstRowAfterPinnedBlock(items, index));
 
             element.SetPickingMode(PickingMode.Position);
 
