@@ -217,6 +217,7 @@ assets **pre-broken** on purpose so you can practise the recovery flow:
 - `Presets/BrokenWeaponPreset.asset`, `Presets/BrokenArsenalPreset.asset` — `ScriptableObject`s referencing a missing `GhostWeapon`.
 - `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol`.
 - `Presets/MovedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` still stores `Pistol` under an old `…Samples.SerializeReferences.Legacy` namespace, as if the class had been moved without a `[MovedFrom]` attribute. The type itself exists — only the stored identity is stale.
+- `Presets/RenamedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` still stores the old `CrossbowLauncher` class name; the class now ships as `Crossbow` carrying a declared `[MovedFrom]`. Not broken at all — the Inspector shows a healthy `Crossbow` — but the file is stale: this one demonstrates the **Migrate all** flow below.
 
 ### Inline repair (one field)
 
@@ -237,7 +238,26 @@ highest, then a same-named type in another namespace/assembly, a casing-only ren
 by the orphaned data's field shape. It is **never applied automatically** — you always click.
 
 > A rename/move that ships `[MovedFrom]` from the start never breaks at all — Unity migrates the reference on load.
-> Smart Fix is the safety net for the moves that forgot it.
+> Smart Fix is the safety net for the moves that forgot it. The files themselves still store the old name until each
+> asset is re-saved, though — the migration flow below bakes the rename in.
+
+### Migrate a `[MovedFrom]` rename (Project References)
+
+`Presets/RenamedWeaponPreset.asset` stores its weapon under the old class name `CrossbowLauncher`, while the class now
+ships as `Crossbow` with `[MovedFrom(false, null, null, "CrossbowLauncher")]`. Select the asset — the Inspector shows a
+perfectly healthy `Crossbow`: Unity migrates the reference **in memory** when the asset loads. The file on disk still
+stores the old name, though — invisible in the Inspector, but stale for version control, CI-level YAML scans and any
+asset that never gets re-saved.
+
+1. Open **`Tools → Aspid 🐍 → FastTools → Project References`** and **Scan Project**.
+2. The `CrossbowLauncher` group renders as a calm, info-tinted **pending migration** — not a warning: an authoritative
+   `[MovedFrom]` match is not a guess, so in place of a Smart Fix suggestion the card carries a
+   **`Migrate all (1) → Crossbow`** button.
+3. Click it and confirm (the dialog previews the exact YAML lines that will change). The file now stores `Crossbow`,
+   keeping `_damage = 17`, `_boltCount = 5`.
+
+Once no file in the project stores the old name, the `[MovedFrom]` attribute can be deleted from the code — migrating
+is what makes that cleanup safe.
 
 > Repair reads and rewrites the asset YAML directly, because Unity does not expose a missing type through its
 > serialization API (and on GameObjects/prefabs even drops it from the live object — UUM-129100). It therefore needs a
@@ -251,7 +271,7 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 | Tab | What it does |
 |---|---|
 | **Asset References** | Maps a saved asset's entire `[SerializeReference]` graph and repairs any missing node inline — any depth, any child object the Inspector can't otherwise reach. |
-| **Project References** | Sweeps every asset under `Assets/` and groups broken references **by stored type** — `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into one **GhostWeapon** group (`4 entries · 2 files`). **Fix all** re-points every entry across both files at once. |
+| **Project References** | Sweeps every asset under `Assets/` and groups broken references **by stored type** — `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into one **GhostWeapon** group (`4 entries · 2 files`). **Fix all** re-points every entry across both files at once. A group whose stored type matches a declared `[MovedFrom]` shows **Migrate all** instead — see the migration section above. |
 
 ### Guard rails (no window needed)
 
@@ -306,9 +326,9 @@ flags `-srGateWarnOnly` (force exit 0) / `-srGateFail` (force fail on violations
 | File | Shows |
 |---|---|
 | `Scripts/Tutorial/TypeSelectorTutorial.cs` | All eight lessons as numbered fields |
-| `Scripts/Weapons/` | `IWeapon` + `IMelee`/`IRanged` branches and `Sword`/`Pistol`/`Shotgun`/`Railgun` |
+| `Scripts/Weapons/` | `IWeapon` + `IMelee`/`IRanged` branches and `Sword`/`Pistol`/`Shotgun`/`Railgun`/`Crossbow` |
 | `Scripts/Effects/` | abstract `StatusEffect` + `BurnEffect`/`FreezeEffect` |
 | `Scripts/Modifiers/` | the `Modifier<T>` generic hierarchy |
 | `Scripts/SlottedLoadout.cs` | references nested in containers (Lesson 7, standalone) — its `IMGUISlottedLoadout` twin forces the IMGUI path |
-| `Scripts/WeaponPreset.cs` + `Presets/Broken*.asset` / `Presets/MovedWeaponPreset.asset` | the missing-type repair flow — manual **Fix** and the one-click **Smart Fix** |
+| `Scripts/WeaponPreset.cs` + `Presets/Broken*.asset` / `Presets/MovedWeaponPreset.asset` / `Presets/RenamedWeaponPreset.asset` | the missing-type repair flow — manual **Fix**, the one-click **Smart Fix** and the `[MovedFrom]` **Migrate all** |
 | `Scripts/IMGUILoadout.cs` / `Scripts/IMGUISlottedLoadout.cs` (+ their `Editor/` companions) | the same fields forced through the IMGUI path; every demo prefab has an `IMGUI…` twin |
