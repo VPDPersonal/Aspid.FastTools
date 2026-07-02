@@ -20,7 +20,7 @@ namespace Aspid.FastTools.Editors
             var autoShow = new AspidSwitch("Auto-show Welcome")
             {
                 value = WelcomeSettings.AutoShowEnabled,
-                tooltip = "Open the Welcome tab automatically the first time the package runs in a project.\n"
+                tooltip = "Open the Welcome tab automatically after the package is installed or updated.\n"
                     + "Turning it off suppresses every future auto-show; Tools → Aspid 🐍 → FastTools → Welcome keeps working.\n"
                     + "Per-user setting — stored locally, never committed.",
             };
