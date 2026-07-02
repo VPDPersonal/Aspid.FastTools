@@ -39,5 +39,20 @@ namespace Aspid.FastTools.Types.Editors
                 ? NoneOption
                 : $"<Missing {assemblyQualifiedName}>";
         }
+
+        /// <summary>
+        /// Formats the hover tooltip for a resolved type shown in the type-selector dropdown — the full
+        /// <c>Namespace.Class, Assembly</c> identity (generic arguments spelled out) — or <see langword="null"/> for
+        /// no type. The caption shows only the short name, so the tooltip is where the complete identity stays
+        /// readable; the format mirrors the missing-type tooltip's <c>ManagedTypeName.FullName</c>.
+        /// </summary>
+        public static string GetTypeSelectorTooltip(Type value)
+        {
+            if (value is null) return null;
+
+            var name = TypeExtensions.FormatGenericName(value);
+            var displayName = string.IsNullOrEmpty(value.Namespace) ? name : $"{value.Namespace}.{name}";
+            return $"{displayName}, {value.Assembly.GetName().Name}";
+        }
     }
 }
