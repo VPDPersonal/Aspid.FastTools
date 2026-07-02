@@ -200,7 +200,12 @@ namespace Aspid.FastTools.Types.Editors
             if (noneOption is not null)
                 _rootItems.Add(noneOption);
 
-            AppendSection(FavoritesSection, TypeSelectorPreferences.LoadFavorites());
+            // Each section is an individual opt-out that leaves its stored preference data intact, so re-enabling
+            // restores the same list. Favorites has an explicit per-user toggle; Recent needs none — a recents
+            // capacity of 0 makes LoadRecents return nothing and an empty section is never composed.
+            if (TypeSelectorSettings.ShowFavorites)
+                AppendSection(FavoritesSection, TypeSelectorPreferences.LoadFavorites());
+
             AppendSection(RecentSection, TypeSelectorPreferences.LoadRecents());
 
             foreach (var child in _rootNode.Children)

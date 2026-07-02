@@ -29,10 +29,14 @@
     margin-bottom:                                        10px;
 }
 
-/* Each control row (caption + switch / dropdown) gets a faint rounded backing so the eye can trace a wide row from its
-   caption on the left to its control pinned on the right; the inset keeps the content off the row's edges and the
-   margin spaces the rows apart. Hover lifts the row a touch more. */
-.aspid-fasttools-serialize-reference-settings .unity-base-field {
+/* Each control row (caption + switch / dropdown / slider — plus the custom __row cards for non-field rows like the
+   clear-saved-lists actions) gets a faint rounded backing so the eye can trace a wide row from its caption on the left
+   to its control pinned on the right; the inset keeps the content off the row's edges and the margin spaces the rows
+   apart. Hover lifts the row a touch more. Only a section's direct children are cards — a field nested inside another
+   control (the slider's inline value box is itself a TextField, i.e. a .unity-base-field) must not pick up the card
+   chrome. */
+.aspid-fasttools-serialize-reference-settings__section-content > .unity-base-field,
+.aspid-fasttools-serialize-reference-settings__row {
     margin-left:                                          0;
     margin-right:                                         0;
     margin-bottom:                                        4px;
@@ -46,8 +50,178 @@
     align-items:                                          center;
 }
 
-.aspid-fasttools-serialize-reference-settings .unity-base-field:hover {
+.aspid-fasttools-serialize-reference-settings__section-content > .unity-base-field:hover,
+.aspid-fasttools-serialize-reference-settings__row:hover {
     background-color:                                     rgba(255, 255, 255, 0.14);
+}
+
+/* Custom (non-BaseField) rows lay out like the field rows: caption left, controls pinned right. */
+.aspid-fasttools-serialize-reference-settings__row {
+    flex-direction:                                       row;
+    min-height:                                           32px;
+}
+
+/* The custom row's caption mirrors .unity-base-field__label: light palette tone, filling the row so the controls pin
+   to the right edge. */
+.aspid-fasttools-serialize-reference-settings__row-caption {
+    flex-grow:                                            1;
+    color:                                                var(--aspid-colors-text-light);
+    -unity-text-align:                                    middle-left;
+}
+
+/* --- Storage-scope marking ---
+   The tab mixes settings persisted in the committed ProjectSettings asset (team-wide) with per-user EditorPrefs ones,
+   so every row wears a scope stripe on its left edge: green = shared with the team, blue = just this machine. The
+   utility classes are applied by the section builders; the stripes only paint inside this window — the Project
+   Settings page never loads this sheet. The legend at the top of the tab decodes the two colours. */
+.aspid-fasttools-serialize-reference-settings .aspid-fasttools-settings-scope--shared {
+    border-left-width:                                    3px;
+    border-left-color:                                    var(--aspid-colors-status-success-lightness);
+}
+
+.aspid-fasttools-serialize-reference-settings .aspid-fasttools-settings-scope--user {
+    border-left-width:                                    3px;
+    border-left-color:                                    var(--aspid-colors-status-info-lightness);
+}
+
+/* The scope legend: one dim line above the sections pairing each stripe colour with what it means for persistence.
+   Items flow in a row and wrap on narrow windows. */
+.aspid-fasttools-serialize-reference-settings__legend {
+    flex-direction:                                       row;
+    flex-wrap:                                            wrap;
+    margin-bottom:                                        8px;
+}
+
+.aspid-fasttools-serialize-reference-settings__legend-item {
+    flex-direction:                                       row;
+    align-items:                                          center;
+    margin-right:                                         16px;
+}
+
+/* Each legend swatch is a miniature of the rows' left stripe (same width, painted by the same scope class via
+   border-left) so the key and the marking read as one system. */
+.aspid-fasttools-serialize-reference-settings__legend-swatch {
+    width:                                                0;
+    height:                                               12px;
+    margin-right:                                         6px;
+    border-radius:                                        1px;
+}
+
+.aspid-fasttools-serialize-reference-settings__legend-text {
+    font-size:                                            11px;
+    color:                                                var(--aspid-colors-text-dark);
+}
+
+/* --- Action buttons (custom rows) ---
+   Small framed buttons pinned to a row's right edge, framed like the other settings inputs. The danger modifier gives
+   a destructive action (clearing a saved list) the red hover family instead of the signature green. */
+.aspid-fasttools-serialize-reference-settings__action {
+    height:                                               22px;
+    margin:                                               0 0 0 6px;
+    padding:                                              0 10px;
+    background-color:                                     rgba(20, 20, 20, 0.55);
+    border-width:                                         1px;
+    border-color:                                         var(--aspid-colors-shade-dark);
+    border-radius:                                        8px;
+    color:                                                var(--aspid-colors-text-light);
+}
+
+.aspid-fasttools-serialize-reference-settings__action:hover {
+    border-color:                                         var(--aspid-colors-status-success-shade-light);
+    color:                                                var(--aspid-colors-status-success-text-light);
+    background-color:                                     rgba(20, 90, 45, 0.25);
+}
+
+.aspid-fasttools-serialize-reference-settings__action--danger:hover {
+    border-color:                                         var(--aspid-colors-status-error-text-dark);
+    color:                                                var(--aspid-colors-status-error-text-light);
+    background-color:                                     rgba(125, 35, 35, 0.25);
+}
+
+/* An action tied to the per-user scope (the per-user reset) hovers in the scope's blue instead of the signature
+   green, mirroring how the shared action's green hover matches its stripe. */
+.aspid-fasttools-serialize-reference-settings__action--info:hover {
+    border-color:                                         var(--aspid-colors-status-info-text-dark);
+    color:                                                var(--aspid-colors-status-info-text-light);
+    background-color:                                     rgba(25, 75, 130, 0.25);
+}
+
+/* --- Reset footer ---
+   Pinned under the scroll (a sibling of it, so it never scrolls away): a hairline over one action row that resets
+   each storage scope to its defaults. The buttons wear the same scope classes as the settings rows, so each carries
+   its scope's stripe on its left edge at rest. The row card keeps the tab's side inset but drops its stacking margin —
+   the footer's own padding spaces it. */
+.aspid-fasttools-serialize-reference-settings__footer {
+    padding:                                              8px 0;
+    border-top-width:                                     1px;
+    border-top-color:                                     var(--aspid-colors-shade-dark);
+}
+
+.aspid-fasttools-serialize-reference-settings__footer .aspid-fasttools-serialize-reference-settings__row {
+    margin-bottom:                                        0;
+}
+
+/* --- Recent-items slider ---
+   The SliderInt row joins the family: caption and control split 50/50 like the EnumField row, a slim dark track with
+   a muted round handle (the switch handle's palette), and the drag-value text box framed like the other inputs. */
+.aspid-fasttools-serialize-reference-settings .unity-base-slider .unity-base-field__label {
+    flex-grow:                                            1;
+    flex-basis:                                           0;
+    min-width:                                            auto;
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-base-slider .unity-base-field__input {
+    flex-grow:                                            1;
+    flex-shrink:                                          1;
+    flex-basis:                                           0;
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-base-slider__tracker {
+    height:                                               4px;
+    margin-top:                                           -2px;
+    border-width:                                         0;
+    border-radius:                                        2px;
+    background-color:                                     var(--aspid-colors-shade-darkness);
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-base-slider__dragger {
+    width:                                                12px;
+    height:                                               12px;
+    margin-top:                                           -6px;
+    border-width:                                         1px;
+    border-radius:                                        6px;
+    border-color:                                         var(--aspid-colors-shade-dark);
+    background-color:                                     rgba(189, 189, 196, 0.85);
+}
+
+/* Hovering the slider washes the handle's border in the muted signature green — the same accent family as the
+   switches, the dropdown and the folder list. */
+.aspid-fasttools-serialize-reference-settings .unity-base-slider:hover .unity-base-slider__dragger {
+    border-color:                                         var(--aspid-colors-status-success-shade-light);
+}
+
+/* The slider's inline value box: a fixed-size TextField (it must not stretch with the row) framed like the other
+   settings inputs instead of Unity's bright default field. */
+.aspid-fasttools-serialize-reference-settings .unity-base-slider__text-field {
+    flex-grow:                                            0;
+    flex-shrink:                                          0;
+    width:                                                34px;
+    margin:                                               0 0 0 8px;
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-base-slider__text-field .unity-base-text-field__input {
+    height:                                               20px;
+    padding:                                              0 4px;
+    -unity-text-align:                                    middle-center;
+    background-color:                                     rgba(20, 20, 20, 0.55);
+    border-width:                                         1px;
+    border-color:                                         var(--aspid-colors-shade-dark);
+    border-radius:                                        6px;
+    color:                                                var(--aspid-colors-text-lightness);
+}
+
+.aspid-fasttools-serialize-reference-settings .unity-base-slider__text-field .unity-base-text-field__input:focus {
+    border-color:                                         var(--aspid-colors-status-success-text-light);
 }
 
 /* Field captions read in the palette's light text tone, matching the window's other labels, and align to the row's

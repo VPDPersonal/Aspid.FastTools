@@ -20,6 +20,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     internal sealed class SerializeReferenceSettingsTests
     {
         private bool _autoDeAlias;
+        private bool _breakageDetection;
         private string[] _excludedFolders;
         private GateSeverity _buildSeverity;
 
@@ -28,6 +29,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             // Snapshot the project's real settings so the assertions below can mutate them freely and restore on teardown.
             _autoDeAlias = SerializeReferenceSettings.AutoDeAliasEnabled;
+            _breakageDetection = SerializeReferenceSettings.BreakageDetectionEnabled;
             _excludedFolders = SerializeReferenceSettings.ExcludedFolders;
             _buildSeverity = SerializeReferenceSettings.BuildSeverity;
         }
@@ -36,6 +38,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void TearDown()
         {
             SerializeReferenceSettings.AutoDeAliasEnabled = _autoDeAlias;
+            SerializeReferenceSettings.BreakageDetectionEnabled = _breakageDetection;
             SerializeReferenceSettings.ExcludedFolders = _excludedFolders;
             SerializeReferenceSettings.BuildSeverity = _buildSeverity;
         }
@@ -108,7 +111,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         // -----------------------------------------------------------------------------------------------------
-        // B — the shared controls mirror the store live (the two settings surfaces stay in sync)
+        // B — the per-scope resets restore exactly their own defaults
+        // -----------------------------------------------------------------------------------------------------
+
+        [Test]
+        public void ResetSharedToDefaults_RestoresCommittedDefaults_AndLeavesUserSettingsAlone()
+        {
+            SerializeReferenceSettings.AutoDeAliasEnabled = false;
+            SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
+            SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Third Party/" };
+            SerializeReferenceSettings.BreakageDetectionEnabled = false;
+
+            SerializeReferenceSettings.ResetSharedToDefaults();
+
+            Assert.IsTrue(SerializeReferenceSettings.AutoDeAliasEnabled, "The shared reset must restore auto de-alias to on.");
+            Assert.AreEqual(GateSeverity.Warn, SerializeReferenceSettings.BuildSeverity, "The shared reset must restore the gate to Warn.");
+            Assert.IsEmpty(SerializeReferenceSettings.ExcludedFolders, "The shared reset must drop every excluded folder.");
+            Assert.IsFalse(SerializeReferenceSettings.BreakageDetectionEnabled,
+                "The shared reset must not touch the per-user breakage-detection setting.");
+        }
+
+        [Test]
+        public void ResetUserToDefaults_RestoresBreakageDetection_AndLeavesSharedSettingsAlone()
+        {
+            SerializeReferenceSettings.BreakageDetectionEnabled = false;
+            SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
+
+            SerializeReferenceSettings.ResetUserToDefaults();
+
+            Assert.IsTrue(SerializeReferenceSettings.BreakageDetectionEnabled, "The per-user reset must restore breakage detection to on.");
+            Assert.AreEqual(GateSeverity.Fail, SerializeReferenceSettings.BuildSeverity,
+                "The per-user reset must not touch the shared gate severity.");
+        }
+
+        // -----------------------------------------------------------------------------------------------------
+        // C — the shared controls mirror the store live (the two settings surfaces stay in sync)
         // -----------------------------------------------------------------------------------------------------
 
         [Test]
@@ -122,11 +159,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var container = new VisualElement();
             SerializeReferenceSettingsUI.BuildControls(container);
 
-            // The two boolean settings render as iOS-style AspidSwitch fields (BaseField<bool>), not plain Toggles.
+            // The two boolean settings render as iOS-style AspidSwitch fields (BaseField<bool>), not plain Toggles —
+            // breakage detection leads the list, auto de-alias follows.
             var switches = container.Query<AspidSwitch>().ToList();
-            Assert.AreEqual(2, switches.Count, "BuildControls must emit the auto-de-alias and breakage-detection switches.");
-            var autoDeAlias = switches[0];
-            var breakageDetection = switches[1];
+            Assert.AreEqual(2, switches.Count, "BuildControls must emit the breakage-detection and auto-de-alias switches.");
+            var breakageDetection = switches[0];
+            var autoDeAlias = switches[1];
             var severity = container.Q<EnumField>();
             var folders = container.Q<SerializeReferenceExcludedFoldersField>();
             Assert.IsNotNull(severity, "BuildControls must emit the build-gate EnumField.");
