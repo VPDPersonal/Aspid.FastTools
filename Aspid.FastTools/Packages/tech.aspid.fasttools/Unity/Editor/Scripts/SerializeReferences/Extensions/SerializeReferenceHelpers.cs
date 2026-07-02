@@ -623,17 +623,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
-        /// The trailing notice label for a Smart Fix <paramref name="suggestion"/> — the short type name with the
-        /// "<c>·  → Name?</c>" affordance. Shared by the UIToolkit and IMGUI notices so the two never drift.
+        /// The Smart Fix <paramref name="suggestion"/> label — the "<c>→ Name?</c>" affordance. Shared by the
+        /// UIToolkit and IMGUI notices and the Project References quick-apply button so the copy never drifts.
+        /// The "<c>·</c>" that separates it from the inline Fix segment is NOT part of this label: it is decoration
+        /// each notice renders itself, unclickable and never underlined.
         /// </summary>
         public static string GetSuggestionLabel(SerializeReferenceRepairSuggestions.RepairCandidate suggestion) =>
-            $"·  → {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion.Type)}?";
-
-        /// <summary>
-        /// The same suggestion as a STANDALONE button label — no leading "<c>·</c>" separator, which only makes sense
-        /// when the affordance trails a "Fix" segment inline (the Project References quick-apply is its own button).
-        /// </summary>
-        public static string GetSuggestionButtonLabel(SerializeReferenceRepairSuggestions.RepairCandidate suggestion) =>
             $"→ {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion.Type)}?";
 
         /// <summary>

@@ -194,6 +194,19 @@
     display:                                               flex;
 }
 
+/* The "·" between Fix and the suggestion: decoration, not an action — same palette and weight as its neighbours,
+   but never underlined, no link cursor, no hover (an underlined separator would read as part of the button). */
+.aspid-fasttools-reference-notice__suggestion-separator {
+    margin-left:                                           6px;
+    color:                                                 var(--aspid-colors-status-warning-text-light);
+    -unity-font-style:                                     bold;
+    display:                                               none;
+}
+
+.aspid-fasttools-reference-notice__suggestion-separator--visible {
+    display:                                               flex;
+}
+
 .aspid-fasttools-reference-notice__suggestion:hover {
     color:                                                 var(--aspid-colors-status-warning-text-lightness);
 }

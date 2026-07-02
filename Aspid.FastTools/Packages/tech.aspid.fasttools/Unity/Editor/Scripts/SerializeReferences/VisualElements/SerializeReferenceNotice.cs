@@ -34,6 +34,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ActionClass = NoticeClass + "__action";
         private const string SuggestionClass = NoticeClass + "__suggestion";
         private const string SuggestionVisibleClass = SuggestionClass + "--visible";
+        private const string SuggestionSeparatorClass = NoticeClass + "__suggestion-separator";
+        private const string SuggestionSeparatorVisibleClass = SuggestionSeparatorClass + "--visible";
 
         // Marks the message as the shared notice's click-to-navigate segment (link cursor via USS); its hover lighten
         // comes from code, since the rid colour is dynamic.
@@ -63,6 +65,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly Label _message;
         private readonly Label _action;
         private readonly Label _suggestion;
+        private readonly Label _suggestionSeparator;
         private readonly VisualElement _dot;
 
         private Action _onAction;
@@ -114,6 +117,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (_sharedColor.HasValue) _action.style.color = _sharedColor.Value;
             });
 
+            // The "·" between the Fix action and the Smart Fix suggestion is DECORATION, not part of either action:
+            // its own element, never underlined, never clickable, so the underline keeps meaning "this is a button".
+            _suggestionSeparator = new Label("·").AddClass(SuggestionSeparatorClass);
+            _suggestionSeparator.pickingMode = PickingMode.Ignore;
+
             _suggestion = new Label().AddClass(SuggestionClass);
             _suggestion.RegisterCallback<ClickEvent>(_ => _onSuggestion?.Invoke());
 
@@ -128,6 +136,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(_icon)
                 .AddChild(_message)
                 .AddChild(_action)
+                .AddChild(_suggestionSeparator)
                 .AddChild(_suggestion);
         }
 
@@ -231,6 +240,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _suggestion.text = Underline(suggestionText);
             _suggestion.tooltip = detail;
             _suggestion.EnableInClassList(SuggestionVisibleClass, hasSuggestion);
+            _suggestionSeparator.EnableInClassList(SuggestionSeparatorVisibleClass, hasSuggestion);
         }
 
         private void ClearSuggestion()
@@ -239,6 +249,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _suggestion.text = string.Empty;
             _suggestion.tooltip = null;
             _suggestion.EnableInClassList(SuggestionVisibleClass, false);
+            _suggestionSeparator.EnableInClassList(SuggestionSeparatorVisibleClass, false);
         }
 
         // Every clickable action word is underlined (rich-text <u>, since USS has no text-decoration) so "this is a
