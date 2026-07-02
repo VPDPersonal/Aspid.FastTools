@@ -56,7 +56,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             });
         }
 
-        private static void OpenAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, VisualElement anchor)
+        // Shared with SerializeReferenceListField, whose "+" needs the same picker anchored the same way — internal so
+        // the attribute-free list offers the identical de-aliased append.
+        internal static void OpenAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, VisualElement anchor)
         {
             var window = EditorWindow.mouseOverWindow != null ? EditorWindow.mouseOverWindow : EditorWindow.focusedWindow;
             if (window == null) return;

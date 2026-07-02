@@ -129,8 +129,8 @@ namespace Aspid.FastTools.Editors
             var user = new Button(ResetUserToDefaults)
             {
                 text = "Per-user",
-                tooltip = "Reset your per-user settings to defaults: Breakage detection on, Favorites section on, "
-                    + $"Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, no theme override, auto-show Welcome on.\n"
+                tooltip = "Reset your per-user settings to defaults: Breakage detection on, dropdown without [TypeSelector] off, "
+                    + $"Favorites section on, Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, no theme override, auto-show Welcome on.\n"
                     + "Only this machine; the saved Favorites / Recent lists are kept.",
             };
             user.AddClass(ActionClass).AddClass(ActionInfoClass).AddClass(UserScopeClass);
@@ -164,6 +164,7 @@ namespace Aspid.FastTools.Editors
                 "Reset per-user settings",
                 "Reset your per-user settings to defaults?\n\n"
                 + "• Breakage detection: On\n"
+                + "• Dropdown without [TypeSelector]: Off\n"
                 + "• Favorites section: On\n"
                 + $"• Recent items: {TypeSelectorSettings.DefaultRecentsCapacity}\n"
                 + "• Theme override: none\n"

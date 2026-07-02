@@ -344,6 +344,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 enterChildren = false;
 
                 var child = iterator.Copy();
+
+                // Attribute-free dropdowns reach nested references through this rebuild: under the opt-in, a child
+                // that is itself a managed reference (or a list of them) without [TypeSelector] gets the dropdown
+                // field instead of Unity's default foldout — an attributed child keeps its drawer via PropertyField.
+                if (SerializeReferenceAutoDropdown.ShouldDraw(child))
+                {
+                    _content.Add(SerializeReferenceAutoDropdown.CreateField(child));
+                    continue;
+                }
+
                 var field = new PropertyField(child);
                 field.BindProperty(child);
 
