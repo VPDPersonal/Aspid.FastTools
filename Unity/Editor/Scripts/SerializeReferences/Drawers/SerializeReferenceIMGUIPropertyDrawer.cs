@@ -302,6 +302,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 // The badge uses "#" (not parentheses) so the number reads as a group id, not a member count; the
                 // tooltip lists the group's other fields by display path, and clicking the message reveals them.
+                // Navigation gets the LIVE property, not the persistent copy: the click callback runs synchronously
+                // inside this Draw (so the live property is valid), and the ancestor expansion it performs must write
+                // isExpanded through the inspector's own SerializedObject — the expanded state is cached per
+                // SerializedObject instance at construction, so a write through a fresh copy never reaches the
+                // long-lived instance the inspector draws from (not even after Update()).
                 DrawNotice(
                     noticeRect,
                     sharedIndex > 0 ? $"Shared reference #{sharedIndex}" : "Shared reference",
@@ -309,19 +314,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     SerializeReferenceHelpers.BuildSharedReferenceDetail(property),
                     () => SerializeReferenceHelpers.MakeReferenceUnique(persistent),
                     ridColor: indexColor,
-                    onMessageClick: () => SerializeReferenceSharedNavigation.NavigateFrom(persistent));
+                    onMessageClick: () => SerializeReferenceSharedNavigation.NavigateFrom(property));
 
                 y += EditorGUIUtility.singleLineHeight + spacing;
 
                 // Group-navigation pulse: while a sibling's "Shared reference" message was just clicked, every other
-                // drawn member of that group tints in the group colour, fading out. Painted over the full field rect
-                // (header + children), mirroring the UIToolkit field's background pulse.
+                // drawn member of that group tints in the group colour, fading out — painted from the status
+                // stripe's line, so the pulse and the stripe read as one band (mirrors the UIToolkit field's __flash
+                // overlay). The right edge depends on the host: a root-level field stretches to the inspector's
+                // right edge (its own rect stops a few px short of it), while a row inside a
+                // SerializeReferenceIMGUIList stops at that list's box border (the row's own rect stops short of it).
                 if (SerializeReferenceSharedNavigation.TryGetFlashAlpha(property, out var flashAlpha) &&
                     indexColor.HasValue)
                 {
                     var flashColor = indexColor.Value;
                     flashColor.a = flashAlpha;
-                    EditorGUI.DrawRect(position, flashColor);
+                    var flashX = content.x - StripeOffset;
+                    var rowLimit = SerializeReferenceIMGUIList.CurrentElementRightLimit;
+                    var flashXMax = float.IsNaN(rowLimit)
+                        ? Mathf.Max(position.xMax, EditorGUIUtility.currentViewWidth)
+                        : rowLimit;
+                    EditorGUI.DrawRect(
+                        new Rect(flashX, position.y, flashXMax - flashX, position.height), flashColor);
                 }
             }
         }

@@ -2,6 +2,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEditorInternal;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -38,6 +39,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static string _revealPath;
         private static double _revealUntil;
 
+        // The per-group navigation cursor: the member the last click revealed, keyed by (target object, rid).
+        // Advancing from the cursor — not from the clicked field — lets repeated clicks on the SAME notice walk the
+        // whole group; advancing from the clicked field would recompute the same "next" forever and members two or
+        // more steps away would stay unreachable from that notice. Mirrors the UIToolkit field's cursor.
+        private static readonly Dictionary<(int target, long rid), string> NavigationCursor = new();
+
         // The active pulse: every drawn member of (target, rid) except the clicked one tints in the group colour
         // until the deadline. Driven by an EditorApplication.update repaint loop while it lasts.
         private static int _flashTarget;
@@ -46,9 +53,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static double _flashUntil;
 
         /// <summary>
-        /// The "Shared reference #N" message was clicked: pick the group's next member in document order (wrapping),
-        /// expand the collapsed parents hiding it — a member inside collapsed parents is not drawn at all — queue the
-        /// scroll for when it is painted (see <see cref="RevealIfPending"/>), and start the group pulse.
+        /// The "Shared reference #N" message was clicked: reveal the WHOLE group — expand the collapsed parents over
+        /// every member (a member inside collapsed parents is not drawn at all) — then scroll to the next member in
+        /// document order (cursor-based, so repeated clicks walk the group; see <see cref="RevealIfPending"/>) and
+        /// start the group pulse.
+        /// Call with the inspector's LIVE property (valid — the message click runs synchronously inside Draw), never
+        /// a persistent copy: isExpanded is cached per SerializedObject instance at construction, so the ancestor
+        /// expansion only reaches the inspector's foldouts when written through its own long-lived SerializedObject.
         /// </summary>
         public static void NavigateFrom(SerializedProperty property)
         {
@@ -63,17 +74,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (group.Count < 2) return;
 
             var selfPath = property.propertyPath;
-            var selfIndex = -1;
-            for (var i = 0; i < group.Count; i++)
+
+            // Reveal the WHOLE group, not just the scroll target: the pulse covers every drawn member, so every
+            // member must be drawn. IMGUI re-reads isExpanded on every repaint, so one pass reaches any depth.
+            foreach (var path in group)
+                if (path != selfPath)
+                    ExpandAncestors(property.serializedObject, path);
+
+            // The scroll target: the next member in document order after the group's cursor (the member the
+            // previous click scrolled to), so repeated clicks on the same notice walk the whole group; the clicked
+            // field itself is skipped.
+            var key = (target.GetInstanceID(), rid);
+            var start = NavigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
+            if (start < 0) start = IndexOf(group, selfPath);
+
+            string nextPath = null;
+            for (var step = 1; step <= group.Count && nextPath is null; step++)
             {
-                if (group[i] != selfPath) continue;
-                selfIndex = i;
-                break;
+                var candidate = group[(start + step) % group.Count];
+                if (candidate != selfPath) nextPath = candidate;
             }
 
-            var nextPath = group[(selfIndex + 1) % group.Count];
+            if (nextPath is null) return;
+            NavigationCursor[key] = nextPath;
 
-            ExpandAncestors(property.serializedObject, nextPath);
             StartFlash(target.GetInstanceID(), rid, selfPath);
 
             _revealTarget = target.GetInstanceID();
@@ -126,6 +150,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ? FlashAlpha
                 : FlashAlpha * (1f - (t - FlashHoldFraction) / (1f - FlashHoldFraction));
             return true;
+        }
+
+        private static int IndexOf(IReadOnlyList<string> paths, string path)
+        {
+            for (var i = 0; i < paths.Count; i++)
+                if (paths[i] == path)
+                    return i;
+
+            return -1;
         }
 
         // Expands every ancestor on the way to a property so it is actually drawn: each '.'-prefix of the path is an

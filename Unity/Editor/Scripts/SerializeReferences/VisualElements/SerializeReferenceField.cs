@@ -50,6 +50,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string StripeActiveClass = StripeClass + "--active";
         private const string StripeWarningClass = StripeClass + "--warning";
 
+        // The group-navigation pulse's overlay: an absolutely-positioned band spanning from the status stripe's line
+        // to the field's right edge (the root's own background cannot reach the stripe, which hangs left of the root
+        // in the gutter). Its colour is animated inline from code; see FlashSharedHighlight.
+        private const string FlashClass = BlockClass + "__flash";
+
         // Root modifier toggled while the field shows a stripe (missing type / shared reference). It gates the foldout's
         // left padding — the stripe gutter — so a field with no stripe keeps its natural position instead of a needless
         // indent (matching the IMGUI drawer). A required-only notice carries no stripe, so it does not set this.
@@ -82,8 +87,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A reveal that had to expand something first waits one beat — for the expansion's layout pass, and for a
         // just-expanded ListView to build its rows — before scrolling and pulsing, or ScrollTo would aim at a
-        // zero-size target.
-        private const long RevealDelayMs = 120;
+        // zero-size target. Deeper nestings (a list inside a list) reveal one level per pass; a pass may also find
+        // nothing new to expand while a previous pass's ListView is still building rows, so navigation keeps
+        // re-checking until MaxRevealRetries passes are spent.
+        private const long RevealDelayMs = 150;
+        private const int MaxRevealRetries = 4;
 
         private readonly Foldout _foldout;
         private readonly TextElement _caption;
@@ -101,6 +109,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private SerializeReferenceNotice _mixedNotice;
         private SerializeReferenceNotice _requiredNotice;
         private VisualElement _stripe;
+        private VisualElement _flashOverlay;
         private Type _currentType;
         private bool _contentBuilt;
         private bool _mixedTypes;
@@ -121,6 +130,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // its group (same target object + rid) and reveal them — scroll to the next one and pulse the whole group.
         // Registered/unregistered alongside the ManagedReferencesChanged subscription in the constructor.
         private static readonly List<SerializeReferenceField> LiveFields = new();
+
+        // The per-group navigation cursor: the member the last click revealed, keyed by (target object, rid).
+        // Advancing from the cursor — not from the clicked field — lets repeated clicks on the SAME notice walk the
+        // whole group; advancing from the clicked field would recompute the same "next" forever and members two or
+        // more steps away would stay unreachable from that notice.
+        private static readonly Dictionary<(int target, long rid), string> NavigationCursor = new();
 
         public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null)
         {
@@ -480,13 +495,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 onNavigate: NavigateToAliases);
         }
 
-        // The shared notice's message click: reveal the other members of this field's shared group — expand whatever
-        // hides the next one (in document order, wrapping), scroll it into view and pulse every member in the group
-        // colour — so "who else uses this?" is answered by the inspector itself instead of a manual hunt for
-        // matching swatches.
-        private void NavigateToAliases() => NavigateToAliases(allowRetry: true);
+        // The shared notice's message click: reveal the WHOLE shared group — expand whatever hides any of its
+        // members (collapsed parents, never-opened lists), scroll to the next member (cursor-based, so repeated
+        // clicks walk the group) and pulse every member in the group colour — so "who else uses this?" is answered
+        // by the inspector itself instead of a manual hunt for matching swatches.
+        private void NavigateToAliases() => NavigateToAliases(MaxRevealRetries);
 
-        private void NavigateToAliases(bool allowRetry)
+        private void NavigateToAliases(int retriesLeft)
         {
             if (!IsPropertyAlive()) return;
 
@@ -498,7 +513,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (group.Count < 2) return;
 
             // The group members' live elements, keyed by path. Same panel only: with two inspectors on one object
-            // every alias exists twice, and cycling should stay inside the inspector the user clicked in.
+            // every alias exists twice, and the reveal should stay inside the inspector the user clicked in.
             var live = new Dictionary<string, SerializeReferenceField>();
             foreach (var field in LiveFields)
             {
@@ -509,35 +524,74 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 live[field._property.propertyPath] = field;
             }
 
-            // The first member after this field in document order (wrapping) that has a live element.
-            var selfIndex = IndexOf(group, _property.propertyPath);
-            SerializeReferenceField next = null;
-            for (var step = 1; step < group.Count && next is null; step++)
-                live.TryGetValue(group[(selfIndex + step) % group.Count], out next);
-
-            if (next is null)
+            // Reveal the WHOLE group, not just the scroll target: the pulse covers every member, so every member
+            // must be on screen — expand the collapsed foldouts over the live ones, and the lists hiding the
+            // missing ones (their elements do not exist until their ListView builds its rows).
+            var selfPath = _property.propertyPath;
+            var expandedSomething = false;
+            var missing = 0;
+            foreach (var path in group)
             {
-                // No member has a live element — typically a list that was never expanded, whose ListView has not
-                // built its rows yet. Expand every reference/list foldout along the next member's path, give the
-                // ListView a beat to build the revealed rows, then retry once.
-                if (allowRetry && RevealPath(group[(selfIndex + 1) % group.Count]))
-                    schedule.Execute(() => NavigateToAliases(allowRetry: false)).StartingIn(RevealDelayMs);
+                if (path == selfPath) continue;
+
+                if (live.TryGetValue(path, out var member))
+                {
+                    expandedSomething |= ExpandAncestorFoldouts(member);
+                }
+                else
+                {
+                    missing++;
+                    expandedSomething |= RevealPath(path);
+                }
+            }
+
+            // Rows of a just-expanded list build asynchronously, so while members are still missing wait a beat and
+            // re-run — a pass where nothing NEW could be expanded still waits, because the previous pass's rows may
+            // still be building. Retries exhausted → proceed with the members that do exist.
+            if (missing > 0 && retriesLeft > 0)
+            {
+                schedule.Execute(() => NavigateToAliases(retriesLeft - 1)).StartingIn(RevealDelayMs);
                 return;
             }
 
-            // A member hidden inside collapsed parents (a nested reference, a collapsed list) gets geometry only
-            // after every Foldout between it and the root expands — expand them, and let a layout pass run before
-            // the scroll so ScrollTo aims at the member's real position.
+            // The scroll target: the next member in document order after the group's cursor (the member the
+            // previous click scrolled to), so repeated clicks on the same notice walk the whole group; the clicked
+            // field itself is skipped, and members whose element never appeared fall through to the next one.
+            var key = (target.GetInstanceID(), rid);
+            var start = NavigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
+            if (start < 0) start = IndexOf(group, selfPath);
+
+            SerializeReferenceField next = null;
+            for (var step = 1; step <= group.Count && next is null; step++)
+            {
+                var candidate = group[(start + step) % group.Count];
+                if (candidate != selfPath) live.TryGetValue(candidate, out next);
+            }
+
+            if (next is null) return;
+
+            // Committing to this member: the next click continues the walk from here.
+            NavigationCursor[key] = next._property.propertyPath;
+
+            // Let the expansion's layout pass run before the scroll, so ScrollTo aims at settled positions.
+            if (expandedSomething) next.schedule.Execute(() => Reveal(next, live)).StartingIn(RevealDelayMs);
+            else Reveal(next, live);
+        }
+
+        // Expands every collapsed Foldout between a member's element and the panel root (nested reference foldouts,
+        // list foldouts, [Serializable] container foldouts alike), so a member hidden inside collapsed parents gets
+        // real geometry. Returns true when anything was actually expanded.
+        private static bool ExpandAncestorFoldouts(VisualElement element)
+        {
             var expanded = false;
-            for (var ancestor = next.hierarchy.parent; ancestor is not null; ancestor = ancestor.hierarchy.parent)
+            for (var ancestor = element.hierarchy.parent; ancestor is not null; ancestor = ancestor.hierarchy.parent)
             {
                 if (ancestor is not Foldout { value: false } foldout) continue;
                 foldout.value = true;
                 expanded = true;
             }
 
-            if (expanded) next.schedule.Execute(() => Reveal(next, live)).StartingIn(RevealDelayMs);
-            else Reveal(next, live);
+            return expanded;
         }
 
         private static void Reveal(SerializeReferenceField next, Dictionary<string, SerializeReferenceField> members)
@@ -596,17 +650,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Briefly tints the whole field in its shared-reference colour — the "here it is" pulse the group-navigation
-        // click uses to point at the other members of a shared group.
+        // click uses to point at the other members of a shared group. The tint lives on a dedicated overlay spanning
+        // from the status stripe's line to the field's right edge, so the pulse and the stripe read as one band
+        // (the root's own background starts at the indented content edge and would leave the gutter dark).
         private void FlashSharedHighlight()
         {
+            if (_flashOverlay is null)
+            {
+                _flashOverlay = new VisualElement()
+                    .AddClass(FlashClass)
+                    .SetPickingMode(PickingMode.Ignore);
+                // First child, so the stripe and the content render over the tint.
+                Insert(0, _flashOverlay);
+            }
+
+            // Stretch the band to the inspector's right edge: the field root ends a few px short of it (inspector
+            // padding, field margins), which left a dark sliver after the pulse. Measured per flash — the gap varies
+            // with nesting depth — and applied as a negative `right`, extending the overlay past the root.
+            var inspectorRoot = (VisualElement)GetFirstAncestorOfType<InspectorElement>() ?? panel?.visualTree;
+            if (inspectorRoot is not null)
+            {
+                var overhang = worldBound.xMax - inspectorRoot.worldBound.xMax;
+                if (!float.IsNaN(overhang)) _flashOverlay.style.right = overhang;
+            }
+
             var from = _sharedColor;
             from.a = FlashAlpha;
 
-            experimental.animation
+            _flashOverlay.experimental.animation
                 .Start(from, Color.clear, FlashDurationMs,
                     static (element, color) => element.style.backgroundColor = color)
                 .Ease(HoldThenFadeEasing)
-                .OnCompleted(() => style.backgroundColor = StyleKeyword.Null);
+                .OnCompleted(() => _flashOverlay.style.backgroundColor = StyleKeyword.Null);
         }
 
         // The pulse holds its full tint for the first FlashHoldFraction of its life and then fades out linearly —
