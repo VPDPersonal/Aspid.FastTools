@@ -130,7 +130,13 @@ namespace Aspid.FastTools.Types.Editors
         {
             var parameters = openDefinition.GetGenericArguments();
 
-            var baseName = TypeExtensions.StripArity(openDefinition.Name);
+            // A [TypeSelectorDisplay(Name)] override carries its "<T, …>" suffix (see GetCustomDisplayName); the
+            // building header re-spells the argument list itself, so only the base part before '<' is wanted here.
+            var custom = TypeSelectorHelpers.GetCustomDisplayName(openDefinition);
+            var angle = custom?.IndexOf('<') ?? -1;
+            var baseName = custom is null
+                ? TypeExtensions.StripArity(openDefinition.Name)
+                : angle < 0 ? custom : custom[..angle];
 
             var parts = new string[parameters.Length];
             for (var k = 0; k < parameters.Length; k++)
