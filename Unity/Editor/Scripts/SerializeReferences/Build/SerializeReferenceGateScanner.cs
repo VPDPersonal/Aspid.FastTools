@@ -87,7 +87,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
 
                 if (options.ScanMissingTypes)
-                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves))
+                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, ResolvesOrMigrates))
                         violations.Add(new GateViolation(path, entry.FileId, entry.Rid, entry.StoredType, GateViolationKind.MissingType, string.Empty));
 
                 if (options.ScanRequiredFields)
@@ -103,6 +103,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return violations;
         }
+
+        // A stored name that no longer loads but is claimed by exactly one declared [MovedFrom] is a pending
+        // migration, not a violation: Unity migrates the reference in memory when the asset loads, so the built
+        // player is unaffected — only the file text is stale (see SerializeReferenceMovedFromResolver). The gate
+        // must never warn or fail a build over a rename that was declared properly. Internal for the gate tests.
+        internal static bool ResolvesOrMigrates(ManagedTypeName stored) =>
+            SerializeReferenceHelpers.StoredTypeResolves(stored) ||
+            SerializeReferenceMovedFromResolver.TryResolve(stored, out _);
 
         // Per-run memo: a script guid -> the required field descriptors of the C# type it resolves to. Keyed by guid so
         // an unresolvable script (deleted / non-MonoBehaviour) caches an empty set once instead of re-probing every object.
