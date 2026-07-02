@@ -68,6 +68,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodePickingClass = NodeClass + "--picking";
         private const string NodeBandClass = RootClass + "__node-band";
         private const string NodeBandMissingClass = NodeBandClass + "--missing";
+        private const string NodeBandMigrateClass = NodeBandClass + "--migrate";
         private const string NodeBandRowClass = RootClass + "__node-band-row";
         private const string NodeMigrateClass = RootClass + "__node-migrate";
         private const string NodeSuggestClass = RootClass + "__node-suggest";
@@ -737,8 +738,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 AspidGradientButton band = null;
                 band = new AspidGradientButton(isMigration ? MigrateFixCollapsedText : FixCollapsedText,
                         _ => OpenMissingPicker(assetPath, fileId, rid, band))
-                    .AddClass(NodeBandClass);
-                if (!isMigration) band.AddClass(NodeBandMissingClass);
+                    .AddClass(NodeBandClass)
+                    .AddClass(isMigration ? NodeBandMigrateClass : NodeBandMissingClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
 

@@ -305,6 +305,17 @@
     color:                                                var(--aspid-colors-status-warning-text-light);
 }
 
+/* A pending-migration band wears the info accent instead: its "Fix ▼" is the calm escape hatch beside the Migrate
+   row — never the amber alarm, and not the dim value-dropdown grey of a healthy card either (matches the info pill). */
+.aspid-fasttools-reference-graph__node
+    .aspid-fasttools-reference-graph__node-band--migrate {
+    --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-status-info-text-light);
+}
+
+.aspid-fasttools-reference-graph__node-band--migrate .aspid-fasttools-gradient-button__label {
+    color:                                                var(--aspid-colors-status-info-text-light);
+}
+
 /* [MovedFrom] one-click migrate: the pending-migration card's full-width action under its band, info-tinted — an
    authoritative rename is a calm migration, never an amber alarm (mirrors the Project Audit __group-migrate row). */
 .aspid-fasttools-reference-graph__node-migrate {

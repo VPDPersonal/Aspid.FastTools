@@ -590,6 +590,15 @@
     -unity-text-align:                                     middle-right;
 }
 
+/* A pending-migration group's manual Fix all keeps the card's calm info tone — the amber accent above is the
+   "broken" alarm, and nothing on a migration card is broken (matches the info pill and the Migrate all row). */
+.aspid-fasttools-repair-references__group
+    .aspid-fasttools-repair-references__group-fix-all--migrate {
+    --aspid-fasttools-colors-gradient_button-accent: var(
+        --aspid-colors-status-info-text-light
+    );
+}
+
 /* The info line: the broken type name with the dimmed count beside it, hugging the left of the header row. */
 .aspid-fasttools-repair-references__group-header-row {
     flex-direction:                                        row;
