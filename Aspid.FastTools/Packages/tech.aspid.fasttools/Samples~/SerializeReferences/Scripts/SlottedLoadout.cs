@@ -1,33 +1,14 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Aspid.FastTools.Types;
 
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
     // Demonstrates [TypeSelector] on references that live INSIDE plain [Serializable]
-    // containers — a single container field and a List<T> of them — instead of directly on the component.
-    //
-    // Everything works at this depth exactly as for a top-level field: the type-picker dropdown, the inline
-    // child properties of the chosen type, and the missing-type warning with its inline Fix. A renamed or
-    // removed weapon type nested in a slot is detected and re-pointed in place (keeping its data), so the
-    // asset-level Repair window is only needed for things the Inspector cannot reach at all.
+    // containers (the shared WeaponSlot.cs) — a single container field and a List<T> of them —
+    // instead of directly on the component. See TUTORIAL.md, Lesson 7: everything (picker,
+    // inline child fields, missing-type Fix) works at this depth exactly as for a top-level field.
     public sealed class SlottedLoadout : MonoBehaviour
     {
-        // A plain [Serializable] container (NOT a managed reference itself) pairing a polymorphic weapon with
-        // some metadata. The [SerializeReference] weapon inside it is still a full hierarchical picker.
-        [Serializable]
-        public sealed class WeaponSlot
-        {
-            public string label;
-
-            [Min(0)] public int priority;
-
-            // Polymorphic weapon nested one level inside the container — picker, inline fields and Fix all apply.
-            [SerializeReference] [TypeSelector]
-            private IWeapon _weapon;
-        }
-
         // A reference nested inside a single container field (path "_primarySlot._weapon").
         [SerializeField] private WeaponSlot _primarySlot = new();
 

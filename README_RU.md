@@ -416,6 +416,23 @@ public sealed class Loadout : MonoBehaviour
 | **Asset References** (`Tools → Aspid 🐍 → FastTools → Asset References`) | Строит весь граф managed-ссылок ассета прямо из YAML — дерево по компонентам с путями полей, общими и осиротевшими ссылками, значками `MISSING` / `SHARED` и инлайн-выбором типа на каждой карточке. Достаёт потерянные ссылки, которые инспектор не показывает. |
 | **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` обходит каждый `.prefab` / `.asset` / `.unity` под `Assets/`, группирует сломанные ссылки по сохранённому типу и чинит всю группу одним `Fix all` (плюс Smart Fix). Группа, чей сохранённый тип совпадает с объявленным переименованием `[MovedFrom]`, читается как ожидающая миграция, а не поломка — один клик **Migrate all** запекает переименование в файлы, после чего атрибут можно удалить из кода. |
 
+### Настройки проекта и build/CI gate
+
+**`Project Settings → Aspid FastTools → SerializeReference`** содержит:
+
+| Настройка | Scope | Что делает |
+|---|---|---|
+| **Breakage detection** | per-user | Проактивный тост + предупреждение в Console, когда ссылки заново становятся потерянными после рекомпиляции / импорта. |
+| **Auto de-alias duplicated list elements** | коммитимая | Дублированный элемент списка получает собственный экземпляр вместо совместного использования id оригинала. |
+| **Build / CI gate** | коммитимая | `Off` / `Warn` / `Fail`: при сборке плеера логировать или прерывать сборку на потерянных (а для CI — и на незаданных обязательных) managed-ссылках. |
+| **Excluded scan folders** | коммитимая | Пути, пропускаемые при всех проектных сканах. |
+
+Коммитимые значения хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset` — закоммитьте его, чтобы команда и CI вели себя одинаково; breakage detection остаётся per-machine (`EditorPrefs`). Rid colours — не настройка: общая ссылка всегда раскрашивается по id, ведь совпадающий цвет и позволяет с одного взгляда понять, какие поля делят один экземпляр.
+
+Те же опции продублированы во вкладке **Settings** окна (`Tools → Aspid 🐍 → FastTools → Settings`) и на странице **`Preferences → Aspid FastTools`**, рядом с индивидуальными настройками пикера: переключатель секции **Favorites**, слайдер **Recent items** (0–20; 0 скрывает секцию и приостанавливает запись, не стирая историю), строка **Saved lists**, очищающая сохранённые Favorites / Recent, секция **Appearance** (override-`StyleSheet` темы редактора с действием **Create template…**) и переключатель автопоказа **Welcome**. Каждая строка помечена полоской scope — зелёная для коммитимых значений, синяя для индивидуальных, — а закреплённый футер предлагает **Reset to defaults** отдельно для каждого scope (сохранённые списки Favorites / Recent сброс переживают). Все поверхности зеркалят друг друга живьём.
+
+Для headless-CI метод `SerializeReferenceCiGate.RunCheck` (через `-batchmode -executeMethod`) пишет отчёт и учитывает коммитимую строгость гейта: `Off` пропускает проверку, `Warn` логирует, но завершается с кодом 0, `Fail` завершается с ненулевым кодом при наличии нарушений. Флаг `-srGateRequired` дополнительно проверяет незаданные поля `[TypeSelector(Required = true)]` в префабах, ScriptableObject и сценах (сцены проверяются на required-поля верхнего уровня через чистый YAML-проход); per-run флаги `-srGateWarnOnly` / `-srGateFail` переопределяют коммитимую строгость.
+
 > Полный сэмпл — `Loadout` / `IWeapon` / `Modifier<T>` и сценарии починки потерянных ссылок — поставляется в сэмпле `SerializeReferences` (Package Manager → Aspid.FastTools → Samples). Пошаговый разбор — в `TUTORIAL.md` этого сэмпла.
 
 ---

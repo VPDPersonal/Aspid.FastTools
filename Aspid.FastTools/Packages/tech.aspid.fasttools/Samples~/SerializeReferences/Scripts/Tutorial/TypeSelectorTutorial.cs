@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Aspid.FastTools.Types;
@@ -25,7 +24,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     {
         // STEP 1 — Your first picker.
         // A single interface-typed field. Click the dropdown to pick any IWeapon implementation
-        // (Sword, Pistol, Shotgun, Railgun). Type to search; ↑↓ navigate; Space stars a favourite;
+        // (Sword, Pistol, Shotgun, Railgun, Crossbow). Type to search; ↑↓ navigate; Space stars a favourite;
         // the first row, <None>, clears the field. The chosen instance's own fields appear inline.
         [Header("STEP 1 — Single polymorphic reference")]
         [SerializeReference] [TypeSelector]
@@ -54,7 +53,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         // to one branch, or pass several base types to union them.
         [Header("STEP 4 — Narrow candidates with [TypeSelector(typeof(...))]")]
         [SerializeReference] [TypeSelector(typeof(IRanged))]
-        [Tooltip("typeof(IRanged) → only Pistol, Shotgun, Railgun.")]
+        [Tooltip("typeof(IRanged) → only Pistol, Shotgun, Railgun, Crossbow.")]
         private IWeapon _step4Ranged;
 
         [SerializeReference] [TypeSelector(typeof(IMelee))]
@@ -91,8 +90,8 @@ namespace Aspid.FastTools.Samples.SerializeReferences
 
         // STEP 7 — References nested in plain [Serializable] containers.
         // The picker, inline child fields and every repair gesture work at any depth — not just when the
-        // field sits directly on the component. Here a polymorphic weapon lives inside a container, and
-        // inside each element of a list of containers.
+        // field sits directly on the component. Here a polymorphic weapon lives inside a container
+        // (the shared WeaponSlot.cs), and inside each element of a list of containers.
         [Header("STEP 7 — References inside [Serializable] containers")]
         [SerializeField]
         [Tooltip("The weapon lives one level deep, inside this container — still a full picker.")]
@@ -109,19 +108,6 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         [SerializeReference] [TypeSelector(Required = true)]
         [Tooltip("Empty → 'Required reference is not set' notice. Pick any IWeapon to satisfy it.")]
         private IWeapon _step8Required;
-
-        // A plain [Serializable] container — NOT a managed reference itself. The [SerializeReference]
-        // weapon inside it is still a full hierarchical picker (used by STEP 7).
-        [Serializable]
-        public sealed class WeaponSlot
-        {
-            public string label = "Slot";
-
-            [Min(0)] public int priority;
-
-            [SerializeReference] [TypeSelector]
-            private IWeapon _weapon;
-        }
 
         // Right-click the component header → "Log Tutorial State" to print every configured step.
         [ContextMenu("Log Tutorial State")]

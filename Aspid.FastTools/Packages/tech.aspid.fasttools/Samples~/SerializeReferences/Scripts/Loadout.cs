@@ -5,24 +5,13 @@ using Aspid.FastTools.Types;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Demonstrates [TypeSelector] through the default (UIToolkit) Inspector.
-    //
-    // Add [TypeSelector] next to [SerializeReference] and the field renders as a
-    // searchable, hierarchical type dropdown:
-    //   - single field      → pick one IWeapon implementation
-    //   - List<T> / array    → each element is its own polymorphic picker
-    //   - abstract base type → only concrete subclasses are offered
-    //   - generic hierarchy  → concrete closed-generic subclasses are offered; the open generic
-    //                          Modifier<T> is also offered and opens a second window to pick T;
-    //                          a closed-generic field type (Modifier<float>) constrains candidates
-    //                          by assignability and infers T directly
-    //
-    // Picking a type instantiates it, <None> clears the reference, and the assigned instance's
-    // serialized fields appear inline under the foldout. Nested [SerializeReference] fields
-    // (e.g. Railgun's charge effect) get their own dropdown recursively.
+    // The demo component behind the Prefabs/ scenarios: every flavour of [SerializeReference] +
+    // [TypeSelector] field (single, list, abstract base, generics) on one MonoBehaviour, rendered
+    // through the default UIToolkit Inspector. The guided walkthrough of each flavour lives in
+    // TUTORIAL.md and Scripts/Tutorial/TypeSelectorTutorial.cs.
     public sealed class Loadout : MonoBehaviour
     {
-        // Interface-typed field: lists every IWeapon implementation (Pistol, Shotgun, Railgun).
+        // Interface-typed field: lists every IWeapon implementation (Sword, Pistol, Shotgun, Railgun, Crossbow).
         [SerializeReference] [TypeSelector]
         private IWeapon _primaryWeapon;
 
@@ -34,15 +23,11 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         [SerializeReference] [TypeSelector]
         private StatusEffect _onHitEffect;
 
-        // Generic hierarchy. Non-generic IModifier field: the picker offers the concrete subclasses
-        // (DamageModifier, AmmoModifier, NameModifier) AND the open generic Modifier<T> — choosing the
-        // latter opens a second window to pick T (e.g. string vs float).
+        // Open-generic entry point: offers the closed subclasses AND Modifier<T> itself (see Modifiers/).
         [SerializeReference] [TypeSelector]
         private IModifier _modifier;
 
-        // Closed-generic field type: only types assignable to Modifier<float> are offered —
-        // DamageModifier (Modifier<float>) and Modifier<T> (its T is inferred to float, no extra window).
-        // AmmoModifier (int) and NameModifier (string) are excluded.
+        // Closed-generic field type: candidates are constrained by assignability to Modifier<float>.
         [SerializeReference] [TypeSelector]
         private Modifier<float> _floatModifier;
 

@@ -15,14 +15,16 @@ private IWeapon _weapon;
 
 1. Import this sample from **Package Manager → Aspid.FastTools → Samples → SerializeReferences → Import**.
 2. Open **`Scenes/TypeSelectorTutorial.unity`** and select the **TypeSelector Tutorial** GameObject.
-3. The Inspector reads top to bottom as **STEP 1 → STEP 8**. A few steps come pre-filled so you can see working
+3. **Checkpoint:** the Inspector shows eight numbered sections, **STEP 1 → STEP 8**, with STEP 1 reading
+   *"Single polymorphic reference"*. If you see plain foldouts without type dropdowns, the sample assembly has
+   not finished compiling — wait for Unity to recompile. A few steps come pre-filled so you can see working
    examples immediately; the rest are empty for you to try.
 
 Prefer a clean slate? Add an empty GameObject and attach the **TypeSelectorTutorial** component.
 
 Every lesson below works in both the default **UIToolkit** inspector and the **IMGUI** inspector — the package
-ships a drawer for each path and they are at feature parity. (Every sample prefab ships an `IMGUI…` twin — via the
-sibling `IMGUILoadout` / `IMGUISlottedLoadout` components — that forces the IMGUI path if you want to compare.)
+ships a drawer for each path and they are at feature parity. (`Prefabs/IMGUILoadout.prefab` forces the IMGUI path
+if you want to compare — see *The IMGUI path* in [README.md](README.md).)
 
 ---
 
@@ -32,6 +34,10 @@ sibling `IMGUILoadout` / `IMGUISlottedLoadout` components — that forces the IM
 
 Click the dropdown in the field header. A searchable, hierarchical window opens listing every concrete `IWeapon`
 implementation: `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`.
+
+![The type picker window](../../Documentation/Images/aspid_fasttools_type_selector_window.png)
+
+*The picker window (shown here on another candidate list — yours opens filtered to `IWeapon`).*
 
 - **Pick a type** → Unity instantiates it and its own serialized fields appear inline under the foldout.
 - **`<None>`** (first row) → clears the reference back to `null`.
@@ -155,8 +161,8 @@ is resolved is the closed type (`Modifier<string>` / `Modifier<float>`) construc
 
 **Fields:** `WeaponSlot _step7Slot` and `List<WeaponSlot> _step7Slots`.
 
-`WeaponSlot` is a plain `[Serializable]` class (not a managed reference itself) holding a `label`, a `priority`, and a
-`[SerializeReference] [TypeSelector] IWeapon`.
+`WeaponSlot` (`Scripts/WeaponSlot.cs`) is a plain `[Serializable]` class (not a managed reference itself) holding a
+`label`, a `priority`, and a `[SerializeReference] [TypeSelector] IWeapon`.
 
 **Try it:**
 1. Expand `_step7Slot` and pick a weapon for its inner field.
@@ -187,7 +193,7 @@ private IWeapon _weapon;
 **Notice:**
 - The same `Required = true` works on a `[TypeSelector] string` type field — there "unset" means an empty type name.
 - A present-but-missing managed-reference type is never a *required* violation — it keeps its own missing-type notice.
-- Required references also feed the **build / CI gate** (see *Project settings & the build/CI gate* below).
+- Required references also feed the **build / CI gate** (see *Project settings* at the end of this page).
 
 ---
 
@@ -280,44 +286,18 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 
 ---
 
-## Project settings & the build/CI gate
+## Project settings
 
-**`Project Settings → Aspid FastTools → SerializeReference`** exposes:
+**`Project Settings → Aspid FastTools → SerializeReference`** exposes **Breakage detection** (the proactive toast,
+per-machine), **Auto de-alias duplicated list elements**, the **Build / CI gate** (`Off` / `Warn` / `Fail`) and
+**Excluded scan folders** — the last three are saved to a **committed**
+`ProjectSettings/SerializeReferenceSharedSettings.asset` so teammates and CI behave identically. The same options,
+plus the picker's per-user preferences (Favorites, Recent capacity, appearance), live in the window's **Settings**
+tab and in **`Preferences → Aspid FastTools`**.
 
-- **Breakage detection** — toggle the proactive missing-reference toast on or off; turn it off to silence the
-  domain-reload / import-time detection entirely. Per-machine.
-- **Auto de-alias duplicated list elements** — give a duplicated list element its own instance instead of sharing the
-  original's id.
-- **Build / CI gate** — `Off` / `Warn` / `Fail`: at player-build time, log or abort on missing (and, for CI,
-  unset-required) managed references.
-- **Excluded scan folders** — paths skipped by every project scan.
-
-Rid colours are not a setting — a shared reference is always colour-coded by id (in the inspector stripe/notice and
-the graph window's chip), since it is the whole point of the feature: matching colours is what lets you tell which
-fields share an instance at a glance.
-
-Auto de-alias, the build/CI gate and the excluded folders must behave the same for every teammate and for CI, so
-unlike breakage detection (per-machine `EditorPrefs`) they are saved to a **committed**
-`ProjectSettings/SerializeReferenceSharedSettings.asset`. Commit that asset after changing any of these three values.
-
-The same options are also available in the window's **Settings** tab (**`Tools → Aspid 🐍 → FastTools → Settings`**).
-The tab additionally hosts a **Type Selector** section with the picker's per-user preferences — a toggle for the root
-page's **Favorites** section, a **Recent items** capacity slider (0–20; 0 hides the Recent section and pauses
-recording without wiping the collected history) and a **Saved lists** row that clears the stored Favorites / Recent
-lists — plus an **Appearance** section (the editor-theme override `StyleSheet` with a **Create template…** action) and
-a **Welcome** section (an **Auto-show Welcome** toggle for the first-run auto-open). Since the tab mixes team-wide and
-individual settings, every row carries a scope stripe on its left edge — green for values in the committed
-`ProjectSettings` asset, blue for per-user ones — decoded by the legend at the top of the tab. A footer pinned to the
-bottom of the tab offers **Reset to defaults** separately per scope (**Shared** / **Per-user**); each button confirms
-with the exact defaults it restores, and the saved Favorites / Recent lists survive a reset. The same surface —
-sections, legend and reset footer — is mirrored in full at **`Preferences → Aspid FastTools`**, so every surface
-stays in live sync with the others.
-
-For headless CI, `SerializeReferenceCiGate.RunCheck` (invoked via `-batchmode -executeMethod`) writes a report and
-honours the committed gate severity: `Off` skips the check, `Warn` logs but exits 0, `Fail` exits non-zero when
-violations exist. `-srGateRequired` also flags unset `[TypeSelector(Required = true)]` fields across prefabs,
-ScriptableObjects and scenes (scenes are checked for top-level required fields via a pure-YAML pass), and the per-run
-flags `-srGateWarnOnly` (force exit 0) / `-srGateFail` (force fail on violations) override the committed severity.
+The full reference — every setting, scope rules and the headless-CI entry point
+(`SerializeReferenceCiGate.RunCheck` and its `-srGate*` flags) — lives in the package documentation:
+**Documentation → SerializeReference Selector → Project settings & the build/CI gate**.
 
 ---
 
@@ -329,6 +309,6 @@ flags `-srGateWarnOnly` (force exit 0) / `-srGateFail` (force fail on violations
 | `Scripts/Weapons/` | `IWeapon` + `IMelee`/`IRanged` branches and `Sword`/`Pistol`/`Shotgun`/`Railgun`/`Crossbow` |
 | `Scripts/Effects/` | abstract `StatusEffect` + `BurnEffect`/`FreezeEffect` |
 | `Scripts/Modifiers/` | the `Modifier<T>` generic hierarchy |
-| `Scripts/SlottedLoadout.cs` | references nested in containers (Lesson 7, standalone) — its `IMGUISlottedLoadout` twin forces the IMGUI path |
+| `Scripts/WeaponSlot.cs` + `Scripts/SlottedLoadout.cs` | references nested in `[Serializable]` containers (Lesson 7, standalone) |
 | `Scripts/WeaponPreset.cs` + `Presets/Broken*.asset` / `Presets/MovedWeaponPreset.asset` / `Presets/RenamedWeaponPreset.asset` | the missing-type repair flow — manual **Fix**, the one-click **Smart Fix** and the `[MovedFrom]` **Migrate all** |
-| `Scripts/IMGUILoadout.cs` / `Scripts/IMGUISlottedLoadout.cs` (+ their `Editor/` companions) | the same fields forced through the IMGUI path; every demo prefab has an `IMGUI…` twin |
+| `Scripts/IMGUILoadout.cs` + `Scripts/Editor/IMGUILoadoutEditor.cs` | the same fields forced through the IMGUI path (see *The IMGUI path* in [README.md](README.md)) |
