@@ -2,7 +2,9 @@
 
 > Живой документ. Пополняется по ходу. Статусы: `[ ]` — не начато · `[~]` — в работе · `[x]` — готово.
 
-## 1. [ ] «Make unique» — переместить в самый низ
+## 1. [~] «Make unique» — переместить в самый низ
+
+> **Статус (2026-07-01):** UIToolkit — сделано (весь host `_notices` вставлен **после** `_content`, `SerializeReferenceField.cs:116`), но переехали **все** плашки, а не только shared. IMGUI — **не синхронизирован**: shared-плашка рисуется до `DrawChildren` (`SerializeReferenceIMGUIPropertyDrawer.cs:223` vs `:251`), т.е. осталась сверху. Итог: рассинхрон рендереров — доделать IMGUI (или привести оба к замыслу «shared вниз, остальные вверху»).
 
 Сейчас плашка `Shared reference — Make unique` рисуется **над** дочерними полями объекта (Damage, Magazine Size). Нужно перенести ссылку `Make unique` в самый низ — под дочерние поля.
 
@@ -13,7 +15,9 @@
 - **IMGUI (держать в синхроне):** `Drawers/SerializeReferenceIMGUIPropertyDrawer.cs` — `DrawNotice("Shared reference —", "Make unique")` рисуется **до** `DrawChildren(...)`. Перенести после, поправить высоты в `GetPropertyHeight`.
 - USS не трогаем (только позиция в дереве): `Resources/UI/SerializeReferences/Aspid-FastTools-SerializeReference.uss`.
 
-## 2. [ ] Auto-fix «Missing type — Fix» — добавить в пример
+## 2. [x] Auto-fix «Missing type — Fix» — добавить в пример
+
+> **Готово (2026-07-01):** добавлены «битые» ассеты (`LoadoutMissingType.prefab` + IMGUI-двойник, `BrokenWeaponPreset.asset`, `BrokenArsenalPreset.asset`), README/TUTORIAL описывают Fix-флоу и проектный свип.
 
 Функция авто-починки (`Missing type — Fix`) есть в дровере, но её нет в демонстрационном примере. Нужно завести в сэмпле сценарий с отсутствующим/переименованным типом и показать кнопку Fix.
 
@@ -24,7 +28,9 @@
   - ⚠️ Правим **источник** в `Packages/.../Samples~`, а не импортированную копию в `Assets/Samples/...`.
 - Welcome-панель (`Welcome/WelcomeView.cs`) — это список сэмплов, не список фич; отдельно править не нужно.
 
-## 3. [ ] Settings-таб — привести к общему стилю
+## 3. [~] Settings-таб — привести к общему стилю
+
+> **Статус (2026-07-01):** тогглы переведены на `AspidSwitch` (auto de-alias, breakage), folder-list переделан (см. п.6), Rid-colours toggle убран. **Осталось:** `EnumField` «Build / CI gate» всё ещё голый (`SerializeReferenceSettingsUI.cs:42`) — навесить Aspid-стиль/классы.
 
 Контролы на вкладке Settings (тогглы `Rid colours`, `Auto de-alias duplicated list elements`, `Breakage detection`, дропдаун `Build / CI gate`, textarea `Excluded scan folders`) — голые Unity-контролы без Aspid-классов, выбиваются из общего оформления окна.
 
@@ -34,7 +40,9 @@
 - **Правка:** навесить Aspid-классы/добавить settings-селекторы (`.unity-toggle`/`.unity-enum-field`/`.unity-text-field` под контейнером настроек).
   - ⚠️ `BuildControls` шарится с Project Settings (`SerializeReferenceSettingsProvider`) — рестайл скоупить на in-window таб, чтобы не протекло в Project Settings.
 
-## 4. [ ] TypeSelector — заголовок в dropdown не должен быть закруглён
+## 4. [x] TypeSelector — заголовок в dropdown не должен быть закруглён
+
+> **Готово (2026-07-01):** `border-radius` полностью удалён из правила `.aspid-fasttools-type-selector__header` — углы прямые.
 
 Шапка `Select Type` (с поиском) в режиме dropdown имеет закруглённые верхние углы — нужно сделать прямые.
 
@@ -43,7 +51,9 @@
 - **Host:** `Types/Selectors/TypeSelectorWindow.cs` → `Show(...)` (`ShowAsDropDown`). View также встраивается инлайн в других местах.
 - **Правка:** добавить модификатор-класс при показе в окне (`TypeSelectorWindow.Show`) и в USS переопределить `border-radius: 0` для шапки под этим модификатором — чтобы инлайн-встраивание сохранило скругление. Если скругление нигде не нужно — просто заменить на `0`.
 
-## 5. [ ] Циклическое переключение вкладок: Ctrl+Tab / Ctrl+Shift+Tab (+ macOS)
+## 5. [x] Циклическое переключение вкладок: Ctrl+Tab / Ctrl+Shift+Tab (+ macOS)
+
+> **Готово (2026-07-02):** добавлены два `[Shortcut]` — `Next Tab` (Ctrl+Tab) и `Previous Tab` (Ctrl+Shift+Tab) в `SerializeReferenceWindow.cs`, оба на `ShortcutModifiers.Control` (физический Ctrl на обеих платформах). Цикл идёт по порядку объявления enum `Mode` (совпадает с тулбаром) с wrap-around через `CycleFrom(args, ±1)`. ⚠️ Риск «`ShortcutManager` не отдаёт `KeyCode.Tab`» остаётся непроверенным вживую — если сработает, fallback (TrickleDown `KeyDownEvent`) описан в комментарии у шорткатов.
 
 В окне Aspid.FastTools `Ctrl+Tab` должен листать вкладки слева направо, `Ctrl+Shift+Tab` — в обратную сторону. На macOS — работать так же.
 
@@ -55,7 +65,9 @@
 - **Риск (проверить):** `KeyCode.Tab` — навигационная клавиша; `ShortcutManager` может её не отдать / focus-навигация перехватит. Если так — fallback: `RegisterCallback<KeyDownEvent>(..., TrickleDown.TrickleDown)` на `rootVisualElement` (перехват до focus-nav). Минус fallback — описан в комментарии у `[Shortcut]`: KeyDown молчит, когда фокус ушёл на пустой хром окна.
 - Бейджи/тултипы (`BindingLabel`/`ShortcutHint`) для cycle-шортката не обязательны; биндинги и так попадут в Edit > Shortcuts и будут переназначаемыми.
 
-## 6. [ ] «Excluded scan folders» — список + селектор папки
+## 6. [x] «Excluded scan folders» — список + селектор папки
+
+> **Готово (2026-07-01):** реализован отдельным классом `SerializeReferenceExcludedFoldersField` — add/remove, folder picker, click-to-edit, zebra-строки, hover-тинты (красный delete / зелёный add). Пошли не через `ListView`, а через кастомный стек строк.
 
 Сейчас «Excluded scan folders» — голое multiline `TextField` (путь на строку). Заменить на список путей с кнопкой-селектором папки (folder picker) на каждой строке + add/remove.
 
@@ -68,7 +80,9 @@
 - **Sync:** текущий `SyncFromSettings(...)` рассчитан на `INotifyValueChanged<T>`-контролы; `ListView` под него не подходит — для live-синхрона между in-window табом и Project Settings подписаться на `SerializeReferenceSettings.Changed` отдельно и пересобирать `itemsSource` (с пропуском, если строку сейчас редактируют — как уже сделано для multiline-поля).
 - **Связано с п.3** — это тот же файл/метод; стилизацию (п.3) и переделку в список делать заодно, чтобы новый `ListView` сразу получил Aspid-оформление.
 
-## 8. [~] Вынести YAML-движок в отдельную internal-ассембли (подготовка к будущей фиче)
+## 8. [x] Вынести YAML-движок в отдельную internal-ассембли (подготовка к будущей фиче)
+
+> **Факт на ветке (2026-07-01):** извлечение выполнено — YAML живёт в своей asmdef `Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml` (`SerializeReferences/Yaml/`), дублей в `Extensions/` не осталось. Реализовано **SR-scoped**, а не как общий движок `…Editor.Yaml`. Генерализация имён + 2-й потребитель (`m_Script`-GUID repair) → отдельный будущий заход (см. «Будущее» ниже).
 
 > Архитектурное, не UI/UX. Цель: изолировать самодостаточный YAML-движок так, чтобы он **мог** позже стать отдельной фичей (`if we want it`), и влить его в `main` отдельной веткой раньше большой SR-ветки. Тут (`feature/serialize-reference-dropdown`) после этого фокусируемся на SerializeReference.
 
@@ -107,7 +121,9 @@
 
 **Будущее (отдельным заходом, when we want it):** генерализация имён (`SerializeReferenceYaml*` → `UnityYaml*`/`AssetYaml*`), split 1352-строчного `SerializeReferenceYamlEditor` на generic-ядро + SR-надстройку, и 2-й потребитель — `m_Script`-GUID repair — как триггер промоушена в публичную фичу.
 
-## 7. [ ] TypeSelector — выделение выбранной строки слишком тусклое
+## 7. [x] TypeSelector — выделение выбранной строки слишком тусклое
+
+> **Готово (2026-07-01):** `item--selected` поднят до `--aspid-colors-shade-light` — выделение чётко отрывается от ховера (пошли путём «более светлый нейтральный тон», без зелёного акцента).
 
 В выпадающем списке типов выделенная строка едва отличима от ховера — читается как «тусклый» селект.
 

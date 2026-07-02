@@ -18,6 +18,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </summary>
     internal sealed class SerializeReferenceWindow : EditorWindow
     {
+        // Declaration order mirrors the toolbar left-to-right (Home → Asset References → Project References → Settings);
+        // the Ctrl+Tab cycle relies on it, stepping through the values numerically with wrap-around.
         private enum Mode
         {
             Welcome,
@@ -25,6 +27,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Project,
             Settings,
         }
+
+        private const int ModeCount = 4;
 
         private const string RootClass = "aspid-fasttools-serialize-reference-window";
         private const string BackgroundClass = RootClass + "__background";
@@ -52,6 +56,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string InspectShortcutId = ShortcutCategory + "Asset References";
         private const string ProjectShortcutId = ShortcutCategory + "Project References";
         private const string SettingsShortcutId = ShortcutCategory + "Settings";
+        private const string NextTabShortcutId = ShortcutCategory + "Next Tab";
+        private const string PreviousTabShortcutId = ShortcutCategory + "Previous Tab";
 
         private AspidAnimatedDotsBackground _background;
         private VisualElement _container;
@@ -216,11 +222,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         [Shortcut(SettingsShortcutId, typeof(SerializeReferenceWindow), KeyCode.Alpha0, ShortcutModifiers.Alt)]
         private static void OnSettingsShortcut(ShortcutArguments args) => SwitchFrom(args, Mode.Settings);
 
+        // Cyclic tab switching, browser-style: Ctrl+Tab walks the toolbar left-to-right, Ctrl+Shift+Tab walks it back,
+        // both wrapping around at the ends. ShortcutModifiers.Control is deliberate on BOTH platforms — Action would map
+        // to ⌘ on macOS, and Cmd+Tab is reserved by the OS for the application switcher; the physical Ctrl key works the
+        // same on Windows and macOS. If the ShortcutManager ever refuses to deliver KeyCode.Tab (it is also a focus-
+        // navigation key), the fallback is a TrickleDown KeyDownEvent on rootVisualElement — with the caveat that
+        // KeyDown goes silent when focus sits on empty window chrome, which is why [Shortcut] is the primary path.
+        [Shortcut(NextTabShortcutId, typeof(SerializeReferenceWindow), KeyCode.Tab, ShortcutModifiers.Control)]
+        private static void OnNextTabShortcut(ShortcutArguments args) => CycleFrom(args, +1);
+
+        [Shortcut(PreviousTabShortcutId, typeof(SerializeReferenceWindow), KeyCode.Tab, ShortcutModifiers.Control | ShortcutModifiers.Shift)]
+        private static void OnPreviousTabShortcut(ShortcutArguments args) => CycleFrom(args, -1);
+
         // The shortcut's context is the focused window instance, handed in via ShortcutArguments.
         private static void SwitchFrom(ShortcutArguments args, Mode mode)
         {
             if (args.context is SerializeReferenceWindow window)
                 window.SwitchMode(mode);
+        }
+
+        private static void CycleFrom(ShortcutArguments args, int step)
+        {
+            if (args.context is not SerializeReferenceWindow window) return;
+
+            var next = (Mode)(((int)window._mode + step + ModeCount) % ModeCount);
+            window.SwitchMode(next);
         }
 
         // The badge / tooltip text for a tab: the shortcut's live binding read straight from the ShortcutManager, so it
