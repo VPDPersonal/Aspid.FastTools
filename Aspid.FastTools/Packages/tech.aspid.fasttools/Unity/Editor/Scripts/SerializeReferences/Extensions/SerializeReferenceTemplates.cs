@@ -34,8 +34,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             public List<Entry> entries = new();
         }
 
-        /// <summary>A resolved template: its display name and the concrete type it instantiates.</summary>
-        internal readonly struct Template
+        /// <summary>
+        /// A resolved template: its display name and the concrete type it instantiates.
+        /// </summary>
+        public readonly struct Template
         {
             public readonly string Name;
             public readonly Type Type;
@@ -49,7 +51,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static string Key => KeyPrefix + PlayerSettings.productGUID;
 
-        /// <summary>Whether a template with <paramref name="name"/> already exists.</summary>
+        /// <summary>
+        /// Whether a template with <paramref name="name"/> already exists.
+        /// </summary>
         public static bool Contains(string name) => Load().entries.Exists(entry => entry.name == name);
 
         /// <summary>
@@ -64,7 +68,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Save(name, value);
         }
 
-        /// <summary>Saves <paramref name="value"/> under <paramref name="name"/> (replacing an existing one).</summary>
+        /// <summary>
+        /// Saves <paramref name="value"/> under <paramref name="name"/> (replacing an existing one).
+        /// </summary>
         public static void Save(string name, object value)
         {
             if (string.IsNullOrWhiteSpace(name) || value is null) return;
@@ -76,7 +82,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Persist(store);
         }
 
-        /// <summary>Every template whose type still resolves, pruning the rest. In stored order.</summary>
+        /// <summary>
+        /// Every template whose type still resolves, pruning the rest. In stored order.
+        /// </summary>
         public static List<Template> LoadResolved()
         {
             var store = Load();
@@ -99,7 +107,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        /// <summary>Rehydrates an independent instance from the named template, or null if it is gone/unresolved.</summary>
+        /// <summary>
+        /// Rehydrates an independent instance from the named template, or null if it is gone/unresolved.
+        /// </summary>
         public static object CreateInstance(string name)
         {
             var entry = Load().entries.Find(e => e.name == name);
@@ -113,7 +123,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return instance;
         }
 
-        /// <summary>Removes the named template. Returns whether one was removed.</summary>
+        /// <summary>
+        /// Removes the named template. Returns whether one was removed.
+        /// </summary>
         public static bool Remove(string name)
         {
             var store = Load();
@@ -122,7 +134,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        /// <summary>A unique default name for a new template of <paramref name="type"/> (deduplicated with a suffix).</summary>
+        /// <summary>
+        /// A unique default name for a new template of <paramref name="type"/> (deduplicated with a suffix).
+        /// </summary>
         public static string SuggestName(Type type)
         {
             var baseName = type?.Name ?? "Template";

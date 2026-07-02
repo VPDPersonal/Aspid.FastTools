@@ -32,10 +32,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             target = null;
             if (string.IsNullOrEmpty(stored.Class)) return false;
 
-            // A stored closed-generic identity ("Modifier`1[[…]]") can never migrate authoritatively: TypeCache
-            // yields definitions and IsAssignableManagedReference excludes anything with generic parameters, so the
-            // only possible claimant is a non-generic type whose arity-stripped name happens to collide — a guess,
-            // not a rename. Those stay with the scored Smart Fix path.
+            // A stored closed-generic identity ("Modifier`1[[…]]") can never migrate authoritatively — the only
+            // possible claimant is an arity-stripped name collision, a guess rather than a rename. Those stay
+            // with the scored Smart Fix path.
             if (stored.Class.IndexOf('`') >= 0) return false;
 
             var key = SerializeReferenceHelpers.StoredTypeKey(stored);

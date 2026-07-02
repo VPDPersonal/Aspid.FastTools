@@ -34,9 +34,8 @@ namespace Aspid.FastTools.Types.Editors
             var notice = new SerializeReferenceNotice();
 
             // The tracked callback hands over a FRESH property each tick — closing over the ctor-time one would read
-            // a disposed SerializedObject once the element outlives its source editor (the Persistent() contract in
-            // SerializePropertyExtensions; every other deferred capture in this subsystem complies). The initial pass
-            // gets its own persistent copy for the same reason.
+            // a disposed SerializedObject once the element outlives its source editor (the Persistent() contract).
+            // The initial pass gets its own persistent copy for the same reason.
             container.TrackPropertyValue(property, Refresh);
             Refresh(property.Persistent());
 

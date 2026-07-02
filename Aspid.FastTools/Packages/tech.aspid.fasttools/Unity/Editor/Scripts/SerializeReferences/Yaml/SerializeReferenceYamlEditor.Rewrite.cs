@@ -286,9 +286,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 for (var i = start; i < end; i++)
                 {
-                    // Skip this rid's own RefIds entry header exactly once (the "- rid: N" at the entry indent under
-                    // RefIds): it is the entry being removed, not a pointer that gets nulled. Mirrors the header skip in
-                    // TryNullReference so the count equals the number of pointers that path would rewrite.
+                    // Skip this rid's own RefIds entry header exactly once — it is the entry, not a pointer. Mirrors
+                    // the header skip in TryNullReference so the count equals the pointers that path would rewrite.
                     if (!headerSkipped && i > refIdsStart)
                     {
                         var header = headerPattern.Match(lines[i]);
@@ -311,12 +310,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // An anchored matcher for a real "rid: N" pointer to a specific id — never a bare "rid: N" substring buried in a
-        // string field value (e.g. _note: 'see rid: 5'). Only Unity's three pointer shapes match: a line-anchored
-        // "- rid: N" sequence item, a line-anchored "rid: N" scalar child, or an inline "{rid: N}" mapping. The
-        // structural prefix/suffix (indent + dash, or the surrounding braces) are captured so a null-rewrite can keep
-        // them and replace only the id — mirroring the reader's knownRids validation, which is what keeps its same
-        // "rid:" scan from corrupting unrelated data.
+        // Anchored matcher for a real "rid: N" pointer — never a bare "rid: N" substring inside a string field value.
+        // Only Unity's three pointer shapes match: a line-anchored "- rid: N" item, a line-anchored "rid: N" scalar,
+        // or an inline "{rid: N}" mapping; the structural prefix/suffix are captured so a rewrite replaces only the id.
         private static Regex BuildPointerPattern(long rid) => new(
             $@"(?<prefix>^\s*(?:-\s+)?)rid:\s*{rid}(?<suffix>\s*$)|(?<prefix>\{{\s*)rid:\s*{rid}(?<suffix>\s*\}})");
 

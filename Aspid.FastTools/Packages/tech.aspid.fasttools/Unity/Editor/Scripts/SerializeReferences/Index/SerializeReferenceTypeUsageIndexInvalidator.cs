@@ -12,20 +12,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </summary>
     internal sealed class SerializeReferenceTypeUsageIndexInvalidator : AssetPostprocessor
     {
-        // Editor-startup hook: a change to the excluded-scan-folder set must drop the warm index. IsExcluded is consulted
-        // only while the index is (re)built (IsScanCandidate), so a warm index would keep serving now-excluded assets
-        // until an unrelated import or a domain reload reset it. Reset is lazy — it nulls the index and the next lookup
-        // rebuilds — so this is cheap and never warms a cold index on its own.
+        // A change to the excluded-folder set must drop the warm index: exclusion is consulted only while the index is
+        // (re)built, so a warm one would keep serving now-excluded assets. Reset is lazy and never warms a cold index.
         [InitializeOnLoadMethod]
         private static void HookSettings() =>
             SerializeReferenceSettings.ExcludedFoldersChanged += SerializeReferenceTypeUsageIndex.Reset;
 
         private static void OnPostprocessAllAssets(string[] imported, string[] deleted, string[] moved, string[] movedFrom)
         {
-            // An in-place class rename reimports the script (an edited .cs in `imported`, no file move). It changes which
-            // stored types resolve without touching any asset YAML, so a surgical per-asset patch would never run and the
-            // warm index would keep serving stale Resolves==true entries for the old type. A coarse reset is the only fix
-            // that re-evaluates resolution across every cached usage; the next lookup rebuilds.
+            // An in-place class rename reimports the .cs without touching any asset YAML, so a per-asset patch would
+            // never run and the warm index would keep stale Resolves entries — only a coarse reset re-evaluates them.
             if (HasCandidate(deleted) || HasCandidate(moved) || HasScript(imported))
             {
                 SerializeReferenceTypeUsageIndex.Reset();

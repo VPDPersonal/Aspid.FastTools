@@ -72,9 +72,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Resolves the effective gate severity: the committed Project Settings value, overridable per run by CLI flags.
         /// <c>-srGateWarnOnly</c> forces <see cref="GateSeverity.Warn"/> (log but never fail) and wins over
-        /// <c>-srGateFail</c>, which forces <see cref="GateSeverity.Fail"/>. Extracted so it is unit-testable.
+        /// <c>-srGateFail</c>, which forces <see cref="GateSeverity.Fail"/>.
         /// </summary>
-        internal static GateSeverity ResolveSeverity(GateSeverity committed, bool warnOnly, bool failOverride)
+        public static GateSeverity ResolveSeverity(GateSeverity committed, bool warnOnly, bool failOverride)
         {
             if (warnOnly) return GateSeverity.Warn;
             if (failOverride) return GateSeverity.Fail;
@@ -83,12 +83,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         /// <summary>
         /// 0 when clean or when severity is anything but <see cref="GateSeverity.Fail"/>; 1 only when violations exist
-        /// and severity is <see cref="GateSeverity.Fail"/>. Extracted so it is unit-testable without exiting.
+        /// and severity is <see cref="GateSeverity.Fail"/>.
         /// </summary>
-        internal static int ComputeExitCode(int violationCount, GateSeverity severity) =>
+        public static int ComputeExitCode(int violationCount, GateSeverity severity) =>
             violationCount > 0 && severity == GateSeverity.Fail ? 1 : 0;
 
-        internal static string BuildReport(IReadOnlyList<GateViolation> violations)
+        public static string BuildReport(IReadOnlyList<GateViolation> violations)
         {
             var builder = new StringBuilder();
             builder.AppendLine($"# SerializeReference Gate Report");

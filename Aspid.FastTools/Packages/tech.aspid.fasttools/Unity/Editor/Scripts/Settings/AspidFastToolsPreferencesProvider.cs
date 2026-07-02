@@ -42,9 +42,8 @@ namespace Aspid.FastTools.Editors
             root.AddAspidThemeStyleSheets();
             root.style.flexGrow = 1;
 
-            // The branded cards read wrong floating over Unity's native grey panel, so the page brings its own
-            // backdrop — the same dotted canvas as the window, over a black base, in the Settings tab's calm idle
-            // tone. The host loads the surface sheet so both the canvas rules and the card rules reach the subtree.
+            // The branded cards read wrong over Unity's native grey panel, so the page brings its own backdrop (the
+            // window's dotted canvas). The host loads the surface sheet so canvas and card rules reach the subtree.
             var host = new VisualElement()
                 .AddStyleSheetsFromResource(AspidSettingsUI.StyleSheetPath)
                 .AddClass(AspidSettingsUI.CanvasClass);

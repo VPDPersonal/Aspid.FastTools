@@ -45,9 +45,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public string[] ExcludedFolders
         {
-            // A defensive copy: handing out the live backing array would let an in-place mutation change the
-            // committed asset without Save()/Changed — and the facade's reference-equality short-circuit would then
-            // swallow the follow-up assignment as a no-op.
+            // Defensive copy: an in-place mutation of the live array would change the asset without Save()/Changed
+            // and make the facade's equality short-circuit swallow the follow-up assignment.
             get => _excludedFolders is { Length: > 0 } ? (string[])_excludedFolders.Clone() : Array.Empty<string>();
             set
             {

@@ -49,11 +49,8 @@ namespace Aspid.FastTools.Types.Editors
             root.Children.Add(globalGroup);
         }
 
-        // Builds the explicit-group side of the hierarchy: every [TypeSelectorDisplay(Group)] path becomes a
-        // chain of container nodes (segments shared between paths reuse the same node, so "Combat/Melee" and
-        // "Combat/Ranged" meet under one "Combat"). Group nodes are deliberately kept separate from namespace
-        // nodes — an author-declared path is never merged into or flattened with the namespace trie, so the
-        // hierarchy the author spelled out is exactly the one shown.
+        // Every [TypeSelectorDisplay(Group)] path becomes a chain of container nodes; shared segments reuse one
+        // node. Group nodes are never merged or flattened into the namespace trie — the author's path shows as spelled.
         private static void AddGroupHierarchy(TreeNode root, List<TypeInfo> types)
         {
             if (types.Count is 0) return;
@@ -173,12 +170,9 @@ namespace Aspid.FastTools.Types.Editors
             return node;
         }
 
-        // Adds one leaf per type under the parent, labelled by TypeInfo.Label (the [TypeSelectorDisplay(Name)]
-        // override when present, the real name otherwise). Label collisions are disambiguated with the assembly
-        // suffix — the historical same-class-name-from-two-assemblies case — and, when the colliding rows share one
-        // assembly (two types given the same Name override), with the real type name: the only identity left that
-        // still splits them. The caption prefixes the label with the node's path: namespaces join with '.', explicit
-        // groups with '/'.
+        // One leaf per type, labelled by TypeInfo.Label. Label collisions are disambiguated with the assembly
+        // suffix; collisions within one assembly (same Name override) fall back to the real type name. The caption
+        // prefixes the label with the node's path (namespaces join with '.', explicit groups with '/').
         private static void AddTypesWithDisambiguation(
             TreeNode parent,
             List<TypeInfo> types,
@@ -220,9 +214,7 @@ namespace Aspid.FastTools.Types.Editors
             };
         }
 
-        // Sorts each node's children alphabetically by display name, while keeping the <None>
-        // option pinned to the top. Applied recursively so every hierarchy level honours the
-        // same ordering.
+        // Sorts children alphabetically at every level, keeping <None> pinned to the top.
         private static void SortNode(TreeNode node)
         {
             node.Children.Sort(CompareNodes);

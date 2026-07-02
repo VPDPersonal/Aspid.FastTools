@@ -68,13 +68,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string GroupEntryPathClass = RootClass + "__group-entry-path";
         private const string GroupEntryRidClass = RootClass + "__group-entry-rid";
 
-        // The bulk-fix button is a single dropdown button: one "Fix all (N)" label with a trailing chevron that flips
-        // ▼→▲ while the type picker is open (see BuildFixAllLabel). Only the glyph differs between the two states.
+        // Chevron on the "Fix all (N)" dropdown button; only the glyph differs between the two states.
         private const string FixArrowCollapsed = "▼";
         private const string FixArrowExpanded = "▲";
 
-        // The scan button's label adapts to the index state: a deliberate "Scan Project" call-to-action while the
-        // index is cold (the first build is expensive), a quiet "Rescan" refresh once a scan has warmed it.
+        // Scan button label: cold call-to-action before the first scan, quiet refresh once the index is warm.
         private const string ScanLabel = "Scan Project";
         private const string RescanLabel = "Rescan";
 
@@ -89,10 +87,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private VisualElement _openPickerCard;
         private AspidGradientButton _scanButton;
 
-        /// <summary>Jump from a project-audit result row to that asset's Inspect graph. Wired by the host window.</summary>
+        /// <summary>
+        /// Jump from a project-audit result row to that asset's Inspect graph. Wired by the host window.
+        /// </summary>
         public Action<Object> OnInspectAsset;
 
-        /// <summary>Reports this view's state-tone to the host window, which owns the shared dotted canvas. Wired by the window.</summary>
+        /// <summary>
+        /// Reports this view's state-tone to the host window, which owns the shared dotted canvas. Wired by the window.
+        /// </summary>
         public Action<Color> OnCanvasTone;
 
         public SerializeReferenceProjectView()
@@ -103,10 +105,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(RootClass);
 
-            // A full-width translucent header panel gives the Scan Project action a purposeful home, stacked: a title
-            // and a one-line description of what the audit does, then a full-width Scan Project button below. The
-            // dotted canvas (owned by the host window) reads through the panel's semi-transparent fill. The title is
-            // phrased around the action rather than repeating the tab's "Project References" name.
             var panelTitle = new AspidLabel("Find missing references", AspidLabelPreset.Default
                     .SetLabelTheme(ThemeStyle.Type.Lightness)
                     .SetLabelSize(AspidLabelSizeStyle.Type.H5)
@@ -117,8 +115,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "Sweep every asset under Assets/ for broken [SerializeReference] types and bulk-fix them by type.")
                 .AddClass(PanelDescriptionClass);
 
-            // Stored as a field so its label can flip between the cold CTA and the warm refresh (see ScanLabel /
-            // RescanLabel). It opens with the cold label; Initialize / ScanProject reconcile it with the index state.
+            // Label flips between ScanLabel and RescanLabel as the index warms.
             _scanButton = new AspidGradientButton(ScanLabel, _ => ScanProject())
                 .AddClass(ScanProjectClass);
 
@@ -128,8 +125,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(panelDescription)
                 .AddChild(_scanButton);
 
-            // The two terminal states (no asset / nothing to repair) share one hero centred in the space below the
-            // card; scan results swap it for a warning-accented header, a short hint and the row list.
             _empty = new VisualElement().AddClass(EmptyClass);
 
             _resultsHeader = new AspidLabel(string.Empty, AspidLabelPreset.Default
@@ -141,11 +136,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _resultsHint = new Label(string.Empty).AddClass(ResultsHintClass);
 
-            // A running stack of help-boxes — one receipt per bulk Fix all, in the order they ran — so chaining fixes
-            // across groups keeps every prior summary on screen instead of overwriting it; the stack is cleared only on
-            // a fresh scan (Rescan / Initialize). Empty until the first Fix all, so the container has no footprint then.
-            // Each box is amber-toned (Warning) so it sits in the Project References view's warning family — the amber
-            // results header, group cards and canvas tone — rather than reading as a foreign green block.
+            // Receipt stack: one help-box per bulk Fix all, kept across chained fixes and cleared only on a fresh scan.
             _summaries = new VisualElement().AddClass(SummaryListClass);
 
             _list = new VisualElement();
@@ -157,9 +148,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(_summaries)
                 .AddChild(_list);
 
-            // One scroll spans the whole view between the window's tabs and footer: the Find-missing panel, the empty
-            // hero, the results header/hint/summary and the group list all live inside it, so the panel scrolls away
-            // with the group list rather than staying pinned above a separately-scrolling list.
+            // One scroll spans the whole view, so the panel scrolls away with the group list instead of staying pinned.
             var content = new VisualElement()
                 .AddClass(ContentClass)
                 .AddChild(panel)
@@ -172,14 +161,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             root.AddChild(scroll);
         }
 
-        // The tab-switch entry point. On a cold index the tab opens idle and waits for a deliberate Scan Project
-        // click: the cold sweep parses every candidate asset's YAML behind a blocking bar (slow on large projects),
-        // so it must never run unasked. Once the index is warm, though — the user already scanned this session, so
-        // the data is already in memory — re-deriving the groups is a cheap in-memory filter with no YAML sweep, so
-        // we re-render them here. That is what makes the results survive a plain tab switch instead of resetting to
-        // idle every time the user leaves and comes back; the warm index is the source of truth and Rescan refreshes
-        // it. The breakage-notification deep-link still bypasses this and forces a scan (the host window calls
-        // ScanProject directly), because the user opened it specifically to see the broken references.
+        // Cold index: open idle and wait for a deliberate Scan click — the cold sweep parses every asset's YAML behind
+        // a blocking bar, so it must never run unasked. Warm index: re-deriving groups is a cheap in-memory filter, so
+        // results survive a tab switch. The breakage-notification deep-link bypasses this and calls ScanProject directly.
         public void Initialize()
         {
             if (SerializeReferenceTypeUsageIndex.IsWarm) RenderWarmGroups();
@@ -190,24 +174,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Project mode
         // ---------------------------------------------------------------------------------------------------------
 
-        // Sweeps every candidate text asset under Assets/, finds the missing references in each, and groups them by
-        // their stored broken type. The sweep is the slow part (it parses every asset's YAML), so it runs behind a
-        // cancelable progress bar; cancelling shows whatever was collected so far.
+        // Sweeps the project for missing references and groups them by stored broken type (slow when the index is cold).
         public void ScanProject()
         {
             if (_list is null) return;
 
-            // Rescan starts from a clean slate: drop any open picker and the running summary stack the previous scan
-            // left behind, then re-collect. RenderWarmGroups does the collect/render and the refresh-label flip — the
-            // same path Initialize takes when it restores results on a warm index.
             ClosePicker();
             ClearSummaries();
             RenderWarmGroups();
         }
 
-        // Collects the current unresolved set from the (now warm) index and paints it. Shared by the Scan/Rescan
-        // button and Initialize's warm-restore path. A scan always warms the index, so the button is a refresh
-        // affordance from here on — whether this is the first cold scan the user triggered or a warm rescan.
+        // Collects the unresolved set from the warm index and paints it; shared by Scan/Rescan and Initialize's warm restore.
         private void RenderWarmGroups()
         {
             if (_list is null) return;
@@ -217,10 +194,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RenderGroups(groups, canceled);
         }
 
-        // Paints a freshly-collected group set into the results region: the count header + hint and one card per
-        // group, or the terminal "Project clean" / "Scan canceled" hero when there is nothing to list. Shared by the
-        // Rescan entry point and the post-fix re-sweep — except ApplyGroupFix special-cases the came-back-clean case
-        // so the rewrite's summary HelpBox survives instead of being replaced by the hero (see there).
+        // Paints a collected group set: count header + hint + one card per group, or the terminal hero when empty.
+        // ApplyGroupFix special-cases the came-back-clean case so its summary HelpBox survives (see there).
         private void RenderGroups(List<ProjectGroup> groups, bool canceled)
         {
             _list.Clear();
@@ -247,12 +222,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _list.AddChild(BuildGroupCard(group));
         }
 
-        // Groups every unresolved managed reference in the project by stored type. Backed by the shared usage index, so
-        // a warm index makes repeat scans an in-memory filter (the one-time cold warm shows its own progress bar). The
-        // index is built from the same SerializeReferenceGraphScanner / StoredTypeResolves path that
-        // FindMissingReferences uses, so the unresolved set matches the old per-asset sweep. The out parameter is kept
-        // for the call site but is always false: the warm-up runs to completion (see the index) rather than being
-        // cancelable mid-scan.
+        // Groups every unresolved managed reference by stored type, backed by the shared usage index. The out
+        // parameter is kept for the call sites but is always false: the index warm-up runs to completion.
         private static List<ProjectGroup> CollectProjectGroups(out bool canceled)
         {
             canceled = false;
@@ -278,13 +249,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return groups;
         }
 
-        // A broken-type group card: the whole header is one flat clickable row — the broken type name + entry/file
-        // counts on the left, the bulk "Fix all (N) ▼" action on the right — so clicking anywhere on the header
-        // toggles the type picker. An optional Smart Fix quick-apply sits below it, then one ping-only row per
-        // entry. Entries are intentionally not individually fixable here — the per-row Fix affordance is reserved for
-        // single-asset mode, where the whole row is the button; adding a second per-entry action under a bulk-fix
-        // group would fight that layout, so project mode is group-level only (a precise per-asset fix is one
-        // ObjectField pick away).
+        // A broken-type group card: the whole header is one clickable row that toggles the type picker, with the bulk
+        // "Fix all (N) ▼" action on the right. Entries are deliberately not individually fixable in project mode —
+        // the per-row Fix affordance is reserved for single-asset mode.
         private VisualElement BuildGroupCard(ProjectGroup group)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -293,18 +260,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var constraint = group.ResolveConstraint();
             var displayName = group.DisplayName;
 
-            // An authoritative [MovedFrom] rename: these entries are not really broken — Unity migrates them in
-            // memory at load; only the files still store the old name. The card keeps the same layout but reads as a
-            // calm migration (info header, "Migrate all" instead of the heuristic Smart Fix suggestion below).
-            // The target must also fit the group's field constraint: Migrate all hands the type straight to
-            // ApplyGroupFix, bypassing the picker's assignability guarantee — a rename that also changed the type's
-            // bases would rewrite files into references Unity nulls at load, hiding a listed breakage. Such a group
-            // falls through to the ordinary warning card, where Rank's constraint-filtered pool refuses the target.
+            // An authoritative [MovedFrom] rename: Unity already migrates these in memory at load — only the files
+            // still store the old name. The target must also fit the group's field constraint: Migrate all bypasses
+            // the picker's assignability guarantee, and an incompatible target would be nulled by Unity at load.
             var isMigration = SerializeReferenceMovedFromResolver.TryResolve(group.StoredType, out var migrationTarget) &&
                 (constraint == typeof(object) || constraint.IsAssignableFrom(migrationTarget));
 
-            // The header button. Built first so the type name + count can be docked into its body to the left of the
-            // action label; the click handler toggles the inline picker (the captured local is assigned before use).
+            // Built first so the type name + count can be docked into its body; the captured local is assigned before use.
             AspidGradientButton fixAll = null;
             fixAll = new AspidGradientButton(BuildFixAllLabel(group, expanded: false),
                     _ => ToggleGroupPicker(group, constraint, fixAll))
@@ -338,9 +300,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (isMigration)
             {
-                // Migration is not a guess, so it replaces the heuristic Smart Fix row: one click bakes the rename
-                // into every entry through the same confirm + diff preview + Undo flow as a picked fix, after which
-                // the [MovedFrom] attribute can be deleted from the code.
+                // Not a guess, so it replaces the Smart Fix row: same confirm + diff preview + Undo flow as a picked fix.
                 var migrate = new AspidGradientButton(
                         $"Migrate all ({group.Entries.Count}) → {migrationTarget.Name}",
                         _ => ApplyGroupFix(group, migrationTarget))
@@ -376,13 +336,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{entryText} · {fileText}";
         }
 
-        // The bulk-fix button's single label: "Fix all (N)" plus a trailing chevron that flips when the picker opens,
-        // so the bulk action reads as one dropdown button rather than a split "Fix all" + "Fix ▼" pair.
+        // "Fix all (N)" plus a trailing chevron; only the glyph changes when the picker opens (ClosePicker relies on that).
         private static string BuildFixAllLabel(ProjectGroup group, bool expanded) =>
             $"Fix all ({group.Entries.Count})  {(expanded ? FixArrowExpanded : FixArrowCollapsed)}";
 
-        // A single broken reference inside a group: its asset path and rid. Clicking pings the asset in the Project
-        // window (read-only — the bulk Fix above is the only mutation in project mode).
+        // Read-only entry row: clicking jumps to the asset — the bulk Fix above is the only mutation in project mode.
         private VisualElement BuildGroupEntryRow(ProjectEntry entry)
         {
             var row = new VisualElement().AddClass(GroupEntryClass);
@@ -409,9 +367,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return row;
         }
 
-        // The group's bulk picker: one pick re-points every entry in the group. It expands inline below the Fix all
-        // button just like the per-row picker, constrained to the group's intersected field type (or unconstrained
-        // when the entries' declared types are mixed/unresolvable).
+        // The group's bulk picker, inline below the Fix all button, constrained to the group's intersected field type.
         private void ToggleGroupPicker(ProjectGroup group, Type constraint, AspidGradientButton button)
         {
             var wasOpen = _openPickerRow == button;
@@ -420,8 +376,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var view = BuildPickerView(constraint, assemblyQualifiedName =>
             {
-                // <None> in the picker emits an empty name: the user wants the group cleared, not re-pointed at a type —
-                // so null every entry out (drop the broken payload) instead of treating it as a no-op.
+                // <None> emits an empty name: clear the group to null instead of treating it as a no-op.
                 if (string.IsNullOrEmpty(assemblyQualifiedName))
                 {
                     ClearGroupToNull(group);
@@ -436,9 +391,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             button.Text = BuildFixAllLabel(group, expanded: true);
         }
 
-        // Rewrites every entry in the group to newType, after a mandatory confirmation (file rewrites are not
-        // undoable). Rewrites are batched per file so each affected asset is reimported exactly once, behind a
-        // progress bar; a success summary then reports the count and a fresh project scan replaces the list.
+        // Rewrites every entry in the group to newType after a mandatory confirmation. Rewrites are batched per file
+        // so each affected asset is reimported exactly once.
         private void ApplyGroupFix(ProjectGroup group, Type newType)
         {
             if (newType is null) return;
@@ -471,8 +425,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var managedType = ManagedTypeName.FromType(newType);
 
-            // Diff preview: show the exact YAML lines this rewrite will change (computed by the same scan the rewrite
-            // applies, so the preview cannot lie) before confirming the file edit.
+            // The preview is computed by the same scan the rewrite applies, so it shows exactly what gets written.
             var diff = BuildDiffPreview(entries, managedType);
 
             if (!EditorUtility.DisplayDialog(
@@ -488,17 +441,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
-            // Re-sweep so the list reflects the new state, then surface the summary above it. The headline carries the
-            // action + count; the body names both ends of the fix — the missing stored type and the type the entries
-            // now point at (long, so they wrap below the divider) — plus any skipped note.
             var summaryTitle = rewritten == 1 ? "Rewrote 1 reference" : $"Rewrote {rewritten} references";
             var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
             if (skipped > 0)
                 summaryBody += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
 
-            // Undo re-points the same entries back to their original (now-missing) stored type — restoring the broken
-            // state — via the same YAML rewrite. The data blocks were never touched on disk (only the type line moved),
-            // so flipping the type back is a faithful revert. Captured into the summary's button below.
+            // Undo re-points the entries back to the original (now-missing) stored type. Only the type line moved —
+            // the data blocks were never touched on disk — so flipping it back is a faithful revert.
             var originalType = group.StoredType;
             var missingName = group.DisplayName;
             var appliedName = newType.FullName;
@@ -509,11 +458,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (groups.Count == 0)
             {
-                // The fix cleared the last broken type. Stay in the results region instead of swapping to the
-                // "Project clean" hero, so the summary HelpBox below survives as the receipt for this rewrite — the
-                // hero would hide it along with the whole _results subtree. The celebratory empty state is reserved
-                // for an explicit Rescan (which the hint invites), so the user reads "what just happened" before the
-                // view resets to clean.
+                // The fix cleared the last broken type. Stay in the results region instead of the "Project clean"
+                // hero, which would hide the summary HelpBox receipt; the hero is reserved for an explicit Rescan.
                 _list.Clear();
                 ShowResults("No missing references", SerializeReferenceCanvasStyle.Success);
                 _resultsHint.text =
@@ -527,12 +473,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ShowSummary(summaryTitle, summaryBody, Undo);
         }
 
-        // Clears every entry in the group to null. References whose asset is closed are nulled in the YAML directly
-        // (TryNullReference: pointer → -2, broken payload dropped). References whose asset is open in Prefab Mode or a
-        // loaded scene cannot be rewritten on disk (the open copy would clobber it on save), so they are nulled on the
-        // live object in memory instead (TryClearMissingReferenceInMemory) and saved with the asset — until then they
-        // keep showing in the audit. Reached by picking <None> in the group's Fix all picker; mirrors ApplyGroupFix's
-        // confirm + receipt stack. NOT undoable: the broken payload is discarded, so the receipt carries no Undo button.
+        // Clears every entry in the group to null. Closed assets are nulled in the YAML directly; assets open in
+        // Prefab Mode / a loaded scene cannot be rewritten on disk (the open copy would clobber it on save), so those
+        // are nulled on the live object and stay in the audit until saved. NOT undoable: the broken payload is discarded.
         private void ClearGroupToNull(ProjectGroup group)
         {
             ClosePicker();
@@ -587,8 +530,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (groups.Count == 0)
             {
-                // Same came-back-clean handling as ApplyGroupFix: stay in the results region so this receipt survives as
-                // the record of the clear, rather than swapping to the "Project clean" hero which would hide it.
+                // Same came-back-clean handling as ApplyGroupFix: keep the receipt visible instead of the hero.
                 _list.Clear();
                 ShowResults("No missing references", SerializeReferenceCanvasStyle.Success);
                 _resultsHint.text =
@@ -603,9 +545,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ShowSummary(summaryTitle, summaryBody, onUndo: null);
         }
 
-        // Splits a group's entries into those safe to rewrite on disk and those whose asset is open in Prefab Mode / a
-        // loaded scene (which must be repaired in memory). Same writable test FilterWritableEntries uses, but it keeps
-        // the open entries instead of only counting them, so the clear can null them on the live object.
+        // Splits entries into those safe to rewrite on disk and those open in Prefab Mode / a loaded scene, which
+        // must be repaired in memory instead.
         private static void SplitWritableEntries(IReadOnlyList<ProjectEntry> source, out List<ProjectEntry> onDisk, out List<ProjectEntry> inMemory)
         {
             var prefabStagePath = CurrentPrefabStagePath();
@@ -674,8 +615,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return cleared;
         }
 
-        // A compact "what gets cleared" list for the null-out confirmation: file + rid per entry, capped so the dialog
-        // stays readable. Unlike the type-fix diff there is no before/after line — the whole entry is being dropped.
+        // Capped file + rid list for the confirmation. No before/after lines — the whole entry is being dropped.
         private static string BuildClearPreview(List<ProjectEntry> entries)
         {
             const int maxShown = 8;
@@ -699,10 +639,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
-        // The skip filter both the fix and the undo share: a scene — or a prefab open in Prefab Mode — that is loaded in
-        // the editor would race a file rewrite, since the in-memory copy wins on the next Ctrl+S and silently clobbers
-        // the on-disk edit (the same hazard the per-property flow avoids in Prefab Mode by repairing in memory). Returns
-        // the entries safe to write on disk; reports how many were held back.
+        // A scene or prefab loaded in the editor would race a file rewrite — the in-memory copy wins on the next save
+        // and silently clobbers the on-disk edit. Returns the entries safe to write; reports how many were held back.
         private static List<ProjectEntry> FilterWritableEntries(IReadOnlyList<ProjectEntry> source, out int skipped)
         {
             var prefabStagePath = CurrentPrefabStagePath();
@@ -721,8 +659,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static string CurrentPrefabStagePath() =>
             UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
 
-        // An entry is safe to rewrite on disk only when its asset is not loaded in a scene or open in Prefab Mode — the
-        // in-memory copy would otherwise win on the next save and clobber the file edit (see FilterWritableEntries).
+        // See FilterWritableEntries: an open asset's in-memory copy would clobber the file edit on the next save.
         private static bool IsEntryWritable(ProjectEntry entry, string prefabStagePath)
         {
             var openInScene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(entry.AssetPath).isLoaded;
@@ -732,10 +669,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return !openInScene && !openInPrefabMode;
         }
 
-        // Rewrites every entry's stored type to targetType, batched per file behind a cancel-free progress bar.
-        // StartAssetEditing defers each ImportAsset until StopAssetEditing, so the whole set reimports in one pass
-        // instead of the editor churning once per file mid-loop. Returns how many entries were actually rewritten.
-        // Shared by the forward fix (re-point to the chosen type) and Undo (re-point back to the missing type).
+        // Rewrites every entry's stored type to targetType, batched per file. StartAssetEditing defers each
+        // ImportAsset to one pass at the end. Shared by the forward fix and Undo.
         private static int BatchRewriteEntries(IReadOnlyList<ProjectEntry> entries, ManagedTypeName targetType, string progressTitle)
         {
             var byFile = entries
@@ -777,21 +712,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return rewritten;
         }
 
-        // Reverts one bulk fix: re-points its entries back to the original (now-missing) stored type, after a
-        // confirmation. Only the type line moves — the entries' data blocks are still on disk untouched — so this
-        // restores the exact broken state the group had before the fix. The reverted references reappear as a fixable
-        // group; only this fix's own receipt is dropped, so summaries for other still-applied fixes (and their Undo
-        // buttons) survive — unlike a full Rescan, which would clear the whole stack.
+        // Reverts one bulk fix by re-pointing its entries back to the original (now-missing) stored type. Only this
+        // fix's own receipt is dropped — receipts for other still-applied fixes survive, unlike a full Rescan.
         private void UndoGroupFix(IReadOnlyList<ProjectEntry> entries, ManagedTypeName originalType, ManagedTypeName appliedType, string missingName, string appliedName, VisualElement receipt)
         {
-            // The asset may have been opened in a scene / Prefab Mode since the fix; re-point only the still-writable
-            // entries, the same guard the forward fix applies.
+            // The asset may have opened in a scene / Prefab Mode since the fix; apply the same guard as the forward fix.
             var writable = FilterWritableEntries(entries, out var skipped);
 
-            // Only entries that STILL hold the type this receipt applied may be re-pointed: rids survive rewrites, so
-            // the group can break again and be fixed to a DIFFERENT type while an older receipt sits on the stack —
-            // blindly rewriting would destroy that newer fix. "Still holds what we applied" is exactly a rewrite
-            // towards the applied type whose old line already equals its new line (a self-no-op).
+            // Only entries that STILL hold the type this receipt applied may be re-pointed — the group can have been
+            // re-broken and fixed to a DIFFERENT type since, and blindly rewriting would destroy that newer fix.
+            // "Still holds it" == a rewrite towards the applied type whose old line already equals its new line.
             var revertible = new List<ProjectEntry>(writable.Count);
             var diverged = 0;
             foreach (var entry in writable)
@@ -836,15 +766,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
-            // Drop only this receipt — the other summaries describe fixes that are still applied, so they stay (and so
-            // do their own Undo buttons). Then re-render the group list (RenderGroups rebuilds only _list, never
-            // _summaries) so the reverted references reappear as a fixable group alongside the surviving receipts.
+            // Drop only this receipt — the others describe fixes still applied. RenderGroups rebuilds only _list,
+            // never _summaries, so the surviving receipts stay put.
             receipt?.RemoveFromHierarchy();
             var groups = CollectProjectGroups(out var canceled);
             RenderGroups(groups, canceled);
 
-            // The undo gets a receipt of its own, honest about the count it actually touched (BatchRewriteEntries can
-            // come up short when a file changed between the check above and the write).
+            // BatchRewriteEntries can come up short if a file changed between the check and the write — report the real count.
             var undoTitle = reverted == 1 ? "Reverted 1 reference" : $"Reverted {reverted} references";
             var undoBody = $"Re-pointed back to the missing '{missingName}'.";
             if (diverged > 0) undoBody += $" Left {diverged} alone (no longer '{appliedName}').";
@@ -852,18 +780,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ShowSummary(undoTitle, undoBody, null);
         }
 
-        // Builds a compact old -> new line preview of the YAML the bulk fix will rewrite, using the same scan
-        // (TryComputeRewrite) the rewrite applies, so the preview is exactly what gets written. Capped so the
-        // confirmation stays readable.
+        // Old -> new preview of the YAML the bulk fix will rewrite, using the same TryComputeRewrite the rewrite
+        // applies, so the preview is exactly what gets written. Capped so the confirmation stays readable.
         private static string BuildDiffPreview(List<ProjectEntry> entries, ManagedTypeName newType)
         {
             const int maxShown = 8;
             var builder = new System.Text.StringBuilder();
             builder.AppendLine("Changes:");
 
-            // Compute first, render second: an entry whose rewrite cannot be computed must neither vanish silently
-            // nor inflate the "…and N more" remainder (which previously counted every unshown entry, computable or
-            // not — overstating the tail and hiding the failures).
+            // Compute first, render second: an uncomputable entry must neither vanish silently nor inflate the
+            // "…and N more" remainder.
             var edits = new List<(ProjectEntry entry, RewriteEdit edit)>(entries.Count);
             foreach (var entry in entries)
                 if (SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, newType, out var edit))
@@ -888,11 +814,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
-        // The group's Smart Fix suggestion: rank the stored type against the candidate pool (constrained to the
-        // group's field type), keying the field-shape heuristic off the first entry's recorded field names. Surfaced
-        // only when a candidate clears the confidence threshold. The quick-apply button hands the suggested type
-        // straight to ApplyGroupFix, bypassing the picker — that is safe only because Rank enforces the constraint
-        // internally (its pool is exactly the types the picker would offer), so the suggestion is always assignable.
+        // Smart Fix: rank the stored type against the constraint-filtered pool, surfaced only above the confidence
+        // threshold. Quick-apply bypasses the picker — safe only because Rank enforces the constraint internally,
+        // so the suggestion is always assignable.
         private static bool TryGetGroupSuggestion(ProjectGroup group, Type constraint, out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
         {
             suggestion = default;
@@ -937,16 +861,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _openPickerRow = anchor;
 
             // The header button is a direct child of the group card, so the picker drops right below it inside the
-            // card — reading as a dropdown spanning the card, with the entry rows shifting down beneath it. The ??
-            // fallback keeps a sane target if the button is ever hosted outside a card.
+            // card; the ?? fallback keeps a sane target if the button is ever hosted outside a card.
             var card = anchor.parent;
             var container = card ?? _list;
             container.InsertChild(container.IndexOf(anchor) + 1, _openPicker);
 
-            // The whole card becomes the active surface: it lights an accent frame, the header button welds to the
-            // picker (its bottom corners square and its gap closes — see __group--picking) and the selector sheds its
-            // own box to blend into the card (see __picker--attached), so header, selector and entry rows read as one
-            // active card rather than a button stacked over a separate dropdown.
+            // __group--picking + __picker--attached weld the header, selector and entry rows into one active card.
             if (card is not null)
             {
                 _openPickerCard = card;
@@ -960,8 +880,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void ClosePicker()
         {
             _openPicker?.RemoveFromHierarchy();
-            // Flip the open button's chevron back to its resting ▼. ClosePicker has no group reference here, but only
-            // the trailing glyph differs between the collapsed and expanded labels, so swapping it in place is enough.
+            // No group reference here, but only the chevron glyph differs between labels — swap it in place.
             if (_openPickerRow is not null)
                 _openPickerRow.Text = _openPickerRow.Text.Replace(FixArrowExpanded, FixArrowCollapsed);
             _openPickerCard?.RemoveClass(GroupPickingClass);
@@ -976,9 +895,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ? null
                 : Type.GetType(assemblyQualifiedName, throwOnError: false);
 
-        // The idle and both terminal states reuse one hero: the package icon (the snake) in the status colour, a
-        // headline and a dimmed explanation. Rebuilt per call — the icon, accent and copy all differ between the idle
-        // "not scanned" info state and the "Project clean" / "Scan canceled" terminal states.
         private void ShowEmptyState(bool success, string title, string message)
         {
             _results.AddClass(ResultsHiddenClass);
@@ -1002,21 +918,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(new Label(message).AddClass(EmptyMessageClass));
         }
 
-        // The cold-index idle state shown until the user triggers the first scan: the Scan panel floats over an
-        // info-toned hero — the snake icon, a headline and a dimmed prompt — mirroring the Asset References tab's
-        // "No asset selected" hero, so an unscanned tab reads as a deliberate starting point rather than a blank
-        // canvas. No results list yet (the project is unscanned, so "clean" cannot be claimed). ShowEmptyState paints
-        // the info icon and tones the canvas Info; the button keeps its cold Scan Project label until ScanProject
-        // relabels it.
+        // Cold-index idle state until the first scan. No results list yet — the project is unscanned, so "clean"
+        // cannot be claimed.
         private void ShowIdle() => ShowEmptyState(
             success: false,
             title: "Project not scanned",
             message: "Run Scan Project to map every broken [SerializeReference] type across your assets — then repair each missing type in bulk.");
 
-        // Reveals the results region with a header and tones the canvas. The tone is explicit per call site because the
-        // region is reused for two opposite states: the missing-references sweep tones Warning (something to repair),
-        // while the came-back-clean receipt (last broken type just fixed/cleared) tones Success — matching the
-        // "Project clean" hero a fresh Rescan would show, instead of leaving a clean state on an amber backdrop.
+        // The tone is explicit per call site: the missing-references sweep tones Warning, while the came-back-clean
+        // receipt tones Success rather than leaving a clean state on an amber backdrop.
         private void ShowResults(string headerText, Color tone)
         {
             _empty.AddClass(EmptyHiddenClass);
@@ -1025,11 +935,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             OnCanvasTone?.Invoke(tone);
         }
 
-        // Appends one receipt to the running stack rather than overwriting the previous: chaining a fix across several
-        // groups leaves every earlier summary on screen, newest at the bottom (just above the list, where the lone
-        // summary used to sit). The stack is reset only by ClearSummaries on the next fresh scan. The receipt carries a
-        // right-pinned Undo button (the help box is a row whose text container flex-grows, so the button rides the
-        // trailing edge) that reverts exactly this fix.
+        // Appends one receipt to the running stack (newest at the bottom) rather than overwriting the previous; only
+        // ClearSummaries resets it on the next fresh scan. The Undo button reverts exactly this fix.
         private void ShowSummary(string title, string message, Action<VisualElement> onUndo)
         {
             var summary = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))
@@ -1049,7 +956,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Project scan data
         // ---------------------------------------------------------------------------------------------------------
 
-        // One broken reference located during a project scan: where it lives (asset path) and the orphaned entry.
         private readonly struct ProjectEntry
         {
             public readonly string AssetPath;
@@ -1062,9 +968,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // All broken references that share one stored type, gathered across the whole project. The group resolves a
-        // single picker constraint by intersecting the declared field types of its entries (per-file constraint maps
-        // are cached so each asset is scanned once), falling back to typeof(object) when they disagree.
+        // All broken references sharing one stored type across the project. Resolves a single picker constraint by
+        // intersecting the entries' declared field types, falling back to typeof(object) when they disagree.
         private sealed class ProjectGroup
         {
             public readonly ManagedTypeName StoredType;
@@ -1085,14 +990,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _files.Add(assetPath);
             }
 
-            // The common declared field type of every entry, or typeof(object) when they disagree or any is
-            // unresolvable. Per-file constraint maps are built once and cached, so the intersection costs one scan per
-            // distinct asset regardless of how many of the group's entries it holds.
+            // Per-file constraint maps are built once and cached, so the intersection costs one scan per distinct asset.
             public Type ResolveConstraint() => ResolveConstraint(out _);
 
-            // Overload reporting whether the typeof(object) fallback was caused specifically by the entries' declared
-            // field types <i>disagreeing</i> (as opposed to one being unrecoverable). The bulk-fix confirmation warns
-            // on this case, since the one chosen type may not fit every entry and the mismatched ones null on reimport.
+            // Reports whether the typeof(object) fallback came from the field types disagreeing (vs. one being
+            // unrecoverable) — the bulk-fix confirmation warns on that case.
             public Type ResolveConstraint(out bool mixedFieldTypes)
             {
                 mixedFieldTypes = false;

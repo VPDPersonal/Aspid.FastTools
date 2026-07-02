@@ -14,8 +14,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </summary>
     internal static class SerializeReferenceLinker
     {
-        /// <summary>A sibling managed reference this field could be linked to.</summary>
-        internal readonly struct LinkCandidate
+        /// <summary>
+        /// A sibling managed reference this field could be linked to.
+        /// </summary>
+        public readonly struct LinkCandidate
         {
             public readonly long Rid;
             public readonly Type Type;
@@ -105,15 +107,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return rids;
         }
 
-        /// <summary>Points this field at the instance held by <paramref name="sourcePath"/>, sharing its rid.</summary>
+        /// <summary>
+        /// Points this field at the instance held by <paramref name="sourcePath"/>, sharing its rid.
+        /// </summary>
         public static bool LinkTo(SerializedProperty property, string sourcePath)
         {
             if (property is null || string.IsNullOrEmpty(sourcePath)) return false;
 
-            // Read AND write through the SAME SerializedObject and apply once. Unity only keeps two fields on a single
-            // managedReferenceId when the SAME instance is assigned within the SAME SerializedObject; assigning a value
-            // pulled into a separate SerializedObject (e.g. property.Persistent()) deserialises a fresh copy that gets a
-            // NEW rid on apply — which would defeat the whole point of linking (no shared rid, no shared-reference notice).
+            // Read AND write through the SAME SerializedObject: Unity only keeps two fields on a single
+            // managedReferenceId when the same instance is assigned within one SerializedObject — a value pulled through
+            // a separate one (e.g. property.Persistent()) deserialises a fresh copy that gets a NEW rid on apply.
             var serializedObject = property.serializedObject;
             var value = serializedObject.FindProperty(sourcePath)?.managedReferenceValue;
             if (value is null) return false;
@@ -123,7 +126,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // True when "candidate" lies inside the "ancestor" property's subtree (a nested field or array element).
         private static bool IsDescendant(string candidate, string ancestor) =>
             candidate.StartsWith(ancestor + ".", StringComparison.Ordinal);
     }

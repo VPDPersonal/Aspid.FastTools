@@ -5,14 +5,6 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>Build/CI gate severity for missing or unset-required managed references.</summary>
-    internal enum GateSeverity
-    {
-        Off,
-        Warn,
-        Fail,
-    }
-
     /// <summary>
     /// The single source of truth for the SerializeReference toolset's configurable behaviors. The purely cosmetic,
     /// per-developer breakage-detection toggle is persisted as JSON in project-scoped <see cref="EditorPrefs"/> (keyed
@@ -25,7 +17,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </summary>
     internal static class SerializeReferenceSettings
     {
-        /// <summary>Raised whenever a setting changes.</summary>
+        /// <summary>
+        /// Raised whenever a setting changes.
+        /// </summary>
         public static event Action Changed;
 
         /// <summary>
@@ -72,8 +66,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             get => Data.breakageDetection;
             set
             {
-                // Equality-guarded like every other setter, so a reset already at the default stays a true no-op
-                // (Changed is wired to RepaintAll — an idle write would repaint every open editor window).
+                // Changed is wired to RepaintAll — an idle write would repaint every open editor window.
                 if (Data.breakageDetection == value) return;
                 Data.breakageDetection = value;
                 Save();
@@ -109,8 +102,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var next = value ?? Array.Empty<string>();
                 var shared = SerializeReferenceSharedSettings.instance;
-                // Detect a genuine change before persisting so the index reset (and its lazy rebuild) only fires when
-                // the exclusion set really moved — re-assigning the same paths leaves the warm index untouched.
+                // Re-assigning the same paths must not fire the costly index reset, so detect a genuine change first.
                 if (FoldersEqual(shared.ExcludedFolders, next)) return;
 
                 shared.ExcludedFolders = next;
@@ -162,7 +154,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             DropdownWithoutAttributeEnabled = false;
         }
 
-        /// <summary>True when <paramref name="path"/> lies under one of the excluded scan folders.</summary>
+        /// <summary>
+        /// True when <paramref name="path"/> lies under one of the excluded scan folders.
+        /// </summary>
         public static bool IsExcluded(string path)
         {
             var folders = SerializeReferenceSharedSettings.instance.ExcludedFolders;

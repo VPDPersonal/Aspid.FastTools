@@ -16,8 +16,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         public SettingsView()
         {
-            // Repaint the plain Unity fields (EnumField popup / sliders / object fields) into the window's dark
-            // palette so they don't read as Unity's bright default inputs floating over the black dotted canvas.
+            // Repaint the plain Unity fields into the window's dark palette so they don't float bright over the canvas.
             this.AsSurface();
 
             // No in-content "Settings" heading: the active gear tab already names the mode.

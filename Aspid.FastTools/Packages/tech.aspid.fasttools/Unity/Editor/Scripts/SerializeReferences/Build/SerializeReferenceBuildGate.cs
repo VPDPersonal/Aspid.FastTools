@@ -32,7 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Debug.LogWarning(summary);
         }
 
-        internal static string BuildSummary(IReadOnlyList<GateViolation> violations)
+        public static string BuildSummary(IReadOnlyList<GateViolation> violations)
         {
             var files = new HashSet<string>();
             var types = new HashSet<string>();

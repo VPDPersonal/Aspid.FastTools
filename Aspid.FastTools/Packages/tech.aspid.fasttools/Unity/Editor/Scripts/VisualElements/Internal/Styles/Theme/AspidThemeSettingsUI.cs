@@ -68,8 +68,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             container.Add(BuildTemplateRow());
         }
 
-        // The template action: writes a commented starter override sheet into the project and assigns it, so theming
-        // starts from a documented token list instead of a blank file.
+        // The template action, so theming starts from a documented token list instead of a blank file.
         private static VisualElement BuildTemplateRow()
         {
             var row = new VisualElement().AddClass(AspidSettingsUI.RowClass).AddClass(AspidSettingsUI.UserScopeClass);
@@ -103,8 +102,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var sheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(path);
             if (sheet == null) return;
 
-            // Assign through the store: every surface's field mirrors it via the live-sync, so there is no field to
-            // update by hand here.
+            // Assign through the store: every surface's field mirrors it via the live-sync.
             AspidThemeSettings.OverrideStyleSheet = sheet;
             EditorGUIUtility.PingObject(sheet);
         }

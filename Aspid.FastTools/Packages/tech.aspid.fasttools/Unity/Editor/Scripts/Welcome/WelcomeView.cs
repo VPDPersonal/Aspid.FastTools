@@ -239,7 +239,6 @@ namespace Aspid.FastTools.Editors
                 .AddClass(SampleBodyClass)
                 .SetPickingMode(PickingMode.Ignore);
 
-            // First line: the name on the left and the Import/Reimport action pinned to the right.
             var header = new VisualElement()
                 .AddClass(SampleHeaderClass)
                 .SetPickingMode(PickingMode.Ignore);
@@ -262,7 +261,6 @@ namespace Aspid.FastTools.Editors
 
             if (!string.IsNullOrEmpty(description))
             {
-                // Full-width rule under the whole header line, then the wrapped description below it.
                 body.Add(new AspidDividingLine(AspidDividingLinePreset.Default
                         .SetTheme(ThemeStyle.Type.Light)
                         .SetSize(AspidDividingLineSizeStyle.Type.Thin))

@@ -20,9 +20,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (Application.isBatchMode) return;
 
-            // An in-place class rename (edit the .cs, no file move, no [MovedFrom]) reimports the script, so the edited
-            // .cs lands in `imported` — not deleted/moved. That is the detector's headline case, so it must schedule a
-            // scan too, alongside the rename/delete (.cs in deleted/moved) and re-saved-asset (candidate import) paths.
+            // An in-place class rename lands the edited .cs in `imported` (no move, no delete) — the detector's
+            // headline case, so it must schedule a scan alongside the rename/delete and re-saved-asset paths.
             var relevant = HasScript(imported) || HasScript(deleted) || HasScript(moved)
                            || HasCandidate(imported) || HasCandidate(deleted) || HasCandidate(moved);
             if (!relevant || _scheduled) return;

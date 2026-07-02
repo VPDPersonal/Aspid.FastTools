@@ -16,7 +16,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static string _json;
         private static Type _type;
 
-        /// <summary>The concrete type of the copied value, or <see langword="null"/> when an empty reference was copied.</summary>
+        /// <summary>
+        /// The concrete type of the copied value, or <see langword="null"/> when an empty reference was copied.
+        /// </summary>
         public static Type Type => _type;
 
         /// <summary>

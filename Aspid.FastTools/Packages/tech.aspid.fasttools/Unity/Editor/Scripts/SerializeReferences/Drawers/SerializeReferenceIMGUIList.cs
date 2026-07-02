@@ -33,11 +33,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // the picker's true footprint.
         private const float PickerWidth = 350f;
 
-        // Unity's default array UI (ReorderableListWrapper) flags its list with the internal m_HasPropertyDrawer, which
-        // makes GetContentRect inset the element rect by Defaults.propertyDrawerPadding (8) past the drag handle. That
-        // flag is unreachable from package code, so the same inset is applied manually in drawElementCallback — without
-        // it every row starts 8px further left than the geometry SerializeReferenceIMGUIPropertyDrawer is tuned for:
-        // the foldout arrow crowds the drag handle and the shared/missing stripe (content.x - StripeOffset) lands ON it.
+        // Unity's default array UI flags its list with the internal m_HasPropertyDrawer, insetting element rects by
+        // Defaults.propertyDrawerPadding (8) past the drag handle. That flag is unreachable from package code, so the
+        // same inset is applied manually in drawElementCallback to keep the geometry the property drawer is tuned for.
         private const float PropertyDrawerPadding = 8f;
 
         /// <summary>
@@ -76,11 +74,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var serializedObject = listProperty.serializedObject;
 
-            // The SerializedObject's identity is part of the key: an Inspector plus a locked Inspector on the same
-            // object hold two DISTINCT SerializedObjects for one (target, path) — under a shared key they would fail
-            // the staleness check below on every alternating repaint and rebuild the list endlessly, resetting its
-            // drag / selection state (the very state this cache exists to keep). The identity hash is stable for the
-            // instance's lifetime and never dereferences the object.
+            // The SerializedObject's identity is part of the key: an Inspector plus a locked Inspector hold two
+            // DISTINCT SerializedObjects for one (target, path) — under a shared key the staleness check below would
+            // rebuild the list on every alternating repaint, resetting its drag / selection state.
             var key = $"{RuntimeHelpers.GetHashCode(serializedObject)}/" +
                       $"{serializedObject.targetObject.GetInstanceID()}/{listProperty.propertyPath}";
 

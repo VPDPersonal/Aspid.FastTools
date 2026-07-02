@@ -52,14 +52,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddAspidThemeStyleSheets();
 
-            // The control itself is the panel: its own header sits above the folder rows, which stack over one
-            // persistent add row. Every row — each folder and the add row — is the same zebra-striped entry element; the
-            // add row's "+" is pinned right and its left carries the empty hint when there is nothing to list.
             var title = new Label("Excluded scan folders").AddClass(TitleClass);
             _list = new VisualElement().AddClass(ListClass);
 
-            // The whole add row is the add affordance: clicking anywhere on it (the "+", the hint, or the gaps between)
-            // adds, and hovering it tints the row green. The "+" is a passive glyph (a Label, not a Button) so its click
+            // The whole add row is the click target; the "+" is a passive glyph (a Label, not a Button) so its click
             // bubbles up to the row instead of firing a second add.
             _hint = new Label { tooltip = "Add folder" }.AddClass(HintClass);
             var addGlyph = new Label("+") { tooltip = "Add folder" }.AddClass(AddButtonClass);
@@ -75,11 +71,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             Rebuild();
 
-            // ExcludedFoldersChanged (not the broad Changed) fires only when the set really moves, so this rebuilds on
-            // its own edits and on the sibling surface's edits, and never on an unrelated setting flip. Armed from
-            // build time, then follows the panel lifecycle: docking/undocking re-parents the tree — a detach then an
-            // attach WITHOUT a rebuild — so a build-time-only subscription would silently stop mirroring after the
-            // first dock move (see AspidSettingsUI.SyncFromSettings for the same dance).
+            // ExcludedFoldersChanged (not the broad Changed) fires only when the set really moves. Armed from build
+            // time, then follows the panel lifecycle: docking re-parents the tree (a detach then an attach WITHOUT a
+            // rebuild), which would kill a build-time-only subscription (see AspidSettingsUI.SyncFromSettings).
             var subscribed = false;
 
             void Arm()
@@ -123,7 +117,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     .AddChild(label)
                     .AddChild(remove);
 
-                // Hovering the path lifts the row to the neutral tint (editable); hovering the ✕ turns the whole row red.
                 TintWhileOver(row, label, EntryHoverClass, null);
                 TintWhileOver(row, remove, EntryDangerClass, null);
 
@@ -135,8 +128,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ApplyStripe(_addRow, folders.Length);
         }
 
-        // Alternates an entry's background wash by its position in the visible list, so adjacent rows read as separate
-        // elements (zebra: even rows a faint light wash, odd rows a faint dark one).
+        // Zebra-stripes an entry by its position in the visible list so adjacent rows read as separate elements.
         private static void ApplyStripe(VisualElement entry, int index)
         {
             var even = index % 2 == 0;
@@ -144,17 +136,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             entry.EnableInClassList(EntryOddClass, !even);
         }
 
-        // Repaints the whole <paramref name="entry"/> while the pointer is over <paramref name="zone"/>: entering paints
-        // <paramref name="tint"/>, leaving falls back to <paramref name="fallback"/> (null clears). This is how a child
-        // (the path, the ✕, the "+") can tint its entire row, which USS can't express from a child's hover state.
+        // Tints the whole entry while the pointer is over the zone (leaving falls back to fallback; null clears) —
+        // USS can't tint a row from a child's hover state.
         private static void TintWhileOver(VisualElement entry, VisualElement zone, string tint, string fallback)
         {
             zone.RegisterCallback<PointerEnterEvent>(_ => SetTint(entry, tint));
             zone.RegisterCallback<PointerLeaveEvent>(_ => SetTint(entry, fallback));
         }
 
-        // Sets exactly one full-row hover tint on the entry (or clears all when <paramref name="tint"/> is null). Being
-        // the single writer is what keeps the three tints mutually exclusive without USS specificity juggling.
+        // Sets exactly one full-row hover tint (null clears all); single-writer keeps the tints mutually exclusive.
         private static void SetTint(VisualElement entry, string tint)
         {
             foreach (var cls in HoverTints) entry.EnableInClassList(cls, cls == tint);
@@ -171,8 +161,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SerializeReferenceSettings.ExcludedFolders = current.Append(relative).ToArray();
         }
 
-        // Clicking a folder row re-opens the picker seeded at that folder and swaps the chosen path in place, so a row
-        // can be re-pointed without remove-then-add. A pick that lands on an existing entry collapses onto it (Distinct).
+        // Re-points a folder row in place; a pick that lands on an existing entry collapses onto it (Distinct).
         private void Edit(string folder)
         {
             var relative = PickProjectFolder("Edit excluded folder", folder);
@@ -184,8 +173,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .ToArray();
         }
 
-        // Opens the folder picker and returns the chosen path as a project-relative path, or null when the user
-        // cancelled or picked a folder outside the project (the latter explains itself via a dialog). Shared by add/edit.
+        // Returns the picked folder as a project-relative path, or null on cancel or an outside-project pick
+        // (the latter explains itself via a dialog).
         private static string PickProjectFolder(string title, string startFolder)
         {
             var absolute = EditorUtility.OpenFolderPanel(title, startFolder, string.Empty);

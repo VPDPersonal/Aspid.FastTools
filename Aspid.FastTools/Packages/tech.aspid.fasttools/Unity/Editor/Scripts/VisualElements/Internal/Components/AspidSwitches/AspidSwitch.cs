@@ -27,27 +27,22 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const float OnFillAlpha = 0.30f;
         private const float AnimationDuration = 0.15f;
 
-        // The handle is positioned inside the track's border box (UIToolkit absolute offsets start at the padding edge,
-        // i.e. inside the border), so its travel is measured against the inner box — otherwise the 1.5px border pushes
-        // the on-position handle past the right edge. A symmetric inset centres it vertically and leaves equal gaps.
+        // UIToolkit absolute offsets start at the padding edge (inside the border), so the handle's travel is measured
+        // against the inner box — otherwise the border pushes the on-position handle past the right edge.
         private const float TrackInnerWidth = TrackWidth - 2f * TrackBorderWidth;     // 41
         private const float TrackInnerHeight = TrackHeight - 2f * TrackBorderWidth;   // 21
         private const float HandleInset = (TrackInnerHeight - HandleSize) / 2f;       // 1.5
 
-        // On tints both the border and a translucent fill to the theme's success accent
-        // (--aspid-colors-status-success-text-dark); off keeps only the neutral outline over a transparent fill.
-        // The switch renders on the package's dark surfaces AND on Unity's NATIVE pages (Project Settings /
-        // Preferences), whose light-theme background sits around #C8C8C8 — the dark-skin neutrals (~#BDBDC4 handle)
-        // would be all but invisible there, so they flip with the editor skin. Read once per domain: a mid-session
-        // skin switch catches up on the next reload, an acceptable trade for not probing the skin per instance.
+        // The switch also renders on Unity's NATIVE light-theme pages (Project Settings / Preferences), where the
+        // dark-skin neutrals would be all but invisible — so they flip with the editor skin. Read once per domain:
+        // a mid-session skin switch catches up on the next reload.
         private static readonly Color AccentColor = new(0.333f, 0.686f, 0.392f, 1f);
 
         private static readonly Color TrackOffBorderColor = EditorGUIUtility.isProSkin
             ? new Color(0.32f, 0.32f, 0.34f, 1f)
             : new Color(0.45f, 0.45f, 0.47f, 1f);
 
-        // A muted, semi-transparent handle (not a flat white disc) so it reads as part of the translucent family and
-        // picks up a touch of the track tint behind it.
+        // Semi-transparent so the handle picks up a touch of the track tint behind it.
         private static readonly Color HandleColor = EditorGUIUtility.isProSkin
             ? new Color(0.74f, 0.74f, 0.77f, 0.85f)
             : new Color(0.35f, 0.35f, 0.38f, 0.9f);
@@ -61,11 +56,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private float _handlePosition;
         private IVisualElementScheduledItem _animation;
 
-        /// <summary>Creates an unlabeled switch.</summary>
+        /// <summary>
+        /// Creates an unlabeled switch.
+        /// </summary>
         public AspidSwitch()
             : this(null) { }
 
-        /// <summary>Creates a switch with the given left caption.</summary>
+        /// <summary>
+        /// Creates a switch with the given left caption.
+        /// </summary>
         public AspidSwitch(string label)
             : this(label, new VisualElement()) { }
 
@@ -82,9 +81,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             labelElement.style.marginRight = 10;
             labelElement.style.unityTextAlign = TextAnchor.MiddleLeft;
 
-            // BaseField's USS pins `.unity-base-field__input` to flex-basis:0, which (per flexbox) overrides `width`,
-            // so the input collapses to 0 and the track overflows off the row's right edge. Override flex-basis to the
-            // track's width and freeze grow/shrink so the input always reserves exactly the switch's room.
+            // BaseField's USS pins `.unity-base-field__input` to flex-basis:0, which overrides `width` and collapses
+            // the input to 0 — override flex-basis to the track's width and freeze grow/shrink.
             input.style.flexBasis = TrackWidth;
             input.style.flexGrow = 0;
             input.style.flexShrink = 0;
@@ -133,9 +131,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             evt.StopPropagation();
         }
 
-        // Animates the handle to the target state on an ease-out-cubic curve, lerping the track colour in step. Before
-        // the field is attached to a panel (e.g. the value seeded during settings build) there is no scheduler, so it
-        // snaps instead — no animation runs on window open.
+        // Before the field is attached to a panel there is no scheduler, so the handle snaps instead of animating —
+        // no animation runs on window open.
         private void MoveTo(bool on)
         {
             var target = on ? 1f : 0f;
@@ -167,8 +164,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             const float maxLeft = TrackInnerWidth - HandleSize - HandleInset;
             _handle.style.left = Mathf.Lerp(HandleInset, maxLeft, _handlePosition);
 
-            // Off: transparent fill + neutral outline. On: a translucent accent wash + accent outline. The fill alpha
-            // and the border colour both lerp with the handle position so the on-tint sweeps in as it slides.
+            // The fill alpha and the border colour lerp with the handle position so the on-tint sweeps in as it slides.
             _track.style.backgroundColor =
                 new Color(AccentColor.r, AccentColor.g, AccentColor.b, Mathf.Lerp(0f, OnFillAlpha, _handlePosition));
             _track.SetBorderColor(Color.Lerp(TrackOffBorderColor, AccentColor, _handlePosition));

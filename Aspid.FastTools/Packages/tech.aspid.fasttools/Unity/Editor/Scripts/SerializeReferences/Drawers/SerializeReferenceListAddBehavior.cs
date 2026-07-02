@@ -41,12 +41,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var listView = elementField.GetFirstAncestorOfType<ListView>();
             if (listView is null || listView.overridingAddButtonBehavior != null) return;
 
-            // Assigning overridingAddButtonBehavior calls ListView.RefreshItems(), which rebuilds the list's item
-            // elements — a hierarchy change. TryInstall runs from the element's AttachToPanelEvent (the only point the
-            // ListView ancestor is reachable), so the subtree is still mid-attach; mutating it synchronously throws
-            // "Modifying the parent of a VisualElement while it's already being modified". Defer one tick — anchored to
-            // the long-lived ListView so it survives item recycling — and re-check the guard, since sibling elements
-            // attaching in the same pass each queue their own install before the first one lands.
+            // Assigning overridingAddButtonBehavior calls RefreshItems() — a hierarchy change — but TryInstall runs
+            // from AttachToPanelEvent, mid-attach, where mutating the subtree synchronously throws. Defer one tick
+            // (anchored to the long-lived ListView) and re-check the guard: sibling elements queue their own installs.
             listView.schedule.Execute(() =>
             {
                 if (listView.overridingAddButtonBehavior != null) return;
@@ -56,16 +53,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             });
         }
 
-        // Shared with SerializeReferenceListField, whose "+" needs the same picker anchored the same way — internal so
-        // the attribute-free list offers the identical de-aliased append.
-        internal static void OpenAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, VisualElement anchor)
+        // Shared with SerializeReferenceListField, whose "+" needs the same picker anchored the same way.
+        public static void OpenAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, VisualElement anchor)
         {
             var window = EditorWindow.mouseOverWindow != null ? EditorWindow.mouseOverWindow : EditorWindow.focusedWindow;
             if (window == null) return;
 
-            // Anchor the picker to the ListView (spanning its width) rather than the small, right-aligned "+" button, so
-            // it opens as a wide dropdown flush below the add row — like the field dropdown — instead of a narrow popup
-            // hanging off the button. Fall back to the button when the ListView is unreachable.
+            // Anchor the picker to the ListView (spanning its width) rather than the small "+" button, so it opens as
+            // a wide dropdown flush below the add row; fall back to the button when the ListView is unreachable.
             var reference = anchor.GetFirstAncestorOfType<ListView>() ?? anchor;
 
             // Match TypeSelectorWindow.Show's minimum width so the clamp below reflects the picker's real footprint.
@@ -77,9 +72,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 window.position.x,
                 Mathf.Min(window.position.x + reference.worldBound.xMin, window.position.xMax - width));
 
-            // y: anchor from the "+" button's TOP + its height, so ShowAsDropDown opens flush below the button's bottom
-            // edge. Anchoring from yMax double-counted the button height and dropped the picker a full row lower — a
-            // visible gap (mirrors the field dropdown, which anchors from yMin).
+            // y: anchor from the "+" button's TOP + its height, so ShowAsDropDown opens flush below its bottom edge —
+            // anchoring from yMax double-counted the button height and dropped the picker a full row lower.
             var screenRect = new Rect(
                 x,
                 window.position.y + anchor.worldBound.yMin,
@@ -95,7 +89,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// override and the IMGUI list drawer (<see cref="SerializeReferenceIMGUIList"/>), whose only difference is how
         /// each computes the anchor rect — so both add paths offer the same picker and the same de-aliased append.
         /// </summary>
-        internal static void ShowAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, Rect screenRect)
+        public static void ShowAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, Rect screenRect)
         {
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
@@ -124,10 +118,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var array = serializedObject.FindProperty(arrayPath);
             if (array is null || !array.isArray) return;
 
-            // Grow the array and assign the new value before a single apply. arraySize++ copies the previous last
-            // element's managedReferenceId, so overwrite it in the same modification — with a fresh instance for a picked
-            // type, or an explicit null for <None> — collapsing both into one Undo step and leaving no rid-aliased
-            // duplicate behind (a bare arraySize++ on a <None> pick would alias the previous element).
+            // arraySize++ copies the previous last element's managedReferenceId, so overwrite it in the same
+            // modification — a fresh instance for a picked type, an explicit null for <None> (a bare arraySize++ there
+            // would alias the previous element) — collapsing both into one Undo step.
             var index = array.arraySize;
             array.arraySize = index + 1;
             array.GetArrayElementAtIndex(index).SetManagedReference(type is null ? null : SerializeReferenceHelpers.CreateInstance(type));

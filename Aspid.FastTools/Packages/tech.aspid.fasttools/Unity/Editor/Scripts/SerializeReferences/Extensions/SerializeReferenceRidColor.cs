@@ -18,21 +18,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // ids further apart.
         private const float GoldenRatioConjugate = 0.618033988749895f;
 
-        // Rid colours must never look like the inspector's error/warning semantics, so the uniform hue is
-        // remapped out of the red (hue ≈ 0 / ≈ 1) and amber-yellow (hue ≈ 0.08–0.20) arcs into a safe
-        // green→magenta band. Remapping a uniform [0,1) fraction into [min,max) keeps the golden-ratio
-        // spread — it just compresses it into the arc that stays clear of "error" (red) and "warning" (yellow).
-        // The low end starts at a true green (not the sour yellow-green / lime that reads as "acid").
+        // Rid colours must never look like the inspector's error (red) / warning (yellow) semantics, so the uniform
+        // hue is remapped into a green→magenta band; the linear remap keeps the golden-ratio spread.
         private const float SafeHueMin = 0.32f; // green — past yellow-green/lime
         private const float SafeHueMax = 0.90f; // magenta/pink — before it reddens
 
         private const float Saturation = 0.55f;
 
-        // HSV is not perceptually uniform: at a fixed value a green reads far brighter — "acid"/neon — than a blue or
-        // purple, because the eye weights green ~10× more than blue (Rec. 709 luminance). A fixed value therefore makes
-        // the green band glow while the purples stay calm. So instead of pinning the value, each hue is pinned to a
-        // common perceived luminance — its value is scaled to hit TargetLuminance — taming greens and lifting
-        // blues/purples to match, so the whole palette reads at one calm brightness on the dark inspector.
+        // HSV is not perceptually uniform — the eye weights green ~10× more than blue (Rec. 709), so a fixed value
+        // makes greens glow "acid". Each hue's value is instead scaled to hit a common perceived luminance.
         private const float TargetLuminance = 0.6f;
 
         // The value ceiling: a hue the eye sees as dark (deep blue) is lifted toward — but never past — a clean
@@ -66,8 +60,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return FromFraction(fraction);
         }
 
-        // Maps a uniform [0,1) fraction to a palette colour: the hue into the safe green→magenta band, then the value
-        // normalised so every hue lands at a common perceived luminance (HSV is not perceptually uniform — see notes).
+        // Hue into the safe green→magenta band, value normalised to the common perceived luminance.
         private static Color FromFraction(float fraction)
         {
             var hue = SafeHueMin + fraction * (SafeHueMax - SafeHueMin);

@@ -23,7 +23,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // elements are managed references.
         private const string ManagedReferenceElementPrefix = "managedReference<";
 
-        /// <summary>The per-user opt-in gating every attribute-free substitution. Off by default.</summary>
+        /// <summary>
+        /// The per-user opt-in gating every attribute-free substitution. Off by default.
+        /// </summary>
         public static bool Enabled => SerializeReferenceSettings.DropdownWithoutAttributeEnabled;
 
         /// <summary>

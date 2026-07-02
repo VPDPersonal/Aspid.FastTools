@@ -37,9 +37,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Consumed once by the post-save pass and then dropped, so a later save re-snapshots from the then-current file.
         private static readonly Dictionary<string, List<Snapshot>> PendingByPath = new();
 
-        // Unity's save hook: fires for every asset about to be written, with the file still holding its pre-save state.
-        // We never alter the returned set — we only read the pristine YAML to snapshot at-risk missing list elements and
-        // queue the post-save repair.
+        // Fires with the file still holding its pre-save state; only reads the pristine YAML to snapshot at-risk
+        // elements and queue the post-save repair — the returned set is never altered.
         private static string[] OnWillSaveAssets(string[] paths)
         {
             foreach (var path in paths)
@@ -61,9 +60,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return paths;
         }
 
-        // Reads the pre-save YAML and captures every top-level [SerializeReference] array element whose stored type is
-        // missing — the only elements a list resize destroys. Each snapshot carries the exact RefIds entry text needed to
-        // re-materialise the reference after the save.
+        // Captures every top-level missing array element — the only shape a list resize destroys — with the exact
+        // RefIds entry text needed to re-materialise it after the save.
         private static List<Snapshot> SnapshotMissingArrayElements(string assetPath)
         {
             var result = new List<Snapshot>();
@@ -84,9 +82,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Runs on the editor tick after the save completed. Re-reads the now-written file and restores any snapshotted
-        // element the save collapsed; a save that left the element intact is a no-op (the restore declines a non-empty
-        // slot). Reimports once if anything was repaired so the live object and inspector pick up the recovered reference.
+        // Re-reads the now-written file and restores any snapshotted element the save collapsed; an intact element is
+        // a no-op (the restore declines a non-empty slot). Reimports once so the live object picks up the recovery.
         private static void RestoreAfterSave(string assetPath)
         {
             if (!PendingByPath.TryGetValue(assetPath, out var snapshots)) return;

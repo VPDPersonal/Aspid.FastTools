@@ -21,7 +21,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </remarks>
     internal static class SerializeReferenceBreakageDetector
     {
-        /// <summary>Raised when one or more references became missing since the last scan.</summary>
+        /// <summary>
+        /// Raised when one or more references became missing since the last scan.
+        /// </summary>
         public static event Action<BreakageReport> BreakageDetected;
 
         private const string EstablishedKey = "Aspid.FastTools.SerializeReferences.Breakage.Established";
@@ -42,33 +44,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             };
         }
 
-        /// <summary>Re-scans and reports any newly-missing references. Called by the reimport hook on relevant changes.</summary>
+        /// <summary>
+        /// Re-scans and reports any newly-missing references. Called by the reimport hook on relevant changes.
+        /// </summary>
         public static void Scan() => RunDetection(report: true);
 
         private static void RunDetection(bool report)
         {
             if (Application.isBatchMode) return;
 
-            // Opt-out: when the user disables breakage detection, never establish a baseline or scan. Re-enabling
-            // re-arms it on the next change — the first run silently re-baselines, so a pre-existing miss never alarms.
+            // Opt-out: never baseline or scan while disabled; re-enabling silently re-baselines on the next change.
             if (!SerializeReferenceSettings.BreakageDetectionEnabled) return;
 
-            // Type resolution flaps while scripts recompile / the AssetDatabase updates, which would falsely alarm
-            // and corrupt the baseline; DEFER (never drop) until the editor settles — a candidate import racing a
-            // background compile would otherwise lose its detection until the next unrelated asset event. A compile
-            // that ends in a domain reload wipes the pending chain, and the script postprocessor re-fires then.
+            // Type resolution flaps while scripts compile / the AssetDatabase updates — DEFER (never drop) until the
+            // editor settles. A compile ending in a domain reload wipes the pending chain; the postprocessor re-fires then.
             if (EditorApplication.isCompiling || EditorApplication.isUpdating)
             {
                 EditorApplication.delayCall += () => RunDetection(report);
                 return;
             }
 
-            // Never warm a cold index from the import / domain-reload path: that runs a modal full-project sweep on every
-            // routine save (risk register 3/10). Detection is active only once the index is already warm (built by a
-            // deliberate Find Usages / Project References scan) and kept warm incrementally on import. When cold — e.g.
-            // after the domain reload an in-place class rename forces — fall back to re-resolving the prior baseline
-            // keys directly (no index, no modal sweep) so the headline rename case still alarms; the explicit Project
-            // References scan continues to find everything.
+            // Never warm a cold index from the import / domain-reload path (a modal full-project sweep on routine
+            // saves). When cold — e.g. after the domain reload an in-place class rename forces — fall back to
+            // re-resolving the prior baseline keys directly, so the headline rename case still alarms (type-level).
             if (!SerializeReferenceTypeUsageIndex.IsWarm)
             {
                 RunDetectionCold(report);
@@ -93,23 +91,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 result = BuildReport(unresolved, baseline);
             }
 
-            // Always advance the baseline to the current resolvable set so a key that just broke (now unresolved) drops
-            // out and is never re-alarmed on the next scan.
+            // Advance the baseline so a key that just broke drops out and is never re-alarmed on the next scan.
             SaveBaseline(resolvable);
             SessionState.SetBool(EstablishedKey, true);
 
             if (result.HasAny) BreakageDetected?.Invoke(result);
         }
 
-        // Cold-index path (the index was reset by the domain reload an in-place rename forces): the index cannot be
-        // enumerated and must not be warmed here, but the per-session baseline of resolvable stored-type keys survives in
-        // SessionState. Each key is re-resolved directly via Type.GetType; a key that WAS resolvable and no longer
-        // resolves is a type that just broke. The report is type-level only (no asset/rid sites — those need the index);
-        // the toast/console warning still fire and the Repair window rebuilds the index to list the exact sites.
+        // Cold-index path: the index must not be warmed here, but the per-session baseline survives in SessionState —
+        // each key is re-resolved directly via Type.GetType. The report is type-level only (no asset/rid sites);
+        // the Repair window rebuilds the index to list the exact sites.
         private static void RunDetectionCold(bool report)
         {
-            // No baseline yet means this is the session's first run with a cold index: there is nothing to compare
-            // against, so establishing silently (no alarm for pre-existing breakages) waits for a warm scan.
+            // No baseline yet — nothing to compare against; establishing silently waits for a warm scan.
             if (!report || !SessionState.GetBool(EstablishedKey, false)) return;
 
             var baseline = LoadBaseline();
@@ -129,25 +123,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     continue;
                 }
 
-                // Type-level entry: no asset path / file id / rid is available without the index. Consumers on this path
-                // (the toast + console warning) read only the count, StoredType and MigrationTarget — the resolver
-                // needs no index, so even the cold path can tell a [MovedFrom] rename from a real breakage.
+                // Type-level entry: no asset/fileId/rid without the index. The [MovedFrom] resolver needs no index,
+                // so even the cold path can tell a rename from a real breakage.
                 SerializeReferenceMovedFromResolver.TryResolve(storedType, out var migrationTarget);
                 entries.Add(new BreakageEntry(null, 0, 0, storedType, isRepairable: false, topSuggestion: null,
                     migrationTarget));
                 brokenTypes.Add(key);
             }
 
-            // Advance the baseline to the keys that still resolve so a type that just broke drops out and is never
-            // re-alarmed on the next cold scan, mirroring the warm path.
+            // Advance the baseline so a just-broken type is never re-alarmed, mirroring the warm path.
             SaveBaseline(stillResolvable);
 
             if (entries.Count == 0) return;
             BreakageDetected?.Invoke(new BreakageReport(entries, brokenTypes.Count));
         }
 
-        // Parses a "Assembly|Namespace|Class" baseline key (see SerializeReferenceHelpers.StoredTypeKey) back into a
-        // ManagedTypeName for direct re-resolution. Returns false for a malformed key or one with no class identity.
+        // Parses an "Assembly|Namespace|Class" key (see SerializeReferenceHelpers.StoredTypeKey) back into a ManagedTypeName.
         private static bool TryParseStoredTypeKey(string key, out ManagedTypeName storedType)
         {
             storedType = default;
@@ -168,9 +159,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var entries = new List<BreakageEntry>();
             var types = new HashSet<string>(StringComparer.Ordinal);
 
-            // Group the just-broke usages by their owning asset so the constraint map (LoadAllAssetsAtPath + full
-            // SerializedObject walk) is built once per asset instead of once per broken reference — a single deleted
-            // script can break dozens of refs in the same asset, which otherwise re-loads/walks it on every entry.
+            // Group by owning asset so the constraint map (LoadAllAssetsAtPath + full SerializedObject walk) is built
+            // once per asset instead of once per broken reference.
             var byPath = new Dictionary<string, List<SerializeReferenceTypeUsageIndex.Usage>>(StringComparer.Ordinal);
 
             foreach (var usage in unresolved)
@@ -194,7 +184,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var path = pair.Key;
                 var repairable = !string.IsNullOrEmpty(path) && !path.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
 
-                // Build the per-asset constraint map once and share it across every broken reference in this asset.
                 Dictionary<(long fileId, long rid), Type> constraints = null;
                 if (repairable)
                 {
@@ -215,8 +204,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return entries.Count == 0 ? default : new BreakageReport(entries, types.Count);
         }
 
-        // Decides repairability and pre-ranks the best fix (priming the shared suggestion cache so the Repair window shows
-        // Smart Fix without a delay), reusing the per-asset constraint map built once by the caller.
+        // Pre-ranks the best fix, priming the shared suggestion cache so the Repair window shows Smart Fix without delay.
         private static BreakageEntry BuildEntry(
             SerializeReferenceTypeUsageIndex.Usage usage,
             string path,

@@ -53,9 +53,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 unbindItem = (element, _) => element.Clear(),
             };
 
-            // The picker-backed "+" (single-object only, matching the attribute path: under a multi-object selection
-            // the native add stays and the duplicate guard de-aliases the copies). Set before any attach, so the
-            // guarded install SerializeReferenceField items attempt on attach short-circuits on it.
+            // Picker-backed "+", single-object only (under a multi-object selection the native add stays and the
+            // duplicate guard de-aliases the copies). Set before any attach, so the item fields' install attempt
+            // short-circuits on it.
             var serializedObject = property.serializedObject;
             if (!serializedObject.isEditingMultipleObjects)
             {
@@ -67,9 +67,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             this.AddChild(_listView);
 
-            // Self-bind: when this field is built dynamically (a nested list inside an already-drawn reference) no
-            // ancestor Bind pass will reach it. The fallback inspector's root gets bound by InspectorElement anyway —
-            // a second bind of the same path is a harmless no-op rebind.
+            // Self-bind: when built dynamically (a nested list inside an already-drawn reference) no ancestor Bind
+            // pass will reach it; a second bind of the same path is a harmless no-op.
             _listView.Bind(serializedObject);
         }
 
@@ -83,9 +82,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             element.Add(new SerializeReferenceField(elementProperty.displayName, elementProperty, _baseTypes));
         }
 
-        // The element property for a row, or null while the view and the data disagree (a just-removed tail element
-        // still being unbound, a torn-down SerializedObject after an asset repair) — the next binding refresh rebuilds
-        // the rows from the current data, so a transient miss only needs to not throw.
+        // Null while the view and the data disagree (a just-removed tail element, a torn-down SerializedObject
+        // after an asset repair) — the next binding refresh rebuilds the rows, so a transient miss must only not throw.
         private SerializedProperty GetElementProperty(int index)
         {
             try

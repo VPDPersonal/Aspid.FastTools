@@ -26,20 +26,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </remarks>
     internal static class SerializeReferencePendingAssignment
     {
-        internal const string Key = "Aspid.FastTools.SerializeReference.PendingAssignment";
+        public const string Key = "Aspid.FastTools.SerializeReference.PendingAssignment";
         private const char EntrySeparator = '\n';
         private const char FieldSeparator = '|';
 
-        /// <summary>Cross-reload backstop: a still-unresolved entry is dropped (with a warning) after this many loads.</summary>
-        internal const int MaxResolveAttempts = 32;
+        /// <summary>
+        /// Cross-reload backstop: a still-unresolved entry is dropped (with a warning) after this many loads.
+        /// </summary>
+        public const int MaxResolveAttempts = 32;
 
-        /// <summary>Per-load belt-and-suspenders: how many extra <c>delayCall</c> passes to arm for a late same-load load.</summary>
-        internal const int MaxInSessionRetries = 3;
+        /// <summary>
+        /// Per-load belt-and-suspenders: how many extra <c>delayCall</c> passes to arm for a late same-load load.
+        /// </summary>
+        public const int MaxInSessionRetries = 3;
 
         // Re-arms left for the current load; reset by Hook on every domain reload (static state does not survive a reload).
         private static int _inSessionRetriesLeft;
 
-        /// <summary>Parks an assignment to complete after a later domain reload (when the new type compiles).</summary>
+        /// <summary>
+        /// Parks an assignment to complete after a later domain reload (when the new type compiles).
+        /// </summary>
         public static void Enqueue(UnityEngine.Object target, string propertyPath, string fullTypeName)
         {
             if (target == null || string.IsNullOrEmpty(propertyPath) || string.IsNullOrEmpty(fullTypeName)) return;
@@ -78,10 +84,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         /// <summary>
         /// Runs one resolve pass over the persisted queue: applies what it can, re-persists what is still pending, erases
-        /// the queue once nothing remains. Returns <c>true</c> while at least one entry is still pending. Internal so the
-        /// EditMode tests can drive the re-persist invariant without scheduling a <c>delayCall</c>.
+        /// the queue once nothing remains. Returns <c>true</c> while at least one entry is still pending.
         /// </summary>
-        internal static bool ResolvePass(bool countAttempt)
+        public static bool ResolvePass(bool countAttempt)
         {
             var raw = SessionState.GetString(Key, string.Empty);
             if (string.IsNullOrEmpty(raw)) return false;
@@ -98,9 +103,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
                 catch (Exception)
                 {
-                    // A resolved-but-incompatible type (e.g. a cross-assembly full-name collision) throws on assign.
-                    // Treat it as an unresolved attempt so it is bounded by the give-up cap instead of re-throwing every
-                    // reload, and — crucially — so it never strands the entries queued after it.
+                    // A resolved-but-incompatible type throws on assign; treat it as an unresolved attempt so the
+                    // give-up cap bounds it and it never strands the entries queued after it.
                     outcome = ApplyOutcome.PendingUnresolved;
                 }
 
@@ -111,8 +115,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         break; // resolved or provably dead — drop from the queue.
 
                     case ApplyOutcome.PendingUnloaded:
-                        // The owning scene/asset just isn't open; a reload cannot fix that, so keep waiting without
-                        // spending the cross-reload budget — only opening the owner (or quitting the session) resolves it.
+                        // The owning scene/asset isn't open; a reload cannot fix that, so wait without spending the budget.
                         survivors.Add(entry);
                         break;
 
@@ -182,13 +185,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // --------------------------------------------------------------------------------------------------------------
-        // Wire model — pure, side-effect-free, unit-testable. SessionState stores newline-separated entries, each a
-        // pipe-separated (globalId | propertyPath | fullTypeName | attempts) record. None of those fields can contain a
-        // pipe or newline (GlobalObjectId, a serialized property path and an assembly-qualified type name never do), so
-        // the split is unambiguous. Legacy three-field records (written before retry tracking) decode as attempts = 0.
+        // Wire model: SessionState stores newline-separated entries, each a pipe-separated
+        // (globalId | propertyPath | fullTypeName | attempts) record — none of those fields can contain a pipe or
+        // newline. Legacy three-field records (written before retry tracking) decode as attempts = 0.
         // --------------------------------------------------------------------------------------------------------------
 
-        internal readonly struct Entry : IEquatable<Entry>
+        public readonly struct Entry : IEquatable<Entry>
         {
             public readonly string GlobalId;
             public readonly string PropertyPath;
@@ -205,7 +207,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             public Entry WithIncrementedAttempt() => new(GlobalId, PropertyPath, FullTypeName, Attempts + 1);
 
-            /// <summary>True when both entries target the same field on the same object (ignores type and attempts).</summary>
+            /// <summary>
+            /// True when both entries target the same field on the same object (ignores type and attempts).
+            /// </summary>
             public bool SameTarget(Entry other) => GlobalId == other.GlobalId && PropertyPath == other.PropertyPath;
 
             public string Encode() =>
@@ -236,7 +240,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             public override string ToString() => Encode();
         }
 
-        internal static List<Entry> Decode(string raw)
+        public static List<Entry> Decode(string raw)
         {
             var entries = new List<Entry>();
             if (string.IsNullOrEmpty(raw)) return entries;
@@ -248,7 +252,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return entries;
         }
 
-        internal static string Encode(IReadOnlyList<Entry> entries)
+        public static string Encode(IReadOnlyList<Entry> entries)
         {
             var builder = new StringBuilder();
             for (var i = 0; i < entries.Count; i++)
@@ -265,7 +269,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// same field on the same object — re-picking a field's "new script" supersedes the previous pending pick rather
         /// than queuing a second, stale assignment to the same path.
         /// </summary>
-        internal static void Merge(List<Entry> queue, Entry entry)
+        public static void Merge(List<Entry> queue, Entry entry)
         {
             queue.RemoveAll(existing => existing.SameTarget(entry));
             queue.Add(entry);

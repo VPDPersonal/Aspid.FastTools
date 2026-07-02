@@ -22,8 +22,7 @@ namespace Aspid.FastTools.Types.Editors
         public const string GlobalNamespace = "<Global>";
 
         // Normalized [TypeSelectorDisplay(Name)] per type (null = no override). Attributes only change with a
-        // recompile, and a recompile resets this dictionary with the domain — so no invalidation is needed.
-        // IMGUI resolves the caption every repaint, hence the cache instead of per-call reflection.
+        // recompile, which resets this with the domain; IMGUI resolves the caption every repaint, hence the cache.
         private static readonly Dictionary<Type, string> CustomDisplayNames = new();
 
         /// <summary>

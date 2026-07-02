@@ -46,10 +46,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static void Draw(Rect position, GUIContent label, SerializedProperty property, params Type[] baseTypes)
         {
-            // Auto-de-alias a freshly duplicated list element (Ctrl+D / Duplicate / list +): when this element shares its
-            // rid with another element of the same array, the guard queues a swap to an independent clone on the next
-            // editor tick (one Undo step) — never mutating the SerializedObject mid-draw. Cheap on the unchanged path
-            // (size + rolling-hash gate), so it is safe to call from every IMGUI repaint.
+            // Auto-de-alias a freshly duplicated list element: on a rid collision within the array, the guard queues a
+            // swap to an independent clone on the next editor tick — never mutating the SerializedObject mid-draw.
+            // Cheap on the unchanged path, so safe to call from every IMGUI repaint.
             SerializeReferenceDuplicateGuard.Observe(property);
 
             var spacing = EditorGUIUtility.standardVerticalSpacing;
@@ -58,24 +57,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var hasValue = currentType is not null && !mixedTypes;
             var fieldType = SerializeReferenceHelpers.GetFieldType(property);
 
-            // Per-asset notices (missing type / shared reference / required) read/write a single backing asset, so they
-            // are suppressed under a multi-object selection. Computed up front because whether the field shows any of
-            // them decides whether it reserves the stripe gutter below.
+            // Per-asset notices read/write a single backing asset, so they are suppressed under a multi-object
+            // selection. Computed up front: showing any of them decides whether the field reserves the stripe gutter.
             var noticesApply = !mixedTypes && SerializeReferenceHelpers.NoticesApply(property);
             var showMissing = noticesApply && SerializeReferenceHelpers.IsMissingType(property);
             var showShared = noticesApply && SerializeReferenceHelpers.HasSharedReference(property);
             var showRequired = noticesApply && SerializeReferenceRequiredGate.IsViolation(property);
 
             // The shared group's 1-based badge number (0 when not shared) drives BOTH the stripe colour and the notice,
-            // so a badge's colour tracks its number — (1),(2),(3) always read as distinct colours — instead of a rid
-            // hash that could alias two unrelated groups onto a similar hue.
+            // so a badge's colour tracks its number instead of a rid hash that could alias two groups onto one hue.
             var sharedIndex = showShared ? SerializeReferenceHelpers.GetSharedReferenceIndex(property) : 0;
 
-            // Reserve a left gutter (StripeGutter) for the status stripe ONLY on a field that shows one, by shifting the
-            // body right — the bar then sits in the reserved space, mirroring the UIToolkit field's padding-left. A field
-            // with no stripe keeps its natural position, so plain foldouts get no needless indent. Missing / required
-            // fields keep the same gutter (so the bar stays put), but pull their arrow-less label + notice left by
-            // FoldoutArrowIndent — onto the foldout-arrow spot — so they hug the bar instead of trailing to its right.
+            // Reserve a left gutter (StripeGutter) for the status stripe ONLY on a field that shows one, mirroring the
+            // UIToolkit field's padding-left. Missing / required fields keep the gutter but pull their arrow-less
+            // label + notice left by FoldoutArrowIndent, onto the foldout-arrow spot.
             var flat = showMissing || showRequired;
             var gutter = showMissing || showShared || showRequired ? StripeGutter : 0f;
             var body = new Rect(position.x + gutter, position.y, position.width - gutter, position.height);
@@ -117,8 +112,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else
             {
-                // A flat (missing / required) field has no foldout arrow, so pull its label left onto the arrow's spot —
-                // hugging the stripe and lining up with a foldout sibling's arrow instead of trailing an empty slot.
+                // A flat (missing / required) field has no foldout arrow — pull its label left onto the arrow's spot.
                 var labelPull = flat ? FoldoutArrowIndent : 0f;
                 EditorGUI.LabelField(new Rect(labelRect.x - labelPull, labelRect.y,
                     labelRect.width + labelPull, labelRect.height), label);
@@ -138,19 +132,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 dropdownRect.width -= openSize + 1f;
             }
 
-            // Mixed types across the selection: show the standard "—" treatment on the dropdown and never the open-script
-            // button (there is no single type to open). Picking a type still rewrites every target. The "—" caption is
-            // what renders the dash here — DropdownButton has no mixed-value styling — but EditorGUI.showMixedValue is
-            // still set/restored to mirror the UIToolkit side's mixed flag and to propagate to any nested IMGUI control.
+            // Mixed types: the "—" caption renders the dash itself (DropdownButton has no mixed-value styling), but
+            // EditorGUI.showMixedValue is still set/restored so the flag propagates to any nested IMGUI control.
             string missingTooltip = null;
             var caption = mixedTypes ? "—" : GetCaption(property, currentType, out missingTooltip);
             var previousMixed = EditorGUI.showMixedValue;
             EditorGUI.showMixedValue = mixedTypes;
 
-            // Missing stored type: mirror the UIToolkit dropdown's --missing treatment — the caption tints the same
-            // warning amber as the stripe and the notice, keeps its class name by trimming from the LEFT (IMGUI clips
-            // at the right edge, which would cut exactly the informative tail of "<Missing Namespace.Class>"), and
-            // carries the full identity — assembly included — on the hover tooltip.
+            // Missing stored type: mirror the UIToolkit dropdown's --missing treatment — amber caption, trimmed from
+            // the LEFT (IMGUI clips at the right edge, which would cut the informative class-name tail).
             var captionStyle = EditorStyles.miniPullDown;
             if (missingTooltip is not null)
             {
@@ -189,17 +179,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            // Indented content rect (of the gutter-shifted body): the header foldout arrow, label and child fields all
-            // sit at this x (Unity shifts it right by EditorGUI.indentLevel), so anchoring the notices and the stripe
-            // here keeps their offset from the foldout arrow the SAME at every nesting depth. GUI.Label/DrawRect ignore
-            // indentLevel, so we apply it explicitly.
+            // Anchor the notices and the stripe to the indented rect so their offset from the foldout arrow is the
+            // same at every nesting depth; GUI.Label/DrawRect ignore indentLevel, so it is applied explicitly.
             var content = EditorGUI.IndentedRect(body);
 
-            // Left status stripe spanning the whole field — header, notices and any expanded children — so a shared
-            // group reads as one continuous colour down through its value's fields, mirroring the UIToolkit field's
-            // full-height __stripe (top:0 bottom:0). The badge's per-index colour for a shared reference, else the
-            // warning amber for a missing-type / required violation. Offset into the left gutter (StripeOffset) so it
-            // clears the foldout arrow / label, and inset top and bottom (StripeInsetY) so adjacent stripes stay apart.
+            // Left status stripe spanning the whole field, mirroring the UIToolkit field's full-height __stripe: the
+            // badge's per-index colour for a shared reference, else the warning amber. Offset into the left gutter
+            // (StripeOffset) and inset vertically (StripeInsetY) so adjacent stripes stay apart.
             {
                 Color? stripeColor = null;
                 if (showShared && sharedIndex > 0)
@@ -222,10 +208,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(property);
                 var canFix = SerializeReferenceHelpers.TryGetRepairLocation(property, out _, out _, out _);
 
-                // The Smart Fix suggestion rides the same row as a second clickable word ("· → Pistol?"): the highest
-                // ranked existing type the renamed/moved reference most likely became. The ranking is cached per
-                // (asset, rid), so this stays cheap across IMGUI's per-frame repaints. The candidate is pre-declared so
-                // it stays definitely assigned even when the short-circuit skips the probe (canFix == false).
+                // Smart Fix suggestion ("· → Pistol?"). The ranking is cached per (asset, rid), so this stays cheap
+                // across IMGUI's per-frame repaints; the candidate is pre-declared so it stays definitely assigned
+                // when the short-circuit skips the probe.
                 SerializeReferenceRepairSuggestions.RepairCandidate suggestion = default;
                 var hasSuggestion = canFix &&
                     SerializeReferenceHelpers.TryGetRepairSuggestion(property, baseTypes, out suggestion);
@@ -240,9 +225,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     canFix
                         ? () =>
                         {
-                            // Anchor from the notice's top (yMin), not its bottom: ShowAsDropDown opens below the
-                            // anchor rect, so a top-anchored one-line rect ends flush at the notice's bottom. Anchoring
-                            // from yMax added the rect's own height on top, dropping the picker a full line lower.
+                            // Anchor from the notice's top (yMin): ShowAsDropDown opens below the anchor rect, so a
+                            // top-anchored one-line rect ends flush at the notice's bottom (yMax drops it a line lower).
                             var screenPosition = GUIUtility.GUIToScreenPoint(new Vector2(noticeRect.x, noticeRect.y));
                             var screenRect = new Rect(screenPosition.x, screenPosition.y, noticeRect.width, EditorGUIUtility.singleLineHeight);
                             SerializeReferenceHelpers.ShowFixTypeSelector(property.Persistent(), screenRect, null, baseTypes);
@@ -265,8 +249,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
                 var message = "Required reference is not set";
 
-                // Warning palette (not the dim info one): an unset required field is a problem to fix. The notice is
-                // non-actionable — the header dropdown above is the implied fix.
                 DrawRequiredNotice(noticeRect, message,
                     "This [SerializeReference] field is marked required but has no value.");
                 y += EditorGUIUtility.singleLineHeight + spacing;
@@ -279,19 +261,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 EditorGUI.indentLevel--;
             }
 
-            // Shared-reference notice sits at the very bottom of the field — under its nested properties — mirroring the
-            // UIToolkit field, where the notice is a sibling placed after the foldout content. It is the only notice that
-            // coexists with children (missing / required render no value, so no children), so only it moves down here.
+            // Shared-reference notice sits under the nested properties, mirroring the UIToolkit field. It is the only
+            // notice that coexists with children (missing / required render no value), so only it moves down here.
             if (showShared)
             {
-                // The badge's per-index colour tints the whole notice — leading swatch, message and Make-unique action —
-                // and the full-height stripe, so aliased fields read as one colour and the "#n" badge and its colour
-                // always agree (mirrors the UIToolkit --shared notice: no warning icon, since a shared reference is
-                // attention, not an error).
+                // The badge's per-index colour tints the whole notice and the stripe, so aliased fields read as one
+                // colour (mirrors the UIToolkit --shared notice: no warning icon — attention, not an error).
                 Color? indexColor = sharedIndex > 0 ? SerializeReferenceRidColor.ForIndex(sharedIndex) : null;
 
-                // Where this member of the group was painted — when it is the member a sibling's message click just
-                // revealed, the inspector scrolls to it here.
+                // When this member is the one a sibling's message click just revealed, scroll the inspector to it.
                 SerializeReferenceSharedNavigation.RevealIfPending(property, position);
 
                 // Pull the notice left by the foldout arrow's reserved width so its leading swatch lines up under the
@@ -300,13 +278,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
                 var persistent = property.Persistent();
 
-                // The badge uses "#" (not parentheses) so the number reads as a group id, not a member count; the
-                // tooltip lists the group's other fields by display path, and clicking the message reveals them.
                 // Navigation gets the LIVE property, not the persistent copy: the click callback runs synchronously
-                // inside this Draw (so the live property is valid), and the ancestor expansion it performs must write
-                // isExpanded through the inspector's own SerializedObject — the expanded state is cached per
-                // SerializedObject instance at construction, so a write through a fresh copy never reaches the
-                // long-lived instance the inspector draws from (not even after Update()).
+                // inside this Draw, and its ancestor isExpanded writes must go through the inspector's own
+                // SerializedObject — expansion state is cached per instance, so a fresh copy's write never reaches it.
                 DrawNotice(
                     noticeRect,
                     sharedIndex > 0 ? $"Shared reference #{sharedIndex}" : "Shared reference",
@@ -318,12 +292,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 y += EditorGUIUtility.singleLineHeight + spacing;
 
-                // Group-navigation pulse: while a sibling's "Shared reference" message was just clicked, every other
-                // drawn member of that group tints in the group colour, fading out — painted from the status
-                // stripe's line, so the pulse and the stripe read as one band (mirrors the UIToolkit field's __flash
-                // overlay). The right edge depends on the host: a root-level field stretches to the inspector's
-                // right edge (its own rect stops a few px short of it), while a row inside a
-                // SerializeReferenceIMGUIList stops at that list's box border (the row's own rect stops short of it).
+                // Group-navigation pulse (mirrors the UIToolkit __flash overlay): painted from the status stripe's
+                // line so pulse and stripe read as one band. Right edge: the inspector's edge for a root-level field,
+                // the list's box border for a row inside a SerializeReferenceIMGUIList.
                 if (SerializeReferenceSharedNavigation.TryGetFlashAlpha(property, out var flashAlpha) &&
                     indexColor.HasValue)
                 {
@@ -461,16 +432,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     if (!SerializeReferenceScriptCreator.TryCreateSubclassStub(fieldType, out _, out var fullTypeName)) return;
 
-                    // Multi-object: enqueue one pending assignment PER target so every selected object gets the new type
-                    // after the script compiles — each entry carries its own GlobalObjectId, so the (GlobalId, path)-keyed
-                    // queue keeps them apart. Enqueuing only targetObject (singular) would leave objects 2..N untouched.
-                    // Read from the persistent property: the transient `property` may be disposed by the time this
-                    // deferred context-menu callback runs.
+                    // Multi-object: enqueue one pending assignment PER target — targetObject alone would leave objects
+                    // 2..N untouched. Read from the persistent property: the transient `property` may be disposed by
+                    // the time this deferred context-menu callback runs.
                     foreach (var target in persistent.serializedObject.targetObjects)
                         SerializeReferencePendingAssignment.Enqueue(target, persistent.propertyPath, fullTypeName);
                 });
 
-            // Save the current instance as a durable named template, and paste any assignable saved template.
             if (usagesType != null)
             {
                 var value = persistent.managedReferenceValue;
@@ -531,9 +499,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
 
-        // A missing stored type also reports its full identity — assembly included — through missingTooltip (null
-        // otherwise), which both feeds the dropdown's hover tooltip and flags the caption for the amber missing
-        // treatment (see the DropdownButton call).
+        // A missing stored type reports its full identity through missingTooltip (null otherwise), which feeds the
+        // dropdown's hover tooltip and flags the caption for the amber missing treatment.
         private static string GetCaption(SerializedProperty property, Type currentType, out string missingTooltip)
         {
             missingTooltip = null;
@@ -551,9 +518,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return TypeSelectorHelpers.GetTypeSelectorTitle(null, missingType.DisplayName);
         }
 
-        // Amber caption for a missing stored type, mirroring the UIToolkit dropdown's --missing tint (NoticeColor is
-        // the same warning amber the stripe and the notice text use). The colour is (re)assigned on every call, like
-        // the notice styles below, so a cached style survives editor-theme changes.
+        // Amber caption for a missing stored type, mirroring the UIToolkit dropdown's --missing tint. The colour is
+        // (re)assigned on every call so the cached style survives editor-theme changes.
         private static GUIStyle _missingCaptionStyle;
 
         private static GUIStyle GetMissingCaptionStyle()
@@ -566,9 +532,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return _missingCaptionStyle;
         }
 
-        // IMGUI clips a too-long caption at its RIGHT edge, which would cut the class name — the informative tail of
-        // "<Missing Namespace.Class>" — so mirror the UIToolkit side's start-ellipsis by hand: drop leading characters
-        // (binary search on the measured width) until the rest fits behind a leading "…".
+        // IMGUI clips a too-long caption at its RIGHT edge, which would cut the informative class-name tail — so
+        // mirror the UIToolkit start-ellipsis by hand: binary-search how many leading characters to drop behind "…".
         private static readonly GUIContent MeasureContent = new();
 
         private static string FitCaptionFromLeft(GUIStyle style, string text, float width)
@@ -599,21 +564,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // ActionHoverLighten, the hover feedback in place of a static USS brighten (the rid colour is dynamic).
         private const float ActionHoverLighten = 0.35f;
 
-        // Leading rid swatch size on the shared-reference notice — mirrors the UIToolkit __dot (8px), drawn as a filled
-        // circle via GUI.DrawTexture's borderRadius.
+        // Leading rid swatch size on the shared-reference notice — mirrors the UIToolkit __dot (8px).
         private const float DotSize = 8f;
 
-        // The shared-reference notice sits under a foldout header, whose arrow reserves this much space to the left of
-        // the value's inline label. Pull the notice's leading swatch back by it so the swatch lines up under the foldout
-        // arrow rather than the label to its right.
+        // Space the foldout arrow reserves left of the value's label; notices pull back by it so their leading edge
+        // lines up under the arrow rather than the label.
         private const float FoldoutArrowIndent = 11f;
 
-        // Left status stripe. StripeGutter is the left padding the whole field body is shifted by, reserving a clear
-        // gutter for the stripe so it never rides on the foldout arrow (to its right) or a list drag handle (to its
-        // left) — mirroring the UIToolkit field's padding-left. StripeOffset places the bar inside that gutter, measured
-        // left from the indented content (so its gap from the arrow is the same at every nesting depth); keep it below
-        // StripeGutter. StripeInsetY trims the top and bottom so adjacent full-height stripes (e.g. two shared list
-        // elements) read as separate bars with a small gap instead of one merged line.
+        // Left status stripe. StripeGutter shifts the field body right to clear a gutter for the bar (mirrors the
+        // UIToolkit padding-left). StripeOffset places the bar inside it, measured left from the indented content so
+        // its gap from the arrow is depth-independent. StripeInsetY keeps adjacent full-height stripes from merging.
         private const float StripeGutter = 5f;
         private const float StripeWidth = 2f;
         private const float StripeOffset = 16f;
@@ -746,14 +706,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <see cref="Aspid.FastTools.Types.Editors.TypeIMGUIPropertyDrawer"/> path so its required notice matches the
         /// managed-reference one exactly.
         /// </summary>
-        internal static void DrawRequiredNotice(Rect rect, string message, string detail) =>
+        public static void DrawRequiredNotice(Rect rect, string message, string detail) =>
             DrawNotice(rect, message, actionText: string.Empty, detail: detail, onClick: null);
 
-        // Draws one bold, clickable, hover-tracking link word in the given rect — underlined, matching the UIToolkit
-        // notice's <u> action treatment, so "this is a button" reads the same in both UIs — that lightens on hover.
-        // Shared by the Fix action, the trailing Smart Fix suggestion and the shared-reference Make-unique action; the
-        // caller supplies the resting and hover colours (warning amber, or the per-rid colour lightened toward white
-        // for the shared notice).
+        // One bold, clickable link word — underlined to match the UIToolkit notice's <u> action treatment — that
+        // lightens on hover. Shared by Fix, the Smart Fix suggestion and Make-unique; the caller supplies the colours.
         private static void DrawLink(Rect linkRect, GUIContent content, Color color, Color hoverColor, Action onClick)
         {
             var hover = linkRect.Contains(Event.current.mousePosition);
@@ -769,10 +726,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (GUI.Button(linkRect, content, _actionStyle)) onClick();
         }
 
-        // Draws the small rid-coloured swatch leading the shared-reference notice — its colour is shared with the tinted
-        // message, action and header stripe, so aliased fields match at a glance. Drawn as a filled circle to mirror the
-        // UIToolkit notice's rounded __dot: IMGUI has no circle primitive, so the 1×1 white texture is tinted and
-        // rounded fully (borderRadius = half the size) via GUI.DrawTexture.
+        // The rid-coloured swatch leading the shared-reference notice, mirroring the UIToolkit rounded __dot: IMGUI
+        // has no circle primitive, so the 1×1 white texture is tinted and fully rounded via GUI.DrawTexture.
         private static void DrawDot(float x, Rect rect, Color color)
         {
             var dotRect = new Rect(x, rect.y + (rect.height - DotSize) * 0.5f, DotSize, DotSize);
