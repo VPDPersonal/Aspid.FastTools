@@ -105,6 +105,22 @@
     background-color:                                      var(--aspid-colors-status-warning-text-light);
 }
 
+/* --- Group-navigation pulse ---
+   The overlay the click-to-navigate pulse tints in the group's rid colour (animated inline from code, so no colour
+   here). It reuses the stripe's left anchor (left:2px pulled by the same -11px margin); the right edge starts at the
+   root's own (right:0) and is stretched further inline per flash — a negative `right` measured against the
+   InspectorElement — so the pulse spans from the stripe's line to the inspector's right edge as one band, whatever
+   the nesting depth. The root's own background could not reach either side: the stripe hangs left of the root in the
+   gutter and the root stops short of the inspector edge. Transparent (zero footprint) whenever not pulsing. */
+.aspid-fasttools-serialize-reference__flash {
+    position:                                              absolute;
+    left:                                                  2px;
+    margin-left:                                           -11px;
+    right:                                                 0;
+    top:                                                   0;
+    bottom:                                                0;
+}
+
 /* Pull the notices back into the stripe gutter to align with it — only meaningful while the gutter exists, so it is
    gated by --striped too. Without a stripe (a required-only or plain field) the notices keep their natural position. */
 .aspid-fasttools-serialize-reference--striped .aspid-fasttools-serialize-reference__notices {

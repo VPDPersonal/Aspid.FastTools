@@ -40,6 +40,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const float PropertyDrawerPadding = 8f;
 
         /// <summary>
+        /// The right edge of the list box whose element is currently being drawn through <see cref="Draw"/> —
+        /// <see cref="float.NaN"/> outside any element. The drawer's group-navigation pulse stops its band there (the
+        /// box border) instead of stretching to the inspector's right edge as it does for a root-level field. Stacked,
+        /// so a list nested inside another list's element restores the outer box's edge when it finishes.
+        /// </summary>
+        internal static float CurrentElementRightLimit =>
+            ElementRightLimits.Count > 0 ? ElementRightLimits.Peek() : float.NaN;
+
+        private static readonly Stack<float> ElementRightLimits = new();
+
+        /// <summary>
         /// Draws <paramref name="listProperty"/> (a <c>[SerializeReference]</c> list/array) with a picker-backed "+".
         /// </summary>
         /// <param name="listProperty">The array/list property to draw. Its elements must be managed references.</param>
@@ -81,6 +92,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             list.drawHeaderCallback = rect => EditorGUI.LabelField(rect, label);
 
+            // The element background rect spans the box's full inner width (the row content rect below is inset past
+            // the drag handle and paddings), so it carries the box border the pulse band should stop at. Only drawn
+            // on Repaint — exactly when the pulse itself paints — so the captured edge is always fresh.
+            var boxRightEdge = 0f;
+            list.drawElementBackgroundCallback = (rect, index, active, focused) =>
+            {
+                boxRightEdge = rect.xMax;
+                ReorderableList.defaultBehaviours.DrawElementBackground(rect, index, active, focused, draggable: true);
+            };
+
             list.elementHeightCallback = index =>
             {
                 var element = list.serializedProperty.GetArrayElementAtIndex(index);
@@ -94,8 +115,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 rect.xMin += PropertyDrawerPadding;
                 rect.y += EditorGUIUtility.standardVerticalSpacing;
                 rect.height = EditorGUI.GetPropertyHeight(element, includeChildren: true);
-                // Drawn through the standard field, so the element still routes through the [TypeSelector] drawer.
-                EditorGUI.PropertyField(rect, element, new GUIContent($"Element {index}"), includeChildren: true);
+
+                // Drawn through the standard field, so the element still routes through the [TypeSelector] drawer;
+                // the pushed limit tells that drawer where this row's box ends (see CurrentElementRightLimit).
+                ElementRightLimits.Push(boxRightEdge);
+                try
+                {
+                    EditorGUI.PropertyField(rect, element, new GUIContent($"Element {index}"), includeChildren: true);
+                }
+                finally
+                {
+                    ElementRightLimits.Pop();
+                }
             };
 
             // Replace Unity's default add (which duplicates the last element, leaving it rid-aliased) with the picker,
