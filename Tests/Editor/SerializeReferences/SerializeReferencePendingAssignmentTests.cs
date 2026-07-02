@@ -147,20 +147,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
-        public void GiveUpBoundary_OneIncrementBelowCap_StillSurvives()
+        public void GiveUpBoundary_LastIncrementBeforeCapSurvives_NextOneIsAbandoned()
         {
-            var entry = new Entry(GlobalId, Path, TypeName, Store.MaxResolveAttempts - 2);
-
-            Assert.Less(entry.WithIncrementedAttempt().Attempts, Store.MaxResolveAttempts,
+            var oneShort = new Entry(GlobalId, Path, TypeName, Store.MaxResolveAttempts - 2).WithIncrementedAttempt();
+            Assert.Less(oneShort.Attempts, Store.MaxResolveAttempts,
                 "An entry one short of the cap must remain pending after the next reload.");
-        }
 
-        [Test]
-        public void GiveUpBoundary_AtCap_IsAbandoned()
-        {
-            var entry = new Entry(GlobalId, Path, TypeName, Store.MaxResolveAttempts - 1);
-
-            Assert.GreaterOrEqual(entry.WithIncrementedAttempt().Attempts, Store.MaxResolveAttempts,
+            Assert.GreaterOrEqual(oneShort.WithIncrementedAttempt().Attempts, Store.MaxResolveAttempts,
                 "Reaching the attempt cap is the give-up boundary the resolver drops (with a warning) on.");
         }
     }

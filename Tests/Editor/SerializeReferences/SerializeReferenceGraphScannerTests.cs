@@ -18,16 +18,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private string _emptyPath;
         private string _allUnassignedPath;
 
-        [SetUp]
-        public void SetUp()
+        // Every test only reads the fixtures, so the temp files are written once per fixture, not per test.
+        [OneTimeSetUp]
+        public void OneTimeSetUp()
         {
             _missingPath = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
             _emptyPath = YamlFixtures.WriteTemp(YamlFixtures.EmptyFieldsPrefab);
             _allUnassignedPath = YamlFixtures.WriteTemp(YamlFixtures.AllUnassignedAsset);
         }
 
-        [TearDown]
-        public void TearDown()
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
         {
             YamlFixtures.Delete(_missingPath);
             YamlFixtures.Delete(_emptyPath);

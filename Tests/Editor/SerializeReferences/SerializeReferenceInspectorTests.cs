@@ -1,30 +1,9 @@
-using System;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
-using Aspid.FastTools.Types;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
-    internal interface ITestWeapon { }
-
-    [Serializable]
-    internal sealed class TestSword : ITestWeapon { public int damage; }
-
-    // Two managed-reference fields, used to prove Link to Existing actually shares one rid.
-    internal sealed class LinkerTestObject : ScriptableObject
-    {
-        [SerializeReference] public ITestWeapon a;
-        [SerializeReference] public ITestWeapon b;
-    }
-
-    // A required managed reference and a required string type field.
-    internal sealed class RequiredTestObject : ScriptableObject
-    {
-        [SerializeReference, TypeSelector(Required = true)] public ITestWeapon requiredRef;
-        [TypeSelector(Required = true)] public string requiredString;
-    }
-
     /// <summary>
     /// EditMode integration coverage that needs a live <see cref="SerializedObject"/>: the rid-sharing contract of
     /// <see cref="SerializeReferenceLinker"/> (a single managedReferenceId across two fields) and the

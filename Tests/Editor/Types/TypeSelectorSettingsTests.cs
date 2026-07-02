@@ -15,6 +15,8 @@ namespace Aspid.FastTools.Types.Editors.Tests
     /// recording without wiping the collected history — and clears its stores on demand;</item>
     /// <item><see cref="NavigationController"/> composes the Favorites root section only while its toggle is on, and
     /// the Recent section only while the capacity is above 0 (its off switch — no separate toggle exists);</item>
+    /// <item>the row counters: <see cref="TreeNode.TypeCount"/> counts the pickable type leaves under a container
+    /// recursively, and a composed section title carries the number of rows the section actually surfaced;</item>
     /// <item>the controls built by <see cref="TypeSelectorSettingsUI"/> mirror the store live, matching the References
     /// section's live-sync contract.</item>
     /// </list>
@@ -228,6 +230,47 @@ namespace Aspid.FastTools.Types.Editors.Tests
             TypeSelectorSettings.RecentsCapacity = 0;
             Assert.IsFalse(HasSection(BuildController(aqn), NavigationController.RecentSection),
                 "Capacity 0 is the Recent section's off switch — the section must not be composed.");
+        }
+
+        [Test]
+        public void TypeCount_CountsDescendantTypeLeavesRecursively()
+        {
+            var root = new TreeNode("/");
+            var container = new TreeNode("Container");
+            var nested = new TreeNode("Nested");
+
+            nested.Children.Add(new TreeNode("A", typeof(int).AssemblyQualifiedName));
+            container.Children.Add(nested);
+            container.Children.Add(new TreeNode("B", typeof(string).AssemblyQualifiedName));
+            root.Children.Add(container);
+            root.Children.Add(new TreeNode("C", typeof(float).AssemblyQualifiedName));
+
+            Assert.AreEqual(3, root.TypeCount, "The root must count every descendant type leaf, at any depth.");
+            Assert.AreEqual(2, container.TypeCount, "A container must count only the leaves under itself.");
+            Assert.AreEqual(0, new TreeNode("Empty").TypeCount, "A childless container holds no types.");
+        }
+
+        [Test]
+        public void AppendedSectionTitle_CarriesItsSurfacedRowCount()
+        {
+            TypeSelectorSettings.ShowFavorites = true;
+            TypeSelectorPreferences.ToggleFavorite(typeof(int).AssemblyQualifiedName);
+            TypeSelectorPreferences.ToggleFavorite(typeof(string).AssemblyQualifiedName);
+
+            // A favorite outside the candidate set is not surfaced — it must not inflate the counter either.
+            TypeSelectorPreferences.ToggleFavorite(typeof(double).AssemblyQualifiedName);
+
+            var root = new TreeNode("/");
+            root.Children.Add(new TreeNode("Int32", typeof(int).AssemblyQualifiedName));
+            root.Children.Add(new TreeNode("String", typeof(string).AssemblyQualifiedName));
+
+            var controller = new NavigationController(root, composeSections: true);
+
+            var title = controller.CurrentItems.Single(node =>
+                node.IsSectionTitle && node.SectionKey == NavigationController.FavoritesSection);
+
+            Assert.AreEqual(2, title.TypeCount,
+                "The section title's counter must match the rows the section actually surfaced.");
         }
 
         private static NavigationController BuildController(string candidateAqn)

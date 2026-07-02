@@ -1,31 +1,8 @@
 using System;
 using NUnit.Framework;
-using UnityEngine;
-using UnityEngine.Scripting.APIUpdating;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
-    // Top-level (namespace-scoped) candidate pool for the ranking tests. The marker interface keeps the TypeCache
-    // pool down to these two types, so the assertions never race additions elsewhere in the project.
-    internal interface IRepairRankTarget { }
-
-    // The "moved without [MovedFrom]" shape the SerializeReferences sample's MovedWeaponPreset.asset demonstrates:
-    // ranked by simple-name match plus the orphaned data's field-shape overlap.
-    [Serializable]
-    internal sealed class RelocatedRanged : IRepairRankTarget
-    {
-        [SerializeField] private int _damage;
-        [SerializeField] private int _magazineSize;
-    }
-
-    // A declared rename: the recorded old class name must out-rank every heuristic with the top score.
-    [Serializable]
-    [MovedFrom(false, null, null, "OldRenamedRanged")]
-    internal sealed class RenamedRanged : IRepairRankTarget
-    {
-        [SerializeField] private int _damage;
-    }
-
     /// <summary>
     /// Coverage for <see cref="SerializeReferenceRepairSuggestions.Rank"/> — the ranking engine behind the
     /// missing-type <b>Smart Fix</b> suggestion. Pins the three outcomes the bundled sample assets rely on: a
