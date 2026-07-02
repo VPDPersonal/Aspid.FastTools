@@ -21,6 +21,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceSharedAliasTests
     {
+        // Builds the shared pair every aliasing test starts from: primary and sidearms[0] linked onto one rid, the
+        // shared-reference cache invalidated. The caller owns the returned object (destroy in finally).
+        private static SharedAliasTestObject CreateSharedPair(out SerializedObject serialized)
+        {
+            var obj = ScriptableObject.CreateInstance<SharedAliasTestObject>();
+            serialized = new SerializedObject(obj);
+            serialized.FindProperty("primary").managedReferenceValue = new TestSword { damage = 7 };
+            serialized.FindProperty("sidearms").arraySize = 1;
+            serialized.ApplyModifiedProperties();
+
+            // Alias the list element onto the primary's instance (one shared rid across both paths).
+            Assert.IsTrue(SerializeReferenceLinker.LinkTo(serialized.FindProperty("sidearms.Array.data[0]"), "primary"));
+            serialized.Update();
+            SerializeReferenceHelpers.InvalidateSharedReferenceCache();
+            return obj;
+        }
+
         [Test]
         public void GetPropertyDisplayPath_NicifiesFieldsAndListElements()
         {
@@ -33,19 +50,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void GetSharedReferenceAliasPaths_ListsTheOtherMembers_AndOnlyThem()
         {
-            var obj = ScriptableObject.CreateInstance<SharedAliasTestObject>();
+            var obj = CreateSharedPair(out var serialized);
             try
             {
-                var serialized = new SerializedObject(obj);
-                serialized.FindProperty("primary").managedReferenceValue = new TestSword { damage = 7 };
-                serialized.FindProperty("sidearms").arraySize = 1;
-                serialized.ApplyModifiedProperties();
-
-                // Alias the list element onto the primary's instance (one shared rid across both paths).
-                Assert.IsTrue(SerializeReferenceLinker.LinkTo(serialized.FindProperty("sidearms.Array.data[0]"), "primary"));
-                serialized.Update();
-                SerializeReferenceHelpers.InvalidateSharedReferenceCache();
-
                 var fromPrimary = SerializeReferenceHelpers.GetSharedReferenceAliasPaths(serialized.FindProperty("primary"));
                 Assert.AreEqual(new[] { "sidearms.Array.data[0]" }, fromPrimary,
                     "The primary field's alias list must hold exactly the list element, not itself.");
@@ -79,18 +86,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void BuildSharedReferenceDetail_ListsAliasesByDisplayPath()
         {
-            var obj = ScriptableObject.CreateInstance<SharedAliasTestObject>();
+            var obj = CreateSharedPair(out var serialized);
             try
             {
-                var serialized = new SerializedObject(obj);
-                serialized.FindProperty("primary").managedReferenceValue = new TestSword();
-                serialized.FindProperty("sidearms").arraySize = 1;
-                serialized.ApplyModifiedProperties();
-
-                Assert.IsTrue(SerializeReferenceLinker.LinkTo(serialized.FindProperty("sidearms.Array.data[0]"), "primary"));
-                serialized.Update();
-                SerializeReferenceHelpers.InvalidateSharedReferenceCache();
-
                 var detail = SerializeReferenceHelpers.BuildSharedReferenceDetail(serialized.FindProperty("primary"));
 
                 StringAssert.Contains("Also used by:", detail,

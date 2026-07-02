@@ -90,6 +90,17 @@ MonoBehaviour:
             YamlFixtures.Delete(_degradedPath);
         }
 
+        // The preamble the round-trip tests share: snapshot GhostPistol's entry from the pristine file and restore it
+        // over the degraded file's sentinel element, asserting both steps succeed.
+        private void RestoreGhostPistolIntoDegraded()
+        {
+            Assert.IsTrue(SerializeReferenceYamlEditor.TryReadArrayElementEntryBlock(
+                _pristinePath, YamlFixtures.MonoBehaviourFileId, ElementPath, out _, out var entryLines));
+            Assert.IsTrue(SerializeReferenceYamlEditor.TryRestoreArrayElementReference(
+                _degradedPath, YamlFixtures.MonoBehaviourFileId, ElementPath, entryLines),
+                "Restoring over a sentinel element must succeed.");
+        }
+
         [Test]
         public void TryReadArrayElementEntryBlock_CapturesTypeAndData()
         {
@@ -119,12 +130,7 @@ MonoBehaviour:
         [Test]
         public void TryRestoreArrayElementReference_RepointsElement_AndReMaterialisesEntry()
         {
-            Assert.IsTrue(SerializeReferenceYamlEditor.TryReadArrayElementEntryBlock(
-                _pristinePath, YamlFixtures.MonoBehaviourFileId, ElementPath, out _, out var entryLines));
-
-            var restored = SerializeReferenceYamlEditor.TryRestoreArrayElementReference(
-                _degradedPath, YamlFixtures.MonoBehaviourFileId, ElementPath, entryLines);
-            Assert.IsTrue(restored, "Restoring over a sentinel element must succeed.");
+            RestoreGhostPistolIntoDegraded();
 
             // The reader resolves the element back to a real, GhostPistol-typed reference (no longer <None>).
             Assert.IsTrue(SerializeReferenceYamlEditor.TryReadStoredType(
@@ -139,10 +145,7 @@ MonoBehaviour:
         [Test]
         public void TryRestoreArrayElementReference_UsesFreshRid_NotCollidingWithSurvivors()
         {
-            Assert.IsTrue(SerializeReferenceYamlEditor.TryReadArrayElementEntryBlock(
-                _pristinePath, YamlFixtures.MonoBehaviourFileId, ElementPath, out _, out var entryLines));
-            Assert.IsTrue(SerializeReferenceYamlEditor.TryRestoreArrayElementReference(
-                _degradedPath, YamlFixtures.MonoBehaviourFileId, ElementPath, entryLines));
+            RestoreGhostPistolIntoDegraded();
 
             SerializeReferenceYamlEditor.TryReadStoredType(
                 _degradedPath, YamlFixtures.MonoBehaviourFileId, ElementPath, out var rid, out _);
@@ -154,10 +157,7 @@ MonoBehaviour:
         [Test]
         public void TryRestoreArrayElementReference_LeavesSurvivingSiblingsIntact()
         {
-            Assert.IsTrue(SerializeReferenceYamlEditor.TryReadArrayElementEntryBlock(
-                _pristinePath, YamlFixtures.MonoBehaviourFileId, ElementPath, out _, out var entryLines));
-            Assert.IsTrue(SerializeReferenceYamlEditor.TryRestoreArrayElementReference(
-                _degradedPath, YamlFixtures.MonoBehaviourFileId, ElementPath, entryLines));
+            RestoreGhostPistolIntoDegraded();
 
             // Element 1 (Shotgun) and element 2 (the fresh <None>) must be untouched.
             Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(

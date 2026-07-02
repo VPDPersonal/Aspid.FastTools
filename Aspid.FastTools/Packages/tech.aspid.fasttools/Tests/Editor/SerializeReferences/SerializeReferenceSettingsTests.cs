@@ -47,20 +47,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // A — excluded folders drive the dedicated index-invalidation signal (and nothing else does)
         // -----------------------------------------------------------------------------------------------------
 
+        // Counts how many times ExcludedFoldersChanged fires while `mutate` runs, leaving the static event clean.
+        private static int ExcludedFoldersChangedCount(Action mutate)
+        {
+            var fired = 0;
+            void Handler() => fired++;
+            SerializeReferenceSettings.ExcludedFoldersChanged += Handler;
+            try { mutate(); }
+            finally { SerializeReferenceSettings.ExcludedFoldersChanged -= Handler; }
+            return fired;
+        }
+
         [Test]
         public void ExcludedFolders_NewValue_RaisesExcludedFoldersChanged()
         {
             SerializeReferenceSettings.ExcludedFolders = Array.Empty<string>();
 
-            var fired = 0;
-            void Handler() => fired++;
-            SerializeReferenceSettings.ExcludedFoldersChanged += Handler;
-            try
-            {
-                SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Third Party/" };
-                Assert.AreEqual(1, fired, "A genuinely new excluded-folder set must raise ExcludedFoldersChanged exactly once.");
-            }
-            finally { SerializeReferenceSettings.ExcludedFoldersChanged -= Handler; }
+            var fired = ExcludedFoldersChangedCount(() =>
+                SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Third Party/" });
+
+            Assert.AreEqual(1, fired, "A genuinely new excluded-folder set must raise ExcludedFoldersChanged exactly once.");
         }
 
         [Test]
@@ -68,32 +74,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/" };
 
-            var fired = 0;
-            void Handler() => fired++;
-            SerializeReferenceSettings.ExcludedFoldersChanged += Handler;
-            try
-            {
-                // Same paths, fresh array instance: the set did not move, so the warm index must not be dropped.
-                SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/" };
-                Assert.AreEqual(0, fired, "Re-assigning an identical set must not raise ExcludedFoldersChanged (no needless index rebuild).");
-            }
-            finally { SerializeReferenceSettings.ExcludedFoldersChanged -= Handler; }
+            // Same paths, fresh array instance: the set did not move, so the warm index must not be dropped.
+            var fired = ExcludedFoldersChangedCount(() =>
+                SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/" });
+
+            Assert.AreEqual(0, fired, "Re-assigning an identical set must not raise ExcludedFoldersChanged (no needless index rebuild).");
         }
 
         [Test]
         public void UnrelatedSetting_DoesNotRaiseExcludedFoldersChanged()
         {
-            var fired = 0;
-            void Handler() => fired++;
-            SerializeReferenceSettings.ExcludedFoldersChanged += Handler;
-            try
+            var fired = ExcludedFoldersChangedCount(() =>
             {
                 SerializeReferenceSettings.BreakageDetectionEnabled = !SerializeReferenceSettings.BreakageDetectionEnabled;
                 SerializeReferenceSettings.AutoDeAliasEnabled = !SerializeReferenceSettings.AutoDeAliasEnabled;
                 SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
-                Assert.AreEqual(0, fired, "Toggling an unrelated setting must never raise ExcludedFoldersChanged (the index stays warm).");
-            }
-            finally { SerializeReferenceSettings.ExcludedFoldersChanged -= Handler; }
+            });
+
+            Assert.AreEqual(0, fired, "Toggling an unrelated setting must never raise ExcludedFoldersChanged (the index stays warm).");
         }
 
         [Test]
@@ -159,12 +157,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var container = new VisualElement();
             SerializeReferenceSettingsUI.BuildControls(container);
 
-            // The two boolean settings render as iOS-style AspidSwitch fields (BaseField<bool>), not plain Toggles —
-            // breakage detection leads the list, auto de-alias follows.
+            // The two boolean settings render as iOS-style AspidSwitch fields (BaseField<bool>), not plain Toggles.
+            // Looked up by label, so reordering the rows never silently swaps the assertions.
             var switches = container.Query<AspidSwitch>().ToList();
             Assert.AreEqual(2, switches.Count, "BuildControls must emit the breakage-detection and auto-de-alias switches.");
-            var breakageDetection = switches[0];
-            var autoDeAlias = switches[1];
+            var breakageDetection = switches.Single(s => s.label == "Breakage detection");
+            var autoDeAlias = switches.Single(s => s.label.StartsWith("Auto de-alias"));
             var severity = container.Q<EnumField>();
             var folders = container.Q<SerializeReferenceExcludedFoldersField>();
             Assert.IsNotNull(severity, "BuildControls must emit the build-gate EnumField.");
