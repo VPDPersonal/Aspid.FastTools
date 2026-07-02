@@ -294,7 +294,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 // Group-navigation pulse (mirrors the UIToolkit __flash overlay): painted from the status stripe's
                 // line so pulse and stripe read as one band. Right edge: the inspector's edge for a root-level field,
-                // the list's box border for a row inside a SerializeReferenceIMGUIList.
+                // the list's box border for a row inside a SerializeReferenceIMGUIList. A field whose path crosses
+                // an array element without a pushed limit is a row of Unity's OWN ReorderableList — its rect is
+                // inset by Defaults.padding from the box's inner edge, so adding it back lands the band on the box
+                // frame instead of spilling past it to the inspector's edge.
                 if (SerializeReferenceSharedNavigation.TryGetFlashAlpha(property, out var flashAlpha) &&
                     indexColor.HasValue)
                 {
@@ -302,6 +305,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     flashColor.a = flashAlpha;
                     var flashX = content.x - StripeOffset;
                     var rowLimit = SerializeReferenceIMGUIList.CurrentElementRightLimit;
+                    if (float.IsNaN(rowLimit) && property.propertyPath.Contains(".Array.data["))
+                        rowLimit = position.xMax + UnityEditorInternal.ReorderableList.Defaults.padding;
                     var flashXMax = float.IsNaN(rowLimit)
                         ? Mathf.Max(position.xMax, EditorGUIUtility.currentViewWidth)
                         : rowLimit;
