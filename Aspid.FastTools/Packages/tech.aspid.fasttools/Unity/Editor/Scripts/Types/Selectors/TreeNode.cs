@@ -5,6 +5,8 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal class TreeNode
     {
+        private int? _typeCount;
+
         public string Caption { get; set; }
 
         public string Tooltip { get; set; }
@@ -41,6 +43,18 @@ namespace Aspid.FastTools.Types.Editors
         /// the indented, left-lined styling of section items.
         /// </summary>
         public string SectionKey { get; set; }
+
+        /// <summary>
+        /// Number of pickable types the row stands for, rendered as the dim right-aligned counter on
+        /// container and section rows. For hierarchy containers it is the recursive count of descendant
+        /// type leaves, computed lazily and cached (the hierarchy is immutable once built); the section
+        /// titles composed by <see cref="NavigationController"/> assign their row count explicitly.
+        /// </summary>
+        public int TypeCount
+        {
+            get => _typeCount ??= CountTypes(this);
+            set => _typeCount = value;
+        }
 
         public bool HasChildren => Children.Count > 0;
 
@@ -87,6 +101,16 @@ namespace Aspid.FastTools.Types.Editors
                 return true;
 
             return false;
+        }
+
+        private static int CountTypes(TreeNode node)
+        {
+            var count = node.IsType ? 1 : 0;
+
+            foreach (var child in node.Children)
+                count += CountTypes(child);
+
+            return count;
         }
     }
 }
