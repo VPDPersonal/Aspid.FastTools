@@ -491,10 +491,10 @@
 /* The search field now lives inside the header strip and fills it via the base stylesheet's __search-field rule
    (flex-grow), so the host no longer needs to stretch a root-level ToolbarSearchField. */
 
-/* Bleed the selector's footer hint to the picker box edges (bottom + sides), mirroring the header strip above.
+/* Bleed the selector's footer to the picker box edges (bottom + sides), mirroring the header strip above.
    -10px cancels both the picker box's 5px padding and the selector root's own 5px padding. */
 .aspid-fasttools-repair-references__picker
-    .aspid-fasttools-type-selector__footer-hint {
+    .aspid-fasttools-type-selector__footer {
     margin: 5px -7px 0;
 }
 
@@ -504,7 +504,7 @@
    own 5px bottom padding holds the matching gap below) and no top divider — so header, list and footer read as one
    rounded stack rather than a bar pasted onto the bottom edge. The base footer's opaque dark fill is kept. */
 .aspid-fasttools-repair-references__picker--attached
-    .aspid-fasttools-type-selector__footer-hint {
+    .aspid-fasttools-type-selector__footer {
     margin: 5px 0 0 0;
     border-top-width: 0;
     border-radius: 8px;

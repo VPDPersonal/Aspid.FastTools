@@ -51,6 +51,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string ListName = "type-selector-list";
         private const string EmptyHintName = "type-selector-empty-hint";
         private const string FooterHintName = "type-selector-footer-hint";
+        private const string SettingsButtonName = "type-selector-settings-button";
 
         private VisualElement _header;
         private VisualElement _breadcrumbBar;
@@ -59,6 +60,7 @@ namespace Aspid.FastTools.Types.Editors
         private Label _errorLabel;
         private Label _emptyHint;
         private Label _footerHint;
+        private Button _settingsButton;
         private ToolbarSearchField _searchField;
 
         private bool _searchFieldFocused;
@@ -184,8 +186,17 @@ namespace Aspid.FastTools.Types.Editors
             _listView = this.Q<ListView>(ListName);
             _emptyHint = this.Q<Label>(EmptyHintName);
             _footerHint = this.Q<Label>(FooterHintName);
+            _settingsButton = this.Q<Button>(SettingsButtonName);
 
             _searchButton.clicked += () => OpenSearch();
+
+            // Settings live outside the picker, so the selector is done: dismiss first (the dropdown host would lose
+            // focus and close anyway; embedded hosts collapse), then land the user on the window's Settings tab.
+            _settingsButton.clicked += () =>
+            {
+                _onDismiss?.Invoke();
+                SerializeReferences.Editors.SerializeReferenceWindow.OpenSettings();
+            };
             _breadcrumbBar.RegisterCallback<ClickEvent>(_ => OpenSearch());
 
             WireSearchField();
