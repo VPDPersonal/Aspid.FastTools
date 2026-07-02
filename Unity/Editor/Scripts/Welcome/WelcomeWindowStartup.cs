@@ -47,6 +47,9 @@ namespace Aspid.FastTools.Editors
             SessionState.SetBool(SessionKey, true);
 
             if (Application.isBatchMode) return;
+            // The user's opt-out (Settings tab / Preferences → Welcome) gates every auto-show; the manual menu entry
+            // is untouched by it.
+            if (!WelcomeSettings.AutoShowEnabled) return;
             if (HasBeenSeen) return;
             if (HasOpenWindow()) return;
 
