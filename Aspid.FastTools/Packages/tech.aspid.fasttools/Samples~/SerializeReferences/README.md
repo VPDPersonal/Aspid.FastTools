@@ -10,7 +10,7 @@ Look at:
 - `Scripts/Weapons/` — `IWeapon` interface and its implementations (`Sword`, `Pistol`, `Shotgun`, `Railgun`). `Railgun` nests another `[TypeSelector]` field, showing recursive polymorphic editing.
 - `Scripts/Effects/` — abstract `StatusEffect` base with `BurnEffect` / `FreezeEffect`. The dropdown offers only the concrete subclasses; the abstract base is never listed.
 - `Scripts/Modifiers/` — generic hierarchy: a non-abstract `Modifier<T>` generic class (`IModifier`) with closed-generic subclasses `DamageModifier : Modifier<float>`, `AmmoModifier : Modifier<int>`, `NameModifier : Modifier<string>`. An `IModifier` field offers all three subclasses **and** the open generic `Modifier<T>` — picking `Modifier<T>` opens a second page inside the same picker to choose the argument `T`. A `Modifier<float>` field offers only the candidates assignable to it (`DamageModifier`, and `Modifier<T>` with `T` inferred to `float`).
-- `Scripts/WeaponPreset.cs` + `Presets/BrokenWeaponPreset.asset` — a `ScriptableObject` whose `_weapon` points at a type that no longer exists, used to demonstrate the missing-type repair flow (see *Maintenance features* below).
+- `Scripts/WeaponPreset.cs` + `Presets/BrokenWeaponPreset.asset` / `Presets/MovedWeaponPreset.asset` — `ScriptableObject`s whose `_weapon` points at a type identity that no longer resolves, used to demonstrate the missing-type repair flow and the one-click **Smart Fix** (see *Maintenance features* below).
 
 The drawer ships both a UIToolkit and an IMGUI rendering path, at full feature parity. **Every demo prefab ships an `IMGUI…` twin** that carries the same data but forces the IMGUI path, so you can compare the two renderers — or migrate an IMGUI-only project — for every scenario below:
 
@@ -57,16 +57,26 @@ The drawer also helps recover from the two ways a managed reference goes wrong i
 
 ### Repair a missing type — `BrokenWeaponPreset.asset` & `LoadoutMissingType.prefab`
 
-Three assets ship pre-broken, pointing at classes that do not exist:
+Four assets ship pre-broken, storing type identities that no longer resolve:
 
 - `Presets/BrokenWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` references a missing `GhostWeapon`.
 - `Presets/BrokenArsenalPreset.asset` — a second `ScriptableObject` that also references the missing `GhostWeapon`, three times over (`Weapon` plus two of its `Alternates`), so it shares a broken type with `BrokenWeaponPreset.asset`.
 - `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol` (its IMGUI twin `Prefabs/IMGUILoadoutMissingType.prefab` breaks the same slot through the IMGUI renderer).
+- `Presets/MovedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` stores `Pistol` under an old `…Samples.SerializeReferences.Legacy` namespace, as if the class had been moved without `[MovedFrom]` — this one demonstrates the one-click **Smart Fix** below.
 
 Select either **in the Project window**. The missing field shows a `<Missing …>` caption, a **Missing type** warning, and a **Fix** button:
 
 1. Click **Fix** — the usual searchable type picker opens. Choose `Pistol`.
 2. The reference is restored to a `Pistol` with its preserved data (the prefab keeps `_damage = 15`, `_magazineSize = 12`; the asset keeps `_damage = 25`, `_magazineSize = 8`). Picking the type rewrites the stored type in the asset file rather than recreating the instance, so the values survive.
+
+When the broken identity has a plausible successor, the warning also carries a one-click **Smart Fix** suggestion —
+open `MovedWeaponPreset.asset`: its notice ends with **`→ Pistol?`** (hover for the full identity and the ranking
+reason). Click it to re-point the reference without opening the picker, keeping `_damage = 21`, `_magazineSize = 6`.
+Suggestions rank a declared `[MovedFrom]` highest, then a same-named type in another namespace/assembly, a casing-only
+rename, and a near-miss name backed by the orphaned data's field shape — and are never applied automatically. (A move
+that ships `[MovedFrom]` from the start never breaks at all: Unity migrates it on load; Smart Fix catches the moves
+that forgot it. The `GhostWeapon`/`GhostPistol` assets above have no plausible successor, so they show no suggestion —
+that contrast is intentional.)
 
 > The repair reads and rewrites the asset file directly — Unity does not expose a missing type through its serialization API (and on GameObjects/prefabs even drops it from the live object, UUM-129100), so the orphaned type and data are recovered straight from the YAML. It works for ScriptableObjects and prefab assets selected in the Project (rewritten in their YAML), for objects open in **Prefab Mode** (repaired on the live instance), and for objects in a **clean saved scene** (located via `GlobalObjectId`) — but not for an **unsaved/dirty scene** or a **prefab-instance override**, which have no committed asset document to map the reference to.
 >

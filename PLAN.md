@@ -18,6 +18,8 @@
 ## 2. [x] Auto-fix «Missing type — Fix» — добавить в пример
 
 > **Готово (2026-07-01):** добавлены «битые» ассеты (`LoadoutMissingType.prefab` + IMGUI-двойник, `BrokenWeaponPreset.asset`, `BrokenArsenalPreset.asset`), README/TUTORIAL описывают Fix-флоу и проектный свип.
+>
+> **Дополнено (2026-07-02):** у `Ghost*`-имён нет кандидата ближе Levenshtein ≤ 2 и нет `[MovedFrom]`, поэтому одно-кликовая **Smart Fix**-подсказка в примере не всплывала вовсе — демонстрировался только ручной Fix. Добавлен `Presets/MovedWeaponPreset.asset`: хранит `Pistol` под старым namespace `…Samples.SerializeReferences.Legacy` (перенос без `[MovedFrom]`) → «same type name» 0.8 + бонус за совпадение полей `_damage`/`_magazineSize` = 1.0 → гарантированная подсказка `→ Pistol?`. Вариант с реальным `[MovedFrom]` не годится: Unity нативно мигрирует managed reference по атрибуту при загрузке, ассет не был бы «битым». README/TUTORIAL (EN+RU) дополнены секцией Smart Fix.
 
 Функция авто-починки (`Missing type — Fix`) есть в дровере, но её нет в демонстрационном примере. Нужно завести в сэмпле сценарий с отсутствующим/переименованным типом и показать кнопку Fix.
 
@@ -53,7 +55,7 @@
 
 ## 5. [x] Циклическое переключение вкладок: Ctrl+Tab / Ctrl+Shift+Tab (+ macOS)
 
-> **Готово (2026-07-02):** добавлены два `[Shortcut]` — `Next Tab` (Ctrl+Tab) и `Previous Tab` (Ctrl+Shift+Tab) в `SerializeReferenceWindow.cs`, оба на `ShortcutModifiers.Control` (физический Ctrl на обеих платформах). Цикл идёт по порядку объявления enum `Mode` (совпадает с тулбаром) с wrap-around через `CycleFrom(args, ±1)`. ⚠️ Риск «`ShortcutManager` не отдаёт `KeyCode.Tab`» остаётся непроверенным вживую — если сработает, fallback (TrickleDown `KeyDownEvent`) описан в комментарии у шорткатов.
+> **Готово (2026-07-02):** добавлены два `[Shortcut]` — `Next Tab` (Ctrl+Tab) и `Previous Tab` (Ctrl+Shift+Tab) в `SerializeReferenceWindow.cs`, оба на `ShortcutModifiers.Control` (физический Ctrl на обеих платформах). Цикл идёт по порядку объявления enum `Mode` (совпадает с тулбаром) с wrap-around через `CycleFrom(args, ±1)`. ✅ Риск «`ShortcutManager` не отдаёт `KeyCode.Tab`» проверен вживую 2026-07-02 — шорткаты работают, fallback не понадобился.
 
 В окне Aspid.FastTools `Ctrl+Tab` должен листать вкладки слева направо, `Ctrl+Shift+Tab` — в обратную сторону. На macOS — работать так же.
 
