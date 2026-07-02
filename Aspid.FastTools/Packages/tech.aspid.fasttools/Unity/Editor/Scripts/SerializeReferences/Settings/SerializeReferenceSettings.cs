@@ -111,6 +111,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
+        /// <summary>
+        /// Restores every team-wide setting this store persists in the committed
+        /// <see cref="SerializeReferenceSharedSettings"/> asset to its default: auto de-alias on, the build/CI gate at
+        /// <see cref="GateSeverity.Warn"/>, no excluded scan folders. Routed through the public setters so each fires
+        /// its usual change signals (live-syncing open surfaces, dropping the warm usage index when the folder set
+        /// really moved) and no-ops when already at the default.
+        /// </summary>
+        public static void ResetSharedToDefaults()
+        {
+            AutoDeAliasEnabled = true;
+            BuildSeverity = GateSeverity.Warn;
+            ExcludedFolders = Array.Empty<string>();
+        }
+
+        /// <summary>
+        /// Restores the per-user setting this store persists in <see cref="EditorPrefs"/> to its default: breakage
+        /// detection on (matching the <see cref="Store"/> field initializer a fresh machine starts from).
+        /// </summary>
+        public static void ResetUserToDefaults() => BreakageDetectionEnabled = true;
+
         /// <summary>True when <paramref name="path"/> lies under one of the excluded scan folders.</summary>
         public static bool IsExcluded(string path)
         {
