@@ -68,6 +68,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeBandClass = RootClass + "__node-band";
         private const string NodeBandMissingClass = NodeBandClass + "--missing";
         private const string NodeBandRowClass = RootClass + "__node-band-row";
+        private const string NodeMigrateClass = RootClass + "__node-migrate";
         private const string NodeHeaderClass = RootClass + "__node-header";
         private const string NodeFooterClass = RootClass + "__node-footer";
         private const string NodeRootLabelClass = RootClass + "__node-root-label";
@@ -94,6 +95,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string FixCollapsedText = "Fix Missing  ▼";
         private const string ChangeCollapsedText = "Change  ▼";
         private const string AssignCollapsedText = "Assign  ▼";
+
+        // A pending-migration card is not missing (Unity migrates it in memory; only the file is stale), so its band
+        // drops the "Missing" word — the picker behind it stays the manual escape hatch beside the Migrate action.
+        private const string MigrateFixCollapsedText = "Fix  ▼";
         private const char BandChevronCollapsed = '▼';
         private const char BandChevronExpanded = '▲';
 
@@ -302,6 +307,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var missing = 0;
             var orphans = 0;
             var empties = 0;
+            var migrations = 0;
 
             // The per-document header only earns its place when there is more than one document to tell apart (a
             // multi-component prefab); a single document drops it (see BuildDocument).
@@ -312,16 +318,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 total += document.Nodes.Count;
                 foreach (var node in document.Nodes)
-                    if (!node.Resolves && !node.StoredType.IsEmpty) missing++;
+                    if (!node.Resolves && !node.StoredType.IsEmpty)
+                    {
+                        missing++;
+                        if (IsPendingMigration(assetPath, document.FileId, node.Rid, node.StoredType, out _))
+                            migrations++;
+                    }
                 orphans += document.Orphans.Count;
                 empties += CountEmptySlots(document);
             }
 
-            ShowOverview(total, missing, orphans, empties);
+            ShowOverview(total, missing, orphans, empties, migrations);
 
-            _onCanvasTone?.Invoke(missing > 0 || orphans > 0
+            // Pending migrations are not breakages — a graph whose only annotations are migrations reads info-blue,
+            // matching the Project References group card; anything actually missing / orphaned keeps the amber wash.
+            _onCanvasTone?.Invoke(missing - migrations > 0 || orphans > 0
                 ? SerializeReferenceCanvasStyle.Warning
-                : SerializeReferenceCanvasStyle.Success);
+                : migrations > 0
+                    ? SerializeReferenceCanvasStyle.Info
+                    : SerializeReferenceCanvasStyle.Success);
+        }
+
+        // A missing node whose stored type is claimed by exactly one [MovedFrom] target that fits the field's declared
+        // type reads as a pending migration — the Project References group gate, applied per node. An unrecoverable
+        // constraint behaves like the unconstrained picker and lets the migration through.
+        private bool IsPendingMigration(string assetPath, long fileId, long rid, ManagedTypeName storedType, out Type target)
+        {
+            if (!SerializeReferenceMovedFromResolver.TryResolve(storedType, out target)) return false;
+
+            var constraint = ResolveConstraint(assetPath, fileId, rid);
+            return constraint is null || constraint == typeof(object) || constraint.IsAssignableFrom(target);
         }
 
         // How many unassigned [SerializeReference] slots the document holds — empty field roots plus empty nested edges
@@ -393,33 +419,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The scan overview above the document scroll, mirroring the Project References results header. Headlines the
-        // missing count first, then orphaned rids, falling back to a green all-clear; the label and its divider flip
-        // between Warning (amber) and Success (green) in place, and the dim hint spells out the full breakdown.
-        private void ShowOverview(int total, int missing, int orphans, int empties)
+        // real missing count first, then orphaned rids, then pending [MovedFrom] migrations, falling back to a green
+        // all-clear; the label and its divider flip between Warning (amber), Info (blue) and Success (green) in place,
+        // and the dim hint spells out the full breakdown.
+        private void ShowOverview(int total, int missing, int orphans, int empties, int migrations)
         {
-            // Only missing / orphaned references are "issues" that tip the headline and divider to amber; empty slots
-            // are unassigned, not broken, so a graph whose only annotation is empty slots still reads green.
-            var status = missing > 0 || orphans > 0
+            // Only genuinely missing / orphaned references are "issues" that tip the headline and divider to amber;
+            // pending migrations are stale files, not breakages (info), and empty slots are unassigned, not broken.
+            var broken = missing - migrations;
+            var status = broken > 0 || orphans > 0
                 ? StatusStyle.Type.Warning
-                : StatusStyle.Type.Success;
+                : migrations > 0
+                    ? StatusStyle.Type.Info
+                    : StatusStyle.Type.Success;
 
-            _overviewTitle.Text = missing > 0
-                ? (missing == 1 ? "1 missing reference" : $"{missing} missing references")
+            _overviewTitle.Text = broken > 0
+                ? (broken == 1 ? "1 missing reference" : $"{broken} missing references")
                 : orphans > 0
                     ? (orphans == 1 ? "1 orphaned reference" : $"{orphans} orphaned references")
-                    : "No missing references";
+                    : migrations > 0
+                        ? (migrations == 1 ? "1 pending migration" : $"{migrations} pending migrations")
+                        : "No missing references";
 
             _overviewTitle.LabelStatus = status;
             _overviewTitle.LineStatus = status;
 
-            _overviewHint.text = BuildOverviewHint(total, missing, orphans, empties);
+            _overviewHint.text = BuildOverviewHint(total, missing, orphans, empties, migrations);
             _overview.RemoveClass(OverviewHiddenClass);
         }
 
         // The overview's dim subtitle: the mapped reference count, annotated with the missing / orphaned / unassigned
         // tallies and a one-line cue toward the matching inline action — or a clean bill of health when nothing is
         // broken (an unassigned-only graph still reads clean, with the empty count appended as a quiet note).
-        private static string BuildOverviewHint(int total, int missing, int orphans, int empties)
+        private static string BuildOverviewHint(int total, int missing, int orphans, int empties, int migrations)
         {
             var references = total == 1 ? "1 managed reference" : $"{total} managed references";
             var emptyNote = empties == 0
@@ -429,14 +461,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (missing == 0 && orphans == 0)
                 return $"{references} mapped{emptyNote} — every [SerializeReference] type resolves.";
 
-            var parts = new List<string>(3);
-            if (missing > 0) parts.Add(missing == 1 ? "1 missing type" : $"{missing} missing types");
+            var broken = missing - migrations;
+
+            var parts = new List<string>(4);
+            if (broken > 0) parts.Add(broken == 1 ? "1 missing type" : $"{broken} missing types");
+            if (migrations > 0)
+                parts.Add(migrations == 1 ? "1 pending [MovedFrom] migration" : $"{migrations} pending [MovedFrom] migrations");
             if (orphans > 0) parts.Add(orphans == 1 ? "1 orphaned rid" : $"{orphans} orphaned rids");
             if (empties > 0) parts.Add(empties == 1 ? "1 unassigned field" : $"{empties} unassigned fields");
 
-            var action = missing > 0
+            var action = broken > 0
                 ? "Fix a missing type inline from its card."
-                : "Clear an orphaned rid from its card.";
+                : migrations > 0
+                    ? "Migrate a renamed type from its card — the Inspector already loads it; only the file is stale."
+                    : "Clear an orphaned rid from its card.";
 
             return $"{references} mapped · {string.Join(" · ", parts)}. {action}";
         }
@@ -593,6 +631,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var missing = node is { Resolves: false } && !node.Value.StoredType.IsEmpty;
 
+            // An authoritative [MovedFrom] rename is a pending migration, not a breakage: Unity loads the reference
+            // fine — only this file still stores the old name. The card mirrors the Project References migration
+            // group: info pill, a neutral "Fix ▼" band (the manual escape hatch) and a one-click Migrate row below.
+            Type migrationTarget = null;
+            var isMigration = missing &&
+                IsPendingMigration(assetPath, document.FileId, rid, node.Value.StoredType, out migrationTarget);
+
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass);
             if (isOrphan) card.AddClass(NodeOrphanClass);
@@ -600,13 +645,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Top band — type identity + status badges on the left, the Fix action docked right.
 
             // The type name drives its own colour through an Aspid status label: a missing / orphaned type wears the
-            // same amber pill the Project References group header uses; a healthy type stays a quiet light label.
+            // same amber pill the Project References group header uses, a pending migration the same info pill; a
+            // healthy type stays a quiet light label.
             var typePreset = AspidLabelPreset.Default
                 .SetLabelSize(AspidLabelSizeStyle.Type.H5)
                 .SetLineSize(AspidDividingLineSizeStyle.Type.None);
-            typePreset = missing || isOrphan
-                ? typePreset.SetLabelStatus(StatusStyle.Type.Warning)
-                : typePreset.SetLabelTheme(ThemeStyle.Type.Lightness);
+            typePreset = isMigration
+                ? typePreset.SetLabelStatus(StatusStyle.Type.Info)
+                : missing || isOrphan
+                    ? typePreset.SetLabelStatus(StatusStyle.Type.Warning)
+                    : typePreset.SetLabelTheme(ThemeStyle.Type.Lightness);
 
             var typeLabel = new AspidLabel(node?.ShortName ?? $"rid {rid}", typePreset)
                 .AddClass(NodeTypeClass)
@@ -646,11 +694,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // YAML (keeping the orphaned payload).
                 var fileId = document.FileId;
                 AspidGradientButton band = null;
-                band = new AspidGradientButton(FixCollapsedText, _ => OpenMissingPicker(assetPath, fileId, rid, band))
-                    .AddClass(NodeBandClass)
-                    .AddClass(NodeBandMissingClass);
+                band = new AspidGradientButton(isMigration ? MigrateFixCollapsedText : FixCollapsedText,
+                        _ => OpenMissingPicker(assetPath, fileId, rid, band))
+                    .AddClass(NodeBandClass);
+                if (!isMigration) band.AddClass(NodeBandMissingClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
+
+                if (isMigration)
+                {
+                    // One click bakes the rename into this document's entry through the same YAML rewrite a picker
+                    // pick performs — no confirm, matching the picker's own apply. The picker above stays available
+                    // for re-pointing at a different type.
+                    var migrate = new AspidGradientButton($"Migrate  →  {migrationTarget.Name}",
+                            _ => ApplyFix(assetPath, fileId, rid, migrationTarget.AssemblyQualifiedName))
+                        .AddClass(NodeMigrateClass);
+                    migrate.tooltip =
+                        $"This entry resolves to {migrationTarget.FullName} via its declared [MovedFrom] — Unity " +
+                        "already migrates it in memory when the asset loads. Migrating rewrites the stored type " +
+                        "name in the file so it matches the code.";
+                    card.AddChild(migrate);
+                }
             }
             else if (!isOrphan)
             {
