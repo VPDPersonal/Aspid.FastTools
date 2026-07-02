@@ -718,14 +718,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var suggestionWidth = hasSuggestion ? _actionStyle.CalcSize(suggestionContent).x : 0f;
             const float suggestionGap = 6f;
 
-            var clusterWidth = actionWidth + (hasSuggestion ? suggestionGap + suggestionWidth : 0f);
+            // The "·" between Fix and the suggestion is decoration, not an action — drawn as a plain label (no
+            // underline, no link cursor, no hover), mirroring the UIToolkit notice's separator element.
+            var separatorContent = hasSuggestion ? new GUIContent("·") : null;
+            var separatorWidth = hasSuggestion ? _actionStyle.CalcSize(separatorContent).x : 0f;
+
+            var clusterWidth = actionWidth +
+                (hasSuggestion ? suggestionGap + separatorWidth + suggestionGap + suggestionWidth : 0f);
             var actionX = Mathf.Max(messageRect.xMax + 6f, rect.xMax - clusterWidth);
 
             DrawLink(new Rect(actionX, rect.y, actionWidth, rect.height), actionContent, baseColor, hoverColor, onClick);
 
             if (hasSuggestion)
-                DrawLink(new Rect(actionX + actionWidth + suggestionGap, rect.y, suggestionWidth, rect.height),
-                    suggestionContent, baseColor, hoverColor, onSuggestion);
+            {
+                _actionStyle.normal.textColor = baseColor;
+                _actionStyle.hover.textColor = baseColor;
+                GUI.Label(new Rect(actionX + actionWidth + suggestionGap, rect.y, separatorWidth, rect.height),
+                    separatorContent, _actionStyle);
+
+                DrawLink(new Rect(actionX + actionWidth + suggestionGap + separatorWidth + suggestionGap, rect.y,
+                    suggestionWidth, rect.height), suggestionContent, baseColor, hoverColor, onSuggestion);
+            }
         }
 
         /// <summary>
