@@ -178,7 +178,13 @@
     flex-basis:                                           0;
 }
 
+/* Track and handle are re-sized from Unity's defaults, so their vertical geometry is re-pinned instead of inheriting
+   offsets tuned for the default sizes — otherwise the handle rides below the track's centre line. The track centres
+   cleanly with top:50% + a minus-half-height margin; the handle's top offset is partly forced by BaseSlider itself,
+   so its margin carries an extra -4px measured against the 22px input row to land the handle's centre exactly on the
+   track's (change either height and this needs re-measuring). */
 .aspid-fasttools-settings .unity-base-slider__tracker {
+    top:                                                  50%;
     height:                                               4px;
     margin-top:                                           -2px;
     border-width:                                         0;
@@ -187,32 +193,47 @@
 }
 
 .aspid-fasttools-settings .unity-base-slider__dragger {
+    top:                                                  50%;
     width:                                                12px;
     height:                                               12px;
-    margin-top:                                           -6px;
+    margin-top:                                           -10px;
     border-width:                                         1px;
     border-radius:                                        6px;
     border-color:                                         var(--aspid-colors-shade-dark);
     background-color:                                     rgba(189, 189, 196, 0.85);
 }
 
+/* Unity's separate focus halo (the dragger-border element) is sized for the default handle and pokes out from under
+   the smaller one as a stray blue disc — hide it; the handle carries the focus tint itself below. */
+.aspid-fasttools-settings .unity-base-slider__dragger-border {
+    display:                                              none;
+}
+
 /* Hovering the slider washes the handle's border in the muted signature green — the same accent family as the
-   switches, the dropdown and the folder list. */
+   switches, the dropdown and the folder list; keyboard focus pulls in the bright accent, replacing the hidden
+   default halo. */
 .aspid-fasttools-settings .unity-base-slider:hover .unity-base-slider__dragger {
     border-color:                                         var(--aspid-colors-status-success-shade-light);
 }
 
+.aspid-fasttools-settings .unity-base-slider:focus .unity-base-slider__dragger {
+    border-color:                                         var(--aspid-colors-status-success-text-light);
+}
+
 /* The slider's inline value box: a fixed-size TextField (it must not stretch with the row) framed like the other
-   settings inputs instead of Unity's bright default field. */
+   settings inputs instead of Unity's bright default field. The height is set on the TextField itself and mirrored on
+   its input — Unity sizes the slider's inline field shorter than our input, which otherwise clips the digit's
+   bottom against the frame. */
 .aspid-fasttools-settings .unity-base-slider__text-field {
     flex-grow:                                            0;
     flex-shrink:                                          0;
     width:                                                34px;
+    height:                                               22px;
     margin:                                               0 0 0 8px;
 }
 
 .aspid-fasttools-settings .unity-base-slider__text-field .unity-base-text-field__input {
-    height:                                               20px;
+    height:                                               22px;
     padding:                                              0 4px;
     -unity-text-align:                                    middle-center;
     background-color:                                     rgba(20, 20, 20, 0.55);

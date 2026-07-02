@@ -21,8 +21,8 @@ namespace Aspid.FastTools.Types.Editors
         /// <summary>Raised whenever a setting changes.</summary>
         public static event Action Changed;
 
-        /// <summary>Default number of picks the Recent list keeps — the pre-settings hardcoded capacity.</summary>
-        public const int DefaultRecentsCapacity = 8;
+        /// <summary>Default number of picks the Recent list keeps.</summary>
+        public const int DefaultRecentsCapacity = 5;
 
         /// <summary>Upper bound for <see cref="RecentsCapacity"/> — past this the section stops being "recent".</summary>
         public const int MaxRecentsCapacity = 20;
