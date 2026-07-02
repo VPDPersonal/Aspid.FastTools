@@ -1,5 +1,6 @@
 using System;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
@@ -8,8 +9,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
     /// Builds the SerializeReference settings controls bound to <see cref="SerializeReferenceSettings"/>. Shared by the
-    /// Project Settings page (<see cref="SerializeReferenceSettingsProvider"/>) and the in-window Settings tab
-    /// (<see cref="SettingsView"/>) so both surfaces render the same controls from one definition — no duplicated UI.
+    /// Project Settings page (<see cref="SerializeReferenceSettingsProvider"/>) and — via
+    /// <see cref="Aspid.FastTools.Editors.AspidSettingsUI.BuildSurfaceContent"/> — the window's Settings tab and the
+    /// Preferences page, so every surface renders the same controls from one definition and mirrors the others live.
     /// </summary>
     internal static class SerializeReferenceSettingsUI
     {
@@ -17,24 +19,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// Appends the breakage-detection, auto-de-alias, build-gate and excluded-folder controls to
         /// <paramref name="container"/>, each wired straight to <see cref="SerializeReferenceSettings"/>. Rid colours
         /// are not configurable — they always identify a shared reference, so there is no control for them here.
-        /// Each row is tagged with its storage scope (<see cref="SettingsView.SharedScopeClass"/> /
-        /// <see cref="SettingsView.UserScopeClass"/>) matching where <see cref="SerializeReferenceSettings"/> persists
-        /// it; the classes paint a scope stripe inside the window's Settings tab and are inert on the Project Settings
+        /// Each row is tagged with its storage scope (<see cref="AspidSettingsUI.SharedScopeClass"/> /
+        /// <see cref="AspidSettingsUI.UserScopeClass"/>) matching where <see cref="SerializeReferenceSettings"/>
+        /// persists it; the classes paint a scope stripe on the branded surfaces and are inert on the Project Settings
         /// page, which never loads that sheet.
         /// </summary>
         public static void BuildControls(VisualElement container)
         {
-            var breakageDetection = new AspidSwitch("Breakage detection")
-            {
-                value = SerializeReferenceSettings.BreakageDetectionEnabled,
-                tooltip = "Watch for managed references that just became missing (renamed/deleted scripts) and surface a "
-                    + "toast pointing at Repair. Turn off to silence the domain-reload / import-time detection entirely.\n"
-                    + "Per-user setting — stored locally, never committed.",
-            };
-            breakageDetection.AddClass(SettingsView.UserScopeClass);
-            breakageDetection.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BreakageDetectionEnabled = evt.newValue);
-            SyncFromSettings(breakageDetection, () => SerializeReferenceSettings.BreakageDetectionEnabled);
-            container.Add(breakageDetection);
+            container.Add(CreateBreakageDetectionSwitch());
 
             var autoDeAlias = new AspidSwitch("Auto de-alias duplicated list elements")
             {
@@ -42,7 +34,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 tooltip = "Give a duplicated list element its own independent instance instead of sharing the original's rid.\n"
                     + "Stored in a committed ProjectSettings asset, so every teammate (and CI) sees the same behaviour.",
             };
-            autoDeAlias.AddClass(SettingsView.SharedScopeClass);
+            autoDeAlias.AddClass(AspidSettingsUI.SharedScopeClass);
             autoDeAlias.RegisterValueChangedCallback(evt => SerializeReferenceSettings.AutoDeAliasEnabled = evt.newValue);
             SyncFromSettings(autoDeAlias, () => SerializeReferenceSettings.AutoDeAliasEnabled);
             container.Add(autoDeAlias);
@@ -53,37 +45,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     + "Stored in a committed ProjectSettings asset, so it travels to a clean CI runner. "
                     + "CLI flags -srGateWarnOnly / -srGateFail override it per run.",
             };
-            severity.AddClass(SettingsView.SharedScopeClass);
+            severity.AddClass(AspidSettingsUI.SharedScopeClass);
             severity.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BuildSeverity = (GateSeverity)evt.newValue);
             SyncFromSettings<EnumField, Enum>(severity, () => SerializeReferenceSettings.BuildSeverity);
             container.Add(severity);
 
             // The excluded-folders panel carries its own "Excluded scan folders" header inside its frame.
-            container.Add(new SerializeReferenceExcludedFoldersField().AddClass(SettingsView.SharedScopeClass));
+            container.Add(new SerializeReferenceExcludedFoldersField().AddClass(AspidSettingsUI.SharedScopeClass));
         }
 
-        /// <summary>
-        /// Keeps <paramref name="control"/> in lock-step with the shared <see cref="SerializeReferenceSettings"/> store so
-        /// the in-window Settings tab and the Project Settings page reflect each other live: on every
-        /// <see cref="SerializeReferenceSettings.Changed"/> the control re-reads its backing value through
-        /// <paramref name="read"/> <i>without notifying</i>, so it never writes back or loops. The control the user is
-        /// actively editing is skipped, so an in-progress edit (e.g. typing a path into the multiline folders field) is
-        /// never normalized out from under the cursor. The subscription is released on
-        /// <see cref="DetachFromPanelEvent"/> so a closed surface leaks nothing.
-        /// </summary>
+        // The one References control persisted per user; built by one definition so the window tab, the Project
+        // Settings page and the Preferences page all render (and live-sync) the same switch.
+        private static AspidSwitch CreateBreakageDetectionSwitch()
+        {
+            var breakageDetection = new AspidSwitch("Breakage detection")
+            {
+                value = SerializeReferenceSettings.BreakageDetectionEnabled,
+                tooltip = "Watch for managed references that just became missing (renamed/deleted scripts) and surface a "
+                    + "toast pointing at Repair. Turn off to silence the domain-reload / import-time detection entirely.\n"
+                    + "Per-user setting — stored locally, never committed.",
+            };
+            breakageDetection.AddClass(AspidSettingsUI.UserScopeClass);
+            breakageDetection.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BreakageDetectionEnabled = evt.newValue);
+            SyncFromSettings(breakageDetection, () => SerializeReferenceSettings.BreakageDetectionEnabled);
+            return breakageDetection;
+        }
+
+        // Shorthand over the shared live-sync helper, binding to this store's Changed signal.
         private static void SyncFromSettings<TControl, TValue>(TControl control, Func<TValue> read)
             where TControl : VisualElement, INotifyValueChanged<TValue>
         {
-            void Handler()
-            {
-                // Don't clobber the surface the user is typing into; the other (unfocused) surface still syncs, and the
-                // focused one re-reads the (already-correct) value on its next change or re-attach.
-                if (control.focusController?.focusedElement == control) return;
-                control.SetValueWithoutNotify(read());
-            }
-
-            SerializeReferenceSettings.Changed += Handler;
-            control.RegisterCallback<DetachFromPanelEvent>(_ => SerializeReferenceSettings.Changed -= Handler);
+            AspidSettingsUI.SyncFromSettings(
+                control,
+                read,
+                handler => SerializeReferenceSettings.Changed += handler,
+                handler => SerializeReferenceSettings.Changed -= handler);
         }
     }
 }

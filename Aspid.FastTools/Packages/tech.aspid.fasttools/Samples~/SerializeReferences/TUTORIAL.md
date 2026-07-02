@@ -268,11 +268,14 @@ The same options are also available in the window's **Settings** tab (**`Tools �
 The tab additionally hosts a **Type Selector** section with the picker's per-user preferences — a toggle for the root
 page's **Favorites** section, a **Recent items** capacity slider (0–20; 0 hides the Recent section and pauses
 recording without wiping the collected history) and a **Saved lists** row that clears the stored Favorites / Recent
-lists. Since the tab mixes team-wide and individual settings, every row carries a scope stripe on its left edge —
-green for values in the committed `ProjectSettings` asset, blue for per-user ones — decoded by the legend at the top
-of the tab. A footer pinned to the bottom of the tab offers **Reset to defaults** separately per scope (**Shared** /
-**Per-user**); each button confirms with the exact defaults it restores, and the saved Favorites / Recent lists
-survive a reset.
+lists — plus an **Appearance** section (the editor-theme override `StyleSheet` with a **Create template…** action) and
+a **Welcome** section (an **Auto-show Welcome** toggle for the first-run auto-open). Since the tab mixes team-wide and
+individual settings, every row carries a scope stripe on its left edge — green for values in the committed
+`ProjectSettings` asset, blue for per-user ones — decoded by the legend at the top of the tab. A footer pinned to the
+bottom of the tab offers **Reset to defaults** separately per scope (**Shared** / **Per-user**); each button confirms
+with the exact defaults it restores, and the saved Favorites / Recent lists survive a reset. The same surface —
+sections, legend and reset footer — is mirrored in full at **`Preferences → Aspid FastTools`**, so every surface
+stays in live sync with the others.
 
 For headless CI, `SerializeReferenceCiGate.RunCheck` (invoked via `-batchmode -executeMethod`) writes a report and
 honours the committed gate severity: `Off` skips the check, `Warn` logs but exits 0, `Fail` exits non-zero when
