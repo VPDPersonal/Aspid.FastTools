@@ -61,6 +61,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string GroupHeaderClass = RootClass + "__group-header";
         private const string GroupCountClass = RootClass + "__group-count";
         private const string GroupFixAllClass = RootClass + "__group-fix-all";
+        private const string GroupFixAllMigrateClass = GroupFixAllClass + "--migrate";
         private const string GroupSuggestClass = RootClass + "__group-suggest";
         private const string GroupMigrateClass = RootClass + "__group-migrate";
         private const string GroupEntryClass = RootClass + "__group-entry";
@@ -308,6 +309,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             fixAll = new AspidGradientButton(BuildFixAllLabel(group, expanded: false),
                     _ => ToggleGroupPicker(group, constraint, fixAll))
                 .AddClass(GroupFixAllClass);
+            // A migration card keeps its calm info tone end to end — the amber Fix all accent is the "broken" alarm.
+            if (isMigration) fixAll.AddClass(GroupFixAllMigrateClass);
             fixAll.tooltip = constraint == typeof(object)
                 ? $"{displayName}\nMixed or unresolvable field types — the picker is unconstrained (any managed-reference type)."
                 : $"{displayName}\nConstrained to {constraint.FullName}.";
