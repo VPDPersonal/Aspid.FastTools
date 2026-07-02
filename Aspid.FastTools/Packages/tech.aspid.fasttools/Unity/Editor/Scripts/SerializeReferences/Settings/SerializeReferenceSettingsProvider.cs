@@ -31,6 +31,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 keywords = new HashSet<string>(new[]
                 {
                     "serialize", "reference", "managed", "aspid", "rid", "gate", "missing", "required",
+                    "dropdown", "typeselector", "attribute",
                 }),
                 activateHandler = (_, root) => Build(root),
             };
