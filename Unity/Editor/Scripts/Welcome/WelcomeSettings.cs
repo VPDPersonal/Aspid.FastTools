@@ -24,9 +24,9 @@ namespace Aspid.FastTools.Editors
         private static string AutoShowKey => AutoShowKeyPrefix + PlayerSettings.productGUID;
 
         /// <summary>
-        /// Whether the Welcome tab may auto-open on the package's first launch in this project (the once-per-project
-        /// gate itself lives in <see cref="WelcomeWindowStartup"/>). Off suppresses every future auto-show; the manual
-        /// menu entry keeps working either way.
+        /// Whether the Welcome tab may auto-open on the first launch after an install or a package update (the
+        /// once-per-version gate itself lives in <see cref="WelcomeWindowStartup"/>). Off suppresses every future
+        /// auto-show; the manual menu entry keeps working either way.
         /// </summary>
         public static bool AutoShowEnabled
         {
@@ -39,8 +39,9 @@ namespace Aspid.FastTools.Editors
             }
         }
 
-        /// <summary>Restores the default: auto-show on. The per-project "seen" flag is startup state, not a setting —
-        /// resetting leaves it alone, so a project that already showed its Welcome doesn't show it again.</summary>
+        /// <summary>Restores the default: auto-show on. The per-version "seen" flag is startup state, not a setting —
+        /// resetting leaves it alone, so a project that already showed the current version's Welcome doesn't show it
+        /// again.</summary>
         public static void ResetToDefaults() => AutoShowEnabled = true;
     }
 }

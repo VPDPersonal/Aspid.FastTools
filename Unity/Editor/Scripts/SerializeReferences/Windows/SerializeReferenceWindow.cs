@@ -77,7 +77,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private bool _forceProjectScan;
 
         /// <summary>
-        /// Opens the window on the Welcome home tab — the menu entry and the first-run auto-show.
+        /// Opens the window on the Welcome home tab — the menu entry and the per-version auto-show.
         /// </summary>
         [MenuItem("Tools/Aspid 🐍/FastTools/Welcome", priority = 0)]
         public static void OpenWelcome()
