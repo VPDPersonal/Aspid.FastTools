@@ -630,6 +630,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             $"·  → {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion.Type)}?";
 
         /// <summary>
+        /// The same suggestion as a STANDALONE button label — no leading "<c>·</c>" separator, which only makes sense
+        /// when the affordance trails a "Fix" segment inline (the Project References quick-apply is its own button).
+        /// </summary>
+        public static string GetSuggestionButtonLabel(SerializeReferenceRepairSuggestions.RepairCandidate suggestion) =>
+            $"→ {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion.Type)}?";
+
+        /// <summary>
         /// The hover-tooltip detail for a Smart Fix <paramref name="suggestion"/> — the full type identity and the
         /// ranking reason. Shared by the UIToolkit and IMGUI notices so the two never drift.
         /// </summary>

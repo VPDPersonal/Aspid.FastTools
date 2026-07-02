@@ -351,7 +351,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             else if (TryGetGroupSuggestion(group, constraint, out var suggestion))
             {
                 // Reuse the shared label/detail builders so the Smart Fix copy never drifts from the inspector notice.
-                var suggest = new AspidGradientButton(SerializeReferenceHelpers.GetSuggestionLabel(suggestion),
+                var suggest = new AspidGradientButton(SerializeReferenceHelpers.GetSuggestionButtonLabel(suggestion),
                         _ => ApplyGroupFix(group, suggestion.Type))
                     .AddClass(GroupSuggestClass);
                 suggest.tooltip = SerializeReferenceHelpers.GetSuggestionDetail(suggestion);
