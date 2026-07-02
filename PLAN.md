@@ -2,9 +2,9 @@
 
 > Живой документ. Пополняется по ходу. Статусы: `[ ]` — не начато · `[~]` — в работе · `[x]` — готово.
 
-## 1. [~] «Make unique» — переместить в самый низ
+## 1. [x] «Make unique» — переместить в самый низ
 
-> **Статус (2026-07-01):** UIToolkit — сделано (весь host `_notices` вставлен **после** `_content`, `SerializeReferenceField.cs:116`), но переехали **все** плашки, а не только shared. IMGUI — **не синхронизирован**: shared-плашка рисуется до `DrawChildren` (`SerializeReferenceIMGUIPropertyDrawer.cs:223` vs `:251`), т.е. осталась сверху. Итог: рассинхрон рендереров — доделать IMGUI (или привести оба к замыслу «shared вниз, остальные вверху»).
+> **Готово (2026-07-02):** IMGUI синхронизирован — shared-плашка рисуется **после** `DrawChildren` (`SerializeReferenceIMGUIPropertyDrawer.cs:278` → `:310`). Паритет с UIToolkit полный: там все плашки живут в host `_notices`, вставленном **после** `_content` (`SerializeReferenceField.cs:161`), но missing/required/mixed рендерятся только когда значения нет (детей нет) — так что фактически «под дочерними полями» оказывается только shared, как и в IMGUI. Это и зафиксировано как замысел в комментарии у IMGUI-отрисовки.
 
 Сейчас плашка `Shared reference — Make unique` рисуется **над** дочерними полями объекта (Damage, Magazine Size). Нужно перенести ссылку `Make unique` в самый низ — под дочерние поля.
 
@@ -30,9 +30,9 @@
   - ⚠️ Правим **источник** в `Packages/.../Samples~`, а не импортированную копию в `Assets/Samples/...`.
 - Welcome-панель (`Welcome/WelcomeView.cs`) — это список сэмплов, не список фич; отдельно править не нужно.
 
-## 3. [~] Settings-таб — привести к общему стилю
+## 3. [x] Settings-таб — привести к общему стилю
 
-> **Статус (2026-07-01):** тогглы переведены на `AspidSwitch` (auto de-alias, breakage), folder-list переделан (см. п.6), Rid-colours toggle убран. **Осталось:** `EnumField` «Build / CI gate» всё ещё голый (`SerializeReferenceSettingsUI.cs:42`) — навесить Aspid-стиль/классы.
+> **Готово (2026-07-02):** тогглы переведены на `AspidSwitch` (auto de-alias, breakage), folder-list переделан (см. п.6), Rid-colours toggle убран. `EnumField` «Build / CI gate» застилен — правила `.aspid-fasttools-settings .unity-enum-field*` (input/text/arrow, hover/focus) в `UI/Windows/Aspid-FastTools-Settings.uss:260-310`. Рестайл скоуплен корневым классом `AspidSettingsUI.RootClass` (`aspid-fasttools-settings`), так что в чужие окна/Project Settings не протекает.
 
 Контролы на вкладке Settings (тогглы `Rid colours`, `Auto de-alias duplicated list elements`, `Breakage detection`, дропдаун `Build / CI gate`, textarea `Excluded scan folders`) — голые Unity-контролы без Aspid-классов, выбиваются из общего оформления окна.
 
@@ -135,4 +135,3 @@
   - вернуть обещанный зелёный акцент: левый рельс/бордер в `--aspid-colors-status-success-*` (есть `…-success-darkness/dark/light` и `…-success-text-*`), либо зелёно-подкрашенный фон строки;
   - либо просто поднять фон выделения на более светлый/контрастный тон (например `--aspid-colors-shade-light` `#505050`), чтобы оно явно отрывалось от ховера.
 - **Связано с п.4** — тот же USS-файл TypeSelector; правки по селектору логично делать одним заходом.
-- **Правка:** добавить модификатор-класс при показе в окне (`TypeSelectorWindow.Show`) и в USS переопределить `border-radius: 0` для шапки под этим модификатором — чтобы инлайн-встраивание сохранило скругление. Если скругление нигде не нужно — просто заменить на `0`.
