@@ -127,17 +127,32 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // Highlights the row for the currently selected type on open — the view has pre-navigated to that type's
-        // namespace, so its row is in view and an immediate Enter re-confirms the same value. Leaves no selection when
-        // the current value is <None> or its type is absent, keeping Enter inert (it must not overwrite the field with
-        // an arbitrary first row). FocusPicker scrolls the selection into view once the list is laid out.
+        // namespace, so its row is in view and an immediate Enter re-confirms the same value. When the current value
+        // is <None> ("") or its type is absent (a missing type keeps the navigation at the root), the pinned <None>
+        // row is selected instead, so Enter re-confirms/clears rather than committing an arbitrary first row. Only a
+        // null current value (the host has no current-value concept) leaves the selection empty and Enter inert.
+        // FocusPicker scrolls the selection into view once the list is laid out.
         private void PreselectCurrent()
         {
-            if (string.IsNullOrEmpty(_currentAqn)) return;
+            if (_currentAqn is null) return;
 
             var items = Nav.CurrentItems;
+
+            if (!string.IsNullOrEmpty(_currentAqn))
+            {
+                for (var i = 0; i < items.Count; i++)
+                {
+                    if (items[i].IsType && items[i].AssemblyQualifiedName == _currentAqn)
+                    {
+                        _listView.selectedIndex = i;
+                        return;
+                    }
+                }
+            }
+
             for (var i = 0; i < items.Count; i++)
             {
-                if (items[i].IsType && items[i].AssemblyQualifiedName == _currentAqn)
+                if (items[i].IsSelectable && items[i].DisplayName == TypeSelectorHelpers.NoneOption)
                 {
                     _listView.selectedIndex = i;
                     return;
