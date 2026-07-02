@@ -21,14 +21,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string DisplayName = "Managed References";
 
         [SearchItemProvider]
-        internal static SearchProvider CreateProvider() =>
+        public static SearchProvider CreateProvider() =>
             new(ProviderId, DisplayName)
             {
                 filterId = FilterId,
-                // Explicit-only: without this the provider joins EVERY general search, and the first keystroke in a
-                // plain Search window would warm a cold usage index — a non-cancelable, full-project modal sweep the
-                // index's own contract forbids on routine paths. "sr:" queries and OpenSearch both create explicit
-                // contexts, so Find Usages is unaffected.
+                // Explicit-only: otherwise the provider joins every general search and the first keystroke would warm
+                // a cold usage index (a modal full-project sweep). "sr:" queries and OpenSearch create explicit contexts.
                 isExplicitProvider = true,
                 priority = 9000,
                 showDetailsOptions = ShowDetailsOptions.Description | ShowDetailsOptions.Preview,
@@ -38,7 +36,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 trackSelection = (item, context) => Ping(item),
             };
 
-        /// <summary>Opens the search window pre-seeded with the type's name under the <c>sr:</c> filter.</summary>
+        /// <summary>
+        /// Opens the search window pre-seeded with the type's name under the <c>sr:</c> filter.
+        /// </summary>
         public static void OpenSearch(Type type)
         {
             if (type is null) return;
@@ -47,7 +47,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SearchService.ShowWindow(context, "Find Usages", saveFilters: false);
         }
 
-        // Populates the result list and returns null (the synchronous fetch convention).
+        // Returns null — the synchronous fetch convention.
         private static object FetchItems(SearchContext context, List<SearchItem> items, SearchProvider provider)
         {
             var token = (context.searchQuery ?? string.Empty).Trim();

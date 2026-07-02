@@ -20,14 +20,15 @@ namespace Aspid.FastTools.Editors
     /// </summary>
     internal static class AspidSettingsUI
     {
-        /// <summary>The settings surface stylesheet — dark-branded cards, scoped under <see cref="RootClass"/>.</summary>
+        /// <summary>
+        /// The settings surface stylesheet — dark-branded cards, scoped under <see cref="RootClass"/>.
+        /// </summary>
         public const string StyleSheetPath = "UI/Windows/Aspid-FastTools-Settings";
 
         public const string RootClass = "aspid-fasttools-settings";
 
-        // The standalone canvas pair: a page that hosts the surface outside the SerializeReference window (whose
-        // window owns its own dotted canvas) wraps it in a host carrying these — the host fills the page and the
-        // dots component gets the black base the dots paint over.
+        // Canvas pair for pages hosting the surface outside the SerializeReference window (which owns its own
+        // dotted canvas): the host fills the page, the background gives the dots their black base.
         public const string CanvasClass = "aspid-fasttools-settings-canvas";
         public const string CanvasBackgroundClass = "aspid-fasttools-settings-canvas__background";
         public const string SectionTitleClass = "aspid-fasttools-settings__section-title";
@@ -38,15 +39,12 @@ namespace Aspid.FastTools.Editors
         public const string LegendTextClass = "aspid-fasttools-settings__legend-text";
         public const string FooterClass = "aspid-fasttools-settings__footer";
 
-        // Storage-scope markers, applied by the per-area builders to every settings row. A utility block of its own,
-        // like the status/theme classes, since the scope of a setting is not a part of any one surface.
+        // Storage-scope markers, applied by the per-area builders to every settings row.
         public const string SharedScopeClass = "aspid-fasttools-settings-scope--shared";
         public const string UserScopeClass = "aspid-fasttools-settings-scope--user";
 
-        // Row primitives for builders that need a non-BaseField settings row (e.g. an action row of buttons): the row
-        // reads as the same card as the field rows, the caption as the same left-hand label, and the action as a small
-        // framed button. The danger modifier gives a destructive action the red hover family; the info modifier gives
-        // an action tied to the per-user scope the matching blue one.
+        // Row primitives for non-BaseField settings rows (e.g. action rows of buttons), styled to match the field
+        // rows. Danger = red hover family for destructive actions; info = blue for per-user-scope actions.
         public const string RowClass = "aspid-fasttools-settings__row";
         public const string RowCaptionClass = "aspid-fasttools-settings__row-caption";
         public const string ActionClass = "aspid-fasttools-settings__action";
@@ -199,11 +197,9 @@ namespace Aspid.FastTools.Editors
         {
             void Handler()
             {
-                // Only an in-progress TEXT edit must survive a store change. Two subtleties: composite fields (a
-                // slider's inline text box) focus an inner element, never the registered control itself, so the
-                // check is containment-based; and a clicked switch/enum keeps its panel's focus indefinitely (a
-                // panel holds focus even without OS window focus), so skipping ANY focused control would silently
-                // freeze that surface's mirror — a non-text control has no in-progress edit to clobber.
+                // Only an in-progress TEXT edit must survive a store change: composite fields focus an inner element
+                // (hence the containment check), and a clicked switch/enum keeps panel focus indefinitely, so
+                // skipping any focused control would silently freeze that surface's mirror.
                 if (control.focusController?.focusedElement is VisualElement focused &&
                     (focused == control || control.Contains(focused)) &&
                     focused is ITextEdition or TextElement)
@@ -212,12 +208,9 @@ namespace Aspid.FastTools.Editors
                 control.SetValueWithoutNotify(read());
             }
 
-            // Docking / undocking the host window re-parents the visual tree to another panel — a detach followed by
-            // an attach WITHOUT a rebuild — so a build-time-only subscription would silently die on the first dock
-            // move. The sync is armed from build time (the control must mirror even before it reaches a panel — the
-            // settings tests pin that contract) and then follows the attach/detach pair, the guard keeping the
-            // subscription single through any number of moves; re-arming also re-reads, so a change made while the
-            // surface was detached is not missed.
+            // Docking/undocking re-parents the tree to another panel (a detach then an attach WITHOUT a rebuild), so
+            // the sync is armed from build time and then follows the attach/detach pair, kept single by the guard;
+            // re-arming also re-reads, so a change made while detached is not missed.
             var subscribed = false;
 
             void Arm()

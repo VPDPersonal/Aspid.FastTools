@@ -14,7 +14,9 @@ namespace Aspid.FastTools.Editors
     /// </summary>
     internal static class WelcomeSettings
     {
-        /// <summary>Raised whenever a setting changes.</summary>
+        /// <summary>
+        /// Raised whenever a setting changes.
+        /// </summary>
         public static event Action Changed;
 
         private const string AutoShowKeyPrefix = "Aspid.FastTools.Welcome.AutoShow.";

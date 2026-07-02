@@ -60,10 +60,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (type is null) return default;
             var root = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
 
-            // Unity stores a nested type's class identity with its declaring types joined by '/' (e.g. Outer/Inner);
-            // reflection's Type.Name is only the leaf, so prefix the declaring chain here — the mirror of the read side's
-            // '/'->'+' mapping in SerializeReferenceHelpers.StoredTypeResolves. Without this, repairing a reference to a
-            // nested type would write `class: Inner`, which Unity cannot resolve (it re-breaks the reference).
+            // Unity stores a nested type's class identity with its declaring types joined by '/' (Outer/Inner), but
+            // Type.Name is only the leaf — mirror of the read side's '/'->'+' mapping in
+            // SerializeReferenceHelpers.StoredTypeResolves. Without the prefix a repaired nested reference re-breaks.
             return new ManagedTypeName(
                 assembly: root.Assembly.GetName().Name,
                 @namespace: root.Namespace,

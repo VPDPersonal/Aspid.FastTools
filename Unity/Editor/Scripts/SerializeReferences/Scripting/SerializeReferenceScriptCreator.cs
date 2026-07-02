@@ -127,9 +127,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while",
         };
 
-        // Validates that the file name is usable as a C# class identifier (rejects digits-first, spaces, keywords, …).
-        // Implemented without System.CodeDom / Microsoft.CSharp.CSharpCodeProvider, which Unity's .NET Standard API
-        // profile does not ship — mirrors the regex-based check used by IdRegistryValidator.
+        // Validates that the file name is usable as a C# class identifier. Implemented without
+        // System.CodeDom / CSharpCodeProvider, which Unity's .NET Standard API profile does not ship.
         private static bool IsValidClassName(string className)
         {
             if (string.IsNullOrEmpty(className)) return false;
@@ -154,8 +153,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // A recursive, generic-aware C# type name for the stub. Handles void, nested types and generic arguments so the
-        // emitted base type / member signatures compile instead of leaking mangled `Name`1[[…]]` reflection strings.
+        // Generic-aware recursive C# type name so emitted signatures compile instead of leaking `Name`1[[…]]` reflection strings.
         private static string TypeName(Type type)
         {
             if (type == typeof(void)) return "void";

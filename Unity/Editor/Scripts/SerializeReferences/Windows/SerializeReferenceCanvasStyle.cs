@@ -12,21 +12,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </summary>
     internal static class SerializeReferenceCanvasStyle
     {
-        /// <summary>Idle / informational backdrop (no asset, empty graph, canceled scan).</summary>
+        /// <summary>
+        /// Idle / informational backdrop (no asset, empty graph, canceled scan).
+        /// </summary>
         public static readonly Color Info = new(0.15f, 0.21f, 0.30f);
 
-        /// <summary>Healthy backdrop (a clean graph, a clean project).</summary>
+        /// <summary>
+        /// Healthy backdrop (a clean graph, a clean project).
+        /// </summary>
         public static readonly Color Success = new(0.16f, 0.28f, 0.21f);
 
-        /// <summary>Attention backdrop (missing references / orphans present).</summary>
+        /// <summary>
+        /// Attention backdrop (missing references / orphans present).
+        /// </summary>
         public static readonly Color Warning = new(0.30f, 0.25f, 0.12f);
 
-        /// <summary>Failure backdrop, reserved for hard-error states.</summary>
+        /// <summary>
+        /// Failure backdrop, reserved for hard-error states.
+        /// </summary>
         public static readonly Color Error = new(0.32f, 0.16f, 0.16f);
 
-        // The component's own default blob colours (the green→amber→red "traffic light"), mirroring the
-        // --aspid-colors-status-{success,warning,error}-text-dark palette tokens that the canvas USS resolves to.
-        // Used to restore the multi-tone gradient on the shared canvas for a screen that carries no single status.
+        // The component's default blob colours, mirroring the --aspid-colors-status-{success,warning,error}-text-dark
+        // palette tokens the canvas USS resolves to.
         private static readonly Color SignalSuccess = new(85f / 255f, 175f / 255f, 100f / 255f);
         private static readonly Color SignalWarning = new(185f / 255f, 135f / 255f, 60f / 255f);
         private static readonly Color SignalError = new(185f / 255f, 65f / 255f, 65f / 255f);

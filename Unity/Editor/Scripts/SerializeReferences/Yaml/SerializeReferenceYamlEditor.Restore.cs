@@ -216,9 +216,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Locates the index-th "- rid: N" element line of the top-level array field, scanning only the object's own
-        // field block (before "references:") so a RefIds entry of the same shape is never mistaken for an element. The
-        // sequence items sit at the field key's own indent (Unity writes "_field:" then "- rid:" at the same column);
-        // the walk stops when the block dedents or a non-item line at the field indent is reached.
+        // field block (before "references:") so a same-shaped RefIds entry is never mistaken for an element. Unity
+        // writes the "- rid:" items at the field key's own indent.
         private static bool TryFindArrayElementPointer(string[] lines, int start, int fieldsEnd, string fieldName,
             int index, out int pointerLine, out long currentRid)
         {
@@ -263,9 +262,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // The smallest positive id greater than every "rid: N" the document currently carries — a fresh, collision-free
-        // id for the restored entry. Scans both field pointers and RefIds entries so a reused id can never alias a
-        // surviving reference.
+        // The smallest positive id greater than every "rid: N" in the document. Scans both field pointers and RefIds
+        // entries so a reused id can never alias a surviving reference.
         private static long NextFreeRid(string[] lines, int start, int end)
         {
             var ridPattern = new Regex(@"rid:\s*(?<rid>-?\d+)");

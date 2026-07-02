@@ -20,11 +20,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </remarks>
     internal static class SerializeReferenceTypeUsageIndex
     {
-        /// <summary>Raised whenever the index changes (rebuilt, reset or an asset patched), so consumers can refresh.</summary>
+        /// <summary>
+        /// Raised whenever the index changes (rebuilt, reset or an asset patched), so consumers can refresh.
+        /// </summary>
         public static event Action IndexChanged;
 
-        /// <summary>A single managed-reference use site. Identity is (asset, document, rid); the rest is payload.</summary>
-        internal readonly struct Usage : IEquatable<Usage>
+        /// <summary>
+        /// A single managed-reference use site. Identity is (asset, document, rid); the rest is payload.
+        /// </summary>
+        public readonly struct Usage : IEquatable<Usage>
         {
             public readonly string Guid;
             public readonly long FileId;
@@ -59,7 +63,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         public static bool IsWarm => _index is not null;
 
-        /// <summary>Every use site of the type identified by <paramref name="storedTypeKey"/> (warms the index if cold).</summary>
+        /// <summary>
+        /// Every use site of the type identified by <paramref name="storedTypeKey"/> (warms the index if cold).
+        /// </summary>
         public static IReadOnlyCollection<Usage> FindUsages(string storedTypeKey)
         {
             if (string.IsNullOrEmpty(storedTypeKey)) return Array.Empty<Usage>();
@@ -98,10 +104,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return (IReadOnlyCollection<Usage>)result ?? Array.Empty<Usage>();
         }
 
-        /// <summary>Number of use sites of <paramref name="type"/>.</summary>
+        /// <summary>
+        /// Number of use sites of <paramref name="type"/>.
+        /// </summary>
         public static int CountUsages(Type type) => FindUsages(type).Count;
 
-        /// <summary>Every use site whose stored type no longer resolves — the fast-scan source for the Repair window.</summary>
+        /// <summary>
+        /// Every use site whose stored type no longer resolves — the fast-scan source for the Repair window.
+        /// </summary>
         public static IEnumerable<Usage> EnumerateUnresolved()
         {
             EnsureBuilt();
@@ -111,7 +121,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         yield return usage;
         }
 
-        /// <summary>Every indexed use site (warms the index) — the source the Find Usages search provider filters.</summary>
+        /// <summary>
+        /// Every indexed use site (warms the index) — the source the Find Usages search provider filters.
+        /// </summary>
         public static IEnumerable<Usage> AllUsages()
         {
             EnsureBuilt();
@@ -120,7 +132,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     yield return usage;
         }
 
-        /// <summary>Drops the whole index; the next lookup rebuilds it. Alias <see cref="ClearCache"/> for the rewrite sites.</summary>
+        /// <summary>
+        /// Drops the whole index; the next lookup rebuilds it. Alias <see cref="ClearCache"/> for the rewrite sites.
+        /// </summary>
         public static void Reset()
         {
             _index = null;
@@ -130,7 +144,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <inheritdoc cref="Reset"/>
         public static void ClearCache() => Reset();
 
-        /// <summary>Re-extracts one asset's usages in place (strip then re-add). No-op while the index is cold.</summary>
+        /// <summary>
+        /// Re-extracts one asset's usages in place (strip then re-add). No-op while the index is cold.
+        /// </summary>
         public static void RebuildAsset(string path)
         {
             if (_index is null) return;
@@ -143,7 +159,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             IndexChanged?.Invoke();
         }
 
-        /// <summary>Removes an asset's usages by guid. No-op while the index is cold.</summary>
+        /// <summary>
+        /// Removes an asset's usages by guid. No-op while the index is cold.
+        /// </summary>
         public static void RemoveAsset(string guid)
         {
             if (_index is null || string.IsNullOrEmpty(guid)) return;
@@ -161,8 +179,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .Where(SerializeReferenceHelpers.IsScanCandidate)
                 .ToArray();
 
-            // A non-cancelable bar: this is a one-time warm-up. A cancelable bar could leave a partial index marked
-            // warm (the null sentinel is already replaced), so completing the build is the safe choice.
+            // Non-cancelable bar: cancelling could leave a partial index marked warm (the null sentinel is already replaced).
             try
             {
                 for (var i = 0; i < paths.Length; i++)
@@ -180,9 +197,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             catch (Exception)
             {
-                // A failed warm-up must not masquerade as a warm index: the sentinel was already replaced, so a
-                // partial map would keep serving wrong Find Usages / delete-guard / breakage answers all session.
-                // Reset to cold and let the next deliberate scan retry from scratch.
+                // A failed warm-up must not masquerade as warm: reset to cold so the next lookup rebuilds from scratch.
                 _index = null;
                 throw;
             }
@@ -194,14 +209,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void AddAsset(string path, string guid)
         {
-            // Data-only scan: the index never reads a document's display TypeName, and resolving it would LOAD every
-            // asset (LoadAllAssetsAtPath) — turning the project warm-up and each per-import rebuild into asset loads.
+            // Data-only scan: resolving display TypeNames would load every asset (LoadAllAssetsAtPath).
             foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
             {
                 foreach (var node in document.Nodes)
                 {
-                    // A node with no recorded type identity (truly orphaned garbage) cannot be looked up by type and
-                    // is not a "missing type", so it is not indexed.
+                    // No recorded type identity — cannot be looked up by type and is not a "missing type"; not indexed.
                     if (node.StoredType.IsEmpty) continue;
 
                     var key = SerializeReferenceHelpers.StoredTypeKey(node.StoredType);

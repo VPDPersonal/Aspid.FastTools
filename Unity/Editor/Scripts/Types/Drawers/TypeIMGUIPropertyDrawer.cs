@@ -27,8 +27,10 @@ namespace Aspid.FastTools.Types.Editors
             if (clicked) type.OpenInScriptEditor();
         }
 
-        /// <summary>Row height: one line, plus a second line for the required-notice when the field is in violation.</summary>
-        internal static float GetHeight(SerializedProperty property)
+        /// <summary>
+        /// Row height: one line, plus a second line for the required-notice when the field is in violation.
+        /// </summary>
+        public static float GetHeight(SerializedProperty property)
         {
             var height = EditorGUIUtility.singleLineHeight;
             if (SerializeReferenceRequiredGate.IsViolation(property))
@@ -37,7 +39,7 @@ namespace Aspid.FastTools.Types.Editors
             return height;
         }
 
-        internal static void Draw(
+        public static void Draw(
             Rect position,
             GUIContent label,
             SerializedProperty property,

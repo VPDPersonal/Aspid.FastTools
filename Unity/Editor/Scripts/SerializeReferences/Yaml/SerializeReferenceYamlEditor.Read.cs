@@ -203,12 +203,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result.Count > 0 ? result : null;
         }
 
-        // Resolves one path segment within [rangeStart, rangeEnd). For a plain field the value is either a managed
-        // reference (its sole child is a "rid:" scalar) or a container to descend into; for an indexed field it is the
-        // segment.Index-th sequence item, itself either a "- rid:" reference or a "- field:" mapping container. When
-        // requiredIndent is non-negative only a field at exactly that effective indent matches (a leading "- " counts
-        // toward the indent so a sequence-of-mappings item's fields align with their dashless siblings), which keeps
-        // resolution on a block's direct children instead of descending into a deeper object that reuses the name.
+        // Resolves one path segment within [rangeStart, rangeEnd): a "rid:" value is a managed reference, anything
+        // else a container to descend into; an indexed segment resolves the Index-th sequence item. A non-negative
+        // requiredIndent matches only the block's direct children (a leading "- " counts toward the indent), so a
+        // deeper object that reuses the name is never picked up.
         private static SegmentKind ResolveSegment(string[] lines, int rangeStart, int rangeEnd, int requiredIndent,
             PathSegment segment, out long rid, out int valueStart, out int valueEnd, out int valueIndent)
         {

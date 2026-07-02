@@ -83,9 +83,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
         }
 
-        // The use-site count plus a sample of affected asset paths. Uses the warm index when available; when the index is
-        // cold we do NOT warm it (a modal full-project build) just to answer one delete — instead we run a targeted,
-        // no-modal scan for this single type, so deletion protection stays active without freezing the editor behind a bar.
+        // Uses the warm index when available; a cold index is never warmed (a modal full-project build) just to answer
+        // one delete — a targeted, no-modal scan for this single type runs instead.
         private static SortedSet<string> GatherUsageSample(Type type, out int count)
         {
             var paths = new SortedSet<string>(StringComparer.Ordinal);
@@ -105,17 +104,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return paths;
             }
 
-            // Match on the open-generic identity: a script resolves to the open definition (Modifier`1[[T]]), while YAML
-            // stores each closed instantiation (Modifier`1[[System.Single, …]]) under its own key — comparing the closed
-            // stored key would never match a generic type's script and the delete would slip through unwarned.
+            // Match on the open-generic identity: a script resolves to the open definition while YAML stores each
+            // closed instantiation under its own key, so the closed key would never match a generic type's script.
             var key = SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(type));
             foreach (var path in AssetDatabase.GetAllAssetPaths())
             {
                 if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
                 var usedHere = false;
-                // Data-only scan — the guard reads stored types, never the display TypeName, so skipping the
-                // name resolution keeps this cold sweep a pure text pass instead of loading every asset it visits.
+                // Data-only scan — skipping display-name resolution keeps this a pure text pass, not an asset load.
                 foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
                 {
                     foreach (var node in document.Nodes)

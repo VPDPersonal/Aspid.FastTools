@@ -9,115 +9,6 @@ using Object = UnityEngine.Object;
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// A single managed-reference node in a document's graph: its <c>RefIds</c> id, the stored type identity and
-    /// whether that type still resolves to a loadable <see cref="Type"/>. Built purely from the asset YAML, so it
-    /// surfaces references at any nesting depth — including the orphaned ones Unity drops from the live object.
-    /// </summary>
-    internal readonly struct ReferenceGraphNode
-    {
-        public readonly long Rid;
-        public readonly ManagedTypeName StoredType;
-        public readonly bool Resolves;
-
-        public ReferenceGraphNode(long rid, ManagedTypeName storedType, bool resolves)
-        {
-            Rid = rid;
-            StoredType = storedType;
-            Resolves = resolves;
-        }
-
-        /// <summary>Short type name (the class identifier without namespace/assembly), for the row label.</summary>
-        public string ShortName =>
-            string.IsNullOrEmpty(StoredType.Class) ? $"rid {Rid}" : StoredType.Class;
-
-        /// <summary>Full <c>Namespace.Class, Assembly</c> identity, for the row tooltip.</summary>
-        public string FullName => StoredType.FullName;
-    }
-
-    /// <summary>
-    /// A field pointer from a document's body into its <c>RefIds</c> block — a root of the reference tree. The
-    /// <see cref="Label"/> is the full field path that holds the reference (best effort), with list elements indexed,
-    /// e.g. <c>_weapon</c> or <c>_alternates[0]</c> or <c>_config._slots[2]</c>. A field that holds nothing (its
-    /// pointer is Unity's null sentinel) is kept as an <see cref="IsEmpty"/> root so an unassigned / cleared slot
-    /// stays visible in the graph rather than silently dropping out — it has no <c>RefIds</c> node behind it.
-    /// </summary>
-    internal readonly struct ReferenceGraphRoot
-    {
-        public readonly long Rid;
-        public readonly string Label;
-
-        public ReferenceGraphRoot(long rid, string label)
-        {
-            Rid = rid;
-            Label = label;
-        }
-
-        /// <summary>True when the pointer is a null sentinel (rid &lt; 0) — an unassigned [SerializeReference] slot.</summary>
-        public bool IsEmpty => Rid < 0;
-    }
-
-    /// <summary>
-    /// A parent → child edge inside a document's nested graph: the child <c>RefIds</c> id and the field path that
-    /// holds it <i>relative to the parent's data block</i>, with list elements indexed (e.g. <c>_chargeEffect</c> or
-    /// <c>_slots[0].weapon</c>). The view joins this onto the parent's full path so a nested reference shows where it
-    /// lives from the document root down. A null child slot is kept as an <see cref="IsEmpty"/> edge (the rid is a null
-    /// sentinel) so a cleared nested field is visible too; it points at no node and never recurses.
-    /// </summary>
-    internal readonly struct ReferenceGraphEdge
-    {
-        public readonly long Rid;
-        public readonly string Label;
-
-        public ReferenceGraphEdge(long rid, string label)
-        {
-            Rid = rid;
-            Label = label;
-        }
-
-        /// <summary>True when the child pointer is a null sentinel (rid &lt; 0) — an unassigned nested slot.</summary>
-        public bool IsEmpty => Rid < 0;
-    }
-
-    /// <summary>
-    /// The managed-reference graph of one serialized object document: its <c>fileId</c> anchor, an optional
-    /// best-effort component/type name for the header, the <c>RefIds</c> nodes, the parent → child edges between
-    /// them, the field-pointer roots and the derived shared / orphaned sets.
-    /// </summary>
-    internal sealed class ReferenceGraphDocument
-    {
-        public long FileId;
-        public string TypeName;
-
-        public readonly List<ReferenceGraphNode> Nodes = new();
-
-        // One entry per field pointer in the document body (the tree's entry points). The same rid may appear under
-        // two fields — both are kept, so the window renders each subtree and the shared set flags the alias.
-        public readonly List<ReferenceGraphRoot> Roots = new();
-
-        // Parent rid → ordered, de-duplicated child edges of the nested graph (data-block pointers only; roots are
-        // tracked separately in Roots). Each edge carries the child rid and the field path holding it relative to the
-        // parent's data block. Empty (null-sentinel) child slots are kept here too so a cleared nested field surfaces.
-        public readonly Dictionary<long, List<ReferenceGraphEdge>> Edges = new();
-
-        // rids referenced by two or more parents in total (root pointers + nested edges) — aliased managed references.
-        public readonly HashSet<long> Shared = new();
-
-        // rids reachable from no root — leftover payloads no field points at.
-        public readonly HashSet<long> Orphans = new();
-
-        public ReferenceGraphNode? FindNode(long rid)
-        {
-            foreach (var node in Nodes)
-                if (node.Rid == rid) return node;
-
-            return null;
-        }
-
-        public IReadOnlyList<ReferenceGraphEdge> ChildrenOf(long rid) =>
-            Edges.TryGetValue(rid, out var children) ? children : Array.Empty<ReferenceGraphEdge>();
-    }
-
-    /// <summary>
     /// Builds, per asset path, a document-per-component managed-reference graph from the raw YAML — independent of
     /// the live serialization API, so it sees nested, orphaned and missing references the Inspector cannot navigate
     /// to. The low-level YAML-scan primitives (document headers, the <c>RefIds</c> lookup, the inline-type grammar,
@@ -189,10 +80,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Parses one document's RefIds block into nodes, then walks the body (field pointers = roots) and each
-        // entry's data block (nested pointers = edges) to assemble edges, shared and orphan sets. Returns null when
-        // the document has no RefIds block (no managed references to graph) or when that block resolves to neither a
-        // real node nor a field pointer (every [SerializeReference] field is an empty list — nothing to graph).
+        // Returns null when the document has no RefIds block, or when that block backs neither a real node nor a
+        // field pointer (every [SerializeReference] field is an empty list — nothing to graph).
         private static ReferenceGraphDocument BuildDocument(string[] lines, long fileId, int start, int end)
         {
             var referencesStart = FindKey(lines, ReferencesKey, start, end);
@@ -211,16 +100,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             CollectEdges(lines, refIdsStart, end, knownRids, document);
             ComputeSharedAndOrphans(document, knownRids);
 
-            // Keep the document if it carries any real node OR any field pointer — an asset whose every managed-ref
-            // field is unassigned still has slots to surface (each renders as a "<None>" leaf), so it must not drop out
-            // as "no managed references". Only a RefIds block backing neither (all fields empty lists) has nothing to
-            // show. Roots count here covers the null-sentinel pointers (rid < 0) too — those are the empty slots.
+            // An asset whose every managed-ref field is unassigned still has slots to surface (each renders as a
+            // "<None>" leaf) — Roots covers the null-sentinel pointers (rid < 0), so such a document is kept.
             if (document.Nodes.Count == 0 && document.Roots.Count == 0) return null;
 
             return document;
         }
 
-        // Each "- rid: N" entry in the RefIds block becomes a node; its type is read from the following "type:" line.
         private static void CollectNodes(string[] lines, int refIdsStart, int end, ReferenceGraphDocument document)
         {
             for (var i = refIdsStart + 1; i < end; i++)
@@ -228,10 +114,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var ridMatch = EntryRid.Match(lines[i]);
                 if (!ridMatch.Success || !long.TryParse(ridMatch.Groups["id"].Value, out var rid)) continue;
 
-                // Negative rids are Unity's sentinels, not managed objects: -2 is the shared null entry
-                // (ManagedReferenceUtility.RefIdNull) Unity writes for any null [SerializeReference] field, -1 is unknown.
-                // They carry an empty type and no payload, so skip them — a field pointing at one is simply null and
-                // must not surface as a "rid -2" node (the pointers then read as dangling and drop out of the graph).
+                // Negative rids are Unity's sentinels (-2 = RefIdNull, written for any null field; -1 = unknown), not
+                // managed objects — a field pointing at one is simply null and must not surface as a node.
                 if (rid < 0) continue;
 
                 var type = default(ManagedTypeName);
@@ -251,10 +135,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Field pointers in the document body (everything before the "references:" block) are the tree roots. The
-        // label is the full field path the pointer sits under, with list elements indexed (see BuildRootPath). Each
-        // pointer is kept (no rid de-duplication) so two fields aliasing one reference both render and the alias is
-        // counted as shared.
+        // Field pointers in the document body are the tree roots. Every pointer is kept (no rid de-duplication) so
+        // two fields aliasing one reference both render and the alias counts as shared.
         private static void CollectRoots(string[] lines, int start, int bodyEnd, HashSet<long> knownRids, ReferenceGraphDocument document)
         {
             for (var i = start + 1; i < bodyEnd; i++)
@@ -263,10 +145,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     if (!long.TryParse(match.Groups["id"].Value, out var rid)) continue;
 
-                    // A null field pointer (rid -2 = RefIdNull, -1 = unknown): the [SerializeReference] slot exists but
-                    // holds nothing. Keep it as an empty root so a cleared / never-assigned field stays visible in the
-                    // graph — there is no RefIds node behind it, so the view renders it as an "<None>" leaf. ShortName /
-                    // shared / orphan computations skip these sentinels (see ComputeSharedAndOrphans).
+                    // A null field pointer (rid -2/-1): keep it as an empty root so a cleared / never-assigned slot
+                    // stays visible as an "<None>" leaf; shared/orphan computations skip these sentinels.
                     if (rid < 0)
                     {
                         document.Roots.Add(new ReferenceGraphRoot(rid, BuildRootPath(lines, i, start)));
@@ -280,10 +160,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Within each RefIds entry's "data:" block, every "rid:" pointer is a parent → child edge. Each edge records the
-        // field path holding the child relative to the parent's data block (BuildEdgePath), so the view can show a
-        // nested reference's full path. A null child slot (rid -2) is kept as an empty edge so a cleared nested field
-        // surfaces. The entry's own "- rid:" header line is skipped so an entry is never recorded as its own child.
+        // Every "rid:" pointer inside a RefIds entry's "data:" block is a parent → child edge. The entry's own
+        // "- rid:" header line is skipped so an entry is never recorded as its own child.
         private static void CollectEdges(string[] lines, int refIdsStart, int end, HashSet<long> knownRids, ReferenceGraphDocument document)
         {
             for (var i = refIdsStart + 1; i < end; i++)
@@ -305,9 +183,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         if (!long.TryParse(match.Groups["id"].Value, out var child)) continue;
                         if (child == parent) continue;
 
-                        // A null nested slot (rid < 0): keep it as an empty edge so a cleared nested [SerializeReference]
-                        // field is visible, but it points at no node so it never recurses. A real child must be a known
-                        // RefIds node; a dangling pointer is dropped.
+                        // A null nested slot (rid < 0) is kept as an empty edge so a cleared nested field stays
+                        // visible; a real child must be a known RefIds node — a dangling pointer is dropped.
                         if (child >= 0 && !knownRids.Contains(child)) continue;
 
                         AddEdge(document, parent, new ReferenceGraphEdge(child, BuildEdgePath(lines, j, dataStart)));
@@ -316,9 +193,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Shared = referenced by 2+ parents in total — every root pointer plus every nested edge counts once.
-        // Orphans = reachable from no root, found by a BFS from the roots and complementing against the known node
-        // set (cycle-safe via the visited set).
+        // Shared = referenced by 2+ parents in total (root pointers + nested edges each count once).
+        // Orphans = nodes reachable from no root.
         private static void ComputeSharedAndOrphans(ReferenceGraphDocument document, HashSet<long> knownRids)
         {
             var parentCount = new Dictionary<long, int>();
@@ -365,34 +241,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             children.Add(edge);
         }
 
-        // A root pointer's full field path from the document body down to the rid pointer on line i, e.g. "_weapon",
-        // "_alternates[0]" or "_config._slots[2]". Climbs to (but excludes) the indent-0 document wrapper key, so a
-        // top-level field reads as "_weapon", never the wrapper name. Falls back to "reference" when no key is found.
+        // A root pointer's full field path, e.g. "_config._slots[2]". Climbs to (but excludes) the indent-0 document
+        // wrapper key, so a top-level field reads as "_weapon", never the wrapper name.
         private static string BuildRootPath(string[] lines, int i, int start)
         {
             var path = BuildPath(lines, i, floor: start, stopIndent: 0);
             return string.IsNullOrEmpty(path) ? "reference" : path;
         }
 
-        // A nested edge's field path relative to its parent's "data:" block, e.g. "_chargeEffect" or "_slots[0].weapon".
-        // Climbs to (but excludes) the "data:" key by stopping at the data block's own indent, so the path is parent-
-        // relative; the view joins it onto the parent's full path. Empty when no key is found (the view then keeps the
-        // parent path alone).
+        // A nested edge's field path relative to its parent's "data:" block (the view joins it onto the parent's full
+        // path); stops at the data block's own indent so the path stays parent-relative.
         private static string BuildEdgePath(string[] lines, int pointerLine, int dataStart) =>
             BuildPath(lines, pointerLine, floor: dataStart, stopIndent: SerializeReferenceYaml.IndentOf(lines[dataStart]));
 
-        // Builds a dotted field path by walking up from the rid pointer on <paramref name="pointerLine"/>, collecting
-        // mapping keys (with a "[index]" suffix on any list key crossed), until it climbs out of the enclosing scope.
-        // <paramref name="floor"/> is the inclusive lowest line the walk may inspect (the document header for a body
-        // root, the "data:" line for a nested edge); <paramref name="stopIndent"/> is the indent at or below which the
-        // walk stops, so it never crosses the scope's own wrapper key (indent-0 wrapper for a root, the "data:" key for
-        // an edge). Returns the dotted path, or an empty string when no path segment is found. Two YAML shapes are
-        // handled per ancestor:
-        // • a named value over two lines ("_weapon:\n  rid: N") — the owning key is the nearest strictly-shallower line.
-        // • a block-sequence item ("_alternates:\n  - rid: N") — Unity writes the dashes at the same column as the list
-        //   key, so the key sits at *equal* indent above the dash; the element's index is its position among the same-
-        //   indent "- …" siblings. An element that carries its own field key on the dash line ("- _weapon:") keeps it,
-        //   so the path reads "_slots[0]._weapon".
+        // Builds a dotted field path by walking up from the rid pointer, collecting mapping keys ("[index]" on any
+        // list key crossed), until it climbs past stopIndent or floor. Unity writes block-sequence dashes at the SAME
+        // column as the list key — the owner key sits at *equal* indent above the dash, the index among same-indent
+        // "- …" siblings.
         private static string BuildPath(string[] lines, int pointerLine, int floor, int stopIndent)
         {
             var segments = new List<string>();
@@ -411,8 +276,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (elementKey.Success && !IsStructuralKey(elementKey.Groups["key"].Value))
                         segments.Add(elementKey.Groups["key"].Value);
 
-                    // The list key (first non-"- " mapping key at this indent above the dashes) and the element index
-                    // (its position among the same-indent "- …" siblings).
                     var index = 0;
                     var ownerLine = -1;
                     for (var j = line - 1; j >= floor; j--)
@@ -438,8 +301,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
                 else
                 {
-                    // A mapping line: record its key, or climb past a structural "rid:"/"data:" line that contributes
-                    // no path segment of its own.
                     var match = MappingKey.Match(lines[line]);
                     if (match.Success && !IsStructuralKey(match.Groups["key"].Value))
                         segments.Add(match.Groups["key"].Value);
@@ -457,8 +318,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return string.Join(".", segments);
         }
 
-        // The nearest non-empty line above `from` whose indent is strictly shallower than `indent` — the structural
-        // parent of the node at `from`. Returns -1 when none exists within the document.
+        // The structural parent: the nearest non-empty line above with strictly shallower indent, or -1.
         private static int ParentLine(string[] lines, int from, int start, int indent)
         {
             for (var j = from - 1; j >= start; j--)
@@ -491,9 +351,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return headers;
         }
 
-        // Maps each document's fileId to a display name from the live object (component / ScriptableObject type
-        // name). Best effort and cheap: a single LoadAllAssetsAtPath pass; objects Unity cannot load are simply
-        // omitted and fall back to the YAML class id.
+        // Best effort, a single LoadAllAssetsAtPath pass: objects Unity cannot load are omitted and fall back to
+        // the YAML class id.
         private static Dictionary<long, string> ResolveTypeNames(string assetPath)
         {
             var map = new Dictionary<long, string>();

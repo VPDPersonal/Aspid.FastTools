@@ -6,57 +6,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>What a gate violation is: a missing managed-reference type, or an unset required reference.</summary>
-    internal enum GateViolationKind
-    {
-        MissingType,
-        RequiredUnset,
-    }
-
-    /// <summary>Which checks the gate runs.</summary>
-    internal readonly struct GateOptions
-    {
-        public readonly bool ScanMissingTypes;
-        public readonly bool ScanRequiredFields;
-
-        public GateOptions(bool scanMissingTypes, bool scanRequiredFields)
-        {
-            ScanMissingTypes = scanMissingTypes;
-            ScanRequiredFields = scanRequiredFields;
-        }
-
-        public static GateOptions MissingOnly => new(true, false);
-        public static GateOptions Full => new(true, true);
-    }
-
-    /// <summary>One gate violation located during a project scan.</summary>
-    internal readonly struct GateViolation
-    {
-        public readonly string AssetPath;
-        public readonly long FileId;
-        public readonly long Rid;
-        public readonly ManagedTypeName StoredType;
-        public readonly GateViolationKind Kind;
-        public readonly string FieldPath;
-
-        public GateViolation(string assetPath, long fileId, long rid, ManagedTypeName storedType, GateViolationKind kind, string fieldPath)
-        {
-            AssetPath = assetPath;
-            FileId = fileId;
-            Rid = rid;
-            StoredType = storedType;
-            Kind = kind;
-            FieldPath = fieldPath;
-        }
-
-        public override string ToString()
-        {
-            var where = string.IsNullOrEmpty(FieldPath) ? $"rid {Rid}" : FieldPath;
-            var what = Kind == GateViolationKind.MissingType ? $"missing type {StoredType.Class}" : "required value not set";
-            return $"{AssetPath} : {where} -> {what}";
-        }
-    }
-
     /// <summary>
     /// Window-free, headless-safe project scanner for managed-reference gate violations, shared by the build gate and
     /// the CI entry point. Missing-type detection reuses the pure-YAML
@@ -108,13 +57,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return violations;
         }
 
-        // A stored name that no longer loads but is claimed by exactly one declared [MovedFrom] is a pending
-        // migration, not a violation — Unity migrates the reference in memory at load — provided the target still
-        // fits the field's declared type: a rename that also changed the type's bases WOULD null at load, so it
-        // stays a violation (the same assignability gate both Editor views apply). Scenes cannot be object-loaded
-        // to recover constraints, so a scene entry claimed by a rename is trusted — a base-changing rename inside a
-        // scene is the one documented gap, and both Editor views still flag it. Internal for the gate tests.
-        internal static bool IsPendingMigration(string assetPath, MissingReferenceEntry entry)
+        // A stored name claimed by exactly one declared [MovedFrom] is a pending migration, not a violation —
+        // Unity migrates it in memory at load — provided the target still fits the field's declared type.
+        // Scenes cannot be object-loaded to recover constraints, so a scene entry claimed by a rename is trusted.
+        public static bool IsPendingMigration(string assetPath, MissingReferenceEntry entry)
         {
             if (!SerializeReferenceMovedFromResolver.TryResolve(entry.StoredType, out var target)) return false;
             if (SerializeReferenceHelpers.IsScene(assetPath)) return true;
@@ -179,9 +125,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void CollectRequiredViolations(string assetPath, List<GateViolation> violations)
         {
-            // Loading objects + walking SerializedObjects is heavier than the pure-YAML missing scan, so this check is
-            // opt-in (off by default for the fast build-time mode). Caller dispatches scenes to the YAML path, so this
-            // only ever sees saved assets (ScriptableObjects, prefabs) that LoadAllAssetsAtPath can read.
+            // Object-loading + SerializedObject walking is heavier than the pure-YAML scan, so this check is opt-in.
+            // The caller dispatches scenes to the YAML path; only loadable saved assets reach here.
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
                 if (asset == null) continue;
@@ -191,9 +136,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 using var iterator = serializedObject.GetIterator();
                 if (!iterator.Next(enterChildren: true)) continue;
 
-                // Never re-enter an instance already seen on this walk: a cyclic managed-reference graph (a shape
-                // the feature explicitly supports — the graph window renders back-edges) would otherwise spin the
-                // headless CI run forever. Mirrors SerializeReferenceHelpers.BuildConstraintMap's guard.
+                // Never re-enter an instance already seen: a cyclic managed-reference graph (explicitly supported)
+                // would spin this walk forever. Mirrors SerializeReferenceHelpers.BuildConstraintMap's guard.
                 var visited = new HashSet<long>();
                 bool enterChildren;
 

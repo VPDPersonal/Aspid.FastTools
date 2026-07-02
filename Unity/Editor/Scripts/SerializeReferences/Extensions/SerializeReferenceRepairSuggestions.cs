@@ -22,7 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// A scored repair candidate for a missing managed reference: the existing <see cref="Type"/> the reference
         /// could be re-pointed to, the heuristic <see cref="Score"/> (highest wins) and a short human <see cref="Reason"/>.
         /// </summary>
-        internal readonly struct RepairCandidate
+        public readonly struct RepairCandidate
         {
             public readonly Type Type;
             public readonly float Score;
@@ -87,9 +87,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (scored.Count == 0) return Array.Empty<RepairCandidate>();
 
-            // Sort by descending score, then break ties deterministically on the candidate's full name and assembly
-            // (both Ordinal) so equally-scored same-named types in different namespaces always order the same way —
-            // otherwise the surfaced one-click fix would depend on TypeCache order and could flip across domain reloads.
+            // Ties broken ordinally by full name, then assembly — otherwise the surfaced fix would depend on
+            // TypeCache order and could flip across domain reloads.
             scored.Sort(static (a, b) =>
             {
                 var byScore = b.Score.CompareTo(a.Score);
@@ -103,9 +102,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return scored.Count <= max ? scored : scored.GetRange(0, max);
         }
 
-        // The picker's candidate pool: types derived from the constraint (or every loaded type when unconstrained),
-        // narrowed to the same managed-reference eligibility the picker enforces and to types actually assignable to
-        // the constraint — so a suggestion can never be a type the field would refuse.
+        // Same eligibility rules the type picker enforces, so a suggestion can never be a type the field would refuse.
         private static IEnumerable<Type> EnumerateCandidates(Type constraint)
         {
             var pool = constraint == typeof(object)
@@ -139,7 +136,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return 0.8f;
             }
 
-            // Same name ignoring case — a casing-only rename.
             if (string.Equals(candidateClass, storedClass, StringComparison.OrdinalIgnoreCase))
             {
                 reason = "same name (case-insensitive)";
@@ -157,8 +153,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return 0f;
         }
 
-        // Overlap ratio (0..1) between the stored field names and the candidate's serialized instance field names:
-        // the fraction of stored names that exist on the candidate. An empty candidate shape contributes nothing.
+        // Fraction (0..1) of stored field names that exist on the candidate's serialized fields.
         private static float FieldShapeOverlap(HashSet<string> storedFields, Type candidate)
         {
             var candidateFields = GetSerializedFieldNames(candidate);
@@ -168,8 +163,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return (float)matched / storedFields.Count;
         }
 
-        // Names of the serialized instance fields Unity would persist for a type: public fields plus private fields
-        // marked [SerializeField], walking the base chain (each level only reports its own declared fields).
+        // Mirrors Unity's serialization rule: public instance fields plus private [SerializeField] ones, base chain included.
         private static HashSet<string> GetSerializedFieldNames(Type type)
         {
             var names = new HashSet<string>(StringComparer.Ordinal);
@@ -190,8 +184,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return names;
         }
 
-        // Bounded Levenshtein: returns true when the edit distance between a and b is at most maxDistance, bailing out
-        // early once a row's best possible distance exceeds the bound (so a long/short mismatch is rejected cheaply).
+        // Bounded Levenshtein with early bail-out once a row's best distance exceeds the bound.
         private static bool LevenshteinAtMost(string a, string b, int maxDistance)
         {
             if (a is null || b is null) return false;
@@ -223,12 +216,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         #region Cached ranking
-        // IMGUI repaints every frame, so the ranking — which scans the whole TypeCache — is cached per
-        // (asset, document, rid) with a small FIFO cap. The document file id is part of the key because a rid is only
-        // unique within one host object: in Prefab Mode several components of the same prefab asset share an asset path
-        // and can reuse a rid, so a (path, rid) key alone would alias their distinct rankings. The cache is cleared
-        // whenever a repair lands (a reimport changes the candidate set and clears the missing reference), so a stale
-        // entry never outlives the asset state it was computed against.
+        // IMGUI repaints every frame, so the TypeCache-scanning ranking is cached per (asset, document, rid) with a
+        // FIFO cap. The document file id is part of the key because a rid is only unique within one host object
+        // (Prefab Mode components of the same prefab share an asset path). Cleared whenever a repair lands.
         private const int CacheCapacity = 64;
 
         private static readonly Dictionary<(string assetPath, long fileId, long rid), IReadOnlyList<RepairCandidate>> Cache = new();
@@ -261,7 +251,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        /// <summary>Drops every cached ranking — called after a repair, since the candidate set has changed.</summary>
+        /// <summary>
+        /// Drops every cached ranking — called after a repair, since the candidate set has changed.
+        /// </summary>
         public static void ClearCache()
         {
             Cache.Clear();

@@ -38,7 +38,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        /// <summary>Assigns a fresh instance of <paramref name="type"/> to the field (per-target on a multi-selection).</summary>
+        /// <summary>
+        /// Assigns a fresh instance of <paramref name="type"/> to the field (per-target on a multi-selection).
+        /// </summary>
         public static void Assign(SerializedProperty property, Type type)
         {
             if (property is null || type is null) return;

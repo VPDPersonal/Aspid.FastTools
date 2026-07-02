@@ -38,7 +38,9 @@ namespace Aspid.FastTools.Editors
             EditorApplication.delayCall += TryShowOnStartup;
         }
 
-        /// <summary>Records that the Welcome panel has been opened, so the first-run auto-show won't fire again.</summary>
+        /// <summary>
+        /// Records that the Welcome panel has been opened, so the first-run auto-show won't fire again.
+        /// </summary>
         public static void MarkSeen() => HasBeenSeen = true;
 
         private static void TryShowOnStartup()

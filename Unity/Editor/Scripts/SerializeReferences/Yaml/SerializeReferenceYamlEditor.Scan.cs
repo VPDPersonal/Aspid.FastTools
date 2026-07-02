@@ -55,9 +55,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (refIdsStart < 0) continue;
 
                     // Entry headers sit at the shallowest "- rid:" indent under RefIds; a deeper "- rid:" is a nested
-                    // array-element pointer inside an entry's own data block, not an entry. Matching at any indent would
-                    // read such a pointer (whose following lines can resemble a type mapping) as a phantom missing entry
-                    // and then aim a repair at the wrong line. Same entry-indent discrimination TryNullReference uses.
+                    // array-element pointer, not an entry — matching it would report a phantom missing entry and aim
+                    // a repair at the wrong line. Same entry-indent discrimination TryNullReference uses.
                     var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
                     if (entryIndent < 0) continue;
 
@@ -134,9 +133,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     foreach (var descriptor in required)
                     {
-                        // An absent key is not a violation — the field was added after the last save (or this is a
-                        // stripped / nested-prefab doc); reserializing fills its default and the object-load path judges
-                        // it. Only a key that is present but empty is reported here.
+                        // An absent key is not a violation (see FieldState); only a present-but-empty key is reported.
                         if (descriptor.IsString)
                         {
                             if (IsStringFieldUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName) == FieldState.PresentUnset)
@@ -265,10 +262,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return FieldState.Absent; // field absent — not a violation (needs reserialize)
         }
 
-        // Whether a required field key was found in the document and, if so, whether it carries a value. An absent key is
-        // distinguished from a present-but-empty one so the gate never flags a field Unity simply hasn't written yet
-        // (object saved before the field was added, or a stripped / nested-prefab doc) — that needs a reserialize, not a
-        // build failure.
+        // Whether a required field key was found and, if so, whether it carries a value. An absent key is distinguished
+        // from a present-but-empty one so the gate never flags a field Unity simply hasn't written yet (object saved
+        // before the field was added, or a stripped / nested-prefab doc) — that needs a reserialize, not a build failure.
         private enum FieldState
         {
             Absent,

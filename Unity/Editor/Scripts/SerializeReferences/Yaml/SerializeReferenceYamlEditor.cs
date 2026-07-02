@@ -61,27 +61,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return headerCount == 1 ? (firstHeader, lines.Length) : (-1, -1);
         }
 
-        // Index of the "RefIds:" key line within [start, end) (see SerializeReferenceYaml.FindRefIdsStart).
         private static int FindRefIdsStart(string[] lines, int start, int end) =>
             SerializeReferenceYaml.FindRefIdsStart(lines, start, end);
 
-        // The exclusive end line of a RefIds entry that begins at headerIndex (see SerializeReferenceYaml.FindEntryEnd).
         private static int FindEntryEnd(string[] lines, int headerIndex, int end, int entryIndent) =>
             SerializeReferenceYaml.FindEntryEnd(lines, headerIndex, end, entryIndent);
 
-        // Leading-indentation width of a line, counting each space or tab as one unit (see SerializeReferenceYaml.IndentOf).
         private static int IndentOf(string line) =>
             SerializeReferenceYaml.IndentOf(line);
 
-        // Parses the inline "class: X, ns: Y, asm: Z" body of a RefIds type mapping (see SerializeReferenceYaml.TryParseInlineType).
         private static bool TryParseInlineType(string body, out ManagedTypeName type) =>
             SerializeReferenceYaml.TryParseInlineType(body, out type);
 
-        // Writes lines back to assetPath preserving the file's original newline style and
-        // trailing-newline state. File.WriteAllLines would re-emit every line with
-        // Environment.NewLine (CRLF on Windows) — Unity writes its YAML with LF on every platform,
-        // so that would churn the whole file LF→CRLF for a one-line edit. Sniffing the source
-        // newline keeps a surgical edit to just the intended line(s).
+        // Writes lines back preserving the source's newline style and trailing-newline state. Unity writes its YAML
+        // with LF on every platform; File.WriteAllLines would re-emit Environment.NewLine (CRLF on Windows) and churn
+        // the whole file for a one-line edit.
         private static void WritePreservingNewlines(string assetPath, IReadOnlyList<string> lines)
         {
             var original = File.ReadAllText(assetPath);
@@ -100,11 +94,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             File.WriteAllText(assetPath, builder.ToString());
         }
 
-        // The newline to re-emit when rewriting an asset: the style that dominates the source by line count, not "any
-        // CRLF wins". Picking by majority keeps a one-line edit on a mixed- or lone-CR file from flipping every other
-        // line's terminator (a whole-file diff for a one-line change). CRLF wins ties only when it is the strict
-        // majority; otherwise LF — Unity's invariant terminator — is used. Counts CRLF and lone-LF (an LF not preceded
-        // by CR); a lone CR (classic Mac) maps to LF, since this writer only emits "\r\n" or "\n".
+        // The newline style that dominates the source by line count — a majority pick keeps a one-line edit on a
+        // mixed-ending file from flipping every other line's terminator. LF (Unity's invariant terminator) wins ties;
+        // a lone CR maps to LF since this writer only emits "\r\n" or "\n".
         private static string DominantNewline(string text)
         {
             var crlf = 0;
@@ -132,19 +124,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // A line whose leading indentation is spaces only — Unity's invariant for serialized YAML. Returns false when
-        // the indent begins with a tab or any other whitespace, the case where IndentOf and the "- rid:" \s* regexes
-        // can still measure the same nesting differently (a single tab vs a run of spaces). Callers about to delete a
-        // bounded block bail on such a line rather than risk a mis-bounded, non-undoable write.
+        // A line whose leading indentation is spaces only — Unity's invariant for serialized YAML. Tab / mixed
+        // indentation is where IndentOf and the "- rid:" \s* regexes can measure nesting differently, so callers
+        // about to delete a bounded block bail rather than risk a mis-bounded, non-undoable write.
         private static bool IndentIsSpaceOnly(string line)
         {
             // A blank / whitespace-only line carries no indentation to measure — FindEntryEnd spans blank lines inside
             // an entry, so a stray tab in such a line must not abort an otherwise valid (space-indented) block removal.
             if (string.IsNullOrWhiteSpace(line)) return true;
 
-            // The leading run of a non-blank line is its indentation; the first non-space character ends it. A tab (or
-            // any non-space whitespace) there means tab / mixed indentation — the case IndentOf and the regexes disagree
-            // on — so the block is untrusted. Whitespace after the first content character is not indentation.
+            // Only the leading run counts as indentation; a non-space whitespace character there makes the block
+            // untrusted. Whitespace after the first content character is not indentation.
             foreach (var character in line)
             {
                 if (character == ' ') continue;
@@ -154,10 +144,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // Whether the text looks like a Unity-serialized YAML asset: its directive preamble (everything before the
-        // first document "---") must carry Unity's signature "%TAG !u! tag:unity3d.com,2011:" directive. Guards the
-        // destructive writes so a hand-authored or foreign YAML file — which this line-scanning parser was never
-        // designed for — can never be surgically rewritten.
+        // A Unity-serialized YAML asset carries the "%TAG !u!" directive before its first document. Guards the
+        // destructive writes so a hand-authored or foreign YAML file can never be surgically rewritten.
         private static bool LooksLikeUnityYaml(string[] lines)
         {
             for (var i = 0; i < lines.Length; i++)

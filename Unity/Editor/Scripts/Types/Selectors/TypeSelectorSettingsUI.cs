@@ -52,8 +52,7 @@ namespace Aspid.FastTools.Types.Editors
             container.Add(BuildClearRow());
         }
 
-        // The maintenance row: the same card as the field rows, a caption on the left and the two destructive
-        // clear actions pinned right, each behind a count-naming confirmation since a wiped list is not undoable.
+        // The two destructive clear actions sit behind a count-naming confirmation — a wiped list is not undoable.
         private static VisualElement BuildClearRow()
         {
             var row = new VisualElement().AddClass(AspidSettingsUI.RowClass).AddClass(AspidSettingsUI.UserScopeClass);
@@ -88,8 +87,7 @@ namespace Aspid.FastTools.Types.Editors
             TypeSelectorPreferences.ClearRecents();
         }
 
-        // Names the exact entry count in the confirmation (raw stored count — cleared entries include the ones kept
-        // for currently-unresolvable types), and short-circuits with a plain notice when there is nothing to clear.
+        // The confirmation names the raw stored count — clearing also drops entries kept for unresolvable types.
         private static bool ConfirmClear(string list, int count)
         {
             var title = $"Clear {list}";

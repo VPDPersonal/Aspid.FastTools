@@ -97,13 +97,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Per-type memo for GetRequiredFields — the reflected field set is stable until a domain reload clears statics.
         private static readonly Dictionary<Type, IReadOnlyList<RequiredFieldDescriptor>> RequiredFieldCache = new();
 
-        // Memoises ResolveFieldInfo by (target type, property path): the reflected field is stable for a given type and
-        // path until a domain reload clears statics, so IsViolation/TryGetRequired — called from both GetHeight and Draw
-        // every IMGUI repaint — reflect each path only once instead of re-walking it on every frame.
+        // The reflected field is stable per (type, path) until a domain reload; IsViolation/TryGetRequired run every
+        // IMGUI repaint, so each path is reflected only once.
         private static readonly Dictionary<(Type, string), FieldInfo> ResolvedFieldCache = new();
 
-        // Walks the property path against the target object's type to find the declared field (which carries the
-        // attribute). For a list/array element the field is the collection itself, matching PropertyDrawer.fieldInfo.
+        // For a list/array element the resolved field is the collection itself, matching PropertyDrawer.fieldInfo.
         private static FieldInfo ResolveFieldInfo(SerializedProperty property)
         {
             var type = property.serializedObject?.targetObject?.GetType();

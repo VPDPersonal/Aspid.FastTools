@@ -18,8 +18,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     internal static class SerializeReferenceSharedNavigation
     {
         // Mirrors the UIToolkit field's FlashAlpha / FlashDurationMs / FlashHoldFraction so the pulse reads the same
-        // in both UIs: full tint for the first FlashHoldFraction of the pulse, then a linear fade (an immediate fade
-        // read as a laggy flicker rather than a "here it is" highlight).
+        // in both UIs: full tint for the first FlashHoldFraction, then a linear fade.
         private const float FlashAlpha = 0.25f;
         private const double FlashSeconds = 1.6;
         private const float FlashHoldFraction = 0.35f;
@@ -39,10 +38,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static string _revealPath;
         private static double _revealUntil;
 
-        // The per-group navigation cursor: the member the last click revealed, keyed by (target object, rid).
-        // Advancing from the cursor — not from the clicked field — lets repeated clicks on the SAME notice walk the
-        // whole group; advancing from the clicked field would recompute the same "next" forever and members two or
-        // more steps away would stay unreachable from that notice. Mirrors the UIToolkit field's cursor.
+        // The per-group navigation cursor, keyed by (target object, rid). Advancing from the cursor — not the clicked
+        // field — lets repeated clicks on the SAME notice walk the whole group. Mirrors the UIToolkit field's cursor.
         private static readonly Dictionary<(int target, long rid), string> NavigationCursor = new();
 
         // The active pulse: every drawn member of (target, rid) except the clicked one tints in the group colour
@@ -81,9 +78,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (path != selfPath)
                     ExpandAncestors(property.serializedObject, path);
 
-            // The scroll target: the next member in document order after the group's cursor (the member the
-            // previous click scrolled to), so repeated clicks on the same notice walk the whole group; the clicked
-            // field itself is skipped.
+            // The scroll target: the next member in document order after the cursor; the clicked field is skipped.
             var key = (target.GetInstanceID(), rid);
             var start = NavigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
             if (start < 0) start = IndexOf(group, selfPath);
@@ -161,10 +156,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return -1;
         }
 
-        // Expands every ancestor on the way to a property so it is actually drawn: each '.'-prefix of the path is an
-        // ancestor ("sidearms", "sidearms.Array.data[1]", …). IMGUI re-reads isExpanded on every repaint, so flipping
-        // the stored state is enough; prefixes that are not real properties (the bare ".Array" marker) resolve to
-        // null and are skipped. The member itself is left alone — revealing it must not toggle its own foldout.
+        // Expands every '.'-prefix ancestor so the property is actually drawn; prefixes that are not real properties
+        // (the bare ".Array" marker) resolve to null and are skipped. The member itself is left alone — revealing it
+        // must not toggle its own foldout.
         private static void ExpandAncestors(SerializedObject serializedObject, string path)
         {
             for (var dot = path.IndexOf('.'); dot >= 0; dot = path.IndexOf('.', dot + 1))

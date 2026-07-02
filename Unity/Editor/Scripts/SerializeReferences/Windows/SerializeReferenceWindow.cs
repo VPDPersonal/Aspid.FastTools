@@ -48,8 +48,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string WindowStyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
 
-        // The Aspid brand mark (green snake), shown beside the window title in its tab.
-        // Uses a padded variant (not the full-bleed status icon) so it doesn't dominate the tab next to the title text.
+        // The Aspid brand mark shown beside the window title; padded variant so it doesn't dominate the tab.
         private const string WindowIconPath = "Icons/aspid_icon_window_tab_green_1022x1011";
 
         // ShortcutManager ids for the tab-switch bindings. They surface under this category in Edit > Shortcuts and are
@@ -68,9 +67,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private Button _inspectButton;
         private Button _projectButton;
         private Button _settingsButton;
-        // Serialized so the active tab and the inspected asset survive a domain reload: EditorWindow persists
-        // [SerializeField] state across assembly reloads, whereas a plain field would reset to its initializer and
-        // CreateGUI → SwitchMode(_mode) would always revert to the Inspect tab on an empty asset.
+        // Serialized so the active tab and the inspected asset survive a domain reload — EditorWindow persists
+        // [SerializeField] state across assembly reloads; a plain field would reset to its initializer.
         [SerializeField] private Mode _mode = Mode.Inspect;
         [SerializeField] private Object _pendingTarget;
 
@@ -78,7 +76,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // index, whereas a plain Project References tab click is warmth-gated inside the view. Consumed in SwitchMode.
         private bool _forceProjectScan;
 
-        /// <summary>Opens the window on the Welcome home tab — the menu entry and the first-run auto-show.</summary>
+        /// <summary>
+        /// Opens the window on the Welcome home tab — the menu entry and the first-run auto-show.
+        /// </summary>
         [MenuItem("Tools/Aspid 🐍/FastTools/Welcome", priority = 0)]
         public static void OpenWelcome()
         {
@@ -92,7 +92,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         [MenuItem("Tools/Aspid 🐍/FastTools/Asset References", priority = 20)]
         private static void OpenMenu() => Open(Selection.activeObject);
 
-        /// <summary>Opens the window in Inspect mode on <paramref name="target"/> (the deep-link for per-asset repair).</summary>
+        /// <summary>
+        /// Opens the window in Inspect mode on <paramref name="target"/> (the deep-link for per-asset repair).
+        /// </summary>
         public static void Open(Object target)
         {
             var window = Reveal();
@@ -100,11 +102,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             window.SwitchMode(Mode.Inspect);
         }
 
-        /// <summary>Opens the window on the Project References tab (no auto-scan — the idle Scan panel shows first).</summary>
+        /// <summary>
+        /// Opens the window on the Project References tab (no auto-scan — the idle Scan panel shows first).
+        /// </summary>
         [MenuItem("Tools/Aspid 🐍/FastTools/Project References", priority = 21)]
         private static void OpenProject() => Reveal().SwitchMode(Mode.Project);
 
-        /// <summary>Opens the window straight into a project audit (the breakage-notification deep-link).</summary>
+        /// <summary>
+        /// Opens the window straight into a project audit (the breakage-notification deep-link).
+        /// </summary>
         public static void OpenProjectScan()
         {
             var window = Reveal();
@@ -112,9 +118,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             window.SwitchMode(Mode.Project);
         }
 
-        /// <summary>Opens the window on the Settings tab. Also the deep-link target of the type selector's footer gear.</summary>
+        /// <summary>
+        /// Opens the window on the Settings tab. Also the deep-link target of the type selector's footer gear.
+        /// </summary>
         [MenuItem("Tools/Aspid 🐍/FastTools/Settings", priority = 40)]
-        internal static void OpenSettings() => Reveal().SwitchMode(Mode.Settings);
+        public static void OpenSettings() => Reveal().SwitchMode(Mode.Settings);
 
         private static SerializeReferenceWindow Reveal()
         {
@@ -132,9 +140,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(WindowStyleSheetPath)
                 .AddClass(RootClass);
 
-            // One dotted canvas, owned by the window, absolutely fills it behind everything; the transparent toolbar
-            // and mode content float over it so the dots read continuously. Its tint follows the active view's state,
-            // routed through the SetCanvasTone callback handed to each view.
+            // One dotted canvas, owned by the window, fills it behind everything; its tint follows the active view's
+            // state via the SetCanvasTone callback handed to each view.
             _background = new AspidAnimatedDotsBackground()
                 .AddClass(BackgroundClass)
                 .SetPickingMode(PickingMode.Ignore);
@@ -153,9 +160,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _container = new VisualElement().AddClass(ContainerClass);
             _container.style.flexGrow = 1;
 
-            // The version/GitHub footer is owned by the window, not any single tab, so it stays pinned to the bottom
-            // across every mode. _container (flex-grow:1) takes the remaining height and pushes the footer down; the
-            // footer is transparent, so the shared dotted canvas reads continuously behind it.
+            // The footer is owned by the window, not any single tab, so it stays pinned to the bottom across every
+            // mode; _container (flex-grow:1) pushes it down.
             root.AddChild(_background)
                 .AddChild(toolbar)
                 .AddChild(_container)
@@ -169,9 +175,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var button = new Button(() => SwitchMode(mode)) { text = label, tooltip = hint };
             button.AddClass(ToolbarButtonClass);
 
-            // The tab's switch shortcut, shown as a small keyboard-cap badge pinned to the right of the centred label so
-            // the binding is discoverable on the tab itself. Absolutely positioned (like the underline below), so it
-            // floats over the button without disturbing its centred text.
+            // Shortcut badge, absolutely positioned so it floats over the button without disturbing the centred label.
             button.AddChild(new Label(hint)
                 .AddClass(TabHintClass)
                 .SetPickingMode(PickingMode.Ignore));
@@ -185,10 +189,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return button;
         }
 
-        // The edge tabs (home on the left, settings on the right) are square and icon-only, not flex label tabs. The
-        // USS --square modifier overrides the flex sizing into a square; the inner __tab-icon (plus an --home/--settings
-        // glyph modifier supplying the background-image) carries the tint. Each keeps the same bottom underline bar as
-        // the mode tabs (grey baseline, green when active) for consistent feedback.
+        // The edge tabs (home / settings) are square and icon-only: the USS --square modifier overrides the flex
+        // sizing, the inner __tab-icon modifier supplies the glyph. Same underline bar as the mode tabs.
         private Button SquareTabButton(Mode mode, string iconModifierClass, string hint)
         {
             var button = new Button(() => SwitchMode(mode)) { tooltip = hint };
@@ -206,13 +208,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return button;
         }
 
-        // Tab-switch hotkeys, registered with the ShortcutManager against this window as the context. A context shortcut
-        // is dispatched at the editor level whenever the window is focused — unlike a panel KeyDownEvent, which only
-        // fires while some element *inside* the window holds keyboard focus, so it would go silent the moment the user
-        // clicked empty chrome. This way the bindings always work as long as the window is focused. Alt+digit is used
-        // because Unity reserves every primary-modifier digit combo globally (Cmd/Ctrl+digit, +Shift, +Alt — see the
-        // tab badges); Alt alone is otherwise only bound inside Scene View / Shader Graph, which are different contexts.
-        // The bindings appear under "Aspid FastTools/Managed References" in Edit > Shortcuts and are user-rebindable.
+        // Registered against this window as the context: a context shortcut fires whenever the window is focused,
+        // unlike a panel KeyDownEvent, which goes silent when focus sits on empty chrome. Alt+digit because Unity
+        // reserves every primary-modifier digit combo globally; user-rebindable in Edit > Shortcuts.
         [Shortcut(HomeShortcutId, typeof(SerializeReferenceWindow), KeyCode.Alpha1, ShortcutModifiers.Alt)]
         private static void OnHomeShortcut(ShortcutArguments args) => SwitchFrom(args, Mode.Welcome);
 
@@ -225,19 +223,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         [Shortcut(SettingsShortcutId, typeof(SerializeReferenceWindow), KeyCode.Alpha0, ShortcutModifiers.Alt)]
         private static void OnSettingsShortcut(ShortcutArguments args) => SwitchFrom(args, Mode.Settings);
 
-        // Cyclic tab switching, browser-style: Ctrl+Tab walks the toolbar left-to-right, Ctrl+Shift+Tab walks it back,
-        // both wrapping around at the ends. ShortcutModifiers.Control is deliberate on BOTH platforms — Action would map
-        // to ⌘ on macOS, and Cmd+Tab is reserved by the OS for the application switcher; the physical Ctrl key works the
-        // same on Windows and macOS. If the ShortcutManager ever refuses to deliver KeyCode.Tab (it is also a focus-
-        // navigation key), the fallback is a TrickleDown KeyDownEvent on rootVisualElement — with the caveat that
-        // KeyDown goes silent when focus sits on empty window chrome, which is why [Shortcut] is the primary path.
+        // Browser-style cyclic tab switching. ShortcutModifiers.Control is deliberate on BOTH platforms — Action would
+        // map to ⌘ on macOS, and Cmd+Tab is reserved by the OS for the application switcher. If the ShortcutManager
+        // ever refuses KeyCode.Tab, the fallback is a TrickleDown KeyDownEvent on rootVisualElement (KeyDown caveat above).
         [Shortcut(NextTabShortcutId, typeof(SerializeReferenceWindow), KeyCode.Tab, ShortcutModifiers.Control)]
         private static void OnNextTabShortcut(ShortcutArguments args) => CycleFrom(args, +1);
 
         [Shortcut(PreviousTabShortcutId, typeof(SerializeReferenceWindow), KeyCode.Tab, ShortcutModifiers.Control | ShortcutModifiers.Shift)]
         private static void OnPreviousTabShortcut(ShortcutArguments args) => CycleFrom(args, -1);
 
-        // The shortcut's context is the focused window instance, handed in via ShortcutArguments.
         private static void SwitchFrom(ShortcutArguments args, Mode mode)
         {
             if (args.context is SerializeReferenceWindow window)
@@ -252,10 +246,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             window.SwitchMode(next);
         }
 
-        // The badge / tooltip text for a tab: the shortcut's live binding read straight from the ShortcutManager, so it
-        // tracks any rebind the user makes in Edit > Shortcuts and renders the real per-platform glyph (⌥2 on macOS,
-        // Alt+2 elsewhere — the same string the Shortcuts window shows). Falls back to the default ⌥/Alt hint if the id
-        // isn't registered yet (e.g. first import before discovery) or its binding has been cleared.
+        // The tab's badge / tooltip: the live binding read from the ShortcutManager, so it tracks user rebinds and
+        // renders the real per-platform glyph. Falls back to the static default when the id isn't registered yet or
+        // its binding has been cleared.
         private static string BindingLabel(string shortcutId, int number)
         {
             try
@@ -271,8 +264,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return ShortcutHint(number);
         }
 
-        // The default tab-switch hint, used as BindingLabel's fallback: the ⌥ Option glyph on macOS (its own "icon"),
-        // spelled-out Alt+ elsewhere. Mirrors the [Shortcut] defaults above (ShortcutModifiers.Alt + the digit).
+        // BindingLabel's fallback, mirroring the [Shortcut] defaults: the ⌥ glyph on macOS, spelled-out Alt+ elsewhere.
         private static string ShortcutHint(int number) =>
             (Application.platform == RuntimePlatform.OSXEditor ? "⌥" : "Alt+") + number;
 
@@ -285,8 +277,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (mode == Mode.Welcome)
             {
-                // Welcome carries no single status; restore the component's default green→amber→red "traffic light"
-                // gradient on the shared canvas (a prior Inspect/Project toned every blob one colour, flattening it).
+                // Welcome carries no single status; restore the default signal gradient a prior view's tone flattened.
                 _background?.SetSignalGradient();
                 _container.AddChild(new WelcomeView());
             }
@@ -311,9 +302,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 };
                 _container.AddChild(project);
 
-                // A plain tab switch never auto-scans (Initialize just shows the idle Scan panel — no scan freeze on
-                // large projects); only the breakage-notification deep-link forces the scan, since the user opened it
-                // specifically to see the breakage.
+                // A plain tab switch never auto-scans (no scan freeze on large projects); only the
+                // breakage-notification deep-link forces the scan.
                 if (_forceProjectScan)
                 {
                     _forceProjectScan = false;

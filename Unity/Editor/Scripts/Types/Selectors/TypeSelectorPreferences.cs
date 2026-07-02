@@ -20,11 +20,8 @@ namespace Aspid.FastTools.Types.Editors
 
         private static string ProjectId => PlayerSettings.productGUID.ToString();
 
-        // Internal (not private) for the test fixtures: they snapshot/restore the RAW EditorPrefs JSON around each
-        // run, and re-spelling the key there would silently rot if this composition ever changed — the restore would
-        // then write a dead key while the API had already cleared the real store, wiping the developer's lists.
-        internal static string FavoritesKey => FavoritesKeyPrefix + ProjectId;
-        internal static string RecentsKey => RecentsKeyPrefix + ProjectId;
+        public static string FavoritesKey => FavoritesKeyPrefix + ProjectId;
+        public static string RecentsKey => RecentsKeyPrefix + ProjectId;
 
         // Membership cache for the favorites set, read once and reused across the many per-row IsFavorite calls a
         // single refresh fires. Invalidated whenever ToggleFavorite rewrites the store (the only writer in-session).
@@ -55,20 +52,28 @@ namespace Aspid.FastTools.Types.Editors
             return resolved;
         }
 
-        /// <summary>Raw stored favorites count — includes entries that don't currently resolve.</summary>
+        /// <summary>
+        /// Raw stored favorites count — includes entries that don't currently resolve.
+        /// </summary>
         public static int FavoritesCount => LoadRaw(FavoritesKey).Count;
 
-        /// <summary>Raw stored recents count — includes entries that don't currently resolve.</summary>
+        /// <summary>
+        /// Raw stored recents count — includes entries that don't currently resolve.
+        /// </summary>
         public static int RecentsCount => LoadRaw(RecentsKey).Count;
 
-        /// <summary>Drops every stored favorite, including entries kept for currently-unresolvable types.</summary>
+        /// <summary>
+        /// Drops every stored favorite, including entries kept for currently-unresolvable types.
+        /// </summary>
         public static void ClearFavorites()
         {
             EditorPrefs.DeleteKey(FavoritesKey);
             _favorites = null;
         }
 
-        /// <summary>Drops the whole recents history, including entries kept for currently-unresolvable types.</summary>
+        /// <summary>
+        /// Drops the whole recents history, including entries kept for currently-unresolvable types.
+        /// </summary>
         public static void ClearRecents() => EditorPrefs.DeleteKey(RecentsKey);
 
         public static bool IsFavorite(string assemblyQualifiedName)

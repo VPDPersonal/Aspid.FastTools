@@ -99,9 +99,8 @@ namespace Aspid.FastTools.Types.Editors
             element.EnableInClass(ItemInSectionClass, !isSectionTitle && node.SectionKey is not null);
             element.EnableInClass(ItemCurrentModifier, isCurrent);
 
-            // The row root itself is the collection-view item (a non-reorderable ListView adds the class
-            // straight onto the makeItem element, no per-row wrapper), so the divider goes here; the parent
-            // is the content container shared by every row.
+            // A non-reorderable ListView adds the item class straight onto the makeItem element (no per-row
+            // wrapper), so the divider modifier goes on the row root itself.
             element.EnableInClass(RowAfterPinnedModifier, IsFirstRowAfterPinnedBlock(items, index));
 
             element.SetPickingMode(PickingMode.Position);
@@ -127,17 +126,14 @@ namespace Aspid.FastTools.Types.Editors
                     : DisplayStyle.None);
         }
 
-        // The row is "current" when it names the value the field already holds — the concrete type by its
-        // assembly-qualified name, or the <None> row when the field is empty — so the stored value reads
-        // apart from the keyboard highlight while browsing. Base page only: a coincidental match on a
-        // generic-argument page is not the field's value.
+        // "Current" = the value the field already holds (the type by its AQN, or <None> for an empty field).
+        // Base page only: a coincidental match on a generic-argument page is not the field's value.
         private bool IsCurrentValue(TreeNode node)
         {
             if (!_pages[^1].IsBase) return false;
 
-            // Null = the host has no current-value concept at all (a list "+" append, a missing-type Fix, the bulk
-            // project picker) — nothing wears the check there, least of all <None>, which only an EMPTY STRING (a
-            // field genuinely holding None) rightly marks.
+            // Null = the host has no current-value concept (a list "+" append, a missing-type Fix, the bulk
+            // project picker) — nothing wears the check there; only an EMPTY STRING rightly marks <None>.
             if (_currentAqn is null) return false;
 
             return _currentAqn.Length > 0
@@ -154,8 +150,7 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // True for the first ordinary root category after the pinned block (<None> plus the Favorites/Recent
-        // sections) — the row that carries the divider separating the pinned rows from the namespace
-        // hierarchy. Only the base root page composes a pinned block, so everywhere else this stays false.
+        // sections) — the row carrying the divider. Only the base root page composes a pinned block.
         private bool IsFirstRowAfterPinnedBlock(List<TreeNode> items, int index)
         {
             if (!Nav.IsAtRoot || index <= 0 || index >= items.Count) return false;

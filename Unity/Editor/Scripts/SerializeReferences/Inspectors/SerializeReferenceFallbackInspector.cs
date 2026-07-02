@@ -1,5 +1,4 @@
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 
@@ -60,11 +59,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return substitutedAny ? root : null;
         }
 
-        // Flipping the opt-in must rebuild open inspectors, not just repaint them: this editor is ALWAYS the selected
-        // fallback editor for the affected components, and what the toggle changes is the UI CreateInspectorGUI
-        // built — which the tracker only re-queries on a rebuild. Watches the general Changed signal for a flip of
-        // this one value, so unrelated settings never pay the rebuild. (The shared tracker covers the main inspector;
-        // a locked inspector rebuilds on its next reselect.)
+        // Flipping the opt-in must rebuild open inspectors, not just repaint them — the tracker only re-queries
+        // CreateInspectorGUI on a rebuild. Watches the general Changed signal for a flip of this one value, so
+        // unrelated settings never pay the rebuild. (A locked inspector rebuilds on its next reselect.)
         [InitializeOnLoadMethod]
         private static void RebuildInspectorsOnToggle()
         {
@@ -79,14 +76,4 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             };
         }
     }
-
-    /// <summary>The attribute-free dropdown fallback for components; see <see cref="SerializeReferenceFallbackInspector"/>.</summary>
-    [CanEditMultipleObjects]
-    [CustomEditor(typeof(MonoBehaviour), editorForChildClasses: true, isFallback = true)]
-    internal sealed class SerializeReferenceMonoBehaviourFallbackInspector : SerializeReferenceFallbackInspector { }
-
-    /// <summary>The attribute-free dropdown fallback for assets; see <see cref="SerializeReferenceFallbackInspector"/>.</summary>
-    [CanEditMultipleObjects]
-    [CustomEditor(typeof(ScriptableObject), editorForChildClasses: true, isFallback = true)]
-    internal sealed class SerializeReferenceScriptableObjectFallbackInspector : SerializeReferenceFallbackInspector { }
 }

@@ -33,8 +33,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var typeWord = report.TypeCount == 1 ? "type" : "types";
 
             // A [MovedFrom]-resolvable entry is not really broken — Unity migrates it in memory at load; only the
-            // file text is stale. Word it as a calm "migrate" invitation, not a data-loss alarm; a mixed report
-            // keeps the alarm but names how much of it is one click away.
+            // file text is stale. Word it as a calm "migrate" invitation, not a data-loss alarm.
             var migratable = 0;
             foreach (var entry in report.Entries)
                 if (entry.MigrationTarget is not null)
@@ -60,14 +59,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             ShowToast(message);
 
-            // A fully-migratable report is a calm invitation, not an alarm — log it at plain severity so the console
-            // matches the copy; anything actually missing keeps the warning.
+            // A fully-migratable report logs at plain severity so the console matches the calm copy.
             var console = $"[Aspid FastTools] {message}. Open Tools/Aspid \U0001F40D/FastTools/Project References.";
             if (migratable == count) Debug.Log(console);
             else Debug.LogWarning(console);
         }
 
-        /// <summary>Public deep-link the user can wire to a button/menu — opens Repair straight into project-scan mode.</summary>
+        /// <summary>
+        /// Public deep-link the user can wire to a button/menu — opens Repair straight into project-scan mode.
+        /// </summary>
         public static void OpenRepair() => SerializeReferenceWindow.OpenProjectScan();
 
         private static void ShowToast(string message)
