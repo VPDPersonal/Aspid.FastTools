@@ -129,7 +129,7 @@ namespace Aspid.FastTools.Editors
             var user = new Button(ResetUserToDefaults)
             {
                 text = "Per-user",
-                tooltip = "Reset your per-user settings to defaults: Breakage detection on, Favorites section on, Recent items 8, "
+                tooltip = "Reset your per-user settings to defaults: Breakage detection on, Favorites section on, Recent items 5, "
                     + "no theme override, auto-show Welcome on.\n"
                     + "Only this machine; the saved Favorites / Recent lists are kept.",
             };
@@ -165,7 +165,7 @@ namespace Aspid.FastTools.Editors
                 "Reset your per-user settings to defaults?\n\n"
                 + "• Breakage detection: On\n"
                 + "• Favorites section: On\n"
-                + "• Recent items: 8\n"
+                + "• Recent items: 5\n"
                 + "• Theme override: none\n"
                 + "• Auto-show Welcome: On\n\n"
                 + "Only this machine is affected; the saved Favorites / Recent lists are kept.",
