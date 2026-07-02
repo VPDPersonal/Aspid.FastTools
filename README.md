@@ -256,13 +256,16 @@ Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in
 ```csharp
 using Aspid.FastTools.Types;
 
-// Give the type a tooltip and an icon:
-[TypeSelectorDisplay(Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
+// Rename the type in the picker, place it under an explicit group, give it a tooltip and an icon:
+[TypeSelectorDisplay(Name = "Damage ×", Group = "Combat/Modifiers",
+    Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
 public sealed class DamageModifier { }
 ```
 
 | Member | Description |
 |--------|-------------|
+| `Name` | Display name shown instead of the type's short name — in the picker rows and in the closed dropdown's caption. Search still matches the real type name too, and the hover tooltip keeps revealing the full `Namespace.Class, Assembly` identity. `null` or whitespace means no override. |
+| `Group` | Explicit picker path with `/` separating levels (e.g. `"Combat/Melee"`). **Replaces** the type's namespace placement — the type appears only under this path, and path segments are shared between types. `null` or whitespace keeps the namespace placement. |
 | `Tooltip` | Tooltip shown when hovering the type's row. `null` means no tooltip override. |
 | `Icon` | Editor icon shown left of the label — an `EditorGUIUtility.IconContent` name, a project-relative asset path with extension (loaded via `AssetDatabase`), or a `Resources` texture path without extension. `null` means no icon. |
 
@@ -411,7 +414,7 @@ Bulk repair lives in two dedicated tabs:
 | Tab | Purpose |
 |---|---|
 | **Asset References** (`Tools → Aspid 🐍 → FastTools → Asset References`) | Maps an asset's whole managed-reference graph from its YAML — a per-component tree with field paths, shared and orphaned references, `MISSING` / `SHARED` badges, and an inline type dropdown on every card. Surfaces the missing references the Inspector cannot show. |
-| **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` sweeps every `.prefab` / `.asset` / `.unity` under `Assets/`, groups broken references by stored type, and rewrites a whole group with a single `Fix all` (plus Smart Fix). |
+| **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` sweeps every `.prefab` / `.asset` / `.unity` under `Assets/`, groups broken references by stored type, and rewrites a whole group with a single `Fix all` (plus Smart Fix). A group whose stored type matches a declared `[MovedFrom]` rename reads as a pending migration instead of a breakage — one **Migrate all** click bakes the rename into the files, after which the attribute can be removed from code. |
 
 > The full sample — `Loadout` / `IWeapon` / `Modifier<T>` and the missing-reference repair scenarios — ships in the `SerializeReferences` sample (Package Manager → Aspid.FastTools → Samples). A step-by-step walkthrough lives in that sample's `TUTORIAL.md`.
 

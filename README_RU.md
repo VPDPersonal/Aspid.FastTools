@@ -256,13 +256,16 @@ public sealed class AbilitySelector : MonoBehaviour
 ```csharp
 using Aspid.FastTools.Types;
 
-// Задать типу tooltip и иконку:
-[TypeSelectorDisplay(Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
+// Переименовать тип в пикере, положить его в явную группу, задать tooltip и иконку:
+[TypeSelectorDisplay(Name = "Damage ×", Group = "Combat/Modifiers",
+    Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
 public sealed class DamageModifier { }
 ```
 
 | Член | Описание |
 |------|----------|
+| `Name` | Отображаемое имя вместо короткого имени типа — в строках пикера и в подписи закрытого дропдауна. Поиск по-прежнему находит тип и по настоящему имени, а tooltip при наведении показывает полную идентичность `Namespace.Class, Assembly`. `null` или пробелы — без переопределения. |
+| `Group` | Явный путь в пикере, уровни разделяются `/` (например `"Combat/Melee"`). **Заменяет** размещение по namespace — тип показывается только под этим путём, сегменты пути общие для разных типов. `null` или пробелы — размещение по namespace. |
 | `Tooltip` | Tooltip, показываемый при наведении на строку типа. `null` — без переопределения tooltip. |
 | `Icon` | Иконка редактора слева от лейбла — имя `EditorGUIUtility.IconContent`, путь к ассету в проекте с расширением (загружается через `AssetDatabase`) или путь к текстуре в `Resources` без расширения. `null` — без иконки. |
 
@@ -411,7 +414,7 @@ public sealed class Loadout : MonoBehaviour
 | Вкладка | Назначение |
 |---|---|
 | **Asset References** (`Tools → Aspid 🐍 → FastTools → Asset References`) | Строит весь граф managed-ссылок ассета прямо из YAML — дерево по компонентам с путями полей, общими и осиротевшими ссылками, значками `MISSING` / `SHARED` и инлайн-выбором типа на каждой карточке. Достаёт потерянные ссылки, которые инспектор не показывает. |
-| **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` обходит каждый `.prefab` / `.asset` / `.unity` под `Assets/`, группирует сломанные ссылки по сохранённому типу и чинит всю группу одним `Fix all` (плюс Smart Fix). |
+| **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` обходит каждый `.prefab` / `.asset` / `.unity` под `Assets/`, группирует сломанные ссылки по сохранённому типу и чинит всю группу одним `Fix all` (плюс Smart Fix). Группа, чей сохранённый тип совпадает с объявленным переименованием `[MovedFrom]`, читается как ожидающая миграция, а не поломка — один клик **Migrate all** запекает переименование в файлы, после чего атрибут можно удалить из кода. |
 
 > Полный сэмпл — `Loadout` / `IWeapon` / `Modifier<T>` и сценарии починки потерянных ссылок — поставляется в сэмпле `SerializeReferences` (Package Manager → Aspid.FastTools → Samples). Пошаговый разбор — в `TUTORIAL.md` этого сэмпла.
 
