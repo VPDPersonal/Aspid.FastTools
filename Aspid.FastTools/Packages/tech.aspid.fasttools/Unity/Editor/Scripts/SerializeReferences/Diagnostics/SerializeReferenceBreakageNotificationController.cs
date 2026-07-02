@@ -31,11 +31,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var count = report.Entries.Count;
             var typeWord = report.TypeCount == 1 ? "type" : "types";
-            var message = $"{count} managed reference{(count == 1 ? "" : "s")} became missing " +
-                          $"({report.TypeCount} {typeWord}) — open Repair";
+
+            // A [MovedFrom]-resolvable entry is not really broken — Unity migrates it in memory at load; only the
+            // file text is stale. Word it as a calm "migrate" invitation, not a data-loss alarm; a mixed report
+            // keeps the alarm but names how much of it is one click away.
+            var migratable = 0;
+            foreach (var entry in report.Entries)
+                if (entry.MigrationTarget is not null)
+                    migratable++;
+
+            var plural = count == 1 ? "" : "s";
+            var message = migratable == count
+                ? $"{count} managed reference{plural} carr{(count == 1 ? "ies" : "y")} an outdated type name " +
+                  $"after a [MovedFrom] rename ({report.TypeCount} {typeWord}) — open Repair to migrate"
+                : migratable > 0
+                    ? $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}; " +
+                      $"{migratable} auto-migratable after a [MovedFrom] rename) — open Repair"
+                    : $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}) — open Repair";
 
             ShowToast(message);
-            Debug.LogWarning($"[Aspid FastTools] {message}. Open Tools/Aspid \U0001F40D/FastTools/Project References.");
+
+            // A fully-migratable report is a calm invitation, not an alarm — log it at plain severity so the console
+            // matches the copy; anything actually missing keeps the warning.
+            var console = $"[Aspid FastTools] {message}. Open Tools/Aspid \U0001F40D/FastTools/Project References.";
+            if (migratable == count) Debug.Log(console);
+            else Debug.LogWarning(console);
         }
 
         /// <summary>Public deep-link the user can wire to a button/menu — opens Repair straight into project-scan mode.</summary>

@@ -63,7 +63,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (stored.IsEmpty || max <= 0) return Array.Empty<RepairCandidate>();
 
             var constraint = baseConstraint ?? typeof(object);
-            var storedClass = NormalizeName(stored.Class);
+            var storedClass = SerializeReferenceMovedFromResolver.NormalizeClassName(stored.Class);
             if (string.IsNullOrEmpty(storedClass)) return Array.Empty<RepairCandidate>();
 
             var hasFieldNames = storedFieldNames is { Count: > 0 };
@@ -124,13 +124,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static float ScoreCandidate(ManagedTypeName stored, string storedClass, Type candidate, out string reason)
         {
             // A declared [MovedFrom] whose recorded old identity matches the stored one is an authoritative rename — top score.
-            if (MatchesMovedFrom(candidate, stored, storedClass))
+            if (SerializeReferenceMovedFromResolver.MatchesOldIdentity(candidate, stored, storedClass))
             {
                 reason = "declared [MovedFrom]";
                 return 1f;
             }
 
-            var candidateClass = NormalizeName(candidate.Name);
+            var candidateClass = SerializeReferenceMovedFromResolver.NormalizeClassName(candidate.Name);
 
             // Same simple class name, different namespace and/or assembly — the class was moved/renamed-by-namespace.
             if (string.Equals(candidateClass, storedClass, StringComparison.Ordinal))
@@ -155,65 +155,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             reason = null;
             return 0f;
-        }
-
-        // True when the candidate carries a [MovedFrom] whose recorded old identity matches the stored type's class
-        // (and, when declared, namespace / assembly). The attribute's backing data is not public API, so every member
-        // is read reflectively and any failure is treated as "no match" rather than throwing.
-        private static bool MatchesMovedFrom(Type candidate, ManagedTypeName stored, string storedClass)
-        {
-            try
-            {
-                foreach (var attribute in candidate.GetCustomAttributes(inherit: false))
-                {
-                    var attributeType = attribute.GetType();
-                    if (attributeType.Name != "MovedFromAttribute") continue;
-
-                    var data = attributeType
-                        .GetField("data", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                        ?.GetValue(attribute);
-                    if (data is null) continue;
-
-                    var dataType = data.GetType();
-
-                    // When a "*HasChanged" flag is false the old value equals the current type's value, so fall back to
-                    // the candidate's own identity for that slot — exactly how Unity's updater resolves the old name.
-                    var oldClass = NormalizeName(ReadMovedSlot(dataType, data, "className", "classHasChanged", candidate.Name));
-                    if (!string.Equals(oldClass, storedClass, StringComparison.Ordinal)) continue;
-
-                    if (!string.IsNullOrEmpty(stored.Namespace))
-                    {
-                        var oldNamespace = ReadMovedSlot(dataType, data, "nameSpace", "nameSpaceHasChanged", candidate.Namespace);
-                        if (!string.Equals(oldNamespace ?? string.Empty, stored.Namespace, StringComparison.Ordinal)) continue;
-                    }
-
-                    if (!string.IsNullOrEmpty(stored.Assembly))
-                    {
-                        var oldAssembly = ReadMovedSlot(dataType, data, "assembly", "assemblyHasChanged", candidate.Assembly.GetName().Name);
-                        if (!string.Equals(oldAssembly ?? string.Empty, stored.Assembly, StringComparison.Ordinal)) continue;
-                    }
-
-                    return true;
-                }
-            }
-            catch (Exception)
-            {
-                // The attribute data struct is not public API; any reflection failure simply means "no MovedFrom match".
-            }
-
-            return false;
-        }
-
-        // Reads a string slot of MovedFromAttributeData, returning the recorded old value when its companion
-        // "*HasChanged" flag is true and the current type's value otherwise (a slot that did not change).
-        private static string ReadMovedSlot(Type dataType, object data, string valueField, string changedField, string current)
-        {
-            var changed = dataType.GetField(changedField, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            var hasChanged = changed?.GetValue(data) is true;
-            if (!hasChanged) return current;
-
-            var value = dataType.GetField(valueField, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            return value?.GetValue(data) as string;
         }
 
         // Overlap ratio (0..1) between the stored field names and the candidate's serialized instance field names:
@@ -248,28 +189,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return names;
         }
-
-        // Strips Unity's generic-arity/expansion decoration from a stored or live class name so both sides compare on
-        // the bare simple name: "Modifier`1[[System.Single, mscorlib]]" and "Modifier`1" both reduce to "Modifier".
-        private static string NormalizeName(string className)
-        {
-            if (string.IsNullOrEmpty(className)) return string.Empty;
-
-            // Drop a bracketed generic expansion ("Foo`1[[...]]") and then the backtick-arity suffix ("Foo`1").
-            var bracket = className.IndexOf('[');
-            if (bracket >= 0) className = className[..bracket];
-
-            var tick = className.IndexOf('`');
-            if (tick >= 0) className = className[..tick];
-
-            // A nested type ("Outer/Inner" or "Outer+Inner") is identified by its innermost segment.
-            var slash = className.LastIndexOfAny(NestedSeparators);
-            if (slash >= 0) className = className[(slash + 1)..];
-
-            return className.Trim();
-        }
-
-        private static readonly char[] NestedSeparators = { '/', '+' };
 
         // Bounded Levenshtein: returns true when the edit distance between a and b is at most maxDistance, bailing out
         // early once a row's best possible distance exceeds the bound (so a long/short mismatch is rejected cheaply).
