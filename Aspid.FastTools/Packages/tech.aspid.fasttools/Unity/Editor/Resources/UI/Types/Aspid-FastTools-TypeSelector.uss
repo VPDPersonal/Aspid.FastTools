@@ -204,10 +204,12 @@ ToolbarSearchField TextElement {
 }
 
 /* The first ordinary root category after the pinned block (<None>, Favorites, Recent) draws the divider
-   line that separates the pinned rows from the namespace hierarchy. It lives on the ListView row wrapper
-   (toggled in code): 1px line flush under the pinned block, 4px of air, then the usual 22px row — the
-   height covers exactly border + padding + content so the row grid below is undisturbed. */
-.aspid-fasttools-type-selector .aspid-fasttools-type-selector__row--after-pinned {
+   line that separates the pinned rows from the namespace hierarchy (toggled in code on the row root, which
+   doubles as the collection-view item): 1px line flush under the pinned block, 4px of air, then the usual
+   22px row — the height covers exactly border + padding + content so the row grid below is undisturbed.
+   The wrapper class rides along in the selector to outweigh the 22px height in the base row rule above. */
+.aspid-fasttools-type-selector
+    .unity-collection-view__item.aspid-fasttools-type-selector__row--after-pinned {
     height:                 27px;
     padding-top:            4px;
     border-top-width:       1px;
