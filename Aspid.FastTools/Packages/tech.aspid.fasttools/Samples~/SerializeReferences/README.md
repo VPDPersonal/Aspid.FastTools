@@ -7,7 +7,7 @@ A tiny loadout system that demonstrates `[TypeSelector]` — a searchable, hiera
 Look at:
 
 - `Scripts/Loadout.cs` — single (`IWeapon`), `List<IWeapon>`, and abstract-base (`StatusEffect`) `[SerializeReference]` fields, each annotated with `[TypeSelector]`.
-- `Scripts/Weapons/` — `IWeapon` interface and its implementations (`Sword`, `Pistol`, `Shotgun`, `Railgun`). `Railgun` nests another `[TypeSelector]` field, showing recursive polymorphic editing.
+- `Scripts/Weapons/` — `IWeapon` interface and its implementations (`Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`). `Railgun` nests another `[TypeSelector]` field, showing recursive polymorphic editing.
 - `Scripts/Effects/` — abstract `StatusEffect` base with `BurnEffect` / `FreezeEffect`. The dropdown offers only the concrete subclasses; the abstract base is never listed.
 - `Scripts/Modifiers/` — generic hierarchy: a non-abstract `Modifier<T>` generic class (`IModifier`) with closed-generic subclasses `DamageModifier : Modifier<float>`, `AmmoModifier : Modifier<int>`, `NameModifier : Modifier<string>`. An `IModifier` field offers all three subclasses **and** the open generic `Modifier<T>` — picking `Modifier<T>` opens a second page inside the same picker to choose the argument `T`. A `Modifier<float>` field offers only the candidates assignable to it (`DamageModifier`, and `Modifier<T>` with `T` inferred to `float`).
 - `Scripts/WeaponPreset.cs` + `Presets/BrokenWeaponPreset.asset` / `Presets/MovedWeaponPreset.asset` — `ScriptableObject`s whose `_weapon` points at a type identity that no longer resolves, used to demonstrate the missing-type repair flow and the one-click **Smart Fix** (see *Maintenance features* below).
@@ -26,12 +26,12 @@ The twin swaps in a sibling component (`IMGUILoadout` / `IMGUISlottedLoadout`) w
 
 ## How to run
 
-Ready-made prefabs live in `Prefabs/` — double-click to open in Prefab Mode, or drag either into any scene. Start with the **Loadout** pair:
+Ready-made demo prefabs live in `Prefabs/` — double-click one to open it in Prefab Mode, or drag it into any scene. Start with `Loadout.prefab` / `NestedLoadout.prefab`. The **Loadout** pair:
 
 - **Loadout** (`Prefabs/Loadout.prefab`) — UIToolkit path. Pre-filled: `Primary Weapon = Railgun` (with a nested `BurnEffect` charge effect), `Sidearms = [Pistol, Shotgun]`, `On Hit Effect = FreezeEffect`.
 - **IMGUILoadout** (`Prefabs/IMGUILoadout.prefab`) — IMGUI path. Same data as **Loadout**, rendered through the IMGUI drawer so you can compare the two paths side by side.
 
-Each scenario prefab in **Maintenance features** below (`SlottedLoadout`, `LoadoutMissingType`, `NestedLoadout`, `LoadoutSharedRef`) ships an `IMGUI…` twin too — open either renderer to see the same data both ways.
+`SlottedLoadout.prefab` is the ready-made demo for Lesson 7 (references nested inside `[Serializable]` containers). It and each scenario prefab in **Maintenance features** below (`LoadoutMissingType`, `NestedLoadout`, `LoadoutSharedRef`) ship an `IMGUI…` twin too — open either renderer to see the same data both ways.
 
 Then experiment with the dropdowns:
 
@@ -65,7 +65,7 @@ Five assets ship storing type identities that no longer resolve directly:
 - `Presets/MovedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` stores `Pistol` under an old `…Samples.SerializeReferences.Legacy` namespace, as if the class had been moved without `[MovedFrom]` — this one demonstrates the one-click **Smart Fix** below.
 - `Presets/RenamedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` stores the old `CrossbowLauncher` class name; the class now ships as `Crossbow` carrying a declared `[MovedFrom]`, so the Inspector shows a healthy weapon and only the file is stale — this one demonstrates the **Migrate all** flow in Project References.
 
-Select either **in the Project window**. The missing field shows a `<Missing …>` caption, a **Missing type** warning, and a **Fix** button:
+Select any of the first four **in the Project window**. The missing field shows a `<Missing …>` caption, a **Missing type** warning, and a **Fix** button:
 
 1. Click **Fix** — the usual searchable type picker opens. Choose `Pistol`.
 2. The reference is restored to a `Pistol` with its preserved data (the prefab keeps `_damage = 15`, `_magazineSize = 12`; the asset keeps `_damage = 25`, `_magazineSize = 8`). Picking the type rewrites the stored type in the asset file rather than recreating the instance, so the values survive.
@@ -83,7 +83,7 @@ that contrast is intentional.)
 >
 > When a missing reference is nested inside another value or sits on a child object the Inspector can't reach, use **`Tools → Aspid 🐍 → FastTools → Asset References`** instead: it scans the whole asset file and lists every missing reference (any depth, any child) with its own **Fix** picker.
 >
-> Its **Project References** tab sweeps every asset under `Assets/` and groups the broken references by their stored type — so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into a single **GhostWeapon** group (`4 entries · 2 files`). One **Fix all** picks a single replacement and re-points every entry across both files at once. And `RenamedWeaponPreset.asset` surfaces there as a calm, info-tinted **pending migration** instead of a warning: its stored `CrossbowLauncher` matches the `[MovedFrom]` declared on `Crossbow`, so the card offers an authoritative one-click **Migrate all (1) → Crossbow** that bakes the rename into the file — after which the attribute could be deleted from code.
+> Its **Project References** tab sweeps every asset under `Assets/` and groups the broken references by their stored type — so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into a single **GhostWeapon** group (`4 entries · 2 files`). One **Fix all** picks a single replacement and re-points every entry across both files at once. And `RenamedWeaponPreset.asset` surfaces there as a calm, info-tinted **pending migration** instead of a warning: its stored `CrossbowLauncher` matches the `[MovedFrom]` declared on `Crossbow`, so the card offers an authoritative **Migrate all (1) → Crossbow** that bakes the rename into the file — after which the attribute could be deleted from code.
 
 ### Map a nested graph — `NestedLoadout.prefab`
 

@@ -13,7 +13,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     /// </summary>
     internal static class AspidThemeSettings
     {
-        private const string OverrideStyleSheetGuidKey = "Aspid.FastTools.Theme.OverrideStyleSheetGuid";
+        // Project-scoped: the stored GUID only resolves inside the project it was picked in, and the per-user reset
+        // must not wipe another project's override — one machine-global slot did both (see the legacy key below).
+        private static string OverrideStyleSheetGuidKey =>
+            "Aspid.FastTools.Theme.OverrideStyleSheetGuid." + PlayerSettings.productGUID;
+
+        // The pre-scoping key. Read once as a fallback and migrated forward, so an override saved before the change
+        // keeps working in the project it was set for (elsewhere its GUID never resolved to an asset anyway).
+        private const string LegacyOverrideStyleSheetGuidKey = "Aspid.FastTools.Theme.OverrideStyleSheetGuid";
 
         /// <summary>
         /// Raised whenever the override style sheet changes so that live elements can re-apply it.
@@ -42,7 +49,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         // (empty when none). Setting it raises Changed; callers go through the typed property.
         private static string OverrideStyleSheetGuid
         {
-            get => EditorPrefs.GetString(OverrideStyleSheetGuidKey, string.Empty);
+            get
+            {
+                var value = EditorPrefs.GetString(OverrideStyleSheetGuidKey, string.Empty);
+                if (value.Length > 0) return value;
+
+                var legacy = EditorPrefs.GetString(LegacyOverrideStyleSheetGuidKey, string.Empty);
+                if (legacy.Length == 0) return string.Empty;
+
+                EditorPrefs.SetString(OverrideStyleSheetGuidKey, legacy);
+                EditorPrefs.DeleteKey(LegacyOverrideStyleSheetGuidKey);
+                return legacy;
+            }
             set
             {
                 value ??= string.Empty;

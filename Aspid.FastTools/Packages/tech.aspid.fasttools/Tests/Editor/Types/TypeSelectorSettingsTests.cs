@@ -22,10 +22,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
     [TestFixture]
     internal sealed class TypeSelectorSettingsTests
     {
-        // The stored favorites / recents live as JSON under these project-scoped keys (the storage contract of
-        // TypeSelectorPreferences); the fixture snapshots the raw JSON so the developer's real lists survive the tests.
-        private static string FavoritesKey => "Aspid.FastTools.TypeSelector.Favorites." + PlayerSettings.productGUID;
-        private static string RecentsKey => "Aspid.FastTools.TypeSelector.Recents." + PlayerSettings.productGUID;
+        // The stored favorites / recents live as JSON under the store's own project-scoped keys; the fixture
+        // snapshots the raw JSON so the developer's real lists survive the tests. Referenced from the store — a
+        // re-spelled copy would rot if the key composition changed, and the restore would then write a dead key
+        // after the API had already cleared the real one.
+        private static string FavoritesKey => TypeSelectorPreferences.FavoritesKey;
+        private static string RecentsKey => TypeSelectorPreferences.RecentsKey;
 
         private bool _showFavorites;
         private int _recentsCapacity;

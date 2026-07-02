@@ -71,7 +71,7 @@
 
 **№1 — почему переформулирована:**
 
-- Unity **нативно** мигрирует managed references по `[MovedFrom]` при загрузке (проверено вживую на Smart Fix-демо — см. PLAN.md п.2): ассет с рабочим атрибутом не ломается, так что старый триггер «100% по `[MovedFrom]`» почти никогда не выстрелил бы. Ветка `MatchesMovedFrom` ранкера (score 1.0) — страховка для краевых случаев, не основной сценарий.
+- Unity **нативно** мигрирует managed references по `[MovedFrom]` при загрузке (проверено вживую на Smart Fix-демо — см. PLAN.md п.2): ассет с рабочим атрибутом не ломается, так что старый триггер «100% по `[MovedFrom]`» почти никогда не выстрелил бы. Ветка `MatchesOldIdentity` резолвера (`SerializeReferenceMovedFromResolver`) (score 1.0) — страховка для краевых случаев, не основной сценарий.
 - Нативная миграция чинит только **в памяти**: YAML на диске держит старое имя до пересохранения ассета → никогда не загружаемые ассеты, CI-сканы и диффы остаются «битыми». Отсюда режим «bake `[MovedFrom]` в диск» — после прогона атрибут можно удалить из кода.
 - «Молча переписать» противоречит зафиксированному продуктовому решению (doc-коммент ранкера: *«The suggestion is never auto-applied — the user always clicks»*). Score 1.0 достижим и чистой эвристикой (0.8 «same type name» + 0.2 field-shape — кейс `MovedWeaponPreset`), а она не авторитетна → только batch с подтверждением.
 - Часть фичи уже существует: проектный свип + группировка по типу + **Fix all** (`SerializeReferenceProjectView`), breakage-детектор как триггер. Реальная дельта — связка «детект → одна кнопка Migrate N → отчёт + undo» и bake-режим.
@@ -101,5 +101,5 @@
 
 - Ранжировщик подсказок: `SerializeReferences/Extensions/SerializeReferenceRepairSuggestions.cs` — `[MovedFrom]` даёт 1.0; тот же 1.0 достижим как 0.8 «same type name» + 0.2 field-shape.
 - Триггер: `SerializeReferences/Diagnostics/SerializeReferenceBreakageDetector.cs` (обнаружение newly-missing).
-- Применение: YAML-rewriter в `SerializeReferences/Yaml/` (`AssignManagedReference`).
+- Применение: YAML-rewriter в `SerializeReferences/Yaml/` (`SerializeReferenceYamlEditor.TryRewriteType`).
 - Проектный охват: `SerializeReferences/Index/SerializeReferenceTypeUsageIndex.cs` + Project-свип с готовым **Fix all** (`SerializeReferences/Windows/SerializeReferenceProjectView.cs`).

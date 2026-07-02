@@ -596,7 +596,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void Reveal(SerializeReferenceField next, Dictionary<string, SerializeReferenceField> members)
         {
-            next.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(next);
+            // Scroll the OUTERMOST ScrollView — the inspector's own scroller. The nearest ancestor is usually a
+            // ListView's internal ScrollView, whose scrollable range is zero in the inspector (lists grow to fit),
+            // so ScrollTo there clamps to a no-op and a list-element member never comes into view. The IMGUI twin
+            // scrolls the window's root ScrollView for the same reason.
+            ScrollView outermost = null;
+            for (var ancestor = next.GetFirstAncestorOfType<ScrollView>();
+                 ancestor is not null;
+                 ancestor = ancestor.GetFirstAncestorOfType<ScrollView>())
+                outermost = ancestor;
+
+            outermost?.ScrollTo(next);
             foreach (var member in members.Values) member.FlashSharedHighlight();
         }
 
@@ -986,13 +996,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Undo/redo changed the object; re-evaluate this field's notice with fresh data — the reverted managed reference
-        // may have re-aliased or un-aliased this field. Same freshness dance as ApplyReferenceChange (live-object Update
-        // + drop the per-frame alias memo) since undo bypasses that path entirely.
+        // may have re-aliased or un-aliased this field. The per-frame alias memo is dropped ONCE globally (the static
+        // hook in SerializeReferenceHelpers runs before any field handler — it subscribed at domain load), so N live
+        // fields rebuild it a single time instead of each field's invalidation discarding the previous rebuild.
         private void OnUndoRedo()
         {
             if (!IsPropertyAlive()) return;
             _property.serializedObject.Update();
-            SerializeReferenceHelpers.InvalidateSharedReferenceCache();
             Refresh(forceRebuild: false);
         }
 

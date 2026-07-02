@@ -69,13 +69,18 @@ namespace Aspid.FastTools.Types.Editors
 
         // "Combat / Melee //" → ["Combat", "Melee"]; null when nothing survives normalization, so a
         // blank-only Group degrades to the plain namespace placement instead of creating empty nodes.
+        // The picker's sentinel strings are dropped like blanks: everything keys off DisplayName == "<None>"
+        // (pinned sort slot, the ○ glyph, IsSelectable, the empty-field checkmark), so a group node named after
+        // a sentinel would impersonate it — the Name override already defends against exactly this.
         private static string[] ParseGroupPath(string group)
         {
             if (string.IsNullOrWhiteSpace(group)) return null;
 
             var segments = group.Split('/')
                 .Select(segment => segment.Trim())
-                .Where(segment => segment.Length > 0)
+                .Where(segment => segment.Length > 0 &&
+                    segment != TypeSelectorHelpers.NoneOption &&
+                    segment != TypeSelectorHelpers.GlobalNamespace)
                 .ToArray();
 
             return segments.Length > 0 ? segments : null;

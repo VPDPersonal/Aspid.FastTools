@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -35,11 +36,22 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         // On tints both the border and a translucent fill to the theme's success accent
         // (--aspid-colors-status-success-text-dark); off keeps only the neutral outline over a transparent fill.
+        // The switch renders on the package's dark surfaces AND on Unity's NATIVE pages (Project Settings /
+        // Preferences), whose light-theme background sits around #C8C8C8 — the dark-skin neutrals (~#BDBDC4 handle)
+        // would be all but invisible there, so they flip with the editor skin. Read once per domain: a mid-session
+        // skin switch catches up on the next reload, an acceptable trade for not probing the skin per instance.
         private static readonly Color AccentColor = new(0.333f, 0.686f, 0.392f, 1f);
-        private static readonly Color TrackOffBorderColor = new(0.32f, 0.32f, 0.34f, 1f);
+
+        private static readonly Color TrackOffBorderColor = EditorGUIUtility.isProSkin
+            ? new Color(0.32f, 0.32f, 0.34f, 1f)
+            : new Color(0.45f, 0.45f, 0.47f, 1f);
+
         // A muted, semi-transparent handle (not a flat white disc) so it reads as part of the translucent family and
         // picks up a touch of the track tint behind it.
-        private static readonly Color HandleColor = new(0.74f, 0.74f, 0.77f, 0.85f);
+        private static readonly Color HandleColor = EditorGUIUtility.isProSkin
+            ? new Color(0.74f, 0.74f, 0.77f, 0.85f)
+            : new Color(0.35f, 0.35f, 0.38f, 0.9f);
+
         private static readonly Color HandleShadowColor = new(0f, 0f, 0f, 0.15f);
 
         private readonly VisualElement _track;

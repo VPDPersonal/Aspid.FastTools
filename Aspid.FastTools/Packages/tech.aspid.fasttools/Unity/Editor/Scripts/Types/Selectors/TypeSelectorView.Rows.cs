@@ -23,7 +23,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string ItemCheckClass = BlockClass + "__item-check";
         private const string ItemCountClass = BlockClass + "__item-count";
         private const string ItemArrowClass = BlockClass + "__item-arrow";
-        private const string RowAfterPinnedModifier = BlockClass + "__row--after-pinned";
+        private const string RowAfterPinnedModifier = BlockClass + "__item--after-pinned";
         private const string SectionTitleClass = BlockClass + "__section-title";
         private const string FavoriteToggleClass = BlockClass + "__favorite-toggle";
         private const string FavoriteToggleOnModifier = FavoriteToggleClass + "--favorite-on";
@@ -134,6 +134,11 @@ namespace Aspid.FastTools.Types.Editors
         private bool IsCurrentValue(TreeNode node)
         {
             if (!_pages[^1].IsBase) return false;
+
+            // Null = the host has no current-value concept at all (a list "+" append, a missing-type Fix, the bulk
+            // project picker) — nothing wears the check there, least of all <None>, which only an EMPTY STRING (a
+            // field genuinely holding None) rightly marks.
+            if (_currentAqn is null) return false;
 
             return _currentAqn.Length > 0
                 ? node.IsType && node.AssemblyQualifiedName == _currentAqn

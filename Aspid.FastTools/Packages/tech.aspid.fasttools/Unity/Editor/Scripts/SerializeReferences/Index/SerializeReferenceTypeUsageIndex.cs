@@ -178,6 +178,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AddAsset(paths[i], guid);
                 }
             }
+            catch (Exception)
+            {
+                // A failed warm-up must not masquerade as a warm index: the sentinel was already replaced, so a
+                // partial map would keep serving wrong Find Usages / delete-guard / breakage answers all session.
+                // Reset to cold and let the next deliberate scan retry from scratch.
+                _index = null;
+                throw;
+            }
             finally
             {
                 EditorUtility.ClearProgressBar();
@@ -186,7 +194,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void AddAsset(string path, string guid)
         {
-            foreach (var document in SerializeReferenceGraphScanner.Build(path))
+            // Data-only scan: the index never reads a document's display TypeName, and resolving it would LOAD every
+            // asset (LoadAllAssetsAtPath) — turning the project warm-up and each per-import rebuild into asset loads.
+            foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
             {
                 foreach (var node in document.Nodes)
                 {

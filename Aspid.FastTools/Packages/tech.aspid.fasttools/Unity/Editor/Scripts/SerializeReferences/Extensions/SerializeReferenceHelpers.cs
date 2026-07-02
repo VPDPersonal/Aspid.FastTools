@@ -2,6 +2,8 @@ using System;
 using System.Text;
 using UnityEngine;
 using UnityEditor;
+using System.Reflection;
+using System.Collections;
 using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
@@ -9,6 +11,7 @@ using Aspid.FastTools.Types.Editors;
 using UnityEditor.SceneManagement;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
+using System.Runtime.CompilerServices;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
@@ -150,6 +153,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static UnityEngine.Object[] _mixedTargets;
         private static bool _mixedResult;
 
+        // Companion invalidation for the memo above: it is keyed by selection, not file state, so an EXTERNAL rewrite
+        // of the selected assets (git checkout, an outside tool) must drop it explicitly — the selection survives the
+        // import while the all-missing state it memoised may not (see SerializeReferenceEditorCacheInvalidator).
+        internal static void InvalidateMixedTypesCache()
+        {
+            _mixedPath = null;
+            _mixedFirst = null;
+            _mixedTargets = null;
+            _mixedResult = false;
+        }
+
         private static bool MixedCacheMatches(string path, string first, UnityEngine.Object[] targets)
         {
             if (_mixedTargets is null || _mixedTargets.Length != targets.Length) return false;
@@ -238,6 +252,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool IsMissingType(SerializedProperty property) =>
             TryGetMissingType(property, out _, out _);
 
+        // Per-frame memo for the probe below: GetHeight, Draw, the caption, the tooltip and the Smart-Fix check all
+        // probe the same property several times per IMGUI repaint, and every LEGITIMATELY EMPTY field pays the full
+        // repair-location resolution (GlobalObjectId / prefab-stage replay / asset loads) plus a YAML parse per call.
+        // Frame-keyed like the alias memo: repairs and imports land on later frames (and the mutation sites drop the
+        // memo explicitly for same-frame reads); the raw YAML lines are separately mtime-cached by the probe cache.
+        private static int _missingProbeFrame = -1;
+        private static readonly Dictionary<(int instanceId, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
+            MissingProbeMemo = new();
+
+        // Companion invalidation for the memo above, for mutations that must be visible to a read later in the SAME
+        // frame (an in-memory repair or clear followed by a synchronous repaint).
+        internal static void InvalidateMissingTypeMemo() => _missingProbeFrame = -1;
+
         // Core missing-type probe shared by the public helpers: reads the property's stored id and type from the
         // asset YAML and reports it missing when the recorded type no longer resolves to a loadable Type.
         private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType)
@@ -247,6 +274,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (property.propertyType != SerializedPropertyType.ManagedReference) return false;
             if (property.managedReferenceValue is not null) return false;
+
+            var frame = Time.frameCount;
+            if (_missingProbeFrame != frame)
+            {
+                MissingProbeMemo.Clear();
+                _missingProbeFrame = frame;
+            }
+
+            var target = property.serializedObject.targetObject;
+            var key = (target != null ? target.GetInstanceID() : 0, property.propertyPath);
+
+            if (MissingProbeMemo.TryGetValue(key, out var cached))
+            {
+                referenceId = cached.referenceId;
+                storedType = cached.storedType;
+                return cached.missing;
+            }
+
+            var missing = ProbeMissingType(property, out referenceId, out storedType);
+            MissingProbeMemo[key] = (missing, referenceId, storedType);
+            return missing;
+        }
+
+        private static bool ProbeMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType)
+        {
+            referenceId = 0;
+            storedType = default;
+
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _)) return false;
             if (!SerializeReferenceYamlEditor.TryReadStoredType(assetPath, fileId, property.propertyPath, out referenceId, out storedType))
                 return false;
@@ -353,7 +408,128 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Best effort: incompatible layouts just mean nothing is carried over.
             }
 
+            // JsonUtility skips [SerializeReference] fields entirely, so nested managed references shared by the two
+            // shapes are carried over by reflection — the very instances, not copies: every caller discards the
+            // previous parent, so reuse keeps the children (and any aliases onto them) intact across a type switch.
+            // The Make-unique flows, which promise independence all the way down, deep-copy the result afterwards
+            // (see CloneManagedReferenceGraph).
+            try
+            {
+                CarryManagedReferences(previous, instance);
+            }
+            catch (Exception)
+            {
+                // Same best-effort contract as the JSON pass.
+            }
+
             return instance;
+        }
+
+        // Assigns every [SerializeReference] field the two shapes share by name (and whose value fits the target
+        // field's declared type) from previous onto instance — including whole arrays / lists of references.
+        private static void CarryManagedReferences(object previous, object instance)
+        {
+            Dictionary<string, FieldInfo> targets = null;
+
+            foreach (var field in EnumerateManagedReferenceFields(previous.GetType()))
+            {
+                if (targets is null)
+                {
+                    targets = new Dictionary<string, FieldInfo>(StringComparer.Ordinal);
+                    foreach (var target in EnumerateManagedReferenceFields(instance.GetType()))
+                        targets[target.Name] = target;
+                }
+
+                if (!targets.TryGetValue(field.Name, out var into)) continue;
+
+                var value = field.GetValue(previous);
+                if (value is null || into.FieldType.IsInstanceOfType(value))
+                    into.SetValue(instance, value);
+            }
+        }
+
+        /// <summary>
+        /// Deep-copies a managed-reference instance: value fields ride the same JSON round-trip as
+        /// <see cref="CreateInstancePreservingData"/>, and every nested <c>[SerializeReference]</c> field — including
+        /// arrays and lists of them — is recursively replaced with its own independent copy. Internal topology is
+        /// preserved: two fields aliasing one nested instance alias one copy, and a cyclic graph clones without
+        /// recursing forever (each copy registers in the map before its children are cloned). This is the Make-unique
+        /// / de-alias copier — those flows promise an instance independent all the way down; the type-switch flows
+        /// keep <see cref="CreateInstancePreservingData"/>, where reusing the nested instances is correct.
+        /// </summary>
+        public static object CloneManagedReferenceGraph(object source) =>
+            CloneManagedReferenceGraph(source, new Dictionary<object, object>(ReferenceComparer.Instance));
+
+        private static object CloneManagedReferenceGraph(object source, Dictionary<object, object> clones)
+        {
+            if (source is null) return null;
+            if (clones.TryGetValue(source, out var existing)) return existing;
+
+            var clone = CreateInstancePreservingData(source.GetType(), source);
+            if (clone is null) return null;
+            clones[source] = clone;
+
+            foreach (var field in EnumerateManagedReferenceFields(source.GetType()))
+                field.SetValue(clone, CloneManagedReferenceValue(field.GetValue(source), clones));
+
+            return clone;
+        }
+
+        // Clones one [SerializeReference] field slot: a collection is rebuilt (never shared with the source — the
+        // whole point is independence) with each element cloned; a single reference clones directly.
+        private static object CloneManagedReferenceValue(object value, Dictionary<object, object> clones)
+        {
+            switch (value)
+            {
+                case null:
+                    return null;
+
+                case Array array:
+                {
+                    var copy = Array.CreateInstance(array.GetType().GetElementType()!, array.Length);
+                    for (var i = 0; i < array.Length; i++)
+                        copy.SetValue(CloneManagedReferenceGraph(array.GetValue(i), clones), i);
+                    return copy;
+                }
+
+                case IList list:
+                {
+                    var copy = (IList)Activator.CreateInstance(value.GetType());
+                    foreach (var element in list)
+                        copy.Add(CloneManagedReferenceGraph(element, clones));
+                    return copy;
+                }
+
+                default:
+                    return CloneManagedReferenceGraph(value, clones);
+            }
+        }
+
+        // The serialized fields Unity persists as managed references: instance fields, public or [SerializeField],
+        // declared with [SerializeReference], walking the base chain (each level reports its own declared fields).
+        private static IEnumerable<FieldInfo> EnumerateManagedReferenceFields(Type type)
+        {
+            const BindingFlags flags =
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly;
+
+            for (var current = type; current is not null && current != typeof(object); current = current.BaseType)
+                foreach (var field in current.GetFields(flags))
+                {
+                    if (field.IsStatic || field.IsInitOnly || field.IsNotSerialized) continue;
+                    if (!field.IsPublic && !field.IsDefined(typeof(SerializeField), inherit: false)) continue;
+                    if (field.IsDefined(typeof(SerializeReference), inherit: false)) yield return field;
+                }
+        }
+
+        // Reference-identity comparer for the clone map: a user-defined Equals must not merge distinct instances
+        // (or split one), and managed references are always classes, so no boxing is involved.
+        private sealed class ReferenceComparer : IEqualityComparer<object>
+        {
+            public static readonly ReferenceComparer Instance = new();
+
+            bool IEqualityComparer<object>.Equals(object x, object y) => ReferenceEquals(x, y);
+
+            int IEqualityComparer<object>.GetHashCode(object obj) => RuntimeHelpers.GetHashCode(obj);
         }
 
         /// <summary>
@@ -578,6 +754,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             fileId = 0;
 
+            // Replaying sibling / component indices assumes the stage hierarchy still matches the on-disk asset. A
+            // dirty stage (auto-save off, объект переставлен/вставлен) has diverged — the replay would land on the
+            // WRONG asset object, read the wrong document and let the repair overwrite the field with a default
+            // instance while the real orphaned payload survives. Bail instead; the fallback path tells the user to
+            // repair through the saved asset. Mirrors TryGetSceneLocation's scene.isDirty guard.
+            if (stage.scene.isDirty) return false;
+
             var indices = new List<int>();
             var transform = stageGo.transform;
             var root = stage.prefabContentsRoot.transform;
@@ -638,7 +821,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes),
                     ArgumentFilter = IsValidGenericArgument,
                 },
-                currentAqn: string.Empty,
+                currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>
                 {
                     var type = string.IsNullOrEmpty(assemblyQualifiedName)
@@ -676,11 +859,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             // A repair reimports the asset / rewrites the live object: the candidate set changes and the missing
-            // reference is gone, so any cached ranking and any cached YAML lines for it are now stale.
+            // reference is gone, so any cached ranking, cached YAML lines and the per-frame alias memo (an IMGUI
+            // repaint can land in the same Time.frameCount as this click) are now stale.
             if (repaired)
             {
                 SerializeReferenceRepairSuggestions.ClearCache();
                 SerializeReferenceYamlProbeCache.ClearCache();
+                InvalidateSharedReferenceCache();
+                InvalidateMissingTypeMemo();
             }
 
             if (repaired) ScheduleInspectorRebuild();
@@ -762,6 +948,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 ClearMissingSubtree(target, rid);
                 EditorUtility.SetDirty(target);
+                InvalidateMissingTypeMemo();
 
                 var scene = (target as Component)?.gameObject.scene ?? default;
                 if (scene.IsValid()) EditorSceneManager.MarkSceneDirty(scene);
@@ -794,28 +981,78 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // repair replaces the reference with a fresh instance, dropping the orphaned payload's nested references — so a
         // missing child it carried (e.g. a missing effect nested inside a missing weapon) would otherwise linger as an
         // unreachable orphan and keep Unity's object-level missing-types flag (and its banner) raised.
+        //
+        // A subtree member can also be pointed at from OUTSIDE the subtree — another live field aliasing it, or another
+        // missing entry's payload referencing it (exactly the sharing the shared-group feature is built around).
+        // Clearing such an entry would destroy the other pointer's payload and leave it unrepairable, so externally
+        // referenced members are kept — along with everything only reachable through them.
         private static void ClearMissingSubtree(Object target, long rootReferenceId)
         {
             var dataByRid = new Dictionary<long, string>();
             foreach (var entry in SerializationUtility.GetManagedReferencesWithMissingTypes(target))
                 dataByRid[entry.referenceId] = entry.serializedData;
 
+            // The transitive closure of the fixed entry: what we would LIKE to clear.
+            var closure = new HashSet<long>();
             var pending = new Stack<long>();
-            var visited = new HashSet<long>();
             pending.Push(rootReferenceId);
 
             while (pending.Count > 0)
             {
                 var rid = pending.Pop();
-                if (!visited.Add(rid)) continue;
+                if (!closure.Add(rid)) continue;
                 if (!dataByRid.TryGetValue(rid, out var data)) continue; // a resolvable reference, or already cleared
 
-                foreach (Match match in Regex.Matches(data ?? string.Empty, @"rid:\s*(-?\d+)"))
-                    if (long.TryParse(match.Groups[1].Value, out var child) && child != rid)
-                        pending.Push(child);
-
-                SerializationUtility.ClearManagedReferenceWithMissingType(target, rid);
+                foreach (var child in EnumerateRidPointers(data, rid))
+                    pending.Push(child);
             }
+
+            // Seed protection with every closure member referenced from outside it: by another missing entry's
+            // payload, or by a live field still holding the rid (the repaired field itself now points at the fresh
+            // instance, so it no longer counts).
+            var keep = new HashSet<long>();
+
+            foreach (var pair in dataByRid)
+            {
+                if (closure.Contains(pair.Key)) continue;
+                foreach (var child in EnumerateRidPointers(pair.Value, pair.Key))
+                    if (closure.Contains(child))
+                        keep.Add(child);
+            }
+
+            using (var serializedObject = new SerializedObject(target))
+                TraverseManagedReferences(serializedObject, property =>
+                {
+                    var id = property.managedReferenceId;
+                    if (closure.Contains(id)) keep.Add(id);
+                    return false;
+                });
+
+            // A kept entry's payload still points at its own children — clearing those would break it the same way,
+            // so protection propagates down through the closure.
+            foreach (var rid in keep) pending.Push(rid);
+            while (pending.Count > 0)
+            {
+                var rid = pending.Pop();
+                if (!dataByRid.TryGetValue(rid, out var data)) continue;
+
+                foreach (var child in EnumerateRidPointers(data, rid))
+                    if (closure.Contains(child) && keep.Add(child))
+                        pending.Push(child);
+            }
+
+            foreach (var rid in closure)
+                if (!keep.Contains(rid) && dataByRid.ContainsKey(rid))
+                    SerializationUtility.ClearManagedReferenceWithMissingType(target, rid);
+        }
+
+        // The rid pointers inside a missing entry's payload block. The look-behind keeps a field that merely ENDS in
+        // "rid" (e.g. "_hybrid: 15") from reading as a pointer — the same discipline as the scanner's RidPointer regex.
+        private static IEnumerable<long> EnumerateRidPointers(string data, long self)
+        {
+            foreach (Match match in Regex.Matches(data ?? string.Empty, @"(?<!\w)rid:\s*(-?\d+)"))
+                if (long.TryParse(match.Groups[1].Value, out var child) && child != self)
+                    yield return child;
         }
 
         // Best-effort recovery of a missing reference's stored data onto the replacement instance. Unity surfaces the
@@ -994,7 +1231,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             AliasOrder.Clear();
             TraverseManagedReferences(serializedObject, other =>
             {
+                // Negative ids are sentinels, not instances: every EMPTY field reports RefIdNull (-2), so counting
+                // them would form a phantom "shared group" that consumes a badge number ("#1" missing, holes in the
+                // sequence) and grows a pointless path list. Skipping at the source keeps every derived map clean.
                 var id = other.managedReferenceId;
+                if (id < 0) return false;
+
                 if (!AliasCounts.TryGetValue(id, out var count)) AliasOrder.Add(id); // first sighting → record its order
                 AliasCounts[id] = count + 1;
                 return false;
@@ -1187,6 +1429,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _sharedPathsFrame = -1;
         }
 
+        // One global invalidation per undo/redo, serving both renderers: the alias memo is keyed by frame, not
+        // content, so a same-frame repaint after an undo would read the pre-undo snapshot. Registered at domain load
+        // — before any per-field handler subscribes — so it always runs first and the N live fields then rebuild the
+        // memo once between them, instead of each field's own invalidation discarding the previous rebuild.
+        [InitializeOnLoadMethod]
+        private static void InvalidateAliasMemoOnUndoRedo() =>
+            Undo.undoRedoPerformed += InvalidateSharedReferenceCache;
+
         /// <summary>
         /// Breaks an aliased managed reference by replacing it with an independent clone that carries the same data
         /// (a fresh instance gets a new <see cref="SerializedProperty.managedReferenceId"/> on assignment), so the
@@ -1198,22 +1448,40 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var current = persistent.managedReferenceValue;
             if (current is null) return;
 
-            persistent.SetManagedReferenceAndApply(CreateInstancePreservingData(current.GetType(), current));
+            // Deep copy: "Make unique" promises an instance independent all the way down — a shallow clone would
+            // keep sharing the nested [SerializeReference] children with the alias it just split from.
+            persistent.SetManagedReferenceAndApply(CloneManagedReferenceGraph(current));
+
+            // The per-frame alias memo is keyed by frame, not content: an IMGUI repaint in this same Time.frameCount
+            // would still read the pre-split snapshot and keep painting the shared notice on both ex-members.
+            InvalidateSharedReferenceCache();
         }
 
         // Visits every managed-reference property in the object, descending into nested values; stops early when
-        // the visitor returns true.
+        // the visitor returns true. Descending into an instance already seen on this walk would loop forever on a
+        // cyclic graph — a shape Link-to-Existing can produce and the graph window explicitly renders — so the guard
+        // mirrors BuildConstraintMap: the revisit itself is still reported, only its children are not re-entered.
         private static void TraverseManagedReferences(SerializedObject serializedObject, Func<SerializedProperty, bool> visit)
         {
             using var iterator = serializedObject.GetIterator();
             if (!iterator.Next(enterChildren: true)) return;
 
+            var visited = new HashSet<long>();
+            bool enterChildren;
+
             do
             {
-                if (iterator.propertyType == SerializedPropertyType.ManagedReference && visit(iterator))
-                    return;
+                enterChildren = true;
+
+                if (iterator.propertyType == SerializedPropertyType.ManagedReference)
+                {
+                    if (visit(iterator)) return;
+
+                    var rid = iterator.managedReferenceId;
+                    if (rid >= 0 && !visited.Add(rid)) enterChildren = false;
+                }
             }
-            while (iterator.Next(enterChildren: true));
+            while (iterator.Next(enterChildren));
         }
         #endregion
     }

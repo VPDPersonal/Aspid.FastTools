@@ -25,6 +25,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             new(ProviderId, DisplayName)
             {
                 filterId = FilterId,
+                // Explicit-only: without this the provider joins EVERY general search, and the first keystroke in a
+                // plain Search window would warm a cold usage index — a non-cancelable, full-project modal sweep the
+                // index's own contract forbids on routine paths. "sr:" queries and OpenSearch both create explicit
+                // contexts, so Find Usages is unaffected.
+                isExplicitProvider = true,
                 priority = 9000,
                 showDetailsOptions = ShowDetailsOptions.Description | ShowDetailsOptions.Preview,
                 fetchItems = (context, items, provider) => FetchItems(context, items, provider),

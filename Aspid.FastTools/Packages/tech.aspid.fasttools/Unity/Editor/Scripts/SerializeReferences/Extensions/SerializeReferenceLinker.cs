@@ -42,16 +42,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var selfPath = property.propertyPath;
             var seen = new HashSet<long>();
 
+            // The ancestor exclusion must work by IDENTITY, not path: an aliased sibling IS an ancestor instance
+            // under another name, and linking a child field to it would tie the object's graph into a cycle the
+            // path-prefix checks below cannot see (the alias's path shares no prefix with this property's).
+            var ancestorRids = CollectAncestorRids(property);
+
             using var iterator = property.serializedObject.GetIterator();
             if (!iterator.Next(enterChildren: true)) return result;
 
+            // Cycle-safe walk: never re-enter an instance already seen on this walk (a cyclic graph would loop the
+            // iterator forever — see SerializeReferenceHelpers.BuildConstraintMap for the same guard).
+            var visitedChildren = new HashSet<long>();
+            bool enterChildren;
+
             do
             {
+                enterChildren = true;
                 if (iterator.propertyType != SerializedPropertyType.ManagedReference) continue;
+
+                var rid = iterator.managedReferenceId;
+                if (rid >= 0 && !visitedChildren.Add(rid)) enterChildren = false;
 
                 var path = iterator.propertyPath;
                 if (path == selfPath) continue;
                 if (IsDescendant(path, selfPath) || IsDescendant(selfPath, path)) continue;
+                if (ancestorRids.Contains(rid)) continue;
 
                 var value = iterator.managedReferenceValue;
                 if (value is null) continue;
@@ -59,14 +74,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var type = value.GetType();
                 if (fieldType != null && !fieldType.IsAssignableFrom(type)) continue;
 
-                var rid = iterator.managedReferenceId;
                 if (!seen.Add(rid)) continue; // one representative per shared instance
 
                 result.Add(new LinkCandidate(rid, type, path));
             }
-            while (iterator.Next(enterChildren: true));
+            while (iterator.Next(enterChildren));
 
             return result;
+        }
+
+        // The rids held by every managed-reference ancestor of the property (walking its path prefixes).
+        private static HashSet<long> CollectAncestorRids(SerializedProperty property)
+        {
+            var rids = new HashSet<long>();
+            var serializedObject = property.serializedObject;
+            var path = property.propertyPath;
+
+            for (var dot = path.LastIndexOf('.'); dot > 0; dot = path.LastIndexOf('.'))
+            {
+                path = path[..dot];
+
+                using var ancestor = serializedObject.FindProperty(path);
+                if (ancestor is { propertyType: SerializedPropertyType.ManagedReference })
+                {
+                    var rid = ancestor.managedReferenceId;
+                    if (rid >= 0) rids.Add(rid);
+                }
+            }
+
+            return rids;
         }
 
         /// <summary>Points this field at the instance held by <paramref name="sourcePath"/>, sharing its rid.</summary>

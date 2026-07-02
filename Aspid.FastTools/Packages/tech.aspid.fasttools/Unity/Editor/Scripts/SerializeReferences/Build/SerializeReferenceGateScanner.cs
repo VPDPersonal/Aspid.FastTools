@@ -80,6 +80,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // The scan resolves each scene MonoBehaviour's required fields by its m_Script guid; memoise the resolution
             // for the run (many objects share a script), cleared up front so a recompile between runs is never served stale.
             ScriptRequiredFieldsCache.Clear();
+            ConstraintMapCache.Clear();
 
             for (var i = 0; i < paths.Length; i++)
             {
@@ -87,8 +88,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
 
                 if (options.ScanMissingTypes)
-                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, ResolvesOrMigrates))
+                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves))
+                    {
+                        if (IsPendingMigration(path, entry)) continue;
                         violations.Add(new GateViolation(path, entry.FileId, entry.Rid, entry.StoredType, GateViolationKind.MissingType, string.Empty));
+                    }
 
                 if (options.ScanRequiredFields)
                 {
@@ -105,12 +109,46 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // A stored name that no longer loads but is claimed by exactly one declared [MovedFrom] is a pending
-        // migration, not a violation: Unity migrates the reference in memory when the asset loads, so the built
-        // player is unaffected — only the file text is stale (see SerializeReferenceMovedFromResolver). The gate
-        // must never warn or fail a build over a rename that was declared properly. Internal for the gate tests.
-        internal static bool ResolvesOrMigrates(ManagedTypeName stored) =>
-            SerializeReferenceHelpers.StoredTypeResolves(stored) ||
-            SerializeReferenceMovedFromResolver.TryResolve(stored, out _);
+        // migration, not a violation — Unity migrates the reference in memory at load — provided the target still
+        // fits the field's declared type: a rename that also changed the type's bases WOULD null at load, so it
+        // stays a violation (the same assignability gate both Editor views apply). Scenes cannot be object-loaded
+        // to recover constraints, so a scene entry claimed by a rename is trusted — a base-changing rename inside a
+        // scene is the one documented gap, and both Editor views still flag it. Internal for the gate tests.
+        internal static bool IsPendingMigration(string assetPath, MissingReferenceEntry entry)
+        {
+            if (!SerializeReferenceMovedFromResolver.TryResolve(entry.StoredType, out var target)) return false;
+            if (SerializeReferenceHelpers.IsScene(assetPath)) return true;
+
+            // Constraint recovery is best-effort: an unreadable asset or an entry the map cannot place behaves like
+            // the views' unresolvable-constraint fallback (unconstrained) rather than manufacturing a violation.
+            var constraints = ConstraintMapFor(assetPath);
+            if (constraints is null) return true;
+
+            return !constraints.TryGetValue((entry.FileId, entry.Rid), out var constraint) ||
+                constraint is null || constraint == typeof(object) || constraint.IsAssignableFrom(target);
+        }
+
+        // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only
+        // for assets whose unresolved entries carry a [MovedFrom] claim. Null marks an asset whose map failed to build.
+        private static readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> ConstraintMapCache =
+            new(StringComparer.Ordinal);
+
+        private static Dictionary<(long fileId, long rid), Type> ConstraintMapFor(string assetPath)
+        {
+            if (ConstraintMapCache.TryGetValue(assetPath, out var map)) return map;
+
+            try
+            {
+                map = SerializeReferenceHelpers.BuildConstraintMap(assetPath);
+            }
+            catch (Exception)
+            {
+                map = null;
+            }
+
+            ConstraintMapCache[assetPath] = map;
+            return map;
+        }
 
         // Per-run memo: a script guid -> the required field descriptors of the C# type it resolves to. Keyed by guid so
         // an unresolvable script (deleted / non-MonoBehaviour) caches an empty set once instead of re-probing every object.
@@ -153,8 +191,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 using var iterator = serializedObject.GetIterator();
                 if (!iterator.Next(enterChildren: true)) continue;
 
+                // Never re-enter an instance already seen on this walk: a cyclic managed-reference graph (a shape
+                // the feature explicitly supports — the graph window renders back-edges) would otherwise spin the
+                // headless CI run forever. Mirrors SerializeReferenceHelpers.BuildConstraintMap's guard.
+                var visited = new HashSet<long>();
+                bool enterChildren;
+
                 do
                 {
+                    enterChildren = true;
+
+                    if (iterator.propertyType == SerializedPropertyType.ManagedReference)
+                    {
+                        var id = iterator.managedReferenceId;
+                        if (id >= 0 && !visited.Add(id)) enterChildren = false;
+                    }
+
                     // Required applies to a [SerializeReference] managed reference (empty == null) and a [TypeSelector]
                     // string type field (empty == null-or-empty); IsViolation dispatches on the property kind.
                     if (iterator.propertyType is not (SerializedPropertyType.ManagedReference or SerializedPropertyType.String)) continue;
@@ -164,7 +216,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     violations.Add(new GateViolation(assetPath, fileId, rid, default,
                         GateViolationKind.RequiredUnset, iterator.propertyPath));
                 }
-                while (iterator.Next(enterChildren: true));
+                while (iterator.Next(enterChildren));
             }
         }
     }

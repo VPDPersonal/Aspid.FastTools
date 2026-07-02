@@ -24,7 +24,7 @@
 
 **Поле:** `[TypeSelector] [SerializeReference] IWeapon _step1Single`
 
-Кликните по выпадающему списку в заголовке поля. Откроется иерархическое окно с поиском, в котором перечислены все конкретные реализации `IWeapon`: `Sword`, `Pistol`, `Shotgun`, `Railgun`.
+Кликните по выпадающему списку в заголовке поля. Откроется иерархическое окно с поиском, в котором перечислены все конкретные реализации `IWeapon`: `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`.
 
 - **Выберите тип** → Unity создаёт экземпляр, а его сериализуемые поля появляются вложенно под foldout.
 - **`<None>`** (первая строка) → очищает ссылку обратно в `null`.
@@ -89,10 +89,10 @@
 
 | Аттрибут | Предлагаемые типы |
 |---|---|
-| `[TypeSelector]` (урок 1) | `Sword`, `Pistol`, `Shotgun`, `Railgun` (все `IWeapon`) |
-| `[TypeSelector(typeof(IRanged))]` | `Pistol`, `Shotgun`, `Railgun` |
+| `[TypeSelector]` (урок 1) | `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow` (все `IWeapon`) |
+| `[TypeSelector(typeof(IRanged))]` | `Pistol`, `Shotgun`, `Railgun`, `Crossbow` |
 | `[TypeSelector(typeof(IMelee))]` | `Sword` |
-| `[TypeSelector(typeof(IMelee), typeof(IRanged))]` | все четыре (несколько базовых типов объединяются по ИЛИ) |
+| `[TypeSelector(typeof(IMelee), typeof(IRanged))]` | все пять (несколько базовых типов объединяются по ИЛИ) |
 
 Так можно держать *тип* поля широким (чтобы код оставался обобщённым) и при этом ограничивать выбор для дизайнеров.
 

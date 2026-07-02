@@ -1,8 +1,9 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using System.Collections.Generic;
 using UnityEditorInternal;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -74,11 +75,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static ReorderableList GetOrCreate(SerializedProperty listProperty, GUIContent label, Type elementType, Type[] baseTypes)
         {
             var serializedObject = listProperty.serializedObject;
-            var key = $"{serializedObject.targetObject.GetInstanceID()}/{listProperty.propertyPath}";
+
+            // The SerializedObject's identity is part of the key: an Inspector plus a locked Inspector on the same
+            // object hold two DISTINCT SerializedObjects for one (target, path) — under a shared key they would fail
+            // the staleness check below on every alternating repaint and rebuild the list endlessly, resetting its
+            // drag / selection state (the very state this cache exists to keep). The identity hash is stable for the
+            // instance's lifetime and never dereferences the object.
+            var key = $"{RuntimeHelpers.GetHashCode(serializedObject)}/" +
+                      $"{serializedObject.targetObject.GetInstanceID()}/{listProperty.propertyPath}";
 
             // A cached list bound to a stale SerializedObject (e.g. after a domain reload) must be rebuilt, not reused.
             if (Lists.TryGetValue(key, out var cached) && cached.serializedProperty.serializedObject == serializedObject)
                 return cached;
+
+            // Entries pin their SerializedObject (the ReorderableList holds its property), so a closed editor's entry
+            // would otherwise live until the next domain reload. Swept on cache misses only — already the slow path.
+            EvictDeadEntries();
 
             // Capture the append target/path once: both are stable for the field's lifetime, and Append opens its own
             // fresh SerializedObject anyway (so no stale-binding hazard from the captured object).
@@ -142,6 +154,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             Lists[key] = list;
             return list;
+        }
+
+        private static void EvictDeadEntries()
+        {
+            List<string> dead = null;
+
+            foreach (var pair in Lists)
+            {
+                bool alive;
+                try
+                {
+                    alive = pair.Value.serializedProperty.serializedObject.targetObject != null;
+                }
+                catch (Exception)
+                {
+                    // A disposed SerializedObject throws on access — the entry is dead either way.
+                    alive = false;
+                }
+
+                if (!alive) (dead ??= new List<string>()).Add(pair.Key);
+            }
+
+            if (dead is null) return;
+            foreach (var key in dead) Lists.Remove(key);
         }
     }
 }

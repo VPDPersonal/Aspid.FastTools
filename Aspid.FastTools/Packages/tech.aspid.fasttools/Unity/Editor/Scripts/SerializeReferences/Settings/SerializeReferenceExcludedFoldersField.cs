@@ -76,9 +76,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Rebuild();
 
             // ExcludedFoldersChanged (not the broad Changed) fires only when the set really moves, so this rebuilds on
-            // its own edits and on the sibling surface's edits, and never on an unrelated setting flip.
-            SerializeReferenceSettings.ExcludedFoldersChanged += Rebuild;
-            RegisterCallback<DetachFromPanelEvent>(_ => SerializeReferenceSettings.ExcludedFoldersChanged -= Rebuild);
+            // its own edits and on the sibling surface's edits, and never on an unrelated setting flip. Armed from
+            // build time, then follows the panel lifecycle: docking/undocking re-parents the tree — a detach then an
+            // attach WITHOUT a rebuild — so a build-time-only subscription would silently stop mirroring after the
+            // first dock move (see AspidSettingsUI.SyncFromSettings for the same dance).
+            var subscribed = false;
+
+            void Arm()
+            {
+                if (subscribed) return;
+                subscribed = true;
+                SerializeReferenceSettings.ExcludedFoldersChanged += Rebuild;
+                Rebuild();
+            }
+
+            void Disarm()
+            {
+                if (!subscribed) return;
+                subscribed = false;
+                SerializeReferenceSettings.ExcludedFoldersChanged -= Rebuild;
+            }
+
+            RegisterCallback<AttachToPanelEvent>(_ => Arm());
+            RegisterCallback<DetachFromPanelEvent>(_ => Disarm());
+            Arm();
         }
 
         private void Rebuild()
