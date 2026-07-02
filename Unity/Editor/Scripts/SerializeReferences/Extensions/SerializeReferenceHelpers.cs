@@ -960,7 +960,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         /// <summary>
         /// The 1-based ordinal of this property's shared-reference group within its object — a small, stable badge
-        /// number ("Shared reference (1)", "(2)", …) so two fields aliasing the same instance show the same number and
+        /// number ("Shared reference #1", "#2", …) so two fields aliasing the same instance show the same number and
         /// two distinct shared groups show different numbers. Numbering follows each rid's first appearance in document
         /// order and is shared by the IMGUI and UIToolkit notices, so the same reference reads the same on both. Returns
         /// <c>0</c> when the property is empty or not part of a shared group.
@@ -1000,7 +1000,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return false;
             });
 
-            _sharedIndicesFrame = -1; // the counts (and their order) were rebuilt — the derived index map is now stale
+            // The counts (and their order) were rebuilt — the maps derived from them are now stale.
+            _sharedIndicesFrame = -1;
+            _sharedPathsFrame = -1;
             _aliasFrame = frame;
             _aliasSerializedObject = serializedObject;
             return AliasCounts;
@@ -1034,6 +1036,145 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
+        /// The property paths of the OTHER managed-reference fields in the same object aliasing this property's
+        /// instance (sharing its rid), in document order — what the shared-reference notice lists in its tooltip and
+        /// navigates between on click. Empty when the property is empty or not part of a shared group.
+        /// </summary>
+        public static List<string> GetSharedReferenceAliasPaths(SerializedProperty property)
+        {
+            var result = new List<string>();
+            if (property.managedReferenceValue is null) return result;
+
+            if (!GetSharedReferencePathsById(property.serializedObject)
+                    .TryGetValue(property.managedReferenceId, out var paths))
+                return result;
+
+            var selfPath = property.propertyPath;
+            foreach (var path in paths)
+                if (path != selfPath)
+                    result.Add(path);
+
+            return result;
+        }
+
+        /// <summary>
+        /// Every property path in this property's shared-reference group — its own included — in document order;
+        /// empty when the property is not part of a shared group. This canonical order backs the notice's
+        /// click-to-navigate cycling in both drawers, so they walk the members the same way. The list is a per-frame
+        /// memo — read it immediately, do not cache it.
+        /// </summary>
+        public static IReadOnlyList<string> GetSharedReferenceGroupPaths(SerializedProperty property)
+        {
+            if (property.managedReferenceValue is null) return Array.Empty<string>();
+
+            return GetSharedReferencePathsById(property.serializedObject)
+                .TryGetValue(property.managedReferenceId, out var paths)
+                ? paths
+                : (IReadOnlyList<string>)Array.Empty<string>();
+        }
+
+        // The shared-reference tooltip lists at most this many alias paths before folding the rest into "…and N more".
+        private const int MaxDetailAliasPaths = 6;
+
+        /// <summary>
+        /// Builds the shared-reference notice's hover detail for both drawers: which other fields alias this instance
+        /// (by display path), what sharing means, and what the notice's two affordances do. Kept here so the IMGUI and
+        /// UIToolkit notices always tell the same story.
+        /// </summary>
+        public static string BuildSharedReferenceDetail(SerializedProperty property)
+        {
+            var builder = new StringBuilder(
+                "This reference is shared — editing it in one place changes every field that uses it.");
+
+            var others = GetSharedReferenceAliasPaths(property);
+            if (others.Count > 0)
+            {
+                builder.Append("\nAlso used by:");
+                var shown = Mathf.Min(others.Count, MaxDetailAliasPaths);
+                for (var i = 0; i < shown; i++)
+                    builder.Append("\n• ").Append(GetPropertyDisplayPath(others[i]));
+
+                if (others.Count > shown)
+                    builder.Append("\n• …and ").Append(others.Count - shown).Append(" more");
+            }
+
+            builder.Append("\n\nClick the message to highlight the other fields; " +
+                           "Make unique gives this field its own independent copy.");
+            return builder.ToString();
+        }
+
+        // propertyPath → display cache ("sidearms.Array.data[1]" → "Sidearms › Element 1"); the same paths recur on
+        // every IMGUI repaint, so the nicified form is built once.
+        private static readonly Dictionary<string, string> DisplayPathCache = new();
+
+        /// <summary>
+        /// Human-readable form of a serialized property path, matching the labels the inspector itself shows:
+        /// "sidearms.Array.data[1].onHitEffect" → "Sidearms › Element 1 › On Hit Effect". Used by the
+        /// shared-reference notice to list the other fields aliasing an instance.
+        /// </summary>
+        public static string GetPropertyDisplayPath(string propertyPath)
+        {
+            if (string.IsNullOrEmpty(propertyPath)) return string.Empty;
+            if (DisplayPathCache.TryGetValue(propertyPath, out var cached)) return cached;
+
+            var builder = new StringBuilder();
+
+            // Unity serializes a list element as "field.Array.data[i]"; fold that to "field[i]" first so the split
+            // below yields one segment per field, with the element index riding its list's segment.
+            var segments = propertyPath.Replace(".Array.data[", "[").Split('.');
+
+            foreach (var segment in segments)
+            {
+                if (builder.Length > 0) builder.Append(" › ");
+
+                var bracket = segment.IndexOf('[');
+                builder.Append(ObjectNames.NicifyVariableName(bracket < 0 ? segment : segment[..bracket]));
+
+                // Each "[i]" becomes the inspector's own "Element i" caption.
+                for (var open = bracket; open >= 0; open = segment.IndexOf('[', open + 1))
+                {
+                    var close = segment.IndexOf(']', open);
+                    if (close < 0) break;
+                    builder.Append(" › Element ").Append(segment, open + 1, close - open - 1);
+                }
+            }
+
+            return DisplayPathCache[propertyPath] = builder.ToString();
+        }
+
+        // Per-object, per-frame memo of each shared (count > 1) id's member property paths, in document order. Built
+        // by its own walk only when a notice actually needs the paths (tooltip / navigation), then reused across the
+        // several shared fields of the same repaint. Invalidated with the counts memo above.
+        private static int _sharedPathsFrame = -1;
+        private static SerializedObject _sharedPathsObject;
+        private static readonly Dictionary<long, List<string>> SharedPathsById = new();
+
+        private static Dictionary<long, List<string>> GetSharedReferencePathsById(SerializedObject serializedObject)
+        {
+            // Refresh the counts for this frame first (this also resets _sharedPathsFrame when it rebuilds).
+            var counts = GetReferenceIdCounts(serializedObject);
+
+            var frame = Time.frameCount;
+            if (_sharedPathsFrame == frame && ReferenceEquals(_sharedPathsObject, serializedObject))
+                return SharedPathsById;
+
+            SharedPathsById.Clear();
+            TraverseManagedReferences(serializedObject, other =>
+            {
+                var id = other.managedReferenceId;
+                if (!counts.TryGetValue(id, out var count) || count <= 1) return false;
+
+                if (!SharedPathsById.TryGetValue(id, out var paths)) SharedPathsById[id] = paths = new List<string>();
+                paths.Add(other.propertyPath);
+                return false;
+            });
+
+            _sharedPathsFrame = frame;
+            _sharedPathsObject = serializedObject;
+            return SharedPathsById;
+        }
+
+        /// <summary>
         /// Drops the per-frame managed-reference-id alias memo (see <see cref="HasSharedReference"/>) so the next call
         /// rebuilds it from the current object. Call after a same-frame reassignment (Make unique, type pick, paste, …):
         /// the memo is keyed by frame, so a synchronous re-query right after the mutation would otherwise return this
@@ -1043,6 +1184,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             _aliasFrame = -1;
             _sharedIndicesFrame = -1;
+            _sharedPathsFrame = -1;
         }
 
         /// <summary>

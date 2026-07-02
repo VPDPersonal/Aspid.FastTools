@@ -7,6 +7,7 @@ using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.Types.Editors;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -31,6 +32,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string BlockClass = "aspid-fasttools-serialize-reference";
         private const string EmptyClass = BlockClass + "--empty";
         private const string DropdownClass = BlockClass + "__dropdown";
+
+        // Missing stored type: tints the caption the warning amber (coupling the broken value with the stripe and
+        // the notice below) and flips its ellipsis to the start, so the class name — the informative tail of
+        // "<Missing Namespace.Class>" — survives truncation instead of the namespace prefix.
+        private const string DropdownMissingClass = DropdownClass + "--missing";
 
         // Wrapper that hosts the per-asset notices (missing / shared / required / mixed) as a sibling placed AFTER the
         // foldout's content, so an expanded field shows the shared notice BELOW its child fields — matching the IMGUI
@@ -66,6 +72,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Small gap kept between the value column and the dropdown's left edge.
         private const float DropdownGap = 2f;
 
+        // The group-navigation pulse: how strongly a member of a shared group tints in its rid colour when the user
+        // clicks another member's "Shared reference" message, how long the pulse lasts, and for what fraction of it
+        // the tint holds at full strength before fading (an immediate fade read as a laggy flicker rather than a
+        // "here it is" highlight). Mirrored by the IMGUI drawer's flash overlay so the pulse reads the same in both UIs.
+        private const float FlashAlpha = 0.25f;
+        private const int FlashDurationMs = 1600;
+        private const float FlashHoldFraction = 0.35f;
+
+        // A reveal that had to expand something first waits one beat — for the expansion's layout pass, and for a
+        // just-expanded ListView to build its rows — before scrolling and pulsing, or ScrollTo would aim at a
+        // zero-size target.
+        private const long RevealDelayMs = 120;
+
         private readonly Foldout _foldout;
         private readonly TextElement _caption;
         private readonly VisualElement _dropdown;
@@ -97,6 +116,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // missing-type fix). Every live field re-evaluates its shared-reference notice on it, since "shared" depends on
         // the other fields' rids and cannot be observed through value tracking (see the constructor subscription).
         private static event Action ManagedReferencesChanged;
+
+        // Every field currently attached to a panel, so a shared notice's message click can find the other members of
+        // its group (same target object + rid) and reveal them — scroll to the next one and pulse the whole group.
+        // Registered/unregistered alongside the ManagedReferencesChanged subscription in the constructor.
+        private static readonly List<SerializeReferenceField> LiveFields = new();
 
         public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null)
         {
@@ -196,11 +220,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // lost) an alias would stay stale until reselect. So each field also re-evaluates itself on undo/redo.
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 Undo.undoRedoPerformed += OnUndoRedo;
+                // Same Remove-then-Add guard for the group-navigation registry.
+                LiveFields.Remove(this);
+                LiveFields.Add(this);
             });
             RegisterCallback<DetachFromPanelEvent>(_ =>
             {
                 ManagedReferencesChanged -= OnManagedReferencesChanged;
                 Undo.undoRedoPerformed -= OnUndoRedo;
+                LiveFields.Remove(this);
             });
         }
 
@@ -232,12 +260,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var currentType = SerializeReferenceHelpers.GetCurrentType(_property);
             var hasValue = currentType is not null;
 
+            // A missing stored type keeps its full "<Missing Namespace.Class>" caption (the --missing USS rule
+            // ellipsizes it from the LEFT so the class name survives truncation) with the complete identity —
+            // assembly included — one hover away on the dropdown's tooltip.
+            var missingType = !mixedTypes && !hasValue && SerializeReferenceHelpers.IsMissingType(_property)
+                ? SerializeReferenceHelpers.GetMissingTypeName(_property)
+                : default;
+
             // With mixed types the foldout would expose only the first target's children, which do not represent the
             // selection; collapse it and key off the dim "different types" hint instead of the per-instance fields.
-            _caption.SetText(mixedTypes ? MixedCaption : GetCaption(currentType));
-            _caption.tooltip = mixedTypes ? "Mixed — the selected objects hold different types." : null;
+            _caption.SetText(mixedTypes
+                ? MixedCaption
+                : TypeSelectorHelpers.GetTypeSelectorTitle(currentType, missingType.DisplayName));
+
+            // The tooltip lives on the dropdown, not the caption — the caption ignores picking, so it can never be
+            // the tooltip anchor.
+            _dropdown.tooltip = mixedTypes
+                ? "Mixed — the selected objects hold different types."
+                : missingType.IsEmpty ? null : $"Missing type: {missingType.FullName}";
+
             _openButton.SetDisplay(hasValue && !mixedTypes ? DisplayStyle.Flex : DisplayStyle.None);
 
+            _dropdown.EnableInClassList(DropdownMissingClass, !missingType.IsEmpty);
             _dropdown.EnableInClassList(MixedValueClass, mixedTypes);
             EnableInClassList(EmptyClass, !hasValue && !mixedTypes);
             _foldout.SetValueWithoutNotify(hasValue && !mixedTypes && _property.isExpanded);
@@ -407,9 +451,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            // The badge number identifies the shared group: every field aliasing this rid shows the same "(n)", so two
-            // like-numbered fields are the same reference at a glance. The colour is keyed to that badge number (not a
-            // rid hash), so consecutive badges are maximally separated and the number and colour always agree.
+            // The badge number identifies the shared group: every field aliasing this rid shows the same "#n", so two
+            // like-numbered fields are the same reference at a glance. "#" (not parentheses) so the number reads as a
+            // group id rather than a member count. The colour is keyed to that badge number (not a rid hash), so
+            // consecutive badges are maximally separated and the number and colour always agree.
             var index = SerializeReferenceHelpers.GetSharedReferenceIndex(_property);
 
             // The per-index colour is the field's shared-reference signal: it fills the notice's leading swatch, tints
@@ -421,15 +466,150 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _sharedNotice ??= new SerializeReferenceNotice();
             if (_sharedNotice.parent is null) _notices.AddChild(_sharedNotice);
 
-            // Passing the colour also flips the notice to its shared treatment (see SerializeReferenceNotice).
+            // Passing the colour also flips the notice to its shared treatment (see SerializeReferenceNotice); the
+            // tooltip lists the group's other fields by display path, and clicking the message reveals them.
             _sharedNotice.Set(
-                message: index > 0 ? $"Shared reference ({index})" : "Shared reference",
+                message: index > 0 ? $"Shared reference #{index}" : "Shared reference",
                 actionText: "Make unique",
-                detail: "This reference is shared with another field — editing one changes both.\n" +
-                        "Click Make unique to give this field its own independent copy.",
+                detail: SerializeReferenceHelpers.BuildSharedReferenceDetail(_property),
                 onAction: MakeUnique,
-                dotColor: sharedColor);
+                dotColor: sharedColor,
+                onNavigate: NavigateToAliases);
         }
+
+        // The shared notice's message click: reveal the other members of this field's shared group — expand whatever
+        // hides the next one (in document order, wrapping), scroll it into view and pulse every member in the group
+        // colour — so "who else uses this?" is answered by the inspector itself instead of a manual hunt for
+        // matching swatches.
+        private void NavigateToAliases() => NavigateToAliases(allowRetry: true);
+
+        private void NavigateToAliases(bool allowRetry)
+        {
+            if (!IsPropertyAlive()) return;
+
+            var target = _property.serializedObject.targetObject;
+            var rid = _property.managedReferenceId;
+
+            // The group's canonical document order (shared with the IMGUI drawer) backs the cycling.
+            var group = SerializeReferenceHelpers.GetSharedReferenceGroupPaths(_property);
+            if (group.Count < 2) return;
+
+            // The group members' live elements, keyed by path. Same panel only: with two inspectors on one object
+            // every alias exists twice, and cycling should stay inside the inspector the user clicked in.
+            var live = new Dictionary<string, SerializeReferenceField>();
+            foreach (var field in LiveFields)
+            {
+                if (ReferenceEquals(field, this) || field.panel != panel) continue;
+                if (!field.IsPropertyAlive()) continue;
+                if (field._property.serializedObject.targetObject != target) continue;
+                if (field._property.managedReferenceId != rid) continue;
+                live[field._property.propertyPath] = field;
+            }
+
+            // The first member after this field in document order (wrapping) that has a live element.
+            var selfIndex = IndexOf(group, _property.propertyPath);
+            SerializeReferenceField next = null;
+            for (var step = 1; step < group.Count && next is null; step++)
+                live.TryGetValue(group[(selfIndex + step) % group.Count], out next);
+
+            if (next is null)
+            {
+                // No member has a live element — typically a list that was never expanded, whose ListView has not
+                // built its rows yet. Expand every reference/list foldout along the next member's path, give the
+                // ListView a beat to build the revealed rows, then retry once.
+                if (allowRetry && RevealPath(group[(selfIndex + 1) % group.Count]))
+                    schedule.Execute(() => NavigateToAliases(allowRetry: false)).StartingIn(RevealDelayMs);
+                return;
+            }
+
+            // A member hidden inside collapsed parents (a nested reference, a collapsed list) gets geometry only
+            // after every Foldout between it and the root expands — expand them, and let a layout pass run before
+            // the scroll so ScrollTo aims at the member's real position.
+            var expanded = false;
+            for (var ancestor = next.hierarchy.parent; ancestor is not null; ancestor = ancestor.hierarchy.parent)
+            {
+                if (ancestor is not Foldout { value: false } foldout) continue;
+                foldout.value = true;
+                expanded = true;
+            }
+
+            if (expanded) next.schedule.Execute(() => Reveal(next, live)).StartingIn(RevealDelayMs);
+            else Reveal(next, live);
+        }
+
+        private static void Reveal(SerializeReferenceField next, Dictionary<string, SerializeReferenceField> members)
+        {
+            next.GetFirstAncestorOfType<ScrollView>()?.ScrollTo(next);
+            foreach (var member in members.Values) member.FlashSharedHighlight();
+        }
+
+        private static int IndexOf(IReadOnlyList<string> paths, string path)
+        {
+            for (var i = 0; i < paths.Count; i++)
+                if (paths[i] == path)
+                    return i;
+
+            return -1;
+        }
+
+        // Expands every foldout along the path to a group member whose element does not exist yet: managed-reference
+        // ancestors through their live fields, list containers through the ListViews bound to the path's prefixes —
+        // scoped to this editor's InspectorElement so another component's identically named list is left alone.
+        // Returns true when something was actually expanded (i.e. a retry is worth scheduling).
+        private bool RevealPath(string path)
+        {
+            var root = (VisualElement)GetFirstAncestorOfType<InspectorElement>() ?? panel?.visualTree;
+            if (root is null) return false;
+
+            var target = _property.serializedObject.targetObject;
+            var expanded = false;
+
+            for (var dot = path.IndexOf('.'); dot >= 0; dot = path.IndexOf('.', dot + 1))
+            {
+                var prefix = path[..dot];
+
+                // A managed-reference ancestor → its live field's own foldout.
+                foreach (var field in LiveFields)
+                {
+                    if (field.panel != panel || !field.IsPropertyAlive()) continue;
+                    if (field._property.serializedObject.targetObject != target) continue;
+                    if (field._property.propertyPath != prefix) continue;
+                    if (field._foldout.value) continue;
+                    field._foldout.value = true;
+                    expanded = true;
+                }
+
+                // A list ancestor → the foldout header of the ListView bound to the prefix.
+                root.Query<ListView>().Where(list => list.bindingPath == prefix).ForEach(list =>
+                {
+                    var header = list.Q<Foldout>();
+                    if (header is null || header.value) return;
+                    header.value = true;
+                    expanded = true;
+                });
+            }
+
+            return expanded;
+        }
+
+        // Briefly tints the whole field in its shared-reference colour — the "here it is" pulse the group-navigation
+        // click uses to point at the other members of a shared group.
+        private void FlashSharedHighlight()
+        {
+            var from = _sharedColor;
+            from.a = FlashAlpha;
+
+            experimental.animation
+                .Start(from, Color.clear, FlashDurationMs,
+                    static (element, color) => element.style.backgroundColor = color)
+                .Ease(HoldThenFadeEasing)
+                .OnCompleted(() => style.backgroundColor = StyleKeyword.Null);
+        }
+
+        // The pulse holds its full tint for the first FlashHoldFraction of its life and then fades out linearly —
+        // matching the IMGUI overlay's curve.
+        private static float HoldThenFadeEasing(float t) =>
+            t < FlashHoldFraction ? 0f : (t - FlashHoldFraction) / (1f - FlashHoldFraction);
 
         // Picks the left-edge stripe from the inputs cached by the notice updates: a missing type paints it the warning
         // amber (from USS), a shared reference the cached per-rid colour (inline); a field that is both takes the
@@ -761,18 +941,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             ApplyReferenceChange();
-        }
-
-        private string GetCaption(Type currentType)
-        {
-            if (currentType is not null)
-                return TypeSelectorHelpers.GetTypeSelectorTitle(currentType);
-
-            var missingName = SerializeReferenceHelpers.IsMissingType(_property)
-                ? SerializeReferenceHelpers.GetMissingTypeDisplayName(_property)
-                : null;
-
-            return TypeSelectorHelpers.GetTypeSelectorTitle(null, missingName);
         }
     }
 }

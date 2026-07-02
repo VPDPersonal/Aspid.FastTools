@@ -142,11 +142,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // button (there is no single type to open). Picking a type still rewrites every target. The "—" caption is
             // what renders the dash here — DropdownButton has no mixed-value styling — but EditorGUI.showMixedValue is
             // still set/restored to mirror the UIToolkit side's mixed flag and to propagate to any nested IMGUI control.
-            var caption = mixedTypes ? "—" : GetCaption(property, currentType);
+            string missingTooltip = null;
+            var caption = mixedTypes ? "—" : GetCaption(property, currentType, out missingTooltip);
             var previousMixed = EditorGUI.showMixedValue;
             EditorGUI.showMixedValue = mixedTypes;
+
+            // Missing stored type: mirror the UIToolkit dropdown's --missing treatment — the caption tints the same
+            // warning amber as the stripe and the notice, keeps its class name by trimming from the LEFT (IMGUI clips
+            // at the right edge, which would cut exactly the informative tail of "<Missing Namespace.Class>"), and
+            // carries the full identity — assembly included — on the hover tooltip.
+            var captionStyle = EditorStyles.miniPullDown;
+            if (missingTooltip is not null)
+            {
+                captionStyle = GetMissingCaptionStyle();
+                caption = FitCaptionFromLeft(captionStyle, caption, dropdownRect.width);
+            }
+
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption,
-                    mixedTypes ? "Mixed — the selected objects hold different types." : null), FocusType.Passive))
+                    mixedTypes ? "Mixed — the selected objects hold different types." : missingTooltip),
+                    FocusType.Passive, captionStyle))
                 // Under mixed types there is no single "current" type to pre-highlight — open the picker unselected.
                 ShowSelector(property, fieldType, baseTypes, mixedTypes ? null : currentType, dropdownRect);
             EditorGUI.showMixedValue = previousMixed;
@@ -266,10 +280,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (showShared)
             {
                 // The badge's per-index colour tints the whole notice — leading swatch, message and Make-unique action —
-                // and the full-height stripe, so aliased fields read as one colour and the "(n)" badge and its colour
+                // and the full-height stripe, so aliased fields read as one colour and the "#n" badge and its colour
                 // always agree (mirrors the UIToolkit --shared notice: no warning icon, since a shared reference is
                 // attention, not an error).
                 Color? indexColor = sharedIndex > 0 ? SerializeReferenceRidColor.ForIndex(sharedIndex) : null;
+
+                // Where this member of the group was painted — when it is the member a sibling's message click just
+                // revealed, the inspector scrolls to it here.
+                SerializeReferenceSharedNavigation.RevealIfPending(property, position);
 
                 // Pull the notice left by the foldout arrow's reserved width so its leading swatch lines up under the
                 // header's arrow (the value is always a foldout here); widen to match so "Make unique" stays right-pinned.
@@ -277,16 +295,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
                 var persistent = property.Persistent();
 
+                // The badge uses "#" (not parentheses) so the number reads as a group id, not a member count; the
+                // tooltip lists the group's other fields by display path, and clicking the message reveals them.
                 DrawNotice(
                     noticeRect,
-                    sharedIndex > 0 ? $"Shared reference ({sharedIndex})" : "Shared reference",
+                    sharedIndex > 0 ? $"Shared reference #{sharedIndex}" : "Shared reference",
                     "Make unique",
-                    "This reference is shared with another field — editing one changes both.\n" +
-                    "Click Make unique to give this field its own independent copy.",
+                    SerializeReferenceHelpers.BuildSharedReferenceDetail(property),
                     () => SerializeReferenceHelpers.MakeReferenceUnique(persistent),
-                    ridColor: indexColor);
+                    ridColor: indexColor,
+                    onMessageClick: () => SerializeReferenceSharedNavigation.NavigateFrom(persistent));
 
                 y += EditorGUIUtility.singleLineHeight + spacing;
+
+                // Group-navigation pulse: while a sibling's "Shared reference" message was just clicked, every other
+                // drawn member of that group tints in the group colour, fading out. Painted over the full field rect
+                // (header + children), mirroring the UIToolkit field's background pulse.
+                if (SerializeReferenceSharedNavigation.TryGetFlashAlpha(property, out var flashAlpha) &&
+                    indexColor.HasValue)
+                {
+                    var flashColor = indexColor.Value;
+                    flashColor.a = flashAlpha;
+                    EditorGUI.DrawRect(position, flashColor);
+                }
             }
         }
 
@@ -481,16 +512,63 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
 
-        private static string GetCaption(SerializedProperty property, Type currentType)
+        // A missing stored type also reports its full identity — assembly included — through missingTooltip (null
+        // otherwise), which both feeds the dropdown's hover tooltip and flags the caption for the amber missing
+        // treatment (see the DropdownButton call).
+        private static string GetCaption(SerializedProperty property, Type currentType, out string missingTooltip)
         {
+            missingTooltip = null;
+
             if (currentType is not null)
                 return TypeSelectorHelpers.GetTypeSelectorTitle(currentType);
 
-            var missingName = SerializeReferenceHelpers.IsMissingType(property)
-                ? SerializeReferenceHelpers.GetMissingTypeDisplayName(property)
-                : null;
+            var missingType = SerializeReferenceHelpers.IsMissingType(property)
+                ? SerializeReferenceHelpers.GetMissingTypeName(property)
+                : default;
 
-            return TypeSelectorHelpers.GetTypeSelectorTitle(null, missingName);
+            if (!missingType.IsEmpty)
+                missingTooltip = $"Missing type: {missingType.FullName}";
+
+            return TypeSelectorHelpers.GetTypeSelectorTitle(null, missingType.DisplayName);
+        }
+
+        // Amber caption for a missing stored type, mirroring the UIToolkit dropdown's --missing tint (NoticeColor is
+        // the same warning amber the stripe and the notice text use). The colour is (re)assigned on every call, like
+        // the notice styles below, so a cached style survives editor-theme changes.
+        private static GUIStyle _missingCaptionStyle;
+
+        private static GUIStyle GetMissingCaptionStyle()
+        {
+            _missingCaptionStyle ??= new GUIStyle(EditorStyles.miniPullDown);
+            _missingCaptionStyle.normal.textColor = NoticeColor;
+            _missingCaptionStyle.hover.textColor = NoticeColor;
+            _missingCaptionStyle.active.textColor = NoticeColor;
+            _missingCaptionStyle.focused.textColor = NoticeColor;
+            return _missingCaptionStyle;
+        }
+
+        // IMGUI clips a too-long caption at its RIGHT edge, which would cut the class name — the informative tail of
+        // "<Missing Namespace.Class>" — so mirror the UIToolkit side's start-ellipsis by hand: drop leading characters
+        // (binary search on the measured width) until the rest fits behind a leading "…".
+        private static readonly GUIContent MeasureContent = new();
+
+        private static string FitCaptionFromLeft(GUIStyle style, string text, float width)
+        {
+            MeasureContent.text = text;
+            if (style.CalcSize(MeasureContent).x <= width) return text;
+
+            // low..high — candidate counts of dropped leading characters; find the smallest that fits.
+            int low = 1, high = text.Length;
+            while (low < high)
+            {
+                var mid = (low + high) / 2;
+                MeasureContent.text = "…" + text.Substring(mid);
+
+                if (style.CalcSize(MeasureContent).x <= width) high = mid;
+                else low = mid + 1;
+            }
+
+            return "…" + text.Substring(low);
         }
 
         // Warning yellow mirrors the UIToolkit notice palette:
@@ -550,17 +628,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         /// <summary>
         /// Draws a compact single-row notice, mirroring the UIToolkit <see cref="SerializeReferenceNotice"/>: a terse
-        /// message, then a bold, right-pinned clickable action word (no underline; it lightens on hover) and — for a
+        /// message, then a bold, right-pinned clickable action word (underlined; it lightens on hover) and — for a
         /// missing-type notice with a Smart Fix candidate — an optional trailing suggestion word ("· → Pistol?")
         /// clustered just after it at the right edge. The full <paramref name="detail"/> rides each segment's hover
         /// tooltip. Without <paramref name="ridColor"/> the row is a warning: a yellow triangle icon and the warning
         /// amber palette (missing-type / required). With <paramref name="ridColor"/> it is the shared-reference variant:
         /// no icon, a leading rid-coloured swatch, and the message plus action both tinted that per-rid colour — so
-        /// aliased fields read as one colour and match at a glance.
+        /// aliased fields read as one colour and match at a glance. <paramref name="onMessageClick"/>, when given,
+        /// makes the message itself clickable (link cursor + hover lighten, no underline — the action words keep that
+        /// affordance) — the shared notice's "show me the other members of this group" segment.
         /// </summary>
         private static void DrawNotice(Rect rect, string message, string actionText, string detail, Action onClick,
             string suggestionText = null, string suggestionDetail = null, Action onSuggestion = null,
-            Color? ridColor = null)
+            Color? ridColor = null, Action onMessageClick = null)
         {
             var shared = ridColor.HasValue;
             var baseColor = shared ? ridColor.Value : NoticeColor;
@@ -588,7 +668,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var messageContent = new GUIContent(message, detail);
             var messageWidth = _messageStyle.CalcSize(messageContent).x;
             var messageRect = new Rect(messageX, rect.y, messageWidth, rect.height);
-            GUI.Label(messageRect, messageContent, _messageStyle);
+            if (onMessageClick is not null)
+            {
+                // Clickable message (the shared notice's group navigation): link cursor and the same hover lighten as
+                // the action beside it, mirroring the UIToolkit __message--navigable treatment.
+                var messageHover = messageRect.Contains(Event.current.mousePosition);
+                var messageColor = messageHover ? hoverColor : baseColor;
+                _messageStyle.normal.textColor = messageColor;
+                _messageStyle.hover.textColor = messageColor;
+
+                EditorGUIUtility.AddCursorRect(messageRect, MouseCursor.Link);
+                if (GUI.Button(messageRect, messageContent, _messageStyle)) onMessageClick();
+            }
+            else
+            {
+                // The style is shared across notices — reset the hover tint a clickable message may have left behind.
+                _messageStyle.hover.textColor = baseColor;
+                GUI.Label(messageRect, messageContent, _messageStyle);
+            }
 
             if (string.IsNullOrEmpty(actionText) || onClick is null) return;
 
@@ -620,10 +717,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static void DrawRequiredNotice(Rect rect, string message, string detail) =>
             DrawNotice(rect, message, actionText: string.Empty, detail: detail, onClick: null);
 
-        // Draws one bold, clickable, hover-tracking link word in the given rect (no underline — it lightens on hover),
-        // mirroring the UIToolkit notice action. Shared by the Fix action, the trailing Smart Fix suggestion and the
-        // shared-reference Make-unique action; the caller supplies the resting and hover colours (warning amber, or the
-        // per-rid colour lightened toward white for the shared notice).
+        // Draws one bold, clickable, hover-tracking link word in the given rect — underlined, matching the UIToolkit
+        // notice's <u> action treatment, so "this is a button" reads the same in both UIs — that lightens on hover.
+        // Shared by the Fix action, the trailing Smart Fix suggestion and the shared-reference Make-unique action; the
+        // caller supplies the resting and hover colours (warning amber, or the per-rid colour lightened toward white
+        // for the shared notice).
         private static void DrawLink(Rect linkRect, GUIContent content, Color color, Color hoverColor, Action onClick)
         {
             var hover = linkRect.Contains(Event.current.mousePosition);
@@ -632,6 +730,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _actionStyle.hover.textColor = drawColor;
 
             EditorGUIUtility.AddCursorRect(linkRect, MouseCursor.Link);
+
+            // IMGUI rich text has no <u>, so the underline is a hand-drawn 1px line under the word.
+            EditorGUI.DrawRect(new Rect(linkRect.x + 1f, linkRect.yMax - 3f, linkRect.width - 2f, 1f), drawColor);
+
             if (GUI.Button(linkRect, content, _actionStyle)) onClick();
         }
 

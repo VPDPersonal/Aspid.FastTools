@@ -18,7 +18,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// multi-object "different types" hint that stands in for the suppressed child fields. A shared-reference call (one
     /// that passes a rid <c>dotColor</c>) instead flips the row to a calm link treatment — the leading swatch, the
     /// message and the Make-unique action all tinted in that per-rid colour, with no icon — since a shared reference is
-    /// attention, not an error.
+    /// attention, not an error. On that shared row the message itself is a third clickable segment (see
+    /// <c>onNavigate</c>): it reveals the other members of the group, so "who else uses this?" is one click away.
     /// </summary>
     internal sealed class SerializeReferenceNotice : VisualElement
     {
@@ -33,6 +34,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ActionClass = NoticeClass + "__action";
         private const string SuggestionClass = NoticeClass + "__suggestion";
         private const string SuggestionVisibleClass = SuggestionClass + "--visible";
+
+        // Marks the message as the shared notice's click-to-navigate segment (link cursor via USS); its hover lighten
+        // comes from code, since the rid colour is dynamic.
+        private const string MessageNavigableClass = MessageClass + "--navigable";
 
         // Leading rid swatch — a small colour-coded circle at the head of the shared-reference row. Its per-rid colour
         // is shared inline with the message text and the field's left stripe, so the whole field reads in one colour
@@ -62,10 +67,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private Action _onAction;
         private Action _onSuggestion;
+        private Action _onNavigate;
 
-        // The shared action's resting rid colour (null when not a shared notice), so the hover handlers know whether to
-        // brighten it and what to restore it to; the missing-type action keeps its USS hover instead.
-        private Color? _actionColor;
+        // The shared notice's resting rid colour (null when not a shared notice), so the hover handlers on the action
+        // and the navigable message know whether to brighten and what to restore to; the missing-type action keeps its
+        // USS hover instead.
+        private Color? _sharedColor;
 
         public SerializeReferenceNotice()
         {
@@ -78,21 +85,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(IconClass)
                 .SetPickingMode(PickingMode.Ignore);
 
+            // Ignores picking by default; the shared notice re-enables it (see Set) so a click on the message reveals
+            // the other members of the group, with the same code-driven hover lighten as the action beside it.
             _message = new Label()
                 .AddClass(MessageClass)
                 .SetPickingMode(PickingMode.Ignore);
+            _message.RegisterCallback<ClickEvent>(_ => _onNavigate?.Invoke());
+            _message.RegisterCallback<PointerEnterEvent>(_ =>
+            {
+                if (_onNavigate is not null && _sharedColor.HasValue)
+                    _message.style.color = Color.Lerp(_sharedColor.Value, Color.white, ActionHoverLighten);
+            });
+            _message.RegisterCallback<PointerLeaveEvent>(_ =>
+            {
+                if (_sharedColor.HasValue) _message.style.color = _sharedColor.Value;
+            });
 
             _action = new Label().AddClass(ActionClass);
             _action.RegisterCallback<ClickEvent>(_ => _onAction?.Invoke());
-            // Shared-notice hover: brighten the rid colour (the missing-type action has no _actionColor and keeps its
+            // Shared-notice hover: brighten the rid colour (the missing-type action has no _sharedColor and keeps its
             // USS hover instead).
             _action.RegisterCallback<PointerEnterEvent>(_ =>
             {
-                if (_actionColor.HasValue) _action.style.color = Color.Lerp(_actionColor.Value, Color.white, ActionHoverLighten);
+                if (_sharedColor.HasValue) _action.style.color = Color.Lerp(_sharedColor.Value, Color.white, ActionHoverLighten);
             });
             _action.RegisterCallback<PointerLeaveEvent>(_ =>
             {
-                if (_actionColor.HasValue) _action.style.color = _actionColor.Value;
+                if (_sharedColor.HasValue) _action.style.color = _sharedColor.Value;
             });
 
             _suggestion = new Label().AddClass(SuggestionClass);
@@ -113,15 +132,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
-        /// Updates the notice content. The <paramref name="actionText"/> word is the only clickable part;
+        /// Updates the notice content. The <paramref name="actionText"/> word is the primary clickable part;
         /// pass an empty string to hide it (e.g. when the action is unavailable for unsaved targets). Setting the
         /// notice also clears any previously shown <see cref="SetSuggestion"/> segment.
         /// <paramref name="dotColor"/>, when given, marks this as the shared-reference notice: it leads the row with a
         /// small colour-coded swatch in that colour and switches to the calm link treatment, so aliased fields can be
         /// matched at a glance by their lined-up swatches. Omit it (the missing-type / required notices) to keep the
         /// default warning palette and hide the swatch.
+        /// <paramref name="onNavigate"/>, when given, makes the message itself clickable (link cursor + hover lighten) —
+        /// the shared notice's "show me the other members of this group" affordance.
         /// </summary>
-        public void Set(string message, string actionText, string detail, Action onAction, Color? dotColor = null)
+        public void Set(string message, string actionText, string detail, Action onAction, Color? dotColor = null,
+            Action onNavigate = null)
         {
             EnableInClassList(InfoModifierClass, false);
 
@@ -129,8 +151,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _onAction = onAction;
 
             var hasAction = !string.IsNullOrEmpty(actionText) && onAction is not null;
-            _action.text = actionText;
+            _action.text = Underline(actionText);
             _action.SetDisplay(hasAction ? DisplayStyle.Flex : DisplayStyle.None);
+
+            // A navigable message picks up pointer events (the default is Ignore so a plain notice never eats clicks).
+            _onNavigate = onNavigate;
+            _message.SetPickingMode(onNavigate is not null ? PickingMode.Position : PickingMode.Ignore);
+            _message.EnableInClassList(MessageNavigableClass, onNavigate is not null);
 
             ApplySharedColor(dotColor);
 
@@ -156,6 +183,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _action.text = string.Empty;
             _action.SetDisplay(DisplayStyle.None);
 
+            _onNavigate = null;
+            _message.SetPickingMode(PickingMode.Ignore);
+            _message.EnableInClassList(MessageNavigableClass, false);
+
             ApplySharedColor(null);
 
             tooltip = detail;
@@ -164,12 +195,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Applies (or, with null, clears) the shared reference's per-rid colour. It is unique per reference, so it is set
         // inline from code: it fills the leading swatch, tints the "Shared reference" message AND the "Make unique"
-        // action (cached in _actionColor for the hover-lighten handlers), and the field paints its left stripe the same
+        // action (cached in _sharedColor for the hover-lighten handlers), and the field paints its left stripe the same
         // colour, so the whole row reads in the rid's colour. The --visible modifier reveals the swatch; clearing
         // reverts to the USS palette (the missing-type / required warning amber).
         private void ApplySharedColor(Color? color)
         {
-            _actionColor = color;
+            _sharedColor = color;
 
             if (color.HasValue)
             {
@@ -197,7 +228,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _onSuggestion = onSuggestion;
 
             var hasSuggestion = !string.IsNullOrEmpty(suggestionText) && onSuggestion is not null;
-            _suggestion.text = suggestionText;
+            _suggestion.text = Underline(suggestionText);
             _suggestion.tooltip = detail;
             _suggestion.EnableInClassList(SuggestionVisibleClass, hasSuggestion);
         }
@@ -209,5 +240,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _suggestion.tooltip = null;
             _suggestion.EnableInClassList(SuggestionVisibleClass, false);
         }
+
+        // Every clickable action word is underlined (rich-text <u>, since USS has no text-decoration) so "this is a
+        // button" reads the same on the Fix, Smart Fix and Make-unique segments — colour alone stays free to carry
+        // group identity on the shared notice. The IMGUI drawer draws the matching underline by hand.
+        private static string Underline(string text) =>
+            string.IsNullOrEmpty(text) ? text : $"<u>{text}</u>";
     }
 }
