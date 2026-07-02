@@ -57,12 +57,13 @@ The drawer also helps recover from the two ways a managed reference goes wrong i
 
 ### Repair a missing type — `BrokenWeaponPreset.asset` & `LoadoutMissingType.prefab`
 
-Four assets ship pre-broken, storing type identities that no longer resolve:
+Five assets ship storing type identities that no longer resolve directly:
 
 - `Presets/BrokenWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` references a missing `GhostWeapon`.
 - `Presets/BrokenArsenalPreset.asset` — a second `ScriptableObject` that also references the missing `GhostWeapon`, three times over (`Weapon` plus two of its `Alternates`), so it shares a broken type with `BrokenWeaponPreset.asset`.
 - `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol` (its IMGUI twin `Prefabs/IMGUILoadoutMissingType.prefab` breaks the same slot through the IMGUI renderer).
 - `Presets/MovedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` stores `Pistol` under an old `…Samples.SerializeReferences.Legacy` namespace, as if the class had been moved without `[MovedFrom]` — this one demonstrates the one-click **Smart Fix** below.
+- `Presets/RenamedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` stores the old `CrossbowLauncher` class name; the class now ships as `Crossbow` carrying a declared `[MovedFrom]`, so the Inspector shows a healthy weapon and only the file is stale — this one demonstrates the **Migrate all** flow in Project References.
 
 Select either **in the Project window**. The missing field shows a `<Missing …>` caption, a **Missing type** warning, and a **Fix** button:
 
@@ -82,7 +83,7 @@ that contrast is intentional.)
 >
 > When a missing reference is nested inside another value or sits on a child object the Inspector can't reach, use **`Tools → Aspid 🐍 → FastTools → Asset References`** instead: it scans the whole asset file and lists every missing reference (any depth, any child) with its own **Fix** picker.
 >
-> Its **Project References** tab sweeps every asset under `Assets/` and groups the broken references by their stored type — so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into a single **GhostWeapon** group (`4 entries · 2 files`). One **Fix all** picks a single replacement and re-points every entry across both files at once.
+> Its **Project References** tab sweeps every asset under `Assets/` and groups the broken references by their stored type — so `BrokenWeaponPreset.asset` and `BrokenArsenalPreset.asset` collapse into a single **GhostWeapon** group (`4 entries · 2 files`). One **Fix all** picks a single replacement and re-points every entry across both files at once. And `RenamedWeaponPreset.asset` surfaces there as a calm, info-tinted **pending migration** instead of a warning: its stored `CrossbowLauncher` matches the `[MovedFrom]` declared on `Crossbow`, so the card offers an authoritative one-click **Migrate all (1) → Crossbow** that bakes the rename into the file — after which the attribute could be deleted from code.
 
 ### Map a nested graph — `NestedLoadout.prefab`
 
