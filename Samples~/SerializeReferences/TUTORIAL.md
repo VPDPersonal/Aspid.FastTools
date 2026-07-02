@@ -216,12 +216,28 @@ assets **pre-broken** on purpose so you can practise the recovery flow:
 
 - `Presets/BrokenWeaponPreset.asset`, `Presets/BrokenArsenalPreset.asset` — `ScriptableObject`s referencing a missing `GhostWeapon`.
 - `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol`.
+- `Presets/MovedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` still stores `Pistol` under an old `…Samples.SerializeReferences.Legacy` namespace, as if the class had been moved without a `[MovedFrom]` attribute. The type itself exists — only the stored identity is stale.
 
 ### Inline repair (one field)
 
 1. Select a broken asset **in the Project window**.
 2. The missing field shows a `<Missing …>` caption, a **Missing type** warning and a **Fix** button (often with a one-click **Smart Fix** suggestion of the likely new type).
 3. Click **Fix**, pick the replacement (e.g. `Pistol`) — the reference is rewritten **keeping its data** (the picker rewrites the stored type in the asset file rather than recreating the instance).
+
+### Smart Fix (one click, no picker)
+
+The `GhostWeapon` assets above have no plausible successor, so their notice only offers the manual **Fix**. Open
+`Presets/MovedWeaponPreset.asset` instead — its warning ends with a clickable **`→ Pistol?`** suggestion:
+
+1. Hover the suggestion — the tooltip shows the full suggested identity and the ranking reason (`same type name`).
+2. Click it — the reference is re-pointed at the moved `Pistol` in one step, keeping `_damage = 21`, `_magazineSize = 6`.
+
+The suggestion is ranked against the same candidate pool the picker would offer: a declared `[MovedFrom]` match scores
+highest, then a same-named type in another namespace/assembly, a casing-only rename, and finally a near-miss name backed
+by the orphaned data's field shape. It is **never applied automatically** — you always click.
+
+> A rename/move that ships `[MovedFrom]` from the start never breaks at all — Unity migrates the reference on load.
+> Smart Fix is the safety net for the moves that forgot it.
 
 > Repair reads and rewrites the asset YAML directly, because Unity does not expose a missing type through its
 > serialization API (and on GameObjects/prefabs even drops it from the live object — UUM-129100). It therefore needs a
@@ -294,5 +310,5 @@ flags `-srGateWarnOnly` (force exit 0) / `-srGateFail` (force fail on violations
 | `Scripts/Effects/` | abstract `StatusEffect` + `BurnEffect`/`FreezeEffect` |
 | `Scripts/Modifiers/` | the `Modifier<T>` generic hierarchy |
 | `Scripts/SlottedLoadout.cs` | references nested in containers (Lesson 7, standalone) — its `IMGUISlottedLoadout` twin forces the IMGUI path |
-| `Scripts/WeaponPreset.cs` + `Presets/Broken*.asset` | the missing-type repair flow |
+| `Scripts/WeaponPreset.cs` + `Presets/Broken*.asset` / `Presets/MovedWeaponPreset.asset` | the missing-type repair flow — manual **Fix** and the one-click **Smart Fix** |
 | `Scripts/IMGUILoadout.cs` / `Scripts/IMGUISlottedLoadout.cs` (+ their `Editor/` companions) | the same fields forced through the IMGUI path; every demo prefab has an `IMGUI…` twin |
