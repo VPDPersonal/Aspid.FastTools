@@ -635,12 +635,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Insert(0, _flashOverlay);
             }
 
-            // Stretch the band to the inspector's right edge: the field root ends a few px short of it (the gap
-            // varies with nesting depth), measured per flash and applied as a negative `right`.
-            var inspectorRoot = (VisualElement)GetFirstAncestorOfType<InspectorElement>() ?? panel?.visualTree;
-            if (inspectorRoot is not null)
+            // Stretch the band to the host's right edge: the field root ends a few px short of it (the gap
+            // varies with nesting depth), measured per flash and applied as a negative `right`. A field living
+            // in a ListView clamps to its item row instead of the inspector — the inspector's edge lies OUTSIDE
+            // the list's bordered box, and the band must not spill past the frame.
+            var edgeHost = GetFlashEdgeHost();
+            if (edgeHost is not null)
             {
-                var overhang = worldBound.xMax - inspectorRoot.worldBound.xMax;
+                var overhang = worldBound.xMax - edgeHost.worldBound.xMax;
                 if (!float.IsNaN(overhang)) _flashOverlay.style.right = overhang;
             }
 
@@ -652,6 +654,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     static (element, color) => element.style.backgroundColor = color)
                 .Ease(HoldThenFadeEasing)
                 .OnCompleted(() => _flashOverlay.style.backgroundColor = StyleKeyword.Null);
+        }
+
+        // The element whose right edge bounds the flash band: the row viewport of the nearest ListView when the
+        // field is a list element (walked inside-out, so the innermost list wins) — the inspector's edge lies
+        // OUTSIDE the list's bordered box — else the InspectorElement / panel root.
+        private VisualElement GetFlashEdgeHost()
+        {
+            for (var ancestor = hierarchy.parent; ancestor is not null; ancestor = ancestor.hierarchy.parent)
+            {
+                switch (ancestor)
+                {
+                    case ListView list:
+                        return list.Q<ScrollView>()?.contentViewport ?? (VisualElement)list;
+
+                    case InspectorElement inspector:
+                        return inspector;
+                }
+            }
+
+            return panel?.visualTree;
         }
 
         // The pulse holds its full tint for the first FlashHoldFraction of its life and then fades out linearly —
