@@ -70,6 +70,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeBandMissingClass = NodeBandClass + "--missing";
         private const string NodeBandRowClass = RootClass + "__node-band-row";
         private const string NodeMigrateClass = RootClass + "__node-migrate";
+        private const string NodeSuggestClass = RootClass + "__node-suggest";
         private const string NodeHeaderClass = RootClass + "__node-header";
         private const string NodeFooterClass = RootClass + "__node-footer";
         private const string NodeRootLabelClass = RootClass + "__node-root-label";
@@ -334,6 +335,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : migrations > 0
                     ? SerializeReferenceCanvasStyle.Info
                     : SerializeReferenceCanvasStyle.Success);
+        }
+
+        // The ranked Smart Fix for a missing node: the stored identity scored against the node's field constraint,
+        // keyed by the payload's field names — through the shared per-(path, fileId, rid) cache, so a rescan and the
+        // inline drawer reuse one computation. Best-effort: a parse miss just means no suggestion row.
+        private bool TryGetNodeSuggestion(string assetPath, long fileId, long rid, ManagedTypeName storedType,
+            out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
+        {
+            suggestion = default;
+
+            try
+            {
+                var fieldNames = SerializeReferenceYamlEditor.GetReferenceFieldNames(assetPath, fileId, rid);
+                var constraint = ResolveConstraint(assetPath, fileId, rid) ?? typeof(object);
+
+                var ranked = SerializeReferenceRepairSuggestions.GetCached(assetPath, fileId, rid,
+                    () => SerializeReferenceRepairSuggestions.Rank(storedType, fieldNames, constraint));
+                if (ranked.Count == 0) return false;
+
+                suggestion = ranked[0];
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         // A missing node whose stored type is claimed by exactly one [MovedFrom] target that fits the field's declared
@@ -729,6 +756,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         "name in the file so it matches the code.";
                     card.AddChild(migrate);
                 }
+                else if (TryGetNodeSuggestion(assetPath, document.FileId, rid, node.Value.StoredType, out var suggestion))
+                {
+                    // The same Smart Fix quick-apply the inline notice and the Project References card surface — the
+                    // graph was the one missing-type surface without it. Safe to hand straight to ApplyFix: Rank's
+                    // pool is constraint-filtered, so the suggestion is always a type the picker itself would offer.
+                    var suggest = new AspidGradientButton(SerializeReferenceHelpers.GetSuggestionLabel(suggestion),
+                            _ => ApplyFix(assetPath, fileId, rid, suggestion.Type.AssemblyQualifiedName))
+                        .AddClass(NodeSuggestClass);
+                    suggest.tooltip = SerializeReferenceHelpers.GetSuggestionDetail(suggestion);
+                    card.AddChild(suggest);
+                }
             }
             else if (!isOrphan)
             {
@@ -984,12 +1022,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // The band is a direct child of the card; drop the picker right below it inside the card — reading as a
             // dropdown welded under the band, with the bottom meta line shifting beneath it — mirroring the Project
             // Audit group picker. The ?? fallback keeps a sane target if the band is ever hosted outside a card.
-            // On a migration card the Migrate row sits right under the band as its visual pair — the picker slots in
-            // after it, so expanding the escape hatch never wedges itself between the band and its one-click action.
+            // On a migration or suggestion card the one-click row sits right under the band as its visual pair — the
+            // picker slots in after it, so expanding the escape hatch never wedges itself between the two.
             var card = anchor?.parent;
             var container = card ?? _list;
             var insertAt = container.IndexOf(anchor) + 1;
-            if (insertAt < container.childCount && container[insertAt].ClassListContains(NodeMigrateClass))
+            if (insertAt < container.childCount &&
+                (container[insertAt].ClassListContains(NodeMigrateClass) ||
+                 container[insertAt].ClassListContains(NodeSuggestClass)))
                 insertAt++;
             container.InsertChild(insertAt, _openPicker);
 
