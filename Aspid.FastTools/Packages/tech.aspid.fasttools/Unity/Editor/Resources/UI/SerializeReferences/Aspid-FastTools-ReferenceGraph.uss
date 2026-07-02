@@ -305,6 +305,23 @@
     color:                                                var(--aspid-colors-status-warning-text-light);
 }
 
+/* [MovedFrom] one-click migrate: the pending-migration card's full-width action under its band, info-tinted — an
+   authoritative rename is a calm migration, never an amber alarm (mirrors the Project Audit __group-migrate row). */
+.aspid-fasttools-reference-graph__node-migrate {
+    margin:                                               2px 0 4px 0;
+    --aspid-fasttools-colors-gradient_button-bg: var(
+        --aspid-colors-status-info-dark
+    );
+    --aspid-fasttools-colors-gradient_button-accent: var(
+        --aspid-colors-status-info-text-light
+    );
+}
+
+.aspid-fasttools-reference-graph__node-migrate
+    .aspid-fasttools-gradient-button__label {
+    -unity-text-align:                                    middle-center;
+}
+
 /* The band's leading content (and the non-missing top row): the type pill + badges hugging the left, shrinkable so a
    long type ellipsises rather than shoving the Fix action off the band. */
 .aspid-fasttools-reference-graph__node-band-row {
