@@ -109,9 +109,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             window.SwitchMode(Mode.Project);
         }
 
-        /// <summary>Opens the window on the Settings tab.</summary>
+        /// <summary>Opens the window on the Settings tab. Also the deep-link target of the type selector's footer gear.</summary>
         [MenuItem("Tools/Aspid 🐍/FastTools/Settings", priority = 40)]
-        private static void OpenSettings() => Reveal().SwitchMode(Mode.Settings);
+        internal static void OpenSettings() => Reveal().SwitchMode(Mode.Settings);
 
         private static SerializeReferenceWindow Reveal()
         {

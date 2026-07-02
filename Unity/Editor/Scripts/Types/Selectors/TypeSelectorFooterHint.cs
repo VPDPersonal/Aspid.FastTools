@@ -48,7 +48,9 @@ namespace Aspid.FastTools.Types.Editors
                 parts.Add("Esc Close");
             }
 
-            return string.Join("  ·  ", parts);
+            // The single-space separator matches the dot-joined summaries elsewhere in the package and keeps the line
+            // narrow enough to share the footer with the settings gear.
+            return string.Join(" · ", parts);
         }
     }
 }
