@@ -203,6 +203,17 @@ ToolbarSearchField TextElement {
     background-color:       var(--aspid-colors-shade-light);
 }
 
+/* The first ordinary root category after the pinned block (<None>, Favorites, Recent) draws the divider
+   line that separates the pinned rows from the namespace hierarchy. It lives on the ListView row wrapper
+   (toggled in code): 1px line flush under the pinned block, 4px of air, then the usual 22px row — the
+   height covers exactly border + padding + content so the row grid below is undisturbed. */
+.aspid-fasttools-type-selector .aspid-fasttools-type-selector__row--after-pinned {
+    height:                 27px;
+    padding-top:            4px;
+    border-top-width:       1px;
+    border-top-color:       var(--aspid-colors-shade-darkness);
+}
+
 .aspid-fasttools-type-selector__item {
     flex-grow:              1;
     align-items:            center;
@@ -239,6 +250,33 @@ ToolbarSearchField TextElement {
 .aspid-fasttools-type-selector__item-title {
     color:                  var(--aspid-colors-text-lightness);
     flex-grow:              1;
+}
+
+/* Marks the value the field currently holds (the matching type row, or <None> when the field is empty).
+   Green is the "this is set" state colour — the picker's blue stays reserved for interaction — and the bold
+   caption keeps the row readable as the current value even where the check is easy to miss. */
+.aspid-fasttools-type-selector__item-check {
+    margin-left:            4px;
+    flex-shrink:            0;
+    font-size:              12px;
+    -unity-font-style:      bold;
+    color:                  var(--aspid-colors-status-success-text-dark);
+}
+
+.aspid-fasttools-type-selector__item--current
+    .aspid-fasttools-type-selector__item-title {
+    -unity-font-style:      bold;
+}
+
+/* Dim right-aligned counter: how many pickable types a namespace holds (recursive) or how many rows a
+   Favorites/Recent section carries — most useful while a section is collapsed. Sits between the caption
+   and the drill-in arrow at the arrow's muted tone, so it reads as meta-information, not content. */
+.aspid-fasttools-type-selector__item-count {
+    margin-left:            4px;
+    margin-right:           2px;
+    flex-shrink:            0;
+    font-size:              10px;
+    color:                  var(--aspid-colors-text-dark);
 }
 
 .aspid-fasttools-type-selector__item-arrow {
