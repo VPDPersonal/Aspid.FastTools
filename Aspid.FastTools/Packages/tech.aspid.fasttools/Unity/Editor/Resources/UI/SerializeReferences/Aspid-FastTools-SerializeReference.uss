@@ -29,6 +29,19 @@
     margin-left:                                            0;
 }
 
+/* Missing stored type: ellipsize the caption from the LEFT, so the class name — the informative tail of
+   "<Missing Namespace.Class>" — survives truncation instead of the namespace prefix, and tint it the same warning
+   amber as the stripe and the notice, so the broken value reads as part of one warning instead of looking healthy.
+   The overflow trio is spelled out because the caption is a bare TextElement carrying only the enum-field text
+   class — it never received Unity's base-popup-field ellipsis rules. */
+.aspid-fasttools-serialize-reference__dropdown--missing .unity-enum-field__text {
+    overflow:                                               hidden;
+    white-space:                                            nowrap;
+    text-overflow:                                          ellipsis;
+    -unity-text-overflow-position:                          start;
+    color:                                                  var(--aspid-colors-status-warning-text-light);
+}
+
 /* Collapse the expand arrow when the reference is empty — there is nothing to expand. display:none (not just
    visibility:hidden) so the arrow reserves NO space either, letting the label slide left to hug the status stripe
    instead of trailing behind an empty arrow slot (matches the IMGUI drawer's flat missing / required layout). */
@@ -127,10 +140,18 @@
     white-space:                                           normal;
 }
 
+/* The shared notice's message is itself clickable — it reveals the other members of the group (scroll + pulse) — so
+   it carries the link cursor. Its hover lighten comes from code, since the rid colour is dynamic; no underline — that
+   affordance is reserved for the action words, so the message reads as a label that happens to navigate. */
+.aspid-fasttools-reference-notice__message--navigable {
+    cursor:                                                link;
+}
+
 /* The clickable action word (Fix / Make unique): bold, pinned to the right of the row — margin-left:auto eats the free
-   space so it reads as a deliberate affordance rather than a word trailing the message — with no underline; it just
-   lightens on hover. Missing type keeps the warning amber here; the shared notice overrides the colour inline with its
-   per-rid colour (and lightens on hover from code, since that colour is dynamic). */
+   space so it reads as a deliberate affordance rather than a word trailing the message — underlined (a rich-text <u>
+   set from code, since USS has no text-decoration) so "this is a button" is unambiguous, and it lightens on hover.
+   Missing type keeps the warning amber here; the shared notice overrides the colour inline with its per-rid colour
+   (and lightens on hover from code, since that colour is dynamic). */
 .aspid-fasttools-reference-notice__action {
     margin-left:                                           auto;
     color:                                                 var(--aspid-colors-status-warning-text-light);
@@ -143,7 +164,7 @@
 }
 
 /* Trailing Smart Fix suggestion ("· → Pistol?"): a second clickable word riding just after Fix (a 6px gap, so the two
-   actions cluster together at the right edge), same warning palette, no underline — it lightens on hover like Fix.
+   actions cluster together at the right edge), same warning palette, underlined and lightening on hover like Fix.
    Hidden by default; the --visible modifier reveals it when a suggestion is set. */
 .aspid-fasttools-reference-notice__suggestion {
     margin-left:                                           6px;
@@ -182,7 +203,7 @@
    A shared reference is not an error but a "these two fields point at the same object" state, so it drops the warning
    amber for a calm treatment carried by the reference's per-rid colour: the leading swatch, the message text, the
    Make-unique action and the field's left stripe are all tinted that one colour (set inline from code), with no icon.
-   The Make-unique action keeps the base action treatment (bold, pinned right, no underline, lightens on hover) — only
+   The Make-unique action keeps the base action treatment (bold, pinned right, underlined, lightens on hover) — only
    its colour differs: the inline rid colour (its hover lighten comes from code, since that colour is dynamic). */
 .aspid-fasttools-reference-notice--shared
     .aspid-fasttools-reference-notice__icon {
