@@ -1,54 +1,56 @@
 # SerializeReferences Sample
 
-A tiny loadout system that demonstrates `[TypeSelector]` — a searchable, hierarchical type dropdown for `[SerializeReference]` fields. You pick which concrete implementation of a polymorphic field is instantiated, directly in the Inspector.
+A tiny loadout system that demonstrates `[TypeSelector]` — a searchable, hierarchical type dropdown for `[SerializeReference]` fields. Put both attributes on one field and the Inspector lets you pick which concrete implementation is instantiated; `<None>` clears the reference, and the instance's serialized fields appear inline under the foldout.
+
+```csharp
+[SerializeReference] [TypeSelector]
+private IWeapon _weapon;
+```
 
 > **New here? Start with [TUTORIAL.md](TUTORIAL.md)** ([RU](TUTORIAL_RU.md)) — a guided, step-by-step tour (Lessons 1–8) built around `Scripts/Tutorial/TypeSelectorTutorial.cs` and `Scenes/TypeSelectorTutorial.unity`. This page is the feature reference; the tutorial is the walkthrough.
 
-Look at:
+![The type picker window](../../Documentation/Images/aspid_fasttools_type_selector_window.png)
 
-- `Scripts/Loadout.cs` — single (`IWeapon`), `List<IWeapon>`, and abstract-base (`StatusEffect`) `[SerializeReference]` fields, each annotated with `[TypeSelector]`.
-- `Scripts/Weapons/` — `IWeapon` interface and its implementations (`Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`). `Railgun` nests another `[TypeSelector]` field, showing recursive polymorphic editing.
-- `Scripts/Effects/` — abstract `StatusEffect` base with `BurnEffect` / `FreezeEffect`. The dropdown offers only the concrete subclasses; the abstract base is never listed.
-- `Scripts/Modifiers/` — generic hierarchy: a non-abstract `Modifier<T>` generic class (`IModifier`) with closed-generic subclasses `DamageModifier : Modifier<float>`, `AmmoModifier : Modifier<int>`, `NameModifier : Modifier<string>`. An `IModifier` field offers all three subclasses **and** the open generic `Modifier<T>` — picking `Modifier<T>` opens a second page inside the same picker to choose the argument `T`. A `Modifier<float>` field offers only the candidates assignable to it (`DamageModifier`, and `Modifier<T>` with `T` inferred to `float`).
-- `Scripts/WeaponPreset.cs` + `Presets/BrokenWeaponPreset.asset` / `Presets/MovedWeaponPreset.asset` — `ScriptableObject`s whose `_weapon` points at a type identity that no longer resolves, used to demonstrate the missing-type repair flow and the one-click **Smart Fix** (see *Maintenance features* below).
-
-The drawer ships both a UIToolkit and an IMGUI rendering path, at full feature parity. **Every demo prefab ships an `IMGUI…` twin** that carries the same data but forces the IMGUI path, so you can compare the two renderers — or migrate an IMGUI-only project — for every scenario below:
-
-| UIToolkit prefab | IMGUI twin |
-|---|---|
-| `Loadout.prefab` | `IMGUILoadout.prefab` |
-| `SlottedLoadout.prefab` | `IMGUISlottedLoadout.prefab` |
-| `LoadoutMissingType.prefab` | `IMGUILoadoutMissingType.prefab` |
-| `NestedLoadout.prefab` | `IMGUINestedLoadout.prefab` |
-| `LoadoutSharedRef.prefab` | `IMGUILoadoutSharedRef.prefab` |
-
-The twin swaps in a sibling component (`IMGUILoadout` / `IMGUISlottedLoadout`) whose companion editor overrides `OnInspectorGUI` without `CreateInspectorGUI` — that alone routes every nested `[TypeSelector]` field through `SerializeReferenceIMGUIPropertyDrawer` instead of the UIToolkit `CreatePropertyGUI`. See `Scripts/IMGUILoadout.cs` + `Scripts/Editor/IMGUILoadoutEditor.cs` for the pattern.
+*The same searchable picker window, shown here on another candidate list — your fields open it filtered to their own type hierarchy.*
 
 ## How to run
 
-Ready-made demo prefabs live in `Prefabs/` — double-click one to open it in Prefab Mode, or drag it into any scene. Start with `Loadout.prefab` / `NestedLoadout.prefab`. The **Loadout** pair:
-
-- **Loadout** (`Prefabs/Loadout.prefab`) — UIToolkit path. Pre-filled: `Primary Weapon = Railgun` (with a nested `BurnEffect` charge effect), `Sidearms = [Pistol, Shotgun]`, `On Hit Effect = FreezeEffect`.
-- **IMGUILoadout** (`Prefabs/IMGUILoadout.prefab`) — IMGUI path. Same data as **Loadout**, rendered through the IMGUI drawer so you can compare the two paths side by side.
-
-`SlottedLoadout.prefab` is the ready-made demo for Lesson 7 (references nested inside `[Serializable]` containers). It and each scenario prefab in **Maintenance features** below (`LoadoutMissingType`, `NestedLoadout`, `LoadoutSharedRef`) ship an `IMGUI…` twin too — open either renderer to see the same data both ways.
-
-Then experiment with the dropdowns:
+Ready-made demo prefabs live in `Prefabs/` — double-click one to open it in Prefab Mode, or drag it into any scene. Start with **`Loadout.prefab`**, pre-filled with `Primary Weapon = Railgun` (carrying a nested `BurnEffect` charge effect), `Sidearms = [Pistol, Shotgun]`, `On Hit Effect = FreezeEffect`. Then experiment:
 
 1. Click any type dropdown and pick another implementation — the instance is created and its serialized fields appear inline under the foldout.
 2. Expand `Railgun` and change its nested `Charge Effect` to see recursive polymorphic editing.
 3. Press **+** on `Sidearms` and give each element its own weapon type.
 4. Open `On Hit Effect` — note only `BurnEffect` / `FreezeEffect` are offered (the abstract `StatusEffect` is hidden).
-5. Open `Modifier` — the three concrete subclasses (`DamageModifier`, `AmmoModifier`, `NameModifier`) are offered alongside the open generic `Modifier<T>`. Pick `Modifier<T>` and a second page opens inside the same picker to choose the argument `T` (try `string`, then `float`) before the instance is created. Open `Float Modifier` — only candidates assignable to `Modifier<float>` are offered (`DamageModifier`, and `Modifier<T>` whose `T` is inferred to `float` without the extra page).
+5. Open `Modifier` — the picker offers the concrete subclasses **and** the open generic `Modifier<T>`; picking `Modifier<T>` opens a second page inside the same picker to choose `T`. Open `Float Modifier` — only candidates assignable to `Modifier<float>` are offered, with `T` inferred (no extra page). The full walkthrough is [TUTORIAL.md, Lesson 6](TUTORIAL.md#lesson-6--generic-hierarchies).
 6. Right-click the component header → **Log Loadout** to print the configured loadout to the Console.
 
-Prefer building from scratch? Add an empty GameObject and attach the **Loadout** (UIToolkit) or **IMGUILoadout** (IMGUI) component.
+Prefer building from scratch? Add an empty GameObject and attach the **Loadout** component.
 
 Switching a field back to `<None>` clears the reference. If a stored type is later renamed or deleted, the dropdown shows a `<Missing …>` caption and a warning instead of silently clearing.
 
+### The demo prefabs
+
+| Prefab | Shows |
+|---|---|
+| `Loadout.prefab` | Every field flavour: single, list, abstract base, generics, nesting |
+| `SlottedLoadout.prefab` | References inside plain `[Serializable]` containers (Lesson 7) |
+| `LoadoutMissingType.prefab` | The missing-type warning and its inline **Fix** |
+| `NestedLoadout.prefab` | A three-level hierarchy for the **Asset References** graph |
+| `LoadoutSharedRef.prefab` | Shared-reference pairs, colour coding, **Make Unique Reference** |
+| `IMGUILoadout.prefab` | The same data as `Loadout.prefab`, forced through the IMGUI renderer (see *The IMGUI path* below) |
+
+## What's in the code
+
+- `Scripts/Loadout.cs` — single (`IWeapon`), `List<IWeapon>`, abstract-base (`StatusEffect`) and generic (`IModifier` / `Modifier<float>`) `[SerializeReference]` fields, each annotated with `[TypeSelector]`.
+- `Scripts/Weapons/` — `IWeapon` interface with its `IMelee` / `IRanged` branches and implementations (`Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`). `Railgun` nests another `[TypeSelector]` field; `Crossbow` carries a `[MovedFrom]` used by the migration demo.
+- `Scripts/Effects/` — abstract `StatusEffect` base with `BurnEffect` / `FreezeEffect`. The dropdown offers only the concrete subclasses.
+- `Scripts/Modifiers/` — the generic hierarchy: open generic `Modifier<T>` plus closed subclasses over `float` / `int` / `string` ([TUTORIAL.md, Lesson 6](TUTORIAL.md#lesson-6--generic-hierarchies)).
+- `Scripts/WeaponSlot.cs` — the plain `[Serializable]` container used by `SlottedLoadout` and the tutorial's Lesson 7.
+- `Scripts/WeaponPreset.cs` + `Presets/` — `ScriptableObject`s whose stored type identities are deliberately broken or stale, used by the repair flows below.
+
 ## Maintenance features
 
-The drawer also helps recover from the two ways a managed reference goes wrong in practice.
+The drawer also helps recover from the ways a managed reference goes wrong in practice.
 
 ### Copy / Paste & keep-data
 
@@ -61,7 +63,7 @@ Five assets ship storing type identities that no longer resolve directly:
 
 - `Presets/BrokenWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` references a missing `GhostWeapon`.
 - `Presets/BrokenArsenalPreset.asset` — a second `ScriptableObject` that also references the missing `GhostWeapon`, three times over (`Weapon` plus two of its `Alternates`), so it shares a broken type with `BrokenWeaponPreset.asset`.
-- `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol` (its IMGUI twin `Prefabs/IMGUILoadoutMissingType.prefab` breaks the same slot through the IMGUI renderer).
+- `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol`.
 - `Presets/MovedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` stores `Pistol` under an old `…Samples.SerializeReferences.Legacy` namespace, as if the class had been moved without `[MovedFrom]` — this one demonstrates the one-click **Smart Fix** below.
 - `Presets/RenamedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` stores the old `CrossbowLauncher` class name; the class now ships as `Crossbow` carrying a declared `[MovedFrom]`, so the Inspector shows a healthy weapon and only the file is stale — this one demonstrates the **Migrate all** flow in Project References.
 
@@ -95,8 +97,6 @@ that contrast is intentional.)
 
 Select it **in the Project window** and open the **Asset References** tab — **`Tools → Aspid 🐍 → FastTools → Asset References`**. The graph maps all three components at once (one document per object). Every reference is an inline dropdown: pick a type to assign / re-point it, or `<None>` to clear it; the missing `GhostPistol` / `GhostBlade` / `GhostAura` cards carry the amber **Fix Missing** action. Nesting is read from the field path (`_primaryWeapon._chargeEffect`), not from indentation, so the flat card stack stays scannable.
 
-Its IMGUI twin `Prefabs/IMGUINestedLoadout.prefab` mirrors the same three-level graph — the **Asset References** window is renderer-agnostic, so it maps both identically, while the twin's root inspector is forced through the IMGUI path.
-
 ### Un-share aliased references & tell groups apart by colour — `LoadoutSharedRef.prefab`
 
 `Prefabs/LoadoutSharedRef.prefab` carries **two independent** shared-reference pairs on one object (each pair is a state you can also reach by duplicating an array element), so the rid-colour stripe/notice actually earns its keep:
@@ -107,4 +107,10 @@ Its IMGUI twin `Prefabs/IMGUINestedLoadout.prefab` mirrors the same three-level 
 1. Open it — each pair shows a **shared reference** notice and editing one member changes its partner. Matching stripe/notice colour means matching instance regardless of where the field sits in the hierarchy, so the two pairs read as two distinct colours.
 2. **Right-click** a member → **Make Unique Reference**. It gets its own copy of the data and the two fields become independent — its notice clears, and so does its former partner's, since nothing is shared any more.
 
-Its IMGUI twin `Prefabs/IMGUILoadoutSharedRef.prefab` shows the same two pairs through the IMGUI renderer.
+## The IMGUI path
+
+The drawer ships both a UIToolkit and an IMGUI rendering path, at full feature parity. **`Prefabs/IMGUILoadout.prefab`** carries the same data as `Loadout.prefab` but forces the IMGUI path, so you can compare the two renderers side by side — or copy the pattern into an IMGUI-only project.
+
+The trick is the companion editor: `IMGUILoadoutEditor` overrides `OnInspectorGUI` **without** `CreateInspectorGUI` — that alone routes every nested `[TypeSelector]` field through `SerializeReferenceIMGUIPropertyDrawer` instead of the UIToolkit `CreatePropertyGUI`. The one IMGUI-specific caveat: Unity applies the drawer per list *element*, so a `[SerializeReference]` list's **+** button is drawn with `SerializeReferenceIMGUIList.Draw(listProperty, label, elementType)` to keep the picker-backed, de-aliased add. See `Scripts/IMGUILoadout.cs` + `Scripts/Editor/IMGUILoadoutEditor.cs`.
+
+All maintenance windows (**Asset References**, **Project References**) are renderer-agnostic and work identically for both paths.

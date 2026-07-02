@@ -413,6 +413,23 @@ Bulk repair lives in two dedicated tabs:
 | **Asset References** (`Tools → Aspid 🐍 → FastTools → Asset References`) | Maps an asset's whole managed-reference graph from its YAML — a per-component tree with field paths, shared and orphaned references, `MISSING` / `SHARED` badges, and an inline type dropdown on every card. Surfaces the missing references the Inspector cannot show. |
 | **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` sweeps every `.prefab` / `.asset` / `.unity` under `Assets/`, groups broken references by stored type, and rewrites a whole group with a single `Fix all` (plus Smart Fix). A group whose stored type matches a declared `[MovedFrom]` rename reads as a pending migration instead of a breakage — one **Migrate all** click bakes the rename into the files, after which the attribute can be removed from code. |
 
+### Project settings & the build/CI gate
+
+**`Project Settings → Aspid FastTools → SerializeReference`** exposes:
+
+| Setting | Scope | What it does |
+|---|---|---|
+| **Breakage detection** | per-user | The proactive toast + console warning when references newly become missing after a recompile / import. |
+| **Auto de-alias duplicated list elements** | committed | A duplicated list element gets its own instance instead of sharing the original's reference id. |
+| **Build / CI gate** | committed | `Off` / `Warn` / `Fail`: at player-build time, log or abort on missing (and, for CI, unset-required) managed references. |
+| **Excluded scan folders** | committed | Paths skipped by every project scan. |
+
+Committed values live in `ProjectSettings/SerializeReferenceSharedSettings.asset` — commit it so teammates and CI behave identically; breakage detection stays per-machine (`EditorPrefs`). Rid colours are not a setting — a shared reference is always colour-coded by id, since matching colours is what lets you tell which fields share an instance at a glance.
+
+The same options are mirrored in the window's **Settings** tab (`Tools → Aspid 🐍 → FastTools → Settings`) and at **`Preferences → Aspid FastTools`**, alongside the picker's per-user preferences: a **Favorites** section toggle, a **Recent items** capacity slider (0–20; 0 hides the section and pauses recording without wiping history), a **Saved lists** row that clears the stored Favorites / Recent, an **Appearance** section (editor-theme override `StyleSheet` with **Create template…**) and a **Welcome** auto-show toggle. Every row carries a scope stripe — green for committed values, blue for per-user — and a pinned footer offers **Reset to defaults** separately per scope (saved Favorites / Recent lists survive a reset). All surfaces stay in live sync.
+
+For headless CI, `SerializeReferenceCiGate.RunCheck` (invoked via `-batchmode -executeMethod`) writes a report and honours the committed gate severity: `Off` skips the check, `Warn` logs but exits 0, `Fail` exits non-zero when violations exist. `-srGateRequired` also flags unset `[TypeSelector(Required = true)]` fields across prefabs, ScriptableObjects and scenes (scenes are checked for top-level required fields via a pure-YAML pass); the per-run flags `-srGateWarnOnly` / `-srGateFail` override the committed severity.
+
 > The full sample — `Loadout` / `IWeapon` / `Modifier<T>` and the missing-reference repair scenarios — ships in the `SerializeReferences` sample (Package Manager → Aspid.FastTools → Samples). A step-by-step walkthrough lives in that sample's `TUTORIAL.md`.
 
 ---
