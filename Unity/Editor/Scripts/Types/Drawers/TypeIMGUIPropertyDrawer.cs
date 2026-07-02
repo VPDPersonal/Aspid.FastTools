@@ -66,7 +66,9 @@ namespace Aspid.FastTools.Types.Editors
             if (hasValidType)
                 dropdownRect.width -= openButtonSize + 1f;
 
-            var caption = GetCaption(property.stringValue);
+            // Reuses the resolve above: for an unresolvable AQN every Type.GetType is a full loaded-assembly scan,
+            // so a second lookup inside the caption would double that cost per <Missing> field per repaint.
+            var caption = TypeSelectorHelpers.GetTypeSelectorTitle(currentType, property.stringValue);
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption), FocusType.Passive))
             {
                 var persistent = property.Persistent();
@@ -107,13 +109,7 @@ namespace Aspid.FastTools.Types.Editors
                 "This [TypeSelector] field is marked required but has no type.");
         }
 
-        private static string GetCaption(string assemblyQualifiedName)
-        {
-            var type = GetType(assemblyQualifiedName);
-            return TypeSelectorHelpers.GetTypeSelectorTitle(type, assemblyQualifiedName);
-        }
-
         private static Type GetType(string assemblyQualifiedName) =>
-            Type.GetType(assemblyQualifiedName, throwOnError: false);
+            string.IsNullOrEmpty(assemblyQualifiedName) ? null : Type.GetType(assemblyQualifiedName, throwOnError: false);
     }
 }

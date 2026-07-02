@@ -129,8 +129,8 @@ namespace Aspid.FastTools.Editors
             var user = new Button(ResetUserToDefaults)
             {
                 text = "Per-user",
-                tooltip = "Reset your per-user settings to defaults: Breakage detection on, Favorites section on, Recent items 5, "
-                    + "no theme override, auto-show Welcome on.\n"
+                tooltip = "Reset your per-user settings to defaults: Breakage detection on, Favorites section on, "
+                    + $"Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, no theme override, auto-show Welcome on.\n"
                     + "Only this machine; the saved Favorites / Recent lists are kept.",
             };
             user.AddClass(ActionClass).AddClass(ActionInfoClass).AddClass(UserScopeClass);
@@ -165,7 +165,7 @@ namespace Aspid.FastTools.Editors
                 "Reset your per-user settings to defaults?\n\n"
                 + "• Breakage detection: On\n"
                 + "• Favorites section: On\n"
-                + "• Recent items: 5\n"
+                + $"• Recent items: {TypeSelectorSettings.DefaultRecentsCapacity}\n"
                 + "• Theme override: none\n"
                 + "• Auto-show Welcome: On\n\n"
                 + "Only this machine is affected; the saved Favorites / Recent lists are kept.",
@@ -186,8 +186,8 @@ namespace Aspid.FastTools.Editors
         /// <paramref name="read"/> <i>without notifying</i>, so it never writes back or loops. The control the user is
         /// actively editing is skipped, so an in-progress edit is never normalized out from under the cursor. The
         /// store's change event is passed as a <paramref name="subscribe"/> / <paramref name="unsubscribe"/> pair
-        /// (events can't travel as values); the subscription is released on <see cref="DetachFromPanelEvent"/> so a
-        /// closed surface leaks nothing.
+        /// (events can't travel as values); the subscription follows the panel lifecycle so a closed surface leaks
+        /// nothing and a re-parented one keeps mirroring.
         /// </summary>
         public static void SyncFromSettings<TControl, TValue>(
             TControl control,
@@ -198,12 +198,45 @@ namespace Aspid.FastTools.Editors
         {
             void Handler()
             {
-                if (control.focusController?.focusedElement == control) return;
+                // Only an in-progress TEXT edit must survive a store change. Two subtleties: composite fields (a
+                // slider's inline text box) focus an inner element, never the registered control itself, so the
+                // check is containment-based; and a clicked switch/enum keeps its panel's focus indefinitely (a
+                // panel holds focus even without OS window focus), so skipping ANY focused control would silently
+                // freeze that surface's mirror — a non-text control has no in-progress edit to clobber.
+                if (control.focusController?.focusedElement is VisualElement focused &&
+                    (focused == control || control.Contains(focused)) &&
+                    focused is ITextEdition or TextElement)
+                    return;
+
                 control.SetValueWithoutNotify(read());
             }
 
-            subscribe(Handler);
-            control.RegisterCallback<DetachFromPanelEvent>(_ => unsubscribe(Handler));
+            // Docking / undocking the host window re-parents the visual tree to another panel — a detach followed by
+            // an attach WITHOUT a rebuild — so a build-time-only subscription would silently die on the first dock
+            // move. The sync is armed from build time (the control must mirror even before it reaches a panel — the
+            // settings tests pin that contract) and then follows the attach/detach pair, the guard keeping the
+            // subscription single through any number of moves; re-arming also re-reads, so a change made while the
+            // surface was detached is not missed.
+            var subscribed = false;
+
+            void Arm()
+            {
+                if (subscribed) return;
+                subscribed = true;
+                subscribe(Handler);
+                control.SetValueWithoutNotify(read());
+            }
+
+            void Disarm()
+            {
+                if (!subscribed) return;
+                subscribed = false;
+                unsubscribe(Handler);
+            }
+
+            control.RegisterCallback<AttachToPanelEvent>(_ => Arm());
+            control.RegisterCallback<DetachFromPanelEvent>(_ => Disarm());
+            Arm();
         }
     }
 }

@@ -69,7 +69,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool BreakageDetectionEnabled
         {
             get => Data.breakageDetection;
-            set { Data.breakageDetection = value; Save(); }
+            set
+            {
+                // Equality-guarded like every other setter, so a reset already at the default stays a true no-op
+                // (Changed is wired to RepaintAll — an idle write would repaint every open editor window).
+                if (Data.breakageDetection == value) return;
+                Data.breakageDetection = value;
+                Save();
+            }
         }
 
         /// <summary>

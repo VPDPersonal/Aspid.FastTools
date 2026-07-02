@@ -31,7 +31,7 @@ sibling `IMGUILoadout` / `IMGUISlottedLoadout` components — that forces the IM
 **Field:** `IWeapon _step1Single` · `[SerializeReference] [TypeSelector]`
 
 Click the dropdown in the field header. A searchable, hierarchical window opens listing every concrete `IWeapon`
-implementation: `Sword`, `Pistol`, `Shotgun`, `Railgun`.
+implementation: `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`.
 
 - **Pick a type** → Unity instantiates it and its own serialized fields appear inline under the foldout.
 - **`<None>`** (first row) → clears the reference back to `null`.
@@ -96,10 +96,10 @@ All three fields are declared `IWeapon`, yet the picker shows different sets. Th
 
 | Attribute | Offered types |
 |---|---|
-| `[TypeSelector]` (Lesson 1) | `Sword`, `Pistol`, `Shotgun`, `Railgun` (all `IWeapon`) |
-| `[TypeSelector(typeof(IRanged))]` | `Pistol`, `Shotgun`, `Railgun` |
+| `[TypeSelector]` (Lesson 1) | `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow` (all `IWeapon`) |
+| `[TypeSelector(typeof(IRanged))]` | `Pistol`, `Shotgun`, `Railgun`, `Crossbow` |
 | `[TypeSelector(typeof(IMelee))]` | `Sword` |
-| `[TypeSelector(typeof(IMelee), typeof(IRanged))]` | all four (multiple base types are OR-ed) |
+| `[TypeSelector(typeof(IMelee), typeof(IRanged))]` | all five (multiple base types are OR-ed) |
 
 Use this to keep a field's *type* broad (so your code stays generic) while constraining what designers can pick.
 

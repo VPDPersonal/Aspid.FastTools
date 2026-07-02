@@ -40,14 +40,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (entry.MigrationTarget is not null)
                     migratable++;
 
+            // The cold-index path emits one TYPE-level entry per broken type (no per-site data without the index),
+            // so counting entries as "references" would misreport — those reports speak in types.
+            var typeLevel = report.Entries.Count > 0 && report.Entries[0].AssetPath is null;
+
             var plural = count == 1 ? "" : "s";
-            var message = migratable == count
-                ? $"{count} managed reference{plural} carr{(count == 1 ? "ies" : "y")} an outdated type name " +
-                  $"after a [MovedFrom] rename ({report.TypeCount} {typeWord}) — open Repair to migrate"
-                : migratable > 0
-                    ? $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}; " +
-                      $"{migratable} auto-migratable after a [MovedFrom] rename) — open Repair"
-                    : $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}) — open Repair";
+            var message = typeLevel
+                ? migratable == count
+                    ? $"{report.TypeCount} managed-reference {typeWord} carr{(report.TypeCount == 1 ? "ies" : "y")} " +
+                      "an outdated name after a [MovedFrom] rename — open Repair to migrate"
+                    : $"{report.TypeCount} managed-reference {typeWord} just became missing — open Repair"
+                : migratable == count
+                    ? $"{count} managed reference{plural} carr{(count == 1 ? "ies" : "y")} an outdated type name " +
+                      $"after a [MovedFrom] rename ({report.TypeCount} {typeWord}) — open Repair to migrate"
+                    : migratable > 0
+                        ? $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}; " +
+                          $"{migratable} auto-migratable after a [MovedFrom] rename) — open Repair"
+                        : $"{count} managed reference{plural} became missing ({report.TypeCount} {typeWord}) — open Repair";
 
             ShowToast(message);
 

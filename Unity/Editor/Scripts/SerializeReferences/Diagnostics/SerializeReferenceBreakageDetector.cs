@@ -53,9 +53,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // re-arms it on the next change — the first run silently re-baselines, so a pre-existing miss never alarms.
             if (!SerializeReferenceSettings.BreakageDetectionEnabled) return;
 
-            // Type resolution flaps while scripts recompile / the AssetDatabase updates, which would falsely alarm and
-            // corrupt the baseline; defer until the editor is settled.
-            if (EditorApplication.isCompiling || EditorApplication.isUpdating) return;
+            // Type resolution flaps while scripts recompile / the AssetDatabase updates, which would falsely alarm
+            // and corrupt the baseline; DEFER (never drop) until the editor settles — a candidate import racing a
+            // background compile would otherwise lose its detection until the next unrelated asset event. A compile
+            // that ends in a domain reload wipes the pending chain, and the script postprocessor re-fires then.
+            if (EditorApplication.isCompiling || EditorApplication.isUpdating)
+            {
+                EditorApplication.delayCall += () => RunDetection(report);
+                return;
+            }
 
             // Never warm a cold index from the import / domain-reload path: that runs a modal full-project sweep on every
             // routine save (risk register 3/10). Detection is active only once the index is already warm (built by a

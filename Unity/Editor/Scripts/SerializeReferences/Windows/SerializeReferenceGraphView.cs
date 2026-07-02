@@ -8,6 +8,7 @@ using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
+using UnityEditor.SceneManagement;
 using System.Text.RegularExpressions;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using Object = UnityEngine.Object;
@@ -317,13 +318,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _list.AddChild(BuildDocument(assetPath, document, showHeaders));
 
                 total += document.Nodes.Count;
-                foreach (var node in document.Nodes)
-                    if (!node.Resolves && !node.StoredType.IsEmpty)
-                    {
-                        missing++;
-                        if (IsPendingMigration(assetPath, document.FileId, node.Rid, node.StoredType, out _))
-                            migrations++;
-                    }
+                var (broken, documentMigrations) = CountUnresolved(assetPath, document);
+                missing += broken + documentMigrations;
+                migrations += documentMigrations;
                 orphans += document.Orphans.Count;
                 empties += CountEmptySlots(document);
             }
@@ -366,15 +363,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return count;
         }
 
-        // A document has issues when it carries any orphaned rid or any unresolved (missing-type) node.
-        private static bool DocumentHasIssues(ReferenceGraphDocument document)
+        // Splits a document's unresolved nodes into genuinely broken ones and pending [MovedFrom] migrations. An
+        // orphaned rid always counts as broken — nothing loads an orphan, so the "Unity migrates it in memory"
+        // argument does not apply to it (it also keeps the Migrate row out of the warning-tinted Orphaned group).
+        private (int broken, int migrations) CountUnresolved(string assetPath, ReferenceGraphDocument document)
         {
-            if (document.Orphans.Count > 0) return true;
+            var broken = 0;
+            var migrations = 0;
 
             foreach (var node in document.Nodes)
-                if (!node.Resolves && !node.StoredType.IsEmpty) return true;
+            {
+                if (node.Resolves || node.StoredType.IsEmpty) continue;
 
-            return false;
+                // An unresolved orphan is one entity, already counted (and amber-glowed) by the orphan tallies —
+                // adding it to "missing" too would double-count it in the overview headline and hints.
+                if (document.Orphans.Contains(node.Rid)) continue;
+
+                if (IsPendingMigration(assetPath, document.FileId, node.Rid, node.StoredType, out _))
+                    migrations++;
+                else
+                    broken++;
+            }
+
+            return (broken, migrations);
         }
 
         // A root is "missing" when the node it points at has an unresolved (unloadable) stored type — the same
@@ -489,7 +500,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // ObjectField above it.
         private VisualElement BuildDocument(string assetPath, ReferenceGraphDocument document, bool showHeader)
         {
-            var hasIssues = DocumentHasIssues(document);
+            // Pending migrations are not issues — a document whose only findings are migrations keeps the calm
+            // header, matching the info-toned overview; orphans and genuinely broken nodes still glow amber.
+            var (broken, migrations) = CountUnresolved(assetPath, document);
+            var hasIssues = document.Orphans.Count > 0 || broken > 0;
 
             // The collapsible body — every node card and the orphan group live here so the header chevron can hide
             // them in one toggle.
@@ -549,7 +563,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(new Label(document.TypeName)
                     .AddClass(DocumentTitleClass)
                     .SetPickingMode(PickingMode.Ignore))
-                .AddChild(new Label(BuildDocumentCountText(document))
+                .AddChild(new Label(BuildDocumentCountText(document, broken, migrations))
                     .AddClass(DocumentCountClass)
                     .SetPickingMode(PickingMode.Ignore)));
 
@@ -559,19 +573,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(body);
         }
 
-        // The header's dim subtitle: total managed-reference count, annotated with the missing / orphaned tallies when
-        // present — the same "N · M" two-part shape the Project References group header uses.
-        private static string BuildDocumentCountText(ReferenceGraphDocument document)
+        // The header's dim subtitle: total managed-reference count, annotated with the missing / migration / orphaned
+        // tallies when present — the same "N · M" two-part shape the Project References group header uses. A pending
+        // [MovedFrom] migration is named as such so the header never contradicts the overview's "0 missing".
+        private static string BuildDocumentCountText(ReferenceGraphDocument document, int broken, int migrations)
         {
             var total = document.Nodes.Count;
-            var missing = 0;
-            foreach (var node in document.Nodes)
-                if (!node.Resolves && !node.StoredType.IsEmpty) missing++;
-
             var orphans = document.Orphans.Count;
 
             var text = total == 1 ? "1 reference" : $"{total} references";
-            if (missing > 0) text += $" · {missing} missing";
+            if (broken > 0) text += $" · {broken} missing";
+            if (migrations > 0) text += migrations == 1 ? " · 1 migration" : $" · {migrations} migrations";
             if (orphans > 0) text += orphans == 1 ? " · 1 orphaned" : $" · {orphans} orphaned";
             return text;
         }
@@ -634,8 +646,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // An authoritative [MovedFrom] rename is a pending migration, not a breakage: Unity loads the reference
             // fine — only this file still stores the old name. The card mirrors the Project References migration
             // group: info pill, a neutral "Fix ▼" band (the manual escape hatch) and a one-click Migrate row below.
+            // Never for an orphan — nothing loads an orphan, so the in-memory migration argument does not hold and
+            // its card stays on the plain missing path inside the warning-tinted Orphaned group.
             Type migrationTarget = null;
-            var isMigration = missing &&
+            var isMigration = missing && !isOrphan &&
                 IsPendingMigration(assetPath, document.FileId, rid, node.Value.StoredType, out migrationTarget);
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -871,6 +885,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // graph may be stale) and only removes a rid that is still genuinely orphaned, then reimports and rescans.
         private void ClearOrphan(string assetPath, long fileId, long rid)
         {
+            if (BlockedByOpenCopy(assetPath)) return;
+
             if (!EditorUtility.DisplayDialog(
                     "Drop Orphaned Entry",
                     $"Remove the orphaned managed-reference entry (rid {rid}) from\n{assetPath}?\n\n" +
@@ -894,9 +910,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (!SerializeReferenceYamlEditor.TryRemoveEntry(assetPath, fileId, rid)) return;
 
+            // The forced import lets the index invalidator patch this one asset surgically — a full ClearCache here
+            // would dump the whole warm index and put Project References back on its modal first-scan.
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
             SerializeReferenceRepairSuggestions.ClearCache();
-            SerializeReferenceTypeUsageIndex.ClearCache();
             Rescan();
         }
 
@@ -906,7 +923,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // (keeping the broken payload) or, on <None>, nulls the reference — neither needs the live object, since Unity
         // cannot reassign a missing reference through the serialization API.
         private void OpenMissingPicker(string assetPath, long fileId, long rid, AspidGradientButton anchor) =>
-            TogglePicker(anchor, ResolveConstraint(assetPath, fileId, rid), currentAqn: string.Empty,
+            TogglePicker(anchor, ResolveConstraint(assetPath, fileId, rid),
+                currentAqn: null, // a missing entry has no current value — nothing (not even <None>) wears the check
                 assemblyQualifiedName => ApplyFix(assetPath, fileId, rid, assemblyQualifiedName));
 
         // Healthy / empty card: opens the live picker. The constraint and the pre-navigated current type are read from
@@ -950,7 +968,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                 },
-                currentAqn: currentAqn ?? string.Empty,
+                currentAqn: currentAqn, // null (no current-value concept) and "" (holds <None>) both pass through as-is
                 onSelected: onSelected,
                 onDismiss: ClosePicker);
 
@@ -966,9 +984,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // The band is a direct child of the card; drop the picker right below it inside the card — reading as a
             // dropdown welded under the band, with the bottom meta line shifting beneath it — mirroring the Project
             // Audit group picker. The ?? fallback keeps a sane target if the band is ever hosted outside a card.
+            // On a migration card the Migrate row sits right under the band as its visual pair — the picker slots in
+            // after it, so expanding the escape hatch never wedges itself between the band and its one-click action.
             var card = anchor?.parent;
             var container = card ?? _list;
-            container.InsertChild(container.IndexOf(anchor) + 1, _openPicker);
+            var insertAt = container.IndexOf(anchor) + 1;
+            if (insertAt < container.childCount && container[insertAt].ClassListContains(NodeMigrateClass))
+                insertAt++;
+            container.InsertChild(insertAt, _openPicker);
 
             // The whole card becomes the active surface: it lights an accent frame (see __node--picking) and the
             // selector sheds its own box (see __picker--attached), so band, selector and meta line read as one active
@@ -999,6 +1022,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void ApplyFix(string assetPath, long fileId, long rid, string assemblyQualifiedName)
         {
+            if (BlockedByOpenCopy(assetPath)) return;
+
             // <None> in the picker emits an empty name: the user wants the reference cleared, not re-pointed at a type —
             // so null it out (dropping the broken payload) instead of treating it as a no-op. Mirrors the Project
             // References group picker, where <None> clears the group. (Before this, an empty name fell through to the
@@ -1033,6 +1058,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // document's rid (rids collide across documents). Healthy / empty slots clear through the live path (see ApplyLive).
         private void ClearReference(string assetPath, long fileId, long rid)
         {
+            if (BlockedByOpenCopy(assetPath)) return;
+
             // Name how many fields the clear will null so an aliased reference doesn't silently take down siblings the
             // user didn't realize shared the rid. A non-positive count means the pointers couldn't be located — fall
             // back to the unnumbered wording rather than print "0 fields".
@@ -1053,9 +1080,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (!SerializeReferenceYamlEditor.TryNullReference(assetPath, fileId, rid)) return;
 
+            // Surgical index patch via the import invalidator, not a full ClearCache (see ClearOrphan).
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
             SerializeReferenceRepairSuggestions.ClearCache();
-            SerializeReferenceTypeUsageIndex.ClearCache();
             Rescan();
         }
 
@@ -1098,10 +1125,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 PersistEdit(assetPath, target);
             }
 
+            // PersistEdit's save triggers the import that lets the index invalidator patch this asset surgically —
+            // no full ClearCache (see ClearOrphan).
             SerializeReferenceRepairSuggestions.ClearCache();
-            SerializeReferenceTypeUsageIndex.ClearCache();
             SerializeReferenceYamlProbeCache.ClearCache();
             Rescan();
+        }
+
+        // A file rewrite is only safe when the asset is not loaded as a scene and not open in Prefab Mode — the open
+        // in-memory copy would win on its next save, silently clobbering the fix (or resurrecting a cleared payload).
+        // Same writable test the Project References bulk apply runs (IsEntryWritable); the graph blocks with a dialog
+        // instead of splitting to an in-memory path, keeping this view's edits all-YAML — the drawer already covers
+        // the open-asset repair story.
+        private static bool BlockedByOpenCopy(string assetPath)
+        {
+            var openInScene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(assetPath).isLoaded;
+            var stagePath = PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
+            var openInPrefabMode = !string.IsNullOrEmpty(stagePath) &&
+                                   string.Equals(stagePath, assetPath, StringComparison.Ordinal);
+
+            if (!openInScene && !openInPrefabMode) return false;
+
+            EditorUtility.DisplayDialog(
+                "Asset References",
+                "This asset is open " + (openInPrefabMode ? "in Prefab Mode" : "as a loaded scene") +
+                " — a file rewrite would be overwritten by its next save.\n\n" +
+                "Close it and rescan, or repair the field directly in the Inspector.",
+                "OK");
+            return true;
         }
 
         // Flushes a live edit to disk so the disk-read graph reflects it on the next rescan. A ScriptableObject (.asset)

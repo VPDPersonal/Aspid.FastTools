@@ -499,7 +499,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var originalType = group.StoredType;
             var missingName = group.DisplayName;
             var appliedName = newType.FullName;
-            void Undo(VisualElement receipt) => UndoGroupFix(entries, originalType, missingName, appliedName, receipt);
+            void Undo(VisualElement receipt) => UndoGroupFix(entries, originalType, managedType, missingName, appliedName, receipt);
 
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
             var groups = CollectProjectGroups(out var canceled);
@@ -779,35 +779,57 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // restores the exact broken state the group had before the fix. The reverted references reappear as a fixable
         // group; only this fix's own receipt is dropped, so summaries for other still-applied fixes (and their Undo
         // buttons) survive — unlike a full Rescan, which would clear the whole stack.
-        private void UndoGroupFix(IReadOnlyList<ProjectEntry> entries, ManagedTypeName originalType, string missingName, string appliedName, VisualElement receipt)
+        private void UndoGroupFix(IReadOnlyList<ProjectEntry> entries, ManagedTypeName originalType, ManagedTypeName appliedType, string missingName, string appliedName, VisualElement receipt)
         {
             // The asset may have been opened in a scene / Prefab Mode since the fix; re-point only the still-writable
             // entries, the same guard the forward fix applies.
             var writable = FilterWritableEntries(entries, out var skipped);
-            if (writable.Count == 0)
+
+            // Only entries that STILL hold the type this receipt applied may be re-pointed: rids survive rewrites, so
+            // the group can break again and be fixed to a DIFFERENT type while an older receipt sits on the stack —
+            // blindly rewriting would destroy that newer fix. "Still holds what we applied" is exactly a rewrite
+            // towards the applied type whose old line already equals its new line (a self-no-op).
+            var revertible = new List<ProjectEntry>(writable.Count);
+            var diverged = 0;
+            foreach (var entry in writable)
+            {
+                if (SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, appliedType, out var edit) &&
+                    edit.IsValid && string.Equals(edit.OldLine, edit.NewLine, StringComparison.Ordinal))
+                    revertible.Add(entry);
+                else
+                    diverged++;
+            }
+
+            if (revertible.Count == 0)
             {
                 EditorUtility.DisplayDialog(
                     "Undo Repair",
-                    "These references now live in open scene(s) or Prefab Mode. Close them and try the undo again.",
+                    diverged > 0
+                        ? "These references no longer hold the type this fix applied (they were re-pointed or removed " +
+                          "since), so there is nothing this undo can safely revert."
+                        : "These references now live in open scene(s) or Prefab Mode. Close them and try the undo again.",
                     "OK");
                 return;
             }
 
-            var files = writable.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
+            var files = revertible.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
             var skippedNote = skipped > 0
                 ? $"\n\n{skipped} reference(s) in open scene(s) or Prefab Mode will be skipped."
+                : string.Empty;
+            var divergedNote = diverged > 0
+                ? $"\n\n{diverged} reference(s) no longer hold '{appliedName}' (changed since this fix) and will be left alone."
                 : string.Empty;
 
             if (!EditorUtility.DisplayDialog(
                     "Undo Repair",
-                    $"Re-point {writable.Count} reference(s) in {files} file(s) back to the missing '{missingName}'?\n\n" +
+                    $"Re-point {revertible.Count} reference(s) in {files} file(s) back to the missing '{missingName}'?\n\n" +
                     $"This restores the broken state you had before replacing it with '{appliedName}', and edits the " +
-                    "asset files directly." + skippedNote,
+                    "asset files directly." + skippedNote + divergedNote,
                     "Undo",
                     "Cancel"))
                 return;
 
-            BatchRewriteEntries(writable, originalType, "Undoing Repair");
+            var reverted = BatchRewriteEntries(revertible, originalType, "Undoing Repair");
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
@@ -817,6 +839,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             receipt?.RemoveFromHierarchy();
             var groups = CollectProjectGroups(out var canceled);
             RenderGroups(groups, canceled);
+
+            // The undo gets a receipt of its own, honest about the count it actually touched (BatchRewriteEntries can
+            // come up short when a file changed between the check above and the write).
+            var undoTitle = reverted == 1 ? "Reverted 1 reference" : $"Reverted {reverted} references";
+            var undoBody = $"Re-pointed back to the missing '{missingName}'.";
+            if (diverged > 0) undoBody += $" Left {diverged} alone (no longer '{appliedName}').";
+            if (reverted < revertible.Count) undoBody += $" {revertible.Count - reverted} could not be rewritten.";
+            ShowSummary(undoTitle, undoBody, null);
         }
 
         // Builds a compact old -> new line preview of the YAML the bulk fix will rewrite, using the same scan
@@ -828,23 +858,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var builder = new System.Text.StringBuilder();
             builder.AppendLine("Changes:");
 
-            var shown = 0;
+            // Compute first, render second: an entry whose rewrite cannot be computed must neither vanish silently
+            // nor inflate the "…and N more" remainder (which previously counted every unshown entry, computable or
+            // not — overstating the tail and hiding the failures).
+            var edits = new List<(ProjectEntry entry, RewriteEdit edit)>(entries.Count);
             foreach (var entry in entries)
+                if (SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, newType, out var edit))
+                    edits.Add((entry, edit));
+
+            for (var i = 0; i < edits.Count && i < maxShown; i++)
             {
-                if (shown >= maxShown)
-                {
-                    builder.AppendLine($"  …and {entries.Count - shown} more");
-                    break;
-                }
-
-                if (!SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, newType, out var edit))
-                    continue;
-
+                var (entry, edit) = edits[i];
                 builder.AppendLine($"  {System.IO.Path.GetFileName(entry.AssetPath)} (rid {entry.Entry.Rid}):");
                 builder.AppendLine($"    - {edit.OldLine.Trim()}");
                 builder.AppendLine($"    + {edit.NewLine.Trim()}");
-                shown++;
             }
+
+            if (edits.Count > maxShown)
+                builder.AppendLine($"  …and {edits.Count - maxShown} more");
+
+            var uncomputable = entries.Count - edits.Count;
+            if (uncomputable > 0)
+                builder.AppendLine($"  ({uncomputable} entr{(uncomputable == 1 ? "y" : "ies")} could not be previewed)");
 
             builder.AppendLine();
             return builder.ToString();
@@ -885,7 +920,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                 },
-                currentAqn: string.Empty,
+                currentAqn: null, // the bulk group picker has no current value — nothing (not even <None>) wears the check
                 onSelected: onSelected,
                 onDismiss: ClosePicker);
         }

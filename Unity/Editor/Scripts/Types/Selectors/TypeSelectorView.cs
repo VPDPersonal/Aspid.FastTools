@@ -98,7 +98,10 @@ namespace Aspid.FastTools.Types.Editors
             _onDismiss = onDismiss;
             _onSelected = onSelected;
             _argumentFilter = filter.ArgumentFilter;
-            _currentAqn = currentAqn ?? string.Empty;
+            // Null and "" mean DIFFERENT things and both flow through unchanged: null = the host has no current-value
+            // concept at all (a list "+" append, a missing-type Fix, the bulk project picker), "" = the field exists
+            // and currently holds <None>. Only the latter may put the current-value check on the <None> row.
+            _currentAqn = currentAqn;
             _fieldTypes = types;
 
             BuildUI();

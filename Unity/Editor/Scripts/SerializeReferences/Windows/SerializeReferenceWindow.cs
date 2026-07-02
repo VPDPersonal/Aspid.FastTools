@@ -1,3 +1,4 @@
+using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -28,7 +29,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Settings,
         }
 
-        private const int ModeCount = 4;
+        // Derived, not hardcoded: a fifth tab added to Mode would otherwise compile cleanly while Ctrl+Tab silently
+        // wrapped early and never reached it.
+        private static readonly int ModeCount = Enum.GetValues(typeof(Mode)).Length;
 
         private const string RootClass = "aspid-fasttools-serialize-reference-window";
         private const string BackgroundClass = RootClass + "__background";

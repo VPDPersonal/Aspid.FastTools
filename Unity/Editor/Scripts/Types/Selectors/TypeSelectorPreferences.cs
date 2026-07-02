@@ -20,8 +20,11 @@ namespace Aspid.FastTools.Types.Editors
 
         private static string ProjectId => PlayerSettings.productGUID.ToString();
 
-        private static string FavoritesKey => FavoritesKeyPrefix + ProjectId;
-        private static string RecentsKey => RecentsKeyPrefix + ProjectId;
+        // Internal (not private) for the test fixtures: they snapshot/restore the RAW EditorPrefs JSON around each
+        // run, and re-spelling the key there would silently rot if this composition ever changed — the restore would
+        // then write a dead key while the API had already cleared the real store, wiping the developer's lists.
+        internal static string FavoritesKey => FavoritesKeyPrefix + ProjectId;
+        internal static string RecentsKey => RecentsKeyPrefix + ProjectId;
 
         // Membership cache for the favorites set, read once and reused across the many per-row IsFavorite calls a
         // single refresh fires. Invalidated whenever ToggleFavorite rewrites the store (the only writer in-session).

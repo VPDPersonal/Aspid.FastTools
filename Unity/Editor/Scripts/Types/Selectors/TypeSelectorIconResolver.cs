@@ -25,7 +25,13 @@ namespace Aspid.FastTools.Types.Editors
             if (string.IsNullOrWhiteSpace(icon)) return null;
 
             if (Cache.TryGetValue(icon, out var cached))
-                return cached;
+            {
+                // Unity-lifetime check, not a C# null check: a cached texture can be DESTROYED later (asset deleted,
+                // Resources unloaded on play-mode load) — serving it binds an invisible icon forever. Drop the entry
+                // and fall through to a reload (or an uncached retry on the next bind).
+                if (cached) return cached;
+                Cache.Remove(icon);
+            }
 
             var texture = LoadIcon(icon);
 

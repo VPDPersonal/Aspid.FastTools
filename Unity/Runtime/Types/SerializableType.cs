@@ -51,7 +51,12 @@ namespace Aspid.FastTools.Types
                 using (this.Marker())
 #endif
                 {
-                    return _type ??= Type.GetType(_assemblyQualifiedName, throwOnError: false);
+                    // Unity deserialization coerces the field to "", but a code-constructed instance still holds
+                    // null — and Type.GetType(null) throws ArgumentNullException regardless of throwOnError,
+                    // breaking the "or null" contract above for a plain `new SerializableType()`.
+                    return _type ??= string.IsNullOrEmpty(_assemblyQualifiedName)
+                        ? null
+                        : Type.GetType(_assemblyQualifiedName, throwOnError: false);
                 }
             }
         }
@@ -109,7 +114,11 @@ namespace Aspid.FastTools.Types
                 using (this.Marker())
 #endif
                 {
-                    return _type ??= Type.GetType(_assemblyQualifiedName, throwOnError: false);
+                    // Same null guard as the non-generic wrapper: a code-constructed instance holds a null name,
+                    // and Type.GetType(null) throws regardless of throwOnError.
+                    return _type ??= string.IsNullOrEmpty(_assemblyQualifiedName)
+                        ? null
+                        : Type.GetType(_assemblyQualifiedName, throwOnError: false);
                 }
             }
         }

@@ -45,7 +45,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public string[] ExcludedFolders
         {
-            get => _excludedFolders ?? Array.Empty<string>();
+            // A defensive copy: handing out the live backing array would let an in-place mutation change the
+            // committed asset without Save()/Changed — and the facade's reference-equality short-circuit would then
+            // swallow the follow-up assignment as a no-op.
+            get => _excludedFolders is { Length: > 0 } ? (string[])_excludedFolders.Clone() : Array.Empty<string>();
             set
             {
                 _excludedFolders = value ?? Array.Empty<string>();

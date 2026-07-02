@@ -44,7 +44,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Aspid.FastTools.Samples.SerializeReferences::Aspid.FastTools.Samples.SerializeReferences.Loadout
+  m_EditorClassIdentifier: 
   _primaryWeapon:
     rid: 1001
   _sidearms:
@@ -122,7 +122,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Aspid.FastTools.Samples.SerializeReferences::Aspid.FastTools.Samples.SerializeReferences.Loadout
+  m_EditorClassIdentifier: 
   _primaryWeapon:
     rid: 2001
   _sidearms:
@@ -183,7 +183,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Aspid.FastTools.Samples.SerializeReferences::Aspid.FastTools.Samples.SerializeReferences.Loadout
+  m_EditorClassIdentifier: 
   _primaryWeapon:
     rid: 3002
   _onHitEffect:

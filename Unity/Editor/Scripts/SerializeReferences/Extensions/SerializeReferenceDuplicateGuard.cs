@@ -117,12 +117,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return false;
             }
 
-            // The only operation that creates a fresh alias is one that *grows* the array (Ctrl+D / Duplicate / list +
-            // all append an element). A same-size or shrunk observation is a reorder or a removal — both of which can
-            // shuffle a pre-existing alias into a new (index, rid) binding that the per-index diff would otherwise
-            // misread as fresh — so those just resync the baseline and never fix, honouring the "pre-existing aliases
-            // are recorded, never fixed" contract.
-            if (size > snapshot.Size &&
+            // The only operation that creates a fresh alias is one that grows the array by EXACTLY ONE element (Ctrl+D
+            // / Duplicate / list + all append a single element). A same-size or shrunk observation is a reorder or a
+            // removal, and a multi-element growth is a bulk restore — Paste Component Values, Revert to Prefab, preset
+            // application — which can legitimately bring back an INTENTIONAL alias pair (made with Link-to-Existing)
+            // that the stale baseline never saw; silently de-aliasing that would destroy deliberate sharing. All those
+            // just resync the baseline and never fix, honouring the "pre-existing aliases are recorded, never fixed"
+            // contract.
+            if (size == snapshot.Size + 1 &&
                 TryFindFreshDuplicate(snapshot.Map, current, out var duplicateIndex))
             {
                 // Keep the existing baseline snapshot (do not advance it to the aliased layout): once the deferred fix
@@ -176,9 +178,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // tick and now (another Undo, a manual edit) — so a stale schedule never clobbers an already-unique element.
             if (!SharesReferenceWithEarlierElement(arrayProperty, duplicateIndex, element.managedReferenceId)) return;
 
-            element.managedReferenceValue =
-                SerializeReferenceHelpers.CreateInstancePreservingData(current.GetType(), current);
+            // Deep copy: the silent de-alias must hand the duplicate its own nested [SerializeReference] children
+            // too — a shallow clone would keep the copy's subtree aliased to the original element's.
+            element.managedReferenceValue = SerializeReferenceHelpers.CloneManagedReferenceGraph(current);
             serializedObject.ApplyModifiedProperties();
+
+            // Same-frame IMGUI repaints must not read the pre-split alias memo (it is keyed by frame, not content).
+            SerializeReferenceHelpers.InvalidateSharedReferenceCache();
         }
 
         // True when an element at a lower index of the same array currently holds rid — i.e. the element at index is the

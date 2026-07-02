@@ -20,12 +20,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             // Never block a headless/CI delete with a dialog.
             if (Application.isBatchMode) return AssetDeleteResult.DidNotDelete;
-            if (string.IsNullOrEmpty(assetPath) || !assetPath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+            if (string.IsNullOrEmpty(assetPath)) return AssetDeleteResult.DidNotDelete;
+
+            // A folder delete fires ONCE with the folder path — the scripts inside never get their own callback, so
+            // without this branch a folder full of referenced scripts deletes unwarned.
+            if (AssetDatabase.IsValidFolder(assetPath)) return GuardFolder(assetPath);
+
+            if (!assetPath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                 return AssetDeleteResult.DidNotDelete;
 
             // The script still exists here (OnWillDeleteAsset fires before deletion), so GetClass() resolves its type.
-            var script = AssetDatabase.LoadAssetAtPath<MonoScript>(assetPath);
-            var type = script != null ? script.GetClass() : null;
+            var type = ResolveScriptType(assetPath);
             if (type is null) return AssetDeleteResult.DidNotDelete;
 
             var sample = GatherUsageSample(type, out var count);
@@ -39,6 +44,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var proceed = EditorUtility.DisplayDialog("Delete Script", message, "Delete Anyway", "Cancel");
 
             // FailedDelete aborts the deletion; DidNotDelete lets Unity proceed normally.
+            return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
+        }
+
+        private static Type ResolveScriptType(string assetPath)
+        {
+            var script = AssetDatabase.LoadAssetAtPath<MonoScript>(assetPath);
+            return script != null ? script.GetClass() : null;
+        }
+
+        // Sweeps the folder's contained scripts and raises ONE combined dialog for every referenced type found.
+        private static AssetDeleteResult GuardFolder(string folderPath)
+        {
+            var affected = new List<string>();
+            var totalCount = 0;
+
+            foreach (var guid in AssetDatabase.FindAssets("t:MonoScript", new[] { folderPath }))
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var type = ResolveScriptType(path);
+                if (type is null) continue;
+
+                GatherUsageSample(type, out var count);
+                if (count <= 0) continue;
+
+                totalCount += count;
+                affected.Add($"{type.Name} — {count} place(s)");
+            }
+
+            if (affected.Count == 0) return AssetDeleteResult.DidNotDelete;
+
+            var message =
+                $"This folder contains {affected.Count} script(s) still used as [SerializeReference] managed " +
+                $"references ({totalCount} place(s) total):\n\n{string.Join("\n", affected)}\n\n" +
+                "Deleting the folder will leave those references missing.";
+
+            var proceed = EditorUtility.DisplayDialog("Delete Folder", message, "Delete Anyway", "Cancel");
             return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
         }
 
@@ -73,7 +114,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
                 var usedHere = false;
-                foreach (var document in SerializeReferenceGraphScanner.Build(path))
+                // Data-only scan — the guard reads stored types, never the display TypeName, so skipping the
+                // name resolution keeps this cold sweep a pure text pass instead of loading every asset it visits.
+                foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
                 {
                     foreach (var node in document.Nodes)
                     {

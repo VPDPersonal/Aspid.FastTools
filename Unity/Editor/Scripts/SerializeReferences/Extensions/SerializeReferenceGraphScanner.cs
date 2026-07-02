@@ -147,7 +147,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <c>RefIds</c> block. Documents without managed references are skipped. A read or parse failure yields an
         /// empty list — the window simply shows its empty state.
         /// </summary>
-        public static List<ReferenceGraphDocument> Build(string assetPath)
+        /// <param name="assetPath">The asset file to scan.</param>
+        /// <param name="resolveTypeNames">
+        /// Whether to resolve each document's display <see cref="ReferenceGraphDocument.TypeName"/> — that path goes
+        /// through <see cref="AssetDatabase.LoadAllAssetsAtPath"/>, i.e. it LOADS the asset and its dependency graph.
+        /// Pass <see langword="false"/> from data-only callers (the usage index, the delete guard) that never read
+        /// the name: a project-wide sweep then stays a pure text scan instead of loading essentially the project.
+        /// </param>
+        public static List<ReferenceGraphDocument> Build(string assetPath, bool resolveTypeNames = true)
         {
             var result = new List<ReferenceGraphDocument>();
 
@@ -157,7 +164,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var lines = File.ReadAllLines(assetPath);
                 var headers = CollectHeaders(lines);
-                var typeNames = ResolveTypeNames(assetPath);
+                var typeNames = resolveTypeNames ? ResolveTypeNames(assetPath) : null;
 
                 for (var h = 0; h < headers.Count; h++)
                 {
@@ -167,7 +174,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var document = BuildDocument(lines, fileId, start, end);
                     if (document is null) continue;
 
-                    document.TypeName = typeNames.TryGetValue(fileId, out var name) && !string.IsNullOrEmpty(name)
+                    document.TypeName = typeNames != null && typeNames.TryGetValue(fileId, out var name) && !string.IsNullOrEmpty(name)
                         ? name
                         : $"!u!{classId}";
 

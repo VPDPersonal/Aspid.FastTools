@@ -43,7 +43,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8f3da7ad8f684af4b28a371fa1e56db9, type: 3}
   m_Name:
-  m_EditorClassIdentifier: Aspid.FastTools.Samples.SerializeReferences::Aspid.FastTools.Samples.SerializeReferences.IMGUISlottedLoadout
+  m_EditorClassIdentifier: 
   _primarySlot:
     label: Primary
     priority: 0
