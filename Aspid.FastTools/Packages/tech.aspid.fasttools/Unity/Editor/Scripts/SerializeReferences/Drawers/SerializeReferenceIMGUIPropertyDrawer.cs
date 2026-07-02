@@ -158,8 +158,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 caption = FitCaptionFromLeft(captionStyle, caption, dropdownRect.width);
             }
 
-            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption,
-                    mixedTypes ? "Mixed — the selected objects hold different types." : missingTooltip),
+            // A resolved type hovers its full Namespace.Class, Assembly identity (the caption shows only the short
+            // name); a missing one, the stored identity it can no longer load.
+            var captionTooltip = mixedTypes
+                ? "Mixed — the selected objects hold different types."
+                : missingTooltip ?? TypeSelectorHelpers.GetTypeSelectorTooltip(currentType);
+
+            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption, captionTooltip),
                     FocusType.Passive, captionStyle))
                 // Under mixed types there is no single "current" type to pre-highlight — open the picker unselected.
                 ShowSelector(property, fieldType, baseTypes, mixedTypes ? null : currentType, dropdownRect);

@@ -274,10 +274,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : TypeSelectorHelpers.GetTypeSelectorTitle(currentType, missingType.DisplayName));
 
             // The tooltip lives on the dropdown, not the caption — the caption ignores picking, so it can never be
-            // the tooltip anchor.
+            // the tooltip anchor. A resolved type hovers its full Namespace.Class, Assembly identity (the caption
+            // shows only the short name); a missing one, the stored identity it can no longer load.
             _dropdown.tooltip = mixedTypes
                 ? "Mixed — the selected objects hold different types."
-                : missingType.IsEmpty ? null : $"Missing type: {missingType.FullName}";
+                : hasValue
+                    ? TypeSelectorHelpers.GetTypeSelectorTooltip(currentType)
+                    : missingType.IsEmpty ? null : $"Missing type: {missingType.FullName}";
 
             _openButton.SetDisplay(hasValue && !mixedTypes ? DisplayStyle.Flex : DisplayStyle.None);
 
