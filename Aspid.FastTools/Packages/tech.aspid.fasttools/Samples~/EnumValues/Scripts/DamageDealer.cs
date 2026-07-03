@@ -6,8 +6,15 @@ namespace Aspid.FastTools.Samples.EnumValues
 {
     public sealed class DamageDealer : MonoBehaviour
     {
+        // Untyped variant: the enum type is picked in the Inspector (a TypeSelector row in the
+        // field header) — use it when the enum should stay a data-side decision.
         [SerializeField] private EnumValues<float> _damageMultipliers;
-        [SerializeField] private EnumValues<Color> _damageColors;
+
+        // Typed variant: the enum is fixed at compile time — no type-picker row in the Inspector,
+        // and GetValue takes a DamageType instead of a boxed Enum. Prefer it whenever the enum is
+        // known up front. The serialized layout matches EnumValues<Color>, so switching a field
+        // between the two variants keeps the configured entries.
+        [SerializeField] private EnumValues<DamageType, Color> _damageColors;
 
         // Lookup on a [Flags] key: an entry whose key EXACTLY equals the lookup value always wins,
         // regardless of list order. Only when no exact match exists does the first entry (in list

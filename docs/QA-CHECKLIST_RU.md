@@ -111,6 +111,7 @@
 
 - [ ] **EnumValues\<TValue\>**: обычные и `[Flags]` enum, ключ не сбрасывается при редактировании, добавление/удаление записей.
 - [ ] **EnumValues\<TEnum, TValue\>**: в инспекторе нет строки выбора типа, строки сразу рендерят типизированные enum-поля, «Populate Missing Enum Members» работает, смена типа поля с `EnumValues<TValue>` (тот же enum) сохраняет сериализованные данные.
+- [ ] **Сэмпл EnumValues**: импорт через Package Manager без ошибок; сцена `EnumValuesTutorial` открывается, TUTORIAL-шаги проходимы (пикер типа, Populate Missing Enum Members, правила `[Flags]`-поиска, `Log Tutorial Lookups`, типизированный шаг `EnumValues<TEnum, TValue>` без строки выбора типа); демо-сцена `EnumValues` печатает ожидаемую строку по Space.
 - [ ] **Id Registries**: создание через `Assets → Create → Aspid → Id Registry`, `TryGetId`/`TryGetName`/`Contains`, привязка IId-структа ровно к одному реестру (IdRegistryResolver), валидация и мутации в редакторе.
 - [ ] **SerializedProperty Extensions**: `.SetValue()`, `.Apply()`, chain-вызовы, reflection-хелперы.
 - [ ] **VisualElement Extensions**: выборочная проверка fluent API (layout/style/borders/callbacks/USS/child) + Math-satellite (`float2/3/4` INotifyValueChanged) при установленном Mathematics.
