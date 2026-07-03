@@ -91,12 +91,8 @@ MonoBehaviour:
       Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     _defaultValue: 1
     _values:
-    - _key: Burning, Slowed
-      _value: 0.4
-      _enumType: Aspid.FastTools.Samples.EnumValues.StatusEffect, Aspid.FastTools.Samples.EnumValues,
-        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Burning
-      _value: 1
+      _value: 0.9
       _enumType: Aspid.FastTools.Samples.EnumValues.StatusEffect, Aspid.FastTools.Samples.EnumValues,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Frozen
@@ -105,6 +101,10 @@ MonoBehaviour:
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Slowed
       _value: 0.5
+      _enumType: Aspid.FastTools.Samples.EnumValues.StatusEffect, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Burning, Slowed
+      _value: 0.4
       _enumType: Aspid.FastTools.Samples.EnumValues.StatusEffect, Aspid.FastTools.Samples.EnumValues,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _currentDamageType: 1
