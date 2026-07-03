@@ -16,22 +16,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     internal static class SerializeReferenceSettingsUI
     {
         /// <summary>
-        /// Appends the References controls that belong to <paramref name="scope"/> — breakage detection and the
-        /// attribute-free dropdown for the per-user scope; auto de-alias, the build gate and the excluded folders for
-        /// the shared scope — to <paramref name="container"/>, each wired straight to
-        /// <see cref="SerializeReferenceSettings"/>. Rid colours are not configurable — they always identify a shared
-        /// reference, so there is no control for them here. Each row is tagged with its storage scope
-        /// (<see cref="AspidSettingsUI.SharedScopeClass"/> / <see cref="AspidSettingsUI.UserScopeClass"/>) matching
-        /// where <see cref="SerializeReferenceSettings"/> persists it; the classes paint a scope stripe on the
-        /// branded surfaces.
+        /// Appends the References controls that belong to <paramref name="scope"/> — breakage detection for the
+        /// per-user scope; auto de-alias, the build gate and the excluded folders for the shared scope — to
+        /// <paramref name="container"/>, each wired straight to <see cref="SerializeReferenceSettings"/>. Rid colours
+        /// are not configurable — they always identify a shared reference, so there is no control for them here. Each
+        /// row is tagged with its storage scope (<see cref="AspidSettingsUI.SharedScopeClass"/> /
+        /// <see cref="AspidSettingsUI.UserScopeClass"/>) matching where <see cref="SerializeReferenceSettings"/>
+        /// persists it; the classes paint a scope stripe on the branded surfaces.
         /// </summary>
         public static void BuildControls(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
         {
             if ((scope & AspidSettingsScope.User) != 0)
-            {
                 container.Add(CreateBreakageDetectionSwitch());
-                container.Add(CreateDropdownWithoutAttributeSwitch());
-            }
 
             if ((scope & AspidSettingsScope.Shared) == 0) return;
 
@@ -76,23 +72,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             breakageDetection.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BreakageDetectionEnabled = evt.newValue);
             SyncFromSettings(breakageDetection, () => SerializeReferenceSettings.BreakageDetectionEnabled);
             return breakageDetection;
-        }
-
-        // The attribute-free dropdown opt-in (off by default), per user like the other purely-inspector behaviours.
-        private static AspidSwitch CreateDropdownWithoutAttributeSwitch()
-        {
-            var dropdownWithoutAttribute = new AspidSwitch("Dropdown without [TypeSelector]")
-            {
-                value = SerializeReferenceSettings.DropdownWithoutAttributeEnabled,
-                tooltip = "Draw [SerializeReference] fields and lists with the type dropdown even when they carry no "
-                    + "[TypeSelector] attribute. Applies to components without their own custom editor and to the "
-                    + "nested fields of an already-drawn reference; a [TypeSelector] field always keeps its attribute's "
-                    + "base-type narrowing.\nPer-user setting — stored locally, never committed.",
-            };
-            dropdownWithoutAttribute.AddClass(AspidSettingsUI.UserScopeClass);
-            dropdownWithoutAttribute.RegisterValueChangedCallback(evt => SerializeReferenceSettings.DropdownWithoutAttributeEnabled = evt.newValue);
-            SyncFromSettings(dropdownWithoutAttribute, () => SerializeReferenceSettings.DropdownWithoutAttributeEnabled);
-            return dropdownWithoutAttribute;
         }
 
         // Shorthand over the shared live-sync helper, binding to this store's Changed signal.

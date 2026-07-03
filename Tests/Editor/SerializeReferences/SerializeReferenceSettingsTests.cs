@@ -22,7 +22,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         private bool _autoDeAlias;
         private bool _breakageDetection;
-        private bool _dropdownWithoutAttribute;
         private string[] _excludedFolders;
         private GateSeverity _buildSeverity;
 
@@ -32,7 +31,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             // Snapshot the project's real settings so the assertions below can mutate them freely and restore on teardown.
             _autoDeAlias = SerializeReferenceSettings.AutoDeAliasEnabled;
             _breakageDetection = SerializeReferenceSettings.BreakageDetectionEnabled;
-            _dropdownWithoutAttribute = SerializeReferenceSettings.DropdownWithoutAttributeEnabled;
             _excludedFolders = SerializeReferenceSettings.ExcludedFolders;
             _buildSeverity = SerializeReferenceSettings.BuildSeverity;
         }
@@ -42,7 +40,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             SerializeReferenceSettings.AutoDeAliasEnabled = _autoDeAlias;
             SerializeReferenceSettings.BreakageDetectionEnabled = _breakageDetection;
-            SerializeReferenceSettings.DropdownWithoutAttributeEnabled = _dropdownWithoutAttribute;
             SerializeReferenceSettings.ExcludedFolders = _excludedFolders;
             SerializeReferenceSettings.BuildSeverity = _buildSeverity;
         }
@@ -155,20 +152,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             SerializeReferenceSettings.AutoDeAliasEnabled = true;
             SerializeReferenceSettings.BreakageDetectionEnabled = true;
-            SerializeReferenceSettings.DropdownWithoutAttributeEnabled = false;
             SerializeReferenceSettings.BuildSeverity = GateSeverity.Warn;
             SerializeReferenceSettings.ExcludedFolders = Array.Empty<string>();
 
             var container = new VisualElement();
             SerializeReferenceSettingsUI.BuildControls(container);
 
-            // The three boolean settings render as iOS-style AspidSwitch fields (BaseField<bool>), not plain Toggles.
+            // The two boolean settings render as iOS-style AspidSwitch fields (BaseField<bool>), not plain Toggles.
             // Looked up by label, so reordering the rows never silently swaps the assertions.
             var switches = container.Query<AspidSwitch>().ToList();
-            Assert.AreEqual(3, switches.Count,
-                "BuildControls must emit the breakage-detection, attribute-free-dropdown and auto-de-alias switches.");
+            Assert.AreEqual(2, switches.Count,
+                "BuildControls must emit the breakage-detection and auto-de-alias switches.");
             var breakageDetection = switches.Single(s => s.label == "Breakage detection");
-            var dropdownWithoutAttribute = switches.Single(s => s.label.StartsWith("Dropdown without"));
             var autoDeAlias = switches.Single(s => s.label.StartsWith("Auto de-alias"));
             var severity = container.Q<EnumField>();
             var folders = container.Q<SerializeReferenceExcludedFoldersField>();
@@ -180,13 +175,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             // rebuilds off the dedicated ExcludedFoldersChanged signal.
             SerializeReferenceSettings.AutoDeAliasEnabled = false;
             SerializeReferenceSettings.BreakageDetectionEnabled = false;
-            SerializeReferenceSettings.DropdownWithoutAttributeEnabled = true;
             SerializeReferenceSettings.BuildSeverity = GateSeverity.Fail;
             SerializeReferenceSettings.ExcludedFolders = new[] { "Assets/Plugins/", "Assets/Generated/" };
 
             Assert.IsFalse(autoDeAlias.value, "The auto-de-alias switch must mirror Settings live.");
             Assert.IsFalse(breakageDetection.value, "The breakage-detection switch must mirror Settings live.");
-            Assert.IsTrue(dropdownWithoutAttribute.value, "The attribute-free-dropdown switch must mirror Settings live.");
             Assert.AreEqual(GateSeverity.Fail, (GateSeverity)severity.value, "The build-gate field must mirror Settings live.");
 
             // The list-based folders field renders one path Label per excluded folder; both new paths must appear live.
@@ -206,9 +199,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             SerializeReferenceSettingsUI.BuildControls(container, AspidSettingsScope.User);
 
             var labels = container.Query<AspidSwitch>().ToList().Select(s => s.label).ToList();
-            Assert.AreEqual(2, labels.Count, "The user scope must emit exactly the two locally-stored switches.");
+            Assert.AreEqual(1, labels.Count, "The user scope must emit exactly the one locally-stored switch.");
             Assert.IsTrue(labels.Contains("Breakage detection"), "Breakage detection is per-user and belongs to the user scope.");
-            Assert.IsTrue(labels.Any(l => l.StartsWith("Dropdown without")), "The attribute-free dropdown is per-user and belongs to the user scope.");
             Assert.IsNull(container.Q<EnumField>(), "The build gate is shared and must not leak onto a per-user page.");
             Assert.IsNull(container.Q<SerializeReferenceExcludedFoldersField>(), "Excluded folders are shared and must not leak onto a per-user page.");
         }

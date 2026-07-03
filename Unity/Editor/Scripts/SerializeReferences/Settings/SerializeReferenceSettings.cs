@@ -36,7 +36,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private sealed class Store
         {
             public bool breakageDetection = true;
-            public bool dropdownWithoutAttribute; // opt-in: default off
         }
 
         private static Store _cache;
@@ -69,24 +68,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Changed is wired to RepaintAll — an idle write would repaint every open editor window.
                 if (Data.breakageDetection == value) return;
                 Data.breakageDetection = value;
-                Save();
-            }
-        }
-
-        /// <summary>
-        /// When on, <c>[SerializeReference]</c> fields render with the type dropdown even without a
-        /// <c>[TypeSelector]</c> attribute — on components without their own custom editor (via the package's fallback
-        /// inspector) and on the nested fields of an already-drawn reference. Off by default: attribute-free drawing
-        /// takes over the whole default inspector of the affected components, so it is a deliberate opt-in. Per-user
-        /// (<see cref="EditorPrefs"/>) — it only changes how this machine renders the inspector, never the data.
-        /// </summary>
-        public static bool DropdownWithoutAttributeEnabled
-        {
-            get => Data.dropdownWithoutAttribute;
-            set
-            {
-                if (Data.dropdownWithoutAttribute == value) return;
-                Data.dropdownWithoutAttribute = value;
                 Save();
             }
         }
@@ -145,13 +126,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         /// <summary>
         /// Restores the per-user settings this store persists in <see cref="EditorPrefs"/> to their defaults: breakage
-        /// detection on, attribute-free dropdowns off (matching the <see cref="Store"/> field initializers a fresh
-        /// machine starts from).
+        /// detection on (matching the <see cref="Store"/> field initializers a fresh machine starts from).
         /// </summary>
         public static void ResetUserToDefaults()
         {
             BreakageDetectionEnabled = true;
-            DropdownWithoutAttributeEnabled = false;
         }
 
         /// <summary>
