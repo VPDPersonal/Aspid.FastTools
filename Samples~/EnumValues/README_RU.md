@@ -1,6 +1,6 @@
 # Пример EnumValues
 
-Маленькая система боевого урона, которая сопоставляет члены enum типизированным значениям через `EnumValues<TValue>` и его типизированного близнеца `EnumValues<TEnum, TValue>`. `DamageDealer` выбирает `DamageType` и `StatusEffect` в Inspector, а по нажатию `Space` наносит урон — извлекая множитель урона, цвет лога и модификатор скорости из трёх полей `EnumValues`. Поле цвета — типизированный вариант (`EnumValues<DamageType, Color>` — без строки выбора типа в Inspector); остальные два выбирают enum в Inspector.
+Маленькая система боевого урона, которая сопоставляет члены enum типизированным значениям через `EnumValues<TValue>` и его типизированного близнеца `EnumValues<TEnum, TValue>`. `DamageDealer` выбирает `DamageType` и `StatusEffect` в Inspector, а по нажатию `Space` наносит урон — извлекая множитель урона, цвет лога и модификатор скорости из трёх полей `EnumValues`. Поле цвета — типизированный вариант (`EnumValues<DamageType, Color>` — строка выбора типа в Inspector заблокирована); остальные два выбирают enum в Inspector.
 
 > **Впервые здесь? Начните с [TUTORIAL_RU.md](TUTORIAL_RU.md)** ([EN](TUTORIAL.md)) — пошаговый тур (уроки 1–5) вокруг `Scripts/Tutorial/EnumValuesTutorial.cs` и `Scenes/EnumValuesTutorial.unity`. Эта страница — разбор демо-сцены; туториал учит самому workflow.
 
