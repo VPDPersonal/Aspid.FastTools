@@ -19,8 +19,10 @@ namespace Aspid.FastTools.Enums.Editors
     internal sealed class EnumValuesPropertyDrawer : PropertyDrawer
     {
         private const string StylesheetPath = "UI/Enums/Aspid-FastTools-EnumValues";
-        private const string HeaderClass = "aspid-fasttools-enum-values__header";
-        private const string ContainerClass = "aspid-fasttools-enum-values__container";
+
+        private const string UssClass = "aspid-fasttools-enum-values";
+        private const string HeaderClass = UssClass + "__header";
+        private const string ContainerClass = UssClass + "__container";
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
@@ -32,15 +34,16 @@ namespace Aspid.FastTools.Enums.Editors
             // Push the parent enum type into every existing entry up-front so already-serialized
             // arrays don't render with a stale per-element _enumType until the user re-edits.
             UpdateValues();
-            
+
             return new VisualElement()
-                .SetName($"enum-values-{property.displayName}")
-                .AddStyleSheetsFromResource(StylesheetPath)
+                .SetName($"enum-values-{property.name.ToKebabCase()}")
                 .AddAspidThemeStyleSheets()
+                .AddStyleSheetsFromResource(StylesheetPath)
                 .AddManipulatorSelf(EnumValuesPropertyDrawerHelper.CreatePopulateMenuManipulator(
-                    values: serializedObject.FindProperty(valuesPath),
-                    enumType: serializedObject.FindProperty(enumTypePath),
-                    defaultValue: serializedObject.FindProperty(defaultValuePath))
+                    serializedObject: serializedObject,
+                    values: valuesPath,
+                    enumType: enumTypePath,
+                    defaultValue: defaultValuePath)
                 )
                 .AddChild(new VisualElement()
                     .AddClass(HeaderClass)

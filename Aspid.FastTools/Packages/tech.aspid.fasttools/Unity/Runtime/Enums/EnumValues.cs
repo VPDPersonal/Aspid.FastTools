@@ -27,8 +27,9 @@ namespace Aspid.FastTools.Enums
     /// </para>
     /// <para>
     /// <see cref="GetValue"/> returns the configured default value when no entry matches the lookup key.
-    /// For <c>[Flags]</c> enums multiple entries may match a single lookup value; the first matching
-    /// entry (in serialized order) wins.
+    /// For <c>[Flags]</c> enums multiple entries may match a single lookup value; an exact-key entry
+    /// always wins first, and only if none exists does the first entry (in serialized order) whose
+    /// bits are all contained in the lookup value win.
     /// </para>
     /// <para>
     /// Iteration via <see cref="GetEnumerator"/> yields only the explicitly configured entries and
@@ -48,12 +49,12 @@ namespace Aspid.FastTools.Enums
     /// </code>
     /// </example>
     [Serializable]
-    public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>
+    public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>, ISerializationCallbackReceiver
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-        [TypeSelector(typeof(Enum))]
+        [TypeSelector(typeof(Enum), Required = true)]
         [SerializeField] private string _enumType;
-        
+
         [SerializeField] private TValue _defaultValue;
         [SerializeField] private EnumValue<TValue>[] _values;
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
@@ -70,19 +71,30 @@ namespace Aspid.FastTools.Enums
             using (this.Marker())
 #endif
             {
-                var type = Type.GetType(_enumType, throwOnError: true);
                 _values ??= Array.Empty<EnumValue<TValue>>();
+
+                // Unconfigured field — degrade to "no entries match" instead of crashing.
+                if (string.IsNullOrWhiteSpace(_enumType))
+                {
+                    Debug.LogWarning($"[{nameof(EnumValues<TValue>)}] [{nameof(Initialize)}] " +
+                        "No enum type configured — GetValue will always return the default value.");
+
+                    _isInitialized = true;
+                    return;
+                }
+
+                var type = Type.GetType(_enumType, throwOnError: true);
 
                 foreach (var value in _values)
                     value.Initialize(type);
 
                 _isFlag = type.IsDefined(typeof(FlagsAttribute), false);
                 _zero = (Enum)Enum.ToObject(type, 0L);
-                
+
                 _isInitialized = true;
             }
         }
-        
+
         /// <summary>
         /// Returns the value mapped to <paramref name="enumValue"/>,
         /// or the configured default value if no mapping exists.
@@ -96,11 +108,24 @@ namespace Aspid.FastTools.Enums
 #endif
             {
                 Initialize();
-            
+
+                if (_isFlag)
+                {
+                    // An exact match always wins over a broader "contains" match, regardless of
+                    // array order — otherwise a plain flag entry earlier in _values (e.g. from
+                    // "Populate Missing Enum Members", which orders ascending by value) would
+                    // shadow a more specific composite entry that's an exact match.
+                    foreach (var value in _values)
+                    {
+                        if (value.Key is not null && value.Key.Equals(enumValue))
+                            return value.Value;
+                    }
+                }
+
                 foreach (var value in _values)
                 {
                     if (Equals(enumValue, value.Key))
-                        return value.Value; 
+                        return value.Value;
                 }
 
                 return _defaultValue;
@@ -127,6 +152,11 @@ namespace Aspid.FastTools.Enums
             {
                 Initialize();
 
+                // Unresolved key (see EnumValue.Initialize) — never matches, instead of
+                // crashing HasFlag on a null argument.
+                if (enumValue2 is null)
+                    return false;
+
                 if (_isFlag)
                 {
 #if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
@@ -141,10 +171,10 @@ namespace Aspid.FastTools.Enums
                 return enumValue1.Equals(enumValue2);
             }
         }
-        
+
         /// <summary>
         /// Yields the explicitly configured (key, value) pairs in serialized order.
-        /// Does <b>not</b> include the default value.
+        /// Does <b>not</b> include the default value or entries with an unresolved key.
         /// </summary>
         public IEnumerator<KeyValuePair<Enum, TValue>> GetEnumerator()
         {
@@ -152,11 +182,22 @@ namespace Aspid.FastTools.Enums
 
             foreach (var value in _values)
             {
+                if (value.Key is null) continue;
                 yield return new KeyValuePair<Enum, TValue>(value.Key, value.Value);
             }
         }
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
+
+        /// <summary>
+        /// Invalidates the resolved-key cache so the next lookup re-resolves it — otherwise
+        /// entries added via an Inspector edit (e.g. "Populate Missing Enum Members") would stay
+        /// unresolved.
+        /// </summary>
+        void ISerializationCallbackReceiver.OnAfterDeserialize() =>
+            _isInitialized = false;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
     }
 }
