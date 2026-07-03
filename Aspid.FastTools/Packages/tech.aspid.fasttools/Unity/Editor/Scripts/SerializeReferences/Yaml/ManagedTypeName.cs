@@ -13,16 +13,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private static readonly char[] _yamlReservedChars = { ',', '[', ']', '{', '}' };
 
-        public readonly bool IsEmpty;
         public readonly string Class;
         public readonly string Assembly;
         public readonly string Namespace;
 
         /// <summary>
+        /// True for the empty type. Computed (not a stored field) so <c>default(ManagedTypeName)</c> — which never
+        /// runs the constructor, e.g. <see cref="FromType"/> on a null type — still reports empty instead of a
+        /// stale <c>false</c>.
+        /// </summary>
+        public bool IsEmpty => string.IsNullOrWhiteSpace(Assembly)
+            && string.IsNullOrWhiteSpace(Namespace)
+            && string.IsNullOrWhiteSpace(Class);
+
+        /// <summary>
         /// Full <c>Namespace.Class, Assembly</c> identity built on top of <see cref="DisplayName"/>, for tooltips that
         /// need the assembly too. Empty for the empty type.
         /// </summary>
-        public readonly string FullName;
+        public string FullName => IsEmpty
+            ? string.Empty
+            : string.IsNullOrWhiteSpace(Assembly) ? DisplayName : $"{DisplayName}, {Assembly}";
 
         /// <summary>
         /// Human-readable <c>Namespace.Class</c> identity (the class alone when there is no namespace), or an empty
@@ -30,25 +40,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// repair dialog, the project audit list and the graph header, so nested (<c>Outer/Inner</c>) or generic
         /// class-name display fixes land in one place.
         /// </summary>
-        public readonly string DisplayName;
+        public string DisplayName => IsEmpty
+            ? string.Empty
+            : string.IsNullOrWhiteSpace(Namespace) ? Class : $"{Namespace}.{Class}";
 
         public ManagedTypeName(string assembly, string @namespace, string className)
         {
             Class = className ?? string.Empty;
             Assembly = assembly ?? string.Empty;
             Namespace = @namespace ?? string.Empty;
-
-            IsEmpty = string.IsNullOrWhiteSpace(Assembly)
-                && string.IsNullOrWhiteSpace(Namespace)
-                && string.IsNullOrWhiteSpace(Class);
-
-            DisplayName = IsEmpty
-                ? string.Empty
-                : string.IsNullOrWhiteSpace(Namespace) ? Class : $"{Namespace}.{Class}";
-
-            FullName = IsEmpty
-                ? string.Empty
-                : string.IsNullOrWhiteSpace(Assembly) ? DisplayName : $"{DisplayName}, {Assembly}";
         }
 
         /// <summary>
@@ -60,10 +60,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (type is null) return default;
             var root = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
 
-            // Unity stores a nested type's class identity with its declaring types joined by '/' (e.g. Outer/Inner);
-            // reflection's Type.Name is only the leaf, so prefix the declaring chain here — the mirror of the read side's
-            // '/'->'+' mapping in SerializeReferenceHelpers.StoredTypeResolves. Without this, repairing a reference to a
-            // nested type would write `class: Inner`, which Unity cannot resolve (it re-breaks the reference).
+            // Unity stores a nested type's class identity with its declaring types joined by '/' (Outer/Inner), but
+            // Type.Name is only the leaf — mirror of the read side's '/'->'+' mapping in
+            // SerializeReferenceHelpers.StoredTypeResolves. Without the prefix a repaired nested reference re-breaks.
             return new ManagedTypeName(
                 assembly: root.Assembly.GetName().Name,
                 @namespace: root.Namespace,

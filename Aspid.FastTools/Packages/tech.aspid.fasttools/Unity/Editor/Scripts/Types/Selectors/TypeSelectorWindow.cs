@@ -33,7 +33,9 @@ namespace Aspid.FastTools.Types.Editors
 
             window.rootVisualElement.AddChild(view);
 
-            var size = new Vector2(Mathf.Max(350, screenRect.width), 320);
+            // 400 keeps the footer's full keyboard hint visible alongside the settings gear in the common states;
+            // longer variants (e.g. the favorite toggle hint) still ellipsize rather than push the gear out.
+            var size = new Vector2(Mathf.Max(400, screenRect.width), 320);
             window.ShowAsDropDown(screenRect, size);
 
             view.FocusPicker();

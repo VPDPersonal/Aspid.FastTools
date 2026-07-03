@@ -19,7 +19,8 @@ namespace Aspid.FastTools.Types.Editors
             var dropdownRect = new Rect(position.x, position.y, position.width - openButtonWidth - 2f, rowHeight);
             var openButtonRect = new Rect(dropdownRect.xMax + 2f, position.y, openButtonWidth, rowHeight);
 
-            if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(currentType.Name), FocusType.Passive))
+            if (EditorGUI.DropdownButton(dropdownRect,
+                    new GUIContent(TypeSelectorHelpers.GetTypeSelectorTitle(currentType)), FocusType.Passive))
             {
                 var filter = new TypeSelectorFilter
                 {

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: MovedWeaponPreset
+  m_EditorClassIdentifier:
+  _weapon:
+    rid: 7200
+  _alternates: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 7200
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences.Legacy, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 21
+        _magazineSize: 6

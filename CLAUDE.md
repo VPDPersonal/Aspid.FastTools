@@ -4,17 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-**Aspid.FastTools** is a Unity package (`tech.aspid.fasttools`) targeting Unity 6.0+ that minimizes routine boilerplate code. It consists of two separate projects:
+**Aspid.FastTools** is a Unity package (`tech.aspid.fasttools`) targeting Unity 6.0+ that minimizes routine boilerplate code. It consists of three components:
 
 1. **`Aspid.FastTools/`** — The Unity project containing the package source (Runtime + Editor code)
 2. **`Aspid.FastTools.Generators/`** — A standalone .NET solution containing Roslyn source generators
+3. **`Aspid.FastTools.Analyzers/`** — A git submodule (repo `VPDPersonal/Aspid.FastTools.Analyzers`) with a standalone Roslyn `DiagnosticAnalyzer` that validates package-attribute usage (currently the `AFT*` `[TypeSelector]` rules)
+
+Repo-internal working documents (roadmap, release checklist, the bilingual QA checklist `QA-CHECKLIST.md`/`QA-CHECKLIST_RU.md`, the `DESIGN.md` design-system spec) live in `docs/` — distinct from the package's user-facing `Documentation/`. The QA checklist is the standing pre-release verification protocol: a new feature must add its checklist item in **both** languages before its branch merges.
 
 ### Unity Package
 Compilation is handled automatically by Unity's build system when the project is open. There are no CLI build scripts.
 
 ### Building & Deploying Generators
 
-`Directory.Build.targets` auto-copies the compiled DLL into the Unity package on build:
+On build, `ILRepack.targets` merges the `Aspid.Generators.Helper*` dependencies into a single-file DLL and `Directory.Build.targets` auto-copies it into the Unity package (never reference `SourceGenerator.Foundations` — its injected `Console` logging deadlocks Unity's compiler server; see `Aspid.FastTools.Generators/CLAUDE.md`):
 
 ```bash
 # From Aspid.FastTools.Generators/
@@ -28,26 +31,37 @@ Run tests with:
 dotnet test
 ```
 
+### Building & Deploying the Analyzer
+
+The analyzer lives in the `Aspid.FastTools.Analyzers/` git submodule (run `git submodule update --init` after cloning). It ships into the package as a prebuilt Roslyn DLL. Unlike the generator there is **no** auto-copy `Directory.Build.targets` — keeping it out keeps the submodule independent of this repo's layout — so the DLL is rebuilt and copied manually:
+
+```bash
+# From the repo root, after editing the submodule:
+dotnet build Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers.sln -c Release
+dotnet test  Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers.sln -c Release
+cp Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/bin/Release/netstandard2.0/Aspid.FastTools.Analyzers.dll \
+   Aspid.FastTools/Packages/tech.aspid.fasttools/
+```
+
+The committed `Aspid.FastTools.Analyzers.dll.meta` carries the `RoslynAnalyzer` label with every platform excluded (mirrors `Aspid.FastTools.Generators.dll.meta`). Diagnostic IDs use the `AFT*` prefix; the generator's `IdStructGenerator` uses `AFID*`.
+
 ## Architecture
 
 ### Two-Project Separation
 
 **Generators project** (`Aspid.FastTools.Generators/Aspid.FastTools.Generators/`):
-- Contains Roslyn `IIncrementalGenerator` implementations
-- `Aspid.FastTools.Generators.Tests/` — unit tests for generators
-- `Aspid.FastTools.Generators.Sample/` — sample project for manual testing
-- Two generators:
-  - `ProfilerMarkersGenerator` — generates per-call-site `ProfilerMarker` registrations keyed by enclosing type + method/field/property + line number. Semantically gated to `ProfilerMarkerExtensionsForGenerator.Marker` only (user-defined `Marker()` extensions are ignored). Walks past lambdas/local-functions; supports `.WithName(literal)` and plain `$"..."` interpolated strings; deduplicates fields when multiple call sites share a line. The generated dispatcher is wrapped in `#if ENABLE_PROFILER` and falls back to `return default;`, so non-development builds carry no per-call dispatch cost.
-  - `IdStructGenerator` — generates boilerplate for ID struct types. Reports `AFID001` when an `IId` struct lacks `partial`, and `AFID002` when the user already declares `_id`/`Id`/`__stringId`. Supports generic target structs and generic containing types (the wrapping `partial` is emitted with `<T,U>`).
-- All pipeline data structures are value-equatable `readonly struct` with explicit `IEquatable<T>` — never store `ISymbol`/`SyntaxNode` in pipeline data (breaks Roslyn's incremental cache). `Aspid.FastTools.Generators.Tests/IncrementalCacheTests` regression-tests this.
-- Dependencies: `Aspid.Generators.Helper`, `Microsoft.CodeAnalysis.CSharp`, `SourceGenerator.Foundations`
+- Roslyn `IIncrementalGenerator` implementations — full pipeline patterns, data-struct rules, and per-generator details live in `Aspid.FastTools.Generators/CLAUDE.md`
+- Two generators: `ProfilerMarkersGenerator` (per-call-site `ProfilerMarker` registrations) and `IdStructGenerator` (ID struct boilerplate; diagnostics `AFID001`/`AFID002`)
+- Pipeline data must be value-equatable `readonly struct` — never store `ISymbol`/`SyntaxNode` (breaks Roslyn's incremental cache; regression-tested by `IncrementalCacheTests`)
+- `Aspid.FastTools.Generators.Tests/` — unit tests; `Aspid.FastTools.Generators.Sample/` — manual smoke-test project
 
 **Unity package** (`Aspid.FastTools/Packages/tech.aspid.fasttools/`):
 - `Unity/Runtime/` — shipped with player builds
 - `Unity/Editor/Scripts/` — editor-only code, excluded from builds
-- `Unity/Editor/Resources/UI/` — editor USS stylesheets, organized by domain (`UI/Components/`, `UI/Ids/`, `UI/Types/`, `UI/Enums/`, `UI/Windows/`); shared base palette at `UI/Aspid-FastTools-Default-Dark.uss`. Files follow `Aspid-FastTools-{Feature}.uss`.
+- `Unity/Editor/Resources/UI/` — editor USS stylesheets, organized by domain (`UI/Components/`, `UI/Ids/`, `UI/Types/`, `UI/Enums/`, `UI/SerializeReferences/`, `UI/Windows/`); shared base palette at `UI/Aspid-FastTools-Default-Dark.uss`. Files follow `Aspid-FastTools-{Feature}.uss`.
 - `Unity/Editor/Resources/Icons/` — editor icon assets referenced by USS via `--aspid-icons-*` variables.
 - `Source/` — pure C# extensions with no Unity dependency
+- `Tests/Editor/` — Unity-side editor test assemblies (`Aspid.FastTools.Unity.Editor.Tests`, `Aspid.FastTools.Unity.Editor.SerializeReferences.Tests`), run via Unity Test Runner
 - `Samples~/` — optional samples (UPM convention, tilde hides from Unity importer, imported via Package Manager)
 
 **Assembly boundary rule:** `Unity/Runtime/` code must NOT reference `UnityEditor` — it ships with player builds.
@@ -61,7 +75,8 @@ dotnet test
 | `Aspid.FastTools` | `Source/` | Pure C# type extensions |
 | `Aspid.FastTools.Unity` | `Unity/Runtime/` | Runtime: Types, Enums, Ids, ProfilerMarkers, VisualElements |
 | `Aspid.FastTools.Unity.VisualElements.Math` | `Unity/Runtime/VisualElements/Extensions/INotifyValueChanged/Math/` | Satellite assembly compiled only when `com.unity.mathematics` is installed; hosts `INotifyValueChanged` extensions for `float2/3/4`, `int2/3/4`, etc. |
-| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Editor: Enums, Extensions, IMGUI, Ids, SerializedProperties, Types, VisualElements, Welcome |
+| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Editor: Enums, Extensions, IMGUI, Ids, SerializedProperties, SerializeReferences, Settings, Types, VisualElements, Welcome |
+| `Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml` | `Unity/Editor/Scripts/SerializeReferences/Yaml/` | Asset-YAML parsing for the SerializeReference tooling, isolated in its own assembly |
 
 ### Key Features and Their Locations
 
@@ -69,17 +84,15 @@ dotnet test
 
 **SerializableType** (`Unity/Runtime/Types/`): Wraps `System.Type` for Unity Inspector serialization using assembly-qualified names with lazy resolution. `SerializableType<T>` adds generic constraint support.
 
-**TypeSelector** (`Unity/Editor/Scripts/Types/`): `EditorWindow`-based hierarchical type picker with search, used as a property drawer for `SerializableType`.
+**TypeSelector** (`Unity/Editor/Scripts/Types/`): `EditorWindow`-based hierarchical type picker with search. The `[TypeSelector]` attribute drives two field shapes: a `string` (storing an assembly-qualified type name, also backing `SerializableType`) and a `[SerializeReference]` managed reference (where picking a type instantiates it). On a managed reference the candidate list defaults to the field's declared type; passing base types (`[TypeSelector(typeof(IMelee))]`) narrows it. `TypeSelectorPropertyDrawer` dispatches on `SerializedProperty.propertyType`; the managed-reference path lives under `Unity/Editor/Scripts/SerializeReferences/`. Picker behavior (Favorites/Recent capacity, toggles) is configurable via `Types/Selectors/TypeSelectorSettings*`. Usage is validated at compile time by the `AFT*` rules in the analyzer submodule.
+
+**SerializeReference tooling** (`Unity/Editor/Scripts/SerializeReferences/`): beyond the managed-reference TypeSelector drawer, hosts `SerializeReferenceWindow` (menu `Tools/Aspid 🐍/FastTools/…`) with four tabs — **Welcome**, **Asset References** (per-asset managed-reference graph via `SerializeReferenceGraphView`), **Project References** (project-wide scan), **Settings**. Subsystems: `Windows/` (window + views), `Index/` (project-wide reference index), `Diagnostics/` (missing-type / breakage detection), `Yaml/` (asset-YAML parsing, own asmdef), `Build/`, `Scripting/`, `Drawers/`, `VisualElements/`, `Extensions/`, `Settings/`. USS domain: `Resources/UI/SerializeReferences/`.
+
+**Settings / Preferences** (`Unity/Editor/Scripts/Settings/`): `AspidFastToolsPreferencesProvider` (per-user Preferences page) + `AspidSettingsUI` (shared settings-UI helpers). Per-feature settings live next to their feature (`Types/Selectors/TypeSelectorSettings*`, `SerializeReferences/Settings/`, `Welcome/WelcomeSettings*`); the `SerializeReferenceWindow` **Settings** tab aggregates them. USS: `Resources/UI/Windows/Aspid-FastTools-Settings.uss`.
 
 **EnumValues<TValue>** (`Unity/Runtime/Enums/`): Serializable dictionary mapping enum values to arbitrary values. Handles `[Flags]` enums.
 
-**Id Registries** (`Unity/Runtime/Ids/`, `Unity/Editor/Scripts/Ids/`): A single `IdRegistry` (`ScriptableObject`) maps string names to stable integer IDs for a given struct type. Full `int ↔ string` mapping is available at runtime via `TryGetId` / `TryGetName` / `Contains(int)` / `Contains(string)`.
-
-Each struct type decorated with `[UniqueId]` / implementing `IId` is bound to exactly **one** registry — uniqueness is enforced at lookup time by `IdRegistryResolver`. The resolver lazily builds a `Type AQN → registry` index on first lookup and updates it incrementally via `AssetPostprocessor`. `UniqueIdIndex` mirrors that strategy for `[UniqueId]`-field collision checks.
-
-Editor UI lives in `RegistryEditorCore`, which talks directly to the registry's `SerializedObject`. Features: C#-identifier name validation, full Undo, explicit Clean-up flow for invalid entries (empty / duplicate names), Sort/Group toolbar, manual Next ID with backward-step warning, Open-Registry shortcut on the `IdStruct` drawer.
-
-The `IdStructGenerator` generates the struct-side boilerplate (and reports `AFID001`/`AFID002` when the struct isn't `partial` or already declares the boilerplate members); the registry asset is created via `Assets → Create → Aspid/Id Registry/Id Registry`.
+**Id Registries** (`Unity/Runtime/Ids/`, `Unity/Editor/Scripts/Ids/`): A single `IdRegistry` (`ScriptableObject`) maps string names to stable integer IDs for a given struct type; full `int ↔ string` mapping at runtime via `TryGetId` / `TryGetName` / `Contains`. Each `IId` struct binds to exactly **one** registry — enforced at lookup time by `IdRegistryResolver`. `IdStructGenerator` emits the struct-side boilerplate; the registry asset is created via `Assets → Create → Aspid → Id Registry`. Editor internals (`RegistryEditorCore` mutation cycle, validation, resolver invariants, `UniqueIdIndex`) are documented in `Unity/Editor/Scripts/Ids/CLAUDE.md`.
 
 **SerializedProperty Extensions** (`Unity/Editor/Scripts/SerializedProperties/`): Fluent chainable extensions (`.SetValue()`, `.Apply()`, reflection helpers). Split across multiple partial files.
 
@@ -87,16 +100,7 @@ The `IdStructGenerator` generates the struct-side boilerplate (and reports `AFID
 
 **Internal Editor VisualElement Components** (`Unity/Editor/Scripts/VisualElements/Internal/`): Custom UIToolkit elements for editor UI. Layout:
 
-- `Components/` — concrete elements, each in its own subfolder:
-  - `AspidAnimatedDotsBackground/`, `AspidAnimatedTitle/` — decorative animated elements.
-  - `AspidAnimatedLogo/` — `AspidAnimatedLogo`, `AspidAnimatedLogoPreset`, fluent extensions, plus `Styles/` with `AspidAnimatedLogoPulseSpeedStyle`, `AspidAnimatedLogoPulseHoverAmplitudeStyle` and `AspidAnimatedLogoLayerImageStyle` (USS-driven float and Texture2D bindings).
-  - `AspidDividingLines/` — `AspidDividingLine`, `AspidDividingLinePreset`, fluent extensions, plus `Styles/` with `AspidDividingLineSizeStyle` and `AspidDividingLineDirectionStyle` (USS-driven enum bindings).
-  - `AspidLabels/` — `AspidLabel`, `AspidLabelPreset`, fluent extensions, plus `Styles/` with `AspidLabelSizeStyle` and `AspidLabelFontStyle`.
-  - `AspidContainers/` — `AspidBox`, `AspidBoxPreset`, fluent extensions.
-  - `AspidGradientButton/` — `AspidGradientButton`, `AspidGradientButtonPreset`, fluent extensions, plus `Styles/`.
-  - `AspidHelpBoxes/` — `AspidHelpBox`, `AspidHelpBoxPreset`, fluent extensions.
-  - `AspidHoverGradientOverlays/` — `AspidHoverGradientOverlay` and its `Styles/` (USS-driven hover-tracking overlay shared by other components).
-  - `AspidInspectorHeaders/` — `AspidInspectorHeader`, `AspidInspectorHeaderPreset`, fluent extensions, plus `Styles/`.
+- `Components/` — one subfolder per element (`AspidLabels/`, `AspidContainers/`, `AspidGradientButton/`, `AspidHelpBoxes/`, `AspidSwitches/`, `AspidWindowFooters/`, `AspidInspectorHeaders/`, `AspidDividingLines/`, `AspidHoverGradientOverlays/`, `AspidAnimatedLogo/`, `AspidAnimatedTitle/`, `AspidAnimatedDotsBackground/`). Every component follows the same shape: the element class, a `{Name}Preset`, fluent extensions, and (when USS-configurable) a `Styles/` folder with `{Name}{Property}Style` structs providing USS-driven bindings (floats, enums, `Texture2D`, …).
 - `Styles/` — shared helpers used across components: `AspidStyles` (USS class/property registry), `StatusStyle`, `ThemeStyle`, `InlineStyle<T>` (USS-vs-code precedence helper). The companion `ICustomStyleExtensions` (extension methods on `ICustomStyle`, including `TryGetByEnum<T>`) lives in `Unity/Runtime/VisualElements/Extensions/ICustomStyle/` since it ships with player builds and is consumed by both runtime and editor styles.
 
 All components use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet (loaded via `AspidStyles.DefaultStyleSheet`) and follow the same `.AddClass()` pattern. Theme/status/size/direction enums are exposed as nested `Type` enums on their respective `Style` structs (e.g. `ThemeStyle.Type`, `AspidLabelSizeStyle.Type`).
@@ -105,7 +109,7 @@ All components use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet (lo
 
 **Editor Extensions** (`Unity/Editor/Scripts/Extensions/`): `GetScriptName()` and `GetScriptNameWithIndex()` on `MonoScript` — respects `[AddComponentMenu]` attribute and appends index suffix for duplicate components.
 
-**Welcome Window** (`Unity/Editor/Scripts/Welcome/`): `WelcomeWindow` (`EditorWindow`, menu `Tools/Aspid FastTools/Welcome`) + `WelcomeWindowStartup` (auto-show on first import). UXML/USS at `Resources/UI/Windows/Welcome/Aspid-FastTools-Welcome.{uxml,uss}`. Lists installable samples by reading `package.json`.
+**Welcome View** (`Unity/Editor/Scripts/Welcome/`): `WelcomeView` (a `VisualElement` hosted as the **Welcome** tab of `SerializeReferenceWindow`, menu `Tools/Aspid 🐍/FastTools/Welcome`) + `WelcomeWindowStartup` (auto-show on first import) + `WelcomeSettings`/`WelcomeSettingsUI`. UXML/USS at `Resources/UI/Windows/Welcome/Aspid-FastTools-Welcome.{uxml,uss}`. Lists installable samples by reading `package.json`.
 
 ### Editor Code Conventions
 
@@ -165,7 +169,8 @@ All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this 
 ### Local Claude Code automation
 
 - **PostToolUse hook** (`.claude/hooks/rebuild-generators-on-change.sh`): on every `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, runs `dotnet build -c Release` for the generator project (which redeploys the DLL into the Unity package). Unity-side edits, tests, and the Sample project are explicitly skipped — keep that scope when changing the hook.
-- **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase), `open-pr` (project conventions for opening pull requests — see *Pull request conventions* below).
+- **PostToolUse hook** (`.claude/hooks/rebuild-analyzers-on-change.sh`): same pattern for the analyzer submodule — on edits to `*.cs` under the analyzer project (Tests/Sample skipped), rebuilds it and copies the DLL into the Unity package. Wired in `.claude/settings.json` `hooks.PostToolUse` next to the generator hook.
+- **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `build-analyzer` (manual analyzer submodule build + test + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase), `commit` (repo-specific overrides for the `/commit` skill), `open-pr` (project conventions for opening pull requests — see *Pull request conventions* below).
 - **Project subagents** (`.claude/agents/`): `code-reviewer` (Unity/Editor boundary + generator + package convention review), `uss-bem-checker` (validates USS class names + `--aspid-*` variables against the BEM/positional grammars above).
 
 ## Pull request conventions

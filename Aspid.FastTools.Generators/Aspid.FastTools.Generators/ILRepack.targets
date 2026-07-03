@@ -1,0 +1,32 @@
+<Project>
+
+    <!-- Replaces ILRepack.Lib.MSBuild.Task's default in-place merge. Unity references a single
+         analyzer DLL, so Aspid.Generators.Helper* are merged into a deploy-only copy under obj/;
+         bin/ keeps the plain multi-assembly output for tests and local runs. -->
+    <Target Name="ILRepacker" AfterTargets="Build">
+        <PropertyGroup>
+            <UnityAnalyzerMergeDir>$(IntermediateOutputPath)unity-merge/</UnityAnalyzerMergeDir>
+            <UnityAnalyzerMergedPath>$(UnityAnalyzerMergeDir)$(TargetFileName)</UnityAnalyzerMergedPath>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <_MergeDependency Include="@(ReferencePath)"
+                              Condition="'%(Filename)' == 'Aspid.Generators.Helper' Or '%(Filename)' == 'Aspid.Generators.Helper.Unity'" />
+            <_MergeLibraryDir Include="@(ReferencePath->'%(RootDir)%(Directory)'->Distinct())" />
+        </ItemGroup>
+
+        <Error Condition="'@(_MergeDependency->Count())' != '2'"
+               Text="Expected exactly 2 Aspid.Generators.Helper* assemblies to merge into the Unity analyzer DLL, found @(_MergeDependency->Count()): [@(_MergeDependency)]" />
+
+        <MakeDir Directories="$(UnityAnalyzerMergeDir)" />
+
+        <ILRepack Parallel="true"
+                  Internalize="true"
+                  DebugInfo="false"
+                  TargetKind="Dll"
+                  InputAssemblies="$(TargetPath);@(_MergeDependency)"
+                  LibraryPath="@(_MergeLibraryDir)"
+                  OutputFile="$(UnityAnalyzerMergedPath)" />
+    </Target>
+
+</Project>

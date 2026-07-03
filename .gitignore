@@ -2,6 +2,7 @@
 .worktrees/
 .claude/worktrees/
 .zed/
+.DS_Store
 
 # UPM convention: `Samples~` is hidden from Unity importer but must be tracked.
 # Override global `*~` ignore.

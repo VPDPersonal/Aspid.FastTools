@@ -15,15 +15,13 @@ namespace Aspid.FastTools.Types.Editors
     /// </summary>
     internal static class TypeSelectorPreferences
     {
-        private const int RecentsCapacity = 8;
-
         private const string FavoritesKeyPrefix = "Aspid.FastTools.TypeSelector.Favorites.";
         private const string RecentsKeyPrefix = "Aspid.FastTools.TypeSelector.Recents.";
 
         private static string ProjectId => PlayerSettings.productGUID.ToString();
 
-        private static string FavoritesKey => FavoritesKeyPrefix + ProjectId;
-        private static string RecentsKey => RecentsKeyPrefix + ProjectId;
+        public static string FavoritesKey => FavoritesKeyPrefix + ProjectId;
+        public static string RecentsKey => RecentsKeyPrefix + ProjectId;
 
         // Membership cache for the favorites set, read once and reused across the many per-row IsFavorite calls a
         // single refresh fires. Invalidated whenever ToggleFavorite rewrites the store (the only writer in-session).
@@ -39,9 +37,44 @@ namespace Aspid.FastTools.Types.Editors
 
         /// <summary>
         /// Returns the most-recently-used assembly-qualified names that still resolve to a loadable
-        /// type, in MRU order (most recent first).
+        /// type, in MRU order (most recent first), capped at <see cref="TypeSelectorSettings.RecentsCapacity"/>
+        /// so lowering the capacity hides the surplus immediately (the surplus stays stored until the
+        /// next <see cref="RecordRecent"/> trims it).
         /// </summary>
-        public static List<string> LoadRecents() => LoadResolved(RecentsKey);
+        public static List<string> LoadRecents()
+        {
+            var resolved = LoadResolved(RecentsKey);
+            var capacity = TypeSelectorSettings.RecentsCapacity;
+
+            if (resolved.Count > capacity)
+                resolved.RemoveRange(capacity, resolved.Count - capacity);
+
+            return resolved;
+        }
+
+        /// <summary>
+        /// Raw stored favorites count — includes entries that don't currently resolve.
+        /// </summary>
+        public static int FavoritesCount => LoadRaw(FavoritesKey).Count;
+
+        /// <summary>
+        /// Raw stored recents count — includes entries that don't currently resolve.
+        /// </summary>
+        public static int RecentsCount => LoadRaw(RecentsKey).Count;
+
+        /// <summary>
+        /// Drops every stored favorite, including entries kept for currently-unresolvable types.
+        /// </summary>
+        public static void ClearFavorites()
+        {
+            EditorPrefs.DeleteKey(FavoritesKey);
+            _favorites = null;
+        }
+
+        /// <summary>
+        /// Drops the whole recents history, including entries kept for currently-unresolvable types.
+        /// </summary>
+        public static void ClearRecents() => EditorPrefs.DeleteKey(RecentsKey);
 
         public static bool IsFavorite(string assemblyQualifiedName)
         {
@@ -77,18 +110,23 @@ namespace Aspid.FastTools.Types.Editors
 
         /// <summary>
         /// Records a successful pick: moves <paramref name="assemblyQualifiedName"/> to the front of the
-        /// recents list (deduplicated, capped at <see cref="RecentsCapacity"/>).
+        /// recents list (deduplicated, capped at <see cref="TypeSelectorSettings.RecentsCapacity"/>).
+        /// A capacity of 0 skips recording entirely — rather than trimming the store to empty — so the
+        /// already-collected history survives the setting being turned back up.
         /// </summary>
         public static void RecordRecent(string assemblyQualifiedName)
         {
             if (string.IsNullOrEmpty(assemblyQualifiedName)) return;
 
+            var capacity = TypeSelectorSettings.RecentsCapacity;
+            if (capacity <= 0) return;
+
             var entries = LoadRaw(RecentsKey);
             entries.Remove(assemblyQualifiedName);
             entries.Insert(0, assemblyQualifiedName);
 
-            if (entries.Count > RecentsCapacity)
-                entries.RemoveRange(RecentsCapacity, entries.Count - RecentsCapacity);
+            if (entries.Count > capacity)
+                entries.RemoveRange(capacity, entries.Count - capacity);
 
             Save(RecentsKey, entries);
         }

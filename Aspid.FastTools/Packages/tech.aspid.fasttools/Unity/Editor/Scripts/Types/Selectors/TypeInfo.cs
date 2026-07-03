@@ -26,6 +26,24 @@ namespace Aspid.FastTools.Types.Editors
         /// </summary>
         public readonly string Icon;
 
+        /// <summary>
+        /// Normalized display-name override from <see cref="TypeSelectorDisplayAttribute.Name"/>;
+        /// <see langword="null"/> when the type keeps its real name.
+        /// </summary>
+        public readonly string CustomName;
+
+        /// <summary>
+        /// Normalized <see cref="TypeSelectorDisplayAttribute.Group"/> path segments (split on <c>/</c>,
+        /// trimmed, empty segments dropped); <see langword="null"/> when the type stays under its namespace.
+        /// </summary>
+        public readonly string[] GroupPath;
+
+        /// <summary>
+        /// The label the picker shows for this type: the <see cref="CustomName"/> override when present,
+        /// the real (short) type name otherwise.
+        /// </summary>
+        public string Label => CustomName ?? Name;
+
         public TypeInfo(Type type)
         {
             Name = TypeExtensions.FormatGenericName(type);
@@ -37,13 +55,33 @@ namespace Aspid.FastTools.Types.Editors
 
             Tooltip = type.FullName;
             Icon = null;
+            CustomName = TypeSelectorHelpers.GetCustomDisplayName(type);
+            GroupPath = null;
 
             if (item is null) return;
 
             Icon = string.IsNullOrWhiteSpace(item.Icon) ? null : item.Icon;
+            GroupPath = ParseGroupPath(item.Group);
 
             if (!string.IsNullOrWhiteSpace(item.Tooltip))
                 Tooltip = item.Tooltip;
+        }
+
+        // "Combat / Melee //" → ["Combat", "Melee"]; null when nothing survives, so a blank-only Group degrades to
+        // the namespace placement. Sentinel segments are dropped too — the picker keys off DisplayName == "<None>",
+        // so a group node named after a sentinel would impersonate it.
+        private static string[] ParseGroupPath(string group)
+        {
+            if (string.IsNullOrWhiteSpace(group)) return null;
+
+            var segments = group.Split('/')
+                .Select(segment => segment.Trim())
+                .Where(segment => segment.Length > 0 &&
+                    segment != TypeSelectorHelpers.NoneOption &&
+                    segment != TypeSelectorHelpers.GlobalNamespace)
+                .ToArray();
+
+            return segments.Length > 0 ? segments : null;
         }
 
         /// <summary>

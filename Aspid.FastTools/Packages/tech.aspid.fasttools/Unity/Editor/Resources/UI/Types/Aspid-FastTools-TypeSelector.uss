@@ -10,6 +10,7 @@
    here it only owns its own fill and spacing. The mode swap is driven from code (display). */
 .aspid-fasttools-type-selector__header {
     min-height:             20px;
+    flex-shrink:            0;
     flex-direction:         row;
     align-items:            center;
     flex-wrap:              nowrap;
@@ -155,6 +156,7 @@ ToolbarSearchField TextElement {
    error palette and spacing live here. */
 .aspid-fasttools-type-selector__error {
     margin:                 2px 4px;
+    flex-shrink:            0;
     white-space:            normal;
     color:                  var(--aspid-colors-status-error-text-light);
 }
@@ -168,15 +170,47 @@ ToolbarSearchField TextElement {
     color:                  var(--aspid-colors-text-dark);
 }
 
-/* Static keyboard affordance pinned to the bottom edge; bleeds to the box edges in embedding hosts. */
-.aspid-fasttools-type-selector__footer-hint {
+/* Footer strip pinned to the bottom edge; bleeds to the box edges in embedding hosts. Pairs the keyboard
+   affordance (left) with the settings gear (right). */
+.aspid-fasttools-type-selector__footer {
     margin:                 5px -2px -5px;
     padding:                3px 8px;
-    font-size: 12px;
-    color:                  var(--aspid-colors-text-darkness);
+    flex-direction:         row;
+    align-items:            center;
+    flex-shrink:            0;
     background-color:       var(--aspid-colors-bg-dark);
     border-top-width:       1px;
     border-top-color:       var(--aspid-colors-shade-darkness);
+}
+
+/* The hint takes all footer width the gear leaves free and trims to an ellipsis rather than pushing the gear out. */
+.aspid-fasttools-type-selector__footer-hint {
+    flex-grow:              1;
+    flex-shrink:            1;
+    overflow:               hidden;
+    white-space:            nowrap;
+    text-overflow:          ellipsis;
+    font-size:              12px;
+    color:                  var(--aspid-colors-text-darkness);
+}
+
+/* Settings gear: flat and transparent like the header magnifier, resting in the hint's muted tone so it reads as
+   chrome; hover lights the glyph up as the click affordance. Opens the Aspid FastTools window's Settings tab. */
+.aspid-fasttools-type-selector__settings-button {
+    width:                  14px;
+    height:                 14px;
+    margin:                 0 0 0 8px;
+    padding:                0;
+    flex-shrink:            0;
+    border-width:           0;
+    border-radius:          3px;
+    background-color:       rgba(0, 0, 0, 0);
+    background-image:       var(--aspid-icons-settings);
+    -unity-background-image-tint-color: var(--aspid-colors-text-darkness);
+}
+
+.aspid-fasttools-type-selector__settings-button:hover {
+    -unity-background-image-tint-color: var(--aspid-colors-text-light);
 }
 
 /* ------------------------------------------------------ Item ------------------------------------------------------ */
@@ -201,6 +235,19 @@ ToolbarSearchField TextElement {
 .aspid-fasttools-type-selector .unity-collection-view__item--selected,
 .aspid-fasttools-type-selector .unity-collection-view__item--selected:hover {
     background-color:       var(--aspid-colors-shade-light);
+}
+
+/* The first ordinary root category after the pinned block (<None>, Favorites, Recent) draws the divider
+   line that separates the pinned rows from the namespace hierarchy (toggled in code on the row root, which
+   doubles as the collection-view item): 1px line flush under the pinned block, 4px of air, then the usual
+   22px row — the height covers exactly border + padding + content so the row grid below is undisturbed.
+   The wrapper class rides along in the selector to outweigh the 22px height in the base row rule above. */
+.aspid-fasttools-type-selector
+    .unity-collection-view__item.aspid-fasttools-type-selector__item--after-pinned {
+    height:                 27px;
+    padding-top:            4px;
+    border-top-width:       1px;
+    border-top-color:       var(--aspid-colors-shade-darkness);
 }
 
 .aspid-fasttools-type-selector__item {
@@ -239,6 +286,33 @@ ToolbarSearchField TextElement {
 .aspid-fasttools-type-selector__item-title {
     color:                  var(--aspid-colors-text-lightness);
     flex-grow:              1;
+}
+
+/* Marks the value the field currently holds (the matching type row, or <None> when the field is empty).
+   Green is the "this is set" state colour — the picker's blue stays reserved for interaction — and the bold
+   caption keeps the row readable as the current value even where the check is easy to miss. */
+.aspid-fasttools-type-selector__item-check {
+    margin-left:            4px;
+    flex-shrink:            0;
+    font-size:              12px;
+    -unity-font-style:      bold;
+    color:                  var(--aspid-colors-status-success-text-dark);
+}
+
+.aspid-fasttools-type-selector__item--current
+    .aspid-fasttools-type-selector__item-title {
+    -unity-font-style:      bold;
+}
+
+/* Dim right-aligned counter: how many pickable types a namespace holds (recursive) or how many rows a
+   Favorites/Recent section carries — most useful while a section is collapsed. Sits between the caption
+   and the drill-in arrow at the arrow's muted tone, so it reads as meta-information, not content. */
+.aspid-fasttools-type-selector__item-count {
+    margin-left:            4px;
+    margin-right:           2px;
+    flex-shrink:            0;
+    font-size:              10px;
+    color:                  var(--aspid-colors-text-dark);
 }
 
 .aspid-fasttools-type-selector__item-arrow {

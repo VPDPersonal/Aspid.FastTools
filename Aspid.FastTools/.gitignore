@@ -78,6 +78,16 @@ crashlytics-build.properties
 /[Aa]ssets/[Tt]utorialInfo.meta
 /[Aa]ssets/[Tt]utorialInfo/*
 
+# Package samples imported into the dev project via Package Manager.
+# Source of truth is the package's `Samples~/`; the imported copy is local-only.
+/[Aa]ssets/[Ss]amples/
+/[Aa]ssets/[Ss]amples.meta
+
+# Auto-generated tool settings created by optional Editor packages
+# (Project Auditor, Timeline). Default values only, dev-project-local.
+/[Pp]roject[Ss]ettings/ProjectAuditorSettings.asset
+/[Pp]roject[Ss]ettings/TimelineSettings.asset
+
 # OS generated
 .DS_Store
 ._*

@@ -1,0 +1,1031 @@
+using System;
+using System.Linq;
+using UnityEngine;
+using UnityEditor;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
+using Aspid.FastTools.Types;
+using Aspid.FastTools.UIElements;
+using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.UIElements.Editors.Internal;
+using Object = UnityEngine.Object;
+
+// ReSharper disable once CheckNamespace
+namespace Aspid.FastTools.SerializeReferences.Editors
+{
+    /// <summary>
+    /// Repair tool for missing <c>[SerializeReference]</c> types. It runs in two modes that share one results list:
+    /// <list type="bullet">
+    /// <item><b>Single asset</b> — assigning the asset field scans that one file and lists every orphaned managed
+    /// reference (at any nesting depth, on any child object) as a full-width Fix row, fixed by rewriting the stored
+    /// type directly in the YAML so it never needs Prefab Mode.</item>
+    /// <item><b>Project</b> — the <c>Scan Project</c> button sweeps every text asset under <c>Assets/</c>, groups the
+    /// broken references by their stored (now unloadable) type, and offers a single bulk <c>Fix all</c> per group:
+    /// one type pick + one confirmation rewrites every entry across every affected file.</item>
+    /// </list>
+    /// </summary>
+    internal sealed class SerializeReferenceProjectView : VisualElement
+    {
+        private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";
+
+        private const string RootClass = "aspid-fasttools-repair-references";
+        private const string ContentClass = RootClass + "__content";
+        private const string PanelClass = RootClass + "__panel";
+        private const string PanelTitleClass = RootClass + "__panel-title";
+        private const string PanelDescriptionClass = RootClass + "__panel-description";
+        private const string ScanProjectClass = RootClass + "__scan-project";
+        private const string EmptyClass = RootClass + "__empty";
+        private const string EmptyHiddenClass = EmptyClass + "--hidden";
+        private const string EmptyIconClass = RootClass + "__empty-icon";
+        private const string EmptyIconInfoClass = EmptyIconClass + "--info";
+        private const string EmptyIconSuccessClass = EmptyIconClass + "--success";
+        private const string EmptyTitleClass = RootClass + "__empty-title";
+        private const string EmptyMessageClass = RootClass + "__empty-message";
+        private const string ResultsClass = RootClass + "__results";
+        private const string ResultsHiddenClass = ResultsClass + "--hidden";
+        private const string ResultsHeaderClass = RootClass + "__results-header";
+        private const string ResultsHintClass = RootClass + "__results-hint";
+        private const string SummaryListClass = RootClass + "__summary-list";
+        private const string SummaryClass = RootClass + "__summary";
+        private const string SummaryUndoClass = RootClass + "__summary-undo";
+        private const string ScrollClass = RootClass + "__scroll";
+        private const string EntryClass = RootClass + "__entry";
+        private const string EntryRidClass = RootClass + "__entry-rid";
+        private const string PickerClass = RootClass + "__picker";
+        private const string PickerAttachedClass = PickerClass + "--attached";
+
+        private const string GroupClass = RootClass + "__group";
+        private const string GroupPickingClass = GroupClass + "--picking";
+        private const string GroupHeaderRowClass = RootClass + "__group-header-row";
+        private const string GroupHeaderClass = RootClass + "__group-header";
+        private const string GroupCountClass = RootClass + "__group-count";
+        private const string GroupFixAllClass = RootClass + "__group-fix-all";
+        private const string GroupFixAllMigrateClass = GroupFixAllClass + "--migrate";
+        private const string GroupSuggestClass = RootClass + "__group-suggest";
+        private const string GroupMigrateClass = RootClass + "__group-migrate";
+        private const string GroupEntryClass = RootClass + "__group-entry";
+        private const string GroupEntryPathClass = RootClass + "__group-entry-path";
+        private const string GroupEntryRidClass = RootClass + "__group-entry-rid";
+
+        // Chevron on the "Fix all (N)" dropdown button; only the glyph differs between the two states.
+        private const string FixArrowCollapsed = "▼";
+        private const string FixArrowExpanded = "▲";
+
+        // Scan button label: cold call-to-action before the first scan, quiet refresh once the index is warm.
+        private const string ScanLabel = "Scan Project";
+        private const string RescanLabel = "Rescan";
+
+        private VisualElement _empty;
+        private VisualElement _results;
+        private AspidLabel _resultsHeader;
+        private VisualElement _summaries;
+        private Label _resultsHint;
+        private VisualElement _list;
+        private VisualElement _openPicker;
+        private AspidGradientButton _openPickerRow;
+        private VisualElement _openPickerCard;
+        private AspidGradientButton _scanButton;
+
+        /// <summary>
+        /// Jump from a project-audit result row to that asset's Inspect graph. Wired by the host window.
+        /// </summary>
+        public Action<Object> OnInspectAsset;
+
+        /// <summary>
+        /// Reports this view's state-tone to the host window, which owns the shared dotted canvas. Wired by the window.
+        /// </summary>
+        public Action<Color> OnCanvasTone;
+
+        public SerializeReferenceProjectView()
+        {
+            var root = this;
+            style.flexGrow = 1;
+            root.AddAspidThemeStyleSheets()
+                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddClass(RootClass);
+
+            var panelTitle = new AspidLabel("Find missing references", AspidLabelPreset.Default
+                    .SetLabelTheme(ThemeStyle.Type.Lightness)
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                    .SetLineSize(AspidDividingLineSizeStyle.Type.None))
+                .AddClass(PanelTitleClass);
+
+            var panelDescription = new Label(
+                    "Sweep every asset under Assets/ for broken [SerializeReference] types and bulk-fix them by type.")
+                .AddClass(PanelDescriptionClass);
+
+            // Label flips between ScanLabel and RescanLabel as the index warms.
+            _scanButton = new AspidGradientButton(ScanLabel, _ => ScanProject())
+                .AddClass(ScanProjectClass);
+
+            var panel = new VisualElement()
+                .AddClass(PanelClass)
+                .AddChild(panelTitle)
+                .AddChild(panelDescription)
+                .AddChild(_scanButton);
+
+            _empty = new VisualElement().AddClass(EmptyClass);
+
+            _resultsHeader = new AspidLabel(string.Empty, AspidLabelPreset.Default
+                    .SetLabelStatus(StatusStyle.Type.Warning)
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H4)
+                    .SetLineTheme(ThemeStyle.Type.Dark)
+                    .SetLineStatus(StatusStyle.Type.Warning))
+                .AddClass(ResultsHeaderClass);
+
+            _resultsHint = new Label(string.Empty).AddClass(ResultsHintClass);
+
+            // Receipt stack: one help-box per bulk Fix all, kept across chained fixes and cleared only on a fresh scan.
+            _summaries = new VisualElement().AddClass(SummaryListClass);
+
+            _list = new VisualElement();
+
+            _results = new VisualElement()
+                .AddClass(ResultsClass)
+                .AddChild(_resultsHeader)
+                .AddChild(_resultsHint)
+                .AddChild(_summaries)
+                .AddChild(_list);
+
+            // One scroll spans the whole view, so the panel scrolls away with the group list instead of staying pinned.
+            var content = new VisualElement()
+                .AddClass(ContentClass)
+                .AddChild(panel)
+                .AddChild(_empty)
+                .AddChild(_results);
+
+            var scroll = new ScrollView().AddClass(ScrollClass);
+            scroll.AddChild(content);
+
+            root.AddChild(scroll);
+        }
+
+        // Cold index: open idle and wait for a deliberate Scan click — the cold sweep parses every asset's YAML behind
+        // a blocking bar, so it must never run unasked. Warm index: re-deriving groups is a cheap in-memory filter, so
+        // results survive a tab switch. The breakage-notification deep-link bypasses this and calls ScanProject directly.
+        public void Initialize()
+        {
+            if (SerializeReferenceTypeUsageIndex.IsWarm) RenderWarmGroups();
+            else ShowIdle();
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Project mode
+        // ---------------------------------------------------------------------------------------------------------
+
+        // Sweeps the project for missing references and groups them by stored broken type (slow when the index is cold).
+        public void ScanProject()
+        {
+            if (_list is null) return;
+
+            ClosePicker();
+            ClearSummaries();
+            RenderWarmGroups();
+        }
+
+        // Collects the unresolved set from the warm index and paints it; shared by Scan/Rescan and Initialize's warm restore.
+        private void RenderWarmGroups()
+        {
+            if (_list is null) return;
+            if (_scanButton is not null) _scanButton.Text = RescanLabel;
+
+            var groups = CollectProjectGroups(out var canceled);
+            RenderGroups(groups, canceled);
+        }
+
+        // Paints a collected group set: count header + hint + one card per group, or the terminal hero when empty.
+        // ApplyGroupFix special-cases the came-back-clean case so its summary HelpBox survives (see there).
+        private void RenderGroups(List<ProjectGroup> groups, bool canceled)
+        {
+            _list.Clear();
+
+            if (groups.Count == 0)
+            {
+                ShowEmptyState(
+                    success: !canceled,
+                    title: canceled ? "Scan canceled" : "Project clean",
+                    message: canceled
+                        ? "The project scan was canceled before finding any missing references."
+                        : "No missing managed references found anywhere under Assets/.");
+                return;
+            }
+
+            var entryCount = groups.Sum(group => group.Entries.Count);
+            ShowResults(entryCount == 1 ? "1 missing reference" : $"{entryCount} missing references",
+                SerializeReferenceCanvasStyle.Warning);
+            _resultsHint.text = canceled
+                ? "Scan canceled — showing partial results. Each group is a broken type; Fix all re-points every entry (or pick <None> to clear them to null) across every file at once."
+                : "Each group is a broken stored type. Fix all picks one replacement and re-points every entry across every affected file at once — or pick <None> to clear them to null.";
+
+            foreach (var group in groups)
+                _list.AddChild(BuildGroupCard(group));
+        }
+
+        // Groups every unresolved managed reference by stored type, backed by the shared usage index. The out
+        // parameter is kept for the call sites but is always false: the index warm-up runs to completion.
+        private static List<ProjectGroup> CollectProjectGroups(out bool canceled)
+        {
+            canceled = false;
+            var byType = new Dictionary<string, ProjectGroup>(StringComparer.Ordinal);
+
+            foreach (var usage in SerializeReferenceTypeUsageIndex.EnumerateUnresolved())
+            {
+                var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
+                if (string.IsNullOrEmpty(path)) continue;
+
+                var key = SerializeReferenceHelpers.StoredTypeKey(usage.StoredType);
+                if (!byType.TryGetValue(key, out var group))
+                {
+                    group = new ProjectGroup(usage.StoredType);
+                    byType.Add(key, group);
+                }
+
+                group.Add(path, new MissingReferenceEntry(usage.FileId, usage.Rid, usage.StoredType));
+            }
+
+            var groups = byType.Values.ToList();
+            groups.Sort((a, b) => b.Entries.Count.CompareTo(a.Entries.Count));
+            return groups;
+        }
+
+        // A broken-type group card: the whole header is one clickable row that toggles the type picker, with the bulk
+        // "Fix all (N) ▼" action on the right. Entries are deliberately not individually fixable in project mode —
+        // the per-row Fix affordance is reserved for single-asset mode.
+        private VisualElement BuildGroupCard(ProjectGroup group)
+        {
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(GroupClass);
+
+            var constraint = group.ResolveConstraint();
+            var displayName = group.DisplayName;
+
+            // An authoritative [MovedFrom] rename: Unity already migrates these in memory at load — only the files
+            // still store the old name. The target must also fit the group's field constraint: Migrate all bypasses
+            // the picker's assignability guarantee, and an incompatible target would be nulled by Unity at load.
+            var isMigration = SerializeReferenceMovedFromResolver.TryResolve(group.StoredType, out var migrationTarget) &&
+                (constraint == typeof(object) || constraint.IsAssignableFrom(migrationTarget));
+
+            // Built first so the type name + count can be docked into its body; the captured local is assigned before use.
+            AspidGradientButton fixAll = null;
+            fixAll = new AspidGradientButton(BuildFixAllLabel(group, expanded: false),
+                    _ => ToggleGroupPicker(group, constraint, fixAll))
+                .AddClass(GroupFixAllClass);
+            // A migration card keeps its calm info tone end to end — the amber Fix all accent is the "broken" alarm.
+            if (isMigration) fixAll.AddClass(GroupFixAllMigrateClass);
+            fixAll.tooltip = constraint == typeof(object)
+                ? $"{displayName}\nMixed or unresolvable field types — the picker is unconstrained (any managed-reference type)."
+                : $"{displayName}\nConstrained to {constraint.FullName}.";
+
+            // The type name + count line, ignored for picking so clicks fall through to the button's own handler.
+            var header = new AspidLabel(group.StoredType.Class, AspidLabelPreset.Default
+                    .SetLabelStatus(isMigration ? StatusStyle.Type.Info : StatusStyle.Type.Warning)
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                    .SetLineSize(AspidDividingLineSizeStyle.Type.None))
+                .AddClass(GroupHeaderClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            var count = new Label(BuildGroupCountText(group))
+                .AddClass(GroupCountClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            var info = new VisualElement()
+                .AddClass(GroupHeaderRowClass)
+                .AddChild(header)
+                .AddChild(count);
+            info.pickingMode = PickingMode.Ignore;
+
+            fixAll.AddLeadingContent(info);
+            card.AddChild(fixAll);
+
+            if (isMigration)
+            {
+                // Not a guess, so it replaces the Smart Fix row: same confirm + diff preview + Undo flow as a picked fix.
+                var migrate = new AspidGradientButton(
+                        $"Migrate all ({group.Entries.Count}) → {migrationTarget.Name}",
+                        _ => ApplyGroupFix(group, migrationTarget))
+                    .AddClass(GroupMigrateClass);
+                migrate.tooltip =
+                    $"Every entry resolves to {migrationTarget.FullName} via its declared [MovedFrom] — Unity already " +
+                    "migrates them in memory when the asset loads. Migrating rewrites the stored type name in the " +
+                    "files so they match the code; the attribute can be removed once no file stores the old name.";
+                card.AddChild(migrate);
+            }
+            else if (TryGetGroupSuggestion(group, constraint, out var suggestion))
+            {
+                // Reuse the shared label/detail builders so the Smart Fix copy never drifts from the inspector notice.
+                var suggest = new AspidGradientButton(SerializeReferenceHelpers.GetSuggestionLabel(suggestion),
+                        _ => ApplyGroupFix(group, suggestion.Type))
+                    .AddClass(GroupSuggestClass);
+                suggest.tooltip = SerializeReferenceHelpers.GetSuggestionDetail(suggestion);
+                card.AddChild(suggest);
+            }
+
+            foreach (var entry in group.Entries)
+                card.AddChild(BuildGroupEntryRow(entry));
+
+            return card;
+        }
+
+        private static string BuildGroupCountText(ProjectGroup group)
+        {
+            var entries = group.Entries.Count;
+            var files = group.FileCount;
+            var entryText = entries == 1 ? "1 entry" : $"{entries} entries";
+            var fileText = files == 1 ? "1 file" : $"{files} files";
+            return $"{entryText} · {fileText}";
+        }
+
+        // "Fix all (N)" plus a trailing chevron; only the glyph changes when the picker opens (ClosePicker relies on that).
+        private static string BuildFixAllLabel(ProjectGroup group, bool expanded) =>
+            $"Fix all ({group.Entries.Count})  {(expanded ? FixArrowExpanded : FixArrowCollapsed)}";
+
+        // Read-only entry row: clicking jumps to the asset — the bulk Fix above is the only mutation in project mode.
+        private VisualElement BuildGroupEntryRow(ProjectEntry entry)
+        {
+            var row = new VisualElement().AddClass(GroupEntryClass);
+
+            var path = new Label(entry.AssetPath)
+                .AddClass(GroupEntryPathClass);
+            path.tooltip = entry.AssetPath;
+
+            var rid = new Label($"rid {entry.Entry.Rid}")
+                .AddClass(GroupEntryRidClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            row.AddChild(path).AddChild(rid);
+            row.RegisterCallback<ClickEvent>(_ =>
+            {
+                var asset = AssetDatabase.LoadMainAssetAtPath(entry.AssetPath);
+                if (asset is null) return;
+
+                // Cross-link: jump to the asset's full Inspect graph; ping as a fallback when hosted standalone.
+                if (OnInspectAsset is not null) OnInspectAsset(asset);
+                else EditorGUIUtility.PingObject(asset);
+            });
+
+            return row;
+        }
+
+        // The group's bulk picker, inline below the Fix all button, constrained to the group's intersected field type.
+        private void ToggleGroupPicker(ProjectGroup group, Type constraint, AspidGradientButton button)
+        {
+            var wasOpen = _openPickerRow == button;
+            ClosePicker();
+            if (wasOpen) return;
+
+            var view = BuildPickerView(constraint, assemblyQualifiedName =>
+            {
+                // <None> emits an empty name: clear the group to null instead of treating it as a no-op.
+                if (string.IsNullOrEmpty(assemblyQualifiedName))
+                {
+                    ClearGroupToNull(group);
+                    return;
+                }
+
+                var type = ResolveType(assemblyQualifiedName);
+                if (type is not null) ApplyGroupFix(group, type);
+            });
+
+            OpenPickerBelow(button, view);
+            button.Text = BuildFixAllLabel(group, expanded: true);
+        }
+
+        // Rewrites every entry in the group to newType after a mandatory confirmation. Rewrites are batched per file
+        // so each affected asset is reimported exactly once.
+        private void ApplyGroupFix(ProjectGroup group, Type newType)
+        {
+            if (newType is null) return;
+            ClosePicker();
+
+            var entries = FilterWritableEntries(group.Entries, out var skipped);
+
+            if (entries.Count == 0)
+            {
+                EditorUtility.DisplayDialog(
+                    "Repair Missing References",
+                    "All references in this group live in open scene(s) or Prefab Mode. Close them and rescan, " +
+                    "or repair the fields directly in the Inspector.",
+                    "OK");
+                return;
+            }
+
+            var files = entries.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
+            var skippedNote = skipped > 0
+                ? $"\n\n{skipped} reference(s) in open scene(s) or Prefab Mode will be skipped."
+                : string.Empty;
+
+            // When the group's picker fell back to an unconstrained list because its entries' declared field types
+            // disagree, the single chosen type cannot fit every entry — warn that the mismatched ones null on reimport.
+            group.ResolveConstraint(out var mixedFieldTypes);
+            var mixedNote = mixedFieldTypes
+                ? "\n\nField types in this group differ — the chosen type may not fit every entry; incompatible ones " +
+                  "will become null on reimport."
+                : string.Empty;
+
+            var managedType = ManagedTypeName.FromType(newType);
+
+            // The preview is computed by the same scan the rewrite applies, so it shows exactly what gets written.
+            var diff = BuildDiffPreview(entries, managedType);
+
+            if (!EditorUtility.DisplayDialog(
+                    "Repair Missing References",
+                    $"Rewrite {entries.Count} reference(s) in {files} file(s) to '{newType.FullName}'?\n\n" +
+                    diff +
+                    "This edits the asset files directly; an Undo button on the summary can revert it." + skippedNote + mixedNote,
+                    "Rewrite",
+                    "Cancel"))
+                return;
+
+            var rewritten = BatchRewriteEntries(entries, managedType, "Repairing References");
+
+            SerializeReferenceRepairSuggestions.ClearCache();
+
+            var summaryTitle = rewritten == 1 ? "Rewrote 1 reference" : $"Rewrote {rewritten} references";
+            var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
+            if (skipped > 0)
+                summaryBody += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
+
+            // Undo re-points the entries back to the original (now-missing) stored type. Only the type line moved —
+            // the data blocks were never touched on disk — so flipping it back is a faithful revert.
+            var originalType = group.StoredType;
+            var missingName = group.DisplayName;
+            var appliedName = newType.FullName;
+            void Undo(VisualElement receipt) => UndoGroupFix(entries, originalType, managedType, missingName, appliedName, receipt);
+
+            if (_scanButton is not null) _scanButton.Text = RescanLabel;
+            var groups = CollectProjectGroups(out var canceled);
+
+            if (groups.Count == 0)
+            {
+                // The fix cleared the last broken type. Stay in the results region instead of the "Project clean"
+                // hero, which would hide the summary HelpBox receipt; the hero is reserved for an explicit Rescan.
+                _list.Clear();
+                ShowResults("No missing references", SerializeReferenceCanvasStyle.Success);
+                _resultsHint.text =
+                    "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+            }
+            else
+            {
+                RenderGroups(groups, canceled);
+            }
+
+            ShowSummary(summaryTitle, summaryBody, Undo);
+        }
+
+        // Clears every entry in the group to null. Closed assets are nulled in the YAML directly; assets open in
+        // Prefab Mode / a loaded scene cannot be rewritten on disk (the open copy would clobber it on save), so those
+        // are nulled on the live object and stay in the audit until saved. NOT undoable: the broken payload is discarded.
+        private void ClearGroupToNull(ProjectGroup group)
+        {
+            ClosePicker();
+
+            SplitWritableEntries(group.Entries, out var onDisk, out var inMemory);
+            if (onDisk.Count == 0 && inMemory.Count == 0) return;
+
+            var fileCount = onDisk.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
+            var total = onDisk.Count + inMemory.Count;
+
+            var openNote = inMemory.Count > 0
+                ? $"\n\n{inMemory.Count} reference(s) are open in Prefab Mode or a scene — those are nulled on the live " +
+                  "object and saved with the asset (the audit keeps listing them until you save)."
+                : string.Empty;
+            var diskNote = onDisk.Count > 0
+                ? $" {onDisk.Count} on disk in {fileCount} file(s) are edited directly."
+                : string.Empty;
+
+            if (!EditorUtility.DisplayDialog(
+                    "Clear Missing References",
+                    $"Clear {total} reference(s) to null?\n\n" +
+                    BuildClearPreview(group.Entries) +
+                    $"This nulls every field holding the broken '{group.DisplayName}' and discards its payload." +
+                    diskNote + " It cannot be undone." + openNote,
+                    "Clear",
+                    "Cancel"))
+                return;
+
+            var clearedOnDisk = BatchNullEntries(onDisk, "Clearing References");
+            var clearedInMemory = ClearOpenEntriesInMemory(inMemory, group.StoredType);
+            var cleared = clearedOnDisk + clearedInMemory;
+
+            SerializeReferenceRepairSuggestions.ClearCache();
+
+            // Nothing actually changed (every edit failed) — skip the receipt rather than claim a cleared count of 0.
+            if (cleared == 0)
+            {
+                if (_scanButton is not null) _scanButton.Text = RescanLabel;
+                RenderGroups(CollectProjectGroups(out var rescanCanceled), rescanCanceled);
+                return;
+            }
+
+            var summaryTitle = cleared == 1 ? "Cleared 1 reference" : $"Cleared {cleared} references";
+            var summaryBody = $"Set missing '{group.DisplayName}' to null.";
+            if (clearedInMemory > 0)
+                summaryBody += clearedInMemory == 1
+                    ? " 1 was nulled in memory — save the asset to persist it (still listed until saved)."
+                    : $" {clearedInMemory} were nulled in memory — save the assets to persist them (still listed until saved).";
+
+            if (_scanButton is not null) _scanButton.Text = RescanLabel;
+            var groups = CollectProjectGroups(out var canceled);
+
+            if (groups.Count == 0)
+            {
+                // Same came-back-clean handling as ApplyGroupFix: keep the receipt visible instead of the hero.
+                _list.Clear();
+                ShowResults("No missing references", SerializeReferenceCanvasStyle.Success);
+                _resultsHint.text =
+                    "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+            }
+            else
+            {
+                RenderGroups(groups, canceled);
+            }
+
+            // No Undo: clearing discards the broken payload (see ClearGroupToNull). The receipt is a plain record.
+            ShowSummary(summaryTitle, summaryBody, onUndo: null);
+        }
+
+        // Splits entries into those safe to rewrite on disk and those open in Prefab Mode / a loaded scene, which
+        // must be repaired in memory instead.
+        private static void SplitWritableEntries(IReadOnlyList<ProjectEntry> source, out List<ProjectEntry> onDisk, out List<ProjectEntry> inMemory)
+        {
+            var prefabStagePath = CurrentPrefabStagePath();
+            onDisk = new List<ProjectEntry>(source.Count);
+            inMemory = new List<ProjectEntry>();
+
+            foreach (var entry in source)
+            {
+                if (IsEntryWritable(entry, prefabStagePath)) onDisk.Add(entry);
+                else inMemory.Add(entry);
+            }
+        }
+
+        // Nulls each open entry on its live object (the file rewrite is skipped for open assets). The file is unchanged,
+        // so these stay in the audit until the asset is saved. Returns how many were cleared.
+        private static int ClearOpenEntriesInMemory(IReadOnlyList<ProjectEntry> entries, ManagedTypeName storedType)
+        {
+            var cleared = 0;
+            foreach (var entry in entries)
+                if (SerializeReferenceHelpers.TryClearMissingReferenceInMemory(entry.AssetPath, entry.Entry.Rid, storedType))
+                    cleared++;
+
+            return cleared;
+        }
+
+        // Nulls every entry to the null managed-reference id and drops its payload, batched per file behind a cancel-free
+        // progress bar (StartAssetEditing defers each reimport to one pass at the end). Returns how many were cleared.
+        private static int BatchNullEntries(IReadOnlyList<ProjectEntry> entries, string progressTitle)
+        {
+            var byFile = entries
+                .GroupBy(entry => entry.AssetPath, StringComparer.Ordinal)
+                .ToArray();
+
+            var cleared = 0;
+
+            AssetDatabase.StartAssetEditing();
+            try
+            {
+                for (var i = 0; i < byFile.Length; i++)
+                {
+                    var file = byFile[i];
+                    EditorUtility.DisplayProgressBar(
+                        progressTitle,
+                        $"{file.Key}  ({i + 1}/{byFile.Length})",
+                        (float)i / byFile.Length);
+
+                    var changed = false;
+                    foreach (var entry in file)
+                    {
+                        if (!SerializeReferenceYamlEditor.TryNullReference(file.Key, entry.Entry.FileId, entry.Entry.Rid))
+                            continue;
+
+                        cleared++;
+                        changed = true;
+                    }
+
+                    if (changed) AssetDatabase.ImportAsset(file.Key, ImportAssetOptions.ForceUpdate);
+                }
+            }
+            finally
+            {
+                AssetDatabase.StopAssetEditing();
+                EditorUtility.ClearProgressBar();
+            }
+
+            return cleared;
+        }
+
+        // Capped file + rid list for the confirmation. No before/after lines — the whole entry is being dropped.
+        private static string BuildClearPreview(List<ProjectEntry> entries)
+        {
+            const int maxShown = 8;
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("Clears:");
+
+            var shown = 0;
+            foreach (var entry in entries)
+            {
+                if (shown >= maxShown)
+                {
+                    builder.AppendLine($"  …and {entries.Count - shown} more");
+                    break;
+                }
+
+                builder.AppendLine($"  {System.IO.Path.GetFileName(entry.AssetPath)} (rid {entry.Entry.Rid})");
+                shown++;
+            }
+
+            builder.AppendLine();
+            return builder.ToString();
+        }
+
+        // A scene or prefab loaded in the editor would race a file rewrite — the in-memory copy wins on the next save
+        // and silently clobbers the on-disk edit. Returns the entries safe to write; reports how many were held back.
+        private static List<ProjectEntry> FilterWritableEntries(IReadOnlyList<ProjectEntry> source, out int skipped)
+        {
+            var prefabStagePath = CurrentPrefabStagePath();
+            var writable = new List<ProjectEntry>(source.Count);
+            skipped = 0;
+
+            foreach (var entry in source)
+            {
+                if (IsEntryWritable(entry, prefabStagePath)) writable.Add(entry);
+                else skipped++;
+            }
+
+            return writable;
+        }
+
+        private static string CurrentPrefabStagePath() =>
+            UnityEditor.SceneManagement.PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
+
+        // See FilterWritableEntries: an open asset's in-memory copy would clobber the file edit on the next save.
+        private static bool IsEntryWritable(ProjectEntry entry, string prefabStagePath)
+        {
+            var openInScene = UnityEngine.SceneManagement.SceneManager.GetSceneByPath(entry.AssetPath).isLoaded;
+            var openInPrefabMode = !string.IsNullOrEmpty(prefabStagePath) &&
+                                   string.Equals(prefabStagePath, entry.AssetPath, StringComparison.Ordinal);
+
+            return !openInScene && !openInPrefabMode;
+        }
+
+        // Rewrites every entry's stored type to targetType, batched per file. StartAssetEditing defers each
+        // ImportAsset to one pass at the end. Shared by the forward fix and Undo.
+        private static int BatchRewriteEntries(IReadOnlyList<ProjectEntry> entries, ManagedTypeName targetType, string progressTitle)
+        {
+            var byFile = entries
+                .GroupBy(entry => entry.AssetPath, StringComparer.Ordinal)
+                .ToArray();
+
+            var rewritten = 0;
+
+            AssetDatabase.StartAssetEditing();
+            try
+            {
+                for (var i = 0; i < byFile.Length; i++)
+                {
+                    var file = byFile[i];
+                    EditorUtility.DisplayProgressBar(
+                        progressTitle,
+                        $"{file.Key}  ({i + 1}/{byFile.Length})",
+                        (float)i / byFile.Length);
+
+                    var changed = false;
+                    foreach (var entry in file)
+                    {
+                        if (!SerializeReferenceYamlEditor.TryRewriteType(file.Key, entry.Entry.FileId, entry.Entry.Rid, targetType))
+                            continue;
+
+                        rewritten++;
+                        changed = true;
+                    }
+
+                    if (changed) AssetDatabase.ImportAsset(file.Key, ImportAssetOptions.ForceUpdate);
+                }
+            }
+            finally
+            {
+                AssetDatabase.StopAssetEditing();
+                EditorUtility.ClearProgressBar();
+            }
+
+            return rewritten;
+        }
+
+        // Reverts one bulk fix by re-pointing its entries back to the original (now-missing) stored type. Only this
+        // fix's own receipt is dropped — receipts for other still-applied fixes survive, unlike a full Rescan.
+        private void UndoGroupFix(IReadOnlyList<ProjectEntry> entries, ManagedTypeName originalType, ManagedTypeName appliedType, string missingName, string appliedName, VisualElement receipt)
+        {
+            // The asset may have opened in a scene / Prefab Mode since the fix; apply the same guard as the forward fix.
+            var writable = FilterWritableEntries(entries, out var skipped);
+
+            // Only entries that STILL hold the type this receipt applied may be re-pointed — the group can have been
+            // re-broken and fixed to a DIFFERENT type since, and blindly rewriting would destroy that newer fix.
+            // "Still holds it" == a rewrite towards the applied type whose old line already equals its new line.
+            var revertible = new List<ProjectEntry>(writable.Count);
+            var diverged = 0;
+            foreach (var entry in writable)
+            {
+                if (SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, appliedType, out var edit) &&
+                    edit.IsValid && string.Equals(edit.OldLine, edit.NewLine, StringComparison.Ordinal))
+                    revertible.Add(entry);
+                else
+                    diverged++;
+            }
+
+            if (revertible.Count == 0)
+            {
+                EditorUtility.DisplayDialog(
+                    "Undo Repair",
+                    diverged > 0
+                        ? "These references no longer hold the type this fix applied (they were re-pointed or removed " +
+                          "since), so there is nothing this undo can safely revert."
+                        : "These references now live in open scene(s) or Prefab Mode. Close them and try the undo again.",
+                    "OK");
+                return;
+            }
+
+            var files = revertible.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
+            var skippedNote = skipped > 0
+                ? $"\n\n{skipped} reference(s) in open scene(s) or Prefab Mode will be skipped."
+                : string.Empty;
+            var divergedNote = diverged > 0
+                ? $"\n\n{diverged} reference(s) no longer hold '{appliedName}' (changed since this fix) and will be left alone."
+                : string.Empty;
+
+            if (!EditorUtility.DisplayDialog(
+                    "Undo Repair",
+                    $"Re-point {revertible.Count} reference(s) in {files} file(s) back to the missing '{missingName}'?\n\n" +
+                    $"This restores the broken state you had before replacing it with '{appliedName}', and edits the " +
+                    "asset files directly." + skippedNote + divergedNote,
+                    "Undo",
+                    "Cancel"))
+                return;
+
+            var reverted = BatchRewriteEntries(revertible, originalType, "Undoing Repair");
+
+            SerializeReferenceRepairSuggestions.ClearCache();
+
+            // Drop only this receipt — the others describe fixes still applied. RenderGroups rebuilds only _list,
+            // never _summaries, so the surviving receipts stay put.
+            receipt?.RemoveFromHierarchy();
+            var groups = CollectProjectGroups(out var canceled);
+            RenderGroups(groups, canceled);
+
+            // BatchRewriteEntries can come up short if a file changed between the check and the write — report the real count.
+            var undoTitle = reverted == 1 ? "Reverted 1 reference" : $"Reverted {reverted} references";
+            var undoBody = $"Re-pointed back to the missing '{missingName}'.";
+            if (diverged > 0) undoBody += $" Left {diverged} alone (no longer '{appliedName}').";
+            if (reverted < revertible.Count) undoBody += $" {revertible.Count - reverted} could not be rewritten.";
+            ShowSummary(undoTitle, undoBody, null);
+        }
+
+        // Old -> new preview of the YAML the bulk fix will rewrite, using the same TryComputeRewrite the rewrite
+        // applies, so the preview is exactly what gets written. Capped so the confirmation stays readable.
+        private static string BuildDiffPreview(List<ProjectEntry> entries, ManagedTypeName newType)
+        {
+            const int maxShown = 8;
+            var builder = new System.Text.StringBuilder();
+            builder.AppendLine("Changes:");
+
+            // Compute first, render second: an uncomputable entry must neither vanish silently nor inflate the
+            // "…and N more" remainder.
+            var edits = new List<(ProjectEntry entry, RewriteEdit edit)>(entries.Count);
+            foreach (var entry in entries)
+                if (SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, newType, out var edit))
+                    edits.Add((entry, edit));
+
+            for (var i = 0; i < edits.Count && i < maxShown; i++)
+            {
+                var (entry, edit) = edits[i];
+                builder.AppendLine($"  {System.IO.Path.GetFileName(entry.AssetPath)} (rid {entry.Entry.Rid}):");
+                builder.AppendLine($"    - {edit.OldLine.Trim()}");
+                builder.AppendLine($"    + {edit.NewLine.Trim()}");
+            }
+
+            if (edits.Count > maxShown)
+                builder.AppendLine($"  …and {edits.Count - maxShown} more");
+
+            var uncomputable = entries.Count - edits.Count;
+            if (uncomputable > 0)
+                builder.AppendLine($"  ({uncomputable} entr{(uncomputable == 1 ? "y" : "ies")} could not be previewed)");
+
+            builder.AppendLine();
+            return builder.ToString();
+        }
+
+        // Smart Fix: rank the stored type against the constraint-filtered pool, surfaced only above the confidence
+        // threshold. Quick-apply bypasses the picker — safe only because Rank enforces the constraint internally,
+        // so the suggestion is always assignable.
+        private static bool TryGetGroupSuggestion(ProjectGroup group, Type constraint, out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
+        {
+            suggestion = default;
+
+            var first = group.Entries[0];
+            var fieldNames = SerializeReferenceYamlEditor.GetReferenceFieldNames(first.AssetPath, first.Entry.FileId, first.Entry.Rid);
+
+            var ranked = SerializeReferenceRepairSuggestions.Rank(group.StoredType, fieldNames, constraint);
+            if (ranked.Count == 0) return false;
+
+            suggestion = ranked[0];
+            return true;
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Shared picker / results plumbing
+        // ---------------------------------------------------------------------------------------------------------
+
+        private TypeSelectorView BuildPickerView(Type constraint, Action<string> onSelected)
+        {
+            var baseType = constraint ?? typeof(object);
+
+            return new TypeSelectorView(
+                filter: new TypeSelectorFilter
+                {
+                    Types = new[] { baseType },
+                    Predicate = SerializeReferenceHelpers.IsAssignableManagedReference,
+                    AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
+                    ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
+                },
+                currentAqn: null, // the bulk group picker has no current value — nothing (not even <None>) wears the check
+                onSelected: onSelected,
+                onDismiss: ClosePicker);
+        }
+
+        private void OpenPickerBelow(AspidGradientButton anchor, TypeSelectorView view)
+        {
+            _openPicker = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(PickerClass)
+                .AddChild(view);
+
+            _openPickerRow = anchor;
+
+            // The header button is a direct child of the group card, so the picker drops right below it inside the
+            // card; the ?? fallback keeps a sane target if the button is ever hosted outside a card.
+            var card = anchor.parent;
+            var container = card ?? _list;
+            container.InsertChild(container.IndexOf(anchor) + 1, _openPicker);
+
+            // __group--picking + __picker--attached weld the header, selector and entry rows into one active card.
+            if (card is not null)
+            {
+                _openPickerCard = card;
+                _openPickerCard.AddClass(GroupPickingClass);
+                _openPicker.AddClass(PickerAttachedClass);
+            }
+
+            view.FocusPicker();
+        }
+
+        private void ClosePicker()
+        {
+            _openPicker?.RemoveFromHierarchy();
+            // No group reference here, but only the chevron glyph differs between labels — swap it in place.
+            if (_openPickerRow is not null)
+                _openPickerRow.Text = _openPickerRow.Text.Replace(FixArrowExpanded, FixArrowCollapsed);
+            _openPickerCard?.RemoveClass(GroupPickingClass);
+
+            _openPicker = null;
+            _openPickerRow = null;
+            _openPickerCard = null;
+        }
+
+        private static Type ResolveType(string assemblyQualifiedName) =>
+            string.IsNullOrEmpty(assemblyQualifiedName)
+                ? null
+                : Type.GetType(assemblyQualifiedName, throwOnError: false);
+
+        private void ShowEmptyState(bool success, string title, string message)
+        {
+            _results.AddClass(ResultsHiddenClass);
+            _empty.RemoveClass(EmptyHiddenClass);
+            _empty.Clear();
+            OnCanvasTone?.Invoke(success ? SerializeReferenceCanvasStyle.Success : SerializeReferenceCanvasStyle.Info);
+
+            var icon = new VisualElement()
+                .AddClass(EmptyIconClass)
+                .AddClass(success ? EmptyIconSuccessClass : EmptyIconInfoClass);
+
+            var titlePreset = AspidLabelPreset.Default
+                .SetLabelTheme(success ? ThemeStyle.Type.Light : ThemeStyle.Type.Lightness)
+                .SetLabelSize(AspidLabelSizeStyle.Type.H3)
+                .SetLineSize(AspidDividingLineSizeStyle.Type.None);
+
+            if (success) titlePreset = titlePreset.SetLabelStatus(StatusStyle.Type.Success);
+
+            _empty.AddChild(icon)
+                .AddChild(new AspidLabel(title, titlePreset).AddClass(EmptyTitleClass))
+                .AddChild(new Label(message).AddClass(EmptyMessageClass));
+        }
+
+        // Cold-index idle state until the first scan. No results list yet — the project is unscanned, so "clean"
+        // cannot be claimed.
+        private void ShowIdle() => ShowEmptyState(
+            success: false,
+            title: "Project not scanned",
+            message: "Run Scan Project to map every broken [SerializeReference] type across your assets — then repair each missing type in bulk.");
+
+        // The tone is explicit per call site: the missing-references sweep tones Warning, while the came-back-clean
+        // receipt tones Success rather than leaving a clean state on an amber backdrop.
+        private void ShowResults(string headerText, Color tone)
+        {
+            _empty.AddClass(EmptyHiddenClass);
+            _results.RemoveClass(ResultsHiddenClass);
+            _resultsHeader.Text = headerText;
+            OnCanvasTone?.Invoke(tone);
+        }
+
+        // Appends one receipt to the running stack (newest at the bottom) rather than overwriting the previous; only
+        // ClearSummaries resets it on the next fresh scan. The Undo button reverts exactly this fix.
+        private void ShowSummary(string title, string message, Action<VisualElement> onUndo)
+        {
+            var summary = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))
+                .AddClass(SummaryClass);
+            summary.Title = title;
+            summary.Message = message;
+
+            if (onUndo is not null)
+                summary.AddChild(new AspidGradientButton("Undo", _ => onUndo(summary)).AddClass(SummaryUndoClass));
+
+            _summaries.AddChild(summary);
+        }
+
+        private void ClearSummaries() => _summaries?.Clear();
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Project scan data
+        // ---------------------------------------------------------------------------------------------------------
+
+        private readonly struct ProjectEntry
+        {
+            public readonly string AssetPath;
+            public readonly MissingReferenceEntry Entry;
+
+            public ProjectEntry(string assetPath, MissingReferenceEntry entry)
+            {
+                AssetPath = assetPath;
+                Entry = entry;
+            }
+        }
+
+        // All broken references sharing one stored type across the project. Resolves a single picker constraint by
+        // intersecting the entries' declared field types, falling back to typeof(object) when they disagree.
+        private sealed class ProjectGroup
+        {
+            public readonly ManagedTypeName StoredType;
+            public readonly List<ProjectEntry> Entries = new();
+
+            private readonly HashSet<string> _files = new(StringComparer.Ordinal);
+            private readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _constraintCache = new(StringComparer.Ordinal);
+
+            public ProjectGroup(ManagedTypeName storedType) => StoredType = storedType;
+
+            public int FileCount => _files.Count;
+
+            public string DisplayName => StoredType.DisplayName;
+
+            public void Add(string assetPath, MissingReferenceEntry entry)
+            {
+                Entries.Add(new ProjectEntry(assetPath, entry));
+                _files.Add(assetPath);
+            }
+
+            // Per-file constraint maps are built once and cached, so the intersection costs one scan per distinct asset.
+            public Type ResolveConstraint() => ResolveConstraint(out _);
+
+            // Reports whether the typeof(object) fallback came from the field types disagreeing (vs. one being
+            // unrecoverable) — the bulk-fix confirmation warns on that case.
+            public Type ResolveConstraint(out bool mixedFieldTypes)
+            {
+                mixedFieldTypes = false;
+                Type common = null;
+
+                foreach (var entry in Entries)
+                {
+                    if (!_constraintCache.TryGetValue(entry.AssetPath, out var map))
+                    {
+                        map = SerializeReferenceHelpers.BuildConstraintMap(entry.AssetPath);
+                        _constraintCache[entry.AssetPath] = map;
+                    }
+
+                    // A field type we cannot recover (a reference nested in a missing parent, or an orphaned rid no
+                    // field points at) leaves the group unconstrained — a tighter guess could hide a valid pick.
+                    if (!map.TryGetValue((entry.Entry.FileId, entry.Entry.Rid), out var fieldType) || fieldType is null)
+                        return typeof(object);
+
+                    if (common is null)
+                    {
+                        common = fieldType;
+                    }
+                    else if (common != fieldType)
+                    {
+                        mixedFieldTypes = true;
+                        return typeof(object);
+                    }
+                }
+
+                return common ?? typeof(object);
+            }
+        }
+    }
+}

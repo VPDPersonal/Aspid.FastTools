@@ -51,6 +51,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string ListName = "type-selector-list";
         private const string EmptyHintName = "type-selector-empty-hint";
         private const string FooterHintName = "type-selector-footer-hint";
+        private const string SettingsButtonName = "type-selector-settings-button";
 
         private VisualElement _header;
         private VisualElement _breadcrumbBar;
@@ -59,6 +60,7 @@ namespace Aspid.FastTools.Types.Editors
         private Label _errorLabel;
         private Label _emptyHint;
         private Label _footerHint;
+        private Button _settingsButton;
         private ToolbarSearchField _searchField;
 
         private bool _searchFieldFocused;
@@ -96,7 +98,10 @@ namespace Aspid.FastTools.Types.Editors
             _onDismiss = onDismiss;
             _onSelected = onSelected;
             _argumentFilter = filter.ArgumentFilter;
-            _currentAqn = currentAqn ?? string.Empty;
+            // Null and "" mean DIFFERENT things and both flow through unchanged: null = the host has no current-value
+            // concept at all (a list "+" append, a missing-type Fix, the bulk project picker), "" = the field exists
+            // and currently holds <None>. Only the latter may put the current-value check on the <None> row.
+            _currentAqn = currentAqn;
             _fieldTypes = types;
 
             BuildUI();
@@ -122,17 +127,32 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // Highlights the row for the currently selected type on open — the view has pre-navigated to that type's
-        // namespace, so its row is in view and an immediate Enter re-confirms the same value. Leaves no selection when
-        // the current value is <None> or its type is absent, keeping Enter inert (it must not overwrite the field with
-        // an arbitrary first row). FocusPicker scrolls the selection into view once the list is laid out.
+        // namespace, so its row is in view and an immediate Enter re-confirms the same value. When the current value
+        // is <None> ("") or its type is absent (a missing type keeps the navigation at the root), the pinned <None>
+        // row is selected instead, so Enter re-confirms/clears rather than committing an arbitrary first row. Only a
+        // null current value (the host has no current-value concept) leaves the selection empty and Enter inert.
+        // FocusPicker scrolls the selection into view once the list is laid out.
         private void PreselectCurrent()
         {
-            if (string.IsNullOrEmpty(_currentAqn)) return;
+            if (_currentAqn is null) return;
 
             var items = Nav.CurrentItems;
+
+            if (!string.IsNullOrEmpty(_currentAqn))
+            {
+                for (var i = 0; i < items.Count; i++)
+                {
+                    if (items[i].IsType && items[i].AssemblyQualifiedName == _currentAqn)
+                    {
+                        _listView.selectedIndex = i;
+                        return;
+                    }
+                }
+            }
+
             for (var i = 0; i < items.Count; i++)
             {
-                if (items[i].IsType && items[i].AssemblyQualifiedName == _currentAqn)
+                if (items[i].IsSelectable && items[i].DisplayName == TypeSelectorHelpers.NoneOption)
                 {
                     _listView.selectedIndex = i;
                     return;
@@ -184,8 +204,17 @@ namespace Aspid.FastTools.Types.Editors
             _listView = this.Q<ListView>(ListName);
             _emptyHint = this.Q<Label>(EmptyHintName);
             _footerHint = this.Q<Label>(FooterHintName);
+            _settingsButton = this.Q<Button>(SettingsButtonName);
 
             _searchButton.clicked += () => OpenSearch();
+
+            // Settings live outside the picker, so the selector is done: dismiss first (the dropdown host would lose
+            // focus and close anyway; embedded hosts collapse), then land the user on the window's Settings tab.
+            _settingsButton.clicked += () =>
+            {
+                _onDismiss?.Invoke();
+                SerializeReferences.Editors.SerializeReferenceWindow.OpenSettings();
+            };
             _breadcrumbBar.RegisterCallback<ClickEvent>(_ => OpenSearch());
 
             WireSearchField();

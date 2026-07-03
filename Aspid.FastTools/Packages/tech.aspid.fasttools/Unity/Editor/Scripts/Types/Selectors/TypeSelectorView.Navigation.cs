@@ -78,7 +78,16 @@ namespace Aspid.FastTools.Types.Editors
 
         private void Emit(string assemblyQualifiedName)
         {
-            TypeSelectorPreferences.RecordRecent(assemblyQualifiedName);
+            // Recents surface only AQNs the hierarchy actually contains, and the hierarchy holds the OPEN generic
+            // definition, never a closed form — recording "Modifier`1[[Single…]]" would burn an invisible Recent
+            // slot forever (the raw-entry trim then evicts a real, displayable recent per generic pick). Record the
+            // definition instead: "Modifier<T>" under Recent is also the row the user actually clicked.
+            var recorded = assemblyQualifiedName;
+            if (!string.IsNullOrEmpty(assemblyQualifiedName) &&
+                Type.GetType(assemblyQualifiedName, throwOnError: false) is { IsConstructedGenericType: true } constructed)
+                recorded = constructed.GetGenericTypeDefinition().AssemblyQualifiedName;
+
+            TypeSelectorPreferences.RecordRecent(recorded);
 
             _onSelected?.Invoke(assemblyQualifiedName);
             _onDismiss?.Invoke();

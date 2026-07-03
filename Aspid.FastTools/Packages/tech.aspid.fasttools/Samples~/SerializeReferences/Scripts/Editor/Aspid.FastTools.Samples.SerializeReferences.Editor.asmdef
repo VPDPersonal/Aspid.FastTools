@@ -1,0 +1,19 @@
+{
+    "name": "Aspid.FastTools.Samples.SerializeReferences.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Aspid.FastTools.Samples.SerializeReferences",
+        "Aspid.FastTools.Unity.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

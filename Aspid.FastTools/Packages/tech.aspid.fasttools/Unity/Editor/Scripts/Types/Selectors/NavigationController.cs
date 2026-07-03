@@ -200,7 +200,12 @@ namespace Aspid.FastTools.Types.Editors
             if (noneOption is not null)
                 _rootItems.Add(noneOption);
 
-            AppendSection(FavoritesSection, TypeSelectorPreferences.LoadFavorites());
+            // Each section is an individual opt-out that leaves its stored preference data intact, so re-enabling
+            // restores the same list. Favorites has an explicit per-user toggle; Recent needs none — a recents
+            // capacity of 0 makes LoadRecents return nothing and an empty section is never composed.
+            if (TypeSelectorSettings.ShowFavorites)
+                AppendSection(FavoritesSection, TypeSelectorPreferences.LoadFavorites());
+
             AppendSection(RecentSection, TypeSelectorPreferences.LoadRecents());
 
             foreach (var child in _rootNode.Children)
@@ -245,7 +250,8 @@ namespace Aspid.FastTools.Types.Editors
 
             if (rows.Count is 0) return;
 
-            _rootItems.Add(new TreeNode(title) { Kind = TreeNodeKind.SectionTitle, SectionKey = title });
+            // The title carries its row count so the header can show how much a collapsed section holds.
+            _rootItems.Add(new TreeNode(title) { Kind = TreeNodeKind.SectionTitle, SectionKey = title, TypeCount = rows.Count });
             _rootItems.AddRange(rows);
         }
 

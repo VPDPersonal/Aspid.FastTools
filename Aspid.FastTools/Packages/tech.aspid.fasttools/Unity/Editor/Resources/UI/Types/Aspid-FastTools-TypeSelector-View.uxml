@@ -10,5 +10,8 @@
     <ui:Label name="type-selector-error" class="aspid-fasttools-type-selector__error" style="display: none;"/>
     <ui:ListView name="type-selector-list" selection-type="Single" virtualization-method="DynamicHeight"/>
     <ui:Label name="type-selector-empty-hint" class="aspid-fasttools-type-selector__empty-hint" style="display: none;"/>
-    <ui:Label name="type-selector-footer-hint" picking-mode="Ignore" class="aspid-fasttools-type-selector__footer-hint"/>
+    <ui:VisualElement name="type-selector-footer" picking-mode="Ignore" class="aspid-fasttools-type-selector__footer">
+        <ui:Label name="type-selector-footer-hint" picking-mode="Ignore" class="aspid-fasttools-type-selector__footer-hint"/>
+        <ui:Button name="type-selector-settings-button" focusable="false" tooltip="Open Aspid FastTools settings" class="aspid-fasttools-type-selector__settings-button"/>
+    </ui:VisualElement>
 </ui:UXML>
