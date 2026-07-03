@@ -1,14 +1,10 @@
-# CLAUDE.md
-
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Repository Overview
 
-**Aspid.FastTools** is a Unity package (`tech.aspid.fasttools`) targeting Unity 6.0+ that minimizes routine boilerplate code. It consists of three components:
+**Aspid.FastTools** is a Unity package (`tech.aspid.fasttools`) that minimizes routine boilerplate code. It consists of three components:
 
 1. **`Aspid.FastTools/`** — The Unity project containing the package source (Runtime + Editor code)
 2. **`Aspid.FastTools.Generators/`** — A standalone .NET solution containing Roslyn source generators
-3. **`Aspid.FastTools.Analyzers/`** — A git submodule (repo `VPDPersonal/Aspid.FastTools.Analyzers`) with a standalone Roslyn `DiagnosticAnalyzer` that validates package-attribute usage (currently the `AFT*` `[TypeSelector]` rules)
+3. **`Aspid.FastTools.Analyzers/`** — A git submodule (repo `VPDPersonal/Aspid.FastTools.Analyzers`) with standalone Roslyn analyzers that validate package-attribute usage (`AFT*` diagnostic IDs)
 
 Repo-internal working documents (roadmap, release checklist, the bilingual QA checklist `QA-CHECKLIST.md`/`QA-CHECKLIST_RU.md`, the `DESIGN.md` design-system spec) live in `docs/` — distinct from the package's user-facing `Documentation/`. The QA checklist is the standing pre-release verification protocol: a new feature must add its checklist item in **both** languages before its branch merges.
 
@@ -50,15 +46,13 @@ The committed `Aspid.FastTools.Analyzers.dll.meta` carries the `RoslynAnalyzer` 
 ### Two-Project Separation
 
 **Generators project** (`Aspid.FastTools.Generators/Aspid.FastTools.Generators/`):
-- Roslyn `IIncrementalGenerator` implementations — full pipeline patterns, data-struct rules, and per-generator details live in `Aspid.FastTools.Generators/CLAUDE.md`
-- Two generators: `ProfilerMarkersGenerator` (per-call-site `ProfilerMarker` registrations) and `IdStructGenerator` (ID struct boilerplate; diagnostics `AFID001`/`AFID002`)
-- Pipeline data must be value-equatable `readonly struct` — never store `ISymbol`/`SyntaxNode` (breaks Roslyn's incremental cache; regression-tested by `IncrementalCacheTests`)
+- Roslyn `IIncrementalGenerator` implementations — pipeline patterns, data-struct rules, and per-generator details live in `Aspid.FastTools.Generators/CLAUDE.md`
 - `Aspid.FastTools.Generators.Tests/` — unit tests; `Aspid.FastTools.Generators.Sample/` — manual smoke-test project
 
 **Unity package** (`Aspid.FastTools/Packages/tech.aspid.fasttools/`):
 - `Unity/Runtime/` — shipped with player builds
 - `Unity/Editor/Scripts/` — editor-only code, excluded from builds
-- `Unity/Editor/Resources/UI/` — editor USS stylesheets, organized by domain (`UI/Components/`, `UI/Ids/`, `UI/Types/`, `UI/Enums/`, `UI/SerializeReferences/`, `UI/Windows/`); shared base palette at `UI/Aspid-FastTools-Default-Dark.uss`. Files follow `Aspid-FastTools-{Feature}.uss`.
+- `Unity/Editor/Resources/UI/` — editor USS stylesheets, organized by domain subfolders (`UI/Components/`, `UI/Ids/`, …); shared base palette at `UI/Aspid-FastTools-Default-Dark.uss`. Files follow `Aspid-FastTools-{Feature}.uss`.
 - `Unity/Editor/Resources/Icons/` — editor icon assets referenced by USS via `--aspid-icons-*` variables.
 - `Source/` — pure C# extensions with no Unity dependency
 - `Tests/Editor/` — Unity-side editor test assemblies (`Aspid.FastTools.Unity.Editor.Tests`, `Aspid.FastTools.Unity.Editor.SerializeReferences.Tests`), run via Unity Test Runner
@@ -75,7 +69,7 @@ The committed `Aspid.FastTools.Analyzers.dll.meta` carries the `RoslynAnalyzer` 
 | `Aspid.FastTools` | `Source/` | Pure C# type extensions |
 | `Aspid.FastTools.Unity` | `Unity/Runtime/` | Runtime: Types, Enums, Ids, ProfilerMarkers, VisualElements |
 | `Aspid.FastTools.Unity.VisualElements.Math` | `Unity/Runtime/VisualElements/Extensions/INotifyValueChanged/Math/` | Satellite assembly compiled only when `com.unity.mathematics` is installed; hosts `INotifyValueChanged` extensions for `float2/3/4`, `int2/3/4`, etc. |
-| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Editor: Enums, Extensions, IMGUI, Ids, SerializedProperties, SerializeReferences, Settings, Types, VisualElements, Welcome |
+| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | All editor-only tooling |
 | `Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml` | `Unity/Editor/Scripts/SerializeReferences/Yaml/` | Asset-YAML parsing for the SerializeReference tooling, isolated in its own assembly |
 
 ### Key Features and Their Locations
@@ -86,7 +80,7 @@ The committed `Aspid.FastTools.Analyzers.dll.meta` carries the `RoslynAnalyzer` 
 
 **TypeSelector** (`Unity/Editor/Scripts/Types/`): `EditorWindow`-based hierarchical type picker with search. The `[TypeSelector]` attribute drives two field shapes: a `string` (storing an assembly-qualified type name, also backing `SerializableType`) and a `[SerializeReference]` managed reference (where picking a type instantiates it). On a managed reference the candidate list defaults to the field's declared type; passing base types (`[TypeSelector(typeof(IMelee))]`) narrows it. `TypeSelectorPropertyDrawer` dispatches on `SerializedProperty.propertyType`; the managed-reference path lives under `Unity/Editor/Scripts/SerializeReferences/`. Picker behavior (Favorites/Recent capacity, toggles) is configurable via `Types/Selectors/TypeSelectorSettings*`. Usage is validated at compile time by the `AFT*` rules in the analyzer submodule.
 
-**SerializeReference tooling** (`Unity/Editor/Scripts/SerializeReferences/`): beyond the managed-reference TypeSelector drawer, hosts `SerializeReferenceWindow` (menu `Tools/Aspid 🐍/FastTools/…`) with four tabs — **Welcome**, **Asset References** (per-asset managed-reference graph via `SerializeReferenceGraphView`), **Project References** (project-wide scan), **Settings**. Subsystems: `Windows/` (window + views), `Index/` (project-wide reference index), `Diagnostics/` (missing-type / breakage detection), `Yaml/` (asset-YAML parsing, own asmdef), `Build/`, `Scripting/`, `Drawers/`, `VisualElements/`, `Extensions/`, `Settings/`. USS domain: `Resources/UI/SerializeReferences/`.
+**SerializeReference tooling** (`Unity/Editor/Scripts/SerializeReferences/`): beyond the managed-reference TypeSelector drawer, hosts `SerializeReferenceWindow` (menu `Tools/Aspid 🐍/FastTools/…`) with four tabs — **Welcome**, **Asset References** (per-asset managed-reference graph via `SerializeReferenceGraphView`), **Project References** (project-wide scan), **Settings**. Key subsystems: `Windows/` (window + views), `Index/` (project-wide reference index), `Diagnostics/` (missing-type / breakage detection), `Yaml/` (asset-YAML parsing, own asmdef). USS domain: `Resources/UI/SerializeReferences/`.
 
 **Settings / Preferences** (`Unity/Editor/Scripts/Settings/`): `AspidFastToolsPreferencesProvider` (per-user Preferences page) + `AspidSettingsUI` (shared settings-UI helpers). Per-feature settings live next to their feature (`Types/Selectors/TypeSelectorSettings*`, `SerializeReferences/Settings/`, `Welcome/WelcomeSettings*`); the `SerializeReferenceWindow` **Settings** tab aggregates them. USS: `Resources/UI/Windows/Aspid-FastTools-Settings.uss`.
 
@@ -96,11 +90,11 @@ The committed `Aspid.FastTools.Analyzers.dll.meta` carries the `RoslynAnalyzer` 
 
 **SerializedProperty Extensions** (`Unity/Editor/Scripts/SerializedProperties/`): Fluent chainable extensions (`.SetValue()`, `.Apply()`, reflection helpers). Split across multiple partial files.
 
-**VisualElement Extensions** (`Unity/Runtime/VisualElements/Extensions/`): Extensive fluent API for UIToolkit — layout, sizing, style, borders, colors, transitions, callbacks, USS, child management, etc. Organized into subdirectories by element type (`Button/`, `CallbackEventHandler/`, `Field/`, `Focusable/`, `Foldout/`, `HelpBox/`, `IMGUIContainer/`, `IMixedValueSupport/`, `INotifyValueChanged/`, `IStyle/`, `Image/`, `List/`, `ProgressBar/`, `Slider/`, `TextElement/`) plus top-level partial files (`VisualElementExtensions.cs`, `.Style.cs`, `.Style.Preset.cs`, `.Uss.cs`, `.Child.cs`). Editor-side command extensions in `Unity/Editor/Scripts/VisualElements/Extensions/`.
+**VisualElement Extensions** (`Unity/Runtime/VisualElements/Extensions/`): Extensive fluent API for UIToolkit — layout, sizing, style, borders, colors, transitions, callbacks, USS, child management, etc. Organized into subdirectories by element type (`Button/`, `Field/`, `INotifyValueChanged/`, `IStyle/`, …) plus top-level partial files (`VisualElementExtensions.cs`, `.Style.cs`, `.Uss.cs`, …). Editor-side command extensions in `Unity/Editor/Scripts/VisualElements/Extensions/`.
 
 **Internal Editor VisualElement Components** (`Unity/Editor/Scripts/VisualElements/Internal/`): Custom UIToolkit elements for editor UI. Layout:
 
-- `Components/` — one subfolder per element (`AspidLabels/`, `AspidContainers/`, `AspidGradientButton/`, `AspidHelpBoxes/`, `AspidSwitches/`, `AspidWindowFooters/`, `AspidInspectorHeaders/`, `AspidDividingLines/`, `AspidHoverGradientOverlays/`, `AspidAnimatedLogo/`, `AspidAnimatedTitle/`, `AspidAnimatedDotsBackground/`). Every component follows the same shape: the element class, a `{Name}Preset`, fluent extensions, and (when USS-configurable) a `Styles/` folder with `{Name}{Property}Style` structs providing USS-driven bindings (floats, enums, `Texture2D`, …).
+- `Components/` — one subfolder per element (`AspidLabels/`, `AspidSwitches/`, `AspidGradientButton/`, …). Every component follows the same shape: the element class, a `{Name}Preset`, fluent extensions, and (when USS-configurable) a `Styles/` folder with `{Name}{Property}Style` structs providing USS-driven bindings (floats, enums, `Texture2D`, …).
 - `Styles/` — shared helpers used across components: `AspidStyles` (USS class/property registry), `StatusStyle`, `ThemeStyle`, `InlineStyle<T>` (USS-vs-code precedence helper). The companion `ICustomStyleExtensions` (extension methods on `ICustomStyle`, including `TryGetByEnum<T>`) lives in `Unity/Runtime/VisualElements/Extensions/ICustomStyle/` since it ships with player builds and is consumed by both runtime and editor styles.
 
 All components use `Aspid-FastTools-Default-Dark.uss` as the base stylesheet (loaded via `AspidStyles.DefaultStyleSheet`) and follow the same `.AddClass()` pattern. Theme/status/size/direction enums are exposed as nested `Type` enums on their respective `Style` structs (e.g. `ThemeStyle.Type`, `AspidLabelSizeStyle.Type`).
@@ -170,15 +164,7 @@ All palette variables in `Aspid-FastTools-Default-Dark.uss` already follow this 
 
 - **PostToolUse hook** (`.claude/hooks/rebuild-generators-on-change.sh`): on every `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, runs `dotnet build -c Release` for the generator project (which redeploys the DLL into the Unity package). Unity-side edits, tests, and the Sample project are explicitly skipped — keep that scope when changing the hook.
 - **PostToolUse hook** (`.claude/hooks/rebuild-analyzers-on-change.sh`): same pattern for the analyzer submodule — on edits to `*.cs` under the analyzer project (Tests/Sample skipped), rebuilds it and copies the DLL into the Unity package. Wired in `.claude/settings.json` `hooks.PostToolUse` next to the generator hook.
-- **Project skills** (`.claude/skills/`): `build-generator` (manual generator build + DLL deploy), `build-analyzer` (manual analyzer submodule build + test + DLL deploy), `sync-readmes` (verify README EN/RU + root/Documentation copies against the codebase), `commit` (repo-specific overrides for the `/commit` skill), `open-pr` (project conventions for opening pull requests — see *Pull request conventions* below).
-- **Project subagents** (`.claude/agents/`): `code-reviewer` (Unity/Editor boundary + generator + package convention review), `uss-bem-checker` (validates USS class names + `--aspid-*` variables against the BEM/positional grammars above).
 
 ## Pull request conventions
 
-When opening a PR — manually or via `@claude` — invoke the `open-pr` skill (`.claude/skills/open-pr/SKILL.md`) for the full procedure. Quick reference:
-
-- **Title** — short imperative sentence under 70 characters; no auto-generated branch-name strings.
-- **Body** — fill out `.github/PULL_REQUEST_TEMPLATE.md` (Summary / Notes for review / Linked issues). Mega-PRs like the `Develop` → `main` release cut are exempt and use feature-scoped `###` subsections instead.
-- **Labels** — exactly one `type: *`, plus matching `area: *` labels.
-- **Commit messages** — short imperative sentences, **no** `Co-Authored-By: Claude …` trailer.
-- **Scope** — one logical change per PR; flag any unrelated noise in *Notes for review*.
+When opening a PR — manually or via `@claude` — invoke the `open-pr` skill (`.claude/skills/open-pr/SKILL.md`): it holds the full procedure (title/body/label/commit-message/scope rules).
