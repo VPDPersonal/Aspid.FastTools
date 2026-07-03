@@ -526,6 +526,27 @@ public sealed class DamageDealer : MonoBehaviour
 
 > Полный сэмпл — `DamageDealer` / `DamageType` / `StatusEffect` — поставляется в сэмпле `EnumValues` (Package Manager → Aspid.FastTools → Samples).
 
+### EnumValues\<TEnum, TValue\>
+
+Типизированный вариант `EnumValues<TValue>` для частого случая, когда тип перечисления уже известен в коде. Тип фиксируется generic-аргументом, поэтому в Inspector нет выбора типа, а обращения проверяются на этапе компиляции. Поиск при этом не использует boxing — ключи сравниваются как закэшированные числовые значения, — а `foreach` по обоим вариантам использует struct-энумератор и не аллоцирует. Реализует `IEnumerable<KeyValuePair<TEnum, TValue>>`.
+
+| Член | Описание |
+|------|----------|
+| `TValue GetValue(TEnum enumValue)` | Возвращает сопоставленное значение или `_defaultValue`, если не найдено |
+| `bool Equals(TEnum, TEnum)` | Проверка равенства с корректной поддержкой `[Flags]` |
+
+```csharp
+public sealed class HitEffect : MonoBehaviour
+{
+    // В Inspector нет выбора типа — перечисление зафиксировано как DamageType.
+    [SerializeField] private EnumValues<DamageType, Color> _damageColors;
+
+    public Color GetColor(DamageType type) => _damageColors.GetValue(type);
+}
+```
+
+Семантика поиска (включая обработку `[Flags]`) идентична `EnumValues<TValue>`, а сериализованный формат совместим — смена типа поля между двумя вариантами сохраняет существующие данные, пока тип перечисления совпадает.
+
 ---
 
 ## ID System (Beta)

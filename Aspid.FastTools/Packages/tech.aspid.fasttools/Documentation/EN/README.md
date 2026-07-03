@@ -521,6 +521,27 @@ In the Inspector, select the enum type in the `EnumValues` header, then assign a
 
 > The complete sample — `DamageDealer` / `DamageType` / `StatusEffect` — ships in the `EnumValues` sample (Package Manager → Aspid.FastTools → Samples).
 
+### EnumValues\<TEnum, TValue\>
+
+The typed counterpart of `EnumValues<TValue>` for the common case where the enum type is already known in code. The enum is fixed by the generic argument, so the Inspector shows no type picker and lookups are compile-time safe. Lookups are also boxing-free — keys are compared as cached numeric values — and `foreach` over either variant binds to a struct enumerator, so iteration does not allocate. Implements `IEnumerable<KeyValuePair<TEnum, TValue>>`.
+
+| Member | Description |
+|--------|-------------|
+| `TValue GetValue(TEnum enumValue)` | Returns the mapped value, or `_defaultValue` if not found |
+| `bool Equals(TEnum, TEnum)` | Equality check with proper `[Flags]` support |
+
+```csharp
+public sealed class HitEffect : MonoBehaviour
+{
+    // No type picker in the Inspector — the enum is fixed to DamageType.
+    [SerializeField] private EnumValues<DamageType, Color> _damageColors;
+
+    public Color GetColor(DamageType type) => _damageColors.GetValue(type);
+}
+```
+
+Lookup semantics (including `[Flags]` handling) are identical to `EnumValues<TValue>`, and the serialized layout is compatible — switching a field between the two variants keeps the existing data as long as the enum type matches.
+
 ---
 
 ## ID System (Beta)

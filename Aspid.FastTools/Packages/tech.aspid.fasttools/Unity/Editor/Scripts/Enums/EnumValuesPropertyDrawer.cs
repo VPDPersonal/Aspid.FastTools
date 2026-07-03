@@ -3,6 +3,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors;
 using Aspid.FastTools.UIElements.Manipulators;
 using Aspid.FastTools.UIElements.Editors.Internal;
@@ -11,11 +12,13 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 namespace Aspid.FastTools.Enums.Editors
 {
     /// <summary>
-    /// Property drawer for <see cref="EnumValues{TValue}"/>. Renders a header with the enum-type
-    /// picker, the entries list, and the default-value field, and exposes a context-menu action
-    /// that fills in any missing enum members from the configured type.
+    /// Property drawer for <see cref="EnumValues{TValue}"/> and <see cref="EnumValues{TEnum,TValue}"/>.
+    /// Renders a header with the enum-type picker (untyped variant only — the typed variant fixes
+    /// the enum at compile time), the entries list, and the default-value field, and exposes a
+    /// context-menu action that fills in any missing enum members from the configured type.
     /// </summary>
     [CustomPropertyDrawer(typeof(EnumValues<>))]
+    [CustomPropertyDrawer(typeof(EnumValues<,>))]
     internal sealed class EnumValuesPropertyDrawer : PropertyDrawer
     {
         private const string StylesheetPath = "UI/Enums/Aspid-FastTools-EnumValues";
@@ -31,9 +34,21 @@ namespace Aspid.FastTools.Enums.Editors
             var enumTypePath = property.FindPropertyRelative("_enumType").propertyPath;
             var defaultValuePath = property.FindPropertyRelative("_defaultValue").propertyPath;
 
+            // The typed variant stamps _enumType itself on every serialize pass (and building this
+            // inspector's SerializedObject already forced one), so it needs no picker and no
+            // tracking — the enum type can never change.
+            var isTyped = IsTypedVariant();
+
             // Push the parent enum type into every existing entry up-front so already-serialized
             // arrays don't render with a stale per-element _enumType until the user re-edits.
             UpdateValues();
+
+            var header = new VisualElement()
+                .AddClass(HeaderClass)
+                .AddChild(new Label(property.displayName));
+
+            if (!isTyped)
+                header.AddChild(new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty));
 
             var root = new VisualElement()
                 .SetName($"enum-values-{property.name.ToKebabCase()}")
@@ -45,11 +60,7 @@ namespace Aspid.FastTools.Enums.Editors
                     enumType: enumTypePath,
                     defaultValue: defaultValuePath)
                 )
-                .AddChild(new VisualElement()
-                    .AddClass(HeaderClass)
-                    .AddChild(new Label(property.displayName))
-                    .AddChild(new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty))
-                )
+                .AddChild(header)
                 .AddChild(new VisualElement()
                     .AddClass(ContainerClass)
                     .AddChild(new PropertyField(serializedObject.FindProperty(valuesPath))
@@ -62,7 +73,9 @@ namespace Aspid.FastTools.Enums.Editors
             // picked type straight into the SerializedProperty — PropertyField only forwards
             // UI-driven ChangeEvents from custom drawers, so a SerializedPropertyChangeEvent
             // callback would never fire. Track the property itself instead.
-            root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValues());
+            // The typed variant's enum type never changes — nothing to track.
+            if (!isTyped)
+                root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValues());
 
             return root;
 
@@ -79,6 +92,23 @@ namespace Aspid.FastTools.Enums.Editors
                         enumTypeElement.SetStringAndApply(enumTypeValue);
                 }
             }
+        }
+
+        /// <summary>
+        /// Whether the drawn field is an <see cref="EnumValues{TEnum,TValue}"/> (directly, or as
+        /// an array/list element) — the variant with the enum fixed at compile time — rather than
+        /// the untyped <see cref="EnumValues{TValue}"/>.
+        /// </summary>
+        private bool IsTypedVariant()
+        {
+            var type = fieldInfo.FieldType;
+
+            if (type.IsArray)
+                type = type.GetElementType();
+            else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+                type = type.GetGenericArguments()[0];
+
+            return type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(EnumValues<,>);
         }
     }
 }

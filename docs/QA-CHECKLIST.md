@@ -110,6 +110,7 @@
 ## 11. Remaining package features
 
 - [ ] **EnumValues\<TValue\>**: plain and `[Flags]` enums, the key does not reset while editing, adding/removing entries.
+- [ ] **EnumValues\<TEnum, TValue\>**: no type-picker row in the Inspector, rows render typed enum fields immediately, "Populate Missing Enum Members" works, switching a field from `EnumValues<TValue>` (same enum) keeps the serialized data.
 - [ ] **Id Registries**: creation via `Assets → Create → Aspid → Id Registry`, `TryGetId`/`TryGetName`/`Contains`, an IId struct binds to exactly one registry (IdRegistryResolver), editor-side validation and mutation.
 - [ ] **SerializedProperty Extensions**: `.SetValue()`, `.Apply()`, chained calls, reflection helpers.
 - [ ] **VisualElement Extensions**: spot-check the fluent API (layout/style/borders/callbacks/USS/child) + the Math satellite (`float2/3/4` INotifyValueChanged) with Mathematics installed.

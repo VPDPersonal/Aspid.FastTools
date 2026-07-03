@@ -19,9 +19,11 @@ namespace Aspid.FastTools.Enums
     /// <para>
     /// The enum type is selected in the Inspector via a <see cref="TypeSelectorAttribute"/>
     /// and stored as an assembly-qualified name. All entries are initialized lazily on first access.
+    /// When the enum type is already known at compile time, prefer
+    /// <see cref="EnumValues{TEnum,TValue}"/> — it skips the Inspector type-picker entirely.
     /// </para>
     /// <para>
-    /// For <c>[Flags]</c> enums <see cref="Equals(Enum,Enum)"/> uses <c>HasFlag</c> semantics
+    /// For <c>[Flags]</c> enums <see cref="Equals(Enum,Enum)"/> uses flag-containment semantics
     /// with special handling for the zero (<c>None</c>) value — two values are considered equal
     /// only when both are zero or both are non-zero and one has all bits of the other set.
     /// </para>
@@ -51,15 +53,15 @@ namespace Aspid.FastTools.Enums
     [Serializable]
     public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>, ISerializationCallbackReceiver
     {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+#pragma warning disable CS8618
         [TypeSelector(typeof(Enum), Required = true)]
         [SerializeField] private string _enumType;
 
         [SerializeField] private TValue _defaultValue;
         [SerializeField] private EnumValue<TValue>[] _values;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
+#pragma warning restore CS8618
 
-        private Enum? _zero;
+        private Type? _type;
         private bool _isFlag;
         private bool _isInitialized;
 
@@ -74,23 +76,42 @@ namespace Aspid.FastTools.Enums
                 _values ??= Array.Empty<EnumValue<TValue>>();
 
                 // Unconfigured field — degrade to "no entries match" instead of crashing.
+                // Reset the caches too: the type may have been configured before and cleared
+                // since (OnAfterDeserialize only resets _isInitialized).
                 if (string.IsNullOrWhiteSpace(_enumType))
                 {
                     Debug.LogWarning($"[{nameof(EnumValues<TValue>)}] [{nameof(Initialize)}] " +
                         "No enum type configured — GetValue will always return the default value.");
 
-                    _isInitialized = true;
+                    Degrade();
                     return;
                 }
 
-                var type = Type.GetType(_enumType, throwOnError: true);
+                // Unresolvable type (renamed/moved since the asset was saved) — degrade the same
+                // way instead of throwing on every lookup.
+                if (Type.GetType(_enumType, throwOnError: false) is not { } type)
+                {
+                    Debug.LogError($"[{nameof(EnumValues<TValue>)}] [{nameof(Initialize)}] " +
+                        $"Couldn't resolve enum type '{_enumType}' — GetValue will always return the default value.");
+
+                    Degrade();
+                    return;
+                }
 
                 foreach (var value in _values)
                     value.Initialize(type);
 
+                _type = type;
                 _isFlag = type.IsDefined(typeof(FlagsAttribute), false);
-                _zero = (Enum)Enum.ToObject(type, 0L);
+                _isInitialized = true;
 
+                return;
+            }
+
+            void Degrade()
+            {
+                _type = null;
+                _isFlag = false;
                 _isInitialized = true;
             }
         }
@@ -98,6 +119,7 @@ namespace Aspid.FastTools.Enums
         /// <summary>
         /// Returns the value mapped to <paramref name="enumValue"/>,
         /// or the configured default value if no mapping exists.
+        /// A value of a different enum type than the configured one never matches.
         /// </summary>
         /// <param name="enumValue">The enum member to look up.</param>
         /// <returns>The mapped value, or the default value when no entry matches.</returns>
@@ -109,26 +131,13 @@ namespace Aspid.FastTools.Enums
             {
                 Initialize();
 
-                if (_isFlag)
-                {
-                    // An exact match always wins over a broader "contains" match, regardless of
-                    // array order — otherwise a plain flag entry earlier in _values (e.g. from
-                    // "Populate Missing Enum Members", which orders ascending by value) would
-                    // shadow a more specific composite entry that's an exact match.
-                    foreach (var value in _values)
-                    {
-                        if (value.Key is not null && value.Key.Equals(enumValue))
-                            return value.Value;
-                    }
-                }
+                // Keys of another enum type could still collide numerically — never match them.
+                // A null lookup on an unconfigured/empty collection degrades to the default too.
+                if (enumValue is null || _type is null || enumValue.GetType() != _type)
+                    return _defaultValue;
 
-                foreach (var value in _values)
-                {
-                    if (Equals(enumValue, value.Key))
-                        return value.Value;
-                }
-
-                return _defaultValue;
+                var lookup = EnumInfo.ToInt64(enumValue);
+                return EnumValueLookup.Find(_values, lookup, _isFlag, _defaultValue);
             }
         }
 
@@ -142,7 +151,8 @@ namespace Aspid.FastTools.Enums
         /// For regular enums: <see langword="true"/> when both values are identical.<br/>
         /// For <c>[Flags]</c> enums: <see langword="true"/> when <paramref name="enumValue1"/>
         /// has all bits of <paramref name="enumValue2"/> set, with the additional rule that
-        /// the zero (<c>None</c>) value is only equal to another zero value.
+        /// the zero (<c>None</c>) value is only equal to another zero value.<br/>
+        /// Values of different enum types are never equal.
         /// </returns>
         public bool Equals(Enum enumValue1, Enum enumValue2)
         {
@@ -152,40 +162,34 @@ namespace Aspid.FastTools.Enums
             {
                 Initialize();
 
-                // Unresolved key (see EnumValue.Initialize) — never matches, instead of
-                // crashing HasFlag on a null argument.
-                if (enumValue2 is null)
+                // Unresolved key (see EnumValue.Initialize) — never matches.
+                if (enumValue1 is null || enumValue2 is null)
                     return false;
 
-                if (_isFlag)
-                {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
-                    using (this.Marker().WithName("Equals.HasFlag"))
-#endif
-                    {
-                        if (!enumValue1.HasFlag(enumValue2)) return false;
-                        return enumValue1.Equals(_zero) == enumValue2.Equals(_zero);
-                    }
-                }
+                // Different enum types could still collide numerically — never equal.
+                if (enumValue1.GetType() != enumValue2.GetType())
+                    return false;
 
-                return enumValue1.Equals(enumValue2);
+                var value1 = EnumInfo.ToInt64(enumValue1);
+                var value2 = EnumInfo.ToInt64(enumValue2);
+
+                return _isFlag ? EnumValueLookup.FlagsEquals(value1, value2) : value1 == value2;
             }
         }
 
         /// <summary>
-        /// Yields the explicitly configured (key, value) pairs in serialized order.
+        /// Returns a struct enumerator over the explicitly configured (key, value) pairs in
+        /// serialized order — <c>foreach</c> binds to it directly and does not allocate.
         /// Does <b>not</b> include the default value or entries with an unresolved key.
         /// </summary>
-        public IEnumerator<KeyValuePair<Enum, TValue>> GetEnumerator()
+        public EnumValuesEnumerator<Enum, TValue> GetEnumerator()
         {
             Initialize();
-
-            foreach (var value in _values)
-            {
-                if (value.Key is null) continue;
-                yield return new KeyValuePair<Enum, TValue>(value.Key, value.Value);
-            }
+            return new EnumValuesEnumerator<Enum, TValue>(_values);
         }
+
+        IEnumerator<KeyValuePair<Enum, TValue>> IEnumerable<KeyValuePair<Enum, TValue>>.GetEnumerator() =>
+            GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() =>
             GetEnumerator();
@@ -199,5 +203,133 @@ namespace Aspid.FastTools.Enums
             _isInitialized = false;
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+    }
+
+    /// <summary>
+    /// A serializable dictionary that maps members of <typeparamref name="TEnum"/> to values of
+    /// type <typeparamref name="TValue"/>. The typed counterpart of <see cref="EnumValues{TValue}"/>
+    /// for the common case where the enum type is known at compile time — no Inspector type-picker,
+    /// and lookups are compile-time safe.
+    /// </summary>
+    /// <typeparam name="TEnum">The enum type the entries are keyed by.</typeparam>
+    /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
+    /// <remarks>
+    /// <para>
+    /// Lookup semantics (including <c>[Flags]</c> handling) are identical to
+    /// <see cref="EnumValues{TValue}"/> — see its remarks for details. The entries are the same
+    /// <see cref="EnumValue{TValue}"/> instances, resolved once against
+    /// <typeparamref name="TEnum"/>; steady-state <see cref="GetValue"/>, <see cref="Equals"/>
+    /// and <c>foreach</c> (which binds to the struct <see cref="EnumValuesEnumerator{TKey,TValue}"/>)
+    /// never allocate.
+    /// </para>
+    /// <para>
+    /// In the editor the serialized layout is compatible with <see cref="EnumValues{TValue}"/>:
+    /// the enum type is still stored in a hidden editor-only <c>_enumType</c> field, auto-filled
+    /// with <typeparamref name="TEnum"/>'s assembly-qualified name on serialization. Switching a
+    /// field between the two variants therefore migrates existing data, as long as the configured
+    /// enum type matches <typeparamref name="TEnum"/>. Player builds strip the field — at runtime
+    /// the enum type comes from the generic argument alone.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// Map a damage type to a color, with the enum fixed at compile time:
+    /// <code>
+    /// public class HitEffect : MonoBehaviour
+    /// {
+    ///     [SerializeField] private EnumValues&lt;DamageType, Color&gt; _damageColors;
+    ///
+    ///     public Color GetColor(DamageType type) =>
+    ///         _damageColors.GetValue(type);
+    /// }
+    /// </code>
+    /// </example>
+    [Serializable]
+    public sealed class EnumValues<TEnum, TValue> : IEnumerable<KeyValuePair<TEnum, TValue>>, ISerializationCallbackReceiver
+        where TEnum : struct, Enum
+    {
+#if UNITY_EDITOR
+        // Editor-only layout mirror of EnumValues<TValue>._enumType, auto-filled from TEnum on
+        // serialization — keeps the two variants layout-compatible in the editor (where variant
+        // switching happens) and feeds the per-element editor drawers. Never read at runtime
+        // (the enum type comes from the generic argument), so it is stripped from player builds.
+#pragma warning disable CS0414 // Field is assigned but its value is never used — read by the editor drawers via serialization.
+        [SerializeField] private string? _enumType;
+#pragma warning restore CS0414
+#endif
+
+#pragma warning disable CS8618
+        [SerializeField] private TValue _defaultValue;
+        [SerializeField] private EnumValue<TValue>[] _values;
+#pragma warning restore CS8618
+
+        private bool _isInitialized;
+
+        private void Initialize()
+        {
+            if (_isInitialized) return;
+
+#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+            using (this.Marker())
+#endif
+            {
+                _values ??= Array.Empty<EnumValue<TValue>>();
+
+                foreach (var value in _values)
+                    value.Initialize(typeof(TEnum));
+
+                _isInitialized = true;
+            }
+        }
+
+        /// <inheritdoc cref="EnumValues{TValue}.GetValue"/>
+        public TValue GetValue(TEnum enumValue)
+        {
+#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
+            using (this.Marker())
+#endif
+            {
+                Initialize();
+
+                var lookup = EnumInfo<TEnum>.ToInt64(enumValue);
+                return EnumValueLookup.Find(_values, lookup, EnumInfo<TEnum>.IsFlags, _defaultValue);
+            }
+        }
+
+        /// <inheritdoc cref="EnumValues{TValue}.Equals(Enum,Enum)"/>
+        public bool Equals(TEnum enumValue1, TEnum enumValue2)
+        {
+            var value1 = EnumInfo<TEnum>.ToInt64(enumValue1);
+            var value2 = EnumInfo<TEnum>.ToInt64(enumValue2);
+
+            return EnumInfo<TEnum>.IsFlags ? EnumValueLookup.FlagsEquals(value1, value2) : value1 == value2;
+        }
+
+        /// <inheritdoc cref="EnumValues{TValue}.GetEnumerator"/>
+        public EnumValuesEnumerator<TEnum, TValue> GetEnumerator()
+        {
+            Initialize();
+            return new EnumValuesEnumerator<TEnum, TValue>(_values);
+        }
+
+        IEnumerator<KeyValuePair<TEnum, TValue>> IEnumerable<KeyValuePair<TEnum, TValue>>.GetEnumerator() =>
+            GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() =>
+            GetEnumerator();
+
+        /// <summary>
+        /// Invalidates the resolved-key cache so the next lookup re-resolves it — otherwise
+        /// entries added via an Inspector edit (e.g. "Populate Missing Enum Members") would stay
+        /// unresolved.
+        /// </summary>
+        void ISerializationCallbackReceiver.OnAfterDeserialize() =>
+            _isInitialized = false;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+#if UNITY_EDITOR
+            _enumType = typeof(TEnum).AssemblyQualifiedName;
+#endif
+        }
     }
 }
