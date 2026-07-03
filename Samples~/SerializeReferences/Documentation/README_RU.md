@@ -10,7 +10,7 @@ private IWeapon _weapon;
 > **Впервые здесь? Начните с [TUTORIAL_RU.md](TUTORIAL_RU.md)** ([EN](TUTORIAL.md)) — пошаговый разбор (уроки 1–8) вокруг `Scripts/Tutorial/TypeSelectorTutorial.cs` и `Scenes/TypeSelectorTutorial.unity`. Эта страница — справочник по фичам, а туториал — пошаговое прохождение.
 
 <!-- TODO(media): aspid_fasttools_type_selector_window.png is re-shot together with README (same shared file) -->
-![Окно выбора типа](../../Documentation/Images/aspid_fasttools_type_selector_window.png)
+![Окно выбора типа](../../../Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 *То же окно-селектор с поиском, здесь показано на другом списке кандидатов — ваши поля открывают его отфильтрованным под собственную иерархию типов.*
 
