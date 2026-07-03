@@ -30,6 +30,7 @@
 
 Кликните по выпадающему списку в заголовке поля. Откроется иерархическое окно с поиском, в котором перечислены все конкретные реализации `IWeapon`: `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`.
 
+<!-- TODO(media): aspid_fasttools_type_selector_window.png is re-shot together with README (same shared file) -->
 ![Окно выбора типа](../../Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 *Окно-селектор (здесь показано на другом списке кандидатов — ваше откроется отфильтрованным под `IWeapon`).*
@@ -212,13 +213,15 @@ drag-and-drop. Попробуйте их на полях из уроков 1–8
 - `Presets/BrokenWeaponPreset.asset`, `Presets/BrokenArsenalPreset.asset` — `ScriptableObject`-ы, ссылающиеся на потерянный `GhostWeapon`.
 - `Prefabs/LoadoutMissingType.prefab` — префаб, у которого `Sidearms → Element 0` ссылается на потерянный `GhostPistol`.
 - `Presets/MovedWeaponPreset.asset` — `ScriptableObject`, у которого `Weapon` всё ещё хранит `Pistol` под старым namespace `…Samples.SerializeReferences.Legacy` — как будто класс перенесли без атрибута `[MovedFrom]`. Сам тип существует — устарела только сохранённая идентичность.
-- `Presets/RenamedWeaponPreset.asset` — `ScriptableObject`, у которого `Weapon` всё ещё хранит старое имя класса `CrossbowLauncher`; сам класс теперь называется `Crossbow` и несёт объявленный `[MovedFrom]`. Вообще не сломан — инспектор показывает здоровый `Crossbow`, — но файл устарел: именно он демонстрирует поток **Migrate all** ниже.
+- `Presets/RenamedWeaponPreset.asset` — всё ещё хранит старое имя класса `CrossbowLauncher`; сам класс теперь называется `Crossbow` и несёт объявленный `[MovedFrom]`. Не сломан, просто устарел на диске — демонстрирует поток **Migrate all** ниже.
 
 ### Починка одного поля в инспекторе
 
 1. Выделите сломанный ассет **в окне Project**.
 2. У потерянного поля будет подпись `<Missing …>`, предупреждение **Missing type** и кнопка **Fix** (часто с подсказкой **Smart Fix** в один клик — вероятным новым типом).
 3. Нажмите **Fix**, выберите замену (например, `Pistol`) — ссылка перепишется **с сохранением данных** (селектор переписывает сохранённый тип в файле ассета, а не создаёт экземпляр заново).
+
+<!-- TODO(media): optional gif aspid_fasttools_serialize_reference_repair.gif — missing-type notice → Fix / Smart Fix, data preserved (shared with README) -->
 
 ### Smart Fix (один клик, без селектора)
 
@@ -229,10 +232,14 @@ drag-and-drop. Попробуйте их на полях из уроков 1–8
 1. Наведите курсор на подсказку — тултип покажет полную предлагаемую идентичность и причину ранжирования (`same type name`).
 2. Кликните — ссылка в один шаг перенаправится на переехавший `Pistol` с сохранением данных (`_damage = 21`, `_magazineSize = 6`).
 
-Подсказка ранжируется по тому же пулу кандидатов, который предложил бы селектор: высший балл — у объявленного
-`[MovedFrom]`, дальше — одноимённый тип в другом namespace/сборке, переименование только по регистру и, наконец,
-похожее имя, подкреплённое совпадением формы полей осиротевших данных. Подсказка **никогда не применяется
-автоматически** — клик всегда за вами.
+Ранжирование, от высшего балла (пул кандидатов — тот же, что у селектора):
+
+1. объявленное совпадение `[MovedFrom]`
+2. одноимённый тип в другом namespace/сборке
+3. переименование только по регистру
+4. похожее имя, подкреплённое формой полей осиротевших данных
+
+Подсказка **никогда не применяется автоматически** — клик всегда за вами.
 
 > Переименование/перенос, сразу снабжённый `[MovedFrom]`, вообще не ломается — Unity мигрирует ссылку при загрузке.
 > Smart Fix — страховка для переносов, где про атрибут забыли. Но сами файлы хранят старое имя, пока каждый ассет не
@@ -240,11 +247,10 @@ drag-and-drop. Попробуйте их на полях из уроков 1–8
 
 ### Миграция переименования с `[MovedFrom]` (Project References)
 
-`Presets/RenamedWeaponPreset.asset` хранит оружие под старым именем класса `CrossbowLauncher`, а сам класс теперь
-называется `Crossbow` и несёт `[MovedFrom(false, null, null, "CrossbowLauncher")]`. Выделите ассет — инспектор
-показывает совершенно здоровый `Crossbow`: Unity мигрирует ссылку **в памяти** при загрузке. Файл на диске при этом
-хранит старое имя — в инспекторе этого не видно, но оно «протухло» для системы контроля версий, YAML-сканов на CI и
-любого ассета, который никогда не пересохраняют.
+`Presets/RenamedWeaponPreset.asset` хранит оружие под старым именем класса `CrossbowLauncher`; сам класс теперь
+называется `Crossbow` и несёт `[MovedFrom(false, null, null, "CrossbowLauncher")]`. Инспектор показывает здоровый
+`Crossbow` — Unity мигрирует ссылку **в памяти** при загрузке, — но файл на диске всё ещё хранит старое имя:
+«протухшее» для контроля версий, YAML-сканов и любого ассета, который никогда не пересохраняют.
 
 1. Откройте **`Tools → Aspid 🐍 → FastTools → Project References`** и нажмите **Scan Project**.
 2. Группа `CrossbowLauncher` рендерится как спокойная info-подсвеченная **ожидающая миграция**, а не предупреждение:
@@ -279,12 +285,11 @@ drag-and-drop. Попробуйте их на полях из уроков 1–8
 
 ## Настройки проекта
 
-**`Project Settings → Aspid FastTools → SerializeReference`** содержит **Breakage detection** (проактивный тост,
-per-machine), **Auto de-alias duplicated list elements**, **Build / CI gate** (`Off` / `Warn` / `Fail`) и
-**Excluded scan folders** — последние три сохраняются в **коммитимый** asset
-`ProjectSettings/SerializeReferenceSharedSettings.asset`, чтобы команда и CI вели себя одинаково. Те же опции, плюс
-индивидуальные настройки пикера (Favorites, ёмкость Recent, оформление), доступны во вкладке **Settings** окна и на
-странице **`Preferences → Aspid FastTools`**.
+**`Project Settings → Aspid FastTools → SerializeReference`** содержит:
+
+- **Breakage detection** — проактивный тост; per-machine.
+- **Auto de-alias duplicated list elements**, **Build / CI gate** (`Off` / `Warn` / `Fail`), **Excluded scan folders** — сохраняются в **коммитимый** `ProjectSettings/SerializeReferenceSharedSettings.asset`, чтобы команда и CI вели себя одинаково.
+- Те же опции, плюс индивидуальные настройки пикера (Favorites, ёмкость Recent, оформление), доступны во вкладке **Settings** окна и на странице **`Preferences → Aspid FastTools`**.
 
 Полный справочник — каждая настройка, правила scope и headless-CI-входная точка
 (`SerializeReferenceCiGate.RunCheck` с флагами `-srGate*`) — в документации пакета:
