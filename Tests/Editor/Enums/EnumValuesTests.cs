@@ -4,6 +4,8 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using Aspid.FastTools.Enums;
+using UnityEngine.TestTools;
+using System.Text.RegularExpressions;
 using UnityEngine.TestTools.Constraints;
 using Is = UnityEngine.TestTools.Constraints.Is;
 
@@ -43,10 +45,19 @@ namespace Aspid.FastTools.Enums.Tests
         Positive = 7,
     }
 
+    // Exercises the ulong branch of the numeric key conversion (top bit set —
+    // the unchecked ulong→long reinterpretation must stay consistent on both sides).
+    internal enum UnsignedValues : ulong
+    {
+        Zero = 0,
+        Top = 1UL << 63,
+    }
+
     /// <summary>
     /// Coverage for <see cref="EnumValues{TValue}"/> and <see cref="EnumValues{TEnum,TValue}"/>:
     /// lookup semantics (regular + <c>[Flags]</c>), the typed variant's auto-stamped
-    /// <c>_enumType</c>, and the serialized-layout compatibility between the two variants.
+    /// <c>_enumType</c>, the serialized-layout compatibility between the two variants, and the
+    /// degrade paths (unconfigured/unresolvable enum type, unparseable entry keys).
     /// All data is written through <see cref="SerializedObject"/> so the real
     /// serialize/deserialize path (including <see cref="ISerializationCallbackReceiver"/>) runs.
     /// </summary>
@@ -60,6 +71,7 @@ namespace Aspid.FastTools.Enums.Tests
             [SerializeField] private EnumValues<Sides, int> _sides = new();
             [SerializeField] private EnumValues<BigFlags, int> _bigFlags = new();
             [SerializeField] private EnumValues<SignedValues, int> _signed = new();
+            [SerializeField] private EnumValues<UnsignedValues, int> _unsigned = new();
 
             public EnumValues<int> Untyped => _untyped;
 
@@ -70,6 +82,8 @@ namespace Aspid.FastTools.Enums.Tests
             public EnumValues<BigFlags, int> BigFlags => _bigFlags;
 
             public EnumValues<SignedValues, int> Signed => _signed;
+
+            public EnumValues<UnsignedValues, int> Unsigned => _unsigned;
         }
 
         private Host _host;
@@ -101,6 +115,13 @@ namespace Aspid.FastTools.Enums.Tests
         {
             var serializedObject = new SerializedObject(_host);
             serializedObject.FindProperty($"{field}._defaultValue").intValue = value;
+            serializedObject.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private void SetEnumType(string field, string enumType)
+        {
+            var serializedObject = new SerializedObject(_host);
+            serializedObject.FindProperty($"{field}._enumType").stringValue = enumType;
             serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -282,6 +303,53 @@ namespace Aspid.FastTools.Enums.Tests
         }
 
         [Test]
+        public void Typed_ULongUnderlyingType_TopBitSurvivesLookup()
+        {
+            SetDefaultValue("_unsigned", -1);
+            AddEntry("_unsigned", nameof(UnsignedValues.Top), 5);
+
+            Assert.AreEqual(5, _host.Unsigned.GetValue(UnsignedValues.Top));
+            Assert.AreEqual(-1, _host.Unsigned.GetValue(UnsignedValues.Zero));
+        }
+
+        [Test]
+        public void Typed_Flags_ContainmentPrefersFirstSerializedEntry()
+        {
+            // Documented tie-break: with no exact entry, the first entry in serialized
+            // order whose bits are contained in the lookup value wins.
+            AddEntry("_sides", nameof(Sides.Right), 20);
+            AddEntry("_sides", nameof(Sides.Left), 10);
+
+            Assert.AreEqual(20, _host.Sides.GetValue(Sides.Both));
+        }
+
+        [Test]
+        public void Typed_Equals_RegularEnum_UsesExactEquality()
+        {
+            Assert.IsTrue(_host.Seasons.Equals(Season.Winter, Season.Winter));
+            Assert.IsFalse(_host.Seasons.Equals(Season.Winter, Season.Spring));
+        }
+
+        [Test]
+        public void Typed_UnparseableKey_LogsErrorAndEntryNeverMatches()
+        {
+            SetDefaultValue("_seasons", -1);
+            AddEntry("_seasons", nameof(Season.Winter), 1);
+            AddEntry("_seasons", "Bogus", 99);
+
+            LogAssert.Expect(LogType.Error, new Regex("Couldn't parse key 'Bogus'"));
+
+            Assert.AreEqual(1, _host.Seasons.GetValue(Season.Winter));
+            Assert.AreEqual(-1, _host.Seasons.GetValue(Season.Summer));
+
+            // The unresolved entry must be skipped by the enumerator too.
+            var entries = _host.Seasons.ToArray();
+
+            Assert.AreEqual(1, entries.Length);
+            Assert.AreEqual(Season.Winter, entries[0].Key);
+        }
+
+        [Test]
         public void Untyped_GetValue_ReturnsMappedValue()
         {
             AddEntry("_untyped", nameof(Season.Summer), 42, typeof(Season).AssemblyQualifiedName);
@@ -317,6 +385,120 @@ namespace Aspid.FastTools.Enums.Tests
             AddEntry("_untyped", nameof(Season.Winter), 42, typeof(Season).AssemblyQualifiedName);
 
             Assert.AreEqual(-1, _host.Untyped.GetValue(null));
+        }
+
+        [Test]
+        public void Untyped_NoEnumTypeConfigured_WarnsAndReturnsDefault()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Winter), 42);
+
+            LogAssert.Expect(LogType.Warning, new Regex("No enum type configured"));
+
+            Assert.AreEqual(-1, _host.Untyped.GetValue(Season.Winter));
+        }
+
+        [Test]
+        public void Untyped_UnresolvableEnumType_LogsErrorAndReturnsDefault()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Winter), 42, "Not.A.Real.Type, Fake.Assembly");
+
+            LogAssert.Expect(LogType.Error, new Regex("Couldn't resolve enum type"));
+
+            Assert.AreEqual(-1, _host.Untyped.GetValue(Season.Winter));
+        }
+
+        [Test]
+        public void Untyped_UnparseableKey_LogsErrorAndEntryNeverMatches()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Winter), 1, typeof(Season).AssemblyQualifiedName);
+            AddEntry("_untyped", "Bogus", 99);
+
+            LogAssert.Expect(LogType.Error, new Regex("Couldn't parse key 'Bogus'"));
+
+            Assert.AreEqual(1, _host.Untyped.GetValue(Season.Winter));
+            Assert.AreEqual(-1, _host.Untyped.GetValue(Season.Summer));
+
+            // The unresolved entry must be skipped by the enumerator too.
+            var entries = _host.Untyped.ToArray();
+
+            Assert.AreEqual(1, entries.Length);
+            Assert.AreEqual(Season.Winter, entries[0].Key);
+        }
+
+        [Test]
+        public void Untyped_Equals_NullArgument_ReturnsFalse()
+        {
+            SetEnumType("_untyped", typeof(Season).AssemblyQualifiedName);
+
+            Assert.IsFalse(_host.Untyped.Equals(null, Season.Winter));
+            Assert.IsFalse(_host.Untyped.Equals(Season.Winter, null));
+            Assert.IsFalse(_host.Untyped.Equals(null, null));
+        }
+
+        [Test]
+        public void Untyped_Equals_DifferentEnumTypes_ReturnsFalse()
+        {
+            SetEnumType("_untyped", typeof(Season).AssemblyQualifiedName);
+
+            // Season.Winter and Sides.None share the numeric value 0 — never equal anyway.
+            Assert.IsFalse(_host.Untyped.Equals(Season.Winter, Sides.None));
+        }
+
+        [Test]
+        public void Untyped_Equals_RegularEnum_UsesExactEquality()
+        {
+            SetEnumType("_untyped", typeof(Season).AssemblyQualifiedName);
+
+            Assert.IsTrue(_host.Untyped.Equals(Season.Winter, Season.Winter));
+            Assert.IsFalse(_host.Untyped.Equals(Season.Winter, Season.Spring));
+        }
+
+        [Test]
+        public void Untyped_Equals_FlagsEnum_UsesFlagsSemantics()
+        {
+            // The flags semantics come from the configured enum type, not the arguments.
+            SetEnumType("_untyped", typeof(Sides).AssemblyQualifiedName);
+
+            Assert.IsTrue(_host.Untyped.Equals(Sides.Both, Sides.Left));
+            Assert.IsFalse(_host.Untyped.Equals(Sides.Left, Sides.Both));
+            Assert.IsFalse(_host.Untyped.Equals(Sides.Left, Sides.None));
+        }
+
+        [Test]
+        public void Untyped_Flags_LongUnderlyingType_HighBitsSurviveLookup()
+        {
+            // Exercises the boxed EnumInfo.ToInt64 Int64 branch (the typed variant
+            // goes through the separate EnumInfo<TEnum> converter).
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(BigFlags.High), 1, typeof(BigFlags).AssemblyQualifiedName);
+            AddEntry("_untyped", nameof(BigFlags.All), 3);
+
+            Assert.AreEqual(3, _host.Untyped.GetValue(BigFlags.All));
+            Assert.AreEqual(1, _host.Untyped.GetValue(BigFlags.High));
+            Assert.AreEqual(-1, _host.Untyped.GetValue(BigFlags.Top));
+        }
+
+        [Test]
+        public void Untyped_NegativeUnderlyingValue_MatchesItsEntry()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(SignedValues.Negative), 5, typeof(SignedValues).AssemblyQualifiedName);
+
+            Assert.AreEqual(5, _host.Untyped.GetValue(SignedValues.Negative));
+            Assert.AreEqual(-1, _host.Untyped.GetValue(SignedValues.Positive));
+        }
+
+        [Test]
+        public void Untyped_ULongUnderlyingType_TopBitSurvivesLookup()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(UnsignedValues.Top), 5, typeof(UnsignedValues).AssemblyQualifiedName);
+
+            Assert.AreEqual(5, _host.Untyped.GetValue(UnsignedValues.Top));
+            Assert.AreEqual(-1, _host.Untyped.GetValue(UnsignedValues.Zero));
         }
     }
 }
