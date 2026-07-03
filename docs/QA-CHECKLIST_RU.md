@@ -48,7 +48,7 @@
 - [ ] Make Unique / Link to Existing: deep-copy графа с сохранением топологии, циклы безопасны; Link не предлагает алиасящего предка.
 - [ ] Authoring: drag MonoScript на поле; Save as Template… / Paste Template ▸ (персист на проект); list `+` открывает пикер; Create New Script… генерит стаб и назначает после компиляции (переживает domain reload).
 - [ ] `Required` на managed reference: warning при null *(2×UI)* + учёт в gate.
-- [ ] Fallback-дропдаун без `[TypeSelector]` (опция off по умолчанию): подмена только на компонентах без кастомного эдитора, вложенные поля на любой глубине, переключение опции live-перестраивает инспекторы; `SerializeReferenceEditorGUI` (`CreateField`/`CreateList`/`DrawFieldLayout`) работает из кастомного эдитора.
+- [ ] Facade `SerializeReferenceEditorGUI` (`CreateField`/`CreateList`/`DrawFieldLayout`) работает из `CreateInspectorGUI`/`OnInspectorGUI` кастомного эдитора.
 - [ ] Позиции notices совпадают в обоих рендерерах (missing/required/mixed — при пустом значении; shared — в самом низу).
 
 ## 4. Ремонт missing-type
@@ -74,7 +74,7 @@
 
 - [ ] Зеркала синхронны live (изменение на одной поверхности видно на другой), переживают dock-move и клики по свитчу.
 - [ ] Scope-полоски (зелёная = ProjectSettings, синяя = EditorPrefs) + легенда; Reset to defaults раздельно per-scope с confirm, называющим дефолты; Favorites/Recent переживают reset.
-- [ ] References: auto de-alias, breakage detection (per-user), gate severity Off/Warn/Fail (shared asset), excluded folders (список + селектор), fallback-дропдаун toggle (per-user).
+- [ ] References: auto de-alias, breakage detection (per-user), gate severity Off/Warn/Fail (shared asset), excluded folders (список + селектор).
 - [ ] Type Selector: hide Favorites, Recent capacity, Saved lists maintenance (confirm с количеством).
 - [ ] Appearance: theme override StyleSheet (live, per-project), Create template…; Welcome: auto-show.
 - [ ] `SerializeReferenceSharedSettings.asset` коммитится и работает на «чужой» машине/CI.
