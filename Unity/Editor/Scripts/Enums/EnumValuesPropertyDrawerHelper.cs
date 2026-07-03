@@ -27,31 +27,24 @@ namespace Aspid.FastTools.Enums.Editors
         /// values (e.g. <c>All = A | B</c>), so they will be added as separate rows.
         /// </remarks>
         public static ContextualMenuManipulator CreatePopulateMenuManipulator(
-            SerializedProperty values,
-            SerializedProperty enumType,
-            SerializedProperty defaultValue)
+            SerializedObject serializedObject,
+            string values,
+            string enumType,
+            string defaultValue) => new(evt =>
         {
-            var serializedObject = values.serializedObject;
-            var valuesPath = values.propertyPath;
-            var enumTypePath = enumType.propertyPath;
-            var defaultValuePath = defaultValue.propertyPath;
+            var valuesProperty = serializedObject.FindProperty(values);
+            var enumTypeProperty = serializedObject.FindProperty(enumType);
+            var defaultValueProperty = serializedObject.FindProperty(defaultValue);
 
-            return new ContextualMenuManipulator(evt =>
-            {
-                var valuesProp = serializedObject.FindProperty(valuesPath);
-                var enumTypeProp = serializedObject.FindProperty(enumTypePath);
-                var defaultValueProp = serializedObject.FindProperty(defaultValuePath);
+            var status = HasMissingMembers(valuesProperty, enumTypeProperty)
+                ? DropdownMenuAction.Status.Normal
+                : DropdownMenuAction.Status.Disabled;
 
-                var status = HasMissingMembers(valuesProp, enumTypeProp)
-                    ? DropdownMenuAction.Status.Normal
-                    : DropdownMenuAction.Status.Disabled;
-
-                evt.menu.AppendAction(
-                    PopulateMenuItem,
-                    _ => PopulateMissing(valuesProp, enumTypeProp, defaultValueProp),
-                    status);
-            });
-        }
+            evt.menu.AppendAction(
+                PopulateMenuItem,
+                _ => PopulateMissing(valuesProperty, enumTypeProperty, defaultValueProperty),
+                status);
+        });
 
         private static void PopulateMissing(
             SerializedProperty values,
@@ -69,14 +62,17 @@ namespace Aspid.FastTools.Enums.Editors
                 if (!existing.Add(name)) continue;
 
                 values.arraySize++;
+
                 var element = values.GetArrayElementAtIndex(values.arraySize - 1);
                 element.FindPropertyRelative("_key").stringValue = name;
                 element.FindPropertyRelative("_enumType").stringValue = enumType.stringValue;
                 element.FindPropertyRelative("_value").boxedValue = defaultValue.boxedValue;
+
                 added = true;
             }
 
-            if (added) values.serializedObject.ApplyModifiedProperties();
+            if (added)
+                values.serializedObject.ApplyModifiedProperties();
         }
 
         private static bool HasMissingMembers(SerializedProperty values, SerializedProperty enumType)
@@ -96,6 +92,7 @@ namespace Aspid.FastTools.Enums.Editors
                 var element = values.GetArrayElementAtIndex(i);
                 set.Add(element.FindPropertyRelative("_key").stringValue);
             }
+
             return set;
         }
     }
