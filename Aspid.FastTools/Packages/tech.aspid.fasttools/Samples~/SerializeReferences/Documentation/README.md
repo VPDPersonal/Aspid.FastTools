@@ -10,7 +10,7 @@ private IWeapon _weapon;
 > **New here? Start with [TUTORIAL.md](TUTORIAL.md)** ([RU](TUTORIAL_RU.md)) — a guided, step-by-step tour (Lessons 1–8) built around `Scripts/Tutorial/TypeSelectorTutorial.cs` and `Scenes/TypeSelectorTutorial.unity`. This page is the feature reference; the tutorial is the walkthrough.
 
 <!-- TODO(media): aspid_fasttools_type_selector_window.png is re-shot together with README (same shared file) -->
-![The type picker window](../../Documentation/Images/aspid_fasttools_type_selector_window.png)
+![The type picker window](../../../Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 *The same searchable picker window, shown here on another candidate list — your fields open it filtered to their own type hierarchy.*
 

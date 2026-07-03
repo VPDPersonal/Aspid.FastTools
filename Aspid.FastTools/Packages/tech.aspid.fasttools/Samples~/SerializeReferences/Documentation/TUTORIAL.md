@@ -36,7 +36,7 @@ Click the dropdown in the field header. A searchable, hierarchical window opens 
 implementation: `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`.
 
 <!-- TODO(media): aspid_fasttools_type_selector_window.png is re-shot together with README (same shared file) -->
-![The type picker window](../../Documentation/Images/aspid_fasttools_type_selector_window.png)
+![The type picker window](../../../Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 *The picker window (shown here on another candidate list — yours opens filtered to `IWeapon`).*
 
