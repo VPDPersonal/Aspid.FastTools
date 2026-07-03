@@ -35,7 +35,7 @@ namespace Aspid.FastTools.Enums.Editors
             // arrays don't render with a stale per-element _enumType until the user re-edits.
             UpdateValues();
 
-            return new VisualElement()
+            var root = new VisualElement()
                 .SetName($"enum-values-{property.name.ToKebabCase()}")
                 .AddAspidThemeStyleSheets()
                 .AddStyleSheetsFromResource(StylesheetPath)
@@ -48,9 +48,7 @@ namespace Aspid.FastTools.Enums.Editors
                 .AddChild(new VisualElement()
                     .AddClass(HeaderClass)
                     .AddChild(new Label(property.displayName))
-                    .AddChild(new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty)
-                        .AddValueChanged(_ => UpdateValues())
-                    )
+                    .AddChild(new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty))
                 )
                 .AddChild(new VisualElement()
                     .AddClass(ContainerClass)
@@ -59,6 +57,14 @@ namespace Aspid.FastTools.Enums.Editors
                     )
                     .AddChild(new PropertyField(serializedObject.FindProperty(defaultValuePath)))
                 );
+
+            // The enum-type PropertyField hosts the TypeSelector custom drawer, which writes the
+            // picked type straight into the SerializedProperty — PropertyField only forwards
+            // UI-driven ChangeEvents from custom drawers, so a SerializedPropertyChangeEvent
+            // callback would never fire. Track the property itself instead.
+            root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValues());
+
+            return root;
 
             void UpdateValues()
             {

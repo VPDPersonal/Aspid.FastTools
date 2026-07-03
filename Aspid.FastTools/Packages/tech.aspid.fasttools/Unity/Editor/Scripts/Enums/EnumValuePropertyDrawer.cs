@@ -40,20 +40,22 @@ namespace Aspid.FastTools.Enums.Editors
             var keyField = new PropertyField(serializedObject.FindProperty(keyPath), label: string.Empty)
                 .SetDisplay(DisplayStyle.None);
 
-            var enumTypeField = new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty)
-                .SetDisplay(DisplayStyle.None)
-                .AddValueChanged(_ => UpdateValue());
-
             // Sync visibility with the currently serialized enum type — without this the
             // EnumField/EnumFlagsField stay hidden until the user edits the type.
             UpdateValue();
 
-            return new VisualElement()
-                .AddChild(enumTypeField)
+            var root = new VisualElement()
                 .AddChild(keyField)
                 .AddChild(keyEnumField)
                 .AddChild(keyEnumFlagField)
                 .AddChild(new PropertyField(serializedObject.FindProperty(valuePath), label: string.Empty));
+
+            // _enumType is stamped into the row by the parent EnumValues drawer via a direct
+            // SerializedProperty write, which a hidden bound PropertyField won't reliably report
+            // as a change event — track the property itself instead.
+            root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValue());
+
+            return root;
 
             void OnKeyChanged(Enum value) => serializedObject
                 .FindProperty(keyPath)
