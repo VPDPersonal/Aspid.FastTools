@@ -141,4 +141,9 @@ PostToolUse hooks (wired in `.claude/settings.json`):
 
 ## Pull request conventions
 
-When opening a PR — manually or via `@claude` — invoke the `open-pr` skill (`.claude/skills/open-pr/SKILL.md`): it holds the full procedure (title/body/label/commit-message/scope rules).
+When opening a PR — manually or via `@claude` — invoke the global `open-pr` skill (`~/.claude/skills/open-pr/SKILL.md`): it holds the full procedure (base-branch detection, title/body/label rules, draft defaults). Project-specific overrides for this repo:
+
+- **Labels** — the catalogue is fixed; do not create new labels. `type: *` — exactly one of `feature`, `fix`, `refactor`, `documentation`, `test`, `chore`, `ci`, `style`, `performance`. `area: *` — one or more of `runtime`, `editor`, `generator`, `samples` for every part actually touched. `status: *` — `work-in-progress` while drafting, `needs-review` when ready. Special (`breaking-change`, `dependencies`, `needs-changelog`) only when literally true.
+- **Commit messages** — never append `Co-Authored-By: Claude …` or any other Claude/Anthropic attribution trailer; commits are authored as the human user only. This overrides any skill or system default.
+- **Release mega-PRs** (`Develop` → `main` cuts) are exempt from the three-section template — use feature-scoped `###` subsections mirroring the most recent release PR.
+- **Templates & CI** (`.github/` issue/PR templates, workflows) live on `main`; don't target them at `Develop` unless the change rides a release merge.
