@@ -1,6 +1,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using Aspid.FastTools.Editors;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
@@ -9,10 +10,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// <summary>
     /// The custom-editor entry point to the SerializeReference dropdown field: draws a <c>[SerializeReference]</c>
     /// property with the package's type-dropdown UI from an editor's own code, no <c>[TypeSelector]</c> attribute
-    /// needed. A custom editor replaces the fallback inspector the "Dropdown without [TypeSelector]" setting works
-    /// through, so this facade is how such an editor offers the same fields: <see cref="CreateField"/> /
-    /// <see cref="CreateList"/> from <c>CreateInspectorGUI</c>, <see cref="DrawFieldLayout"/> from an IMGUI
-    /// <c>OnInspectorGUI</c> (lists there: <see cref="SerializeReferenceIMGUIList.Draw"/>).
+    /// needed. This is how a custom editor offers the same fields Unity's own inspector would need
+    /// <c>[TypeSelector]</c> for: <see cref="CreateField"/> / <see cref="CreateList"/> from
+    /// <c>CreateInspectorGUI</c>, <see cref="DrawFieldLayout"/> from an IMGUI <c>OnInspectorGUI</c> (lists there:
+    /// <see cref="SerializeReferenceIMGUIList.Draw"/>).
     /// </summary>
     /// <example>
     /// <code>
@@ -61,7 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static VisualElement CreateList(SerializedProperty property, string label = null, params Type[] baseTypes)
         {
             if (property is null) throw new ArgumentNullException(nameof(property));
-            if (!SerializeReferenceAutoDropdown.IsManagedReferenceArray(property))
+            if (!IsManagedReferenceArray(property))
                 throw new ArgumentException(
                     "CreateList expects an array/list property whose elements are [SerializeReference] managed references.",
                     nameof(property));
@@ -69,8 +70,40 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return new SerializeReferenceListField(
                 label ?? property.displayName,
                 property,
-                SerializeReferenceAutoDropdown.GetElementType(property),
+                GetElementType(property),
                 baseTypes);
+        }
+
+        // SerializedProperty.arrayElementType for a [SerializeReference] array/list — the only array shape whose
+        // elements are managed references.
+        private const string ManagedReferenceElementPrefix = "managedReference<";
+
+        /// <summary>
+        /// True when <paramref name="property"/> is an array/list whose elements are managed references.
+        /// </summary>
+        internal static bool IsManagedReferenceArray(SerializedProperty property) =>
+            property.isArray &&
+            property.arrayElementType.StartsWith(ManagedReferenceElementPrefix, StringComparison.Ordinal);
+
+        /// <summary>
+        /// The declared element type of a managed-reference list/array — what constrains the add-picker on a list
+        /// that may currently be empty (a non-empty list's elements resolve their own field type). Read from the
+        /// reflected field's array/List&lt;T&gt; shape; falls back to the first element's declared typename, then to
+        /// <see cref="object"/>.
+        /// </summary>
+        internal static Type GetElementType(SerializedProperty property)
+        {
+            if (property.GetMemberInfo() is System.Reflection.FieldInfo field)
+            {
+                var fieldType = field.FieldType;
+                if (fieldType.IsArray) return fieldType.GetElementType();
+                if (fieldType.IsGenericType && fieldType.GetGenericArguments() is { Length: 1 } arguments)
+                    return arguments[0];
+            }
+
+            return property.arraySize > 0
+                ? SerializeReferenceHelpers.GetFieldType(property.GetArrayElementAtIndex(0))
+                : typeof(object);
         }
 
         /// <summary>
