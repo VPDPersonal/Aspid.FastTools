@@ -31,7 +31,7 @@
 Кликните по выпадающему списку в заголовке поля. Откроется иерархическое окно с поиском, в котором перечислены все конкретные реализации `IWeapon`: `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`.
 
 <!-- TODO(media): aspid_fasttools_type_selector_window.png is re-shot together with README (same shared file) -->
-![Окно выбора типа](../../Documentation/Images/aspid_fasttools_type_selector_window.png)
+![Окно выбора типа](../../../Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 *Окно-селектор (здесь показано на другом списке кандидатов — ваше откроется отфильтрованным под `IWeapon`).*
 
