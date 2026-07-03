@@ -48,7 +48,7 @@
 - [ ] Make Unique / Link to Existing: deep copy of the reference graph preserving aliasing topology, cyclic graphs safe; Link never offers an aliasing ancestor.
 - [ ] Authoring: dragging a MonoScript onto the field; Save as Template… / Paste Template ▸ (persisted per project); the list `+` opens the picker; Create New Script… generates a stub and assigns it after compilation (survives the domain reload).
 - [ ] `Required` on a managed reference: warning when null *(2×UI)* + counted by the gate.
-- [ ] Fallback dropdown without `[TypeSelector]` (opt-in, off by default): substitution only on components without a custom editor, nested fields at any depth, toggling rebuilds open inspectors live; `SerializeReferenceEditorGUI` (`CreateField`/`CreateList`/`DrawFieldLayout`) works from a custom editor.
+- [ ] `SerializeReferenceEditorGUI` facade (`CreateField`/`CreateList`/`DrawFieldLayout`) works from a custom editor's `CreateInspectorGUI`/`OnInspectorGUI`.
 - [ ] Notice placement agrees between both renderers (missing/required/mixed — only when the field is empty; shared — at the very bottom).
 
 ## 4. Missing-type repair
@@ -74,7 +74,7 @@
 
 - [ ] The mirrors sync live (a change on one surface shows on the others), survive dock moves and switch clicks.
 - [ ] Scope stripes (green = ProjectSettings, blue = EditorPrefs) + legend; per-scope Reset to defaults behind a confirm naming the exact defaults; Favorites/Recent survive a reset.
-- [ ] References: auto de-alias, breakage detection (per-user), gate severity Off/Warn/Fail (shared asset), excluded folders (list + selector), fallback-dropdown toggle (per-user).
+- [ ] References: auto de-alias, breakage detection (per-user), gate severity Off/Warn/Fail (shared asset), excluded folders (list + selector).
 - [ ] Type Selector: hide Favorites, Recent capacity, Saved lists maintenance (confirm with counts).
 - [ ] Appearance: theme override StyleSheet (live, per-project), Create template…; Welcome: auto-show.
 - [ ] `SerializeReferenceSharedSettings.asset` is committed and works on a teammate's machine / CI.

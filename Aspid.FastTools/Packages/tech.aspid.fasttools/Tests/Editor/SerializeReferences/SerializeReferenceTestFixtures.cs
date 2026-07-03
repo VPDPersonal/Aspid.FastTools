@@ -1,7 +1,6 @@
 using System;
 using UnityEngine;
 using Aspid.FastTools.Types;
-using System.Collections.Generic;
 using UnityEngine.Scripting.APIUpdating;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -27,33 +26,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         [SerializeReference, TypeSelector(Required = true)] public ITestWeapon requiredRef;
         [TypeSelector(Required = true)] public string requiredString;
-    }
-
-    // A weapon whose own fields are managed references — lets the attribute-free dropdown tests reach NESTED
-    // properties (children of an assigned instance), where the concrete type, not the declared interface, is what
-    // carries (or omits) [TypeSelector].
-    [Serializable]
-    internal sealed class TestWeaponHolder : ITestWeapon
-    {
-        [SerializeReference] public ITestWeapon inner;
-        [SerializeReference, TypeSelector(typeof(ITestWeapon))] public ITestWeapon innerMarked;
-    }
-
-    // The attribute-free dropdown matrix: a bare reference and a bare list (both eligible), an attributed reference
-    // (the attribute always wins) and a plain value field (never substituted).
-    internal sealed class AutoDropdownTestObject : ScriptableObject
-    {
-        [SerializeReference] public ITestWeapon plain;
-        [SerializeReference, TypeSelector(typeof(ITestWeapon))] public ITestWeapon marked;
-        [SerializeReference] public List<ITestWeapon> list = new();
-        public int number;
-    }
-
-    // No managed references at all — the fallback inspector must leave it to Unity's default inspector even with the
-    // attribute-free opt-in on.
-    internal sealed class PlainValueTestObject : ScriptableObject
-    {
-        public int number;
     }
 
     // Top-level (namespace-scoped) candidate pool for the ranking tests. The marker interface keeps the TypeCache

@@ -316,14 +316,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var child = iterator.Copy();
 
-                // Under the opt-in, a child that is itself a managed reference (or a list of them) without
-                // [TypeSelector] gets the dropdown field; an attributed child keeps its drawer via PropertyField.
-                if (SerializeReferenceAutoDropdown.ShouldDraw(child))
-                {
-                    _content.Add(SerializeReferenceAutoDropdown.CreateField(child));
-                    continue;
-                }
-
                 var field = new PropertyField(child);
                 field.BindProperty(child);
 
