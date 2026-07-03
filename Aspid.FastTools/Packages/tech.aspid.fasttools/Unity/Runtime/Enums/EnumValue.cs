@@ -54,7 +54,10 @@ namespace Aspid.FastTools.Enums
                 }
                 else
                 {
-                    // Not Exception. Because this is a visual error.
+                    // A stale Key from a previous type would crash EnumValues.Equals (HasFlag
+                    // requires matching types), so reset it instead of leaving it as-is.
+                    Key = null;
+
                     Debug.LogError($"[{nameof(EnumValue<TValue>)}] [{nameof(Initialize)}] " +
                         $"Couldn't parse key '{_key}' to Enum '{type.FullName}'");
                 }

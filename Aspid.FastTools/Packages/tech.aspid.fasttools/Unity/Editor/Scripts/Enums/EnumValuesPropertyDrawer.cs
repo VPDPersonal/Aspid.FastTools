@@ -19,8 +19,10 @@ namespace Aspid.FastTools.Enums.Editors
     internal sealed class EnumValuesPropertyDrawer : PropertyDrawer
     {
         private const string StylesheetPath = "UI/Enums/Aspid-FastTools-EnumValues";
-        private const string HeaderClass = "aspid-fasttools-enum-values__header";
-        private const string ContainerClass = "aspid-fasttools-enum-values__container";
+
+        private const string UssClass = "aspid-fasttools-enum-values";
+        private const string HeaderClass = UssClass + "__header";
+        private const string ContainerClass = UssClass + "__container";
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
@@ -32,22 +34,21 @@ namespace Aspid.FastTools.Enums.Editors
             // Push the parent enum type into every existing entry up-front so already-serialized
             // arrays don't render with a stale per-element _enumType until the user re-edits.
             UpdateValues();
-            
-            return new VisualElement()
-                .SetName($"enum-values-{property.displayName}")
-                .AddStyleSheetsFromResource(StylesheetPath)
+
+            var root = new VisualElement()
+                .SetName($"enum-values-{property.name.ToKebabCase()}")
                 .AddAspidThemeStyleSheets()
+                .AddStyleSheetsFromResource(StylesheetPath)
                 .AddManipulatorSelf(EnumValuesPropertyDrawerHelper.CreatePopulateMenuManipulator(
-                    values: serializedObject.FindProperty(valuesPath),
-                    enumType: serializedObject.FindProperty(enumTypePath),
-                    defaultValue: serializedObject.FindProperty(defaultValuePath))
+                    serializedObject: serializedObject,
+                    values: valuesPath,
+                    enumType: enumTypePath,
+                    defaultValue: defaultValuePath)
                 )
                 .AddChild(new VisualElement()
                     .AddClass(HeaderClass)
                     .AddChild(new Label(property.displayName))
-                    .AddChild(new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty)
-                        .AddValueChanged(_ => UpdateValues())
-                    )
+                    .AddChild(new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty))
                 )
                 .AddChild(new VisualElement()
                     .AddClass(ContainerClass)
@@ -56,6 +57,14 @@ namespace Aspid.FastTools.Enums.Editors
                     )
                     .AddChild(new PropertyField(serializedObject.FindProperty(defaultValuePath)))
                 );
+
+            // The enum-type PropertyField hosts the TypeSelector custom drawer, which writes the
+            // picked type straight into the SerializedProperty — PropertyField only forwards
+            // UI-driven ChangeEvents from custom drawers, so a SerializedPropertyChangeEvent
+            // callback would never fire. Track the property itself instead.
+            root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValues());
+
+            return root;
 
             void UpdateValues()
             {
