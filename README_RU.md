@@ -7,7 +7,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/VPDPersonal/Aspid.FastTools?label=License&labelColor=254d2c&color=4fa35d" alt="License" /></a>
 </p>
 
-**Aspid.FastTools** — набор инструментов, предназначенных для минимизации рутинного написания кода в Unity. Пакет объединяет генераторы кода на базе Roslyn и подборку runtime- и editor-утилит: регистрация `ProfilerMarker` для каждого места вызова, сериализуемый `System.Type`, словарь `EnumValues<TValue>`, стабильный реестр `int ↔ string` ID, fluent-расширения UI Toolkit и IMGUI-скоупы для разметки.
+**Aspid.FastTools** — набор инструментов, предназначенных для минимизации рутинного написания кода в Unity: инструменты для `SerializeReference` (выбор типа в инспекторе и окно-обозреватель ссылок), генераторы кода на базе Roslyn и подборка runtime- и editor-утилит — от сериализуемого `System.Type` до fluent-расширений UI Toolkit.
 
 ### \[[Unity Asset Store](https://assetstore.unity.com/packages/slug/365584)\] \[[Donate](#donate)\]
 
@@ -23,16 +23,16 @@
   - [SerializeReference Selector](#serializereference-selector)
   - [Enum System](#enum-system)
   - [ID System (Beta)](#id-system-beta)
+  - [VisualElement Extensions](#visualelement-extensions)
   - [SerializedProperty Extensions](#serializedproperty-extensions)
   - [IMGUI Layout Scopes](#imgui-layout-scopes)
-  - [VisualElement Extensions](#visualelement-extensions)
   - [Editor Helper Extensions](#editor-helper-extensions)
 
 ---
 
 ## Integration
 
-Установите Aspid.FastTools через UPM (Unity Package Manager) — добавьте пакет по его Git URL. Релизный workflow публикует две ветки, в корне которых лежит само содержимое пакета, поэтому параметр `?path=` указывать не нужно.
+Установите Aspid.FastTools через UPM: в Package Manager нажмите **+ → Install package from git URL…** и вставьте один из URL ниже.
 
 ### Stable
 
@@ -79,6 +79,9 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.2
 
 ```sh
 /plugin marketplace add VPDPersonal/Aspid.Claude.Plugins
+```
+
+```sh
 /plugin install aspid-fasttools@aspid-claude-plugins
 ```
 
@@ -199,6 +202,7 @@ public sealed class AbilitySelector : MonoBehaviour
     }
 }
 ```
+<!-- TODO(media): re-record aspid_fasttools_serializable_type.gif — picker now has Favorites/Recent and the new window styling -->
 ![aspid_fasttools_serializable_type.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serializable_type.gif)
 
 ### TypeSelectorAttribute
@@ -215,7 +219,8 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
     public TypeSelectorAttribute(string assemblyQualifiedName)
     public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
 
-    public TypeAllow Allow { get; set; } // по умолчанию: TypeAllow.None
+    public TypeAllow Allow { get; set; }  // по умолчанию: TypeAllow.None
+    public bool Required { get; set; }    // по умолчанию: false
 }
 
 [Flags]
@@ -231,6 +236,7 @@ public enum TypeAllow
 | Свойство | Описание |
 |----------|----------|
 | `Allow` | Какие специальные категории типов (абстрактные классы, интерфейсы) включаются в список выбора в дополнение к обычным конкретным классам. По умолчанию: `TypeAllow.None` |
+| `Required` | Помечает незаполненное поле: managed reference `[SerializeReference]`, оставшийся `null`, или пустое `string`-поле показывает предупреждение «required» в инспекторе и считается нарушением для build/CI-гейта. По умолчанию: `false` |
 
 ```csharp
 using UnityEngine;
@@ -257,8 +263,11 @@ public sealed class AbilitySelector : MonoBehaviour
 using Aspid.FastTools.Types;
 
 // Переименовать тип в пикере, положить его в явную группу, задать tooltip и иконку:
-[TypeSelectorDisplay(Name = "Damage ×", Group = "Combat/Modifiers",
-    Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
+[TypeSelectorDisplay(
+    Name = "Damage ×",
+    Group = "Combat/Modifiers",
+    Tooltip = "Scales incoming damage",
+    Icon = "d_ScriptableObject Icon")]
 public sealed class DamageModifier { }
 ```
 
@@ -277,11 +286,16 @@ public sealed class DamageModifier { }
 
 - Иерархическую организацию по пространствам имён
 - Текстовый поиск с фильтрацией
-- Навигацию с клавиатуры (стрелки, Enter, Escape)
-- Историю навигации (кнопка «назад»)
+- Навигацию с клавиатуры (стрелки, Enter, Escape; Space — в избранное)
+- Хлебные крошки и возврат назад (стрелка ← или клик по крошке)
 - Разрешение неоднозначности для типов с одинаковыми именами из разных сборок
-- Секции **Favorites** и **Recent** на корневой странице: появляющийся при наведении переключатель ★ закрепляет тип в Favorites, а последние 8 выбранных типов хранятся в Recent (оба сохраняются на проект и скрыты во время поиска)
+- Секции **Favorites** (★ при наведении) и **Recent** (последние выборы) на корневой странице — хранятся локально для каждого проекта (`EditorPrefs`, не попадают в репозиторий), скрыты во время поиска
+- Пункт `<None>` вверху списка и галочку ✓ у текущего значения — его строка выбирается при открытии
+- Счётчики типов у групп и заголовков секций
+- Поддержку generic-типов — выбор открытого generic ведёт через выбор его аргументов и возвращает сконструированный тип
+- Настройку Favorites/Recent (вкл/выкл, ёмкость Recent) во вкладке Settings окна SerializeReference
 
+<!-- TODO(media): re-shoot aspid_fasttools_type_selector_window.png — window UI changed (Favorites/Recent, counters, dividers) -->
 ![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 Это же окно доступно как публичный API — открывайте его из любого editor-кода (кастомных инспекторов, `EditorWindow`, пунктов меню), когда нужно вывести выбор типа за пределами стандартного потока `SerializableType` / `[TypeSelector]`.
@@ -342,6 +356,7 @@ public sealed class TankEnemy : EnemyBase
 }
 ```
 
+<!-- TODO(media): re-record aspid_fasttools_component_type_selector.gif — FastEnemy ↔ TankEnemy switch with the current picker window -->
 ![aspid_fasttools_component_type_selector.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_component_type_selector.gif)
 
 ---
@@ -409,6 +424,8 @@ public sealed class Loadout : MonoBehaviour
 | **Smart Fix** | Рядом с **Fix** предлагает наиболее вероятную замену (`[MovedFrom]`, другой namespace/сборка, регистр, близкое имя) и применяет в один клик — никогда не автоматически. |
 | **Общая ссылка** (два поля делят экземпляр) | Помечается лейблом; **Make unique** расщепляет её в независимую копию. Дублирование элемента списка (Ctrl+D, `+`) больше не создаёт алиас. |
 
+<!-- TODO(media): optional gif aspid_fasttools_serialize_reference_repair.gif — BrokenWeaponPreset → missing-type notice → Smart Fix, data preserved -->
+
 Массовая починка вынесена в отдельные вкладки:
 
 | Вкладка | Назначение |
@@ -427,11 +444,24 @@ public sealed class Loadout : MonoBehaviour
 | **Build / CI gate** | коммитимая | `Off` / `Warn` / `Fail`: при сборке плеера логировать или прерывать сборку на потерянных (а для CI — и на незаданных обязательных) managed-ссылках. |
 | **Excluded scan folders** | коммитимая | Пути, пропускаемые при всех проектных сканах. |
 
-Коммитимые значения хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset` — закоммитьте его, чтобы команда и CI вели себя одинаково; breakage detection остаётся per-machine (`EditorPrefs`). Rid colours — не настройка: общая ссылка всегда раскрашивается по id, ведь совпадающий цвет и позволяет с одного взгляда понять, какие поля делят один экземпляр.
+- Коммитимые значения хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset` — закоммитьте его, чтобы команда и CI вели себя одинаково; breakage detection остаётся per-machine (`EditorPrefs`).
+- Rid colours — не настройка: общая ссылка всегда раскрашивается по id — совпадающий цвет и показывает, какие поля делят один экземпляр.
 
-Те же опции продублированы во вкладке **Settings** окна (`Tools → Aspid 🐍 → FastTools → Settings`) и на странице **`Preferences → Aspid FastTools`**, рядом с индивидуальными настройками пикера: переключатель секции **Favorites**, слайдер **Recent items** (0–20; 0 скрывает секцию и приостанавливает запись, не стирая историю), строка **Saved lists**, очищающая сохранённые Favorites / Recent, секция **Appearance** (override-`StyleSheet` темы редактора с действием **Create template…**) и переключатель автопоказа **Welcome**. Каждая строка помечена полоской scope — зелёная для коммитимых значений, синяя для индивидуальных, — а закреплённый футер предлагает **Reset to defaults** отдельно для каждого scope (сохранённые списки Favorites / Recent сброс переживают). Все поверхности зеркалят друг друга живьём.
+Те же опции продублированы во вкладке **Settings** окна (`Tools → Aspid 🐍 → FastTools → Settings`) и на странице **`Preferences → Aspid FastTools`**, рядом с индивидуальными настройками пикера:
 
-Для headless-CI метод `SerializeReferenceCiGate.RunCheck` (через `-batchmode -executeMethod`) пишет отчёт и учитывает коммитимую строгость гейта: `Off` пропускает проверку, `Warn` логирует, но завершается с кодом 0, `Fail` завершается с ненулевым кодом при наличии нарушений. Флаг `-srGateRequired` дополнительно проверяет незаданные поля `[TypeSelector(Required = true)]` в префабах, ScriptableObject и сценах (сцены проверяются на required-поля верхнего уровня через чистый YAML-проход); per-run флаги `-srGateWarnOnly` / `-srGateFail` переопределяют коммитимую строгость.
+- **Favorites** — переключатель секции.
+- **Recent items** — слайдер ёмкости (0–20; 0 скрывает секцию и приостанавливает запись, не стирая историю).
+- **Saved lists** — очищает сохранённые Favorites / Recent.
+- **Appearance** — override-`StyleSheet` темы редактора с действием **Create template…**.
+- **Welcome** — переключатель автопоказа.
+
+Каждая строка помечена полоской scope (зелёная — коммитимые, синяя — индивидуальные); закреплённый футер предлагает **Reset to defaults** отдельно для каждого scope (сохранённые списки Favorites / Recent сброс переживают). Все поверхности зеркалят друг друга живьём.
+
+Для headless-CI метод `SerializeReferenceCiGate.RunCheck` (через `-batchmode -executeMethod`) пишет отчёт и учитывает коммитимую строгость гейта:
+
+- `Off` пропускает проверку, `Warn` логирует, но завершается с кодом 0, `Fail` завершается с ненулевым кодом при нарушениях.
+- `-srGateRequired` дополнительно проверяет незаданные поля `[TypeSelector(Required = true)]` в префабах, ScriptableObject и сценах (required-поля верхнего уровня, чистый YAML-проход).
+- Per-run флаги `-srGateWarnOnly` / `-srGateFail` переопределяют коммитимую строгость.
 
 > Полный сэмпл — `Loadout` / `IWeapon` / `Modifier<T>` и сценарии починки потерянных ссылок — поставляется в сэмпле `SerializeReferences` (Package Manager → Aspid.FastTools → Samples). Пошаговый разбор — в `TUTORIAL.md` этого сэмпла.
 
@@ -594,69 +624,6 @@ public sealed class UniqueIdAttribute : PropertyAttribute { }
 
 ---
 
-## SerializedProperty Extensions
-
-Цепочные расширения над `SerializedProperty` для синхронизации владеющего `SerializedObject`, записи типизированных значений и рефлексии над полем-источником.
-
-```csharp
-property
-    .Update()
-    .SetVector3(Vector3.up)
-    .SetBool(true)
-    .ApplyModifiedProperties();
-```
-
-Пакет покрывает:
-
-- **Update / Apply** — `Update`, `UpdateIfRequiredOrScript`, `ApplyModifiedProperties`.
-- **Типизированные сеттеры** — `SetValue` (обобщённый диспетчер) и `SetXxx` для `int`/`uint`/`long`/`ulong`/`float`/`double`/`bool`/`string`/`Color`/`Gradient`/`Hash128`/`Rect`/`RectInt`/`Bounds`/`BoundsInt`/`Vector2..4` (и `Vector2/3Int`)/`Quaternion`/`AnimationCurve`/`EntityId` (Unity 6.2+). К каждому идёт парный вариант `SetXxxAndApply`.
-- **Enum-сеттеры** — `SetEnumFlag` и `SetEnumIndex` (каждый + `AndApply`).
-- **Массивы** — `SetArraySize`, `AddArraySize`, `RemoveArraySize` (каждый + `AndApply`).
-- **Ссылки** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, а также `SetBoxed` (Unity 6+).
-- **Рефлексионные хелперы** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` для разрешения C#-члена и runtime-экземпляра, стоящих за property.
-
-> Полный справочник по методам: [SerializedPropertyExtensions.md](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/SerializedPropertyExtensions.md)
-
----
-
-## IMGUI Layout Scopes
-
-Три `ref struct`-области — `VerticalScope`, `HorizontalScope`, `ScrollViewScope` — оборачивают `EditorGUILayout.Begin*` / `End*`. Каждая предоставляет свойство `Rect` и вызывает соответствующий метод `End*` в `Dispose`:
-
-```csharp
-using (VerticalScope.Begin())
-{
-    EditorGUILayout.LabelField("Item 1");
-    EditorGUILayout.LabelField("Item 2");
-}
-
-using (HorizontalScope.Begin())
-{
-    EditorGUILayout.LabelField("Left");
-    EditorGUILayout.LabelField("Right");
-}
-
-var scrollPos = Vector2.zero;
-using (ScrollViewScope.Begin(ref scrollPos))
-{
-    EditorGUILayout.LabelField("Scrollable content");
-}
-```
-
-Получить rect области через перегрузку с `out`-параметром:
-
-```csharp
-using (VerticalScope.Begin(out var rect, GUI.skin.box))
-{
-    EditorGUI.DrawRect(rect, new Color(0, 0, 0, 0.1f));
-    EditorGUILayout.LabelField("Boxed content");
-}
-```
-
-Все перегрузки `Begin` соответствуют сигнатурам `EditorGUILayout.Begin*` (опциональные `GUIStyle`, `GUILayoutOption[]`, параметры scroll view и т.д.).
-
----
-
 ## VisualElement Extensions
 
 Fluent-методы расширения для построения UIToolkit-деревьев в коде. Все методы возвращают `T` (сам элемент) для цепочки вызовов.
@@ -721,6 +688,69 @@ internal sealed class AbilityConfigEditor : Editor
 ### Result
 
 ![aspid_fasttools_visual_element.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_visual_element.gif)
+
+---
+
+## SerializedProperty Extensions
+
+Цепочные расширения над `SerializedProperty` для синхронизации владеющего `SerializedObject`, записи типизированных значений и рефлексии над полем-источником.
+
+```csharp
+property
+    .Update()
+    .SetVector3(Vector3.up)
+    .SetBool(true)
+    .ApplyModifiedProperties();
+```
+
+Пакет покрывает:
+
+- **Update / Apply** — `Update`, `UpdateIfRequiredOrScript`, `ApplyModifiedProperties`.
+- **Типизированные сеттеры** — `SetValue` (обобщённый диспетчер) и `SetXxx` для `int`/`uint`/`long`/`ulong`/`float`/`double`/`bool`/`string`/`Color`/`Gradient`/`Hash128`/`Rect`/`RectInt`/`Bounds`/`BoundsInt`/`Vector2..4` (и `Vector2/3Int`)/`Quaternion`/`AnimationCurve`/`EntityId` (Unity 6.2+). К каждому идёт парный вариант `SetXxxAndApply`.
+- **Enum-сеттеры** — `SetEnumFlag` и `SetEnumIndex` (каждый + `AndApply`).
+- **Массивы** — `SetArraySize`, `AddArraySize`, `RemoveArraySize` (каждый + `AndApply`).
+- **Ссылки** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, а также `SetBoxed` (Unity 6+).
+- **Рефлексионные хелперы** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` для разрешения C#-члена и runtime-экземпляра, стоящих за property.
+
+> Полный справочник по методам: [SerializedPropertyExtensions.md](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/SerializedPropertyExtensions.md)
+
+---
+
+## IMGUI Layout Scopes
+
+Три `ref struct`-области — `VerticalScope`, `HorizontalScope`, `ScrollViewScope` — оборачивают `EditorGUILayout.Begin*` / `End*`. Каждая предоставляет свойство `Rect` и вызывает соответствующий метод `End*` в `Dispose`:
+
+```csharp
+using (VerticalScope.Begin())
+{
+    EditorGUILayout.LabelField("Item 1");
+    EditorGUILayout.LabelField("Item 2");
+}
+
+using (HorizontalScope.Begin())
+{
+    EditorGUILayout.LabelField("Left");
+    EditorGUILayout.LabelField("Right");
+}
+
+var scrollPos = Vector2.zero;
+using (ScrollViewScope.Begin(ref scrollPos))
+{
+    EditorGUILayout.LabelField("Scrollable content");
+}
+```
+
+Получить rect области через перегрузку с `out`-параметром:
+
+```csharp
+using (VerticalScope.Begin(out var rect, GUI.skin.box))
+{
+    EditorGUI.DrawRect(rect, new Color(0, 0, 0, 0.1f));
+    EditorGUILayout.LabelField("Boxed content");
+}
+```
+
+Все перегрузки `Begin` соответствуют сигнатурам `EditorGUILayout.Begin*` (опциональные `GUIStyle`, `GUILayoutOption[]`, параметры scroll view и т.д.).
 
 ---
 

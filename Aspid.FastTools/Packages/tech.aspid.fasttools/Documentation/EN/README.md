@@ -1,6 +1,6 @@
 <img src="../Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
-**Aspid.FastTools** is a set of tools designed to minimize routine code writing in Unity. It combines Roslyn-powered source generators with a curated collection of runtime and editor utilities — including per-call-site `ProfilerMarker` registration, a serializable `System.Type`, an `EnumValues<TValue>` dictionary, a stable `int ↔ string` ID registry, fluent UI Toolkit extensions and IMGUI layout scopes.
+**Aspid.FastTools** is a set of tools designed to minimize routine code writing in Unity: `SerializeReference` tooling (an inspector type picker plus a reference explorer window), Roslyn-powered source generators, and a collection of runtime and editor utilities — from a serializable `System.Type` to fluent UI Toolkit extensions.
 
 ### \[[Unity Asset Store](https://assetstore.unity.com/packages/slug/365584)\] \[[Donate](#donate)\]
 
@@ -20,16 +20,16 @@
   - [SerializeReference Selector](#serializereference-selector)
   - [Enum System](#enum-system)
   - [ID System (Beta)](#id-system-beta)
+  - [VisualElement Extensions](#visualelement-extensions)
   - [SerializedProperty Extensions](#serializedproperty-extensions)
   - [IMGUI Layout Scopes](#imgui-layout-scopes)
-  - [VisualElement Extensions](#visualelement-extensions)
   - [Editor Helper Extensions](#editor-helper-extensions)
 
 ---
 
 ## Integration
 
-Install Aspid.FastTools via UPM (Unity Package Manager) — add the package using its Git URL. The release workflow publishes two branches containing only the package contents at their root, so no `?path=` query is needed.
+Install Aspid.FastTools via UPM: in the Package Manager click **+ → Install package from git URL…** and paste one of the URLs below.
 
 ### Stable
 
@@ -76,6 +76,9 @@ Add the marketplace and install the plugin:
 
 ```sh
 /plugin marketplace add VPDPersonal/Aspid.Claude.Plugins
+```
+
+```sh
 /plugin install aspid-fasttools@aspid-claude-plugins
 ```
 
@@ -212,7 +215,8 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
     public TypeSelectorAttribute(string assemblyQualifiedName)
     public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
 
-    public TypeAllow Allow { get; set; } // default: TypeAllow.None
+    public TypeAllow Allow { get; set; }  // default: TypeAllow.None
+    public bool Required { get; set; }    // default: false
 }
 
 [Flags]
@@ -228,6 +232,7 @@ public enum TypeAllow
 | Property | Description |
 |----------|-------------|
 | `Allow` | Which special type categories (abstract classes, interfaces) the picker includes in addition to plain concrete classes. Default: `TypeAllow.None` |
+| `Required` | Flags an unset field: a `[SerializeReference]` managed reference left `null`, or a `string` field left empty, shows an inline "required" warning in the Inspector and counts as a violation for the build/CI gate. Default: `false` |
 
 ```csharp
 using UnityEngine;
@@ -254,8 +259,11 @@ Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in
 using Aspid.FastTools.Types;
 
 // Rename the type in the picker, place it under an explicit group, give it a tooltip and an icon:
-[TypeSelectorDisplay(Name = "Damage ×", Group = "Combat/Modifiers",
-    Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
+[TypeSelectorDisplay(
+    Name = "Damage ×",
+    Group = "Combat/Modifiers",
+    Tooltip = "Scales incoming damage",
+    Icon = "d_ScriptableObject Icon")]
 public sealed class DamageModifier { }
 ```
 
@@ -274,10 +282,14 @@ The Inspector shows a button that opens a searchable popup window with:
 
 - Hierarchical namespace organization
 - Text search with filtering
-- Keyboard navigation (Arrow keys, Enter, Escape)
-- Navigation history (back button)
+- Keyboard navigation (Arrow keys, Enter, Escape; Space toggles a favorite)
+- Breadcrumb trail with back navigation (Left arrow or a click on a crumb)
 - Assembly disambiguation for types with identical names
-- **Favorites** and **Recent** sections on the root page: a hover-revealed ★ toggle pins a type to Favorites, and the last 8 picked types are kept under Recent (both persisted per project, hidden while searching)
+- **Favorites** (★ on hover) and **Recent** (last picks) sections on the root page — stored locally per project (`EditorPrefs`, never committed), hidden while searching
+- A `<None>` option pinned at the top and a ✓ mark on the current value — its row is pre-selected on open
+- Type counters on namespace/group rows and section headers
+- Generic type support — picking an open generic walks through its type parameters and emits the constructed type
+- Favorites/Recent tuning (on/off, Recent capacity) in the Settings tab of the SerializeReference window
 
 ![aspid_fasttools_type_selector_window.png](../Images/aspid_fasttools_type_selector_window.png)
 
@@ -339,6 +351,7 @@ public sealed class TankEnemy : EnemyBase
 }
 ```
 
+<!-- TODO(media): re-record aspid_fasttools_component_type_selector.gif — FastEnemy ↔ TankEnemy switch with the current picker window -->
 ![aspid_fasttools_component_type_selector.gif](../Images/aspid_fasttools_component_type_selector.gif)
 
 ---
@@ -406,6 +419,8 @@ The attribute is editor-only (`[Conditional("UNITY_EDITOR")]`) and carries no ru
 | **Smart Fix** | Next to **Fix**, suggests the most likely replacement (`[MovedFrom]`, a different namespace/assembly, casing, a near-miss name) and applies it in one click — never automatically. |
 | **Shared reference** (two fields share one instance) | Flagged with a notice; **Make unique** splits it into an independent copy. Duplicating a list element (Ctrl+D, `+`) no longer aliases the reference. |
 
+<!-- TODO(media): optional gif aspid_fasttools_serialize_reference_repair.gif — BrokenWeaponPreset → missing-type notice → Smart Fix, data preserved -->
+
 Bulk repair lives in two dedicated tabs:
 
 | Tab | Purpose |
@@ -424,11 +439,24 @@ Bulk repair lives in two dedicated tabs:
 | **Build / CI gate** | committed | `Off` / `Warn` / `Fail`: at player-build time, log or abort on missing (and, for CI, unset-required) managed references. |
 | **Excluded scan folders** | committed | Paths skipped by every project scan. |
 
-Committed values live in `ProjectSettings/SerializeReferenceSharedSettings.asset` — commit it so teammates and CI behave identically; breakage detection stays per-machine (`EditorPrefs`). Rid colours are not a setting — a shared reference is always colour-coded by id, since matching colours is what lets you tell which fields share an instance at a glance.
+- Committed values live in `ProjectSettings/SerializeReferenceSharedSettings.asset` — commit it so teammates and CI behave identically; breakage detection stays per-machine (`EditorPrefs`).
+- Rid colours are not a setting — a shared reference is always colour-coded by id, so matching colours reveal shared instances at a glance.
 
-The same options are mirrored in the window's **Settings** tab (`Tools → Aspid 🐍 → FastTools → Settings`) and at **`Preferences → Aspid FastTools`**, alongside the picker's per-user preferences: a **Favorites** section toggle, a **Recent items** capacity slider (0–20; 0 hides the section and pauses recording without wiping history), a **Saved lists** row that clears the stored Favorites / Recent, an **Appearance** section (editor-theme override `StyleSheet` with **Create template…**) and a **Welcome** auto-show toggle. Every row carries a scope stripe — green for committed values, blue for per-user — and a pinned footer offers **Reset to defaults** separately per scope (saved Favorites / Recent lists survive a reset). All surfaces stay in live sync.
+The same options are mirrored in the window's **Settings** tab (`Tools → Aspid 🐍 → FastTools → Settings`) and at **`Preferences → Aspid FastTools`**, alongside the picker's per-user preferences:
 
-For headless CI, `SerializeReferenceCiGate.RunCheck` (invoked via `-batchmode -executeMethod`) writes a report and honours the committed gate severity: `Off` skips the check, `Warn` logs but exits 0, `Fail` exits non-zero when violations exist. `-srGateRequired` also flags unset `[TypeSelector(Required = true)]` fields across prefabs, ScriptableObjects and scenes (scenes are checked for top-level required fields via a pure-YAML pass); the per-run flags `-srGateWarnOnly` / `-srGateFail` override the committed severity.
+- **Favorites** — section on/off toggle.
+- **Recent items** — capacity slider (0–20; 0 hides the section and pauses recording without wiping history).
+- **Saved lists** — clears the stored Favorites / Recent.
+- **Appearance** — editor-theme override `StyleSheet` with **Create template…**.
+- **Welcome** — auto-show toggle.
+
+Every row carries a scope stripe (green — committed, blue — per-user); a pinned footer offers **Reset to defaults** per scope (saved Favorites / Recent lists survive a reset). All surfaces stay in live sync.
+
+For headless CI, `SerializeReferenceCiGate.RunCheck` (invoked via `-batchmode -executeMethod`) writes a report and honours the committed gate severity:
+
+- `Off` skips the check, `Warn` logs but exits 0, `Fail` exits non-zero when violations exist.
+- `-srGateRequired` also flags unset `[TypeSelector(Required = true)]` fields across prefabs, ScriptableObjects and scenes (top-level fields, pure-YAML pass).
+- `-srGateWarnOnly` / `-srGateFail` override the committed severity per run.
 
 > The full sample — `Loadout` / `IWeapon` / `Modifier<T>` and the missing-reference repair scenarios — ships in the `SerializeReferences` sample (Package Manager → Aspid.FastTools → Samples). A step-by-step walkthrough lives in that sample's `TUTORIAL.md`.
 
@@ -591,69 +619,6 @@ The registry derives from `ScriptableObject` directly and exposes a generic coun
 
 ---
 
-## SerializedProperty Extensions
-
-Chainable extensions on `SerializedProperty` for synchronizing the owning `SerializedObject`, writing typed values, and reflecting on the underlying field.
-
-```csharp
-property
-    .Update()
-    .SetVector3(Vector3.up)
-    .SetBool(true)
-    .ApplyModifiedProperties();
-```
-
-The package covers:
-
-- **Update / Apply** — `Update`, `UpdateIfRequiredOrScript`, `ApplyModifiedProperties`.
-- **Typed setters** — `SetValue` (generic dispatch) and `SetXxx` for `int`/`uint`/`long`/`ulong`/`float`/`double`/`bool`/`string`/`Color`/`Gradient`/`Hash128`/`Rect`/`RectInt`/`Bounds`/`BoundsInt`/`Vector2..4` (and `Vector2/3Int`)/`Quaternion`/`AnimationCurve`/`EntityId` (Unity 6.2+). Each comes with a paired `SetXxxAndApply` variant.
-- **Enum setters** — `SetEnumFlag` and `SetEnumIndex` (each + `AndApply`).
-- **Arrays** — `SetArraySize`, `AddArraySize`, `RemoveArraySize` (each + `AndApply`).
-- **References** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, and `SetBoxed` (Unity 6+).
-- **Reflection helpers** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` for resolving the C# member and runtime instance behind a property.
-
-> Full method-by-method reference: [SerializedPropertyExtensions.md](SerializedPropertyExtensions.md)
-
----
-
-## IMGUI Layout Scopes
-
-Three `ref struct` scopes — `VerticalScope`, `HorizontalScope`, `ScrollViewScope` — wrap `EditorGUILayout.Begin*` / `End*`. Each exposes a `Rect` property and calls the matching `End*` method on `Dispose`:
-
-```csharp
-using (VerticalScope.Begin())
-{
-    EditorGUILayout.LabelField("Item 1");
-    EditorGUILayout.LabelField("Item 2");
-}
-
-using (HorizontalScope.Begin())
-{
-    EditorGUILayout.LabelField("Left");
-    EditorGUILayout.LabelField("Right");
-}
-
-var scrollPos = Vector2.zero;
-using (ScrollViewScope.Begin(ref scrollPos))
-{
-    EditorGUILayout.LabelField("Scrollable content");
-}
-```
-
-Capture the group rect with the `out`-overload when needed:
-
-```csharp
-using (VerticalScope.Begin(out var rect, GUI.skin.box))
-{
-    EditorGUI.DrawRect(rect, new Color(0, 0, 0, 0.1f));
-    EditorGUILayout.LabelField("Boxed content");
-}
-```
-
-All `Begin` overloads match the corresponding `EditorGUILayout.Begin*` signatures (optional `GUIStyle`, `GUILayoutOption[]`, scroll view options, etc.).
-
----
-
 ## VisualElement Extensions
 
 Fluent extension methods for building UIToolkit trees in code. All methods return `T` (the element itself) for chaining.
@@ -718,6 +683,69 @@ internal sealed class AbilityConfigEditor : Editor
 ### Result
 
 ![aspid_fasttools_visual_element.gif](../Images/aspid_fasttools_visual_element.gif)
+
+---
+
+## SerializedProperty Extensions
+
+Chainable extensions on `SerializedProperty` for synchronizing the owning `SerializedObject`, writing typed values, and reflecting on the underlying field.
+
+```csharp
+property
+    .Update()
+    .SetVector3(Vector3.up)
+    .SetBool(true)
+    .ApplyModifiedProperties();
+```
+
+The package covers:
+
+- **Update / Apply** — `Update`, `UpdateIfRequiredOrScript`, `ApplyModifiedProperties`.
+- **Typed setters** — `SetValue` (generic dispatch) and `SetXxx` for `int`/`uint`/`long`/`ulong`/`float`/`double`/`bool`/`string`/`Color`/`Gradient`/`Hash128`/`Rect`/`RectInt`/`Bounds`/`BoundsInt`/`Vector2..4` (and `Vector2/3Int`)/`Quaternion`/`AnimationCurve`/`EntityId` (Unity 6.2+). Each comes with a paired `SetXxxAndApply` variant.
+- **Enum setters** — `SetEnumFlag` and `SetEnumIndex` (each + `AndApply`).
+- **Arrays** — `SetArraySize`, `AddArraySize`, `RemoveArraySize` (each + `AndApply`).
+- **References** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, and `SetBoxed` (Unity 6+).
+- **Reflection helpers** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` for resolving the C# member and runtime instance behind a property.
+
+> Full method-by-method reference: [SerializedPropertyExtensions.md](SerializedPropertyExtensions.md)
+
+---
+
+## IMGUI Layout Scopes
+
+Three `ref struct` scopes — `VerticalScope`, `HorizontalScope`, `ScrollViewScope` — wrap `EditorGUILayout.Begin*` / `End*`. Each exposes a `Rect` property and calls the matching `End*` method on `Dispose`:
+
+```csharp
+using (VerticalScope.Begin())
+{
+    EditorGUILayout.LabelField("Item 1");
+    EditorGUILayout.LabelField("Item 2");
+}
+
+using (HorizontalScope.Begin())
+{
+    EditorGUILayout.LabelField("Left");
+    EditorGUILayout.LabelField("Right");
+}
+
+var scrollPos = Vector2.zero;
+using (ScrollViewScope.Begin(ref scrollPos))
+{
+    EditorGUILayout.LabelField("Scrollable content");
+}
+```
+
+Capture the group rect with the `out`-overload when needed:
+
+```csharp
+using (VerticalScope.Begin(out var rect, GUI.skin.box))
+{
+    EditorGUI.DrawRect(rect, new Color(0, 0, 0, 0.1f));
+    EditorGUILayout.LabelField("Boxed content");
+}
+```
+
+All `Begin` overloads match the corresponding `EditorGUILayout.Begin*` signatures (optional `GUIStyle`, `GUILayoutOption[]`, scroll view options, etc.).
 
 ---
 
