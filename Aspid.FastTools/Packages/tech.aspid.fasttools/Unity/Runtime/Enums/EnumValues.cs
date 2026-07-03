@@ -20,7 +20,7 @@ namespace Aspid.FastTools.Enums
     /// The enum type is selected in the Inspector via a <see cref="TypeSelectorAttribute"/>
     /// and stored as an assembly-qualified name. All entries are initialized lazily on first access.
     /// When the enum type is already known at compile time, prefer
-    /// <see cref="EnumValues{TEnum,TValue}"/> — it skips the Inspector type-picker entirely.
+    /// <see cref="EnumValues{TEnum,TValue}"/> — its Inspector type-picker is read-only.
     /// </para>
     /// <para>
     /// For <c>[Flags]</c> enums <see cref="Equals(Enum,Enum)"/> uses flag-containment semantics
@@ -208,8 +208,8 @@ namespace Aspid.FastTools.Enums
     /// <summary>
     /// A serializable dictionary that maps members of <typeparamref name="TEnum"/> to values of
     /// type <typeparamref name="TValue"/>. The typed counterpart of <see cref="EnumValues{TValue}"/>
-    /// for the common case where the enum type is known at compile time — no Inspector type-picker,
-    /// and lookups are compile-time safe.
+    /// for the common case where the enum type is known at compile time — the Inspector type-picker
+    /// is read-only, and lookups are compile-time safe.
     /// </summary>
     /// <typeparam name="TEnum">The enum type the entries are keyed by.</typeparam>
     /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>

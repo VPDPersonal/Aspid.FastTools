@@ -528,7 +528,7 @@ public sealed class DamageDealer : MonoBehaviour
 
 ### EnumValues\<TEnum, TValue\>
 
-Типизированный вариант `EnumValues<TValue>` для частого случая, когда тип перечисления уже известен в коде. Тип фиксируется generic-аргументом, поэтому в Inspector нет выбора типа, а обращения проверяются на этапе компиляции. Поиск при этом не использует boxing — ключи сравниваются как закэшированные числовые значения, — а `foreach` по обоим вариантам использует struct-энумератор и не аллоцирует. Реализует `IEnumerable<KeyValuePair<TEnum, TValue>>`.
+Типизированный вариант `EnumValues<TValue>` для частого случая, когда тип перечисления уже известен в коде. Тип фиксируется generic-аргументом, поэтому выбор типа в Inspector заблокирован, а обращения проверяются на этапе компиляции. Поиск при этом не использует boxing — ключи сравниваются как закэшированные числовые значения, — а `foreach` по обоим вариантам использует struct-энумератор и не аллоцирует. Реализует `IEnumerable<KeyValuePair<TEnum, TValue>>`.
 
 | Член | Описание |
 |------|----------|
@@ -538,7 +538,7 @@ public sealed class DamageDealer : MonoBehaviour
 ```csharp
 public sealed class HitEffect : MonoBehaviour
 {
-    // В Inspector нет выбора типа — перечисление зафиксировано как DamageType.
+    // Выбор типа в Inspector заблокирован — перечисление зафиксировано как DamageType.
     [SerializeField] private EnumValues<DamageType, Color> _damageColors;
 
     public Color GetColor(DamageType type) => _damageColors.GetValue(type);
