@@ -1,14 +1,18 @@
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// The package's Project Settings page (<c>Project Settings → Aspid FastTools → SerializeReference</c>) for the
-    /// SerializeReference toolset: rid colours, auto de-alias, the build/CI gate severity, and excluded scan folders.
+    /// The package's Project Settings page (<c>Project Settings → Aspid FastTools → SerializeReference</c>) — the
+    /// team-wide half of the settings, matching the page's <see cref="SettingsScope.Project"/>: auto de-alias, the
+    /// build/CI gate severity and the excluded scan folders, all persisted in the committed ProjectSettings asset.
+    /// The per-user controls live on the <c>Preferences → Aspid FastTools</c> page instead, and the window's Settings
+    /// tab shows both scopes as the one full overview. <see cref="AspidSettingsUI.BuildProviderPage"/> composes the
+    /// same branded page (dotted canvas, legend, sections, pinned reset footer) both Unity-native pages share.
     /// Backed by <see cref="SerializeReferenceSettings"/>.
     /// </summary>
     internal static class SerializeReferenceSettingsProvider
@@ -31,29 +35,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 keywords = new HashSet<string>(new[]
                 {
                     "serialize", "reference", "managed", "aspid", "rid", "gate", "missing", "required",
-                    "dropdown", "typeselector", "attribute",
+                    "alias", "build", "ci", "excluded", "folders",
                 }),
-                activateHandler = (_, root) => Build(root),
+                activateHandler = (_, root) => AspidSettingsUI.BuildProviderPage(root, AspidSettingsScope.Shared),
             };
-
-        private static void Build(VisualElement root)
-        {
-            root.style.marginLeft = 9;
-            root.style.marginTop = 6;
-            root.style.marginRight = 9;
-
-            root.Add(Header("SerializeReference"));
-            SerializeReferenceSettingsUI.BuildControls(root);
-        }
-
-        private static Label Header(string text) => new(text)
-        {
-            style =
-            {
-                unityFontStyleAndWeight = FontStyle.Bold,
-                fontSize = 14,
-                marginBottom = 8,
-            },
-        };
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -192,6 +193,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var listedPaths = folders.Query<Label>().ToList().Select(label => label.text).ToList();
             Assert.Contains("Assets/Plugins/", listedPaths, "The folders field must list every excluded path live.");
             Assert.Contains("Assets/Generated/", listedPaths, "The folders field must list every excluded path live.");
+        }
+
+        // -----------------------------------------------------------------------------------------------------
+        // D — the scope filter routes each control to the page that owns its storage
+        // -----------------------------------------------------------------------------------------------------
+
+        [Test]
+        public void BuildControls_UserScope_EmitsOnlyPerUserControls()
+        {
+            var container = new VisualElement();
+            SerializeReferenceSettingsUI.BuildControls(container, AspidSettingsScope.User);
+
+            var labels = container.Query<AspidSwitch>().ToList().Select(s => s.label).ToList();
+            Assert.AreEqual(2, labels.Count, "The user scope must emit exactly the two locally-stored switches.");
+            Assert.IsTrue(labels.Contains("Breakage detection"), "Breakage detection is per-user and belongs to the user scope.");
+            Assert.IsTrue(labels.Any(l => l.StartsWith("Dropdown without")), "The attribute-free dropdown is per-user and belongs to the user scope.");
+            Assert.IsNull(container.Q<EnumField>(), "The build gate is shared and must not leak onto a per-user page.");
+            Assert.IsNull(container.Q<SerializeReferenceExcludedFoldersField>(), "Excluded folders are shared and must not leak onto a per-user page.");
+        }
+
+        [Test]
+        public void BuildControls_SharedScope_EmitsOnlyTeamWideControls()
+        {
+            var container = new VisualElement();
+            SerializeReferenceSettingsUI.BuildControls(container, AspidSettingsScope.Shared);
+
+            var labels = container.Query<AspidSwitch>().ToList().Select(s => s.label).ToList();
+            Assert.AreEqual(1, labels.Count, "The shared scope must emit exactly the auto-de-alias switch.");
+            Assert.IsTrue(labels.Single().StartsWith("Auto de-alias"), "Auto de-alias is the one shared switch.");
+            Assert.IsNotNull(container.Q<EnumField>(), "The build gate is shared and must render on the shared page.");
+            Assert.IsNotNull(container.Q<SerializeReferenceExcludedFoldersField>(), "Excluded folders are shared and must render on the shared page.");
         }
     }
 }

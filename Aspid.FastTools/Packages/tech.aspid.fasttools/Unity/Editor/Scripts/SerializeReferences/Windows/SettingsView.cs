@@ -6,11 +6,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
     /// The Settings tab (the rightmost square tab): the package's settings surfaced inside the window so the toolset is
-    /// self-contained. A thin host over the shared settings surface — <see cref="AspidSettingsUI.BuildSurfaceContent"/>
-    /// composes the scope legend and every package area's section from one definition per area (the same composition
-    /// the Preferences page renders), and <see cref="AspidSettingsUI.BuildResetFooter"/> pins the per-scope reset
-    /// under the scroll. The window's dotted canvas already sits behind this tab, so unlike the Preferences page it
-    /// brings no canvas of its own.
+    /// self-contained. The one surface showing BOTH storage scopes — the Unity-native pages each render only their
+    /// own scope (Preferences the per-user controls, Project Settings the shared ones) from the same definitions.
+    /// A thin host over the shared settings surface — <see cref="AspidSettingsUI.BuildSurfaceContent"/> composes the
+    /// scope legend and every package area's section from one definition per area, and
+    /// <see cref="AspidSettingsUI.BuildResetFooter"/> pins the per-scope reset under the scroll. The window's dotted
+    /// canvas already sits behind this tab, so unlike the Unity-native pages it brings no canvas of its own.
     /// </summary>
     internal sealed class SettingsView : VisualElement
     {

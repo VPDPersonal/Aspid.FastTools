@@ -10,13 +10,33 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 namespace Aspid.FastTools.Editors
 {
     /// <summary>
+    /// Which storage scopes a settings surface renders. The window's Settings tab shows <see cref="All"/> as the one
+    /// full overview; the Unity-native pages each take the scope that matches their convention — the Preferences page
+    /// <see cref="User"/>, the Project Settings page <see cref="Shared"/> — so no page lists a control it doesn't own.
+    /// </summary>
+    [Flags]
+    internal enum AspidSettingsScope
+    {
+        /// <summary>Team-wide settings persisted in the committed ProjectSettings asset.</summary>
+        Shared = 1 << 0,
+
+        /// <summary>Per-user settings persisted locally (EditorPrefs), never committed.</summary>
+        User = 1 << 1,
+
+        /// <summary>Both scopes — the window tab's full overview.</summary>
+        All = Shared | User,
+    }
+
+    /// <summary>
     /// The shared vocabulary and composition of the package's settings surfaces — the SerializeReference window's
-    /// Settings tab and the <c>Preferences → Aspid FastTools</c> page. Owns the surface's stylesheet path and USS
+    /// Settings tab, the <c>Preferences → Aspid FastTools</c> page and the
+    /// <c>Project Settings → Aspid FastTools → SerializeReference</c> page. Owns the surface's stylesheet path and USS
     /// class names (sections, legend, row/action primitives, and the storage-scope markers), the one definition of
-    /// the surface's content (<see cref="BuildSurfaceContent"/>: the legend and every package area's section) and its
-    /// per-scope reset footer (<see cref="BuildResetFooter"/>), and the live-sync helper every per-area settings
-    /// builder wires its controls with. Keeping these here — rather than on one view — is what keeps the two surfaces
-    /// identical and lets each package area define its controls once.
+    /// the surface's content (<see cref="BuildSurfaceContent"/>: the legend and every package area's section, filtered
+    /// by <see cref="AspidSettingsScope"/>), its per-scope reset footer (<see cref="BuildResetFooter"/>), the branded
+    /// page host the two Unity settings pages share (<see cref="BuildProviderPage"/>), and the live-sync helper every
+    /// per-area settings builder wires its controls with. Keeping these here — rather than on one view — is what keeps
+    /// the surfaces identical and lets each package area define its controls once.
     /// </summary>
     internal static class AspidSettingsUI
     {
@@ -59,14 +79,54 @@ namespace Aspid.FastTools.Editors
             element.AddStyleSheetsFromResource(StyleSheetPath).AddClass(RootClass);
 
         /// <summary>
-        /// Fills <paramref name="container"/> with the settings surface's whole content — the scope legend followed by
-        /// every package area's section, one definition per area. Both surfaces call this, so the window tab and the
-        /// Preferences page always list the same controls and mirror each other live.
+        /// Composes a whole Unity settings page (Preferences or Project Settings) hosting the branded surface for
+        /// <paramref name="scope"/>: the window's dotted canvas as the page backdrop (the branded cards read wrong
+        /// over Unity's native grey panel), the scope-filtered surface content in a scroll, and the matching reset
+        /// footer pinned under it. One definition, so the two Unity-native pages stay pixel-identical to each other
+        /// and to the window's Settings tab.
         /// </summary>
-        public static void BuildSurfaceContent(VisualElement container)
+        public static void BuildProviderPage(VisualElement root, AspidSettingsScope scope)
         {
-            container.Add(BuildScopeLegend());
-            AddSection(container, "References", SerializeReferenceSettingsUI.BuildControls);
+            // The theme sheets make a user override apply to this page too.
+            root.AddAspidThemeStyleSheets();
+            root.style.flexGrow = 1;
+
+            // The host loads the surface sheet so canvas and card rules reach the subtree.
+            var host = new VisualElement()
+                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddClass(CanvasClass);
+
+            var canvas = new AspidAnimatedDotsBackground()
+                .AddClass(CanvasBackgroundClass)
+                .SetPickingMode(PickingMode.Ignore);
+            canvas.SetTone(SerializeReferenceCanvasStyle.Info);
+
+            var surface = new VisualElement().AddClass(RootClass);
+            var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1 } };
+            BuildSurfaceContent(scroll.contentContainer, scope);
+
+            surface.Add(scroll);
+            surface.Add(BuildResetFooter(scope));
+            host.AddChild(canvas).AddChild(surface);
+            root.Add(host);
+        }
+
+        /// <summary>
+        /// Fills <paramref name="container"/> with the settings surface's content for <paramref name="scope"/> — the
+        /// scope legend followed by every package area's section that has controls in that scope, one definition per
+        /// area. Every surface calls this, so the window tab (<see cref="AspidSettingsScope.All"/>), the Preferences
+        /// page (<see cref="AspidSettingsScope.User"/>) and the Project Settings page
+        /// (<see cref="AspidSettingsScope.Shared"/>) render the same control definitions and mirror each other live.
+        /// </summary>
+        public static void BuildSurfaceContent(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
+        {
+            container.Add(BuildScopeLegend(scope));
+            AddSection(container, "References", content => SerializeReferenceSettingsUI.BuildControls(content, scope));
+
+            // The remaining areas are per-user through and through, so a shared-only surface simply has no sections
+            // for them rather than empty headers.
+            if ((scope & AspidSettingsScope.User) == 0) return;
+
             AddSection(container, "Type Selector", TypeSelectorSettingsUI.BuildControls);
             AddSection(container, "Appearance", AspidThemeSettingsUI.BuildControls);
             AddSection(container, "Welcome", WelcomeSettingsUI.BuildControls);
@@ -88,13 +148,19 @@ namespace Aspid.FastTools.Editors
 
         /// <summary>
         /// The one-line key to the rows' scope stripes: each item pairs a swatch painted by the same scope class the
-        /// rows wear with a caption naming what that colour means for persistence.
+        /// rows wear with a caption naming what that colour means for persistence. Only the scopes the surface renders
+        /// get an item, so a single-scope page never explains a stripe it doesn't show.
         /// </summary>
-        public static VisualElement BuildScopeLegend()
+        public static VisualElement BuildScopeLegend(AspidSettingsScope scope = AspidSettingsScope.All)
         {
             var legend = new VisualElement().AddClass(LegendClass);
-            legend.Add(BuildLegendItem(SharedScopeClass, "Shared — committed, same for the whole team"));
-            legend.Add(BuildLegendItem(UserScopeClass, "Per-user — stored locally, just for you"));
+
+            if ((scope & AspidSettingsScope.Shared) != 0)
+                legend.Add(BuildLegendItem(SharedScopeClass, "Shared — committed, same for the whole team"));
+
+            if ((scope & AspidSettingsScope.User) != 0)
+                legend.Add(BuildLegendItem(UserScopeClass, "Per-user — stored locally, just for you"));
+
             return legend;
         }
 
@@ -106,37 +172,40 @@ namespace Aspid.FastTools.Editors
         }
 
         /// <summary>
-        /// The surface's footer: one row with a reset button per storage scope, each wearing its scope's stripe (the
-        /// same classes the settings rows wear) and confirming with the exact default values before touching anything.
-        /// Two separate buttons — not one — because the scopes have different blast radii: the shared reset changes
-        /// the committed asset for the whole team, the per-user one only this machine's EditorPrefs. Pinned by the
-        /// caller under its scroll, so the affordance stays reachable however long the surface grows.
+        /// The surface's footer: one row with a reset button per storage scope the surface renders, each wearing its
+        /// scope's stripe (the same classes the settings rows wear) and confirming with the exact default values
+        /// before touching anything. Two separate buttons — not one — because the scopes have different blast radii:
+        /// the shared reset changes the committed asset for the whole team, the per-user one only this machine's
+        /// EditorPrefs. Pinned by the caller under its scroll, so the affordance stays reachable however long the
+        /// surface grows.
         /// </summary>
-        public static VisualElement BuildResetFooter()
+        public static VisualElement BuildResetFooter(AspidSettingsScope scope = AspidSettingsScope.All)
         {
-            var caption = new Label("Reset to defaults").AddClass(RowCaptionClass);
-
-            var shared = new Button(ResetSharedToDefaults)
-            {
-                text = "Shared",
-                tooltip = "Reset the team-wide settings to defaults: Auto de-alias on, Build / CI gate Warn, no excluded scan folders.\n"
-                    + "Changes the committed ProjectSettings asset — affects every teammate once committed.",
-            };
-            shared.AddClass(ActionClass).AddClass(SharedScopeClass);
-
-            var user = new Button(ResetUserToDefaults)
-            {
-                text = "Per-user",
-                tooltip = "Reset your per-user settings to defaults: Breakage detection on, dropdown without [TypeSelector] off, "
-                    + $"Favorites section on, Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, no theme override, auto-show Welcome on.\n"
-                    + "Only this machine; the saved Favorites / Recent lists are kept.",
-            };
-            user.AddClass(ActionClass).AddClass(ActionInfoClass).AddClass(UserScopeClass);
-
             var row = new VisualElement().AddClass(RowClass)
-                .AddChild(caption)
-                .AddChild(shared)
-                .AddChild(user);
+                .AddChild(new Label("Reset to defaults").AddClass(RowCaptionClass));
+
+            if ((scope & AspidSettingsScope.Shared) != 0)
+            {
+                var shared = new Button(ResetSharedToDefaults)
+                {
+                    text = "Shared",
+                    tooltip = "Reset the team-wide settings to defaults: Auto de-alias on, Build / CI gate Warn, no excluded scan folders.\n"
+                        + "Changes the committed ProjectSettings asset — affects every teammate once committed.",
+                };
+                row.AddChild(shared.AddClass(ActionClass).AddClass(SharedScopeClass));
+            }
+
+            if ((scope & AspidSettingsScope.User) != 0)
+            {
+                var user = new Button(ResetUserToDefaults)
+                {
+                    text = "Per-user",
+                    tooltip = "Reset your per-user settings to defaults: Breakage detection on, dropdown without [TypeSelector] off, "
+                        + $"Favorites section on, Recent items {TypeSelectorSettings.DefaultRecentsCapacity}, no theme override, auto-show Welcome on.\n"
+                        + "Only this machine; the saved Favorites / Recent lists are kept.",
+                };
+                row.AddChild(user.AddClass(ActionClass).AddClass(ActionInfoClass).AddClass(UserScopeClass));
+            }
 
             return new VisualElement().AddClass(FooterClass).AddChild(row);
         }

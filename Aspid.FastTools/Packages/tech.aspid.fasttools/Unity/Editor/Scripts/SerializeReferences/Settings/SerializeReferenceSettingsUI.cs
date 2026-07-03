@@ -8,26 +8,32 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// Builds the SerializeReference settings controls bound to <see cref="SerializeReferenceSettings"/>. Shared by the
-    /// Project Settings page (<see cref="SerializeReferenceSettingsProvider"/>) and — via
-    /// <see cref="Aspid.FastTools.Editors.AspidSettingsUI.BuildSurfaceContent"/> — the window's Settings tab and the
-    /// Preferences page, so every surface renders the same controls from one definition and mirrors the others live.
+    /// Builds the SerializeReference settings controls bound to <see cref="SerializeReferenceSettings"/>. Rendered —
+    /// via <see cref="Aspid.FastTools.Editors.AspidSettingsUI.BuildSurfaceContent"/> — by the window's Settings tab
+    /// (both scopes), the Preferences page (per-user controls) and the Project Settings page (shared controls), so
+    /// every surface renders the same controls from one definition and mirrors the others live.
     /// </summary>
     internal static class SerializeReferenceSettingsUI
     {
         /// <summary>
-        /// Appends the breakage-detection, attribute-free-dropdown, auto-de-alias, build-gate and excluded-folder
-        /// controls to <paramref name="container"/>, each wired straight to <see cref="SerializeReferenceSettings"/>. Rid colours
-        /// are not configurable — they always identify a shared reference, so there is no control for them here.
-        /// Each row is tagged with its storage scope (<see cref="AspidSettingsUI.SharedScopeClass"/> /
-        /// <see cref="AspidSettingsUI.UserScopeClass"/>) matching where <see cref="SerializeReferenceSettings"/>
-        /// persists it; the classes paint a scope stripe on the branded surfaces and are inert on the Project Settings
-        /// page, which never loads that sheet.
+        /// Appends the References controls that belong to <paramref name="scope"/> — breakage detection and the
+        /// attribute-free dropdown for the per-user scope; auto de-alias, the build gate and the excluded folders for
+        /// the shared scope — to <paramref name="container"/>, each wired straight to
+        /// <see cref="SerializeReferenceSettings"/>. Rid colours are not configurable — they always identify a shared
+        /// reference, so there is no control for them here. Each row is tagged with its storage scope
+        /// (<see cref="AspidSettingsUI.SharedScopeClass"/> / <see cref="AspidSettingsUI.UserScopeClass"/>) matching
+        /// where <see cref="SerializeReferenceSettings"/> persists it; the classes paint a scope stripe on the
+        /// branded surfaces.
         /// </summary>
-        public static void BuildControls(VisualElement container)
+        public static void BuildControls(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
         {
-            container.Add(CreateBreakageDetectionSwitch());
-            container.Add(CreateDropdownWithoutAttributeSwitch());
+            if ((scope & AspidSettingsScope.User) != 0)
+            {
+                container.Add(CreateBreakageDetectionSwitch());
+                container.Add(CreateDropdownWithoutAttributeSwitch());
+            }
+
+            if ((scope & AspidSettingsScope.Shared) == 0) return;
 
             var autoDeAlias = new AspidSwitch("Auto de-alias duplicated list elements")
             {
@@ -55,8 +61,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             container.Add(new SerializeReferenceExcludedFoldersField().AddClass(AspidSettingsUI.SharedScopeClass));
         }
 
-        // The one References control persisted per user; built by one definition so the window tab, the Project
-        // Settings page and the Preferences page all render (and live-sync) the same switch.
+        // Built by one definition so the window tab and the Preferences page both render (and live-sync) the same
+        // switch.
         private static AspidSwitch CreateBreakageDetectionSwitch()
         {
             var breakageDetection = new AspidSwitch("Breakage detection")
