@@ -10,6 +10,7 @@
    here it only owns its own fill and spacing. The mode swap is driven from code (display). */
 .aspid-fasttools-type-selector__header {
     min-height:             20px;
+    flex-shrink:            0;
     flex-direction:         row;
     align-items:            center;
     flex-wrap:              nowrap;
@@ -155,6 +156,7 @@ ToolbarSearchField TextElement {
    error palette and spacing live here. */
 .aspid-fasttools-type-selector__error {
     margin:                 2px 4px;
+    flex-shrink:            0;
     white-space:            normal;
     color:                  var(--aspid-colors-status-error-text-light);
 }
@@ -175,6 +177,7 @@ ToolbarSearchField TextElement {
     padding:                3px 8px;
     flex-direction:         row;
     align-items:            center;
+    flex-shrink:            0;
     background-color:       var(--aspid-colors-bg-dark);
     border-top-width:       1px;
     border-top-color:       var(--aspid-colors-shade-darkness);
