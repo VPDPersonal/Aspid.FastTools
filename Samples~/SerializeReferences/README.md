@@ -9,6 +9,7 @@ private IWeapon _weapon;
 
 > **New here? Start with [TUTORIAL.md](TUTORIAL.md)** ([RU](TUTORIAL_RU.md)) — a guided, step-by-step tour (Lessons 1–8) built around `Scripts/Tutorial/TypeSelectorTutorial.cs` and `Scenes/TypeSelectorTutorial.unity`. This page is the feature reference; the tutorial is the walkthrough.
 
+<!-- TODO(media): aspid_fasttools_type_selector_window.png is re-shot together with README (same shared file) -->
 ![The type picker window](../../Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 *The same searchable picker window, shown here on another candidate list — your fields open it filtered to their own type hierarchy.*
@@ -75,11 +76,10 @@ Select any of the first four **in the Project window**. The missing field shows 
 When the broken identity has a plausible successor, the warning also carries a one-click **Smart Fix** suggestion —
 open `MovedWeaponPreset.asset`: its notice ends with **`→ Pistol?`** (hover for the full identity and the ranking
 reason). Click it to re-point the reference without opening the picker, keeping `_damage = 21`, `_magazineSize = 6`.
-Suggestions rank a declared `[MovedFrom]` highest, then a same-named type in another namespace/assembly, a casing-only
-rename, and a near-miss name backed by the orphaned data's field shape — and are never applied automatically. (A move
-that ships `[MovedFrom]` from the start never breaks at all: Unity migrates it on load; Smart Fix catches the moves
-that forgot it. The `GhostWeapon`/`GhostPistol` assets above have no plausible successor, so they show no suggestion —
-that contrast is intentional.)
+
+- Ranking, highest first: a declared `[MovedFrom]` match, a same-named type in another namespace/assembly, a casing-only rename, a near-miss name backed by the orphaned data's field shape.
+- Never applied automatically — you always click.
+- A move that ships `[MovedFrom]` from the start never breaks (Unity migrates it on load); Smart Fix catches the moves that forgot it. The `GhostWeapon`/`GhostPistol` assets have no plausible successor, so they show no suggestion — that contrast is intentional.
 
 > The repair reads and rewrites the asset file directly — Unity does not expose a missing type through its serialization API (and on GameObjects/prefabs even drops it from the live object, UUM-129100), so the orphaned type and data are recovered straight from the YAML. It works for ScriptableObjects and prefab assets selected in the Project (rewritten in their YAML), for objects open in **Prefab Mode** (repaired on the live instance), and for objects in a **clean saved scene** (located via `GlobalObjectId`) — but not for an **unsaved/dirty scene** or a **prefab-instance override**, which have no committed asset document to map the reference to.
 >

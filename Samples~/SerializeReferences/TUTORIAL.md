@@ -35,6 +35,7 @@ if you want to compare — see *The IMGUI path* in [README.md](README.md).)
 Click the dropdown in the field header. A searchable, hierarchical window opens listing every concrete `IWeapon`
 implementation: `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`.
 
+<!-- TODO(media): aspid_fasttools_type_selector_window.png is re-shot together with README (same shared file) -->
 ![The type picker window](../../Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 *The picker window (shown here on another candidate list — yours opens filtered to `IWeapon`).*
@@ -223,13 +224,15 @@ assets **pre-broken** on purpose so you can practise the recovery flow:
 - `Presets/BrokenWeaponPreset.asset`, `Presets/BrokenArsenalPreset.asset` — `ScriptableObject`s referencing a missing `GhostWeapon`.
 - `Prefabs/LoadoutMissingType.prefab` — a prefab whose `Sidearms → Element 0` references a missing `GhostPistol`.
 - `Presets/MovedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` still stores `Pistol` under an old `…Samples.SerializeReferences.Legacy` namespace, as if the class had been moved without a `[MovedFrom]` attribute. The type itself exists — only the stored identity is stale.
-- `Presets/RenamedWeaponPreset.asset` — a `ScriptableObject` whose `Weapon` still stores the old `CrossbowLauncher` class name; the class now ships as `Crossbow` carrying a declared `[MovedFrom]`. Not broken at all — the Inspector shows a healthy `Crossbow` — but the file is stale: this one demonstrates the **Migrate all** flow below.
+- `Presets/RenamedWeaponPreset.asset` — still stores the old `CrossbowLauncher` class name; the class now ships as `Crossbow` with a declared `[MovedFrom]`. Not broken, just stale on disk — demonstrates the **Migrate all** flow below.
 
 ### Inline repair (one field)
 
 1. Select a broken asset **in the Project window**.
 2. The missing field shows a `<Missing …>` caption, a **Missing type** warning and a **Fix** button (often with a one-click **Smart Fix** suggestion of the likely new type).
 3. Click **Fix**, pick the replacement (e.g. `Pistol`) — the reference is rewritten **keeping its data** (the picker rewrites the stored type in the asset file rather than recreating the instance).
+
+<!-- TODO(media): optional gif aspid_fasttools_serialize_reference_repair.gif — missing-type notice → Fix / Smart Fix, data preserved (shared with README) -->
 
 ### Smart Fix (one click, no picker)
 
@@ -239,9 +242,14 @@ The `GhostWeapon` assets above have no plausible successor, so their notice only
 1. Hover the suggestion — the tooltip shows the full suggested identity and the ranking reason (`same type name`).
 2. Click it — the reference is re-pointed at the moved `Pistol` in one step, keeping `_damage = 21`, `_magazineSize = 6`.
 
-The suggestion is ranked against the same candidate pool the picker would offer: a declared `[MovedFrom]` match scores
-highest, then a same-named type in another namespace/assembly, a casing-only rename, and finally a near-miss name backed
-by the orphaned data's field shape. It is **never applied automatically** — you always click.
+Ranking, highest first (the same candidate pool the picker would offer):
+
+1. a declared `[MovedFrom]` match
+2. a same-named type in another namespace/assembly
+3. a casing-only rename
+4. a near-miss name backed by the orphaned data's field shape
+
+The suggestion is **never applied automatically** — you always click.
 
 > A rename/move that ships `[MovedFrom]` from the start never breaks at all — Unity migrates the reference on load.
 > Smart Fix is the safety net for the moves that forgot it. The files themselves still store the old name until each
@@ -249,11 +257,10 @@ by the orphaned data's field shape. It is **never applied automatically** — yo
 
 ### Migrate a `[MovedFrom]` rename (Project References)
 
-`Presets/RenamedWeaponPreset.asset` stores its weapon under the old class name `CrossbowLauncher`, while the class now
-ships as `Crossbow` with `[MovedFrom(false, null, null, "CrossbowLauncher")]`. Select the asset — the Inspector shows a
-perfectly healthy `Crossbow`: Unity migrates the reference **in memory** when the asset loads. The file on disk still
-stores the old name, though — invisible in the Inspector, but stale for version control, CI-level YAML scans and any
-asset that never gets re-saved.
+`Presets/RenamedWeaponPreset.asset` stores its weapon under the old class name `CrossbowLauncher`; the class now ships
+as `Crossbow` with `[MovedFrom(false, null, null, "CrossbowLauncher")]`. The Inspector shows a healthy `Crossbow` —
+Unity migrates the reference **in memory** on load — but the file on disk still stores the old name: stale for version
+control, YAML scans and any asset that never gets re-saved.
 
 1. Open **`Tools → Aspid 🐍 → FastTools → Project References`** and **Scan Project**.
 2. The `CrossbowLauncher` group renders as a calm, info-tinted **pending migration** — not a warning: an authoritative
@@ -288,12 +295,11 @@ Open **`Tools → Aspid 🐍 → FastTools`**:
 
 ## Project settings
 
-**`Project Settings → Aspid FastTools → SerializeReference`** exposes **Breakage detection** (the proactive toast,
-per-machine), **Auto de-alias duplicated list elements**, the **Build / CI gate** (`Off` / `Warn` / `Fail`) and
-**Excluded scan folders** — the last three are saved to a **committed**
-`ProjectSettings/SerializeReferenceSharedSettings.asset` so teammates and CI behave identically. The same options,
-plus the picker's per-user preferences (Favorites, Recent capacity, appearance), live in the window's **Settings**
-tab and in **`Preferences → Aspid FastTools`**.
+**`Project Settings → Aspid FastTools → SerializeReference`** exposes:
+
+- **Breakage detection** — the proactive toast; per-machine.
+- **Auto de-alias duplicated list elements**, **Build / CI gate** (`Off` / `Warn` / `Fail`), **Excluded scan folders** — saved to a **committed** `ProjectSettings/SerializeReferenceSharedSettings.asset` so teammates and CI behave identically.
+- The same options, plus the picker's per-user preferences (Favorites, Recent capacity, appearance), also live in the window's **Settings** tab and at **`Preferences → Aspid FastTools`**.
 
 The full reference — every setting, scope rules and the headless-CI entry point
 (`SerializeReferenceCiGate.RunCheck` and its `-srGate*` flags) — lives in the package documentation:
