@@ -1,6 +1,8 @@
 # EnumValues Sample
 
-A tiny combat damage system that maps enum members to typed values through `EnumValues<TValue>`. `DamageDealer` picks a `DamageType` and `StatusEffect` in the Inspector, then on `Space` applies damage — pulling the damage multiplier, log color, and speed modifier from three `EnumValues` fields.
+A tiny combat damage system that maps enum members to typed values through `EnumValues<TValue>` and its typed twin `EnumValues<TEnum, TValue>`. `DamageDealer` picks a `DamageType` and `StatusEffect` in the Inspector, then on `Space` applies damage — pulling the damage multiplier, log color, and speed modifier from three `EnumValues` fields. The color field is the typed variant (`EnumValues<DamageType, Color>` — no type-picker row in the Inspector); the other two pick their enum in the Inspector.
+
+> **New here? Start with [TUTORIAL.md](TUTORIAL.md)** ([RU](TUTORIAL_RU.md)) — a guided, step-by-step tour (Lessons 1–5) built around `Scripts/Tutorial/EnumValuesTutorial.cs` and `Scenes/EnumValuesTutorial.unity`. This page is the demo-scene walkthrough; the tutorial teaches the workflow.
 
 The code lives in `Scripts/` — see the inline comments in `DamageDealer.cs` and `StatusEffect.cs`.
 
