@@ -80,6 +80,8 @@ elevation:
 
 # Aspid FastTools — Design Language
 
+> **Source of truth for token values** is the shipped stylesheet `Aspid.FastTools/Packages/tech.aspid.fasttools/Unity/Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss`. This document describes the *system* — the ramp structure, naming, scales and application rules; when a value here disagrees with the USS, the USS wins and this file must be re-synced.
+
 Aspid FastTools ships as editor tooling for Unity 6.0+, inheriting Unity's dark editor chrome while layering a disciplined, **Gemstone-themed** design language for content surfaces and status semantics.
 
 ## Brand & Voice
