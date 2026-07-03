@@ -10,6 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. **`Aspid.FastTools.Generators/`** — A standalone .NET solution containing Roslyn source generators
 3. **`Aspid.FastTools.Analyzers/`** — A git submodule (repo `VPDPersonal/Aspid.FastTools.Analyzers`) with a standalone Roslyn `DiagnosticAnalyzer` that validates package-attribute usage (currently the `AFT*` `[TypeSelector]` rules)
 
+Repo-internal working documents (roadmap, release checklist, the bilingual QA checklist `QA-CHECKLIST.md`/`QA-CHECKLIST_RU.md`, the `DESIGN.md` design-system spec) live in `docs/` — distinct from the package's user-facing `Documentation/`. The QA checklist is the standing pre-release verification protocol: a new feature must add its checklist item in **both** languages before its branch merges.
+
 ### Unity Package
 Compilation is handled automatically by Unity's build system when the project is open. There are no CLI build scripts.
 
