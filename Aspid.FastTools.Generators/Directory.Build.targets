@@ -1,11 +1,12 @@
 <Project>
 
-    <Target Name="CopyToUnity" AfterTargets="Build" Condition="'$(IsRoslynComponent)' == 'true'">
+    <!-- Ships the merged single-file analyzer DLL produced by ILRepack.targets into the Unity package. -->
+    <Target Name="CopyToUnity" AfterTargets="ILRepacker" Condition="'$(IsRoslynComponent)' == 'true'">
         <PropertyGroup>
             <_UnityDestination>$(MSBuildThisFileDirectory)../Aspid.FastTools/Packages/tech.aspid.fasttools/</_UnityDestination>
         </PropertyGroup>
         <MakeDir Directories="$(_UnityDestination)" />
-        <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(_UnityDestination)" SkipUnchangedFiles="true" />
+        <Copy SourceFiles="$(UnityAnalyzerMergedPath)" DestinationFolder="$(_UnityDestination)" SkipUnchangedFiles="true" />
     </Target>
 
 </Project>

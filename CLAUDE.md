@@ -17,7 +17,7 @@ Compilation is handled automatically by Unity's build system when the project is
 
 ### Building & Deploying Generators
 
-`Directory.Build.targets` auto-copies the compiled DLL into the Unity package on build:
+On build, `ILRepack.targets` merges the `Aspid.Generators.Helper*` dependencies into a single-file DLL and `Directory.Build.targets` auto-copies it into the Unity package (never reference `SourceGenerator.Foundations` — its injected `Console` logging deadlocks Unity's compiler server; see `Aspid.FastTools.Generators/CLAUDE.md`):
 
 ```bash
 # From Aspid.FastTools.Generators/

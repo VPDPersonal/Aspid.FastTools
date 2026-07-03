@@ -12,18 +12,18 @@ dotnet build -c Release
 dotnet test
 ```
 
-`Directory.Build.targets` copies the compiled DLL to `../Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Generators.dll` on build.
+Deploy pipeline: `Aspid.FastTools.Generators/ILRepack.targets` merges `Aspid.Generators.Helper*` into a single-file copy of the DLL under `obj/` (Unity references exactly one analyzer DLL; `bin/` stays multi-assembly for tests), then `Directory.Build.targets` copies the merged DLL to `../Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.Generators.dll`.
 
 A repo-level PostToolUse hook (`.claude/hooks/rebuild-generators-on-change.sh`) also runs `dotnet build` automatically after any `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`. The hook intentionally **does not** trigger for tests, the Sample project, or Unity-side edits — keep that scope if you modify it.
 
 ## Solution Structure
 
 ```
-Aspid.FastTools.Generators/        ← generator implementation
+Aspid.FastTools.Generators/        ← generator implementation (+ ILRepack.targets deploy merge)
 Aspid.FastTools.Generators.Tests/  ← unit tests + GeneratorTestHost helper
 Aspid.FastTools.Generators.Sample/ ← manual smoke-test project
 Aspid.FastTools.Generators.sln
-Directory.Build.targets
+Directory.Build.targets            ← copies the merged DLL into the Unity package
 ```
 
 ## Target Framework
@@ -37,7 +37,9 @@ Directory.Build.targets
 | `Microsoft.CodeAnalysis.CSharp` 4.3.0 | Roslyn semantic model and syntax |
 | `Aspid.Generators.Helper` | `CodeWriter` utility for emitting source |
 | `Aspid.Generators.Helper.Unity` | Unity-specific analysis helpers |
-| `SourceGenerator.Foundations` 2.0.13 | Incremental generator infrastructure |
+| `ILRepack.Lib.MSBuild.Task` | Build-only: merges the Helper DLLs into the deployed analyzer DLL |
+
+**Never add `SourceGenerator.Foundations` (SGF).** Its MSBuild injector plants a module initializer that writes `Console.WriteLine` per embedded assembly on every generator load. Inside Unity's long-lived VBCSCompiler server nobody drains stdout, so the pipe buffer eventually fills and the `write()` blocks forever — script compilation hangs indefinitely (observed: 15 min – 2 h). It also embeds ~17 MB of unrelated assemblies (own copies of `Microsoft.CodeAnalysis*`, `envdte`, …) into the DLL. The same rule generalizes: no `Console` output anywhere in generator/analyzer code paths.
 
 ## Generator Implementation Pattern
 
