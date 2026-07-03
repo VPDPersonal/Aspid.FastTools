@@ -30,6 +30,7 @@ namespace Aspid.FastTools.Types.Editors
         private readonly VisualElement _visualInput;
         private readonly SerializedProperty _property;
 
+        private bool _isReadOnly;
         private string _missingAssemblyQualifiedName;
 
         /// <summary>
@@ -42,6 +43,21 @@ namespace Aspid.FastTools.Types.Editors
         /// Base types — the dropdown lists subtypes assignable to every one of them.
         /// </summary>
         public Type[] Types { get; set; } = { typeof(object) };
+
+        /// <summary>
+        /// When <see langword="true"/> the dropdown is disabled — the displayed type cannot be
+        /// changed — while the open-in-script-editor button stays active.
+        /// </summary>
+        [UxmlAttribute]
+        public bool IsReadOnly
+        {
+            get => _isReadOnly;
+            set
+            {
+                _isReadOnly = value;
+                _visualInput.SetEnabled(!value);
+            }
+        }
 
         public TypeField()
             : this(label: null) { }
@@ -125,7 +141,7 @@ namespace Aspid.FastTools.Types.Editors
 
         private void OnDropdownClicked(PointerDownEvent evt)
         {
-            if (evt.button is not 0) return;
+            if (_isReadOnly || evt.button is not 0) return;
 
             var window = EditorWindow.focusedWindow != null
                 ? EditorWindow.focusedWindow

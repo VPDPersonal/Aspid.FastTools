@@ -1,21 +1,22 @@
 # Пример EnumValues
 
-Маленькая система боевого урона, которая сопоставляет члены enum типизированным значениям через `EnumValues<TValue>`. `DamageDealer` выбирает `DamageType` и `StatusEffect` в Inspector, а по нажатию `Space` наносит урон — извлекая множитель урона, цвет лога и модификатор скорости из трёх полей `EnumValues`.
+Маленькая система боевого урона, которая сопоставляет члены enum типизированным значениям через `EnumValues<TValue>` и его типизированного близнеца `EnumValues<TEnum, TValue>`. `DamageDealer` выбирает `DamageType` и `StatusEffect` в Inspector, а по нажатию `Space` наносит урон — извлекая множитель урона, цвет лога и модификатор скорости из трёх полей `EnumValues`. Поле цвета — типизированный вариант (`EnumValues<DamageType, Color>` — строка выбора типа в Inspector заблокирована); остальные два выбирают enum в Inspector.
 
-Смотрите:
-- `Scripts/DamageDealer.cs:9` — `EnumValues<float>`, сопоставляющий `DamageType` множителю урона.
-- `Scripts/DamageDealer.cs:10` — `EnumValues<Color>`, сопоставляющий `DamageType` цвету отладочного лога.
-- `Scripts/DamageDealer.cs:14` — `EnumValues<float>` по `[Flags]` enum `StatusEffect`; композитные записи вроде `Burning | Slowed` должны идти до одиночных флагов (см. комментарий рядом).
-- `Scripts/DamageDealer.cs:30` — вызов `GetValue` на Flags-поле.
-- `Scripts/StatusEffect.cs` — `[Flags]` enum, используемый в третьем сопоставлении.
+> **Впервые здесь? Начните с [TUTORIAL_RU.md](TUTORIAL_RU.md)** ([EN](TUTORIAL.md)) — пошаговый тур (уроки 1–5) вокруг `Scripts/Tutorial/EnumValuesTutorial.cs` и `Scenes/EnumValuesTutorial.unity`. Эта страница — разбор демо-сцены; туториал учит самому workflow.
+
+Код лежит в `Scripts/` — смотрите комментарии в `DamageDealer.cs` и `StatusEffect.cs`.
+
+## Правила поиска по `[Flags]`-ключу
+
+1. **Точное совпадение выигрывает первым**, независимо от порядка записей: поиск `Burning | Slowed` вернёт запись `Burning | Slowed`, хотя она стоит *последней* в списке.
+2. **Нет точного совпадения → выигрывает первая содержащаяся запись**: поиск `Burning | Frozen | Slowed` (такой записи нет) вернёт первую по порядку запись, все флаги которой содержатся в значении — здесь `Burning`.
+3. **Ничего не совпало → значение по умолчанию**: у `Stunned` нет записи, поэтому поиск проваливается в `_defaultValue`. `None` (ноль) совпадает только с записью `None` и никогда — с флаговой записью.
 
 ## Как запустить
 
-Откройте `Scenes/EnumValues.unity` и войдите в Play Mode. В сцене есть `DamageDealer`, подключённый из `Prefabs/EnumValues.prefab`, который предзаполнен:
+Откройте `Scenes/EnumValues.unity` и войдите в Play Mode. В сцене есть предзаполненный `DamageDealer`, подключённый из `Prefabs/EnumValues.prefab`.
 
-- `_damageMultipliers`: `Physical = 1.0`, `Fire = 1.5`, `Ice = 0.8`, `Poison = 0.6`.
-- `_damageColors`: серый / оранжевый / голубой / ядовито-зелёный по `DamageType`.
-- `_speedMultipliersByStatus`: `Burning | Slowed = 0.4` **первой**, затем `Burning = 1.0`, `Frozen = 0.2`, `Slowed = 0.5` — порядок с композитом впереди именно и гарантирует, что комбинация флагов разрешается в `0.4`, а не проваливается на первое совпадение одиночного флага.
-- `_currentDamageType = Fire`, `_activeEffects = Burning | Slowed`, `_baseDamage = 10`.
+Нажмите `Space` — в Console появится оранжевое `Fire hit: 15 dmg (speed mod: 0.40)`: композитная запись `Burning | Slowed` выигрывает точным совпадением, хотя стоит последней в списке. Затем проверьте остальные правила поиска в Inspector:
 
-Нажмите `Space` — в Console появится оранжевое `Fire hit: 15 dmg (speed mod: 0.40)`. Меняйте значения enum в Inspector (или переключайте флаги в `_activeEffects`), чтобы увидеть другие варианты поиска.
+- поставьте `_activeEffects` в `Burning | Frozen | Slowed` → `0.90` (точной записи нет; выигрывает первая содержащаяся — `Burning`);
+- поставьте `Stunned` (или `None`) → `1.00` (ни одна запись не совпала; значение по умолчанию).

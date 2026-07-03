@@ -3,6 +3,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
+using Aspid.FastTools.Types.Editors;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors;
 using Aspid.FastTools.UIElements.Manipulators;
@@ -13,8 +14,8 @@ namespace Aspid.FastTools.Enums.Editors
 {
     /// <summary>
     /// Property drawer for <see cref="EnumValues{TValue}"/> and <see cref="EnumValues{TEnum,TValue}"/>.
-    /// Renders a header with the enum-type picker (untyped variant only — the typed variant fixes
-    /// the enum at compile time), the entries list, and the default-value field, and exposes a
+    /// Renders a header with the enum-type picker (disabled for the typed variant — the enum is
+    /// fixed at compile time), the entries list, and the default-value field, and exposes a
     /// context-menu action that fills in any missing enum members from the configured type.
     /// </summary>
     [CustomPropertyDrawer(typeof(EnumValues<>))]
@@ -35,8 +36,10 @@ namespace Aspid.FastTools.Enums.Editors
             var defaultValuePath = property.FindPropertyRelative("_defaultValue").propertyPath;
 
             // The typed variant stamps _enumType itself on every serialize pass (and building this
-            // inspector's SerializedObject already forced one), so it needs no picker and no
-            // tracking — the enum type can never change.
+            // inspector's SerializedObject already forced one). Its _enumType carries no
+            // [TypeSelector] attribute, so the picker row is built directly as a read-only
+            // InspectorTypeField (dropdown disabled, open-in-script-editor button active) and
+            // needs no tracking — the enum type can never change.
             var isTyped = IsTypedVariant();
 
             // Push the parent enum type into every existing entry up-front so already-serialized
@@ -47,8 +50,9 @@ namespace Aspid.FastTools.Enums.Editors
                 .AddClass(HeaderClass)
                 .AddChild(new Label(property.displayName));
 
-            if (!isTyped)
-                header.AddChild(new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty));
+            header.AddChild(isTyped
+                ? (VisualElement)new InspectorTypeField(label: null, serializedObject.FindProperty(enumTypePath)) { IsReadOnly = true }
+                : new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty));
 
             var root = new VisualElement()
                 .SetName($"enum-values-{property.name.ToKebabCase()}")

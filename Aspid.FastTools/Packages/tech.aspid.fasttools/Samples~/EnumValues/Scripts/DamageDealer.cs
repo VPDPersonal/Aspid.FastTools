@@ -6,11 +6,20 @@ namespace Aspid.FastTools.Samples.EnumValues
 {
     public sealed class DamageDealer : MonoBehaviour
     {
+        // Untyped variant: the enum type is picked in the Inspector (a TypeSelector row in the
+        // field header) — use it when the enum should stay a data-side decision.
         [SerializeField] private EnumValues<float> _damageMultipliers;
-        [SerializeField] private EnumValues<Color> _damageColors;
 
-        // Flag combinations (e.g. Burning | Slowed) match via HasFlag and first-hit wins, so list
-        // composite entries BEFORE their constituent flags — otherwise the single-flag entry matches first.
+        // Typed variant: the enum is fixed at compile time — no type-picker row in the Inspector,
+        // and GetValue takes a DamageType instead of a boxed Enum. Prefer it whenever the enum is
+        // known up front. The serialized layout matches EnumValues<Color>, so switching a field
+        // between the two variants keeps the configured entries.
+        [SerializeField] private EnumValues<DamageType, Color> _damageColors;
+
+        // Lookup on a [Flags] key: an entry whose key EXACTLY equals the lookup value always wins,
+        // regardless of list order. Only when no exact match exists does the first entry (in list
+        // order) whose flags are all contained in the lookup value win; anything still unmatched
+        // (including None, which only equals None) falls back to the default value.
         [SerializeField] private EnumValues<float> _speedMultipliersByStatus;
 
         [SerializeField] private DamageType _currentDamageType = DamageType.Physical;
