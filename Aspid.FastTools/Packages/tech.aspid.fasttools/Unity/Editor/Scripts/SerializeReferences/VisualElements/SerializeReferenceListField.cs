@@ -13,9 +13,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// "+" opens the type picker (appending a fresh typed instance, never a rid-aliased duplicate). With the
     /// attribute, Unity routes each element through the drawer and
     /// <see cref="SerializeReferenceListAddBehavior"/> retrofits the picker onto Unity's own ListView — without it
-    /// there is no element drawer to route through, so this field rebuilds that list shape itself. Created by
-    /// <see cref="SerializeReferenceAutoDropdown"/> (fallback inspectors, nested content) and by the public
-    /// custom-editor facade.
+    /// there is no element drawer to route through, so this field rebuilds that list shape itself. Created by the
+    /// public custom-editor facade (<see cref="SerializeReferenceEditorGUI.CreateList"/>).
     /// </summary>
     internal sealed class SerializeReferenceListField : VisualElement
     {
