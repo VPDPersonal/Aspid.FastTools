@@ -13,6 +13,8 @@
 
 set -uo pipefail
 
+command -v jq >/dev/null || { echo "rebuild-generators hook: jq not found — hook cannot parse tool input" >&2; exit 2; }
+
 file_path=$(jq -r '.tool_input.file_path // empty' 2>/dev/null)
 
 case "$file_path" in
@@ -22,6 +24,7 @@ esac
 
 cd "$CLAUDE_PROJECT_DIR" || exit 0
 
+# --no-restore: the hook only fires on .cs edits, so dependencies cannot have changed.
 dotnet build \
   Aspid.FastTools.Generators/Aspid.FastTools.Generators/Aspid.FastTools.Generators.csproj \
-  -c Release --nologo -v quiet 1>&2 || exit 2
+  --no-restore -c Release --nologo -v quiet 1>&2 || exit 2
