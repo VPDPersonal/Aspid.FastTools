@@ -22,16 +22,16 @@ namespace Aspid.FastTools.Enums
         private KeyValuePair<TKey, TValue> _current;
         private readonly EnumValue<TValue>[] _values;
 
+        readonly object IEnumerator.Current => _current;
+
+        public readonly KeyValuePair<TKey, TValue> Current => _current;
+
         internal EnumValuesEnumerator(EnumValue<TValue>[] values)
         {
             _index = 0;
             _values = values;
             _current = default;
         }
-
-        public readonly KeyValuePair<TKey, TValue> Current => _current;
-
-        private readonly object IEnumerator.Current => _current;
 
         public bool MoveNext()
         {
