@@ -11,7 +11,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// Persisted as a YAML asset under <c>ProjectSettings/</c> (via <see cref="ScriptableSingleton{T}"/> +
     /// <see cref="FilePathAttribute"/>) so the chosen values are committed to VCS and travel to a clean CI runner —
     /// unlike the per-machine <see cref="EditorPrefs"/> that back the purely cosmetic rest of
-    /// <see cref="SerializeReferenceSettings"/> (rid colours, breakage detection). Commit
+    /// <see cref="SerializeReferenceSettings"/> (breakage detection). Commit
     /// <c>ProjectSettings/SerializeReferenceSharedSettings.asset</c> for these values to reach CI and the rest of the team.
     /// </summary>
     [FilePath("ProjectSettings/SerializeReferenceSharedSettings.asset", FilePathAttribute.Location.ProjectFolder)]
