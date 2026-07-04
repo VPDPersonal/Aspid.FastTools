@@ -56,16 +56,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Sweeps the folder's contained scripts and raises ONE combined dialog for every referenced type found.
         private static AssetDeleteResult GuardFolder(string folderPath)
         {
+            var types = new List<Type>();
+            foreach (var guid in AssetDatabase.FindAssets("t:MonoScript", new[] { folderPath }))
+            {
+                var type = ResolveScriptType(AssetDatabase.GUIDToAssetPath(guid));
+                if (type is not null) types.Add(type);
+            }
+
+            if (types.Count == 0) return AssetDeleteResult.DidNotDelete;
+
             var affected = new List<string>();
             var totalCount = 0;
 
-            foreach (var guid in AssetDatabase.FindAssets("t:MonoScript", new[] { folderPath }))
+            foreach (var (type, count) in CountUsagesBatch(types))
             {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var type = ResolveScriptType(path);
-                if (type is null) continue;
-
-                GatherUsageSample(type, out var count);
                 if (count <= 0) continue;
 
                 totalCount += count;
@@ -81,6 +85,44 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var proceed = EditorUtility.DisplayDialog("Delete Folder", message, "Delete Anyway", "Cancel");
             return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
+        }
+
+        // Counts usages for a whole batch of types at once. A warm index answers per type; a cold index falls back to
+        // ONE combined project sweep matching every type's open key — never one full sweep per contained script, which
+        // would freeze the editor when deleting a folder of scripts.
+        private static IEnumerable<(Type type, int count)> CountUsagesBatch(List<Type> types)
+        {
+            if (SerializeReferenceTypeUsageIndex.IsWarm)
+            {
+                foreach (var type in types)
+                    yield return (type, SerializeReferenceTypeUsageIndex.CountUsages(type));
+
+                yield break;
+            }
+
+            var countsByKey = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var type in types)
+                countsByKey[SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(type))] = 0;
+
+            foreach (var path in AssetDatabase.GetAllAssetPaths())
+            {
+                if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
+
+                // Data-only scan — skipping display-name resolution keeps this a pure text pass, not an asset load.
+                foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
+                {
+                    foreach (var node in document.Nodes)
+                    {
+                        if (node.StoredType.IsEmpty) continue;
+
+                        var key = SerializeReferenceHelpers.OpenTypeKey(node.StoredType);
+                        if (countsByKey.TryGetValue(key, out var count)) countsByKey[key] = count + 1;
+                    }
+                }
+            }
+
+            foreach (var type in types)
+                yield return (type, countsByKey[SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(type))]);
         }
 
         // Uses the warm index when available; a cold index is never warmed (a modal full-project build) just to answer

@@ -126,7 +126,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // Memoise the per-target probe per selection: it allocates a SerializedObject per selected object on every
             // IMGUI repaint, while the all-missing state it measures is stable until the backing assets change.
-            if (MixedCacheMatches(property.propertyPath, first, targets)) return _mixedResult;
+            if (TryGetMixedCache(property.propertyPath, first, targets, out var cached)) return cached;
 
             var result = false;
             foreach (var target in targets)
@@ -143,26 +143,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Per-selection memo backing HasMixedTypes' expensive all-missing multi-select probe.
-        private static string _mixedPath;
-        private static string _mixedFirst;
+        // Per-selection memo backing HasMixedTypes' expensive all-missing multi-select probe. Entries are held per
+        // property path so several empty fields drawn under ONE multi-selection all stay memoized across a repaint —
+        // a single shared slot would be overwritten by each field and miss on the next. The map is scoped to one
+        // selection snapshot (_mixedTargets) and resets whenever the selection changes, so it stays bounded by the
+        // fields the current inspector actually draws.
         private static Object[] _mixedTargets;
-        private static bool _mixedResult;
+        private static readonly Dictionary<string, (string first, bool result)> _mixedResults = new(StringComparer.Ordinal);
 
         // The memo is keyed by selection, not file state, so an EXTERNAL rewrite of the selected assets must drop it
         // explicitly (see SerializeReferenceEditorCacheInvalidator).
         public static void InvalidateMixedTypesCache()
         {
-            _mixedPath = null;
-            _mixedFirst = null;
             _mixedTargets = null;
-            _mixedResult = false;
+            _mixedResults.Clear();
         }
 
-        private static bool MixedCacheMatches(string path, string first, UnityEngine.Object[] targets)
+        private static bool TryGetMixedCache(string path, string first, UnityEngine.Object[] targets, out bool result)
+        {
+            result = false;
+            if (!MixedTargetsMatch(targets)) return false;
+            if (!_mixedResults.TryGetValue(path, out var entry) || entry.first != first) return false;
+
+            result = entry.result;
+            return true;
+        }
+
+        private static bool MixedTargetsMatch(UnityEngine.Object[] targets)
         {
             if (_mixedTargets is null || _mixedTargets.Length != targets.Length) return false;
-            if (_mixedPath != path || _mixedFirst != first) return false;
 
             for (var i = 0; i < targets.Length; i++)
                 if (!ReferenceEquals(_mixedTargets[i], targets[i])) return false;
@@ -172,10 +181,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void StoreMixedCache(string path, string first, UnityEngine.Object[] targets, bool result)
         {
-            _mixedPath = path;
-            _mixedFirst = first;
-            _mixedTargets = (Object[])targets.Clone(); // snapshot the references so a reused array can't alias
-            _mixedResult = result;
+            if (!MixedTargetsMatch(targets))
+            {
+                _mixedResults.Clear();
+                _mixedTargets = (Object[])targets.Clone(); // snapshot the references so a reused array can't alias
+            }
+
+            _mixedResults[path] = (first, result);
         }
 
         /// <summary>
