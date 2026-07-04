@@ -153,7 +153,7 @@ Convenience methods for toggling bold / italic without overwriting the other fla
 
 | Method | Style property | Notes |
 |--------|---------------|-------|
-| `SetWorldSpacing(StyleLength)` | `wordSpacing` | |
+| `SetWordSpacing(StyleLength)` | `wordSpacing` | |
 | `SetLetterSpacing(StyleLength)` | `letterSpacing` | |
 | `SetUnityTextAlign(TextAnchor)` | `unityTextAlign` | |
 | `SetTextShadow(StyleTextShadow)` | `textShadow` | |
@@ -223,7 +223,7 @@ Available on Unity 6000.3+.
 
 | Method | Style property |
 |--------|---------------|
-| `SetAspectRation(StyleRatio)` | `aspectRatio` *(method name preserves the source typo)* |
+| `SetAspectRatio(StyleRatio)` | `aspectRatio` |
 | `SetFilter(StyleList<FilterFunction>)` | `filter` |
 | `SetUnityMaterial(StyleMaterialDefinition)` | `unityMaterial` |
 
@@ -387,7 +387,7 @@ button
 slider
     .SetLowValue(0f)
     .SetHighValue(100f)
-    .SetShowInputField<SliderFloat, float>(true);
+    .SetShowInputField(true);
 ```
 
 | Method | Description |
@@ -521,7 +521,7 @@ listView
 | `AddItemsSourceChanged(Action)` / `RemoveItemsSourceChanged` | `itemsSource` reference changed |
 | `AddCanStartDrag(Func<CanStartDragArgs, bool>)` / `RemoveCanStartDrag` | Custom drag-start gating |
 | `AddSetupDragAndDrop(Func<SetupDragAndDropArgs, StartDragArgs>)` / `RemoveSetupDragAndDrop` | Drag-and-drop preparation |
-| `AddSetupDragAndDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveSetupDragAndDrop` | Drag-and-drop visual mode |
+| `AddDragAndDropUpdate(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveDragAndDropUpdate` | Drag-and-drop visual mode |
 | `AddHandleDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveHandleDrop` | Drop handling |
 
 #### `BaseListView`-specific

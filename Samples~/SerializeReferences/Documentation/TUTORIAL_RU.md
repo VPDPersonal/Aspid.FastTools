@@ -5,8 +5,8 @@
 **Единственное правило:** ставьте `[SerializeReference]` **и** `[TypeSelector]` на одно и то же поле. Первое говорит Unity хранить полиморфный экземпляр, второе рисует выпадающий селектор типов с поиском.
 
 ```csharp
-[TypeSelector]
-[SerializeReference] private IWeapon _weapon;
+[SerializeReference] [TypeSelector]
+private IWeapon _weapon;
 ```
 
 ## Как открыть туториал
@@ -26,7 +26,7 @@
 
 ## Урок 1 — Ваш первый селектор
 
-**Поле:** `[TypeSelector] [SerializeReference] IWeapon _step1Single`
+**Поле:** `IWeapon _step1Single` · `[SerializeReference] [TypeSelector]`
 
 Кликните по выпадающему списку в заголовке поля. Откроется иерархическое окно с поиском, в котором перечислены все конкретные реализации `IWeapon`: `Sword`, `Pistol`, `Shotgun`, `Railgun`, `Crossbow`.
 
@@ -48,7 +48,7 @@
 
 ## Урок 2 — Списки и массивы
 
-**Поле:** `[TypeSelector] [SerializeReference] List<IWeapon> _step2List`
+**Поле:** `List<IWeapon> _step2List` · `[SerializeReference] [TypeSelector]`
 
 `List<T>` (или массив) поля `[SerializeReference]` превращает каждый элемент в собственный независимый селектор.
 
@@ -64,7 +64,7 @@
 
 ## Урок 3 — Абстрактные базы и интерфейсы
 
-**Поле:** `[TypeSelector] [SerializeReference] StatusEffect _step3Abstract`
+**Поле:** `StatusEffect _step3Abstract` · `[SerializeReference] [TypeSelector]`
 
 `StatusEffect` — **абстрактный** класс, создать его через `new` нельзя.
 
@@ -84,14 +84,9 @@
 **Поля:** три поля `IWeapon` с разными аргументами аттрибута.
 
 ```csharp
-[TypeSelector(typeof(IRanged))]
-[SerializeReference] private IWeapon _step4Ranged;
-
-[TypeSelector(typeof(IMelee))]
-[SerializeReference] private IWeapon _step4Melee;
-
-[TypeSelector(typeof(IMelee), typeof(IRanged))] 
-[SerializeReference] private IWeapon _step4MeleeOrRanged;
+[SerializeReference] [TypeSelector(typeof(IRanged))] private IWeapon _step4Ranged;
+[SerializeReference] [TypeSelector(typeof(IMelee))] private IWeapon _step4Melee;
+[SerializeReference] [TypeSelector(typeof(IMelee), typeof(IRanged))] private IWeapon _step4MeleeOrRanged;
 ```
 
 Все три поля объявлены как `IWeapon`, но селектор показывает разные наборы. Базовые типы, переданные в `[TypeSelector(...)]`, работают как **дополнительный фильтр, применяемый ниже объявленного типа поля**:
@@ -114,11 +109,11 @@
 
 ## Урок 5 — Вложенные ссылки (рекурсия)
 
-**Поле:** `[TypeSelector] [SerializeReference] IWeapon _step5Nested`
+**Поле:** `IWeapon _step5Nested` · `[SerializeReference] [TypeSelector]`
 
 **Попробуйте:**
 1. Выберите **`Railgun`** и разверните его foldout.
-2. Найдите его поле `Charge Effect` — это снова `[TypeSelector] [SerializeReference] StatusEffect`.
+2. Найдите его поле `Charge Effect` — это снова `[SerializeReference] [TypeSelector] StatusEffect`.
 3. Откройте *этот* селектор и присвойте `BurnEffect` или `FreezeEffect`.
 
 **Обратите внимание:**
@@ -152,7 +147,7 @@
 
 **Поля:** `WeaponSlot _step7Slot` и `List<WeaponSlot> _step7Slots`.
 
-`WeaponSlot` (`Scripts/WeaponSlot.cs`) — обычный `[Serializable]`-класс (сам не managed-ссылка), содержащий `label`, `priority` и `[TypeSelector] [SerializeReference] IWeapon`.
+`WeaponSlot` (`Scripts/WeaponSlot.cs`) — обычный `[Serializable]`-класс (сам не managed-ссылка), содержащий `label`, `priority` и `[SerializeReference] [TypeSelector] IWeapon`.
 
 **Попробуйте:**
 1. Разверните `_step7Slot` и выберите оружие для его внутреннего поля.
