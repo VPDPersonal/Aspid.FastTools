@@ -113,7 +113,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // A fresh SerializedObject avoids any stale-binding hazard from a captured one; the bound inspector ListView
             // refreshes from the changed target on its next update.
-            var serializedObject = new SerializedObject(target);
+            using var serializedObject = new SerializedObject(target);
             var array = serializedObject.FindProperty(arrayPath);
             if (array is null || !array.isArray) return;
 
