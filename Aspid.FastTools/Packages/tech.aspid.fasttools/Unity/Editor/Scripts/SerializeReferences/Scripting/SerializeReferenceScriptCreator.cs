@@ -13,7 +13,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// <summary>
     /// Generates a <c>[Serializable]</c> subclass stub for a managed-reference field's base type and imports it, so an
     /// author can create a new subtype without leaving the inspector. For an interface base the interface members are
-    /// emitted as auto-properties / <see cref="NotImplementedException"/> method stubs so the file compiles.
+    /// emitted as auto-properties, field-like events and <see cref="NotImplementedException"/> method stubs so the
+    /// file compiles.
     /// </summary>
     internal static class SerializeReferenceScriptCreator
     {
@@ -83,30 +84,101 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
+        // The interface hierarchy is flattened, so same-signature members can arrive from several branches
+        // (e.g. IEnumerable<T> and IEnumerable both declare GetEnumerator). Each signature group emits one public
+        // implicit member; a duplicate that differs only in property/return type cannot share it and is emitted as
+        // an explicit implementation on its declaring interface instead.
         private static void AppendInterfaceMembers(StringBuilder builder, string indent, Type interfaceType)
         {
-            var handledByProperties = new System.Collections.Generic.HashSet<MethodInfo>();
+            const string body = "throw new NotImplementedException()";
 
-            foreach (var property in EnumerateInterfaceMembers(interfaceType).OfType<PropertyInfo>())
+            var members = EnumerateInterfaceMembers(interfaceType).ToArray();
+            var events = members.OfType<EventInfo>().ToArray();
+            var properties = members.OfType<PropertyInfo>().ToArray();
+
+            var handledAccessors = new HashSet<MethodInfo>();
+            foreach (var @event in events)
             {
-                var accessors = property.GetAccessors();
-                foreach (var accessor in accessors) handledByProperties.Add(accessor);
+                if (@event.AddMethod is not null) handledAccessors.Add(@event.AddMethod);
+                if (@event.RemoveMethod is not null) handledAccessors.Add(@event.RemoveMethod);
+            }
+            foreach (var property in properties)
+                foreach (var accessor in property.GetAccessors())
+                    handledAccessors.Add(accessor);
 
-                var get = property.CanRead ? " get;" : string.Empty;
-                var set = property.CanWrite ? " set;" : string.Empty;
-                builder.AppendLine($"{indent}public {TypeName(property.PropertyType)} {property.Name} {{{get}{set} }}");
+            foreach (var group in events.GroupBy(@event => @event.Name))
+            {
+                foreach (var (typeGroup, index) in group.GroupBy(@event => TypeName(@event.EventHandlerType))
+                    .Select((typeGroup, index) => (typeGroup, index)))
+                {
+                    if (index is 0)
+                    {
+                        builder.AppendLine($"{indent}public event {typeGroup.Key} {group.Key};");
+                        continue;
+                    }
+
+                    foreach (var @event in typeGroup)
+                        builder.AppendLine($"{indent}event {typeGroup.Key} {TypeName(@event.DeclaringType)}.{group.Key} {{ add => {body}; remove => {body}; }}");
+                }
             }
 
-            foreach (var method in EnumerateInterfaceMembers(interfaceType).OfType<MethodInfo>())
+            foreach (var group in properties.GroupBy(property => property.Name))
             {
-                if (method.IsSpecialName || handledByProperties.Contains(method)) continue; // property/event accessors
+                foreach (var (typeGroup, index) in group.GroupBy(property => TypeName(property.PropertyType))
+                    .Select((typeGroup, index) => (typeGroup, index)))
+                {
+                    if (index is 0)
+                    {
+                        // An auto-property requires a get accessor, so one is emitted even for a set-only interface property.
+                        var setter = typeGroup.FirstOrDefault(property => property.CanWrite);
+                        var set = setter is null ? string.Empty : IsInitOnly(setter) ? " init;" : " set;";
+                        builder.AppendLine($"{indent}public {typeGroup.Key} {group.Key} {{ get;{set} }}");
+                        continue;
+                    }
 
-                var parameters = string.Join(", ", method.GetParameters().Select(p => $"{TypeName(p.ParameterType)} {p.Name}"));
-                builder.AppendLine($"{indent}public {TypeName(method.ReturnType)} {method.Name}({parameters}) => throw new NotImplementedException();");
+                    foreach (var property in typeGroup)
+                    {
+                        var get = property.CanRead ? $" get => {body};" : string.Empty;
+                        var set = property.CanWrite ? $" {(IsInitOnly(property) ? "init" : "set")} => {body};" : string.Empty;
+                        builder.AppendLine($"{indent}{typeGroup.Key} {TypeName(property.DeclaringType)}.{group.Key} {{{get}{set} }}");
+                    }
+                }
+            }
+
+            var methods = members.OfType<MethodInfo>()
+                .Where(method => !method.IsSpecialName && !handledAccessors.Contains(method)) // property/event accessors
+                .ToArray();
+
+            foreach (var group in methods.GroupBy(method =>
+                $"{method.Name}({string.Join(",", method.GetParameters().Select(p => p.ParameterType.AssemblyQualifiedName ?? p.ParameterType.Name))})"))
+            {
+                foreach (var (returnGroup, index) in group.GroupBy(method => TypeName(method.ReturnType))
+                    .Select((returnGroup, index) => (returnGroup, index)))
+                {
+                    if (index is 0)
+                    {
+                        var method = returnGroup.First();
+                        var parameters = string.Join(", ", method.GetParameters().Select(p => $"{TypeName(p.ParameterType)} {p.Name}"));
+                        builder.AppendLine($"{indent}public {returnGroup.Key} {method.Name}({parameters}) => {body};");
+                        continue;
+                    }
+
+                    foreach (var method in returnGroup)
+                    {
+                        var parameters = string.Join(", ", method.GetParameters().Select(p => $"{TypeName(p.ParameterType)} {p.Name}"));
+                        builder.AppendLine($"{indent}{returnGroup.Key} {TypeName(method.DeclaringType)}.{method.Name}({parameters}) => {body};");
+                    }
+                }
             }
         }
 
-        private static System.Collections.Generic.IEnumerable<MemberInfo> EnumerateInterfaceMembers(Type interfaceType)
+        // C# has no set-only auto-properties and an `init` accessor can only be implemented by another `init`,
+        // detected via the IsExternalInit modreq on the setter's return parameter.
+        private static bool IsInitOnly(PropertyInfo property) =>
+            property.SetMethod is { ReturnParameter: { } returnParameter }
+            && returnParameter.GetRequiredCustomModifiers().Any(modifier => modifier.FullName == "System.Runtime.CompilerServices.IsExternalInit");
+
+        private static IEnumerable<MemberInfo> EnumerateInterfaceMembers(Type interfaceType)
         {
             foreach (var member in interfaceType.GetMembers()) yield return member;
             foreach (var inherited in interfaceType.GetInterfaces())
