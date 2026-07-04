@@ -103,7 +103,7 @@ namespace Aspid.FastTools.Types.Editors
                     !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
                     !t.Name.Contains("<") &&
                     !t.Name.Contains(">") &&
-                    (allow.HasFlag(TypeAllow.Abstract) || !t.IsAbstract) &&
+                    (allow.HasFlag(TypeAllow.Abstract) || t.IsInterface || !t.IsAbstract) &&
                     (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
                     (filter is null || filter(t)))
                 .Select(type => new TypeInfo(type)));
