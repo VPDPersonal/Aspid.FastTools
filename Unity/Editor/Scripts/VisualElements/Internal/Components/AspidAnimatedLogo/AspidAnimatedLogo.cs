@@ -147,7 +147,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
             _pulse = schedule.Execute(UpdatePulse).Every(AnimationIntervalMs);
 
-            RegisterCallback<AttachToPanelEvent>(_ => _pulse.Resume());
+            RegisterCallback<AttachToPanelEvent>(_ =>
+            {
+                _pulse.Resume();
+
+                // Mirror the detach handler: if the pointer is still over the logo, resume the
+                // paused color cycle. Without this the StartColorCycle guard (non-null _colorCycle)
+                // would keep the cross-fade frozen until a full pointer leave/re-enter.
+                if (_hovered) _colorCycle?.Resume();
+            });
             RegisterCallback<DetachFromPanelEvent>(_ =>
             {
                 _pulse.Pause();

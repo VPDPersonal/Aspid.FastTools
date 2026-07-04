@@ -106,5 +106,16 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             element.LineSize = value;
             return element;
         }
+
+        /// <summary>
+        /// Sets <see cref="AspidLabel.LineDirection"/> and returns the element for chaining.
+        /// </summary>
+        /// <param name="element">The element to configure.</param>
+        /// <param name="value">The new line direction.</param>
+        public static AspidLabel SetLineDirection(this AspidLabel element, AspidDividingLineDirectionStyle.Type value)
+        {
+            element.LineDirection = value;
+            return element;
+        }
     }
 }
