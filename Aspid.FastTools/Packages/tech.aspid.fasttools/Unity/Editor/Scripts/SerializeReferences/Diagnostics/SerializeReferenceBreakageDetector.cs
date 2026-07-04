@@ -31,18 +31,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const char BaselineSeparator = '\n';
 
         [InitializeOnLoadMethod]
-        private static void EstablishBaselineOnce()
+        private static void EstablishBaselineOnce() => EditorApplication.delayCall += () =>
         {
-            EditorApplication.delayCall += () =>
-            {
-                if (Application.isBatchMode) return;
-                if (SessionState.GetBool(EstablishedKey, false)) return;
+            if (Application.isBatchMode) return;
+            if (SessionState.GetBool(EstablishedKey, false)) return;
 
-                // First run of the session: record what currently resolves, report nothing (pre-existing breakages are
-                // not "new").
-                RunDetection(report: false);
-            };
-        }
+            // First run of the session: record what currently resolves, report nothing (pre-existing breakages are
+            // not "new").
+            RunDetection(report: false);
+        };
 
         /// <summary>
         /// Re-scans and reports any newly-missing references. Called by the reimport hook on relevant changes.

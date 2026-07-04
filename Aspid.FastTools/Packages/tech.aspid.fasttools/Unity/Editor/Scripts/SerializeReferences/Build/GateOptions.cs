@@ -9,13 +9,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public readonly bool ScanMissingTypes;
         public readonly bool ScanRequiredFields;
 
-        public GateOptions(bool scanMissingTypes, bool scanRequiredFields)
+        public static GateOptions Full =>
+            new(true, true);
+
+        public static GateOptions MissingOnly =>
+            new(true, false);
+
+        private GateOptions(bool scanMissingTypes, bool scanRequiredFields)
         {
             ScanMissingTypes = scanMissingTypes;
             ScanRequiredFields = scanRequiredFields;
         }
-
-        public static GateOptions MissingOnly => new(true, false);
-        public static GateOptions Full => new(true, true);
     }
 }
