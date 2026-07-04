@@ -70,11 +70,6 @@ namespace Aspid.FastTools.Types
         /// </summary>
         public static implicit operator Type?(SerializableType type) => type.Type;
 
-        /// <summary>
-        /// Invalidates the resolved-type cache so the next access re-resolves it — otherwise
-        /// an Inspector edit that changes the stored name (apply during play mode, undo, preset)
-        /// would keep returning the previously resolved type.
-        /// </summary>
         void ISerializationCallbackReceiver.OnAfterDeserialize() =>
             _type = null;
 
@@ -146,11 +141,6 @@ namespace Aspid.FastTools.Types
         /// </summary>
         public static implicit operator Type?(SerializableType<T> type) => type.Type;
 
-        /// <summary>
-        /// Invalidates the resolved-type cache so the next access re-resolves it — otherwise
-        /// an Inspector edit that changes the stored name (apply during play mode, undo, preset)
-        /// would keep returning the previously resolved type.
-        /// </summary>
         void ISerializationCallbackReceiver.OnAfterDeserialize() =>
             _type = null;
 
