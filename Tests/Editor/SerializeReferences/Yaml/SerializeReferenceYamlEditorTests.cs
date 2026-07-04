@@ -60,6 +60,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(1, missing.Count,
                     "A nested '- rid:' list element must not be read as a second, phantom RefIds entry.");
                 Assert.AreEqual(YamlFixtures.GhostPistolRid, missing[0].Rid);
+                Assert.AreEqual(YamlFixtures.NestedListPointerFileId, missing[0].FileId);
                 Assert.AreEqual("GhostPistol", missing[0].StoredType.Class);
             }
             finally { YamlFixtures.Delete(path); }
@@ -121,6 +122,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var railgunFields = SerializeReferenceYamlEditor.GetReferenceFieldNames(
                 _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.RailgunRid);
             CollectionAssert.AreEquivalent(new[] { "_chargeTime", "_chargeEffect" }, railgunFields);
+        }
+
+        [Test]
+        public void GetReferenceFieldNames_SequenceItemsInData_ReportsParentKeyOnly()
+        {
+            // WeaponRack's data holds a list whose "- rid:" items Unity writes at the parent key's own indent — they
+            // must not be reported as bogus "- rid" pseudo-keys next to the real _weapons field.
+            var path = YamlFixtures.WriteTemp(YamlFixtures.NestedListPointerPrefab);
+            try
+            {
+                var fields = SerializeReferenceYamlEditor.GetReferenceFieldNames(
+                    path, YamlFixtures.NestedListPointerFileId, YamlFixtures.NestedListPointerRackRid);
+                CollectionAssert.AreEqual(new[] { "_weapons" }, fields,
+                    "Only the block's own field keys are field-shape signal; sequence items are not keys.");
+            }
+            finally { YamlFixtures.Delete(path); }
         }
 
         [Test]
