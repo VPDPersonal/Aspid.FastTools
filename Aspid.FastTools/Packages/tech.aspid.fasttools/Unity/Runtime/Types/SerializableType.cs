@@ -9,6 +9,10 @@ namespace Aspid.FastTools.Types
     /// A wrapper around <see cref="System.Type"/> that supports Unity Inspector serialization.
     /// The type is stored by its <c>AssemblyQualifiedName</c> and resolved lazily on first access.
     /// </summary>
+    /// <remarks>
+    /// Type resolution is wrapped in a profiler marker; define the
+    /// <c>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile it out.
+    /// </remarks>
     /// <example>
     /// Declare a serializable type field and use the resolved type at runtime:
     /// <code>
@@ -26,7 +30,7 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     [Serializable]
-    public sealed class SerializableType
+    public sealed class SerializableType : ISerializationCallbackReceiver
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         [SerializeField] private string _assemblyQualifiedName;
@@ -65,6 +69,11 @@ namespace Aspid.FastTools.Types
         /// Implicitly converts to <see cref="System.Type"/>. Equivalent to accessing <see cref="Type"/>.
         /// </summary>
         public static implicit operator Type?(SerializableType type) => type.Type;
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize() =>
+            _type = null;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
     }
 
     /// <summary>
@@ -72,6 +81,10 @@ namespace Aspid.FastTools.Types
     /// constrained to types assignable to <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The base constraint type. Only subtypes will be offered in the editor picker.</typeparam>
+    /// <remarks>
+    /// Type resolution is wrapped in a profiler marker; define the
+    /// <c>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile it out.
+    /// </remarks>
     /// <example>
     /// Constrain the picker to <c>MonoBehaviour</c> subtypes only:
     /// <code>
@@ -89,7 +102,7 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     [Serializable]
-    public sealed class SerializableType<T>
+    public sealed class SerializableType<T> : ISerializationCallbackReceiver
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         [SerializeField] private string _assemblyQualifiedName;
@@ -127,5 +140,10 @@ namespace Aspid.FastTools.Types
         /// Implicitly converts to <see cref="System.Type"/>. Equivalent to accessing <see cref="Type"/>.
         /// </summary>
         public static implicit operator Type?(SerializableType<T> type) => type.Type;
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize() =>
+            _type = null;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
     }
 }
