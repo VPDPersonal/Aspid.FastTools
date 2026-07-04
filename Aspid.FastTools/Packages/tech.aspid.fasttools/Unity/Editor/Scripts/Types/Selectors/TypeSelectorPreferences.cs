@@ -76,11 +76,9 @@ namespace Aspid.FastTools.Types.Editors
         /// </summary>
         public static void ClearRecents() => EditorPrefs.DeleteKey(RecentsKey);
 
-        public static bool IsFavorite(string assemblyQualifiedName)
-        {
-            if (string.IsNullOrEmpty(assemblyQualifiedName)) return false;
-            return Favorites.Contains(assemblyQualifiedName);
-        }
+        public static bool IsFavorite(string assemblyQualifiedName) =>
+            !string.IsNullOrEmpty(assemblyQualifiedName)
+            && Favorites.Contains(assemblyQualifiedName);
 
         /// <summary>
         /// Adds or removes <paramref name="assemblyQualifiedName"/> from the favorites set and persists
@@ -163,7 +161,11 @@ namespace Aspid.FastTools.Types.Editors
 
         private static void Save(string key, List<string> entries)
         {
-            var store = new Store { entries = entries };
+            var store = new Store
+            {
+                entries = entries
+            };
+            
             EditorPrefs.SetString(key, JsonUtility.ToJson(store));
         }
 

@@ -130,9 +130,7 @@ namespace Aspid.FastTools.Types.Editors
             var c = evt.character;
 
             if (c == '\0' || char.IsControl(c) || char.IsWhiteSpace(c)) return false;
-            if (evt.ctrlKey || evt.commandKey || evt.altKey) return false;
-
-            return true;
+            return !evt.ctrlKey && !evt.commandKey && !evt.altKey;
         }
 
         private bool HandleUpArrow()

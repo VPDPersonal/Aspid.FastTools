@@ -35,17 +35,11 @@ namespace Aspid.FastTools.Types.Editors
 
         private const string KeyPrefix = "Aspid.FastTools.TypeSelector.Settings.";
 
-        [Serializable]
-        private sealed class Store
-        {
-            public bool showFavorites = true;
-            public int recentsCapacity = DefaultRecentsCapacity;
-        }
-
         private static Store _cache;
 
-        private static string Key => KeyPrefix + PlayerSettings.productGUID;
         private static Store Data => _cache ??= Load();
+
+        private static string Key => KeyPrefix + PlayerSettings.productGUID;
 
         /// <summary>Whether the picker's root page composes the ★ Favorites section. Hiding the section does not
         /// touch the stored favorites (nor the per-row ★ toggle), so flipping it back restores the same list.</summary>
@@ -109,6 +103,13 @@ namespace Aspid.FastTools.Types.Editors
         {
             EditorPrefs.SetString(Key, JsonUtility.ToJson(_cache));
             Changed?.Invoke();
+        }
+
+        [Serializable]
+        private sealed class Store
+        {
+            public bool showFavorites = true;
+            public int recentsCapacity = DefaultRecentsCapacity;
         }
     }
 }

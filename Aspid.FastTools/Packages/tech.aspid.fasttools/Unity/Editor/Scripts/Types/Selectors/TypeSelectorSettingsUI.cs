@@ -31,6 +31,7 @@ namespace Aspid.FastTools.Types.Editors
                     + "Hiding it keeps your saved favorites (and the per-row ★ toggle) — turning it back on restores the same list.\n"
                     + "Per-user setting — stored locally, never committed.",
             };
+
             showFavorites.AddClass(AspidSettingsUI.UserScopeClass);
             showFavorites.RegisterValueChangedCallback(evt => TypeSelectorSettings.ShowFavorites = evt.newValue);
             SyncFromSettings(showFavorites, () => TypeSelectorSettings.ShowFavorites);
@@ -44,6 +45,7 @@ namespace Aspid.FastTools.Types.Editors
                     + "0 hides the section and pauses recording without wiping the already-collected history.\n"
                     + "Per-user setting — stored locally, never committed.",
             };
+
             capacity.AddClass(AspidSettingsUI.UserScopeClass);
             capacity.RegisterValueChangedCallback(evt => TypeSelectorSettings.RecentsCapacity = evt.newValue);
             SyncFromSettings(capacity, () => TypeSelectorSettings.RecentsCapacity);
@@ -92,7 +94,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             var title = $"Clear {list}";
 
-            if (count == 0)
+            if (count is 0)
             {
                 EditorUtility.DisplayDialog(title, $"There are no saved {list} to clear.", "OK");
                 return false;

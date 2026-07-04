@@ -49,10 +49,8 @@ namespace Aspid.FastTools.Types.Editors
                     return;
                 }
 
-                var message = "Required type is not set";
-
                 notice.Set(
-                    message: message,
+                    message: "Required type is not set",
                     actionText: string.Empty,
                     detail: "This [TypeSelector] field is marked required but has no type. Pick a type from the dropdown.",
                     onAction: null);

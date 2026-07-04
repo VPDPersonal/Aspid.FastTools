@@ -209,8 +209,10 @@ namespace Aspid.FastTools.Types.Editors
             AppendSection(RecentSection, TypeSelectorPreferences.LoadRecents());
 
             foreach (var child in _rootNode.Children)
+            {
                 if (child != noneOption)
                     _rootItems.Add(child);
+            }
 
             RebuildVisibleRootItems();
         }
