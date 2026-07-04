@@ -58,7 +58,7 @@ property
 | `SetVector4` | `Vector4` | |
 | `SetQuaternion` | `Quaternion` | |
 | `SetAnimationCurve` | `AnimationCurve` | |
-| `SetEntityId` | `Unity.Entities.EntityId` | Unity 6.2+. Apply-вариант называется `SetEntityIdApply` *(имя метода сохраняет опечатку из исходника: пропущено `And`)* |
+| `SetEntityId` | `EntityId` (`UnityEngine`) | Unity 6.2+ |
 
 ### Enum setters
 

@@ -93,8 +93,8 @@ element (and alias its data); here "+" always appends a fresh, typed instance.
 **Fields:** three `IWeapon` fields with different attribute arguments.
 
 ```csharp
-[SerializeReference] [TypeSelector(typeof(IRanged))]            private IWeapon _step4Ranged;
-[SerializeReference] [TypeSelector(typeof(IMelee))]             private IWeapon _step4Melee;
+[SerializeReference] [TypeSelector(typeof(IRanged))] private IWeapon _step4Ranged;
+[SerializeReference] [TypeSelector(typeof(IMelee))] private IWeapon _step4Melee;
 [SerializeReference] [TypeSelector(typeof(IMelee), typeof(IRanged))] private IWeapon _step4MeleeOrRanged;
 ```
 
