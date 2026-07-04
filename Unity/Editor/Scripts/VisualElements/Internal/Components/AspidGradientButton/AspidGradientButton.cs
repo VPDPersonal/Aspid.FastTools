@@ -211,6 +211,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private void RebuildGradient(Color color)
         {
+            // Textures live only while the element is attached: OnAttachToPanel builds the first
+            // one and OnDetachFromPanel disposes it, so a detached button never holds a texture.
+            if (panel == null) return;
+
             DisposeTexture();
             _gradientTexture = CreateHorizontalFadeTexture(color);
             style.backgroundImage = new StyleBackground(_gradientTexture);
