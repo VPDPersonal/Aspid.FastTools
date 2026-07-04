@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using NUnit.Framework;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -25,6 +25,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void SharedNotice_RendersBelowChildFields()
         {
             var obj = ScriptableObject.CreateInstance<LinkerTestObject>();
+
             try
             {
                 var serialized = new SerializedObject(obj);
@@ -81,8 +82,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private static T FindFirst<T>(VisualElement root) where T : VisualElement
         {
             foreach (var element in DescendantsAndSelf(root))
+            {
                 if (element is T match)
                     return match;
+            }
 
             return null;
         }
@@ -90,8 +93,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private static VisualElement FindFirstWithClass(VisualElement root, string className)
         {
             foreach (var element in DescendantsAndSelf(root))
+            {
                 if (element.ClassListContains(className))
                     return element;
+            }
 
             return null;
         }
@@ -99,8 +104,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private static bool IsAncestorOf(VisualElement ancestor, VisualElement node)
         {
             for (var current = node.hierarchy.parent; current is not null; current = current.hierarchy.parent)
+            {
                 if (current == ancestor)
                     return true;
+            }
 
             return false;
         }
@@ -110,8 +117,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             yield return root;
 
             for (var i = 0; i < root.hierarchy.childCount; i++)
+            {
                 foreach (var descendant in DescendantsAndSelf(root.hierarchy[i]))
                     yield return descendant;
+            }
         }
     }
 }

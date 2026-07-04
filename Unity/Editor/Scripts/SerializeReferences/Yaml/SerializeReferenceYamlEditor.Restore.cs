@@ -1,8 +1,8 @@
 using System;
 using System.IO;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors

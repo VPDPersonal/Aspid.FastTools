@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using UnityEditor;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -91,8 +91,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var restored = 0;
             foreach (var snapshot in snapshots)
+            {
                 if (SerializeReferenceYamlEditor.TryRestoreArrayElementReference(assetPath, snapshot.FileId, snapshot.ElementPath, snapshot.EntryLines))
                     restored++;
+            }
 
             if (restored == 0) return;
 

@@ -2,7 +2,6 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.Types.Editors;
 using Object = UnityEngine.Object;

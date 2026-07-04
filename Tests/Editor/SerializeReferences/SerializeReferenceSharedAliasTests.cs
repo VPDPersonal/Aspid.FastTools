@@ -1,6 +1,6 @@
-using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using NUnit.Framework;
 using System.Collections.Generic;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -62,7 +62,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(new[] { "primary" }, fromElement,
                     "The list element's alias list must hold exactly the primary field, not itself.");
             }
-            finally { Object.DestroyImmediate(obj); }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
         }
 
         [Test]
@@ -80,7 +83,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.IsEmpty(SerializeReferenceHelpers.GetSharedReferenceAliasPaths(serialized.FindProperty("primary")),
                     "A reference used by a single field is not part of any shared group.");
             }
-            finally { Object.DestroyImmediate(obj); }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
         }
 
         [Test]
@@ -98,7 +104,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 StringAssert.Contains("Make unique", detail,
                     "The tooltip must explain the notice's Make-unique affordance.");
             }
-            finally { Object.DestroyImmediate(obj); }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
         }
     }
 }

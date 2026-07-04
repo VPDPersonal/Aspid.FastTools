@@ -1,11 +1,7 @@
-using System;
-using System.Linq;
 using UnityEngine;
-using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
-using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors

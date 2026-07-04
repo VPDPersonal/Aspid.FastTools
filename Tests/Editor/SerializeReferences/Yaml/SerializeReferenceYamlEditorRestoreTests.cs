@@ -1,5 +1,4 @@
 using System.IO;
-using System.Linq;
 using NUnit.Framework;
 
 // ReSharper disable once CheckNamespace
@@ -175,11 +174,14 @@ MonoBehaviour:
             // The user re-assigned element 0 to a real reference (rid 1003) after the loss — restore must not clobber it.
             var reassigned = File.ReadAllLines(_degradedPath);
             for (var i = 0; i < reassigned.Length; i++)
+            {
                 if (reassigned[i].Trim() == "- rid: -2" && reassigned[i].StartsWith("  - "))
                 {
                     reassigned[i] = "  - rid: 1003"; // first field-level element pointer
                     break;
                 }
+            }
+
             File.WriteAllLines(_degradedPath, reassigned);
 
             var entryLines = new[]

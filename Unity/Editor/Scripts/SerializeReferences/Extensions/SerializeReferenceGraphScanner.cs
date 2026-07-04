@@ -20,18 +20,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         // Document headers, the RefIds-key lookup and the inline-type grammar are single-sourced in
         // SerializeReferenceYaml so this scanner and the repair flow read Unity's RefIds shape identically.
-        private static readonly Regex ReferencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
-        private static readonly Regex EntryRid = new(@"^(?<indent>\s*)-\s+rid:\s*(?<id>-?\d+)\s*$", RegexOptions.Compiled);
-        private static readonly Regex TypeLine = new(@"^\s*type:\s*\{(?<body>.*)\}\s*$", RegexOptions.Compiled);
-        private static readonly Regex DataKey = new(@"^\s*data:\s*$", RegexOptions.Compiled);
+        private static readonly Regex _referencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
+        private static readonly Regex _entryRid = new(@"^(?<indent>\s*)-\s+rid:\s*(?<id>-?\d+)\s*$", RegexOptions.Compiled);
+        private static readonly Regex _typeLine = new(@"^\s*type:\s*\{(?<body>.*)\}\s*$", RegexOptions.Compiled);
+        private static readonly Regex _dataKey = new(@"^\s*data:\s*$", RegexOptions.Compiled);
 
         // A "rid:" pointer anywhere in a body/data line (inline "{rid: N}", "- rid: N", or a bare "rid: N" scalar).
         // The leading non-word lookbehind keeps a field whose name ends in "rid" (e.g. "_hybrid: 5") from matching;
         // a matched number is further validated against the known RefIds set before becoming an edge.
-        private static readonly Regex RidPointer = new(@"(?<!\w)rid:\s*(?<id>-?\d+)", RegexOptions.Compiled);
+        private static readonly Regex _ridPointer = new(@"(?<!\w)rid:\s*(?<id>-?\d+)", RegexOptions.Compiled);
 
         // A mapping key on a body line ("_weapon:", "data:", a sequence item's "- _weapon:"), used to label a root.
-        private static readonly Regex MappingKey = new(@"^\s*(?:-\s+)?(?<key>[A-Za-z_][\w\-]*)\s*:", RegexOptions.Compiled);
+        private static readonly Regex _mappingKey = new(@"^\s*(?:-\s+)?(?<key>[A-Za-z_][\w\-]*)\s*:", RegexOptions.Compiled);
 
         /// <summary>
         /// Scans every object document in the asset and returns the managed-reference graph of each one that has a
@@ -84,7 +84,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // field pointer (every [SerializeReference] field is an empty list — nothing to graph).
         private static ReferenceGraphDocument BuildDocument(string[] lines, long fileId, int start, int end)
         {
-            var referencesStart = FindKey(lines, ReferencesKey, start, end);
+            var referencesStart = FindKey(lines, _referencesKey, start, end);
             var bodyEnd = referencesStart >= 0 ? referencesStart : end;
 
             var refIdsStart = SerializeReferenceYaml.FindRefIdsStart(lines, start, end);
@@ -111,7 +111,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             for (var i = refIdsStart + 1; i < end; i++)
             {
-                var ridMatch = EntryRid.Match(lines[i]);
+                var ridMatch = _entryRid.Match(lines[i]);
                 if (!ridMatch.Success || !long.TryParse(ridMatch.Groups["id"].Value, out var rid)) continue;
 
                 // Negative rids are Unity's sentinels (-2 = RefIdNull, written for any null field; -1 = unknown), not
@@ -121,7 +121,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var type = default(ManagedTypeName);
                 for (var j = i + 1; j < end && j <= i + 4; j++)
                 {
-                    var typeMatch = TypeLine.Match(lines[j]);
+                    var typeMatch = _typeLine.Match(lines[j]);
                     if (!typeMatch.Success) continue;
 
                     // On a parse failure type stays default/empty (and the node renders as just "rid N").
@@ -141,7 +141,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             for (var i = start + 1; i < bodyEnd; i++)
             {
-                foreach (Match match in RidPointer.Matches(lines[i]))
+                foreach (Match match in _ridPointer.Matches(lines[i]))
                 {
                     if (!long.TryParse(match.Groups["id"].Value, out var rid)) continue;
 
@@ -166,19 +166,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             for (var i = refIdsStart + 1; i < end; i++)
             {
-                var ridMatch = EntryRid.Match(lines[i]);
+                var ridMatch = _entryRid.Match(lines[i]);
                 if (!ridMatch.Success || !long.TryParse(ridMatch.Groups["id"].Value, out var parent)) continue;
                 if (parent < 0) continue; // a sentinel entry carries no data block of its own
 
                 var entryIndent = ridMatch.Groups["indent"].Length;
                 var entryEnd = SerializeReferenceYaml.FindEntryEnd(lines, i, end, entryIndent);
 
-                var dataStart = FindKey(lines, DataKey, i + 1, entryEnd);
+                var dataStart = FindKey(lines, _dataKey, i + 1, entryEnd);
                 if (dataStart < 0) continue;
 
                 for (var j = dataStart + 1; j < entryEnd; j++)
                 {
-                    foreach (Match match in RidPointer.Matches(lines[j]))
+                    foreach (Match match in _ridPointer.Matches(lines[j]))
                     {
                         if (!long.TryParse(match.Groups["id"].Value, out var child)) continue;
                         if (child == parent) continue;
@@ -205,8 +205,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (root.Rid >= 0) parentCount[root.Rid] = parentCount.GetValueOrDefault(root.Rid) + 1;
 
             foreach (var pair in document.Edges)
-            foreach (var edge in pair.Value)
-                if (edge.Rid >= 0) parentCount[edge.Rid] = parentCount.GetValueOrDefault(edge.Rid) + 1;
+            {
+                foreach (var edge in pair.Value)
+                    if (edge.Rid >= 0) parentCount[edge.Rid] = parentCount.GetValueOrDefault(edge.Rid) + 1;
+            }
 
             foreach (var pair in parentCount)
                 if (pair.Value >= 2) document.Shared.Add(pair.Key);
@@ -272,7 +274,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (lines[line].TrimStart().StartsWith("- "))
                 {
                     // The element's own field key, if the dash line carries one ("- _weapon:"), is the deepest segment.
-                    var elementKey = MappingKey.Match(lines[line]);
+                    var elementKey = _mappingKey.Match(lines[line]);
                     if (elementKey.Success && !IsStructuralKey(elementKey.Groups["key"].Value))
                         segments.Add(elementKey.Groups["key"].Value);
 
@@ -293,7 +295,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     if (ownerLine < 0) break;
 
-                    var ownerKey = MappingKey.Match(lines[ownerLine]);
+                    var ownerKey = _mappingKey.Match(lines[ownerLine]);
                     if (!ownerKey.Success || IsStructuralKey(ownerKey.Groups["key"].Value)) break;
 
                     segments.Add($"{ownerKey.Groups["key"].Value}[{index}]");
@@ -301,7 +303,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
                 else
                 {
-                    var match = MappingKey.Match(lines[line]);
+                    var match = _mappingKey.Match(lines[line]);
                     if (match.Success && !IsStructuralKey(match.Groups["key"].Value))
                         segments.Add(match.Groups["key"].Value);
 

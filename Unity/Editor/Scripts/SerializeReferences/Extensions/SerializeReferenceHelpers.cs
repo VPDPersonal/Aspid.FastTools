@@ -4,12 +4,11 @@ using UnityEngine;
 using UnityEditor;
 using System.Reflection;
 using System.Collections;
-using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
-using Aspid.FastTools.Types.Editors;
 using UnityEditor.SceneManagement;
 using System.Runtime.Serialization;
+using Aspid.FastTools.Types.Editors;
 using System.Text.RegularExpressions;
 using System.Runtime.CompilerServices;
 using Object = UnityEngine.Object;
@@ -147,7 +146,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Per-selection memo backing HasMixedTypes' expensive all-missing multi-select probe.
         private static string _mixedPath;
         private static string _mixedFirst;
-        private static UnityEngine.Object[] _mixedTargets;
+        private static Object[] _mixedTargets;
         private static bool _mixedResult;
 
         // The memo is keyed by selection, not file state, so an EXTERNAL rewrite of the selected assets must drop it
@@ -175,7 +174,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             _mixedPath = path;
             _mixedFirst = first;
-            _mixedTargets = (UnityEngine.Object[])targets.Clone(); // snapshot the references so a reused array can't alias
+            _mixedTargets = (Object[])targets.Clone(); // snapshot the references so a reused array can't alias
             _mixedResult = result;
         }
 
@@ -248,7 +247,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // mutation sites drop the memo explicitly for same-frame reads.
         private static int _missingProbeFrame = -1;
         private static readonly Dictionary<(int instanceId, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
-            MissingProbeMemo = new();
+            _missingProbeMemo = new();
 
         // For mutations that must be visible to a read later in the SAME frame.
         public static void InvalidateMissingTypeMemo() => _missingProbeFrame = -1;
@@ -265,14 +264,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var frame = Time.frameCount;
             if (_missingProbeFrame != frame)
             {
-                MissingProbeMemo.Clear();
+                _missingProbeMemo.Clear();
                 _missingProbeFrame = frame;
             }
 
             var target = property.serializedObject.targetObject;
             var key = (target != null ? target.GetInstanceID() : 0, property.propertyPath);
 
-            if (MissingProbeMemo.TryGetValue(key, out var cached))
+            if (_missingProbeMemo.TryGetValue(key, out var cached))
             {
                 referenceId = cached.referenceId;
                 storedType = cached.storedType;
@@ -280,7 +279,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             var missing = ProbeMissingType(property, out referenceId, out storedType);
-            MissingProbeMemo[key] = (missing, referenceId, storedType);
+            _missingProbeMemo[key] = (missing, referenceId, storedType);
             return missing;
         }
 
@@ -1011,8 +1010,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             foreach (var rid in closure)
+            {
                 if (!keep.Contains(rid) && dataByRid.ContainsKey(rid))
                     SerializationUtility.ClearManagedReferenceWithMissingType(target, rid);
+            }
         }
 
         // The rid pointers inside a missing entry's payload block. The look-behind keeps a field that merely ENDS in
@@ -1020,8 +1021,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static IEnumerable<long> EnumerateRidPointers(string data, long self)
         {
             foreach (Match match in Regex.Matches(data ?? string.Empty, @"(?<!\w)rid:\s*(-?\d+)"))
+            {
                 if (long.TryParse(match.Groups[1].Value, out var child) && child != self)
                     yield return child;
+            }
         }
 
         // Best-effort recovery of a missing reference's stored data: Unity surfaces the orphaned payload as YAML
@@ -1231,8 +1234,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SharedIndices.Clear();
             var next = 1;
             foreach (var id in AliasOrder)
+            {
                 if (counts.TryGetValue(id, out var count) && count > 1)
                     SharedIndices[id] = next++;
+            }
 
             _sharedIndicesFrame = frame;
             _sharedIndicesObject = serializedObject;
@@ -1251,12 +1256,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (!GetSharedReferencePathsById(property.serializedObject)
                     .TryGetValue(property.managedReferenceId, out var paths))
+            {
                 return result;
+            }
 
             var selfPath = property.propertyPath;
             foreach (var path in paths)
+            {
                 if (path != selfPath)
                     result.Add(path);
+            }
 
             return result;
         }

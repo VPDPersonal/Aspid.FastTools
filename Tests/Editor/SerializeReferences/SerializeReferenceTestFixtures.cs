@@ -12,7 +12,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     internal interface ITestWeapon { }
 
     [Serializable]
-    internal sealed class TestSword : ITestWeapon { public int damage; }
+    internal sealed class TestSword : ITestWeapon
+    {
+        public int damage;
+    }
 
     // Two managed-reference fields, used to prove Link to Existing actually shares one rid.
     internal sealed class LinkerTestObject : ScriptableObject

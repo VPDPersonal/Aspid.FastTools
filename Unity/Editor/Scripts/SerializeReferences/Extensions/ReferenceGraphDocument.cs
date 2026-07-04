@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -32,8 +33,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public ReferenceGraphNode? FindNode(long rid)
         {
-            foreach (var node in Nodes)
-                if (node.Rid == rid) return node;
+            foreach (var node in Nodes.Where(node => node.Rid == rid))
+                return node;
 
             return null;
         }

@@ -2,9 +2,9 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEditor.ShortcutManagement;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
+using UnityEditor.ShortcutManagement;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using Object = UnityEngine.Object;
 

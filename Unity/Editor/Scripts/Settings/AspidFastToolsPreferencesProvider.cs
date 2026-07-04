@@ -18,18 +18,15 @@ namespace Aspid.FastTools.Editors
         private const string SettingsPath = "Preferences/Aspid FastTools";
 
         [SettingsProvider]
-        public static SettingsProvider Create()
+        public static SettingsProvider Create() => new(SettingsPath, SettingsScope.User)
         {
-            return new SettingsProvider(SettingsPath, SettingsScope.User)
+            label = "Aspid FastTools",
+            activateHandler = static (_, root) => AspidSettingsUI.BuildProviderPage(root, AspidSettingsScope.User),
+            keywords = new[]
             {
-                label = "Aspid FastTools",
-                activateHandler = static (_, root) => AspidSettingsUI.BuildProviderPage(root, AspidSettingsScope.User),
-                keywords = new[]
-                {
-                    "Aspid", "FastTools", "Theme", "Style", "USS", "Color", "Palette", "Override",
-                    "Type Selector", "Favorites", "Recent", "Breakage", "Welcome", "Dropdown",
-                },
-            };
-        }
+                "Aspid", "FastTools", "Theme", "Style", "USS", "Color", "Palette", "Override",
+                "Type Selector", "Favorites", "Recent", "Breakage", "Welcome", "Dropdown",
+            },
+        };
     }
 }

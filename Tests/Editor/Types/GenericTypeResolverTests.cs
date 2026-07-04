@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Aspid.FastTools.Types.Editors;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {

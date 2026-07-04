@@ -16,10 +16,12 @@ namespace Aspid.FastTools.Editors.Tests
         private bool _autoShow;
 
         [SetUp]
-        public void SetUp() => _autoShow = WelcomeSettings.AutoShowEnabled;
+        public void SetUp() =>
+            _autoShow = WelcomeSettings.AutoShowEnabled;
 
         [TearDown]
-        public void TearDown() => WelcomeSettings.AutoShowEnabled = _autoShow;
+        public void TearDown() =>
+            WelcomeSettings.AutoShowEnabled = _autoShow;
 
         [Test]
         public void Setter_RaisesChanged_OnlyOnRealChange()
@@ -27,7 +29,7 @@ namespace Aspid.FastTools.Editors.Tests
             WelcomeSettings.AutoShowEnabled = true;
 
             var fired = 0;
-            void Handler() => fired++;
+
             WelcomeSettings.Changed += Handler;
             try
             {
@@ -41,6 +43,8 @@ namespace Aspid.FastTools.Editors.Tests
             {
                 WelcomeSettings.Changed -= Handler;
             }
+
+            void Handler() => fired++;
         }
 
         [Test]

@@ -51,10 +51,12 @@ namespace Aspid.FastTools.Types.Editors
             ThrowExceptionIfInvalidProperty(property);
 
             if (property.propertyType == SerializedPropertyType.ManagedReference)
+            {
                 return SerializeReferenceUIToolkitPropertyDrawer.Draw(
                     label: preferredLabel,
                     property: property,
                     baseTypes: GetTypesFromAttribute(property));
+            }
 
             return TypeUIToolkitPropertyDrawer.Draw(
                 label: preferredLabel,
@@ -72,14 +74,14 @@ namespace Aspid.FastTools.Types.Editors
         private Type[] GetTypesFromAttribute(SerializedProperty property)
         {
             var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
-            
+
             var assemblyQualifiedNames = typeSelectorAttribute.AssemblyQualifiedNames
                 .Where(assemblyQualifiedName => !string.IsNullOrWhiteSpace(assemblyQualifiedName))
                 .ToArray();
-            
+
             if (assemblyQualifiedNames.Length is 0)
                 return Array.Empty<Type>();
-            
+
             var targetObject = property.serializedObject.targetObject;
             var targetType = targetObject.GetType();
             var types = new List<Type>();
@@ -87,7 +89,7 @@ namespace Aspid.FastTools.Types.Editors
             foreach (var name in assemblyQualifiedNames)
             {
                 var member = GetMemberFromHierarchy(targetType, name);
-                
+
                 if (member is not null)
                 {
                     AddTypesFromMember(types, member, targetObject);
@@ -95,7 +97,7 @@ namespace Aspid.FastTools.Types.Editors
                 else
                 {
                     var type = Type.GetType(name, throwOnError: false);
-                    
+
                     if (type is not null)
                         types.Add(type);
                 }
@@ -107,17 +109,17 @@ namespace Aspid.FastTools.Types.Editors
         private static MemberInfo GetMemberFromHierarchy(Type type, string memberName)
         {
             const BindingFlags bindingAttr = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly;
-            
+
             var currentType = type;
             while (currentType is not null)
             {
                 var members = currentType.GetMember(memberName, bindingAttr);
                 if (members.Length > 0)
                     return members[0];
-                
+
                 currentType = currentType.BaseType;
             }
-            
+
             return null;
         }
 
@@ -133,15 +135,15 @@ namespace Aspid.FastTools.Types.Editors
             switch (value)
             {
                 case null: return;
-                
+
                 case Type type:
                     types.Add(type);
                     return;
-                
+
                 case Type[] typeArray:
                     types.AddRange(typeArray.Where(t => t is not null));
                     return;
-                
+
                 case string assemblyQualifiedName:
                 {
                     var type = Type.GetType(assemblyQualifiedName, throwOnError: false);
@@ -149,13 +151,13 @@ namespace Aspid.FastTools.Types.Editors
                         types.Add(type);
                     return;
                 }
-                
+
                 case string[] assemblyQualifiedNames:
                 {
                     foreach (var assemblyQualifiedName in assemblyQualifiedNames)
                     {
                         if (string.IsNullOrWhiteSpace(assemblyQualifiedName)) continue;
-                        
+
                         var type = Type.GetType(assemblyQualifiedName, throwOnError: false);
                         if (type is not null)
                             types.Add(type);
@@ -164,13 +166,15 @@ namespace Aspid.FastTools.Types.Editors
                 }
             }
         }
-        
+
         private static void ThrowExceptionIfInvalidProperty(SerializedProperty property)
         {
             if (property.propertyType is not (SerializedPropertyType.String or SerializedPropertyType.ManagedReference))
+            {
                 throw new ArgumentException(
                     "[TypeSelector] can only be applied to a string field or a [SerializeReference] managed-reference field.",
                     nameof(property));
+            }
         }
     }
 }

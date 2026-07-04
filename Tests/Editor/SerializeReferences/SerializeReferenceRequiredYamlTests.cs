@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
-using NUnit.Framework;
 using UnityEngine;
+using NUnit.Framework;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
 
@@ -11,10 +11,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // classifies each by kind (string vs [SerializeReference] managed reference).
     internal sealed class MixedRequiredObject : ScriptableObject
     {
-        [SerializeReference, TypeSelector(Required = true)] public ITestWeapon requiredRef;
-        [TypeSelector(Required = true)] public string requiredString;
-        [SerializeReference, TypeSelector] public ITestWeapon optionalRef;
-        [TypeSelector] public string optionalString;
+        [SerializeReference, TypeSelector(Required = true)]
+        public ITestWeapon requiredRef;
+
+        [TypeSelector(Required = true)]
+        public string requiredString;
+
+        [SerializeReference, TypeSelector]
+        public ITestWeapon optionalRef;
+
+        [TypeSelector]
+        public string optionalString;
+
         public int plain;
     }
 
@@ -85,7 +93,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void FindUnsetRequiredFields_BothSet_ReportsNone()
         {
             _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneSet);
-
             var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, Resolve);
 
             Assert.AreEqual(0, violations.Count, "A set managed reference and a populated string are not violations.");
@@ -97,7 +104,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             // Both required keys are missing from the document (object saved before the fields were added / stripped doc).
             // An absent key needs a reserialize, not a build failure, so it must not be reported as a violation.
             _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneAbsentKeys);
-
             var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, Resolve);
 
             Assert.AreEqual(0, violations.Count, "An absent required key is not a violation — it needs a reserialize.");
@@ -107,7 +113,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void FindUnsetRequiredFields_MixedAndUnknownScript_ReportsOnlyKnownUnset()
         {
             _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneMixedUnknownScript);
-
             var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, Resolve);
 
             Assert.AreEqual(1, violations.Count,

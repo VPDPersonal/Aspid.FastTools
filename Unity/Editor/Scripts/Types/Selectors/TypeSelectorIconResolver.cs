@@ -67,10 +67,8 @@ namespace Aspid.FastTools.Types.Editors
             // Built-in editor icon (e.g. "d_ScriptableObject Icon"). IconContent never throws but may
             // return an empty content whose image is null.
             var content = EditorGUIUtility.IconContent(icon);
-            if (content?.image is not null) return content.image;
+            return content?.image ?? Resources.Load<Texture>(icon);
 
-            // Fall back to a Resources texture path.
-            return Resources.Load<Texture>(icon);
         }
     }
 }

@@ -114,7 +114,7 @@ namespace Aspid.FastTools.Ids.Editors
             _addRow = new IdRegistryAddRowVisualElement(ValidateAddRow);
             _addRow.AddRequested += OnAddRowAddRequested;
             container.AddChild(_addRow);
-            
+
             container.TrackSerializedObjectValue(_serializedObject, _ => RebuildEntries());
             RebuildEntries();
 
@@ -272,7 +272,7 @@ namespace Aspid.FastTools.Ids.Editors
             if (newIndex >= 0) _list.ScrollToItem(newIndex);
         }
 
-        private void OnRowNameFocusIn(IdRegistryEntryVisualElement row, IdRegistryEntryData data)
+        private static void OnRowNameFocusIn(IdRegistryEntryVisualElement row, IdRegistryEntryData data)
         {
             if (data.IsDuplicate)
                 row.SetError("Name already exists.");
@@ -329,7 +329,7 @@ namespace Aspid.FastTools.Ids.Editors
             RemoveAt(data.OriginalIndex);
             Commit();
         }
-        
+
         private AddRowValidation ValidateAddRow(string trimmed)
         {
             if (!IdRegistryValidator.IsValidName(trimmed, IsTakenExcluding(), out var err))
@@ -351,8 +351,10 @@ namespace Aspid.FastTools.Ids.Editors
             var show = value <= maxAssigned && value >= 1;
 
             if (show)
+            {
                 return NextIdWarning.Visible(
                     $"Reusing ID {value} may silently remap references: assets that previously pointed to this ID will appear bound to the next name you create. Proceed only if you know these IDs are unused.");
+            }
 
             return value < 1
                 ? NextIdWarning.Hidden("Next ID must be ≥ 1.")

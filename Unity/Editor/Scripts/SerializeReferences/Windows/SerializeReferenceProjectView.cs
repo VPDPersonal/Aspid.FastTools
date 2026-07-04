@@ -3,8 +3,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
-using UnityEditor.UIElements;
-using Aspid.FastTools.Types;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
@@ -50,8 +48,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string SummaryClass = RootClass + "__summary";
         private const string SummaryUndoClass = RootClass + "__summary-undo";
         private const string ScrollClass = RootClass + "__scroll";
-        private const string EntryClass = RootClass + "__entry";
-        private const string EntryRidClass = RootClass + "__entry-rid";
         private const string PickerClass = RootClass + "__picker";
         private const string PickerAttachedClass = PickerClass + "--attached";
 
@@ -76,16 +72,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ScanLabel = "Scan Project";
         private const string RescanLabel = "Rescan";
 
-        private VisualElement _empty;
-        private VisualElement _results;
-        private AspidLabel _resultsHeader;
-        private VisualElement _summaries;
-        private Label _resultsHint;
-        private VisualElement _list;
+        private readonly VisualElement _empty;
+        private readonly VisualElement _results;
+        private readonly AspidLabel _resultsHeader;
+        private readonly VisualElement _summaries;
+        private readonly Label _resultsHint;
+        private readonly VisualElement _list;
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
         private VisualElement _openPickerCard;
-        private AspidGradientButton _scanButton;
+        private readonly AspidGradientButton _scanButton;
 
         /// <summary>
         /// Jump from a project-audit result row to that asset's Inspect graph. Wired by the host window.
@@ -566,8 +562,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var cleared = 0;
             foreach (var entry in entries)
+            {
                 if (SerializeReferenceHelpers.TryClearMissingReferenceInMemory(entry.AssetPath, entry.Entry.Rid, storedType))
                     cleared++;
+            }
 
             return cleared;
         }
@@ -792,8 +790,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // "…and N more" remainder.
             var edits = new List<(ProjectEntry entry, RewriteEdit edit)>(entries.Count);
             foreach (var entry in entries)
+            {
                 if (SerializeReferenceYamlEditor.TryComputeRewrite(entry.AssetPath, entry.Entry.FileId, entry.Entry.Rid, newType, out var edit))
                     edits.Add((entry, edit));
+            }
 
             for (var i = 0; i < edits.Count && i < maxShown; i++)
             {

@@ -48,11 +48,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Per (target instance id, parent array path) snapshot of the last observed index → rid layout. Static, so it is
         // cleared automatically on domain reload; dead-target entries are pruned lazily on access and on Undo resync.
-        private static readonly Dictionary<ArrayKey, Snapshot> Snapshots = new();
+        private static readonly Dictionary<ArrayKey, Snapshot> _snapshots = new();
 
         // Arrays whose de-alias fix is queued for the next editor tick. Guards against re-detecting (the layout still
         // shows the alias until the deferred fix runs) and re-scheduling on every intervening repaint.
-        private static readonly HashSet<ArrayKey> Pending = new();
+        private static readonly HashSet<ArrayKey> _pending = new();
 
         private static bool _undoHooked;
 
@@ -87,7 +87,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var key = new ArrayKey(target.GetInstanceID(), arrayPath);
 
-            if (Pending.Contains(key)) return false;
+            if (_pending.Contains(key)) return false;
 
             var arrayProperty = serializedObject.FindProperty(arrayPath);
             if (arrayProperty is null || !arrayProperty.isArray) return false;
@@ -97,7 +97,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var size = arrayProperty.arraySize;
             var signature = ComputeSignature(arrayProperty, size);
 
-            if (Snapshots.TryGetValue(key, out var snapshot) &&
+            if (_snapshots.TryGetValue(key, out var snapshot) &&
                 snapshot.Size == size && snapshot.Signature == signature)
                 return false;
 
@@ -131,11 +131,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // can invalidate the inspector's active property walk — so it is deferred to the next editor tick.
         private static void ScheduleFix(ArrayKey key, Object target, string arrayPath, int duplicateIndex)
         {
-            Pending.Add(key);
+            _pending.Add(key);
             EditorApplication.delayCall += () =>
             {
                 // The fix re-verifies the alias on a fresh read, so a stale schedule is a safe no-op.
-                Pending.Remove(key);
+                _pending.Remove(key);
                 MakeElementUnique(target, arrayPath, duplicateIndex);
             };
         }
@@ -279,13 +279,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             // On overflow drop the whole cache, with Pending alongside so the two never desync: a re-snapshot never
             // auto-fixes and a queued fix re-verifies before applying, so at worst a fix is cancelled, never mis-applied.
-            if (!Snapshots.ContainsKey(key) && Snapshots.Count >= MaxTrackedArrays)
+            if (!_snapshots.ContainsKey(key) && _snapshots.Count >= MaxTrackedArrays)
             {
-                Snapshots.Clear();
-                Pending.Clear();
+                _snapshots.Clear();
+                _pending.Clear();
             }
 
-            Snapshots[key] = new Snapshot(size, signature, map);
+            _snapshots[key] = new Snapshot(size, signature, map);
         }
 
         // The parent array path of an element path. Nested arrays resolve to the innermost array (last marker) — the
@@ -318,8 +318,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             // An Undo can revert to a state a fix was scheduled against, or restore an intentional alias; dropping both
             // makes the next observation re-record (never auto-fix), so a reverted alias is recorded, not re-fixed.
-            Snapshots.Clear();
-            Pending.Clear();
+            _snapshots.Clear();
+            _pending.Clear();
         }
 
         private readonly struct ArrayKey : IEquatable<ArrayKey>

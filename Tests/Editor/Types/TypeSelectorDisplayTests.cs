@@ -128,8 +128,10 @@ namespace Aspid.FastTools.Types.Editors.Tests
             if (node.IsType) yield return node;
 
             foreach (var child in node.Children)
+            {
                 foreach (var leaf in Leaves(child))
                     yield return leaf;
+            }
         }
 
         private static TreeNode FindLeaf(TreeNode root, Type type) =>

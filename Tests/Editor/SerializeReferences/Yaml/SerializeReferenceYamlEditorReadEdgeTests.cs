@@ -31,7 +31,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     path, YamlFixtures.MonoBehaviourFileId, "_primaryWeapon._chargeEffect", out var nested));
                 Assert.AreEqual(-2, nested, "A cleared nested field reads as the null id (-2).");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -44,7 +47,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(path, fileId: 0, "_weapon", out var rid));
                 Assert.AreEqual(-2, rid);
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -62,7 +68,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(before, File.ReadAllText(path),
                     "A rewrite against an absent document must leave the file byte-identical.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -79,7 +88,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     path, YamlFixtures.ListOfStructFileId, "_slots.Array.data[1]._weapon", out var second));
                 Assert.AreEqual(3002, second, "Second List<struct> element's nested managed reference must resolve.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -95,7 +107,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     "The single-quoted generic class identity must round-trip un-quoted.");
                 Assert.AreEqual("Aspid.FastTools.Samples.SerializeReferences", type.Namespace);
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
     }
 }

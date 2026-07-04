@@ -1,7 +1,6 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.Types.Editors;
 
@@ -156,8 +155,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption, captionTooltip),
                     FocusType.Passive, captionStyle))
+            {
                 // Under mixed types there is no single "current" type to pre-highlight — open the picker unselected.
                 ShowSelector(property, fieldType, baseTypes, mixedTypes ? null : currentType, dropdownRect);
+            }
+
             EditorGUI.showMixedValue = previousMixed;
 
             if (hasValue)
@@ -419,20 +421,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Find every asset/field using the current type, via the sr: Quick Search provider.
             var usagesType = SerializeReferenceHelpers.GetCurrentType(property);
             if (usagesType != null)
+            {
                 menu.AddItem(new GUIContent($"Find Usages of {usagesType.Name}"), false,
                     () => SerializeReferenceUsageSearchProvider.OpenSearch(usagesType));
+            }
 
             // Link this field to an existing instance of the same object (inverse of Make Unique), single-target only.
             if (SerializeReferenceHelpers.NoticesApply(property))
+            {
                 foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(property))
                 {
                     var path = candidate.Path;
                     menu.AddItem(new GUIContent($"Link to Existing/{candidate.Type.Name}  ({path})"), false,
                         () => SerializeReferenceLinker.LinkTo(persistent, path));
                 }
+            }
 
             // Generate a new subclass of the field's type and assign it once it compiles.
             if (fieldType != null)
+            {
                 menu.AddItem(new GUIContent("Create New Script…"), false, () =>
                 {
                     if (!SerializeReferenceScriptCreator.TryCreateSubclassStub(fieldType, out _, out var fullTypeName)) return;
@@ -443,6 +450,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     foreach (var target in persistent.serializedObject.targetObjects)
                         SerializeReferencePendingAssignment.Enqueue(target, persistent.propertyPath, fullTypeName);
                 });
+            }
 
             if (usagesType != null)
             {
@@ -462,6 +470,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             menu.ShowAsContext();
+            return;
 
             void Paste(SerializedProperty target)
             {
