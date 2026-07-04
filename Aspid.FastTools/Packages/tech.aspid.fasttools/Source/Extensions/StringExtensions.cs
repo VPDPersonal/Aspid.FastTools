@@ -27,21 +27,22 @@ namespace Aspid.FastTools
 
                 if (c is '_' or '-' or ' ')
                 {
-                    if (!previousWasSeparator && builder.Length > 0)
-                    {
-                        builder.Append('-');
-                        previousWasSeparator = true;
-                    }
-
+                    previousWasSeparator = true;
                     continue;
                 }
 
-                if (char.IsUpper(c))
+                if (previousWasSeparator)
+                {
+                    if (builder.Length > 0)
+                        builder.Append('-');
+
+                    builder.Append(char.ToLowerInvariant(c));
+                }
+                else if (char.IsUpper(c))
                 {
                     var isNewWord =
-                        !previousWasSeparator
-                        && (char.IsLower(value[i - 1]) || char.IsDigit(value[i - 1])
-                        || (i + 1 < value.Length && char.IsLower(value[i + 1])));
+                        char.IsLower(value[i - 1]) || char.IsDigit(value[i - 1])
+                        || (i + 1 < value.Length && char.IsLower(value[i + 1]));
 
                     if (isNewWord)
                         builder.Append('-');
