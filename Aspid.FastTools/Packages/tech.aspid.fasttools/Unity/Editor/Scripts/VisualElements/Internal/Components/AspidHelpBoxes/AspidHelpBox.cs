@@ -40,7 +40,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         [UxmlAttribute]
         public string Title
         {
-            get => _titleElement?.Text ?? string.Empty;
+            get => _titleElement is { parent: not null } ? _titleElement.Text : string.Empty;
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
