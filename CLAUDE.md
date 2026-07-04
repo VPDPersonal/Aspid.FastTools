@@ -35,7 +35,7 @@ The Unity package itself has no CLI build — Unity compiles it when the project
 
 **Assembly boundary rule:** `Unity/Runtime/` code must NOT reference `UnityEditor` — it ships with player builds.
 
-**Optional Mathematics integration:** new Mathematics-dependent code goes in the satellite `Aspid.FastTools.Unity.VisualElements.Math` assembly, compiled only when `com.unity.mathematics` is installed (via `versionDefines`). The same `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION` symbol is also declared on the main runtime asmdef for the rare single-file gate in `Aspid.FastTools.Unity`.
+**Optional Mathematics integration:** new Mathematics-dependent code goes in the satellite `Aspid.FastTools.Unity.VisualElements.Math` assembly, compiled only when `com.unity.mathematics` is installed (via `versionDefines` declaring `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION`). Only the satellite asmdef declares that symbol — the main runtime asmdef does not.
 
 ### Assembly Definitions
 
@@ -76,7 +76,7 @@ All components load `AspidStyles.DefaultStyleSheet` as the base stylesheet and f
 
 **IMGUI Scopes** (`Unity/Editor/Scripts/IMGUI/`): Disposable `VerticalScope`, `HorizontalScope`, `ScrollViewScope` wrappers with `Rect` properties.
 
-**Editor Extensions** (`Unity/Editor/Scripts/Extensions/`): `GetScriptName()` and `GetScriptNameWithIndex()` on `MonoScript` — respects `[AddComponentMenu]` attribute and appends index suffix for duplicate components.
+**Editor Extensions** (`Unity/Editor/Scripts/Extensions/`): `GetScriptName()` on `UnityEngine.Object` and `GetScriptNameWithIndex()` on `Component` — respects `[AddComponentMenu]` attribute and appends index suffix for duplicate components.
 
 **Welcome View** (`Unity/Editor/Scripts/Welcome/`): `WelcomeView` — the **Welcome** tab of `SerializeReferenceWindow` (menu `Tools/Aspid 🐍/FastTools/Welcome`) + `WelcomeWindowStartup` (auto-show on first import) + `WelcomeSettings*`. UXML/USS at `Resources/UI/Windows/Welcome/`. Lists installable samples from `package.json`.
 
