@@ -28,9 +28,11 @@ namespace Aspid.FastTools.Types.Editors
                 parts.Add("Enter Select");
 
             if (!searchFocused && selected is { IsType: true })
+            {
                 parts.Add(TypeSelectorPreferences.IsFavorite(selected.AssemblyQualifiedName)
                     ? TypeSelectorGlyphs.StarFilled + " Space Unfavorite"
                     : TypeSelectorGlyphs.StarEmpty + " Space Favorite");
+            }
 
             if (isSearching)
             {

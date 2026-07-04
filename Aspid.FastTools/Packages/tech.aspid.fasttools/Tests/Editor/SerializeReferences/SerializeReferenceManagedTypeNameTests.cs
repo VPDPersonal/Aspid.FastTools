@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -13,7 +13,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // Top-level generic types so the open/closed identity test keys on "Modifier`1"/"Pair`2" rather than a nested name.
     internal sealed class GenericModifier<T> { }
 
-    internal sealed class GenericPair<T, U> { }
+    internal sealed class GenericPair<T, TU> { }
 
     /// <summary>
     /// Coverage for <see cref="ManagedTypeName"/> — the YAML type-identity builder used by every repair write. Pins the
@@ -42,10 +42,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
-        public void FromType_Null_IsEmpty()
-        {
+        public void FromType_Null_IsEmpty() =>
             Assert.IsTrue(ManagedTypeName.FromType(null).IsEmpty);
-        }
 
         [Test]
         public void FromType_NestedType_JoinsDeclaringChainWithSlash()

@@ -44,7 +44,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     path, YamlFixtures.MonoBehaviourFileId, "_sidearms.Array.data[0]", out var rid));
                 Assert.AreEqual(-2, rid);
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -64,7 +67,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 StringAssert.DoesNotContain("GhostPistol", after);
                 StringAssert.DoesNotContain("Shotgun", after);
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -78,7 +84,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     path, YamlFixtures.MonoBehaviourFileId, 987654));
                 Assert.AreEqual(before, File.ReadAllText(path), "A no-op null must leave the file byte-identical.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -109,7 +118,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(1, CountOccurrences(after, NullSentinelType),
                     "Two nulled aliases still share Unity's single null sentinel.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -122,7 +134,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(2, SerializeReferenceYamlEditor.CountPointersTo(
                     path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid));
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -135,7 +150,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(1, SerializeReferenceYamlEditor.CountPointersTo(
                     path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid));
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -161,7 +179,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(count, CountOccurrences(after, "rid: -2") - 1,
                     "CountPointersTo must equal the number of field pointers TryNullReference nulls.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -173,12 +194,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(0, SerializeReferenceYamlEditor.CountPointersTo(
                     path, YamlFixtures.MonoBehaviourFileId, 987654));
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         private static int CountOccurrences(string haystack, string needle)
         {
             var count = 0;
+
             for (var i = haystack.IndexOf(needle, System.StringComparison.Ordinal);
                  i >= 0;
                  i = haystack.IndexOf(needle, i + needle.Length, System.StringComparison.Ordinal))

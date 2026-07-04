@@ -264,23 +264,16 @@ namespace Aspid.FastTools.Editors
             Action<Action> unsubscribe)
             where TControl : VisualElement, INotifyValueChanged<TValue>
         {
-            void Handler()
-            {
-                // Only an in-progress TEXT edit must survive a store change: composite fields focus an inner element
-                // (hence the containment check), and a clicked switch/enum keeps panel focus indefinitely, so
-                // skipping any focused control would silently freeze that surface's mirror.
-                if (control.focusController?.focusedElement is VisualElement focused &&
-                    (focused == control || control.Contains(focused)) &&
-                    focused is ITextEdition or TextElement)
-                    return;
-
-                control.SetValueWithoutNotify(read());
-            }
 
             // Docking/undocking re-parents the tree to another panel (a detach then an attach WITHOUT a rebuild), so
             // the sync is armed from build time and then follows the attach/detach pair, kept single by the guard;
             // re-arming also re-reads, so a change made while detached is not missed.
             var subscribed = false;
+
+            control.RegisterCallback<AttachToPanelEvent>(_ => Arm());
+            control.RegisterCallback<DetachFromPanelEvent>(_ => Disarm());
+            Arm();
+            return;
 
             void Arm()
             {
@@ -297,9 +290,18 @@ namespace Aspid.FastTools.Editors
                 unsubscribe(Handler);
             }
 
-            control.RegisterCallback<AttachToPanelEvent>(_ => Arm());
-            control.RegisterCallback<DetachFromPanelEvent>(_ => Disarm());
-            Arm();
+            void Handler()
+            {
+                // Only an in-progress TEXT edit must survive a store change: composite fields focus an inner element
+                // (hence the containment check), and a clicked switch/enum keeps panel focus indefinitely, so
+                // skipping any focused control would silently freeze that surface's mirror.
+                if (control.focusController?.focusedElement is VisualElement focused &&
+                    (focused == control || control.Contains(focused)) &&
+                    focused is ITextEdition or TextElement)
+                    return;
+
+                control.SetValueWithoutNotify(read());
+            }
         }
     }
 }

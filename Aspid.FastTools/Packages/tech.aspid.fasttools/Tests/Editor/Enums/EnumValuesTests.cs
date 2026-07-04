@@ -3,7 +3,6 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
-using Aspid.FastTools.Enums;
 using UnityEngine.TestTools;
 using System.Text.RegularExpressions;
 using UnityEngine.TestTools.Constraints;
@@ -89,10 +88,12 @@ namespace Aspid.FastTools.Enums.Tests
         private Host _host;
 
         [SetUp]
-        public void SetUp() => _host = ScriptableObject.CreateInstance<Host>();
+        public void SetUp() =>
+            _host = ScriptableObject.CreateInstance<Host>();
 
         [TearDown]
-        public void TearDown() => UnityEngine.Object.DestroyImmediate(_host);
+        public void TearDown() =>
+            UnityEngine.Object.DestroyImmediate(_host);
 
         private void AddEntry(string field, string key, int value, string enumType = null)
         {
@@ -129,7 +130,6 @@ namespace Aspid.FastTools.Enums.Tests
         public void Typed_GetValue_ReturnsMappedValue()
         {
             AddEntry("_seasons", nameof(Season.Summer), 42);
-
             Assert.AreEqual(42, _host.Seasons.GetValue(Season.Summer));
         }
 
@@ -170,7 +170,6 @@ namespace Aspid.FastTools.Enums.Tests
         public void Typed_Flags_ContainmentMatchesWhenNoExactEntry()
         {
             AddEntry("_sides", nameof(Sides.Left), 1);
-
             Assert.AreEqual(1, _host.Sides.GetValue(Sides.Both));
         }
 
@@ -353,7 +352,6 @@ namespace Aspid.FastTools.Enums.Tests
         public void Untyped_GetValue_ReturnsMappedValue()
         {
             AddEntry("_untyped", nameof(Season.Summer), 42, typeof(Season).AssemblyQualifiedName);
-
             Assert.AreEqual(42, _host.Untyped.GetValue(Season.Summer));
         }
 
@@ -394,7 +392,6 @@ namespace Aspid.FastTools.Enums.Tests
             AddEntry("_untyped", nameof(Season.Winter), 42);
 
             LogAssert.Expect(LogType.Warning, new Regex("No enum type configured"));
-
             Assert.AreEqual(-1, _host.Untyped.GetValue(Season.Winter));
         }
 
@@ -405,7 +402,6 @@ namespace Aspid.FastTools.Enums.Tests
             AddEntry("_untyped", nameof(Season.Winter), 42, "Not.A.Real.Type, Fake.Assembly");
 
             LogAssert.Expect(LogType.Error, new Regex("Couldn't resolve enum type"));
-
             Assert.AreEqual(-1, _host.Untyped.GetValue(Season.Winter));
         }
 

@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Aspid.FastTools.SerializeReferences.Editors;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {

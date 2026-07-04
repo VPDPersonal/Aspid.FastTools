@@ -449,6 +449,7 @@ MonoBehaviour:
             Directory.CreateDirectory(dir);
             var path = Path.Combine(dir, Guid.NewGuid().ToString("N") + ".prefab");
             File.WriteAllText(path, yaml);
+
             return path;
         }
 

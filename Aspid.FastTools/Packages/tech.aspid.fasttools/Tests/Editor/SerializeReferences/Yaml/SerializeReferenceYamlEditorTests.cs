@@ -21,10 +21,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             !type.Class.StartsWith("Ghost", StringComparison.Ordinal);
 
         [SetUp]
-        public void SetUp() => _path = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
+        public void SetUp() =>
+            _path = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
 
         [TearDown]
-        public void TearDown() => YamlFixtures.Delete(_path);
+        public void TearDown()
+            => YamlFixtures.Delete(_path);
 
         [Test]
         public void FindMissingReferences_ReportsOnlyUnresolvableEntry()

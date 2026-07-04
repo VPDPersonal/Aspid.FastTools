@@ -3,6 +3,7 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using System.Linq;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -77,8 +78,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static GateSeverity ResolveSeverity(GateSeverity committed, bool warnOnly, bool failOverride)
         {
             if (warnOnly) return GateSeverity.Warn;
-            if (failOverride) return GateSeverity.Fail;
-            return committed;
+            return failOverride ? GateSeverity.Fail : committed;
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static int ComputeExitCode(int violationCount, GateSeverity severity) =>
             violationCount > 0 && severity == GateSeverity.Fail ? 1 : 0;
 
-        public static string BuildReport(IReadOnlyList<GateViolation> violations)
+        private static string BuildReport(IReadOnlyList<GateViolation> violations)
         {
             var builder = new StringBuilder();
             builder.AppendLine($"# SerializeReference Gate Report");
@@ -113,19 +113,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static string GetArgValue(string[] args, string flag)
         {
             for (var i = 0; i < args.Length - 1; i++)
+            {
                 if (string.Equals(args[i], flag, StringComparison.OrdinalIgnoreCase))
                     return args[i + 1];
+            }
 
             return null;
         }
 
-        private static bool HasFlag(string[] args, string flag)
-        {
-            foreach (var arg in args)
-                if (string.Equals(arg, flag, StringComparison.OrdinalIgnoreCase))
-                    return true;
-
-            return false;
-        }
+        private static bool HasFlag(string[] args, string flag) =>
+            args.Any(arg => string.Equals(arg, flag, StringComparison.OrdinalIgnoreCase));
     }
 }

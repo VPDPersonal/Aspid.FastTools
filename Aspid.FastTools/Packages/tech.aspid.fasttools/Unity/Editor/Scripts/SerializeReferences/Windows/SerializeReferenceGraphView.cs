@@ -3,14 +3,14 @@ using UnityEngine;
 using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
-using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
-using Aspid.FastTools.Types.Editors;
 using UnityEditor.SceneManagement;
+using Aspid.FastTools.Types.Editors;
 using System.Text.RegularExpressions;
 using Aspid.FastTools.UIElements.Editors.Internal;
+using System.Linq;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
@@ -80,7 +80,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeBadgesClass = RootClass + "__node-badges";
 
         private const string BadgeClass = RootClass + "__badge";
-        private const string BadgeMissingClass = BadgeClass + "--missing";
         private const string BadgeSharedClass = BadgeClass + "--shared";
 
         private const string ChipClass = RootClass + "__chip";
@@ -115,14 +114,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly Action<Object> _onTargetChanged;
 
         private Object _target;
-        private ObjectField _assetField;
-        private AspidGradientButton _rescanButton;
-        private VisualElement _empty;
-        private VisualElement _overview;
-        private AspidLabel _overviewTitle;
-        private Label _overviewHint;
-        private ScrollView _scroll;
-        private VisualElement _list;
+        private readonly ObjectField _assetField;
+        private readonly VisualElement _empty;
+        private readonly VisualElement _overview;
+        private readonly AspidLabel _overviewTitle;
+        private readonly Label _overviewHint;
+        private readonly VisualElement _list;
 
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
@@ -167,16 +164,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // dragging an asset in doesn't bubble to the button's Clickable and re-run Rescan.
             _assetField.RegisterCallback<PointerDownEvent>(evt => evt.StopPropagation());
 
-            _rescanButton = new AspidGradientButton("Rescan", _ => Rescan())
+            var rescanButton = new AspidGradientButton("Rescan", _ => Rescan())
                 .AddClass(RescanClass);
-            _rescanButton.AddTrailingContent(_assetField);
-            _rescanButton.FillWithTrailingContent();
+            rescanButton.AddTrailingContent(_assetField);
+            rescanButton.FillWithTrailingContent();
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(CardClass)
                 .AddChild(cardTitle)
                 .AddChild(cardDescription)
-                .AddChild(_rescanButton);
+                .AddChild(rescanButton);
 
             _empty = new VisualElement().AddClass(EmptyClass);
 
@@ -206,10 +203,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(_overview)
                 .AddChild(_list);
 
-            _scroll = new ScrollView().AddClass(ScrollClass);
-            _scroll.AddChild(content);
+            var scroll = new ScrollView().AddClass(ScrollClass);
+            scroll.AddChild(content);
 
-            root.AddChild(_scroll);
+            root.AddChild(scroll);
 
             Rescan();
         }
@@ -342,14 +339,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Used only for the overview hint; empty slots are not "issues".
         private static int CountEmptySlots(ReferenceGraphDocument document)
         {
-            var count = 0;
-
-            foreach (var root in document.Roots)
-                if (root.IsEmpty) count++;
+            var count = document.Roots.Count(root => root.IsEmpty);
 
             foreach (var pair in document.Edges)
-            foreach (var edge in pair.Value)
-                if (edge.IsEmpty) count++;
+            {
+                count += pair.Value.Count(edge => edge.IsEmpty);
+            }
 
             return count;
         }
@@ -427,11 +422,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     : StatusStyle.Type.Success;
 
             _overviewTitle.Text = broken > 0
-                ? (broken == 1 ? "1 missing reference" : $"{broken} missing references")
+                ? broken == 1 ? "1 missing reference" : $"{broken} missing references"
                 : orphans > 0
-                    ? (orphans == 1 ? "1 orphaned reference" : $"{orphans} orphaned references")
+                    ? orphans == 1 ? "1 orphaned reference" : $"{orphans} orphaned references"
                     : migrations > 0
-                        ? (migrations == 1 ? "1 pending migration" : $"{migrations} pending migrations")
+                        ? migrations == 1 ? "1 pending migration" : $"{migrations} pending migrations"
                         : "No missing references";
 
             _overviewTitle.LabelStatus = status;
@@ -444,9 +439,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static string BuildOverviewHint(int total, int missing, int orphans, int empties, int migrations)
         {
             var references = total == 1 ? "1 managed reference" : $"{total} managed references";
-            var emptyNote = empties == 0
-                ? string.Empty
-                : empties == 1 ? " · 1 unassigned field" : $" · {empties} unassigned fields";
+            var emptyNote = empties switch
+            {
+                0 => string.Empty,
+                1 => " · 1 unassigned field",
+                _ => $" · {empties} unassigned fields"
+            };
 
             if (missing == 0 && orphans == 0)
                 return $"{references} mapped{emptyNote} — every [SerializeReference] type resolves.";
@@ -455,8 +453,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var parts = new List<string>(4);
             if (broken > 0) parts.Add(broken == 1 ? "1 missing type" : $"{broken} missing types");
-            if (migrations > 0)
-                parts.Add(migrations == 1 ? "1 pending [MovedFrom] migration" : $"{migrations} pending [MovedFrom] migrations");
+            if (migrations > 0) parts.Add(migrations == 1 ? "1 pending [MovedFrom] migration" : $"{migrations} pending [MovedFrom] migrations");
             if (orphans > 0) parts.Add(orphans == 1 ? "1 orphaned rid" : $"{orphans} orphaned rids");
             if (empties > 0) parts.Add(empties == 1 ? "1 unassigned field" : $"{empties} unassigned fields");
 
@@ -585,8 +582,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static string CombinePath(string parent, string child)
         {
             if (string.IsNullOrEmpty(child)) return parent;
-            if (string.IsNullOrEmpty(parent)) return child;
-            return $"{parent}.{child}";
+            return string.IsNullOrEmpty(parent) ? child : $"{parent}.{child}";
         }
 
         // A node card whose band is an inline dropdown: a missing card edits through the YAML, a healthy one through

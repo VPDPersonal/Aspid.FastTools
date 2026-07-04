@@ -1,6 +1,6 @@
 using System;
-using NUnit.Framework;
 using UnityEngine;
+using NUnit.Framework;
 using UnityEngine.Scripting.APIUpdating;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests

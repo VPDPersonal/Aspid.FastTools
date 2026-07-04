@@ -1,8 +1,8 @@
 using System.Text;
 using UnityEngine;
 using UnityEditor.Build;
-using UnityEditor.Build.Reporting;
 using System.Collections.Generic;
+using UnityEditor.Build.Reporting;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -32,7 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Debug.LogWarning(summary);
         }
 
-        public static string BuildSummary(IReadOnlyList<GateViolation> violations)
+        private static string BuildSummary(IReadOnlyList<GateViolation> violations)
         {
             var files = new HashSet<string>();
             var types = new HashSet<string>();

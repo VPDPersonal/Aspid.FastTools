@@ -14,12 +14,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private static bool _hasContent;
         private static string _json;
-        private static Type _type;
 
         /// <summary>
         /// The concrete type of the copied value, or <see langword="null"/> when an empty reference was copied.
         /// </summary>
-        public static Type Type => _type;
+        public static Type Type { get; private set; }
 
         /// <summary>
         /// Captures <paramref name="value"/> into the clipboard. Copying <see langword="null"/> is meaningful — a
@@ -28,7 +27,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static void Copy(object value)
         {
             _hasContent = true;
-            _type = value?.GetType();
+            Type = value?.GetType();
             _json = value is null ? null : JsonUtility.ToJson(value);
         }
 
@@ -42,9 +41,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool CanPasteInto(Type fieldType, Func<Type, bool> filter = null)
         {
             if (!_hasContent) return false;
-            if (_type is null) return true;
-            if (fieldType is not null && !fieldType.IsAssignableFrom(_type)) return false;
-            return filter is null || filter(_type);
+            if (Type is null) return true;
+            if (fieldType is not null && !fieldType.IsAssignableFrom(Type)) return false;
+            return filter is null || filter(Type);
         }
 
         /// <summary>
@@ -53,11 +52,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         public static object CreateInstance()
         {
-            if (!_hasContent || _type is null) return null;
+            if (!_hasContent || Type is null) return null;
 
             return string.IsNullOrEmpty(_json)
-                ? SerializeReferenceHelpers.CreateInstance(_type)
-                : JsonUtility.FromJson(_json, _type);
+                ? SerializeReferenceHelpers.CreateInstance(Type)
+                : JsonUtility.FromJson(_json, Type);
         }
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using UnityEngine;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -291,8 +290,10 @@ namespace Aspid.FastTools.Types.Editors
             if (items is null) return -1;
 
             for (var i = start; i >= 0 && i < items.Count; i += step)
+            {
                 if (items[i].IsSelectable || items[i].HasChildren || items[i].IsSectionTitle)
                     return i;
+            }
 
             return -1;
         }

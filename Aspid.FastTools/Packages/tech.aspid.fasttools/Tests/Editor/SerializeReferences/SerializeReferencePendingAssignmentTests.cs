@@ -1,9 +1,9 @@
-using System.Collections.Generic;
-using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
-using Entry = Aspid.FastTools.SerializeReferences.Editors.SerializeReferencePendingAssignment.Entry;
+using UnityEditor;
+using NUnit.Framework;
+using System.Collections.Generic;
 using Store = Aspid.FastTools.SerializeReferences.Editors.SerializeReferencePendingAssignment;
+using Entry = Aspid.FastTools.SerializeReferences.Editors.SerializeReferencePendingAssignment.Entry;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {

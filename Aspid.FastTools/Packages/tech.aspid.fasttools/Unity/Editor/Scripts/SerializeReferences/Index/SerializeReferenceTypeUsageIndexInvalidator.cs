@@ -29,8 +29,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             foreach (var asset in imported)
+            {
                 if (SerializeReferenceHelpers.IsScanCandidate(asset))
                     SerializeReferenceTypeUsageIndex.RebuildAsset(asset);
+            }
         }
 
         private static bool HasCandidate(string[] paths) =>

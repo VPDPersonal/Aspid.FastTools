@@ -23,9 +23,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Persists the header foldout's expanded state across selection changes, like Unity's own PropertyField list.
         private const string ViewDataKeyPrefix = "aspid-fasttools-serialize-reference-list::";
 
-        private readonly ListView _listView;
-        private readonly SerializedProperty _property;
         private readonly Type[] _baseTypes;
+        private readonly SerializedProperty _property;
 
         public SerializeReferenceListField(string label, SerializedProperty property, Type elementType, Type[] baseTypes = null)
         {
@@ -34,7 +33,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             this.AddClass(BlockClass);
 
-            _listView = new ListView
+            var listView = new ListView
             {
                 showBorder = true,
                 reorderable = true,
@@ -60,15 +59,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var target = serializedObject.targetObject;
                 var arrayPath = property.propertyPath;
-                _listView.overridingAddButtonBehavior = (_, button) =>
+                listView.overridingAddButtonBehavior = (_, button) =>
                     SerializeReferenceListAddBehavior.OpenAppendPicker(target, arrayPath, elementType, _baseTypes, button);
             }
 
-            this.AddChild(_listView);
+            this.AddChild(listView);
 
             // Self-bind: when built dynamically (a nested list inside an already-drawn reference) no ancestor Bind
             // pass will reach it; a second bind of the same path is a harmless no-op.
-            _listView.Bind(serializedObject);
+            listView.Bind(serializedObject);
         }
 
         private void BindItem(VisualElement element, int index)

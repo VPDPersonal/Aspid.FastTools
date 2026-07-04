@@ -14,10 +14,9 @@ namespace Aspid.FastTools.Types.Editors
         {
             var currentType = property.serializedObject.targetObject.GetType();
             var rowHeight = EditorGUIUtility.singleLineHeight;
-            var openButtonWidth = rowHeight;
 
-            var dropdownRect = new Rect(position.x, position.y, position.width - openButtonWidth - 2f, rowHeight);
-            var openButtonRect = new Rect(dropdownRect.xMax + 2f, position.y, openButtonWidth, rowHeight);
+            var dropdownRect = new Rect(position.x, position.y, position.width - rowHeight - 2f, rowHeight);
+            var openButtonRect = new Rect(dropdownRect.xMax + 2f, position.y, rowHeight, rowHeight);
 
             if (EditorGUI.DropdownButton(dropdownRect,
                     new GUIContent(TypeSelectorHelpers.GetTypeSelectorTitle(currentType)), FocusType.Passive))

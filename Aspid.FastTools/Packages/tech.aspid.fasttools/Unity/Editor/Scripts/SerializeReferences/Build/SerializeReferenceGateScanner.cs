@@ -37,11 +37,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
 
                 if (options.ScanMissingTypes)
+                {
                     foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves))
                     {
                         if (IsPendingMigration(path, entry)) continue;
                         violations.Add(new GateViolation(path, entry.FileId, entry.Rid, entry.StoredType, GateViolationKind.MissingType, string.Empty));
                     }
+                }
 
                 if (options.ScanRequiredFields)
                 {
@@ -105,8 +107,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static void CollectSceneRequiredViolations(string assetPath, List<GateViolation> violations)
         {
             foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(assetPath, RequiredFieldsForScript))
+            {
                 violations.Add(new GateViolation(assetPath, entry.FileId, entry.Rid, default,
                     GateViolationKind.RequiredUnset, entry.FieldName));
+            }
         }
 
         // Resolves a MonoBehaviour script guid to the required fields of its C# type (via MonoScript), memoised per run.

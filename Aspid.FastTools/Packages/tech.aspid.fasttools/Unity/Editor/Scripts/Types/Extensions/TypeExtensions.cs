@@ -93,7 +93,7 @@ namespace Aspid.FastTools.Types.Editors
         /// A tuple of the matched <see cref="MonoScript"/> and the 1-based line number of the type declaration.
         /// If no script is found, returns <c>(null, 0)</c>.
         /// </returns>
-        public static (MonoScript script, int line) FindMonoScriptWithLine(this Type type)
+        private static (MonoScript script, int line) FindMonoScriptWithLine(this Type type)
         {
             var script = type.FindMonoScript();
             if (script is null) return (script: null, line: 0);
@@ -152,7 +152,7 @@ namespace Aspid.FastTools.Types.Editors
                     yield return type;
             }
         }
-        
+
         private static int FindTypeLineNumber(string text, string typeName, bool isEnum)
         {
             if (string.IsNullOrEmpty(text)) return 1;
@@ -168,11 +168,11 @@ namespace Aspid.FastTools.Types.Editors
 
             return 1;
         }
-        
+
         private static string GetPattern(bool isEnum, string typeName) => isEnum
             ? $@"\benum\s+{Regex.Escape(typeName)}\b"
             : $@"\b(class|struct|record)\s+{Regex.Escape(typeName)}\b";
-        
+
         private static Regex GetRegex(bool isEnum, string typeName)
         {
             var key = $"{isEnum}:{typeName}";

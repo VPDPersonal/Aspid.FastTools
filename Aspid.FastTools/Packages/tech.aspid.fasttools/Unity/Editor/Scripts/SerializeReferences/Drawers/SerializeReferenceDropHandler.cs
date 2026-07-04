@@ -49,10 +49,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var previous = persistent.managedReferenceValue;
 
             if (SerializeReferenceHelpers.IsEditingMultipleObjects(persistent))
+            {
                 SerializeReferenceHelpers.ApplyManagedReferencePerTarget(persistent,
                     target => SerializeReferenceHelpers.CreateInstancePreservingData(type, target));
-            else
-                persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
+            }
+            else persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
         }
     }
 }

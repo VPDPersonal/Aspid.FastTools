@@ -1,8 +1,8 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using Aspid.FastTools.Editors;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -40,13 +40,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <exception cref="ArgumentException">The property is not a managed reference.</exception>
         public static VisualElement CreateField(SerializedProperty property, string label = null, params Type[] baseTypes)
         {
-            if (property is null) throw new ArgumentNullException(nameof(property));
-            if (property.propertyType is not SerializedPropertyType.ManagedReference)
-                throw new ArgumentException(
-                    "CreateField expects a [SerializeReference] managed-reference property; for a list/array of them use CreateList.",
-                    nameof(property));
+            if (property is null)
+                throw new ArgumentNullException(nameof(property));
 
-            return new SerializeReferenceField(label ?? property.displayName, property, baseTypes);
+            return property.propertyType is not SerializedPropertyType.ManagedReference
+                ? throw new ArgumentException("CreateField expects a [SerializeReference] managed-reference property; for a list/array of them use CreateList.", nameof(property))
+                : new SerializeReferenceField(label ?? property.displayName, property, baseTypes);
         }
 
         /// <summary>
@@ -63,9 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (property is null) throw new ArgumentNullException(nameof(property));
             if (!IsManagedReferenceArray(property))
-                throw new ArgumentException(
-                    "CreateList expects an array/list property whose elements are [SerializeReference] managed references.",
-                    nameof(property));
+                throw new ArgumentException("CreateList expects an array/list property whose elements are [SerializeReference] managed references.", nameof(property));
 
             return new SerializeReferenceListField(
                 label ?? property.displayName,
@@ -81,7 +78,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// True when <paramref name="property"/> is an array/list whose elements are managed references.
         /// </summary>
-        internal static bool IsManagedReferenceArray(SerializedProperty property) =>
+        private static bool IsManagedReferenceArray(SerializedProperty property) =>
             property.isArray &&
             property.arrayElementType.StartsWith(ManagedReferenceElementPrefix, StringComparison.Ordinal);
 
@@ -91,7 +88,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// reflected field's array/List&lt;T&gt; shape; falls back to the first element's declared typename, then to
         /// <see cref="object"/>.
         /// </summary>
-        internal static Type GetElementType(SerializedProperty property)
+        private static Type GetElementType(SerializedProperty property)
         {
             if (property.GetMemberInfo() is System.Reflection.FieldInfo field)
             {
@@ -120,9 +117,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (property is null) throw new ArgumentNullException(nameof(property));
             if (property.propertyType is not SerializedPropertyType.ManagedReference)
-                throw new ArgumentException(
-                    "DrawFieldLayout expects a [SerializeReference] managed-reference property; for a list/array of them use SerializeReferenceIMGUIList.Draw.",
-                    nameof(property));
+                throw new ArgumentException("DrawFieldLayout expects a [SerializeReference] managed-reference property; for a list/array of them use SerializeReferenceIMGUIList.Draw.", nameof(property));
 
             label ??= new GUIContent(property.displayName);
 

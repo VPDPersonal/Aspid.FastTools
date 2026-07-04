@@ -2,9 +2,9 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.Types.Editors;
-using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
@@ -50,7 +50,10 @@ namespace Aspid.FastTools.Enums.Editors
                 .AddChild(new Label(property.displayName));
 
             header.AddChild(isTyped
-                ? (VisualElement)new InspectorTypeField(label: null, serializedObject.FindProperty(enumTypePath)) { IsReadOnly = true }
+                ? new InspectorTypeField(label: null, serializedObject.FindProperty(enumTypePath))
+                {
+                    IsReadOnly = true
+                }
                 : new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty));
 
             var root = new VisualElement()
@@ -78,7 +81,9 @@ namespace Aspid.FastTools.Enums.Editors
             // callback would never fire. Track the property itself instead.
             // The typed variant's enum type never changes — nothing to track.
             if (!isTyped)
+            {
                 root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValues());
+            }
 
             return root;
 
@@ -89,7 +94,9 @@ namespace Aspid.FastTools.Enums.Editors
 
                 for (var i = 0; i < values.arraySize; i++)
                 {
-                    var enumTypeElement = values.GetArrayElementAtIndex(i).FindPropertyRelative("_enumType");
+                    var enumTypeElement = values
+                        .GetArrayElementAtIndex(i)
+                        .FindPropertyRelative("_enumType");
 
                     if (enumTypeElement.stringValue != enumTypeValue)
                         enumTypeElement.SetStringAndApply(enumTypeValue);
@@ -107,9 +114,13 @@ namespace Aspid.FastTools.Enums.Editors
             var type = fieldInfo.FieldType;
 
             if (type.IsArray)
+            {
                 type = type.GetElementType();
+            }
             else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
                 type = type.GetGenericArguments()[0];
+            }
 
             return type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(EnumValues<,>);
         }

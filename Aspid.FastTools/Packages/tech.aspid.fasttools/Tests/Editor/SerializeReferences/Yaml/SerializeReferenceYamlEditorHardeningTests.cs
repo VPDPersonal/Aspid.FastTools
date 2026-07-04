@@ -107,13 +107,17 @@ MonoBehaviour:
         public void TryRewriteType_MissingDirectivePreamble_ReturnsFalse_LeavesFileUnchanged()
         {
             var path = YamlFixtures.WriteTemp(MissingDirectivePreamble);
+
             try
             {
                 var before = File.ReadAllText(path);
                 Assert.IsFalse(SerializeReferenceYamlEditor.TryRewriteType(path, FileId, Rid, SomeType));
                 Assert.AreEqual(before, File.ReadAllText(path), "A refused rewrite must leave the file byte-identical.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -126,7 +130,10 @@ MonoBehaviour:
                 Assert.IsFalse(SerializeReferenceYamlEditor.TryRemoveEntry(path, FileId, Rid));
                 Assert.AreEqual(before, File.ReadAllText(path), "A refused remove must leave the file byte-identical.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -139,7 +146,10 @@ MonoBehaviour:
                 Assert.IsFalse(SerializeReferenceYamlEditor.TryNullReference(path, FileId, Rid));
                 Assert.AreEqual(before, File.ReadAllText(path), "A refused null must leave the file byte-identical.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         // ---- indent bail: a tab-indented entry block is never destructively rewritten ---------------------------------
@@ -155,7 +165,10 @@ MonoBehaviour:
                     "A tab-indented entry can be mis-bounded — the remover must bail rather than write.");
                 Assert.AreEqual(before, File.ReadAllText(path), "A refused remove must leave the file byte-identical.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -169,7 +182,10 @@ MonoBehaviour:
                     "A tab-indented entry block can be mis-bounded — the nuller must bail before writing.");
                 Assert.AreEqual(before, File.ReadAllText(path), "A refused null must leave the file byte-identical.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         // ---- positive control: the guards do NOT regress a well-formed, space-indented Unity asset --------------------
@@ -185,7 +201,10 @@ MonoBehaviour:
                     "A canonical Unity asset (%TAG present, space-indented) must still be editable after hardening.");
                 StringAssert.DoesNotContain("Shotgun", File.ReadAllText(path));
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -199,7 +218,10 @@ MonoBehaviour:
                 StringAssert.DoesNotContain("Pistol", File.ReadAllText(path),
                     "The rid 1001 entry must be gone once the blank-line guard no longer falsely mistrusts the block.");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
     }
 }

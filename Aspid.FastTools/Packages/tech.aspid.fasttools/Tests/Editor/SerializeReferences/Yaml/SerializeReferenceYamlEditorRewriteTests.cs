@@ -16,10 +16,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private string _path;
 
         [SetUp]
-        public void SetUp() => _path = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
+        public void SetUp() =>
+            _path = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
 
         [TearDown]
-        public void TearDown() => YamlFixtures.Delete(_path);
+        public void TearDown() =>
+            YamlFixtures.Delete(_path);
 
         [Test]
         public void TryRewriteType_RepointsRid_AndChangesExactlyOneLine()
@@ -148,7 +150,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 StringAssert.DoesNotContain("\r", File.ReadAllText(path),
                     "An LF asset must stay LF after a rewrite (no CRLF churn).");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
 
         [Test]
@@ -172,7 +177,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.IsFalse(raw.Replace("\r\n", "").Contains("\n"),
                     "Every newline in a CRLF file must remain CRLF (no lone LF introduced).");
             }
-            finally { YamlFixtures.Delete(path); }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
         }
     }
 }

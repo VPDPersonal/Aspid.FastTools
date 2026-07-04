@@ -1,4 +1,5 @@
 using System.Text;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
@@ -34,10 +35,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             // A [MovedFrom]-resolvable entry is not really broken — Unity migrates it in memory at load; only the
             // file text is stale. Word it as a calm "migrate" invitation, not a data-loss alarm.
-            var migratable = 0;
-            foreach (var entry in report.Entries)
-                if (entry.MigrationTarget is not null)
-                    migratable++;
+            var migratable = report.Entries.Count(entry => entry.MigrationTarget is not null);
 
             // The cold-index path emits one TYPE-level entry per broken type (no per-site data without the index),
             // so counting entries as "references" would misreport — those reports speak in types.
@@ -68,7 +66,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Public deep-link the user can wire to a button/menu — opens Repair straight into project-scan mode.
         /// </summary>
-        public static void OpenRepair() => SerializeReferenceWindow.OpenProjectScan();
+        public static void OpenRepair() =>
+            SerializeReferenceWindow.OpenProjectScan();
 
         private static void ShowToast(string message)
         {

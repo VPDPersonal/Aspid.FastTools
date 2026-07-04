@@ -26,7 +26,7 @@ namespace Aspid.FastTools.Types.Editors
         /// <c>additionalTypes</c> path, which bypasses the name/<see cref="CompilerGeneratedAttribute"/>
         /// checks applied to ordinary candidates, so they must be excluded here.
         /// </summary>
-        public static bool IsAssignableGenericDefinition(Type type) =>
+        private static bool IsAssignableGenericDefinition(Type type) =>
             type is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: true } &&
             !typeof(UnityEngine.Object).IsAssignableFrom(type) &&
             !typeof(Delegate).IsAssignableFrom(type) &&
@@ -205,7 +205,7 @@ namespace Aspid.FastTools.Types.Editors
         /// <summary>
         /// Short display form of an open definition with its parameter names (<c>Modifier&lt;T&gt;</c>).
         /// </summary>
-        public static string FormatDefinitionName(Type definition)
+        private static string FormatDefinitionName(Type definition)
         {
             var baseName = TypeExtensions.StripArity(definition.Name);
             var arguments = string.Join(", ", definition.GetGenericArguments().Select(argument => argument.Name));
@@ -237,12 +237,16 @@ namespace Aspid.FastTools.Types.Editors
                 yield return openDefinition.GetGenericTypeDefinition();
 
             for (var current = openDefinition.BaseType; current is not null; current = current.BaseType)
+            {
                 if (current.IsGenericType)
                     yield return current.GetGenericTypeDefinition();
+            }
 
             foreach (var contract in openDefinition.GetInterfaces())
+            {
                 if (contract.IsGenericType)
                     yield return contract.GetGenericTypeDefinition();
+            }
         }
 
         // Cached once per domain: the open-generic flow sweeps every domain type per parameter page (twice, with the

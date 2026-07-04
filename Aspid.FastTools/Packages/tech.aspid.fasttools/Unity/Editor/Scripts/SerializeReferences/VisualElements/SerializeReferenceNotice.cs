@@ -56,7 +56,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // underline), since the rid colour is dynamic and cannot be brightened from a static USS rule.
         private const float ActionHoverLighten = 0.35f;
 
-        private readonly VisualElement _icon;
         private readonly Label _message;
         private readonly Label _action;
         private readonly Label _suggestion;
@@ -78,7 +77,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(NoticeClass);
 
-            _icon = new VisualElement()
+            var icon = new VisualElement()
                 .AddClass(IconClass)
                 .SetPickingMode(PickingMode.Ignore);
 
@@ -126,7 +125,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .SetPickingMode(PickingMode.Ignore);
 
             this.AddChild(_dot)
-                .AddChild(_icon)
+                .AddChild(icon)
                 .AddChild(_message)
                 .AddChild(_action)
                 .AddChild(_suggestionSeparator)
