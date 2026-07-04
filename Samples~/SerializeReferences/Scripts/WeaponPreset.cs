@@ -15,7 +15,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     // See the bundled BrokenWeaponPreset.asset: its _weapon points at a type that does not exist (GhostWeapon),
     // so the Inspector shows a "Missing type" warning with a "Fix" button — set the class back to "Pistol"
     // to recover the reference and its data.
-    [CreateAssetMenu(menuName = "Aspid/FastTools Samples/Weapon Preset", fileName = "WeaponPreset")]
+    [CreateAssetMenu(menuName = "Aspid/FastTools/Samples/Weapon Preset", fileName = "WeaponPreset")]
     public sealed class WeaponPreset : ScriptableObject
     {
         [SerializeReference] [TypeSelector]
