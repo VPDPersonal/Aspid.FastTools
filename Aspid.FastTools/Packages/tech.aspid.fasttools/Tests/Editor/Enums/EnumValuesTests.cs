@@ -56,7 +56,7 @@ namespace Aspid.FastTools.Enums.Tests
     /// Coverage for <see cref="EnumValues{TValue}"/> and <see cref="EnumValues{TEnum,TValue}"/>:
     /// lookup semantics (regular + <c>[Flags]</c>), the typed variant's auto-stamped
     /// <c>_enumType</c>, the serialized-layout compatibility between the two variants, and the
-    /// degrade paths (unconfigured/unresolvable enum type, unparseable entry keys).
+    /// degrade paths (unconfigured/unresolvable/non-enum enum type, unparseable entry keys).
     /// All data is written through <see cref="SerializedObject"/> so the real
     /// serialize/deserialize path (including <see cref="ISerializationCallbackReceiver"/>) runs.
     /// </summary>
@@ -403,6 +403,37 @@ namespace Aspid.FastTools.Enums.Tests
 
             LogAssert.Expect(LogType.Error, new Regex("Couldn't resolve enum type"));
             Assert.AreEqual(-1, _host.Untyped.GetValue(Season.Winter));
+        }
+
+        [Test]
+        public void Untyped_NonEnumType_LogsErrorAndReturnsDefault()
+        {
+            // A type that resolves but is not an enum (e.g. an enum refactored into a
+            // class/struct with the same name) must degrade like an unresolvable one
+            // instead of throwing from Enum.TryParse on every lookup.
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Winter), 42, typeof(string).AssemblyQualifiedName);
+
+            LogAssert.Expect(LogType.Error, new Regex("is not an enum"));
+            Assert.AreEqual(-1, _host.Untyped.GetValue(Season.Winter));
+        }
+
+        [Test]
+        public void Untyped_EnumTypeClearedAfterResolution_DegradesAndYieldsNothing()
+        {
+            SetDefaultValue("_untyped", -1);
+            AddEntry("_untyped", nameof(Season.Winter), 1, typeof(Season).AssemblyQualifiedName);
+
+            // Resolve the keys once, then clear the type — degrading must reset the
+            // previously resolved keys instead of letting them keep matching lookups
+            // and being yielded by the enumerator.
+            Assert.AreEqual(1, _host.Untyped.GetValue(Season.Winter));
+            SetEnumType("_untyped", string.Empty);
+
+            LogAssert.Expect(LogType.Warning, new Regex("No enum type configured"));
+
+            Assert.AreEqual(-1, _host.Untyped.GetValue(Season.Winter));
+            Assert.AreEqual(0, _host.Untyped.ToArray().Length);
         }
 
         [Test]
