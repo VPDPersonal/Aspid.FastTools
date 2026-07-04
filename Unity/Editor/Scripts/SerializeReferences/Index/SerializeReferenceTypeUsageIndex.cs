@@ -21,11 +21,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     internal static class SerializeReferenceTypeUsageIndex
     {
         /// <summary>
-        /// Raised whenever the index changes (rebuilt, reset or an asset patched), so consumers can refresh.
-        /// </summary>
-        public static event Action IndexChanged;
-
-        /// <summary>
         /// A single managed-reference use site. Identity is (asset, document, rid); the rest is payload.
         /// </summary>
         public readonly struct Usage : IEquatable<Usage>
@@ -105,11 +100,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
-        /// Number of use sites of <paramref name="type"/>.
-        /// </summary>
-        public static int CountUsages(Type type) => FindUsages(type).Count;
-
-        /// <summary>
         /// Every use site whose stored type no longer resolves — the fast-scan source for the Repair window.
         /// </summary>
         public static IEnumerable<Usage> EnumerateUnresolved()
@@ -135,11 +125,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Drops the whole index; the next lookup rebuilds it. Alias <see cref="ClearCache"/> for the rewrite sites.
         /// </summary>
-        public static void Reset()
-        {
-            _index = null;
-            IndexChanged?.Invoke();
-        }
+        public static void Reset() => _index = null;
 
         /// <inheritdoc cref="Reset"/>
         public static void ClearCache() => Reset();
@@ -156,17 +142,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             RemoveGuid(guid);
             AddAsset(path, guid);
-            IndexChanged?.Invoke();
-        }
-
-        /// <summary>
-        /// Removes an asset's usages by guid. No-op while the index is cold.
-        /// </summary>
-        public static void RemoveAsset(string guid)
-        {
-            if (_index is null || string.IsNullOrEmpty(guid)) return;
-            RemoveGuid(guid);
-            IndexChanged?.Invoke();
         }
 
         private static void EnsureBuilt()

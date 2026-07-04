@@ -62,7 +62,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string DocumentBodyClass = RootClass + "__document-body";
 
         private const string NodeClass = RootClass + "__node";
-        private const string NodeOrphanClass = NodeClass + "--orphan";
         private const string NodeBackEdgeClass = NodeClass + "--back-edge";
         private const string NodeEmptyClass = NodeClass + "--empty";
         private const string NodePickingClass = NodeClass + "--picking";
@@ -84,7 +83,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string ChipClass = RootClass + "__chip";
         private const string ClearOrphanClass = RootClass + "__clear-orphan";
-        private const string OpenSourceClass = RootClass + "__open-source";
         private const string OrphanGroupClass = RootClass + "__orphan-group";
         private const string OrphanGroupHeaderClass = RootClass + "__orphan-group-header";
         private const string PickerClass = RootClass + "__picker";
@@ -247,8 +245,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     _list.AddChild(info);
 
                     _list.AddChild(new AspidGradientButton("Open Source Prefab",
-                            _ => SetTarget(AssetDatabase.LoadAssetAtPath<Object>(sourcePath)))
-                        .AddClass(OpenSourceClass));
+                        _ => SetTarget(AssetDatabase.LoadAssetAtPath<Object>(sourcePath))));
                     return;
                 }
 
@@ -601,7 +598,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass);
-            if (isOrphan) card.AddClass(NodeOrphanClass);
 
             var typePreset = AspidLabelPreset.Default
                 .SetLabelSize(AspidLabelSizeStyle.Type.H5)
