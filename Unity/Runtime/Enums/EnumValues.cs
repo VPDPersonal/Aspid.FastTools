@@ -38,6 +38,10 @@ namespace Aspid.FastTools.Enums
     /// Iteration via <see cref="GetEnumerator"/> yields only the explicitly configured entries and
     /// does <b>not</b> include the default value.
     /// </para>
+    /// <para>
+    /// Internal hot paths are wrapped in profiler markers; define the
+    /// <c>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
+    /// </para>
     /// </remarks>
     /// <example>
     /// Map a damage type to a color:
@@ -229,6 +233,10 @@ namespace Aspid.FastTools.Enums
     /// field between the two variants therefore migrates existing data, as long as the configured
     /// enum type matches <typeparamref name="TEnum"/>. Player builds strip the field — at runtime
     /// the enum type comes from the generic argument alone.
+    /// </para>
+    /// <para>
+    /// Internal hot paths are wrapped in profiler markers; define the
+    /// <c>ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED</c> scripting symbol to compile them out.
     /// </para>
     /// </remarks>
     /// <example>
