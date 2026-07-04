@@ -20,7 +20,3 @@
 
 - поставьте `_activeEffects` в `Burning | Frozen | Slowed` → `0.90` (точной записи нет; выигрывает первая содержащаяся — `Burning`);
 - поставьте `Stunned` (или `None`) → `1.00` (ни одна запись не совпала; значение по умолчанию).
-
-## IMGUI vs UIToolkit инспектор
-
-`EnumValues<TValue>`/`EnumValues<TEnum, TValue>` рендерятся через оба бэкенда инспектора. В сцене также есть GameObject `IMGUIDamageDealer` — те же поля, что у `DamageDealer`, но `IMGUIDamageDealerEditor` принудительно переводит весь инспектор на IMGUI, поэтому он рендерится через `EnumValuesIMGUIPropertyDrawer` вместо UIToolkit-варианта. Выберите оба GameObject'а рядом, чтобы сравнить.
