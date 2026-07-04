@@ -153,7 +153,7 @@ element
 
 | Метод | Свойство стиля | Примечания |
 |-------|---------------|------------|
-| `SetWorldSpacing(StyleLength)` | `wordSpacing` | |
+| `SetWordSpacing(StyleLength)` | `wordSpacing` | |
 | `SetLetterSpacing(StyleLength)` | `letterSpacing` | |
 | `SetUnityTextAlign(TextAnchor)` | `unityTextAlign` | |
 | `SetTextShadow(StyleTextShadow)` | `textShadow` | |
@@ -223,7 +223,7 @@ element
 
 | Метод | Свойство стиля |
 |-------|----------------|
-| `SetAspectRation(StyleRatio)` | `aspectRatio` *(имя метода сохраняет опечатку из исходника)* |
+| `SetAspectRatio(StyleRatio)` | `aspectRatio` |
 | `SetFilter(StyleList<FilterFunction>)` | `filter` |
 | `SetUnityMaterial(StyleMaterialDefinition)` | `unityMaterial` |
 
@@ -387,7 +387,7 @@ button
 slider
     .SetLowValue(0f)
     .SetHighValue(100f)
-    .SetShowInputField<SliderFloat, float>(true);
+    .SetShowInputField(true);
 ```
 
 | Метод | Описание |
@@ -521,7 +521,7 @@ listView
 | `AddItemsSourceChanged(Action)` / `RemoveItemsSourceChanged` | Смена ссылки `itemsSource` |
 | `AddCanStartDrag(Func<CanStartDragArgs, bool>)` / `RemoveCanStartDrag` | Кастомный gating старта drag |
 | `AddSetupDragAndDrop(Func<SetupDragAndDropArgs, StartDragArgs>)` / `RemoveSetupDragAndDrop` | Подготовка drag-and-drop |
-| `AddSetupDragAndDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveSetupDragAndDrop` | Визуальный режим drag-and-drop |
+| `AddDragAndDropUpdate(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveDragAndDropUpdate` | Визуальный режим drag-and-drop |
 | `AddHandleDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveHandleDrop` | Обработка drop |
 
 #### `BaseListView`-specific
