@@ -124,6 +124,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void GetReferenceFieldNames_SequenceItemsInData_ReportsParentKeyOnly()
+        {
+            // WeaponRack's data holds a list whose "- rid:" items Unity writes at the parent key's own indent — they
+            // must not be reported as bogus "- rid" pseudo-keys next to the real _weapons field.
+            var path = YamlFixtures.WriteTemp(YamlFixtures.NestedListPointerPrefab);
+            try
+            {
+                var fields = SerializeReferenceYamlEditor.GetReferenceFieldNames(
+                    path, YamlFixtures.NestedListPointerFileId, YamlFixtures.NestedListPointerRackRid);
+                CollectionAssert.AreEqual(new[] { "_weapons" }, fields,
+                    "Only the block's own field keys are field-shape signal; sequence items are not keys.");
+            }
+            finally { YamlFixtures.Delete(path); }
+        }
+
+        [Test]
         public void ParseTopLevelFieldNames_SkipsIndentedAndSequenceLines()
         {
             var names = SerializeReferenceYamlEditor.ParseTopLevelFieldNames(

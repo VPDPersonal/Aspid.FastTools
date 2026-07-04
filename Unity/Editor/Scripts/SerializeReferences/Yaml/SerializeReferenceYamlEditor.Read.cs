@@ -45,7 +45,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // or sequence item, by indent) or jumps into a managed reference's RefIds data block (by rid).
                 var cursorStart = start;
                 var cursorEnd = fieldsEnd;
-                var cursorIndent = -1; // the object's top-level fields: match at any indent
+
+                // The object's top-level fields all align with the m_Script line's indent (see TryReadScriptGuid), so
+                // the first segment is matched at exactly that indent — otherwise a same-named key nested inside an
+                // earlier field's serializable container would shadow the real top-level field. A document without a
+                // readable script guid falls back to matching at any indent.
+                var cursorIndent = TryReadScriptGuid(lines, start + 1, fieldsEnd, out _, out var fieldIndent)
+                    ? fieldIndent
+                    : -1;
 
                 for (var s = 0; s < segments.Count; s++)
                 {
@@ -387,10 +394,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Collects the keys of "name: …" entries at exactly childIndent within [blockStart, blockEnd), skipping the
-        // deeper lines of nested mappings/sequences so only the block's own top-level fields are reported.
+        // deeper lines of nested mappings/sequences so only the block's own top-level fields are reported. Sequence
+        // items ("- rid: 7", "- _damage: 5") sit at the parent key's own indent, so the key pattern excludes the dash
+        // — they are items of an already-reported field, not keys ("- rid" / "- _damage" would be pseudo-keys).
         private static void CollectTopLevelKeys(string[] lines, int blockStart, int blockEnd, int childIndent, List<string> result)
         {
-            var keyPattern = new Regex(@"^(?<indent>\s*)(?<key>[^\s:][^:]*):(\s.*|\s*)$");
+            var keyPattern = new Regex(@"^(?<indent>\s*)(?<key>[^\s:#-][^:]*):(\s.*|\s*)$");
 
             for (var i = blockStart; i < blockEnd; i++)
             {
@@ -401,9 +410,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!match.Success) continue;
                 if (match.Groups["indent"].Length != childIndent) continue;
 
-                var key = match.Groups["key"].Value.Trim();
-                if (key.Length > 0 && key != "-")
-                    result.Add(key);
+                result.Add(match.Groups["key"].Value.Trim());
             }
         }
 

@@ -144,8 +144,9 @@ MonoBehaviour:
         _slowPercent: 40
 ";
 
-        // The single-object document file id of the nested-list-pointer fixture below.
+        // The single-object document file id of the nested-list-pointer fixture below, and its resolvable WeaponRack entry.
         public const long NestedListPointerFileId = 8800000000000000003L;
+        public const long NestedListPointerRackRid = 1001;
 
         // A MonoBehaviour whose one managed reference (WeaponRack, rid 1001) holds a List<IWeapon> _weapons with a single
         // element pointing at a MISSING entry (GhostPistol, rid 1002). The nested "- rid: 1002" list element sits DEEPER
@@ -308,6 +309,44 @@ MonoBehaviour:
       data:
         _pellets: 6
         _spreadAngle: 20
+";
+
+        // The single-object document file id and the two rids of the shadowed-field fixture below.
+        public const long ShadowedFileId = 9900000000000000003L;
+        public const long ShadowedNestedRid = 4001;   // _config._weapon (nested inside a plain serializable container)
+        public const long ShadowedTopLevelRid = 4002; // _weapon         (the real top-level field)
+
+        // A MonoBehaviour where an EARLIER field's plain serializable container (_config) holds a key named exactly like
+        // a later TOP-LEVEL field (_weapon). The nested _weapon (rid 4001) appears first in the document, so a reader
+        // that matched the first path segment at any indent would resolve "_weapon" to the nested pointer; matching at
+        // the document's top-level field indent (the m_Script line's indent) must resolve it to rid 4002.
+        public const string ShadowedFieldPrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &9900000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name: ShadowedLoadout
+  _config:
+    _weapon:
+      rid: 4001
+    _label: primary
+  _weapon:
+    rid: 4002
+  references:
+    version: 2
+    RefIds:
+    - rid: 4001
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 10
+        _magazineSize: 7
+    - rid: 4002
+      type: {class: Shotgun, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _pellets: 8
+        _spreadAngle: 25
 ";
 
         // Script guids for the scene required-field fixtures below. The first maps (via the test's injected resolver) to
