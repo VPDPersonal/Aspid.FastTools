@@ -6,7 +6,6 @@ using Aspid.FastTools.UIElements;
 using Aspid.FastTools.Types.Editors;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors;
-using Aspid.FastTools.UIElements.Manipulators;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace

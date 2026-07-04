@@ -1,9 +1,10 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
-    public static partial class BaseFieldExtensionsSetLabelQuaternion
+    public static class BaseFieldExtensionsSetLabelQuaternion
     {
         /// <summary>
         /// Sets the label of the field via <see cref="BaseField{TValueType}.label"/>.

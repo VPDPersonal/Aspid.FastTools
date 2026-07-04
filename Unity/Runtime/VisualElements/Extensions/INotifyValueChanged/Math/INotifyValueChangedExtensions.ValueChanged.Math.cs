@@ -1576,7 +1576,113 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
+        #region Unity.Mathematics.Half
+        /// <summary>
+        /// Subscribes to the value-changed event of the element.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<half>> callback)
+            where T : INotifyValueChanged<half>
+        {
+            element.RegisterValueChangedCallback(callback);
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the value-changed event of the element.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<half>> callback)
+            where T : INotifyValueChanged<half>
+        {
+            element.UnregisterValueChangedCallback(callback);
+            return element;
+        }
+
+        /// <summary>
+        /// Subscribes to the value-changed event of the element.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<half2>> callback)
+            where T : INotifyValueChanged<half2>
+        {
+            element.RegisterValueChangedCallback(callback);
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the value-changed event of the element.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<half2>> callback)
+            where T : INotifyValueChanged<half2>
+        {
+            element.UnregisterValueChangedCallback(callback);
+            return element;
+        }
+
+        /// <summary>
+        /// Subscribes to the value-changed event of the element.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<half3>> callback)
+            where T : INotifyValueChanged<half3>
+        {
+            element.RegisterValueChangedCallback(callback);
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the value-changed event of the element.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<half3>> callback)
+            where T : INotifyValueChanged<half3>
+        {
+            element.UnregisterValueChangedCallback(callback);
+            return element;
+        }
+
+        /// <summary>
+        /// Subscribes to the value-changed event of the element.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<half4>> callback)
+            where T : INotifyValueChanged<half4>
+        {
+            element.RegisterValueChangedCallback(callback);
+            return element;
+        }
+
+        /// <summary>
+        /// Unsubscribes from the value-changed event of the element.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<half4>> callback)
+            where T : INotifyValueChanged<half4>
+        {
+            element.UnregisterValueChangedCallback(callback);
+            return element;
+        }
+        #endregion
+
         #region Unity.Mathematics.Quaternion
         /// <summary>
         /// Subscribes to the value-changed event of the element.
