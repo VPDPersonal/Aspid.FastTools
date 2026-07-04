@@ -19,18 +19,17 @@ namespace Aspid.FastTools.Enums
     public struct EnumValuesEnumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue>>
     {
         private int _index;
-        private KeyValuePair<TKey, TValue> _current;
         private readonly EnumValue<TValue>[] _values;
 
-        readonly object IEnumerator.Current => _current;
+        readonly object IEnumerator.Current => Current;
 
-        public readonly KeyValuePair<TKey, TValue> Current => _current;
+        public KeyValuePair<TKey, TValue> Current { get; private set; }
 
         internal EnumValuesEnumerator(EnumValue<TValue>[] values)
         {
             _index = 0;
             _values = values;
-            _current = default;
+            Current = default;
         }
 
         public bool MoveNext()
@@ -42,7 +41,7 @@ namespace Aspid.FastTools.Enums
 
                 // For a value-type TKey this unboxes the stored key, copying it out of the
                 // existing box; for TKey = Enum it is a plain reference cast — no allocation.
-                _current = new KeyValuePair<TKey, TValue>((TKey)(object)value.Key, value.Value);
+                Current = new KeyValuePair<TKey, TValue>((TKey)(object)value.Key, value.Value);
                 return true;
             }
 
@@ -51,7 +50,7 @@ namespace Aspid.FastTools.Enums
 
         void IEnumerator.Reset()
         {
-            _current = default;
+            Current = default;
             _index = 0;
         }
 
