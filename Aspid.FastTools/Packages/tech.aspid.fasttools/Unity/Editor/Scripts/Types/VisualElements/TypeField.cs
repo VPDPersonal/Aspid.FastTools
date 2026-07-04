@@ -1,6 +1,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
@@ -70,6 +71,11 @@ namespace Aspid.FastTools.Types.Editors
         {
             _property = property.Persistent();
             SetValueFromAssemblyQualifiedNameWithoutNotify(_property.stringValue);
+
+            // Undo/redo, revert-to-prefab and scripted edits rewrite the backing string outside this field;
+            // the tracked callback hands over a fresh property each tick (the Persistent() contract).
+            this.TrackPropertyValue(_property, current =>
+                SetValueFromAssemblyQualifiedNameWithoutNotify(current.stringValue));
         }
 
         public TypeField(string label, Type defaultValue = null)
@@ -165,7 +171,8 @@ namespace Aspid.FastTools.Types.Editors
                         ? null
                         : Type.GetType(assemblyQualifiedName, throwOnError: false));
 
-                    _property?.SetStringAndApply(assemblyQualifiedName);
+                    // <None> arrives as null (the TypeSelectorWindow contract); store string.Empty like the IMGUI path.
+                    _property?.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
                 });
 
             evt.StopPropagation();
