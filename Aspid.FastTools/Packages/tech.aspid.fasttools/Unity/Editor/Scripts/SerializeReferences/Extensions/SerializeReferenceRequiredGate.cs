@@ -98,7 +98,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Dictionary<Type, IReadOnlyList<RequiredFieldDescriptor>> RequiredFieldCache = new();
 
         // The reflected field is stable per (type, path) until a domain reload; IsViolation/TryGetRequired run every
-        // IMGUI repaint, so each path is reflected only once.
+        // IMGUI repaint, so each path is reflected only once. Paths crossing a [SerializeReference] hop resolve
+        // through the live instance's runtime type, which can differ per object — those bypass the cache.
         private static readonly Dictionary<(Type, string), FieldInfo> ResolvedFieldCache = new();
 
         // For a list/array element the resolved field is the collection itself, matching PropertyDrawer.fieldInfo.
@@ -110,24 +111,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var cacheKey = (type, property.propertyPath);
             if (ResolvedFieldCache.TryGetValue(cacheKey, out var cachedField)) return cachedField;
 
-            var field = ResolveFieldInfoUncached(type, property.propertyPath);
-            ResolvedFieldCache[cacheKey] = field;
+            var field = ResolveFieldInfoUncached(type, property, out var cacheable);
+            if (cacheable) ResolvedFieldCache[cacheKey] = field;
             return field;
         }
 
-        private static FieldInfo ResolveFieldInfoUncached(Type targetType, string propertyPath)
+        private static FieldInfo ResolveFieldInfoUncached(Type targetType, SerializedProperty property, out bool cacheable)
         {
+            cacheable = true;
             var type = targetType;
 
             // "_slots.Array.data[0]._weapon" -> "_slots[0]._weapon"
-            var path = propertyPath.Replace(".Array.data[", "[");
-            FieldInfo field = null;
+            var path = property.propertyPath.Replace(".Array.data[", "[");
+            var segments = path.Split('.');
 
-            foreach (var rawSegment in path.Split('.'))
+            FieldInfo field = null;
+            string traversedPath = null;
+
+            for (var i = 0; i < segments.Length; i++)
             {
-                var segment = rawSegment;
+                var segment = segments[i];
                 var bracket = segment.IndexOf('[');
                 var isElement = bracket >= 0;
+
+                // Rebuild the original property path up to this segment ("[" only ever comes from the simplification).
+                var originalSegment = segment.Replace("[", ".Array.data[");
+                traversedPath = traversedPath is null ? originalSegment : traversedPath + "." + originalSegment;
+
                 if (isElement) segment = segment[..bracket];
 
                 field = GetFieldIncludingBase(type, segment);
@@ -135,6 +145,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 type = isElement ? GetElementType(field.FieldType) : field.FieldType;
                 if (type is null) return null;
+
+                // A [SerializeReference] hop is polymorphic: the next segment's field lives on the instance's runtime
+                // type (a derived class or an interface implementation), not on the declared field type — walk on from
+                // the live managed reference instead. Falls back to the declared type when no instance is loaded.
+                if (i == segments.Length - 1 || !field.IsDefined(typeof(SerializeReference), inherit: false)) continue;
+
+                cacheable = false;
+                using var hop = property.serializedObject.FindProperty(traversedPath);
+                if (hop is { propertyType: SerializedPropertyType.ManagedReference, managedReferenceValue: not null })
+                    type = hop.managedReferenceValue.GetType();
             }
 
             return field;
