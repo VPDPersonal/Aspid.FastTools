@@ -9,7 +9,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
     /// Surfaces a breakage report non-intrusively: a fade-out <see cref="EditorWindow.ShowNotification"/> toast that
-    /// steals no focus, plus a single clickable warning in the console pointing at the Repair window. The same breakage
+    /// steals no focus, plus a single console warning pointing at the Repair window's menu path. The same breakage
     /// set is shown at most once per session (a content hash in <see cref="SessionState"/>), so a recompile that
     /// re-detects the identical set does not nag.
     /// </summary>
@@ -62,12 +62,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (migratable == count) Debug.Log(console);
             else Debug.LogWarning(console);
         }
-
-        /// <summary>
-        /// Public deep-link the user can wire to a button/menu — opens Repair straight into project-scan mode.
-        /// </summary>
-        public static void OpenRepair() =>
-            SerializeReferenceWindow.OpenProjectScan();
 
         private static void ShowToast(string message)
         {

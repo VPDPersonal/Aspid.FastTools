@@ -124,17 +124,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
-        /// Removes the named template. Returns whether one was removed.
-        /// </summary>
-        public static bool Remove(string name)
-        {
-            var store = Load();
-            if (store.entries.RemoveAll(e => e.name == name) == 0) return false;
-            Persist(store);
-            return true;
-        }
-
-        /// <summary>
         /// A unique default name for a new template of <paramref name="type"/> (deduplicated with a suffix).
         /// </summary>
         public static string SuggestName(Type type)
