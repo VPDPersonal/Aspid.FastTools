@@ -100,6 +100,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
+        /// Number of use sites of <paramref name="type"/>.
+        /// </summary>
+        public static int CountUsages(Type type) => FindUsages(type).Count;
+
+        /// <summary>
         /// Every use site whose stored type no longer resolves — the fast-scan source for the Repair window.
         /// </summary>
         public static IEnumerable<Usage> EnumerateUnresolved()
