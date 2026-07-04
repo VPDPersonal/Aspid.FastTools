@@ -7,6 +7,7 @@ using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 // ReSharper disable PossibleNullReferenceException
+// ReSharper disable ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
 // ReSharper disable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 namespace Aspid.FastTools.Enums
 {
@@ -104,9 +105,8 @@ namespace Aspid.FastTools.Enums
                 _type = type;
                 _isFlag = type.IsDefined(typeof(FlagsAttribute), false);
                 _isInitialized = true;
-
-                return;
             }
+            return;
 
             void Degrade()
             {
@@ -252,9 +252,8 @@ namespace Aspid.FastTools.Enums
         // serialization — keeps the two variants layout-compatible in the editor (where variant
         // switching happens) and feeds the per-element editor drawers. Never read at runtime
         // (the enum type comes from the generic argument), so it is stripped from player builds.
-#pragma warning disable CS0414 // Field is assigned but its value is never used — read by the editor drawers via serialization.
+        // ReSharper disable once NotAccessedField.Local
         [SerializeField] private string? _enumType;
-#pragma warning restore CS0414
 #endif
 
 #pragma warning disable CS8618
