@@ -45,6 +45,11 @@ element
 | `InsertChildren(int, List<VisualElement>)` | Inserts from a list |
 | `InsertChildren(int, Span<VisualElement>)` | Inserts from a span |
 | `InsertChildren(int, ReadOnlySpan<VisualElement>)` | Inserts from a read-only span |
+| `RemoveChild(VisualElement)` | Removes a child, returns the parent |
+| `RemoveChildAt(int)` | Removes the child at the specified index |
+| `ClearChildren()` | Removes all children |
+
+> Every child operation has an `*If` counterpart (`AddChildIf`, `AddChildrenIf`, `InsertChildIf`, `InsertChildrenIf`, `RemoveChildIf`, `RemoveChildAtIf`, `ClearChildrenIf`) taking a leading `bool condition` — the operation is applied only when the condition is `true`.
 
 > `RegisterCallbackOnce<TEventType>` and `RegisterCallbackOnce<TEventType, TUserArgsType>` are available on all Unity versions (polyfill included for versions prior to 2023.1).
 
@@ -352,7 +357,7 @@ field.RemoveValueChanged(myCallback);
 
 Typed overloads are provided for `int`, `uint`, `nint`, `nuint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal`, `char`, `string`, `bool`, `Color`, `Vector2/3/4`, `Vector2Int/3Int`, `Rect/RectInt`, `Bounds/BoundsInt`, `Hash128`, `GUID`, `Quaternion`, `Matrix4x4`, `Gradient`, `AnimationCurve`, `Delegate`, `Enum`, `Object`, `object`, plus a generic `SetValue<T, TValue>` fallback.
 
-> When the `com.unity.mathematics` package is installed, the `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION` define is set automatically and adds `SetValue` / `AddValueChanged` / `RemoveValueChanged` overloads for `int2/3/4` (and `intMxN`), `float2/3/4` (and `floatMxN`), `bool2/3/4` (and `boolMxN`), and `quaternion`.
+> When the `com.unity.mathematics` package is installed, the `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION` define is set automatically and adds `SetValue` / `AddValueChanged` / `RemoveValueChanged` overloads for `int2/3/4` (and `intMxN`), `float2/3/4` (and `floatMxN`), `half`/`half2/3/4`, `bool2/3/4` (and `boolMxN`), and `quaternion`.
 
 ### IMixedValueSupport
 
@@ -471,6 +476,7 @@ container
 | `RemoveOnGUIHandler(Action)` | Unsubscribes from `onGUIHandler` |
 | `SetCullingEnabled(bool)` | Skips `onGUIHandler` when the element is offscreen |
 | `SetContextType(ContextType)` | Sets the IMGUI context type |
+| `MarkDirtyLayout()` | Marks the IMGUI layout dirty so it is recomputed |
 
 ### Collection views (ListView, TreeView, MultiColumn variants)
 
@@ -493,19 +499,16 @@ listView
 
 #### Source, layout and behavior — `BaseVerticalCollectionView`
 
-| Method | Description | Notes |
-|--------|-------------|-------|
-| `SetItemsSource(IList)` | Underlying data source | |
-| `SetReorderable(bool)` | Enables drag-to-reorder | |
-| `SetSelectedIndex(int)` | Selects a specific index | |
-| `SetSelectionType(SelectionType)` | None / Single / Multiple | |
-| `SetFixedItemHeight(float)` | Fixed item height (for `FixedHeight` virtualization) | |
-| `SetVirtualizationMethod(CollectionVirtualizationMethod)` | `FixedHeight` or `DynamicHeight` | |
-| `SetHorizontalScrollingEnabled(bool)` | Enables horizontal scrolling | |
-| `SetShowAlternatingRowBackgrounds(AlternatingRowBackground)` | Zebra striping mode | |
-| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Footer factory | Unity 6+ |
-| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Header factory | Unity 6+ |
-| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Empty-state factory | Unity 6+ |
+| Method | Description |
+|--------|-------------|
+| `SetItemsSource(IList)` | Underlying data source |
+| `SetReorderable(bool)` | Enables drag-to-reorder |
+| `SetSelectedIndex(int)` | Selects a specific index |
+| `SetSelectionType(SelectionType)` | None / Single / Multiple |
+| `SetFixedItemHeight(float)` | Fixed item height (for `FixedHeight` virtualization) |
+| `SetVirtualizationMethod(CollectionVirtualizationMethod)` | `FixedHeight` or `DynamicHeight` |
+| `SetHorizontalScrollingEnabled(bool)` | Enables horizontal scrolling |
+| `SetShowAlternatingRowBackgrounds(AlternatingRowBackground)` | Zebra striping mode |
 
 #### Events — `BaseVerticalCollectionView`
 
@@ -535,6 +538,9 @@ listView
 | `SetOnAdd(Action<BaseListView>)` · `AddOnAdd` · `RemoveOnAdd` | Custom add-button callback |
 | `SetOnRemove(Action<BaseListView>)` · `AddOnRemove` · `RemoveOnRemove` | Custom remove-button callback |
 | `SetOverridingAddButtonBehavior(Action<BaseListView, Button>)` · `AddOverridingAddButtonBehavior` · `RemoveOverridingAddButtonBehavior` | Replace default add-button click |
+| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Footer factory (Unity 6+) |
+| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Header factory (Unity 6+) |
+| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Empty-state factory (Unity 6+) |
 | `AddItemsAdded(Action<IEnumerable<int>>)` / `RemoveItemsAdded` | Items added by index |
 | `AddItemsRemoved(Action<IEnumerable<int>>)` / `RemoveItemsRemoved` | Items removed by index |
 
