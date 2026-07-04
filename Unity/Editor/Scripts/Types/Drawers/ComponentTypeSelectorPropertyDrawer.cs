@@ -46,9 +46,6 @@ namespace Aspid.FastTools.Types.Editors
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
             var currentType = property.serializedObject.targetObject.GetType();
-
-            // The callback fires once the element may have outlived its source editor — closing over the
-            // drawer-time property would read a disposed SerializedObject (the Persistent() contract).
             var persistent = property.Persistent();
 
             var field = new InspectorTypeField(label: null, defaultValue: currentType)
