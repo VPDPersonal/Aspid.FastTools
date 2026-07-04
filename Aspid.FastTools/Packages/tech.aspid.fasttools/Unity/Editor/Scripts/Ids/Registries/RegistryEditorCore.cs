@@ -65,7 +65,7 @@ namespace Aspid.FastTools.Ids.Editors
             var root = new VisualElement()
                 .AddAspidThemeStyleSheets()
                 .AddStyleSheetsFromResource(Constants.Registry.StyleSheetPath)
-                .AddClass("aspid-fasttools-inspector-container");
+                .AddClass(AspidStyles.InspectorStyleClass);
 
             root.Add(new AspidInspectorHeader(_registry.name + " (Beta)", _registry)
             {
@@ -356,9 +356,9 @@ namespace Aspid.FastTools.Ids.Editors
                     $"Reusing ID {value} may silently remap references: assets that previously pointed to this ID will appear bound to the next name you create. Proceed only if you know these IDs are unused.");
             }
 
-            return value < 1
-                ? NextIdWarning.Hidden("Next ID must be ≥ 1.")
-                : NextIdWarning.Hidden();
+            // A hidden icon is display:none, so it can't carry a tooltip —
+            // the "must be ≥ 1" message is surfaced by ValidateAddRow instead.
+            return NextIdWarning.Hidden();
         }
 
         private bool NextIdCollides(int nextId)
