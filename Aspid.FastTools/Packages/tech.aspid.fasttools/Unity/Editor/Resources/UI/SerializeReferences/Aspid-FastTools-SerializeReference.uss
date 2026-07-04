@@ -436,31 +436,13 @@
     flex-shrink:                                           0;
 }
 
-/* Amber-tinted gradient rows — a broken reference reads as a warning — with a matching hover accent. */
-.aspid-fasttools-repair-references__entry {
-    --aspid-fasttools-colors-gradient_button-bg: var(
-        --aspid-colors-status-warning-darkness
-    );
-    --aspid-fasttools-colors-gradient_button-accent: var(
-        --aspid-colors-status-warning-text-light
-    );
-}
-
-/* The dimmed rid rides between the type label and the trailing "Fix" cue; reset the row's bold weight. */
-.aspid-fasttools-repair-references__entry-rid {
-    margin-left:                                           10px;
-    color:                                                 var(--aspid-colors-text-dark);
-    -unity-font-style:                                     normal;
-    -unity-text-align:                                     middle-right;
-}
-
 /* Inline type picker: the selector view expanded as an accordion full-width in the group card, below the header
    row. A translucent fill (the cards'/panel's value) lets the window's dotted canvas read through it too, framed by
    a neutral border and the card's 8px radius rather than the warning amber it used to carry. It composites over the
    card's own translucent fill, so the open picker still sits a touch denser than the bare card — enough figure to
    read as an active surface without going opaque. Fixed height — the selector's ListView needs bounds to virtualize.
-   The 5px padding matches the selector's own edge spacing so its full-bleed header strip reaches the box border;
-   overflow keeps that strip inside the rounded corners. */
+   Zero padding plus the header/footer bleed rules below let the selector's full-bleed strips reach the box border;
+   overflow keeps those strips inside the rounded corners. */
 .aspid-fasttools-repair-references__picker.aspid-fasttools-background {
     flex-grow:                                             0;
     height:                                                300px;
@@ -484,8 +466,8 @@
 }
 
 /* Bleed the selector's header strip to the picker box edges (top + sides) so it reads as a filled header bar, not an
-   inset rectangle. -10px cancels both the picker box's 5px padding and the selector root's own 5px padding; the
-   picker's overflow:hidden + 8px radius round the header's top corners to match the box. */
+   inset rectangle. With the box's zero padding, zero margins already reach the edges — only a 5px bottom gap to the
+   list remains; the picker's overflow:hidden + 8px radius round the header's top corners to match the box. */
 .aspid-fasttools-repair-references__picker
     .aspid-fasttools-type-selector__header {
     background-color:                                       #00000000;
@@ -493,9 +475,8 @@
     margin-bottom:                                          5px;
 }
 
-/* The boxless attached picker has no rounded corners to hug, so the breadcrumb strip drops its own rounded top
-   corners too — otherwise the strip's 8px radius would leave two card-fill notches at its top, breaking the flush
-   band that should butt directly under the group header. */
+/* The boxless attached picker keeps the breadcrumb strip's rounded corners (the group card's accent frame is what
+   boxes it now), so the strip reads as a rounded pill under the group header rather than a square band. */
 .aspid-fasttools-repair-references__picker--attached
     .aspid-fasttools-type-selector__header {
     border-radius:                                         8px;
@@ -504,8 +485,8 @@
 /* The search field now lives inside the header strip and fills it via the base stylesheet's __search-field rule
    (flex-grow), so the host no longer needs to stretch a root-level ToolbarSearchField. */
 
-/* Bleed the selector's footer to the picker box edges (bottom + sides), mirroring the header strip above.
-   -10px cancels both the picker box's 5px padding and the selector root's own 5px padding. */
+/* Bleed the selector's footer to the picker box edges (bottom + sides), mirroring the header strip above, with a 5px
+   gap to the list. */
 .aspid-fasttools-repair-references__picker
     .aspid-fasttools-type-selector__footer {
     margin: 5px -7px 0;
