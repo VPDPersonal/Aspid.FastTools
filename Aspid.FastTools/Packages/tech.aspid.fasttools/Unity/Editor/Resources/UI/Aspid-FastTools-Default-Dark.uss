@@ -294,7 +294,7 @@ Button.aspid-fasttools-theme--dark {
 
 Button.aspid-fasttools-theme--light {
     color:                                          var(--aspid-colors-text-light);
-    background-color:                               var(--aspid-colors-bg-lightness);
+    background-color:                               var(--aspid-colors-bg-light);
 }
 
 Button.aspid-fasttools-theme--lightness {
