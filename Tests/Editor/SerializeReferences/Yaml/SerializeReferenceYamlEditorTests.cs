@@ -60,6 +60,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.AreEqual(1, missing.Count,
                     "A nested '- rid:' list element must not be read as a second, phantom RefIds entry.");
                 Assert.AreEqual(YamlFixtures.GhostPistolRid, missing[0].Rid);
+                Assert.AreEqual(YamlFixtures.NestedListPointerFileId, missing[0].FileId);
                 Assert.AreEqual("GhostPistol", missing[0].StoredType.Class);
             }
             finally { YamlFixtures.Delete(path); }

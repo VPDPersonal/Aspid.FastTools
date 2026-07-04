@@ -11,9 +11,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// (single managed ref, list of managed refs, nested managed ref). The strings are written at column 0 inside the
     /// verbatim literal — their leading whitespace IS the YAML indentation and must not be reflowed.
     /// </summary>
-    // Public (not internal) because the SerializeReference editor test assembly references this test assembly to reuse
-    // these fixtures in its SR+YAML integration tests, which live outside Aspid.FastTools.Unity.Editor.SerializeReferences.Tests.
-    public static class YamlFixtures
+    internal static class YamlFixtures
     {
         // The MonoBehaviour document's local file id (its "--- !u!114 &<fileID>" anchor).
         public const long MonoBehaviourFileId = 6500000000000000003L;
@@ -179,9 +177,8 @@ MonoBehaviour:
         _magazineSize: 12
 ";
 
-        // RefIds present in the empty-fields fixture below.
-        public const long EmptyRailgunRid = 1001;  // _primaryWeapon  (resolvable, holds a cleared nested _chargeEffect)
-        public const long EmptyPistolRid = 1002;   // _sidearms[0]    (resolvable)
+        // The Railgun entry of the empty-fields fixture below: _primaryWeapon, resolvable, holds a cleared nested _chargeEffect.
+        public const long EmptyRailgunRid = 1001;
 
         // A MonoBehaviour exercising unassigned (null-sentinel) [SerializeReference] slots written by Unity as
         // "rid: -2" (ManagedReferenceUtility.RefIdNull): a cleared top-level field (_onHitEffect), a null list element
@@ -349,14 +346,12 @@ MonoBehaviour:
         _spreadAngle: 25
 ";
 
-        // Script guids for the scene required-field fixtures below. The first maps (via the test's injected resolver) to
-        // RequiredTestObject's required fields; the second is an "unknown" script the resolver returns no fields for.
+        // The script guid of the scene required-field fixtures below — maps (via the test's injected resolver) to
+        // RequiredTestObject's required fields. Any other guid (the mixed fixture's bbbb… script) is unknown to the resolver.
         public const string RequiredSceneScriptGuid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-        public const string UnknownScriptGuid = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
-        // MonoBehaviour document file ids in the scene fixtures (the "--- !u!114 &<fileID>" anchors).
+        // The known-script MonoBehaviour document's file id in the scene fixtures (its "--- !u!114 &<fileID>" anchor).
         public const long RequiredSceneMonoFileId = 101L;
-        public const long RequiredSceneOtherFileId = 201L;
 
         // A scene with one MonoBehaviour whose required managed reference (requiredRef) and required string field
         // (requiredString) are both left unset — the managed reference at Unity's null id (-2), the string empty. Exact
