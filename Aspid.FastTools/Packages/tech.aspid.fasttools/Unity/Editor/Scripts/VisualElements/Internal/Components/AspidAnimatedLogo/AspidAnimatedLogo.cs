@@ -15,6 +15,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidAnimatedLogo : VisualElement
     {
+        private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedLogo";
+
         private const int LayerCount = 3;
         private const long AnimationIntervalMs = 33;
         private const float PulseAmplitudeSmoothing = 0.07f;
@@ -104,7 +106,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <param name="preset">The configuration preset to apply.</param>
         public AspidAnimatedLogo(AspidAnimatedLogoPreset preset)
         {
-            this.AddStyleSheetsFromResource("UI/Components/Aspid-FastTools-AspidAnimatedLogo");
+            this.AddStyleSheetsFromResource(StyleSheetPath);
 
             ColorCycleIntervalMs = preset.ColorCycleIntervalMs;
 
