@@ -35,7 +35,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </remarks>
     internal static class SerializeReferenceDuplicateGuard
     {
-        // A managed reference with no value reports RefIdNull (-1); a missing-type one reports RefIdUnknown (-2). Only
+        // A managed reference with no value reports RefIdNull (-2); a missing-type one reports RefIdUnknown (-1). Only
         // ids >= 0 are real instances that can alias — the rest are excluded from the index → rid map.
         private const long FirstValidReferenceId = 0;
 

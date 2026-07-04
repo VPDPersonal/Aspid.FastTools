@@ -14,7 +14,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// field. The notice host is a sibling placed after the foldout content, so it never inherits the child indent.
     /// </summary>
     /// <remarks>
-    /// Reuses <c>LinkerTestObject</c> / <c>TestSword</c> from <see cref="SerializeReferenceInspectorTests"/>: linking two
+    /// Reuses the shared <c>LinkerTestObject</c> / <c>TestSword</c> fixtures from <c>SerializeReferenceTestFixtures.cs</c>: linking two
     /// managed-reference fields onto one rid surfaces the shared-reference notice on a field that also has a value (so it
     /// renders child fields), which is the only notice that co-exists with children — the case the bug was about.
     /// </remarks>
