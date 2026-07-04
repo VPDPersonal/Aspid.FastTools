@@ -309,7 +309,7 @@ MonoBehaviour:
 ";
 
         // The single-object document file id and the two rids of the shadowed-field fixture below.
-        public const long ShadowedFileId = 9900000000000000003L;
+        public const long ShadowedFileId = 9000000000000000003L;
         public const long ShadowedNestedRid = 4001;   // _config._weapon (nested inside a plain serializable container)
         public const long ShadowedTopLevelRid = 4002; // _weapon         (the real top-level field)
 
@@ -320,7 +320,7 @@ MonoBehaviour:
         public const string ShadowedFieldPrefab =
 @"%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &9900000000000000003
+--- !u!114 &9000000000000000003
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
