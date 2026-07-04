@@ -14,6 +14,13 @@ namespace Aspid.FastTools.Enums.Editors
     /// </summary>
     internal static class EnumValueUIToolkitPropertyDrawer
     {
+        // Styles live in the parent EnumValues drawer's stylesheet (UI/Enums/…-EnumValues.uss);
+        // rows always render inside that root, so the classes resolve via inheritance.
+        private const string UssClass = "aspid-fasttools-enum-value";
+        private const string KeyClass = UssClass + "__key";
+        private const string ValueClass = UssClass + "__value";
+        private const string InlineClass = UssClass + "--inline";
+
         public static VisualElement Draw(SerializedProperty property)
         {
             // Re-fetch by path (never hold onto the SerializedProperty instances passed in)
@@ -40,11 +47,27 @@ namespace Aspid.FastTools.Enums.Editors
             // EnumField/EnumFlagsField stay hidden until the user edits the type.
             UpdateValue();
 
+            // A value that folds out (a custom serializable struct/class) gets its own line under
+            // the key, labelled "Value"; a single-line value sits next to the key in two columns,
+            // mirroring the IMGUI layout.
+            var valueProperty = serializedObject.FindProperty(valuePath);
+            var hasFoldout = valueProperty.propertyType is SerializedPropertyType.Generic
+                && valueProperty.hasVisibleChildren;
+
             var root = new VisualElement()
-                .AddChild(keyField)
-                .AddChild(keyEnumField)
-                .AddChild(keyEnumFlagField)
-                .AddChild(new PropertyField(serializedObject.FindProperty(valuePath), label: string.Empty));
+                .AddClass(UssClass)
+                .AddChild(new VisualElement()
+                    .AddClass(KeyClass)
+                    .AddChild(keyField)
+                    .AddChild(keyEnumField)
+                    .AddChild(keyEnumFlagField)
+                )
+                .AddChild(new PropertyField(valueProperty, label: hasFoldout ? "Value" : string.Empty)
+                    .AddClass(ValueClass)
+                );
+
+            if (!hasFoldout)
+                root.AddClass(InlineClass);
 
             // _enumType is stamped into the row by the parent EnumValues drawer via a direct
             // SerializedProperty write, which a hidden bound PropertyField won't reliably report
