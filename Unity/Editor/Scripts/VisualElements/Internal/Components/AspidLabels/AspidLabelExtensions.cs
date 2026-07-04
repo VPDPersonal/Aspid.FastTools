@@ -1,5 +1,3 @@
-using UnityEngine;
-
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
@@ -64,17 +62,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         }
 
         /// <summary>
-        /// Sets <see cref="AspidLabel.LabelFontStyle"/> and returns the element for chaining.
-        /// </summary>
-        /// <param name="element">The element to configure.</param>
-        /// <param name="value">The new font style.</param>
-        public static AspidLabel SetLabelFontStyle(this AspidLabel element, FontStyle value)
-        {
-            element.LabelFontStyle = value;
-            return element;
-        }
-
-        /// <summary>
         /// Sets <see cref="AspidLabel.LineTheme"/> and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to configure.</param>
@@ -104,17 +91,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public static AspidLabel SetLineSize(this AspidLabel element, AspidDividingLineSizeStyle.Type value)
         {
             element.LineSize = value;
-            return element;
-        }
-
-        /// <summary>
-        /// Sets <see cref="AspidLabel.LineDirection"/> and returns the element for chaining.
-        /// </summary>
-        /// <param name="element">The element to configure.</param>
-        /// <param name="value">The new line direction.</param>
-        public static AspidLabel SetLineDirection(this AspidLabel element, AspidDividingLineDirectionStyle.Type value)
-        {
-            element.LineDirection = value;
             return element;
         }
     }
