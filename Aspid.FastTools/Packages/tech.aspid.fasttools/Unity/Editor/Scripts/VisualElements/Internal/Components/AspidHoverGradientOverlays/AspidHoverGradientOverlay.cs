@@ -20,8 +20,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const float DefaultLerpRate = 0.12f;
         private const float DefaultAlphaScale = 0.35f;
 
-        // Each step emits 6 indices, so steps must stay at or below 65535 / 6 = 10922 to keep the
-        // (ushort)(i * 2 + 3) index math from wrapping past the 65535 ushort mesh-index limit.
+        // Conservative cap on the step count: each step emits 6 indices, so 65535 / 6 = 10922 steps
+        // keeps even the total index count within ushort range. The hard limits — the largest emitted
+        // vertex index, (ushort)(i * 2 + 3) = 2 * steps + 1, and the 65535-vertex allocation ceiling —
+        // are only reached above ~32k steps, well past this cap.
         private const int MaxSteps = ushort.MaxValue / 6;
 
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidHoverGradientOverlay";
