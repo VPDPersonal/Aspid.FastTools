@@ -92,7 +92,7 @@
 
 /* Match the input to the frameless field: no border/radius/fill of its own, so the header background shows through. */
 .aspid-fasttools-type-selector__search-field .unity-base-text-field__input {
-    font-size:              12;
+    font-size:              12px;
     border-width:           0;
     border-radius:          0;
     background-color:       rgba(0, 0, 0, 0);
