@@ -20,3 +20,7 @@ Press `Space` and the Console prints `Fire hit: 15 dmg (speed mod: 0.40)` in ora
 
 - set `_activeEffects` to `Burning | Frozen | Slowed` → `0.90` (no exact entry; first contained entry `Burning` wins);
 - set it to `Stunned` (or `None`) → `1.00` (no entry matches; default value).
+
+## IMGUI vs UIToolkit inspector
+
+`EnumValues<TValue>`/`EnumValues<TEnum, TValue>` render through both inspector backends. The scene also hosts an `IMGUIDamageDealer` GameObject — same fields as `DamageDealer`, but `IMGUIDamageDealerEditor` forces the whole inspector through IMGUI, so it renders via `EnumValuesIMGUIPropertyDrawer` instead of the UIToolkit path. Select both GameObjects side by side to compare.
