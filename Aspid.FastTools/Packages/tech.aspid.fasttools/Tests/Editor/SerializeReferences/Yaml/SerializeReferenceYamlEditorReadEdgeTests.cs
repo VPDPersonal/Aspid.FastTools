@@ -7,8 +7,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// <summary>
     /// Edge-case read coverage the happy-path tests miss: the <c>-2</c> null-sentinel contract of
     /// <see cref="SerializeReferenceYamlEditor.TryReadReferenceId"/>, the single-document anchor fallback and
-    /// multi-document write confinement of the internal <c>FindDocumentRange</c>, and the single-quoted generic
-    /// class round-trip (the risk-register generic case) through the reader.
+    /// multi-document write confinement of the internal <c>FindDocumentRange</c>, the single-quoted generic
+    /// class round-trip (the risk-register generic case) through the reader, and the top-level-indent segment
+    /// matching that keeps a same-named nested key from shadowing the real top-level field.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceYamlEditorReadEdgeTests
@@ -87,6 +88,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
                     path, YamlFixtures.ListOfStructFileId, "_slots.Array.data[1]._weapon", out var second));
                 Assert.AreEqual(3002, second, "Second List<struct> element's nested managed reference must resolve.");
+            }
+            finally
+            {
+                YamlFixtures.Delete(path);
+            }
+        }
+
+        [Test]
+        public void TryReadReferenceId_TopLevelFieldShadowedByEarlierNestedKey_ResolvesTopLevelRid()
+        {
+            var path = YamlFixtures.WriteTemp(YamlFixtures.ShadowedFieldPrefab);
+            try
+            {
+                // The nested _config._weapon pointer appears before the top-level _weapon in the document — the first
+                // path segment must be matched at the top-level field indent, not at any indent.
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, YamlFixtures.ShadowedFileId, "_weapon", out var topLevel));
+                Assert.AreEqual(YamlFixtures.ShadowedTopLevelRid, topLevel,
+                    "A same-named key nested in an earlier container must not shadow the real top-level field.");
+
+                Assert.IsTrue(SerializeReferenceYamlEditor.TryReadReferenceId(
+                    path, YamlFixtures.ShadowedFileId, "_config._weapon", out var nested));
+                Assert.AreEqual(YamlFixtures.ShadowedNestedRid, nested,
+                    "The nested occurrence must still resolve through its own path.");
             }
             finally
             {

@@ -11,9 +11,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     /// (single managed ref, list of managed refs, nested managed ref). The strings are written at column 0 inside the
     /// verbatim literal — their leading whitespace IS the YAML indentation and must not be reflowed.
     /// </summary>
-    // Public (not internal) because the SerializeReference editor test assembly references this test assembly to reuse
-    // these fixtures in its SR+YAML integration tests, which live outside Aspid.FastTools.Unity.Editor.SerializeReferences.Tests.
-    public static class YamlFixtures
+    internal static class YamlFixtures
     {
         // The MonoBehaviour document's local file id (its "--- !u!114 &<fileID>" anchor).
         public const long MonoBehaviourFileId = 6500000000000000003L;
@@ -144,8 +142,9 @@ MonoBehaviour:
         _slowPercent: 40
 ";
 
-        // The single-object document file id of the nested-list-pointer fixture below.
+        // The single-object document file id of the nested-list-pointer fixture below, and its resolvable WeaponRack entry.
         public const long NestedListPointerFileId = 8800000000000000003L;
+        public const long NestedListPointerRackRid = 1001;
 
         // A MonoBehaviour whose one managed reference (WeaponRack, rid 1001) holds a List<IWeapon> _weapons with a single
         // element pointing at a MISSING entry (GhostPistol, rid 1002). The nested "- rid: 1002" list element sits DEEPER
@@ -178,9 +177,8 @@ MonoBehaviour:
         _magazineSize: 12
 ";
 
-        // RefIds present in the empty-fields fixture below.
-        public const long EmptyRailgunRid = 1001;  // _primaryWeapon  (resolvable, holds a cleared nested _chargeEffect)
-        public const long EmptyPistolRid = 1002;   // _sidearms[0]    (resolvable)
+        // The Railgun entry of the empty-fields fixture below: _primaryWeapon, resolvable, holds a cleared nested _chargeEffect.
+        public const long EmptyRailgunRid = 1001;
 
         // A MonoBehaviour exercising unassigned (null-sentinel) [SerializeReference] slots written by Unity as
         // "rid: -2" (ManagedReferenceUtility.RefIdNull): a cleared top-level field (_onHitEffect), a null list element
@@ -310,14 +308,50 @@ MonoBehaviour:
         _spreadAngle: 20
 ";
 
-        // Script guids for the scene required-field fixtures below. The first maps (via the test's injected resolver) to
-        // RequiredTestObject's required fields; the second is an "unknown" script the resolver returns no fields for.
-        public const string RequiredSceneScriptGuid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-        public const string UnknownScriptGuid = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+        // The single-object document file id and the two rids of the shadowed-field fixture below.
+        public const long ShadowedFileId = 9900000000000000003L;
+        public const long ShadowedNestedRid = 4001;   // _config._weapon (nested inside a plain serializable container)
+        public const long ShadowedTopLevelRid = 4002; // _weapon         (the real top-level field)
 
-        // MonoBehaviour document file ids in the scene fixtures (the "--- !u!114 &<fileID>" anchors).
+        // A MonoBehaviour where an EARLIER field's plain serializable container (_config) holds a key named exactly like
+        // a later TOP-LEVEL field (_weapon). The nested _weapon (rid 4001) appears first in the document, so a reader
+        // that matched the first path segment at any indent would resolve "_weapon" to the nested pointer; matching at
+        // the document's top-level field indent (the m_Script line's indent) must resolve it to rid 4002.
+        public const string ShadowedFieldPrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &9900000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name: ShadowedLoadout
+  _config:
+    _weapon:
+      rid: 4001
+    _label: primary
+  _weapon:
+    rid: 4002
+  references:
+    version: 2
+    RefIds:
+    - rid: 4001
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 10
+        _magazineSize: 7
+    - rid: 4002
+      type: {class: Shotgun, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _pellets: 8
+        _spreadAngle: 25
+";
+
+        // The script guid of the scene required-field fixtures below — maps (via the test's injected resolver) to
+        // RequiredTestObject's required fields. Any other guid (the mixed fixture's bbbb… script) is unknown to the resolver.
+        public const string RequiredSceneScriptGuid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+
+        // The known-script MonoBehaviour document's file id in the scene fixtures (its "--- !u!114 &<fileID>" anchor).
         public const long RequiredSceneMonoFileId = 101L;
-        public const long RequiredSceneOtherFileId = 201L;
 
         // A scene with one MonoBehaviour whose required managed reference (requiredRef) and required string field
         // (requiredString) are both left unset — the managed reference at Unity's null id (-2), the string empty. Exact
