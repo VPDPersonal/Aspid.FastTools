@@ -8,9 +8,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </summary>
     internal readonly struct BreakageEntry
     {
-        public readonly string AssetPath;
-        public readonly long FileId;
         public readonly long Rid;
+        public readonly long FileId;
+        public readonly string AssetPath;
         public readonly ManagedTypeName StoredType;
 
         /// <summary>
@@ -39,9 +39,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SerializeReferenceRepairSuggestions.RepairCandidate? topSuggestion,
             Type migrationTarget)
         {
-            AssetPath = assetPath;
-            FileId = fileId;
             Rid = rid;
+            FileId = fileId;
+            AssetPath = assetPath;
             StoredType = storedType;
             IsRepairable = isRepairable;
             TopSuggestion = topSuggestion;

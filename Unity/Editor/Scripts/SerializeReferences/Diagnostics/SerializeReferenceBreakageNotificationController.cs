@@ -104,6 +104,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString().GetHashCode().ToString("X8");
         }
 
-        private static string ProjectId() => PlayerSettings.productGUID.ToString();
+        private static string ProjectId() =>
+            PlayerSettings.productGUID.ToString();
     }
 }

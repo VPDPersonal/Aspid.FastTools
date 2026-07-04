@@ -49,10 +49,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     // Scenes cannot be object-loaded, so they take the pure-YAML required scan; saved assets keep the
                     // object-load path, which also covers required fields nested inside serializable containers.
-                    if (SerializeReferenceHelpers.IsScene(path))
-                        CollectSceneRequiredViolations(path, violations);
-                    else
-                        CollectRequiredViolations(path, violations);
+                    if (SerializeReferenceHelpers.IsScene(path)) CollectSceneRequiredViolations(path, violations);
+                    else CollectRequiredViolations(path, violations);
                 }
             }
 
