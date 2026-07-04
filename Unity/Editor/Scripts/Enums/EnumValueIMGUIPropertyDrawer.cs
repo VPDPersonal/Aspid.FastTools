@@ -13,13 +13,45 @@ namespace Aspid.FastTools.Enums.Editors
     {
         private const float FieldSpacing = 4f;
 
-        public static float GetHeight(SerializedProperty property) => EditorGUIUtility.singleLineHeight;
+        // In the Inspector (hierarchy mode) foldout arrows render to the LEFT of the supplied
+        // rect — inset foldout-bearing rects by this much so the arrow stays inside the frame.
+        internal const float FoldoutArrowWidth = 13f;
+
+        private static readonly GUIContent ValueLabel = new("Value");
+
+        public static float GetHeight(SerializedProperty property)
+        {
+            var valueProperty = property.FindPropertyRelative("_value");
+
+            if (!HasFoldout(valueProperty))
+                return EditorGUIUtility.singleLineHeight;
+
+            return EditorGUIUtility.singleLineHeight
+                + EditorGUIUtility.standardVerticalSpacing
+                + EditorGUI.GetPropertyHeight(valueProperty, includeChildren: true);
+        }
 
         public static void Draw(Rect position, SerializedProperty property)
         {
             var keyProperty = property.FindPropertyRelative("_key");
             var valueProperty = property.FindPropertyRelative("_value");
             var enumTypeProperty = property.FindPropertyRelative("_enumType");
+
+            // A value that folds out (a custom serializable struct/class) gets its own line under
+            // the key, labelled "Value" — mirrors the UIToolkit layout.
+            if (HasFoldout(valueProperty))
+            {
+                var keyLineRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
+                DrawKey(keyLineRect, keyProperty, enumTypeProperty);
+
+                var valueY = keyLineRect.yMax + EditorGUIUtility.standardVerticalSpacing;
+                var foldoutValueRect = new Rect(
+                    position.x + FoldoutArrowWidth, valueY,
+                    position.width - FoldoutArrowWidth, position.yMax - valueY);
+
+                EditorGUI.PropertyField(foldoutValueRect, valueProperty, ValueLabel, includeChildren: true);
+                return;
+            }
 
             var halfWidth = (position.width - FieldSpacing) / 2f;
             var keyRect = new Rect(position.x, position.y, halfWidth, position.height);
@@ -28,6 +60,11 @@ namespace Aspid.FastTools.Enums.Editors
             DrawKey(keyRect, keyProperty, enumTypeProperty);
             EditorGUI.PropertyField(valueRect, valueProperty, GUIContent.none);
         }
+
+        // Generic with visible children is what IMGUI renders as a foldout; every single-line
+        // built-in (float, Color, ObjectReference, …) reports a different propertyType.
+        private static bool HasFoldout(SerializedProperty valueProperty) =>
+            valueProperty.propertyType is SerializedPropertyType.Generic && valueProperty.hasVisibleChildren;
 
         private static void DrawKey(Rect rect, SerializedProperty keyProperty, SerializedProperty enumTypeProperty)
         {
