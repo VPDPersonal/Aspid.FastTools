@@ -21,6 +21,7 @@ namespace Aspid.FastTools.Types.Editors
             if (EditorGUI.DropdownButton(dropdownRect,
                     new GUIContent(TypeSelectorHelpers.GetTypeSelectorTitle(currentType)), FocusType.Passive))
             {
+                var persistent = property.Persistent();
                 var filter = new TypeSelectorFilter
                 {
                     Types = new[] { fieldInfo.DeclaringType },
@@ -31,7 +32,7 @@ namespace Aspid.FastTools.Types.Editors
                     filter,
                     currentType.AssemblyQualifiedName,
                     onSelected: aqn => ReplaceComponentScript(
-                        property,
+                        persistent,
                         currentType,
                         string.IsNullOrEmpty(aqn) ? null : Type.GetType(aqn, throwOnError: false)));
             }
@@ -46,17 +47,23 @@ namespace Aspid.FastTools.Types.Editors
         {
             var currentType = property.serializedObject.targetObject.GetType();
 
+            // The callback fires once the element may have outlived its source editor — closing over the
+            // drawer-time property would read a disposed SerializedObject (the Persistent() contract).
+            var persistent = property.Persistent();
+
             var field = new InspectorTypeField(label: null, defaultValue: currentType)
             {
                 Types = new[] { fieldInfo.DeclaringType },
             };
 
             field.RegisterValueChangedCallback(evt =>
-                ReplaceComponentScript(property, currentType, evt.newValue));
+                ReplaceComponentScript(persistent, currentType, evt.newValue));
 
             return field;
         }
 
+        /// <param name="property">Must own its <see cref="SerializedObject"/> (see <c>Persistent()</c>) —
+        /// it is read one <see cref="EditorApplication.delayCall"/> tick later.</param>
         private static void ReplaceComponentScript(SerializedProperty property, Type oldType, Type newType)
         {
             if (newType is null || newType == oldType) return;
