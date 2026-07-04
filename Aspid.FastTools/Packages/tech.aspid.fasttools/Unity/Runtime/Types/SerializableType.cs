@@ -26,7 +26,7 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     [Serializable]
-    public sealed class SerializableType
+    public sealed class SerializableType : ISerializationCallbackReceiver
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         [SerializeField] private string _assemblyQualifiedName;
@@ -65,6 +65,16 @@ namespace Aspid.FastTools.Types
         /// Implicitly converts to <see cref="System.Type"/>. Equivalent to accessing <see cref="Type"/>.
         /// </summary>
         public static implicit operator Type?(SerializableType type) => type.Type;
+
+        /// <summary>
+        /// Invalidates the resolved-type cache so the next access re-resolves it — otherwise
+        /// an Inspector edit that changes the stored name (apply during play mode, undo, preset)
+        /// would keep returning the previously resolved type.
+        /// </summary>
+        void ISerializationCallbackReceiver.OnAfterDeserialize() =>
+            _type = null;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
     }
 
     /// <summary>
@@ -89,7 +99,7 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     [Serializable]
-    public sealed class SerializableType<T>
+    public sealed class SerializableType<T> : ISerializationCallbackReceiver
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         [SerializeField] private string _assemblyQualifiedName;
@@ -127,5 +137,15 @@ namespace Aspid.FastTools.Types
         /// Implicitly converts to <see cref="System.Type"/>. Equivalent to accessing <see cref="Type"/>.
         /// </summary>
         public static implicit operator Type?(SerializableType<T> type) => type.Type;
+
+        /// <summary>
+        /// Invalidates the resolved-type cache so the next access re-resolves it — otherwise
+        /// an Inspector edit that changes the stored name (apply during play mode, undo, preset)
+        /// would keep returning the previously resolved type.
+        /// </summary>
+        void ISerializationCallbackReceiver.OnAfterDeserialize() =>
+            _type = null;
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
     }
 }
