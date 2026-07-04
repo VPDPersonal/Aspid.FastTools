@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
-    public static partial class INotifyValueChangedExtensions
+    public static partial class INotifyValueChangedMathExtensions
     {
         #region Unity.Mathematics.Int
         /// <summary>
