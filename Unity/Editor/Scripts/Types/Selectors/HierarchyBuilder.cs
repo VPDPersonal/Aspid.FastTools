@@ -204,15 +204,12 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        private static TreeNode CreateLeaf(TypeInfo type, string displayName, string caption = null)
+        private static TreeNode CreateLeaf(TypeInfo type, string displayName, string caption = null) => new(displayName, type.AssemblyQualifiedName, caption ?? displayName)
         {
-            return new TreeNode(displayName, type.AssemblyQualifiedName, caption ?? displayName)
-            {
-                Tooltip = type.Tooltip,
-                Icon = type.Icon,
-                SearchName = type.Name,
-            };
-        }
+            Tooltip = type.Tooltip,
+            Icon = type.Icon,
+            SearchName = type.Name,
+        };
 
         // Sorts children alphabetically at every level, keeping <None> pinned to the top.
         private static void SortNode(TreeNode node)

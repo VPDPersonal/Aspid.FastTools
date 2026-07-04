@@ -106,7 +106,6 @@ namespace Aspid.FastTools.Types.Editors
             BuildUI();
 
             var hierarchy = HierarchyBuilder.Build(types, filter.Allow, filter.Predicate, filter.AdditionalTypes);
-
             var navigation = new NavigationController(hierarchy, composeSections: true);
 
             if (!string.IsNullOrWhiteSpace(_currentAqn))

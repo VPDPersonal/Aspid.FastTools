@@ -57,16 +57,12 @@ namespace Aspid.FastTools.Types.Editors
             var baseTypes = GenericTypeResolver.GetConstraintBaseTypes(parameter);
             var constraintType = baseTypes.Length == 1 ? baseTypes[0] : typeof(object);
 
-            Func<Type, bool> filter = candidate =>
-                GenericTypeResolver.SatisfiesSpecialConstraints(parameter, candidate) &&
-                (_argumentFilter?.Invoke(candidate) ?? true);
-
             // Offer open generic definitions as arguments too, so the user can nest generics (e.g. choose
             // Modifier<T> for T) — picking one resolves its own arguments before it is used here. Pass every
             // constraint base type (not just the collapsed single one) so a multi-constraint parameter narrows
             // the nested definitions by all of them up front, instead of offering defs that fail every later pick.
             var nested = GenericTypeResolver.GetAssignableGenericDefinitions(baseTypes[0], baseTypes);
-            var hierarchy = HierarchyBuilder.Build(baseTypes, TypeAllow.None, filter, nested, includeNoneOption: false);
+            var hierarchy = HierarchyBuilder.Build(baseTypes, TypeAllow.None, (Func<Type, bool>)Filter, nested, includeNoneOption: false);
 
             return new PickerPage
             {
@@ -76,6 +72,10 @@ namespace Aspid.FastTools.Types.Editors
                 OnPicked = onPicked,
                 IsBase = false,
             };
+
+            bool Filter(Type candidate) =>
+                GenericTypeResolver.SatisfiesSpecialConstraints(parameter, candidate)
+                && (_argumentFilter?.Invoke(candidate) ?? true);
         }
 
         private void PushPage(PickerPage page)

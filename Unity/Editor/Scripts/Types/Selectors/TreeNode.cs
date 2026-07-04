@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -103,14 +104,7 @@ namespace Aspid.FastTools.Types.Editors
             return false;
         }
 
-        private static int CountTypes(TreeNode node)
-        {
-            var count = node.IsType ? 1 : 0;
-
-            foreach (var child in node.Children)
-                count += CountTypes(child);
-
-            return count;
-        }
+        private static int CountTypes(TreeNode node) =>
+            (node.IsType ? 1 : 0) + node.Children.Sum(CountTypes);
     }
 }
