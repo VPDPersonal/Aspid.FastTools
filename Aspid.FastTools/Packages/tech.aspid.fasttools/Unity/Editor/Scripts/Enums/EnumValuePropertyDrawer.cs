@@ -72,7 +72,10 @@ namespace Aspid.FastTools.Enums.Editors
                 keyEnumField.SetDisplay(DisplayStyle.None);
                 keyEnumFlagField.SetDisplay(DisplayStyle.None);
 
-                if (enumType is null)
+                // A resolvable non-enum type (e.g. an enum refactored into a class/struct with
+                // the same name) would make Enum.TryParse/Enum.GetValues below throw — fall back
+                // to the raw string field, same as EnumValuesPropertyDrawerHelper's guard.
+                if (enumType is null || !enumType.IsEnum)
                 {
                     keyField.SetDisplay(DisplayStyle.Flex);
                     return;

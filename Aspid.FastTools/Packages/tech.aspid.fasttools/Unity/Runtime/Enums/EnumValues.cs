@@ -99,6 +99,18 @@ namespace Aspid.FastTools.Enums
                     return;
                 }
 
+                // Resolvable but not an enum (e.g. the type was refactored into a class/struct
+                // keeping the same name) — degrade the same way instead of throwing from
+                // Enum.TryParse on every lookup.
+                if (!type.IsEnum)
+                {
+                    Debug.LogError($"[{nameof(EnumValues<TValue>)}] [{nameof(Initialize)}] " +
+                        $"Type '{_enumType}' is not an enum — GetValue will always return the default value.");
+
+                    Degrade();
+                    return;
+                }
+
                 foreach (var value in _values)
                     value.Initialize(type);
 
@@ -110,6 +122,12 @@ namespace Aspid.FastTools.Enums
 
             void Degrade()
             {
+                // Reset the entries too — keys resolved by a previous initialization would
+                // otherwise keep matching lookups and being yielded by GetEnumerator even
+                // though the type is no longer configured.
+                foreach (var value in _values)
+                    value.Reset();
+
                 _type = null;
                 _isFlag = false;
                 _isInitialized = true;

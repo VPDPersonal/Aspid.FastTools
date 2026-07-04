@@ -69,13 +69,22 @@ namespace Aspid.FastTools.Enums
                 {
                     // A stale Key from a previous type would silently keep matching lookups,
                     // so reset the entry instead of leaving it as-is.
-                    Key = null;
-                    NumericKey = 0L;
+                    Reset();
 
                     Debug.LogError($"[{nameof(EnumValue<TValue>)}] [{nameof(Initialize)}] " +
                         $"Couldn't parse key '{_key}' to Enum '{type.FullName}'");
                 }
             }
+        }
+
+        /// <summary>
+        /// Clears the resolved key so the entry no longer matches lookups and is skipped by
+        /// enumeration — used when the owning collection degrades to an unconfigured state.
+        /// </summary>
+        public void Reset()
+        {
+            Key = null;
+            NumericKey = 0L;
         }
     }
 }
