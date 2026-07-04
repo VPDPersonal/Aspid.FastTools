@@ -202,7 +202,6 @@ public sealed class AbilitySelector : MonoBehaviour
     }
 }
 ```
-<!-- TODO(media): re-record aspid_fasttools_serializable_type.gif — picker now has Favorites/Recent and the new window styling -->
 ![aspid_fasttools_serializable_type.gif](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serializable_type.gif)
 
 ### TypeSelectorAttribute
@@ -295,7 +294,6 @@ public sealed class DamageModifier { }
 - Поддержку generic-типов — выбор открытого generic ведёт через выбор его аргументов и возвращает сконструированный тип
 - Настройку Favorites/Recent (вкл/выкл, ёмкость Recent) во вкладке Settings окна SerializeReference
 
-<!-- TODO(media): re-shoot aspid_fasttools_type_selector_window.png — window UI changed (Favorites/Recent, counters, dividers) -->
 ![aspid_fasttools_type_selector_window.png](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_type_selector_window.png)
 
 Это же окно доступно как публичный API — открывайте его из любого editor-кода (кастомных инспекторов, `EditorWindow`, пунктов меню), когда нужно вывести выбор типа за пределами стандартного потока `SerializableType` / `[TypeSelector]`.
