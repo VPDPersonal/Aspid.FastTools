@@ -58,7 +58,7 @@ For each supported type four variants exist:
 | `SetVector4` | `Vector4` | |
 | `SetQuaternion` | `Quaternion` | |
 | `SetAnimationCurve` | `AnimationCurve` | |
-| `SetEntityId` | `Unity.Entities.EntityId` | Unity 6.2+. The apply-variant is named `SetEntityIdApply` *(method name preserves the source typo: missing `And`)* |
+| `SetEntityId` | `EntityId` (`UnityEngine`) | Unity 6.2+ |
 
 ### Enum setters
 
