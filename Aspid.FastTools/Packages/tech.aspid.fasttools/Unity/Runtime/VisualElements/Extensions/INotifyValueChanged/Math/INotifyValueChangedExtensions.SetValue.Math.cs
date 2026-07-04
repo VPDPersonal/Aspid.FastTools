@@ -976,7 +976,73 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
-        
+
+        #region Unity.Mathematics.Half
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, half value, bool notify = true)
+            where T : INotifyValueChanged<half>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+
+            return element;
+        }
+
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, half2 value, bool notify = true)
+            where T : INotifyValueChanged<half2>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+
+            return element;
+        }
+
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, half3 value, bool notify = true)
+            where T : INotifyValueChanged<half3>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+
+            return element;
+        }
+
+        /// <summary>
+        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// </summary>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, half4 value, bool notify = true)
+            where T : INotifyValueChanged<half4>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+
+            return element;
+        }
+        #endregion
+
         #region Unity.Mathematics.Quaternion
         /// <summary>
         /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
