@@ -1,0 +1,18 @@
+{
+    "name": "Aspid.FastTools.Samples.EnumValues.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Aspid.FastTools.Samples.EnumValues"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

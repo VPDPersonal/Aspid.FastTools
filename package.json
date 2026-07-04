@@ -45,7 +45,7 @@
     },
     {
       "displayName": "EnumValues",
-      "description": "Inspector-serializable enum-keyed dictionary, including [Flags] handling.",
+      "description": "Inspector-serializable enum-keyed dictionary, including [Flags] handling, in both UIToolkit and IMGUI inspectors.",
       "path": "Samples~/EnumValues"
     },
     {
