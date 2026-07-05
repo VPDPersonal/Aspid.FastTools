@@ -2,6 +2,8 @@
 
 Demonstrates the `IId` / `IdRegistry` / `[UniqueId]` trio: fields show a human-readable string in the Inspector while serializing as a stable integer, and the Inspector catches collisions at edit-time.
 
+> **New here? Start with [TUTORIAL.md](TUTORIAL.md)** ([RU](TUTORIAL_RU.md)) — a guided, step-by-step tour (Lessons 1–4) built around `Scripts/Tutorial/IdsTutorial.cs` and `Scenes/IdsTutorial.unity`. This page is the demo-scene walkthrough; the tutorial teaches the workflow.
+
 ## How it works
 
 - `IId` — a marker interface declaring the `int Id { get; }` property.
@@ -21,10 +23,6 @@ Look at:
 
 ## How to run
 
-Open `Scenes/Ids.unity` — it contains an `EnemySpawner` GameObject (also available as `Prefabs/Ids.prefab`). Wire it up once:
-
-1. Drag the four `Data/*_enemy_*.asset` files into the spawner's `Catalog` array.
-2. Pick a target enemy from the `Spawn Target` dropdown — the picker is sourced from `IdRegistry_EnemyId`.
-3. Enter Play Mode — the Console logs the resolved `EnemyDefinition` (display name, HP, move speed). Switch the dropdown to see different lookups.
+Open `Scenes/Ids.unity` and enter Play Mode — the scene hosts a pre-wired `EnemySpawner` (from `Prefabs/Ids.prefab`) with all four `Data/*_enemy_*.asset` files in its `Catalog` and `walk_enemy_orc` as the `Spawn Target`. The Console logs the resolved `EnemyDefinition` (display name, HP, move speed). Switch the `Spawn Target` dropdown — the picker is sourced from `IdRegistry_EnemyId` — to see different lookups.
 
 To create more entries, open `Data/IdRegistry_EnemyId.asset` to add registry rows, then `Assets > Create > Aspid > FastTools > Samples > Enemy Definition` for the asset side.

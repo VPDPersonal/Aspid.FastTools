@@ -50,7 +50,7 @@
     },
     {
       "displayName": "Ids",
-      "description": "IId / [UniqueId] structs paired with IdRegistry assets for stable int \u2194 string IDs.",
+      "description": "IId / [UniqueId] structs paired with IdRegistry assets for stable int \u2194 string IDs. Includes a step-by-step TUTORIAL and a guided IdsTutorial scene.",
       "path": "Samples~/Ids"
     },
     {
