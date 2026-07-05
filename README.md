@@ -450,7 +450,6 @@ The same options are mirrored in the window's **Settings** tab (`Tools → Aspid
 - **Favorites** — section on/off toggle.
 - **Recent items** — capacity slider (0–20; 0 hides the section and pauses recording without wiping history).
 - **Saved lists** — clears the stored Favorites / Recent.
-- **Appearance** — editor-theme override `StyleSheet` with **Create template…**.
 - **Welcome** — auto-show toggle.
 
 Every row carries a scope stripe (green — committed, blue — per-user); a pinned footer offers **Reset to defaults** per scope (saved Favorites / Recent lists survive a reset). All surfaces stay in live sync.

@@ -110,7 +110,10 @@ namespace Aspid.FastTools.Editors
             if ((scope & AspidSettingsScope.User) == 0) return;
 
             AddSection(container, "Type Selector", TypeSelectorSettingsUI.BuildControls);
-            AddSection(container, "Appearance", AspidThemeSettingsUI.BuildControls);
+            // Temporarily hidden pending a decision on the theme-override feature. The store, live-apply
+            // (AddAspidThemeStyleSheets) and reset stay in place, so any override set earlier still applies
+            // and is still cleared by "Reset to defaults" — only the picker UI is out. Re-enable to restore.
+            // AddSection(container, "Appearance", AspidThemeSettingsUI.BuildControls);
             AddSection(container, "Welcome", WelcomeSettingsUI.BuildControls);
         }
 
