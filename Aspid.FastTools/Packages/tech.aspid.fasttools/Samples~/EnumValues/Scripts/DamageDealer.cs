@@ -26,12 +26,9 @@ namespace Aspid.FastTools.Samples.EnumValues
         [SerializeField] private StatusEffect _activeEffects = StatusEffect.None;
         [SerializeField] private float _baseDamage = 10f;
 
-        private void Update()
-        {
-            if (!Input.GetKeyDown(KeyCode.Space)) return;
-            DealDamage();
-        }
-
+        // Right-click the component header → Deal Damage to run a lookup. A context menu works in
+        // both Edit and Play Mode and needs no Input package, so the sample stays input-agnostic.
+        [ContextMenu("Deal Damage")]
         private void DealDamage()
         {
             var multiplier = _damageMultipliers.GetValue(_currentDamageType);

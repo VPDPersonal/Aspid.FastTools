@@ -1,6 +1,6 @@
 # Пример EnumValues
 
-Маленькая система боевого урона, которая сопоставляет члены enum типизированным значениям через `EnumValues<TValue>` и его типизированного близнеца `EnumValues<TEnum, TValue>`. `DamageDealer` выбирает `DamageType` и `StatusEffect` в Inspector, а по нажатию `Space` наносит урон — извлекая множитель урона, цвет лога и модификатор скорости из трёх полей `EnumValues`. Поле цвета — типизированный вариант (`EnumValues<DamageType, Color>` — строка выбора типа в Inspector заблокирована); остальные два выбирают enum в Inspector.
+Маленькая система боевого урона, которая сопоставляет члены enum типизированным значениям через `EnumValues<TValue>` и его типизированного близнеца `EnumValues<TEnum, TValue>`. `DamageDealer` выбирает `DamageType` и `StatusEffect` в Inspector, а по команде контекстного меню **Deal Damage** наносит урон — извлекая множитель урона, цвет лога и модификатор скорости из трёх полей `EnumValues`. Поле цвета — типизированный вариант (`EnumValues<DamageType, Color>` — строка выбора типа в Inspector заблокирована); остальные два выбирают enum в Inspector.
 
 > **Впервые здесь? Начните с [TUTORIAL_RU.md](TUTORIAL_RU.md)** ([EN](TUTORIAL.md)) — пошаговый тур (уроки 1–5) вокруг `Scripts/Tutorial/EnumValuesTutorial.cs` и `Scenes/EnumValuesTutorial.unity`. Эта страница — разбор демо-сцены; туториал учит самому workflow.
 
@@ -14,9 +14,9 @@
 
 ## Как запустить
 
-Откройте `Scenes/EnumValues.unity` и войдите в Play Mode. В сцене есть предзаполненный `DamageDealer`, подключённый из `Prefabs/EnumValues.prefab`.
+Откройте `Scenes/EnumValues.unity`. В сцене есть предзаполненный `DamageDealer`, подключённый из `Prefabs/EnumValues.prefab`.
 
-Нажмите `Space` — в Console появится оранжевое `Fire hit: 15 dmg (speed mod: 0.40)`: композитная запись `Burning | Slowed` выигрывает точным совпадением, хотя стоит последней в списке. Затем проверьте остальные правила поиска в Inspector:
+Кликните правой кнопкой по заголовку компонента `DamageDealer` → **Deal Damage** (работает в Edit Mode — Play Mode не нужен), и в Console появится оранжевое `Fire hit: 15 dmg (speed mod: 0.40)`: композитная запись `Burning | Slowed` выигрывает точным совпадением, хотя стоит последней в списке. Затем проверьте остальные правила поиска в Inspector:
 
 - поставьте `_activeEffects` в `Burning | Frozen | Slowed` → `0.90` (точной записи нет; выигрывает первая содержащаяся — `Burning`);
 - поставьте `Stunned` (или `None`) → `1.00` (ни одна запись не совпала; значение по умолчанию).
