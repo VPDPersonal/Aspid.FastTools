@@ -34,11 +34,13 @@ namespace Aspid.FastTools.Enums.Editors
             var valueProperty = property.FindPropertyRelative("_value");
             var enumTypeProperty = property.FindPropertyRelative("_enumType");
 
+            var hasFoldout = valueProperty.HasFoldout();
+
             Rect keyRect;
             Rect valueRect;
             GUIContent label;
 
-            if (valueProperty.HasFoldout())
+            if (hasFoldout)
             {
                 label = _valueLabel;
 
@@ -66,7 +68,12 @@ namespace Aspid.FastTools.Enums.Editors
             }
 
             DrawKey(keyRect, keyProperty, enumTypeProperty);
-            EditorGUI.PropertyField(valueRect, valueProperty, label);
+
+            // includeChildren must match the foldout case: for a complex TValue the height reserved
+            // in GetHeight covers the expanded children, so they have to be drawn here too — the
+            // 3-arg PropertyField overload defaults includeChildren to false and would leave the
+            // reserved space blank under the "Value" foldout.
+            EditorGUI.PropertyField(valueRect, valueProperty, label, includeChildren: hasFoldout);
         }
 
         private static void DrawKey(Rect rect, SerializedProperty keyProperty, SerializedProperty enumTypeProperty)
