@@ -45,7 +45,7 @@ In the Inspector the field renders as a **name dropdown**, not an int field:
 
 **Field:** `IdRegistry _step2Registry` — references `Data/IdRegistry_EnemyId.asset`.
 
-1. Click the field to ping the registry asset and open it.
+1. Click the field — it pings the registry asset in the Project window and opens it in the Inspector automatically.
 2. The Inspector lists the `(Id, Name)` rows: `1 = fly_enemy_dragon` … `4 = walk_enemy_skeleton`.
 3. Add a row, e.g. `swim_enemy_shark` — a fresh ID is assigned automatically.
 4. Go back to the tutorial GameObject: the STEP 1 dropdown now offers the new name.
