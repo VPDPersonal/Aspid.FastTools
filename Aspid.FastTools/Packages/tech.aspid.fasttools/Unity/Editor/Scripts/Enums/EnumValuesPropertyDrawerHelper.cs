@@ -2,6 +2,7 @@
 using System;
 using UnityEditor;
 using System.Linq;
+using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 
@@ -45,6 +46,43 @@ namespace Aspid.FastTools.Enums.Editors
                 _ => PopulateMissing(valuesProperty, enumTypeProperty, defaultValueProperty),
                 status);
         });
+
+        /// <summary>
+        /// IMGUI counterpart of <see cref="CreatePopulateMenuManipulator"/> — shows the same
+        /// "Populate Missing Enum Members" <see cref="GenericMenu"/> on a right-click inside
+        /// <paramref name="rect"/>, consuming the event.
+        /// </summary>
+        public static void ShowPopulateContextMenu(
+            Rect rect,
+            SerializedObject serializedObject,
+            string values,
+            string enumType,
+            string defaultValue)
+        {
+            var current = Event.current;
+            if (current.type != EventType.ContextClick || !rect.Contains(current.mousePosition)) return;
+
+            var valuesProperty = serializedObject.FindProperty(values);
+            var enumTypeProperty = serializedObject.FindProperty(enumType);
+
+            var menu = new GenericMenu();
+            var menuLabel = new GUIContent(PopulateMenuItem);
+
+            if (HasMissingMembers(valuesProperty, enumTypeProperty))
+            {
+                menu.AddItem(menuLabel, false, () => PopulateMissing(
+                    serializedObject.FindProperty(values),
+                    serializedObject.FindProperty(enumType),
+                    serializedObject.FindProperty(defaultValue)));
+            }
+            else
+            {
+                menu.AddDisabledItem(menuLabel);
+            }
+
+            menu.ShowAsContext();
+            current.Use();
+        }
 
         private static void PopulateMissing(
             SerializedProperty values,

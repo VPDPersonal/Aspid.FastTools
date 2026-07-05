@@ -1,12 +1,7 @@
 using UnityEditor;
-using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
-using Aspid.FastTools.Editors;
 using System.Collections.Generic;
-using Aspid.FastTools.UIElements;
-using Aspid.FastTools.Types.Editors;
-using Aspid.FastTools.UIElements.Editors;
-using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Enums.Editors
@@ -21,88 +16,14 @@ namespace Aspid.FastTools.Enums.Editors
     [CustomPropertyDrawer(typeof(EnumValues<,>))]
     internal sealed class EnumValuesPropertyDrawer : PropertyDrawer
     {
-        private const string StylesheetPath = "UI/Enums/Aspid-FastTools-EnumValues";
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) =>
+            EnumValuesIMGUIPropertyDrawer.Draw(position, label, property, IsTypedVariant());
 
-        private const string UssClass = "aspid-fasttools-enum-values";
-        private const string HeaderClass = UssClass + "__header";
-        private const string ContainerClass = UssClass + "__container";
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
+            EnumValuesIMGUIPropertyDrawer.GetHeight(property);
 
-        public override VisualElement CreatePropertyGUI(SerializedProperty property)
-        {
-            var serializedObject = property.serializedObject;
-            var valuesPath = property.FindPropertyRelative("_values").propertyPath;
-            var enumTypePath = property.FindPropertyRelative("_enumType").propertyPath;
-            var defaultValuePath = property.FindPropertyRelative("_defaultValue").propertyPath;
-
-            // The typed variant stamps _enumType itself on every serialize pass (and building this
-            // inspector's SerializedObject already forced one). Its _enumType carries no
-            // [TypeSelector] attribute, so the picker row is built directly as a read-only
-            // InspectorTypeField (dropdown disabled, open-in-script-editor button active) and
-            // needs no tracking — the enum type can never change.
-            var isTyped = IsTypedVariant();
-
-            // Push the parent enum type into every existing entry up-front so already-serialized
-            // arrays don't render with a stale per-element _enumType until the user re-edits.
-            UpdateValues();
-
-            var header = new VisualElement()
-                .AddClass(HeaderClass)
-                .AddChild(new Label(property.displayName));
-
-            header.AddChild(isTyped
-                ? new InspectorTypeField(label: null, serializedObject.FindProperty(enumTypePath))
-                {
-                    IsReadOnly = true
-                }
-                : new PropertyField(serializedObject.FindProperty(enumTypePath), label: string.Empty));
-
-            var root = new VisualElement()
-                .SetName($"enum-values-{property.name.ToKebabCase()}")
-                .AddAspidThemeStyleSheets()
-                .AddStyleSheetsFromResource(StylesheetPath)
-                .AddManipulatorSelf(EnumValuesPropertyDrawerHelper.CreatePopulateMenuManipulator(
-                    serializedObject: serializedObject,
-                    values: valuesPath,
-                    enumType: enumTypePath,
-                    defaultValue: defaultValuePath)
-                )
-                .AddChild(header)
-                .AddChild(new VisualElement()
-                    .AddClass(ContainerClass)
-                    .AddChild(new PropertyField(serializedObject.FindProperty(valuesPath))
-                        .AddValueChanged(_ => UpdateValues())
-                    )
-                    .AddChild(new PropertyField(serializedObject.FindProperty(defaultValuePath)))
-                );
-
-            // The enum-type PropertyField hosts the TypeSelector custom drawer, which writes the
-            // picked type straight into the SerializedProperty — PropertyField only forwards
-            // UI-driven ChangeEvents from custom drawers, so a SerializedPropertyChangeEvent
-            // callback would never fire. Track the property itself instead.
-            // The typed variant's enum type never changes — nothing to track.
-            if (!isTyped)
-            {
-                root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValues());
-            }
-
-            return root;
-
-            void UpdateValues()
-            {
-                var values = serializedObject.FindProperty(valuesPath);
-                var enumTypeValue = serializedObject.FindProperty(enumTypePath).stringValue;
-
-                for (var i = 0; i < values.arraySize; i++)
-                {
-                    var enumTypeElement = values
-                        .GetArrayElementAtIndex(i)
-                        .FindPropertyRelative("_enumType");
-
-                    if (enumTypeElement.stringValue != enumTypeValue)
-                        enumTypeElement.SetStringAndApply(enumTypeValue);
-                }
-            }
-        }
+        public override VisualElement CreatePropertyGUI(SerializedProperty property) =>
+            EnumValuesUIToolkitPropertyDrawer.Draw(property, IsTypedVariant());
 
         /// <summary>
         /// Whether the drawn field is an <see cref="EnumValues{TEnum,TValue}"/> (directly, or as

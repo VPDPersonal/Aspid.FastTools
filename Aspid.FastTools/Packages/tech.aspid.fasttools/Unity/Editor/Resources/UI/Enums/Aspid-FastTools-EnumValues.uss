@@ -35,3 +35,20 @@
     border-color: var(--aspid-colors-bg-dark);
     background-color: var(--aspid-colors-bg-lightness);
 }
+
+/* Single-line values sit next to the key in two equal columns (mirrors the IMGUI layout);
+   values with a foldout keep the default column flow — key line, then a "Value" foldout. */
+.aspid-fasttools-enum-value--inline {
+    flex-direction: row;
+}
+
+.aspid-fasttools-enum-value--inline > .aspid-fasttools-enum-value__key {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-right: 4px;
+}
+
+.aspid-fasttools-enum-value--inline > .aspid-fasttools-enum-value__value {
+    flex-grow: 1;
+    flex-basis: 0;
+}
