@@ -29,12 +29,6 @@ namespace Aspid.FastTools.Editors
             {
                 "Aspid",
                 "FastTools",
-                "Theme",
-                "Style",
-                "USS",
-                "Color",
-                "Palette",
-                "Override",
                 "Type Selector",
                 "Favorites",
                 "Recent",
