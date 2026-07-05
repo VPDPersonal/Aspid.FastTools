@@ -10,8 +10,9 @@ namespace Aspid.FastTools.DevTests.Enums
     // the whole inspector through IMGUI, routing every field below through
     // EnumValuesIMGUIPropertyDrawer/EnumValueIMGUIPropertyDrawer instead of the UIToolkit path.
     //
-    // To test: drop this component on any GameObject in the dev project and compare against a
-    // plain component with the same fields (default UIToolkit inspector).
+    // To test: open Prefabs — EnumValuesDevTest.prefab carries this component next to
+    // EnumValuesUIToolkitTest (same fields, default UIToolkit inspector) so both paths sit in
+    // one Inspector for side-by-side comparison.
     public sealed class EnumValuesIMGUITest : MonoBehaviour
     {
         public enum Element

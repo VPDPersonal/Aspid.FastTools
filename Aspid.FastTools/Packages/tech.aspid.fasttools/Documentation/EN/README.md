@@ -551,6 +551,8 @@ Maps an asset-assignable name to a stable integer ID. Use the resulting `int` in
 
 A single `IdRegistry` ScriptableObject maps string names to stable integer IDs and provides full `int ↔ string` lookups at runtime.
 
+> The complete sample — `EnemyId` / `EnemyDefinition` / `EnemySpawner` with a pre-wired registry — ships in the `Ids` sample (Package Manager → Aspid.FastTools → Samples). A step-by-step walkthrough lives in that sample's `TUTORIAL.md`.
+
 ### Setup
 
 **1.** Declare a `partial struct` implementing `IId`. The source generator adds the required fields and property automatically:
