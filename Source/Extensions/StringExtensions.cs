@@ -41,7 +41,8 @@ namespace Aspid.FastTools
                 else if (char.IsUpper(c))
                 {
                     var isNewWord =
-                        char.IsLower(value[i - 1]) || char.IsDigit(value[i - 1])
+                        char.IsLower(value[i - 1])
+                        || char.IsDigit(value[i - 1])
                         || (i + 1 < value.Length && char.IsLower(value[i + 1]));
 
                     if (isNewWord)

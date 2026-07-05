@@ -14,8 +14,6 @@ namespace Aspid.FastTools.Enums.Editors
     /// </summary>
     internal static class EnumValueUIToolkitPropertyDrawer
     {
-        // Styles live in the parent EnumValues drawer's stylesheet (UI/Enums/…-EnumValues.uss);
-        // rows always render inside that root, so the classes resolve via inheritance.
         private const string UssClass = "aspid-fasttools-enum-value";
         private const string KeyClass = UssClass + "__key";
         private const string ValueClass = UssClass + "__value";
@@ -23,10 +21,6 @@ namespace Aspid.FastTools.Enums.Editors
 
         public static VisualElement Draw(SerializedProperty property)
         {
-            // Re-fetch by path (never hold onto the SerializedProperty instances passed in)
-            // inside every closure below — this row's index can shift or disappear from under
-            // us via list reorder/delete, and a captured reference throws ObjectDisposedException
-            // once its array slot is gone.
             var serializedObject = property.serializedObject;
             var keyPath = property.FindPropertyRelative("_key").propertyPath;
             var valuePath = property.FindPropertyRelative("_value").propertyPath;
@@ -47,12 +41,8 @@ namespace Aspid.FastTools.Enums.Editors
             // EnumField/EnumFlagsField stay hidden until the user edits the type.
             UpdateValue();
 
-            // A value that folds out (a custom serializable struct/class) gets its own line under
-            // the key, labelled "Value"; a single-line value sits next to the key in two columns,
-            // mirroring the IMGUI layout.
             var valueProperty = serializedObject.FindProperty(valuePath);
-            var hasFoldout = valueProperty.propertyType is SerializedPropertyType.Generic
-                && valueProperty.hasVisibleChildren;
+            var hasFoldout = valueProperty.HasFoldout();
 
             var root = new VisualElement()
                 .AddClass(UssClass)

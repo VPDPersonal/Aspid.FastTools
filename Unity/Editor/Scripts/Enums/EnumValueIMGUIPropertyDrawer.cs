@@ -12,18 +12,15 @@ namespace Aspid.FastTools.Enums.Editors
     internal static class EnumValueIMGUIPropertyDrawer
     {
         private const float FieldSpacing = 4f;
-
-        // In the Inspector (hierarchy mode) foldout arrows render to the LEFT of the supplied
-        // rect — inset foldout-bearing rects by this much so the arrow stays inside the frame.
         internal const float FoldoutArrowWidth = 13f;
 
-        private static readonly GUIContent ValueLabel = new("Value");
+        private static readonly GUIContent _valueLabel = new("Value");
 
         public static float GetHeight(SerializedProperty property)
         {
             var valueProperty = property.FindPropertyRelative("_value");
 
-            if (!HasFoldout(valueProperty))
+            if (!valueProperty.HasFoldout())
                 return EditorGUIUtility.singleLineHeight;
 
             return EditorGUIUtility.singleLineHeight
@@ -37,34 +34,40 @@ namespace Aspid.FastTools.Enums.Editors
             var valueProperty = property.FindPropertyRelative("_value");
             var enumTypeProperty = property.FindPropertyRelative("_enumType");
 
-            // A value that folds out (a custom serializable struct/class) gets its own line under
-            // the key, labelled "Value" — mirrors the UIToolkit layout.
-            if (HasFoldout(valueProperty))
+            Rect keyRect;
+            Rect valueRect;
+            GUIContent label;
+
+            if (valueProperty.HasFoldout())
             {
-                var keyLineRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
-                DrawKey(keyLineRect, keyProperty, enumTypeProperty);
+                label = _valueLabel;
 
-                var valueY = keyLineRect.yMax + EditorGUIUtility.standardVerticalSpacing;
-                var foldoutValueRect = new Rect(
-                    position.x + FoldoutArrowWidth, valueY,
-                    position.width - FoldoutArrowWidth, position.yMax - valueY);
+                keyRect = new Rect(position.x, position.y, position.width, EditorGUIUtility.singleLineHeight);
 
-                EditorGUI.PropertyField(foldoutValueRect, valueProperty, ValueLabel, includeChildren: true);
-                return;
+                var valueY = keyRect.yMax + EditorGUIUtility.standardVerticalSpacing;
+                valueRect = new Rect(
+                    position.x + FoldoutArrowWidth,
+                    valueY,
+                    position.width - FoldoutArrowWidth,
+                    position.yMax - valueY);
+            }
+            else
+            {
+                label = GUIContent.none;
+
+                var halfWidth = (position.width - FieldSpacing) / 2f;
+                keyRect = new Rect(position.x, position.y, halfWidth, position.height);
+
+                valueRect = new Rect(
+                    keyRect.xMax + FieldSpacing,
+                    position.y,
+                    halfWidth,
+                    position.height);
             }
 
-            var halfWidth = (position.width - FieldSpacing) / 2f;
-            var keyRect = new Rect(position.x, position.y, halfWidth, position.height);
-            var valueRect = new Rect(keyRect.xMax + FieldSpacing, position.y, halfWidth, position.height);
-
             DrawKey(keyRect, keyProperty, enumTypeProperty);
-            EditorGUI.PropertyField(valueRect, valueProperty, GUIContent.none);
+            EditorGUI.PropertyField(valueRect, valueProperty, label);
         }
-
-        // Generic with visible children is what IMGUI renders as a foldout; every single-line
-        // built-in (float, Color, ObjectReference, …) reports a different propertyType.
-        private static bool HasFoldout(SerializedProperty valueProperty) =>
-            valueProperty.propertyType is SerializedPropertyType.Generic && valueProperty.hasVisibleChildren;
 
         private static void DrawKey(Rect rect, SerializedProperty keyProperty, SerializedProperty enumTypeProperty)
         {
@@ -85,6 +88,7 @@ namespace Aspid.FastTools.Enums.Editors
                 // edited/renamed since). Fall back to the first member and persist it, migrating
                 // the stale key rather than leaving the row unusable.
                 var values = Enum.GetValues(enumType);
+
                 if (values.Length is 0)
                 {
                     EditorGUI.PropertyField(rect, keyProperty, GUIContent.none);
