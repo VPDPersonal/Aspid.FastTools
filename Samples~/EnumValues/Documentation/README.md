@@ -1,6 +1,6 @@
 # EnumValues Sample
 
-A tiny combat damage system that maps enum members to typed values through `EnumValues<TValue>` and its typed twin `EnumValues<TEnum, TValue>`. `DamageDealer` picks a `DamageType` and `StatusEffect` in the Inspector, then on `Space` applies damage — pulling the damage multiplier, log color, and speed modifier from three `EnumValues` fields. The color field is the typed variant (`EnumValues<DamageType, Color>` — the type-picker row in the Inspector is disabled); the other two pick their enum in the Inspector.
+A tiny combat damage system that maps enum members to typed values through `EnumValues<TValue>` and its typed twin `EnumValues<TEnum, TValue>`. `DamageDealer` picks a `DamageType` and `StatusEffect` in the Inspector, then on its **Deal Damage** context-menu command applies damage — pulling the damage multiplier, log color, and speed modifier from three `EnumValues` fields. The color field is the typed variant (`EnumValues<DamageType, Color>` — the type-picker row in the Inspector is disabled); the other two pick their enum in the Inspector.
 
 > **New here? Start with [TUTORIAL.md](TUTORIAL.md)** ([RU](TUTORIAL_RU.md)) — a guided, step-by-step tour (Lessons 1–5) built around `Scripts/Tutorial/EnumValuesTutorial.cs` and `Scenes/EnumValuesTutorial.unity`. This page is the demo-scene walkthrough; the tutorial teaches the workflow.
 
@@ -14,9 +14,9 @@ The code lives in `Scripts/` — see the inline comments in `DamageDealer.cs` an
 
 ## How to run
 
-Open `Scenes/EnumValues.unity` and enter Play Mode. The scene hosts a pre-seeded `DamageDealer` wired up from `Prefabs/EnumValues.prefab`.
+Open `Scenes/EnumValues.unity`. The scene hosts a pre-seeded `DamageDealer` wired up from `Prefabs/EnumValues.prefab`.
 
-Press `Space` and the Console prints `Fire hit: 15 dmg (speed mod: 0.40)` in orange — the composite `Burning | Slowed` entry wins by exact match even though it is listed last. Then try the other lookup rules in the Inspector:
+Right-click the `DamageDealer` component header → **Deal Damage** (works in Edit Mode — no Play Mode needed) and the Console prints `Fire hit: 15 dmg (speed mod: 0.40)` in orange — the composite `Burning | Slowed` entry wins by exact match even though it is listed last. Then try the other lookup rules in the Inspector:
 
 - set `_activeEffects` to `Burning | Frozen | Slowed` → `0.90` (no exact entry; first contained entry `Burning` wins);
 - set it to `Stunned` (or `None`) → `1.00` (no entry matches; default value).
