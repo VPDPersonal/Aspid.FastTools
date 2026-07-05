@@ -45,7 +45,7 @@ public partial struct EnemyId : IId { }
 
 **Поле:** `IdRegistry _step2Registry` — ссылается на `Data/IdRegistry_EnemyId.asset`.
 
-1. Кликните по полю, чтобы подсветить ассет реестра, и откройте его.
+1. Кликните по полю — ассет реестра подсветится в окне Project и автоматически откроется в Inspector.
 2. Inspector показывает строки `(Id, Name)`: `1 = fly_enemy_dragon` … `4 = walk_enemy_skeleton`.
 3. Добавьте строку, например `swim_enemy_shark` — свежий ID назначится автоматически.
 4. Вернитесь к tutorial-объекту: дропдаун из урока 1 теперь предлагает новое имя.
