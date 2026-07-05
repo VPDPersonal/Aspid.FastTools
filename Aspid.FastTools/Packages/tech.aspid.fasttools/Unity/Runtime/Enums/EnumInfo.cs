@@ -26,8 +26,7 @@ namespace Aspid.FastTools.Enums
             TypeCode.UInt32 => (uint)(object)value,
             TypeCode.Int64 => (long)(object)value,
             TypeCode.UInt64 => unchecked((long)(ulong)(object)value),
-            _ => throw new InvalidOperationException(
-                $"Unsupported enum underlying type '{Enum.GetUnderlyingType(value.GetType())}'."),
+            _ => throw new InvalidOperationException($"Unsupported enum underlying type '{Enum.GetUnderlyingType(value.GetType())}'."),
         };
     }
 
@@ -59,8 +58,7 @@ namespace Aspid.FastTools.Enums
             TypeCode.UInt32 => UnsafeUtility.As<TEnum, uint>(ref value),
             TypeCode.Int64 => UnsafeUtility.As<TEnum, long>(ref value),
             TypeCode.UInt64 => (long)UnsafeUtility.As<TEnum, ulong>(ref value),
-            _ => throw new InvalidOperationException(
-                $"Unsupported enum underlying type '{Enum.GetUnderlyingType(typeof(TEnum))}'."),
+            _ => throw new InvalidOperationException($"Unsupported enum underlying type '{Enum.GetUnderlyingType(typeof(TEnum))}'."),
         };
     }
 }
