@@ -551,6 +551,8 @@ public sealed class HitEffect : MonoBehaviour
 
 Единственный ScriptableObject `IdRegistry` сопоставляет строковые имена стабильным целочисленным ID и предоставляет полные `int ↔ string` поиски в рантайме.
 
+> Полный сэмпл — `EnemyId` / `EnemyDefinition` / `EnemySpawner` с уже настроенным реестром — поставляется в сэмпле `Ids` (Package Manager → Aspid.FastTools → Samples). Пошаговый разбор — в `TUTORIAL_RU.md` этого сэмпла.
+
 ### Setup
 
 **1.** Объявите `partial struct`, реализующий `IId`. Генератор исходников автоматически добавит необходимые поля и свойство:
