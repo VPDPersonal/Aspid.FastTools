@@ -6,6 +6,8 @@ unique `ProfilerMarker` keyed by `(type, method, line)`. `.WithName(...)`
 is optional — when omitted, the generator auto-names the marker after the
 enclosing type and method.
 
+> **New here? Start with [TUTORIAL.md](TUTORIAL.md)** ([RU](TUTORIAL_RU.md)) — a guided, step-by-step tour (Lessons 1–4) built around `Scripts/Tutorial/ProfilerMarkersTutorial.cs` and `Scenes/ProfilerMarkersTutorial.unity`. This page is the compact reference for the three forms; the tutorial walks each call form lesson by lesson.
+
 ## Supported forms
 
 1. **Block `using`-statement with an explicit name.** Marker scope is the
