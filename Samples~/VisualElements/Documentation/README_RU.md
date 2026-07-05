@@ -2,6 +2,8 @@
 
 Кастомный UIToolkit Inspector для `ScriptableObject` `AbilityConfig`, демонстрирующий fluent-API расширений `VisualElement` — карточный inspector, собранный целиком в коде, со статус-бейджем, реагирующим на правки Mana Cost.
 
+> **Впервые здесь? Начните с [TUTORIAL_RU.md](TUTORIAL_RU.md)** ([EN](TUTORIAL.md)) — пошаговый тур (Уроки 1–5) вокруг `Scripts/Editor/VisualElementsTutorialEditor.cs` и `Scenes/VisualElementsTutorial.unity`: fluent-стилизация, пресеты шрифта, раскладка и композиция, реактивные поля и расширения по элементам. Эта страница — разбор демо-инспектора; туториал учит самому fluent-API.
+
 Смотрите:
 
 - `Scripts/Editor/AbilityConfigEditor.cs:23` — `CreateInspectorGUI` собирает карточку из обычных `VisualElement` / `Label` / `HelpBox` с цепочкой Aspid fluent-расширений (`.SetPadding`, `.SetBorderRadius`, `.SetBorderColor`, `.SetFlexDirection`, `.AddChild`).

@@ -2,6 +2,8 @@
 
 A custom UIToolkit Inspector for an `AbilityConfig` ScriptableObject that showcases the fluent `VisualElement` extension API — building a card-style inspector entirely in code, with a status badge that reacts to Mana Cost edits.
 
+> **New here? Start with [TUTORIAL.md](TUTORIAL.md)** ([RU](TUTORIAL_RU.md)) — a guided, step-by-step tour (Lessons 1–5) built around `Scripts/Editor/VisualElementsTutorialEditor.cs` and `Scenes/VisualElementsTutorial.unity`, covering fluent styling, font presets, layout & composition, reactive fields, and the per-element extensions. This page is the demo-inspector walkthrough; the tutorial teaches the fluent API itself.
+
 Look at:
 
 - `Scripts/Editor/AbilityConfigEditor.cs:23` — `CreateInspectorGUI` composes the card from plain `VisualElement` / `Label` / `HelpBox` chained with the Aspid fluent extensions (`.SetPadding`, `.SetBorderRadius`, `.SetBorderColor`, `.SetFlexDirection`, `.AddChild`).

@@ -60,7 +60,7 @@
     },
     {
       "displayName": "VisualElements",
-      "description": "Fluent UI Toolkit extensions, presets and helpers.",
+      "description": "Fluent UI Toolkit VisualElement extensions, font presets and per-element helpers. Includes a step-by-step TUTORIAL and a guided VisualElementsTutorial scene alongside the AbilityConfig custom-inspector demo.",
       "path": "Samples~/VisualElements"
     }
   ],
