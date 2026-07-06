@@ -35,7 +35,7 @@
   "samples": [
     {
       "displayName": "Types",
-      "description": "SerializableType, SerializableType<T>, TypeSelectorAttribute and ComponentTypeSelector usage with the editor type picker.",
+      "description": "SerializableType, SerializableType<T>, TypeSelectorAttribute and ComponentTypeSelector usage with the editor type picker. Includes a step-by-step TUTORIAL and a guided TypesTutorial scene.",
       "path": "Samples~/Types"
     },
     {
