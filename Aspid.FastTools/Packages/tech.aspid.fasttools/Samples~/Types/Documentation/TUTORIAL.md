@@ -37,8 +37,8 @@ The whole declaration is one line — see `Scripts/Tutorial/TypesTutorial.cs`:
 - `SerializableType<T>` shows candidates with `TypeAllow.All`, so the base type `T` itself — **including when it
   is abstract or an interface** — is listed too. This is a general-purpose type reference, so a base/abstract
   type is a valid value; if you resolve it to instantiate (`AddComponent` / `Activator`), pick a **concrete**
-  subtype, since an abstract type cannot be instantiated. Contrast Lesson 2: `[TypeSelector]` defaults to
-  `TypeAllow.None` and hides abstract bases and interfaces.
+  subtype, since an abstract type cannot be instantiated. `[TypeSelector]` on a raw `string` (Lesson 2) now
+  shares this `TypeAllow.All` default, so both behave the same.
 - What is serialized is the **assembly-qualified name** string; `.Type` performs the `GetType()` lookup on
   first access and caches the result.
 - `.Type` returns `null` if the stored name no longer resolves (e.g. the type was renamed) — always null-check
@@ -60,8 +60,8 @@ The whole declaration is one line — see `Scripts/Tutorial/TypesTutorial.cs`:
 
 - Annotating a plain `string` (or `string[]`) gives you the picker **without** the `SerializableType<T>`
   wrapper — useful when you already store the name yourself, or want multiple base constraints across fields.
-- `Allow` defaults to `TypeAllow.None`: abstract bases and interfaces are hidden. Set
-  `[TypeSelector(typeof(AbilityModifier), Allow = TypeAllow.Abstract)]` (or `Interface` / `All`) to opt them in.
+- `Allow` defaults to `TypeAllow.All`: abstract bases and interfaces are shown alongside concrete types. Set
+  `[TypeSelector(typeof(AbilityModifier), Allow = TypeAllow.None)]` to restrict the picker to concrete types only.
 - The same `[TypeSelector]` attribute also backs a `SerializableType` field — the string is the storage, the
   attribute is the picker.
 

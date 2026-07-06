@@ -20,8 +20,8 @@ namespace Aspid.FastTools.Samples.Types
         [SerializeField] private SerializableType<Ability> _abilityType;
 
         // Array field + attribute: each element is its own picker constrained to AbilityModifier.
-        // Allow defaults to TypeAllow.None — abstract bases and interfaces are hidden;
-        // set Allow = TypeAllow.Abstract / Interface / All to opt in.
+        // Allow defaults to TypeAllow.All — abstract bases and interfaces are shown;
+        // set Allow = TypeAllow.None to restrict the picker to concrete types.
         [TypeSelector(typeof(AbilityModifier))]
         [SerializeField] private string[] _modifierTypes;
 

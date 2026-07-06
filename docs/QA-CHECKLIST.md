@@ -19,6 +19,7 @@
 - [ ] `[TypeSelector]` on a `string` field: the picker opens, picking writes an assembly-qualified name.
 - [ ] `SerializableType` / `SerializableType<T>`: serialization works, the generic constraint narrows the list.
 - [ ] Candidate narrowing via `[TypeSelector(typeof(Base))]`, multiple base types.
+- [ ] `Allow` defaults to `TypeAllow.All`: a `[TypeSelector]` `string` / `SerializableType` picker lists abstract classes and interfaces by default; `Allow = TypeAllow.None` restricts it to concrete types.
 - [ ] `Required` on a string field: an empty value shows an inline warning *(2×UI)* + counts as a gate violation.
 - [ ] A `null` element in a referenced `Type[]` member does not crash the picker.
 

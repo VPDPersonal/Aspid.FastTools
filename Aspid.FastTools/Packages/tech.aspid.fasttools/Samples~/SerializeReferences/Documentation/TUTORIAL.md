@@ -113,10 +113,10 @@ Use this to keep a field's *type* broad (so your code stays generic) while const
 > The base types narrow **below** the declared field type — they can never widen it. `[TypeSelector(typeof(object))]`
 > on an `IWeapon` field still only shows `IWeapon` implementations.
 
-> **Note — `TypeAllow` does not apply here.** The `Allow = TypeAllow.Abstract / Interface` option on the attribute
-> only affects `[TypeSelector]` on a **`string`** field (where you are naming a type, not instantiating it). For a
-> `[SerializeReference]` field it is ignored — you can never pick an abstract class or interface, because there would
-> be nothing to instantiate.
+> **Note — `TypeAllow` does not apply here.** The `Allow` option (which defaults to `TypeAllow.All`) only affects
+> `[TypeSelector]` on a **type-name** field — a `string` or a `SerializableType`, where you are naming a type, not
+> instantiating it; there `Allow = TypeAllow.None` restricts the list to concrete types. For a `[SerializeReference]`
+> field it is ignored — you can never pick an abstract class or interface, because there would be nothing to instantiate.
 
 ---
 
