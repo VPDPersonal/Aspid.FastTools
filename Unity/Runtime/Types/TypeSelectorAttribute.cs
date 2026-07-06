@@ -55,6 +55,10 @@ namespace Aspid.FastTools.Types
         /// null, or a <c>string</c> field left empty, shows an inline "required" warning in the inspector and counts as a
         /// violation for the build/CI gate. A present-but-missing managed-reference type is not a required violation here —
         /// it has its own missing-type notice/gate. Defaults to <see langword="false"/>.
+        /// <para>
+        /// Also covers a <see cref="SerializableType"/> / <see cref="SerializableType{T}"/> field: an unset one — its stored
+        /// type name left empty — shows the same inline notice and counts as a build/CI gate violation.
+        /// </para>
         /// </summary>
         /// <example>
         /// <code>
