@@ -13,14 +13,28 @@ namespace Aspid.FastTools.Types.Editors
     /// <summary>
     /// Property drawer for <see cref="TypeSelectorAttribute"/>. Dispatches on the property kind: a
     /// <c>[SerializeReference]</c> managed reference gets the hierarchical instance selector (the attribute's
-    /// base types optionally narrow the candidates below the declared field type), while a <c>string</c> field
-    /// gets the assembly-qualified-name picker constrained by the attribute's base types and <see cref="TypeAllow"/>.
+    /// base types optionally narrow the candidates below the declared field type), while a <c>string</c> field —
+    /// or a <see cref="SerializableType"/> / <see cref="SerializableType{T}"/> container, whose backing
+    /// <c>_assemblyQualifiedName</c> string this drawer targets — gets the assembly-qualified-name picker
+    /// constrained by the attribute's base types (intersected with the generic argument <c>T</c>) and
+    /// <see cref="TypeAllow"/>.
     /// </summary>
     [CustomPropertyDrawer(typeof(TypeSelectorAttribute))]
     internal sealed class TypeSelectorPropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            if (TryGetSerializableTypeContainer(property, out var nameProperty, out var genericBaseType))
+            {
+                TypeIMGUIPropertyDrawer.Draw(
+                    position: position,
+                    property: nameProperty,
+                    label: label,
+                    allow: GetTypeAllow(),
+                    types: GetSerializableTypeBaseTypes(property, genericBaseType));
+                return;
+            }
+
             ThrowExceptionIfInvalidProperty(property);
 
             if (property.propertyType == SerializedPropertyType.ManagedReference)
@@ -41,13 +55,27 @@ namespace Aspid.FastTools.Types.Editors
                 types: GetTypesFromAttribute(property));
         }
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
-            property.propertyType == SerializedPropertyType.ManagedReference
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            if (TryGetSerializableTypeContainer(property, out var nameProperty, out _))
+                return TypeIMGUIPropertyDrawer.GetHeight(nameProperty);
+
+            return property.propertyType == SerializedPropertyType.ManagedReference
                 ? SerializeReferenceIMGUIPropertyDrawer.GetHeight(property)
                 : TypeIMGUIPropertyDrawer.GetHeight(property);
+        }
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
+            if (TryGetSerializableTypeContainer(property, out var nameProperty, out var genericBaseType))
+            {
+                return TypeUIToolkitPropertyDrawer.Draw(
+                    label: preferredLabel,
+                    property: nameProperty,
+                    allow: GetTypeAllow(),
+                    types: GetSerializableTypeBaseTypes(property, genericBaseType));
+            }
+
             ThrowExceptionIfInvalidProperty(property);
 
             if (property.propertyType == SerializedPropertyType.ManagedReference)
@@ -69,6 +97,55 @@ namespace Aspid.FastTools.Types.Editors
         {
             var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
             return typeSelectorAttribute.Allow;
+        }
+
+        // A SerializableType / SerializableType<T> serializes as a Generic property with a child
+        // _assemblyQualifiedName string. Unity picks this attribute drawer over SerializableTypePropertyDrawer,
+        // so this is where [TypeSelector] on a SerializableType field is handled — we drive the string picker on
+        // the child name property instead of throwing on the Generic kind. Detection reads the field type (arrays
+        // and List<T> unwrapped to their element) so an element in a SerializableType[] / List<SerializableType> matches too.
+        private bool TryGetSerializableTypeContainer(SerializedProperty property, out SerializedProperty nameProperty, out Type genericBaseType)
+        {
+            nameProperty = null;
+            genericBaseType = null;
+
+            if (property.propertyType is not SerializedPropertyType.Generic) return false;
+            if (fieldInfo is null) return false;
+
+            var type = fieldInfo.FieldType;
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+                type = type.GetGenericArguments()[0];
+            else if (type.IsArray)
+                type = type.GetElementType();
+
+            if (type == typeof(SerializableType))
+            {
+                nameProperty = property.FindPropertyRelative("_assemblyQualifiedName");
+                return nameProperty is not null;
+            }
+
+            if (type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(SerializableType<>))
+            {
+                genericBaseType = type.GetGenericArguments()[0];
+                nameProperty = property.FindPropertyRelative("_assemblyQualifiedName");
+                return nameProperty is not null;
+            }
+
+            return false;
+        }
+
+        // Base types for a SerializableType picker: the attribute's types plus the generic argument T (for
+        // SerializableType<T>). The picker intersects — a candidate must be assignable to ALL entries
+        // (TypeInfo.GetAllTypeInfos) — so appending T narrows the attribute's set to T's subtypes.
+        private Type[] GetSerializableTypeBaseTypes(SerializedProperty property, Type genericBaseType)
+        {
+            var attributeTypes = GetTypesFromAttribute(property);
+            if (genericBaseType is null) return attributeTypes;
+
+            var types = new List<Type>(attributeTypes.Length + 1) { genericBaseType };
+            types.AddRange(attributeTypes);
+            return types.ToArray();
         }
 
         private Type[] GetTypesFromAttribute(SerializedProperty property)
@@ -172,7 +249,8 @@ namespace Aspid.FastTools.Types.Editors
             if (property.propertyType is not (SerializedPropertyType.String or SerializedPropertyType.ManagedReference))
             {
                 throw new ArgumentException(
-                    "[TypeSelector] can only be applied to a string field or a [SerializeReference] managed-reference field.",
+                    "[TypeSelector] can only be applied to a string field, a SerializableType / SerializableType<T> field, " +
+                    "or a [SerializeReference] managed-reference field.",
                     nameof(property));
             }
         }

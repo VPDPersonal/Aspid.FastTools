@@ -134,15 +134,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     foreach (var descriptor in required)
                     {
                         // An absent key is not a violation (see FieldState); only a present-but-empty key is reported.
-                        if (descriptor.IsString)
+                        var rid = 0L;
+                        var state = descriptor.Kind switch
                         {
-                            if (IsStringFieldUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName) == FieldState.PresentUnset)
-                                result.Add(new RequiredViolationEntry(fileId, descriptor.FieldName, 0));
-                        }
-                        else if (IsManagedReferenceUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName, out var rid) == FieldState.PresentUnset)
-                        {
+                            RequiredFieldKind.String =>
+                                IsStringFieldUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName),
+                            RequiredFieldKind.SerializableType =>
+                                IsSerializableTypeFieldUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName),
+                            _ => IsManagedReferenceUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName, out rid),
+                        };
+
+                        if (state == FieldState.PresentUnset)
                             result.Add(new RequiredViolationEntry(fileId, descriptor.FieldName, rid));
-                        }
                     }
                 }
             }
@@ -257,6 +260,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return value.Length == 0 || value == "''" || value == "\"\""
                     ? FieldState.PresentUnset
                     : FieldState.PresentSet;
+            }
+
+            return FieldState.Absent; // field absent — not a violation (needs reserialize)
+        }
+
+        // Classifies a SerializableType field `name`: PresentUnset when its nested _assemblyQualifiedName scalar is empty
+        // (or the block carries no such child), PresentSet when it holds a value, Absent when the field key is not in the
+        // doc. Mirrors IsStringFieldUnset but reads the wrapper's one indented child rather than an inline scalar.
+        private static FieldState IsSerializableTypeFieldUnset(string[] lines, int start, int end, int fieldIndent, string name)
+        {
+            var pattern = new Regex($@"^(?<indent>\s*){Regex.Escape(name)}:\s*$");
+
+            for (var i = start; i < end; i++)
+            {
+                var field = pattern.Match(lines[i]);
+                if (!field.Success || field.Groups["indent"].Length != fieldIndent) continue;
+
+                // The wrapper's _assemblyQualifiedName scalar is the field's first indented child.
+                for (var j = i + 1; j < end; j++)
+                {
+                    if (lines[j].Trim().Length == 0) continue;
+                    if (IndentOf(lines[j]) <= fieldIndent) break; // dedented out of the field without the child
+
+                    var child = Regex.Match(lines[j].Trim(), @"^_assemblyQualifiedName:\s*(?<value>.*)$");
+                    if (!child.Success) break; // first child is not the backing scalar — unrecognised shape
+
+                    var value = child.Groups["value"].Value.Trim();
+                    return value.Length == 0 || value == "''" || value == "\"\""
+                        ? FieldState.PresentUnset
+                        : FieldState.PresentSet;
+                }
+
+                return FieldState.PresentUnset; // field present but no _assemblyQualifiedName child — treat as unset
             }
 
             return FieldState.Absent; // field absent — not a violation (needs reserialize)

@@ -11,13 +11,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// <summary>
     /// Shared logic for the <c>[TypeSelector(Required = true)]</c> marker: detecting whether a property carries it (via
     /// the field reflected from the property path) and whether it is currently violated (a genuinely empty value). Used
-    /// by the inspector notice and by the build/CI gate's per-property check. Applies to both a <c>[SerializeReference]</c>
-    /// managed reference (empty == null) and a <c>string</c> type field (empty == null-or-empty).
+    /// by the inspector notice and by the build/CI gate's per-property check. Applies to a <c>[SerializeReference]</c>
+    /// managed reference (empty == null), a <c>string</c> type field (empty == null-or-empty), and a
+    /// <see cref="SerializableType"/> field (empty == its nested <c>_assemblyQualifiedName</c> is null-or-empty; the
+    /// attribute is resolved from the wrapper field, and violation is checked on its backing string).
     /// </summary>
     internal static class SerializeReferenceRequiredGate
     {
         private const BindingFlags FieldFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         private const BindingFlags DeclaredFieldFlags = FieldFlags | BindingFlags.DeclaredOnly;
+
+        // The backing string field a SerializableType / SerializableType<T> serializes its type name into.
+        private const string SerializableTypeNameField = "_assemblyQualifiedName";
 
         /// <summary>
         /// Resolves the <c>[TypeSelector]</c> attribute on this property's declared field when it opts in with
@@ -82,9 +87,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (!seen.Add(field.Name)) continue;
 
                     if (field.FieldType == typeof(string))
-                        result.Add(new RequiredFieldDescriptor(field.Name, isString: true));
+                        result.Add(new RequiredFieldDescriptor(field.Name, RequiredFieldKind.String));
+                    else if (IsSerializableTypeField(field.FieldType))
+                        result.Add(new RequiredFieldDescriptor(field.Name, RequiredFieldKind.SerializableType));
                     else if (field.IsDefined(typeof(SerializeReference), inherit: false))
-                        result.Add(new RequiredFieldDescriptor(field.Name, isString: false));
+                        result.Add(new RequiredFieldDescriptor(field.Name, RequiredFieldKind.ManagedReference));
                     // A required [TypeSelector] on any other shape is a misuse the analyzer flags; skip it here.
                 }
             }
@@ -126,10 +133,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var segments = path.Split('.');
 
             FieldInfo field = null;
+            FieldInfo previousField = null;
             string traversedPath = null;
 
             for (var i = 0; i < segments.Length; i++)
             {
+                previousField = field;
+
                 var segment = segments[i];
                 var bracket = segment.IndexOf('[');
                 var isElement = bracket >= 0;
@@ -157,6 +167,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     type = hop.managedReferenceValue.GetType();
             }
 
+            // A required [TypeSelector] lives on the SerializableType field, not on the wrapper's backing
+            // _assemblyQualifiedName string the drawer targets — redirect to the parent field so the attribute is found.
+            if (previousField is not null &&
+                field.Name == SerializableTypeNameField &&
+                IsSerializableTypeField(previousField.FieldType))
+                return previousField;
+
             return field;
         }
 
@@ -181,6 +198,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return collectionType;
+        }
+
+        // True for a SerializableType / SerializableType<T> field, or an array / List<T> of them. Unwraps the
+        // collection first, then matches the wrapper's open definition (SerializableType<T> is generic, so it must
+        // not be mistaken for a collection and unwrapped by GetElementType).
+        private static bool IsSerializableTypeField(Type fieldType)
+        {
+            var type = fieldType;
+
+            if (type.IsArray)
+                type = type.GetElementType();
+            else if (type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(List<>))
+                type = type.GetGenericArguments()[0];
+
+            if (type is null) return false;
+            if (type == typeof(SerializableType)) return true;
+
+            return type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(SerializableType<>);
         }
     }
 }

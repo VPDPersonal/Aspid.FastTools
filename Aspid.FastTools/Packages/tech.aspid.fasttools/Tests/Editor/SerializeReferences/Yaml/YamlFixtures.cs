@@ -408,6 +408,45 @@ MonoBehaviour:
         _damage: 5
 ";
 
+        // A scene whose MonoBehaviour has a required SerializableType field (requiredType) left unset: the wrapper is
+        // written as a block whose nested _assemblyQualifiedName scalar is empty. One violation expected.
+        public const string RequiredSceneSerializableTypeUnset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+  requiredType:
+    _assemblyQualifiedName:
+";
+
+        // The same scene with the SerializableType populated — its nested _assemblyQualifiedName holds a name. No violation.
+        public const string RequiredSceneSerializableTypeSet =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+  requiredType:
+    _assemblyQualifiedName: Aspid.FastTools.Samples.SerializeReferences.Pistol, Aspid.FastTools.Samples.SerializeReferences
+";
+
         // The same scene where BOTH required keys are ABSENT from the MonoBehaviour — the shape Unity writes when the
         // object was last saved before the [TypeSelector(Required = true)] fields were added (also stripped / nested-prefab
         // docs). Reserializing fills the defaults; until then the gate must NOT flag the missing keys, so no violations
