@@ -2,16 +2,13 @@
 
 Маленькая система способностей, демонстрирующая полиморфный выбор типа в Unity Inspector с помощью `SerializableType<T>`, `TypeSelectorAttribute` и `ComponentTypeSelector`. Игрок выбирает наследника `Ability` и список наследников `AbilityModifier`; для врагов используется `ComponentTypeSelector`, чтобы конкретный скрипт врага можно было заменить «на лету» из Inspector.
 
+> **Впервые здесь? Начните с [TUTORIAL_RU.md](TUTORIAL_RU.md)** ([EN](TUTORIAL.md)) — пошаговый гид (уроки 1–6) на основе `Scripts/Tutorial/TypesTutorial.cs` и `Scenes/TypesTutorial.unity`. Эта страница — обзор демо-сцены; туториал учит рабочему процессу.
+
 Смотрите:
 
 - `Scripts/Abilities/AbilitySelector.cs:20` — поле `SerializableType<Ability>`, ограниченный выбор одного подтипа.
 - `Scripts/Abilities/AbilitySelector.cs:25` — `[TypeSelector(typeof(AbilityModifier))]` на поле `string[]`.
 - `Scripts/Enemies/EnemyBase.cs:18` — объявление `ComponentTypeSelector`, заменяющее прикреплённый скрипт по месту.
-
-Оба Type-drawer’а поддерживают и UIToolkit, и IMGUI. Параллельные `IMGUI*`-варианты принудительно используют IMGUI-путь — удобно для сравнения или миграции IMGUI-проектов:
-
-- `Scripts/Abilities/IMGUIAbilitySelector.cs` + `Scripts/Editor/IMGUIAbilitySelectorEditor.cs` — те же поля `SerializableType<T>` / `[TypeSelector]`, отрисованные через `OnInspectorGUI`.
-- `Scripts/Enemies/IMGUI/IMGUIEnemyBase.cs` (+ `IMGUIFastEnemy`, `IMGUITankEnemy`) + `Scripts/Editor/IMGUIEnemyBaseEditor.cs` — IMGUI-эквивалент потока подмены через `ComponentTypeSelector`.
 
 ## Как запустить
 
