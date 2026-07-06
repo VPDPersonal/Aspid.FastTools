@@ -18,7 +18,7 @@ namespace Aspid.FastTools.Samples.Types
         [Header("STEP 2 — [TypeSelector] on a raw string[]")]
         [TypeSelector(typeof(AbilityModifier))]
         [SerializeField]
-        [Tooltip("Each element is its own picker constrained to AbilityModifier. Allow defaults to TypeAllow.None — abstract bases and interfaces are hidden until you opt in.")]
+        [Tooltip("Each element is its own picker constrained to AbilityModifier. Allow defaults to TypeAllow.All — abstract bases and interfaces are shown; set Allow = TypeAllow.None to restrict to concrete types.")]
         private string[] _step2ModifierTypes;
 
         [Header("STEP 3 — Generic types in the picker")]

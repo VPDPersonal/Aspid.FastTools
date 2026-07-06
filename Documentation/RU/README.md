@@ -215,7 +215,7 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
     public TypeSelectorAttribute(string assemblyQualifiedName)
     public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
 
-    public TypeAllow Allow { get; set; }  // по умолчанию: TypeAllow.None
+    public TypeAllow Allow { get; set; }  // по умолчанию: TypeAllow.All
     public bool Required { get; set; }    // по умолчанию: false
 }
 
@@ -231,7 +231,7 @@ public enum TypeAllow
 
 | Свойство | Описание |
 |----------|----------|
-| `Allow` | Какие специальные категории типов (абстрактные классы, интерфейсы) включаются в список выбора в дополнение к обычным конкретным классам. По умолчанию: `TypeAllow.None` |
+| `Allow` | Какие специальные категории типов (абстрактные классы, интерфейсы) включаются в список выбора в дополнение к обычным конкретным классам. По умолчанию: `TypeAllow.All` (поле-имя типа показывает и абстрактные классы, и интерфейсы; укажите `TypeAllow.None`, чтобы ограничить только конкретными типами). Игнорируется на managed-ссылке `[SerializeReference]` |
 | `Required` | Помечает незаполненное поле: managed reference `[SerializeReference]`, оставшийся `null`, или пустое `string`-поле показывает предупреждение «required» в инспекторе и считается нарушением для build/CI-гейта. По умолчанию: `false` |
 
 ```csharp
