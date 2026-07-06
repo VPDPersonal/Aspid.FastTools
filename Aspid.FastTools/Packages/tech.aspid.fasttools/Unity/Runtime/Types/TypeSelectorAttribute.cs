@@ -42,9 +42,13 @@ namespace Aspid.FastTools.Types
 
         /// <summary>
         /// Which special type categories (abstract classes, interfaces) the picker should
-        /// include in addition to plain concrete classes. Defaults to <see cref="TypeAllow.None"/>.
+        /// include in addition to plain concrete classes. Defaults to <see cref="TypeAllow.All"/>,
+        /// so a type-name field (a <c>string</c> or a <see cref="SerializableType"/>) offers abstract
+        /// classes and interfaces too — set <see cref="TypeAllow.None"/> to restrict it to concrete types.
+        /// Ignored on a <c>[SerializeReference]</c> managed reference: that path always lists only
+        /// concrete, instantiable types regardless of this value.
         /// </summary>
-        public TypeAllow Allow { get; set; } = TypeAllow.None;
+        public TypeAllow Allow { get; set; } = TypeAllow.All;
 
         /// <summary>
         /// When <see langword="true"/>, an unset field is flagged: a <c>[SerializeReference]</c> managed reference left

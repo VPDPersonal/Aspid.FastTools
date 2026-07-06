@@ -215,7 +215,7 @@ public sealed class TypeSelectorAttribute : PropertyAttribute
     public TypeSelectorAttribute(string assemblyQualifiedName)
     public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
 
-    public TypeAllow Allow { get; set; }  // default: TypeAllow.None
+    public TypeAllow Allow { get; set; }  // default: TypeAllow.All
     public bool Required { get; set; }    // default: false
 }
 
@@ -231,7 +231,7 @@ public enum TypeAllow
 
 | Property | Description |
 |----------|-------------|
-| `Allow` | Which special type categories (abstract classes, interfaces) the picker includes in addition to plain concrete classes. Default: `TypeAllow.None` |
+| `Allow` | Which special type categories (abstract classes, interfaces) the picker includes in addition to plain concrete classes. Default: `TypeAllow.All` (a type-name field lists abstract classes and interfaces too; set `TypeAllow.None` to restrict it to concrete types). Ignored on a `[SerializeReference]` managed reference |
 | `Required` | Flags an unset field: a `[SerializeReference]` managed reference left `null`, or a `string` field left empty, shows an inline "required" warning in the Inspector and counts as a violation for the build/CI gate. Default: `false` |
 
 ```csharp
