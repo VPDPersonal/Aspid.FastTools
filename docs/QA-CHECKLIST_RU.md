@@ -18,9 +18,11 @@
 
 - [ ] `[TypeSelector]` на `string`-поле: пикер открывается, выбор пишет assembly-qualified имя.
 - [ ] `SerializableType` / `SerializableType<T>`: сериализация, generic-констрейнт сужает список.
+- [ ] `[TypeSelector]` на поле `SerializableType` / `SerializableType<T>`: фильтрует пикер; базовые типы атрибута пересекаются с generic `T`; анализатор не выдаёт `AFT0001`. *(2×UI)*
 - [ ] Сужение кандидатов через `[TypeSelector(typeof(Base))]`, несколько базовых типов.
 - [ ] `Allow` по умолчанию `TypeAllow.All`: пикер `[TypeSelector]` `string` / `SerializableType` показывает абстрактные классы и интерфейсы; `Allow = TypeAllow.None` ограничивает только конкретными типами.
 - [ ] `Required` на string-поле: пустое значение — inline-warning *(2×UI)* + нарушение для gate.
+- [ ] `Required` на поле `SerializableType` / `SerializableType<T>`: пустое имя типа — inline-warning *(2×UI)* + нарушение для gate (инспектор, сохранённый ассет и pure-YAML скан сцены).
 - [ ] `null`-элемент в `Type[]`-члене не роняет пикер.
 
 ## 2. Окно выбора типа (TypeSelectorWindow)

@@ -203,7 +203,7 @@ public sealed class AbilitySelector : MonoBehaviour
 
 ### TypeSelectorAttribute
 
-Атрибут `PropertyAttribute`, доступный только в редакторе, ограничивающий всплывающее окно выбора типа конкретными базовыми типами. Применяется к полям `string`, хранящим assembly-qualified имена типов.
+Атрибут `PropertyAttribute`, доступный только в редакторе, ограничивающий всплывающее окно выбора типа конкретными базовыми типами. Применяется к полю `string` (хранящему assembly-qualified имя типа), полю `SerializableType` / `SerializableType<T>` или managed-reference полю `[SerializeReference]`. Для `SerializableType<T>` базовые типы атрибута пересекаются с generic-аргументом `T`.
 
 ```csharp
 [Conditional("UNITY_EDITOR")]
@@ -232,7 +232,7 @@ public enum TypeAllow
 | Свойство | Описание |
 |----------|----------|
 | `Allow` | Какие специальные категории типов (абстрактные классы, интерфейсы) включаются в список выбора в дополнение к обычным конкретным классам. По умолчанию: `TypeAllow.All` (поле-имя типа показывает и абстрактные классы, и интерфейсы; укажите `TypeAllow.None`, чтобы ограничить только конкретными типами). Игнорируется на managed-ссылке `[SerializeReference]` |
-| `Required` | Помечает незаполненное поле: managed reference `[SerializeReference]`, оставшийся `null`, или пустое `string`-поле показывает предупреждение «required» в инспекторе и считается нарушением для build/CI-гейта. По умолчанию: `false` |
+| `Required` | Помечает незаполненное поле: managed reference `[SerializeReference]`, оставшийся `null`, или пустое `string`-поле показывает предупреждение «required» в инспекторе и считается нарушением для build/CI-гейта. Также покрывает поле `SerializableType` (когда сохранённое имя типа пустое). По умолчанию: `false` |
 
 ```csharp
 using UnityEngine;

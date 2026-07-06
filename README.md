@@ -206,7 +206,7 @@ public sealed class AbilitySelector : MonoBehaviour
 
 ### TypeSelectorAttribute
 
-An editor-only `PropertyAttribute` that restricts the type selection popup to specific base types. Applied to `string` fields that store assembly-qualified type names.
+An editor-only `PropertyAttribute` that restricts the type selection popup to specific base types. Applied to a `string` field (storing an assembly-qualified type name), a `SerializableType` / `SerializableType<T>` field, or a `[SerializeReference]` managed-reference field. On a `SerializableType<T>` the attribute's base types are intersected with the generic argument `T`.
 
 ```csharp
 [Conditional("UNITY_EDITOR")]
@@ -235,7 +235,7 @@ public enum TypeAllow
 | Property | Description |
 |----------|-------------|
 | `Allow` | Which special type categories (abstract classes, interfaces) the picker includes in addition to plain concrete classes. Default: `TypeAllow.All` (a type-name field lists abstract classes and interfaces too; set `TypeAllow.None` to restrict it to concrete types). Ignored on a `[SerializeReference]` managed reference |
-| `Required` | Flags an unset field: a `[SerializeReference]` managed reference left `null`, or a `string` field left empty, shows an inline "required" warning in the Inspector and counts as a violation for the build/CI gate. Default: `false` |
+| `Required` | Flags an unset field: a `[SerializeReference]` managed reference left `null`, or a `string` field left empty, shows an inline "required" warning in the Inspector and counts as a violation for the build/CI gate. Also covers a `SerializableType` field (its stored type name left empty). Default: `false` |
 
 ```csharp
 using UnityEngine;

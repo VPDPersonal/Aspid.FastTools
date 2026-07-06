@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     // A type mixing required, optional and plain fields, to prove GetRequiredFields returns only the required ones and
-    // classifies each by kind (string vs [SerializeReference] managed reference).
+    // classifies each by kind (string vs SerializableType vs [SerializeReference] managed reference).
     internal sealed class MixedRequiredObject : ScriptableObject
     {
         [SerializeReference, TypeSelector(Required = true)]
@@ -16,6 +16,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
         [TypeSelector(Required = true)]
         public string requiredString;
+
+        [TypeSelector(Required = true)]
+        public SerializableType requiredType;
 
         [SerializeReference, TypeSelector]
         public ITestWeapon optionalRef;
@@ -51,13 +54,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void GetRequiredFields_ReturnsOnlyRequiredFields_ClassifiedByKind()
         {
             var byName = SerializeReferenceRequiredGate.GetRequiredFields(typeof(MixedRequiredObject))
-                .ToDictionary(field => field.FieldName, field => field.IsString);
+                .ToDictionary(field => field.FieldName, field => field.Kind);
 
-            Assert.AreEqual(2, byName.Count, "Only the two Required fields should be returned.");
-            Assert.IsTrue(byName.ContainsKey("requiredRef"), "The required managed reference should be included.");
-            Assert.IsTrue(byName.ContainsKey("requiredString"), "The required string field should be included.");
-            Assert.IsFalse(byName["requiredRef"], "A [SerializeReference] field is a managed reference, not a string.");
-            Assert.IsTrue(byName["requiredString"], "A string type field is classified as a string.");
+            Assert.AreEqual(3, byName.Count, "Only the three Required fields should be returned.");
+            Assert.AreEqual(RequiredFieldKind.ManagedReference, byName["requiredRef"], "A [SerializeReference] field is a managed reference.");
+            Assert.AreEqual(RequiredFieldKind.String, byName["requiredString"], "A string type field is classified as a string.");
+            Assert.AreEqual(RequiredFieldKind.SerializableType, byName["requiredType"], "A SerializableType field is classified as SerializableType.");
         }
 
         [Test]
@@ -127,6 +129,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneUnset);
             Assert.AreEqual(0, SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, null).Count);
+        }
+
+        // Resolves the fixtures' script to a single required SerializableType field (requiredType), so the pure-YAML
+        // scan reads the wrapper's nested _assemblyQualifiedName scalar to decide the violation.
+        private static IReadOnlyList<RequiredFieldDescriptor> ResolveSerializableType(string guid) =>
+            guid == YamlFixtures.RequiredSceneScriptGuid
+                ? new[] { new RequiredFieldDescriptor("requiredType", RequiredFieldKind.SerializableType) }
+                : Array.Empty<RequiredFieldDescriptor>();
+
+        [Test]
+        public void FindUnsetRequiredFields_SerializableTypeUnset_ReportsViolation()
+        {
+            _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneSerializableTypeUnset);
+            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, ResolveSerializableType);
+
+            Assert.AreEqual(1, violations.Count, "An empty SerializableType (blank _assemblyQualifiedName) is a violation.");
+            Assert.AreEqual("requiredType", violations[0].FieldName);
+            Assert.AreEqual(YamlFixtures.RequiredSceneMonoFileId, violations[0].FileId);
+        }
+
+        [Test]
+        public void FindUnsetRequiredFields_SerializableTypeSet_ReportsNone()
+        {
+            _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneSerializableTypeSet);
+            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, ResolveSerializableType);
+
+            Assert.AreEqual(0, violations.Count, "A populated SerializableType is not a violation.");
         }
     }
 }
