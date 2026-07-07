@@ -100,6 +100,47 @@ MonoBehaviour:
                 "Restoring over a sentinel element must succeed.");
         }
 
+        // ---- TryFindTopLevelArrayElementForRid: rid -> (field, index) attribution the delete-guard relies on ---------
+
+        [Test]
+        public void TryFindTopLevelArrayElementForRid_ListElements_ReportFieldAndIndex()
+        {
+            Assert.IsTrue(SerializeReferenceYamlEditor.TryFindTopLevelArrayElementForRid(
+                _pristinePath, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, out var field, out var index));
+            Assert.AreEqual("_sidearms", field);
+            Assert.AreEqual(0, index);
+
+            Assert.IsTrue(SerializeReferenceYamlEditor.TryFindTopLevelArrayElementForRid(
+                _pristinePath, YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid, out field, out index));
+            Assert.AreEqual("_sidearms", field);
+            Assert.AreEqual(1, index, "Element indexing must count within the field, not across the document.");
+        }
+
+        [Test]
+        public void TryFindTopLevelArrayElementForRid_SingleFieldPointer_ReturnsFalse()
+        {
+            // _primaryWeapon holds Railgun as a plain (non-array) field — a list resize cannot destroy it, so the
+            // rid must not be attributed to any array element.
+            Assert.IsFalse(SerializeReferenceYamlEditor.TryFindTopLevelArrayElementForRid(
+                _pristinePath, YamlFixtures.MonoBehaviourFileId, YamlFixtures.RailgunRid, out _, out _));
+        }
+
+        [Test]
+        public void TryFindTopLevelArrayElementForRid_NestedPointer_ReturnsFalse()
+        {
+            // BurnEffect is pointed at from INSIDE Railgun's RefIds data (_chargeEffect), not from a top-level list —
+            // the references block must be excluded from the walk.
+            Assert.IsFalse(SerializeReferenceYamlEditor.TryFindTopLevelArrayElementForRid(
+                _pristinePath, YamlFixtures.MonoBehaviourFileId, YamlFixtures.BurnEffectRid, out _, out _));
+        }
+
+        [Test]
+        public void TryFindTopLevelArrayElementForRid_UnknownRid_ReturnsFalse()
+        {
+            Assert.IsFalse(SerializeReferenceYamlEditor.TryFindTopLevelArrayElementForRid(
+                _pristinePath, YamlFixtures.MonoBehaviourFileId, 999_999, out _, out _));
+        }
+
         [Test]
         public void TryReadArrayElementEntryBlock_CapturesTypeAndData()
         {
