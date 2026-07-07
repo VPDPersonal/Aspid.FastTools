@@ -4,6 +4,7 @@ using UnityEngine;
 using System.Reflection;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -200,22 +201,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return collectionType;
         }
 
-        // True for a SerializableType / SerializableType<T> field, or an array / List<T> of them. Unwraps the
-        // collection first, then matches the wrapper's open definition (SerializableType<T> is generic, so it must
-        // not be mistaken for a collection and unwrapped by GetElementType).
-        private static bool IsSerializableTypeField(Type fieldType)
-        {
-            var type = fieldType;
-
-            if (type.IsArray)
-                type = type.GetElementType();
-            else if (type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(List<>))
-                type = type.GetGenericArguments()[0];
-
-            if (type is null) return false;
-            if (type == typeof(SerializableType)) return true;
-
-            return type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(SerializableType<>);
-        }
+        // True for an ISerializableType wrapper field, or an array / List<T> of them.
+        private static bool IsSerializableTypeField(Type fieldType) =>
+            SerializableTypeUtility.IsSerializableTypeField(fieldType);
     }
 }

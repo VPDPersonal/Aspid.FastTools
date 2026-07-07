@@ -30,7 +30,7 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     [Serializable]
-    public sealed class SerializableType : ISerializationCallbackReceiver
+    public sealed class SerializableType : ISerializableType, ISerializationCallbackReceiver
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         [SerializeField] private string _assemblyQualifiedName;
@@ -102,7 +102,7 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     [Serializable]
-    public sealed class SerializableType<T> : ISerializationCallbackReceiver
+    public sealed class SerializableType<T> : ISerializableType, ISerializationCallbackReceiver
     {
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
         [SerializeField] private string _assemblyQualifiedName;
