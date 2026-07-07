@@ -52,6 +52,7 @@
 - [ ] Make Unique / Link to Existing: deep copy of the reference graph preserving aliasing topology, cyclic graphs safe; Link never offers an aliasing ancestor.
 - [ ] Authoring: dragging a MonoScript onto the field; Save as Template… / Paste Template ▸ (persisted per project); the list `+` opens the picker; Create New Script… generates a stub and assigns it after compilation (survives the domain reload).
 - [ ] `Required` on a managed reference: warning when null *(2×UI)* + counted by the gate.
+- [ ] `Required` inside a plain `[Serializable]` container (nested field): inline warning in the inspector + counted by the gate for prefabs/SOs **and** the pure-YAML scene scan (reported under the dotted path, e.g. `_loadout.primary`).
 - [ ] `SerializeReferenceEditorGUI` facade (`CreateField`/`CreateList`/`DrawFieldLayout`) works from a custom editor's `CreateInspectorGUI`/`OnInspectorGUI`.
 - [ ] Notice placement agrees between both renderers (missing/required/mixed — only when the field is empty; shared — at the very bottom).
 

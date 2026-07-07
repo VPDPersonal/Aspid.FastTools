@@ -157,5 +157,71 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.AreEqual(0, violations.Count, "A populated SerializableType is not a violation.");
         }
+
+        // ---- required fields nested inside plain [Serializable] containers (ASP-52) ------------------------------------
+
+        [Test]
+        public void GetRequiredFields_NestedContainer_ReturnsPathedDescriptors()
+        {
+            var byPath = SerializeReferenceRequiredGate.GetRequiredFields(typeof(NestedRequiredTestObject))
+                .ToDictionary(field => field.Path, field => field.Kind);
+
+            Assert.AreEqual(2, byPath.Count, "Both required fields inside the container should be returned.");
+            Assert.AreEqual(RequiredFieldKind.ManagedReference, byPath["_loadout.primary"],
+                "The nested managed reference is reported under its container path.");
+            Assert.AreEqual(RequiredFieldKind.String, byPath["_loadout.typeName"],
+                "The nested string type field is reported under its container path.");
+        }
+
+        [Test]
+        public void GetRequiredFields_SelfReferentialContainer_TerminatesAndPrunesCycle()
+        {
+            var paths = SerializeReferenceRequiredGate.GetRequiredFields(typeof(CycleRequiredTestObject))
+                .Select(field => field.Path).ToList();
+
+            Assert.AreEqual(new[] { "root.typeName" }, paths,
+                "The cyclic 'next' branch must be pruned, leaving exactly the first level's required field.");
+        }
+
+        // Maps the fixtures' script guid to NestedRequiredTestObject, whose required fields all sit inside _loadout.
+        private static IReadOnlyList<RequiredFieldDescriptor> ResolveNested(string guid) =>
+            guid == YamlFixtures.RequiredSceneScriptGuid
+                ? SerializeReferenceRequiredGate.GetRequiredFields(typeof(NestedRequiredTestObject))
+                : Array.Empty<RequiredFieldDescriptor>();
+
+        [Test]
+        public void FindUnsetRequiredFields_NestedUnset_ReportsBothWithPaths()
+        {
+            _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneNestedUnset);
+
+            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, ResolveNested);
+
+            Assert.AreEqual(2, violations.Count, "Both unset fields inside the container should be reported.");
+
+            var managed = violations.Single(v => v.FieldName == "_loadout.primary");
+            Assert.AreEqual(-2L, managed.Rid, "The nested unset managed reference reads the null id (-2).");
+            Assert.IsTrue(violations.Any(v => v.FieldName == "_loadout.typeName"),
+                "The nested empty string field is a violation.");
+        }
+
+        [Test]
+        public void FindUnsetRequiredFields_NestedSet_ReportsNone()
+        {
+            _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneNestedSet);
+            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, ResolveNested);
+
+            Assert.AreEqual(0, violations.Count, "Set fields inside the container are not violations.");
+        }
+
+        [Test]
+        public void FindUnsetRequiredFields_NestedContainerAbsent_ReportsNone()
+        {
+            // The whole container key is missing (object saved before the field was added) — like a top-level absent
+            // key, that needs a reserialize, not a build failure.
+            _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneNestedContainerAbsent);
+            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, ResolveNested);
+
+            Assert.AreEqual(0, violations.Count, "An absent container key is not a violation — it needs a reserialize.");
+        }
     }
 }

@@ -52,6 +52,7 @@
 - [ ] Make Unique / Link to Existing: deep-copy графа с сохранением топологии, циклы безопасны; Link не предлагает алиасящего предка.
 - [ ] Authoring: drag MonoScript на поле; Save as Template… / Paste Template ▸ (персист на проект); list `+` открывает пикер; Create New Script… генерит стаб и назначает после компиляции (переживает domain reload).
 - [ ] `Required` на managed reference: warning при null *(2×UI)* + учёт в gate.
+- [ ] `Required` внутри обычного `[Serializable]`-контейнера (вложенное поле): inline-warning в инспекторе + учёт в gate для prefabs/SO **и** pure-YAML скана сцен (в отчёте — путь через точку, например `_loadout.primary`).
 - [ ] Facade `SerializeReferenceEditorGUI` (`CreateField`/`CreateList`/`DrawFieldLayout`) работает из `CreateInspectorGUI`/`OnInspectorGUI` кастомного эдитора.
 - [ ] Позиции notices совпадают в обоих рендерерах (missing/required/mixed — при пустом значении; shared — в самом низу).
 
