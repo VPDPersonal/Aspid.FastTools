@@ -108,6 +108,9 @@
 
 - [ ] `AFT0004` (error): `[SerializeReference]` + `[TypeSelector]` on a UnityEngine.Object-derived type.
 - [ ] `AFT0005` (warning): empty candidate list; candidate-scan performance has not regressed.
+- [ ] `AFT0006` (error): `[TypeSelector("...")]` with an identifier string that matches no member of the declaring type; message offers the `"Name, Assembly"` alternative.
+- [ ] `AFT0007` (error): identifier string names a member that is static, a method, or not of type `Type`/`Type[]`/`string`/`string[]`.
+- [ ] `AFT0008` (warning): malformed assembly-qualified name (empty comma part, spaces in the type part); valid AQN / `Outer+Nested` / generic-with-brackets forms stay silent.
 - [ ] `ProfilerMarkersGenerator`: `this.Marker()` is unique per (class, method, line), markers visible in the Profiler.
 - [ ] `IdStructGenerator`: boilerplate generation, `AFID001`/`AFID002` diagnostics.
 - [ ] The incremental cache survives edits (IncrementalCacheTests green).

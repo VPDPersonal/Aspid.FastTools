@@ -108,6 +108,9 @@
 
 - [ ] `AFT0004` (error): `[SerializeReference]`+`[TypeSelector]` на UnityEngine.Object-наследнике.
 - [ ] `AFT0005` (warning): пустой список кандидатов; производительность candidate-scan не регрессировала.
+- [ ] `AFT0006` (error): `[TypeSelector("...")]` со строкой-идентификатором, не совпадающей ни с одним членом объявляющего типа; сообщение предлагает альтернативу `"Name, Assembly"`.
+- [ ] `AFT0007` (error): строка-идентификатор указывает на член, который статический, метод или не типа `Type`/`Type[]`/`string`/`string[]`.
+- [ ] `AFT0008` (warning): некорректное assembly-qualified имя (пустая часть после запятой, пробелы в имени типа); валидные AQN / `Outer+Nested` / generic-в-скобках не триггерят.
 - [ ] `ProfilerMarkersGenerator`: `this.Marker()` уникален per (class, method, line), маркеры видны в Profiler.
 - [ ] `IdStructGenerator`: генерация boilerplate, диагностики `AFID001`/`AFID002`.
 - [ ] Инкрементальный кэш не ломается при правках (IncrementalCacheTests зелёные).
