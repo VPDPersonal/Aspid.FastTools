@@ -386,6 +386,7 @@ public class ProfilerMarkersGeneratorTests
             """;
 
         var run = GeneratorTestHost.RunProfilerMarkers(source);
+        GeneratorTestHost.AssertNoErrors(run);
         var generated = run.RunResult.Results[0].GeneratedSources;
 
         Assert.Single(generated);
