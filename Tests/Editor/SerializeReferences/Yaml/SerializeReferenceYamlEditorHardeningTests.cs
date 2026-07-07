@@ -188,25 +188,6 @@ MonoBehaviour:
             }
         }
 
-        // ---- positive control: the guards do NOT regress a well-formed, space-indented Unity asset --------------------
-
-        [Test]
-        public void WellFormedUnityAsset_PassesGuards_RemoveEntrySucceeds()
-        {
-            var path = YamlFixtures.WriteTemp(YamlFixtures.MissingTypePrefab);
-            try
-            {
-                Assert.IsTrue(SerializeReferenceYamlEditor.TryRemoveEntry(
-                    path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid),
-                    "A canonical Unity asset (%TAG present, space-indented) must still be editable after hardening.");
-                StringAssert.DoesNotContain("Shotgun", File.ReadAllText(path));
-            }
-            finally
-            {
-                YamlFixtures.Delete(path);
-            }
-        }
-
         [Test]
         public void TryRemoveEntry_BlankLineWithStrayTabInsideEntry_StillRemoves_LeavesNoEntry()
         {

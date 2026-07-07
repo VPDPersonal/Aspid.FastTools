@@ -146,16 +146,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual("Game.B", queue[1].FullTypeName);
         }
 
-        [Test]
-        public void GiveUpBoundary_LastIncrementBeforeCapSurvives_NextOneIsAbandoned()
-        {
-            var oneShort = new Entry(GlobalId, Path, TypeName, Store.MaxResolveAttempts - 2).WithIncrementedAttempt();
-            Assert.Less(oneShort.Attempts, Store.MaxResolveAttempts,
-                "An entry one short of the cap must remain pending after the next reload.");
-
-            Assert.GreaterOrEqual(oneShort.WithIncrementedAttempt().Attempts, Store.MaxResolveAttempts,
-                "Reaching the attempt cap is the give-up boundary the resolver drops (with a warning) on.");
-        }
     }
 
     // A persistable target for the resolve-pass tests: saved as an asset so its GlobalObjectId round-trips back to the

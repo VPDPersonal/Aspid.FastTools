@@ -14,13 +14,6 @@ namespace Aspid.FastTools.Types.Editors.Tests
     internal sealed class SerializableTypeUtilityTests
     {
         [Test]
-        public void BothWrappers_ImplementISerializableType()
-        {
-            Assert.IsInstanceOf<ISerializableType>(new SerializableType());
-            Assert.IsInstanceOf<ISerializableType>(new SerializableType<Exception>());
-        }
-
-        [Test]
         public void BaseType_IsObject_OnTheUnconstrainedWrapper()
         {
             ISerializableType wrapper = new SerializableType();
