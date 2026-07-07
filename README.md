@@ -256,6 +256,24 @@ public sealed class AbilitySelector : MonoBehaviour
 
 > The complete sample — `Ability` / `AbilitySelector` / `EnemyBase` and their subclasses — ships in the `Types` sample (Package Manager → Aspid.FastTools → Samples).
 
+#### Dynamic base types via member references
+
+The string constructors resolve **member-first**: when the string is a valid C# identifier that matches an instance field or property on the same object, that member's *current value* supplies the base type(s) — so one field can constrain another's picker, live in the Inspector. Any other string is treated as an assembly-qualified type name (`Type.GetType`), which is what you need for a type the call site cannot reference with `typeof` (across an editor or asmdef boundary).
+
+```csharp
+public sealed class Loadout : MonoBehaviour
+{
+    // The category chosen here drives the picker of _weaponType below.
+    [SerializeField] private SerializableType<Weapon> _category;
+
+    // Constrained live to whatever _category currently holds.
+    [TypeSelector(nameof(_category))]
+    [SerializeField] private string _weaponType;
+}
+```
+
+A referenced member may be a `Type`, `Type[]`, `string`, `string[]`, or a `SerializableType` / `SerializableType<T>` (and arrays of these). Prefer `nameof(...)` so a rename keeps the link. Misuse — an unknown member name, or a member of an unusable type — is a **compile error** (analyzer rules `AFT0006`–`AFT0008`); for cases the analyzer cannot see (precompiled assemblies, a member renamed after compilation) the drawer shows a quiet inline warning below the field instead.
+
 Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost:
 
 ```csharp
