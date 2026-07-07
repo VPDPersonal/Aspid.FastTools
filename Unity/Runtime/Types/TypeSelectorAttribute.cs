@@ -97,16 +97,44 @@ namespace Aspid.FastTools.Types
         }
 
         /// <summary>
-        /// Creates an attribute constrained to a single base type specified by its assembly-qualified name.
+        /// Creates an attribute constrained to a single base type named by a string.
         /// </summary>
-        /// <param name="assemblyQualifiedName">The assembly-qualified name of the base constraint type.</param>
+        /// <param name="assemblyQualifiedName">
+        /// Either an <b>assembly-qualified type name</b> (e.g. <c>"MyGame.IWeapon, MyGame"</c>) resolved with
+        /// <see cref="System.Type.GetType(string)"/>, or the <b>name of a member</b> on the same object that supplies
+        /// the constraint at inspector time — see the constructor remarks.
+        /// </param>
+        /// <remarks>
+        /// The string is resolved <b>member-first</b>: if it is a valid C# identifier and matches an instance field or
+        /// property on the target object, that member's <i>current value</i> supplies the base type(s) — the constraint
+        /// becomes dynamic, driven by another field. Otherwise the string is treated as an assembly-qualified type name.
+        /// A member may be of type <see cref="System.Type"/>, <c>Type[]</c>, <c>string</c> (an assembly-qualified name),
+        /// <c>string[]</c>, or a <see cref="SerializableType"/> / <see cref="SerializableType{T}"/> (and arrays of these).
+        /// Prefer <c>nameof(...)</c> so a rename keeps the reference intact. When <c>typeof(...)</c> is possible, the
+        /// <see cref="TypeSelectorAttribute(System.Type)"/> overload is safer; the string overloads exist for types the
+        /// call site cannot reference (e.g. across an editor/asmdef boundary). Misuse (an unknown member, or a member of
+        /// an unusable type) is reported at compile time by analyzer rules <c>AFT0006</c>–<c>AFT0008</c>, and as a quiet
+        /// inline notice in the inspector for cases the analyzer cannot see (precompiled assemblies, renamed members).
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// // Constrain the picker to the value of another field, resolved live:
+        /// [SerializeField] private SerializableType _category;
+        /// [TypeSelector(nameof(_category))]
+        /// [SerializeField] private string _subType;
+        /// </code>
+        /// </example>
         public TypeSelectorAttribute(string assemblyQualifiedName)
             : this(assemblyQualifiedNames: assemblyQualifiedName) { }
 
         /// <summary>
-        /// Creates an attribute constrained to one or more base types specified by their assembly-qualified names.
+        /// Creates an attribute constrained to one or more base types, each named by a string.
         /// </summary>
-        /// <param name="assemblyQualifiedNames">The assembly-qualified names of the base constraint types.</param>
+        /// <param name="assemblyQualifiedNames">
+        /// Each entry is resolved independently, member-first: an identifier matching an instance field/property on the
+        /// target object supplies its value as a constraint, otherwise the entry is an assembly-qualified type name. See
+        /// <see cref="TypeSelectorAttribute(string)"/> for the full contract and the supported member types.
+        /// </param>
         public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
         {
             AssemblyQualifiedNames = assemblyQualifiedNames;
