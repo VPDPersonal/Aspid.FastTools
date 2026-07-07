@@ -256,6 +256,24 @@ public sealed class AbilitySelector : MonoBehaviour
 
 > Полный сэмпл — `Ability` / `AbilitySelector` / `EnemyBase` и их наследники — поставляется в сэмпле `Types` (Package Manager → Aspid.FastTools → Samples).
 
+#### Динамические базовые типы через ссылки на члены
+
+Строковые конструкторы резолвят строку **member-first**: если строка — корректный C#-идентификатор и совпадает с instance-полем или свойством того же объекта, *текущее значение* этого члена задаёт базовый тип(ы) — так одно поле ограничивает пикер другого прямо в Инспекторе, вживую. Любая другая строка трактуется как assembly-qualified имя типа (`Type.GetType`) — то, что нужно для типа, на который в месте вызова нельзя сослаться через `typeof` (за границей editor-сборки или asmdef).
+
+```csharp
+public sealed class Loadout : MonoBehaviour
+{
+    // Выбранная здесь категория управляет пикером _weaponType ниже.
+    [SerializeField] private SerializableType<Weapon> _category;
+
+    // Ограничен вживую тем, что сейчас лежит в _category.
+    [TypeSelector(nameof(_category))]
+    [SerializeField] private string _weaponType;
+}
+```
+
+Член может быть `Type`, `Type[]`, `string`, `string[]` или `SerializableType` / `SerializableType<T>` (и массивами из них). Предпочитайте `nameof(...)`, чтобы переименование не рвало ссылку. Ошибка использования — неизвестное имя члена или член неподходящего типа — это **ошибка компиляции** (правила анализатора `AFT0006`–`AFT0008`); для случаев, которые анализатор не видит (precompiled-сборки, член переименован после компиляции), drawer вместо этого показывает тихое inline-предупреждение под полем.
+
 Пометьте тип-кандидат атрибутом `[TypeSelectorDisplay]`, чтобы настроить, как он показывается в селекторе — это editor-only атрибут (`[Conditional("UNITY_EDITOR")]`) в `Aspid.FastTools.Types`, не несущий стоимости в рантайме:
 
 ```csharp

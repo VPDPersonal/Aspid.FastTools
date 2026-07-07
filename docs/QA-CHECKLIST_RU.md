@@ -25,6 +25,9 @@
 - [ ] `Required` на string-поле: пустое значение — inline-warning *(2×UI)* + нарушение для gate.
 - [ ] `Required` на поле `SerializableType` / `SerializableType<T>`: пустое имя типа — inline-warning *(2×UI)* + нарушение для gate (инспектор, сохранённый ассет и pure-YAML скан сцены).
 - [ ] `null`-элемент в `Type[]`-члене не роняет пикер.
+- [ ] `[TypeSelector(nameof(_member))]` сужает пикер до текущего значения члена; типы члена `Type` / `Type[]` / `string` / `string[]` / `SerializableType` / `SerializableType<T>` (и массивы) работают, правка члена обновляет ограничение. *(2×UI)*
+- [ ] `[TypeSelector("Namespace.Type, Assembly")]` (строка-неидентификатор) по-прежнему резолвится как assembly-qualified имя типа.
+- [ ] Неразрешимый строковый аргумент (идентификатор без совпадающего члена — например в precompiled-DLL или после переименования) показывает тихое inline-предупреждение под полем; при валидном члене/AQN — не показывает. *(2×UI)*
 
 ## 2. Окно выбора типа (TypeSelectorWindow)
 

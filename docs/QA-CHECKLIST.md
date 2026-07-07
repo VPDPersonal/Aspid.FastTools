@@ -25,6 +25,9 @@
 - [ ] `Required` on a string field: an empty value shows an inline warning *(2×UI)* + counts as a gate violation.
 - [ ] `Required` on a `SerializableType` / `SerializableType<T>` field: an empty type name shows the inline warning *(2×UI)* + counts as a gate violation (inspector, saved asset, and pure-YAML scene scan).
 - [ ] A `null` element in a referenced `Type[]` member does not crash the picker.
+- [ ] `[TypeSelector(nameof(_member))]` narrows the picker to the member's live value; member types `Type` / `Type[]` / `string` / `string[]` / `SerializableType` / `SerializableType<T>` (and arrays) all work, and editing the member updates the constraint. *(2×UI)*
+- [ ] `[TypeSelector("Namespace.Type, Assembly")]` (a non-identifier string) still resolves as an assembly-qualified type name.
+- [ ] Unresolvable string argument (identifier matching no member, e.g. in a precompiled DLL or after a rename) shows the quiet inline warning notice below the field; a valid member/AQN shows none. *(2×UI)*
 
 ## 2. Type picker window (TypeSelectorWindow)
 
