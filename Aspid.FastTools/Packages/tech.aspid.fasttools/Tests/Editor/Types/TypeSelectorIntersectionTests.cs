@@ -28,7 +28,9 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
         private static void Collect(TreeNode node, List<string> names)
         {
-            if (node.IsType) names.Add(node.DisplayName);
+            // FlattenSingleChildChain merges a lone leaf into its namespace chain ("Ns.Sub.Sword"),
+            // so keep only the trailing segment of the display name.
+            if (node.IsType) names.Add(node.DisplayName[(node.DisplayName.LastIndexOf('.') + 1)..]);
             foreach (var child in node.Children) Collect(child, names);
         }
 
