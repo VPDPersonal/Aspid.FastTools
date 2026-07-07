@@ -97,12 +97,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             {
                 var detail = SerializeReferenceHelpers.BuildSharedReferenceDetail(serialized.FindProperty("primary"));
 
-                StringAssert.Contains("Also used by:", detail,
-                    "A shared reference's tooltip must announce the other fields using the instance.");
+                // Structural assertions only — the surrounding tooltip copy is free to change without breaking this
+                // test; what must hold is WHICH paths the detail lists and in what form.
                 StringAssert.Contains("Sidearms › Element 0", detail,
                     "The alias must be listed by its inspector-style display path, not the raw property path.");
-                StringAssert.Contains("Make unique", detail,
-                    "The tooltip must explain the notice's Make-unique affordance.");
+                StringAssert.DoesNotContain("Primary", detail,
+                    "The queried field itself is not an alias — only the other members of the pair are listed.");
             }
             finally
             {
