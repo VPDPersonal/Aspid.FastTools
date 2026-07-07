@@ -18,6 +18,7 @@
 
 - [ ] `[TypeSelector]` на `string`-поле: пикер открывается, выбор пишет assembly-qualified имя.
 - [ ] `SerializableType` / `SerializableType<T>`: сериализация, generic-констрейнт сужает список.
+- [ ] `ISerializableType`: параметр API, типизированный интерфейсом, принимает обе обёртки; `BaseType` возвращает `object` / `T`; поля любой из обёрток (включая массивы / `List<T>`) по-прежнему распознаются drawer-ами пикера и гейтом обязательных полей.
 - [ ] `[TypeSelector]` на поле `SerializableType` / `SerializableType<T>`: фильтрует пикер; базовые типы атрибута пересекаются с generic `T`; анализатор не выдаёт `AFT0001`. *(2×UI)*
 - [ ] Сужение кандидатов через `[TypeSelector(typeof(Base))]`, несколько базовых типов.
 - [ ] `Allow` по умолчанию `TypeAllow.All`: пикер `[TypeSelector]` `string` / `SerializableType` показывает абстрактные классы и интерфейсы; `Allow = TypeAllow.None` ограничивает только конкретными типами.

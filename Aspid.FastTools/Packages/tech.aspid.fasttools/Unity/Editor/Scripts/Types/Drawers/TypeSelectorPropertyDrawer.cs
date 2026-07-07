@@ -112,27 +112,12 @@ namespace Aspid.FastTools.Types.Editors
             if (property.propertyType is not SerializedPropertyType.Generic) return false;
             if (fieldInfo is null) return false;
 
-            var type = fieldInfo.FieldType;
+            if (!SerializableTypeUtility.TryGetBaseType(fieldInfo.FieldType, out var baseType)) return false;
 
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
-                type = type.GetGenericArguments()[0];
-            else if (type.IsArray)
-                type = type.GetElementType();
-
-            if (type == typeof(SerializableType))
-            {
-                nameProperty = property.FindPropertyRelative("_assemblyQualifiedName");
-                return nameProperty is not null;
-            }
-
-            if (type is { IsGenericType: true } && type.GetGenericTypeDefinition() == typeof(SerializableType<>))
-            {
-                genericBaseType = type.GetGenericArguments()[0];
-                nameProperty = property.FindPropertyRelative("_assemblyQualifiedName");
-                return nameProperty is not null;
-            }
-
-            return false;
+            // typeof(object) is the unconstrained wrapper's BaseType — nothing to narrow the picker with.
+            genericBaseType = baseType == typeof(object) ? null : baseType;
+            nameProperty = property.FindPropertyRelative("_assemblyQualifiedName");
+            return nameProperty is not null;
         }
 
         // Base types for a SerializableType picker: the attribute's types plus the generic argument T (for

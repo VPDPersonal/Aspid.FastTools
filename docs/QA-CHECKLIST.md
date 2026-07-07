@@ -18,6 +18,7 @@
 
 - [ ] `[TypeSelector]` on a `string` field: the picker opens, picking writes an assembly-qualified name.
 - [ ] `SerializableType` / `SerializableType<T>`: serialization works, the generic constraint narrows the list.
+- [ ] `ISerializableType`: an API parameter typed as the interface accepts both wrappers; `BaseType` reports `object` / `T`; fields of either wrapper (including arrays / `List<T>`) are still detected by the picker drawers and the required-field gate.
 - [ ] `[TypeSelector]` on a `SerializableType` / `SerializableType<T>` field: filters the picker; the attribute's base types are intersected with the generic `T`; the analyzer raises no `AFT0001`. *(2×UI)*
 - [ ] Candidate narrowing via `[TypeSelector(typeof(Base))]`, multiple base types.
 - [ ] `Allow` defaults to `TypeAllow.All`: a `[TypeSelector]` `string` / `SerializableType` picker lists abstract classes and interfaces by default; `Allow = TypeAllow.None` restricts it to concrete types.
