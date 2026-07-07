@@ -343,6 +343,8 @@ A serializable struct that renders a type-switching dropdown in the Inspector. A
 
 The dropdown is automatically constrained to subtypes of the class that declares the field. No additional configuration is required.
 
+Because the dropdown owns type-switching, the Inspector's built-in **Script** row is hidden while the selector is present — you change the type only through the dropdown (UIToolkit inspectors only; the legacy IMGUI inspector draws that row itself).
+
 ```csharp
 using UnityEngine;
 using Aspid.FastTools.Types;
