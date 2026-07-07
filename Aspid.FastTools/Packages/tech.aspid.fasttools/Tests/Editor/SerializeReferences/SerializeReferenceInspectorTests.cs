@@ -56,6 +56,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void IsViolation_RequiredInNestedContainer_TrueWhenEmpty_FalseWhenSet()
+        {
+            // Parity pin for ASP-52: the live half resolves the attribute through the container hop, so the
+            // inspector notice and the YAML scan agree on nested required fields.
+            var obj = ScriptableObject.CreateInstance<NestedRequiredTestObject>();
+            try
+            {
+                var serialized = new SerializedObject(obj);
+                Assert.IsTrue(SerializeReferenceRequiredGate.IsViolation(serialized.FindProperty("_loadout.primary")),
+                    "An empty required managed reference inside a serializable container is a violation.");
+
+                var prop = serialized.FindProperty("_loadout.primary");
+                prop.managedReferenceValue = new TestSword();
+                serialized.ApplyModifiedProperties();
+                serialized.Update();
+
+                Assert.IsFalse(SerializeReferenceRequiredGate.IsViolation(serialized.FindProperty("_loadout.primary")),
+                    "A set nested required managed reference is not a violation.");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(obj); }
+        }
+
+        [Test]
         public void IsViolation_RequiredString_TrueWhenEmpty_FalseWhenSet()
         {
             var obj = ScriptableObject.CreateInstance<RequiredTestObject>();
