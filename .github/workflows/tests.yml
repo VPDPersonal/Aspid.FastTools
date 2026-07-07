@@ -1,0 +1,37 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dotnet-tests:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Generators
+            path: Aspid.FastTools.Generators
+          - name: Analyzers
+            path: Aspid.FastTools.Analyzers
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      # The test projects target net6.0; the 8.0 SDK builds them, the 6.0 runtime runs them.
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            6.0.x
+            8.0.x
+
+      - name: Run ${{ matrix.name }} tests
+        run: dotnet test "${{ matrix.path }}" --nologo
