@@ -101,8 +101,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// concern, not a required violation. A field whose key is <em>absent</em> from the document is NOT a violation:
         /// Unity omits a serialized field from YAML when the object was last saved before the field was added (and for
         /// stripped / nested-prefab docs), so flagging it would fail a project that is valid once reopened/reserialized.
-        /// Required fields nested inside serializable containers are not covered here (the field keys are read at the
-        /// document's top level only).
+        /// A required field nested inside plain <c>[Serializable]</c> containers is read by first narrowing the window
+        /// to the innermost container block along <see cref="RequiredFieldDescriptor.Parents"/>; an absent ancestor key
+        /// counts as absent for the same reserialize reason.
         /// </summary>
         public static List<RequiredViolationEntry> FindUnsetRequiredFields(
             string assetPath, Func<string, IReadOnlyList<RequiredFieldDescriptor>> requiredFieldsForScript)
@@ -133,19 +134,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     foreach (var descriptor in required)
                     {
+                        // A nested field is read inside its container block; an absent ancestor key means the whole
+                        // chain is absent (needs a reserialize), so the descriptor is skipped like an absent leaf.
+                        var start = i + 1;
+                        var end = fieldsEnd;
+                        var indent = fieldIndent;
+                        if (!TryEnterContainers(lines, ref start, ref end, ref indent, descriptor.Parents)) continue;
+
                         // An absent key is not a violation (see FieldState); only a present-but-empty key is reported.
                         var rid = 0L;
                         var state = descriptor.Kind switch
                         {
                             RequiredFieldKind.String =>
-                                IsStringFieldUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName),
+                                IsStringFieldUnset(lines, start, end, indent, descriptor.FieldName),
                             RequiredFieldKind.SerializableType =>
-                                IsSerializableTypeFieldUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName),
-                            _ => IsManagedReferenceUnset(lines, i + 1, fieldsEnd, fieldIndent, descriptor.FieldName, out rid),
+                                IsSerializableTypeFieldUnset(lines, start, end, indent, descriptor.FieldName),
+                            _ => IsManagedReferenceUnset(lines, start, end, indent, descriptor.FieldName, out rid),
                         };
 
                         if (state == FieldState.PresentUnset)
-                            result.Add(new RequiredViolationEntry(fileId, descriptor.FieldName, rid));
+                            result.Add(new RequiredViolationEntry(fileId, descriptor.Path, rid));
                     }
                 }
             }
@@ -187,6 +195,53 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return false;
+        }
+
+        // Narrows the [start, end) window and key indent to the innermost container block along `parents` — each hop
+        // finds the container key at the current indent and descends to its children's indent. False when any ancestor
+        // key is absent or the container block is empty; the caller treats that as an absent leaf (needs reserialize).
+        private static bool TryEnterContainers(string[] lines, ref int start, ref int end, ref int indent, string[] parents)
+        {
+            if (parents is not { Length: > 0 }) return true;
+
+            foreach (var parent in parents)
+            {
+                var pattern = new Regex($@"^(?<indent>\s*){Regex.Escape(parent)}:\s*$");
+                var entered = false;
+
+                for (var i = start; i < end; i++)
+                {
+                    var match = pattern.Match(lines[i]);
+                    if (!match.Success || match.Groups["indent"].Length != indent) continue;
+
+                    // The block spans until the first line dedented back to (or above) the container key; its direct
+                    // children sit at the first child line's indent — deeper lines belong to sub-blocks and are
+                    // filtered out by the leaf matchers' exact-indent checks.
+                    var blockEnd = i + 1;
+                    var childIndent = -1;
+
+                    for (var j = i + 1; j < end; j++)
+                    {
+                        if (lines[j].Trim().Length == 0) { blockEnd = j + 1; continue; }
+                        if (IndentOf(lines[j]) <= indent) break;
+
+                        if (childIndent < 0) childIndent = IndentOf(lines[j]);
+                        blockEnd = j + 1;
+                    }
+
+                    if (childIndent < 0) return false; // container key present but the block carries no children
+
+                    start = i + 1;
+                    end = blockEnd;
+                    indent = childIndent;
+                    entered = true;
+                    break;
+                }
+
+                if (!entered) return false;
+            }
+
+            return true;
         }
 
         // The exclusive end of a MonoBehaviour's own serialized fields: the "references:" line, or the document end when

@@ -31,6 +31,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [TypeSelector(Required = true)] public string requiredString;
     }
 
+    // A plain [Serializable] by-value container holding required fields — the nesting shape the required gate must
+    // recurse into (ASP-52): the fields appear in YAML as children of the container key, not at the document top level.
+    [Serializable]
+    internal sealed class RequiredLoadout
+    {
+        [SerializeReference, TypeSelector(Required = true)] public ITestWeapon primary;
+        [TypeSelector(Required = true)] public string typeName;
+    }
+
+    // A component whose only required fields live inside a nested serializable container ([SerializeField] private,
+    // so the walk is proven to include non-public serialized fields).
+    internal sealed class NestedRequiredTestObject : ScriptableObject
+    {
+        [SerializeField] private RequiredLoadout _loadout = new();
+    }
+
+    // A self-referential serializable shape: the reflection walk must terminate on the cycle instead of recursing
+    // forever (Unity itself refuses such graphs at serialize time, but GetRequiredFields sees the raw type).
+    [Serializable]
+    internal sealed class RequiredCycleNode
+    {
+        public RequiredCycleNode next;
+        [TypeSelector(Required = true)] public string typeName;
+    }
+
+    internal sealed class CycleRequiredTestObject : ScriptableObject
+    {
+        public RequiredCycleNode root;
+    }
+
     // Top-level (namespace-scoped) candidate pool for the ranking tests. The marker interface keeps the TypeCache
     // pool down to these two types, so the assertions never race additions elsewhere in the project.
     internal interface IRepairRankTarget { }

@@ -13,7 +13,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// asset's objects and checks <see cref="SerializeReferenceRequiredGate.IsViolation"/> per managed-reference and
     /// string type property; scenes — which cannot be read through <see cref="AssetDatabase.LoadAllAssetsAtPath"/> — go
     /// through the pure-YAML <see cref="SerializeReferenceYamlEditor.FindUnsetRequiredFields"/> instead, so a <c>.unity</c>
-    /// is covered for top-level required fields too.
+    /// is covered too — including required fields nested inside plain serializable containers.
     /// </summary>
     internal static class SerializeReferenceGateScanner
     {
@@ -48,7 +48,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (options.ScanRequiredFields)
                 {
                     // Scenes cannot be object-loaded, so they take the pure-YAML required scan; saved assets keep the
-                    // object-load path, which also covers required fields nested inside serializable containers.
+                    // object-load path. Both cover required fields nested inside serializable containers.
                     if (SerializeReferenceHelpers.IsScene(path)) CollectSceneRequiredViolations(path, violations);
                     else CollectRequiredViolations(path, violations);
                 }
