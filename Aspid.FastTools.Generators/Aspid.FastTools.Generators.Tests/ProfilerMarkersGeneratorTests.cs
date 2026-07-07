@@ -188,6 +188,53 @@ public class ProfilerMarkersGeneratorTests
     }
 
     [Fact]
+    public void WithNameWithSpecialCharacters_EscapesGeneratedLiteral()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public void Run() { this.Marker().WithName("A \"quoted\" \\ label"); }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        // Quotes and backslashes in the label must be escaped; AssertNoErrors proves the emitted
+        // marker literal is valid C# rather than a broken string that fails to compile.
+        Assert.Contains("quoted", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+    }
+
+    [Fact]
+    public void WithNameWithBraces_OnGenericType_EscapesGeneratedLiteral()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo<T>
+                {
+                    public void Run() { this.Marker().WithName("Brace{x} and \"q\""); }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        // Braces in the label must not be treated as interpolation holes on the generic path,
+        // yet the type name must still be resolved per closed instantiation via typeof(T).Name.
+        Assert.Contains("Brace", text);
+        Assert.Contains("typeof(T).Name", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+    }
+
+    [Fact]
     public void Constructor_UsesCtorAsMarkerName()
     {
         const string source = """

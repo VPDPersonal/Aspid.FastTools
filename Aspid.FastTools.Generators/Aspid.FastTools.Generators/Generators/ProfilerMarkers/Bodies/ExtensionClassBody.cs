@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Aspid.Generators.Helper;
 using System.Collections.Generic;
@@ -138,12 +139,57 @@ internal static class ExtensionClassBody
 
     private static string BuildMarkerValueExpression(TypeData type, MarkerCall call)
     {
+        // call.Label may originate from a user-supplied .WithName("...") literal and can contain
+        // quotes, backslashes or braces. Every literal fragment is emitted through ToLiteral so the
+        // result is always valid C# — the raw label is never interpolated verbatim into the source.
         if (type.Arity == 0)
-            return $"\"{type.TypeName}.{call.Label} ({call.Line})\"";
+            return ToLiteral($"{type.TypeName}.{call.Label} ({call.Line})");
 
-        var typeArgs = ExtractTypeParamNames(type.TypeParamList);
-        var interpolations = string.Join(", ", typeArgs.Select(p => $"{{typeof({p}).Name}}"));
-        return $"$\"{type.TypeName}<{interpolations}>.{call.Label} ({call.Line})\"";
+        // Generic enclosing type: the runtime label interpolates typeof(T).Name per closed
+        // instantiation, so build it as a concatenation of escaped literals and typeof() expressions
+        // instead of one interpolated string (which would break on braces inside the label).
+        var typeofExpressions = string.Join(
+            " + \", \" + ",
+            ExtractTypeParamNames(type.TypeParamList).Select(p => $"typeof({p}).Name"));
+
+        var prefix = ToLiteral($"{type.TypeName}<");
+        var suffix = ToLiteral($">.{call.Label} ({call.Line})");
+        return $"{prefix} + {typeofExpressions} + {suffix}";
+    }
+
+    // Renders an arbitrary string as a valid C# double-quoted string literal (quotes included),
+    // escaping quotes, backslashes and control characters so user-supplied .WithName(...) text can
+    // never produce malformed generated source.
+    private static string ToLiteral(string value)
+    {
+        var builder = new StringBuilder(value.Length + 2);
+        builder.Append('"');
+
+        foreach (var c in value)
+        {
+            switch (c)
+            {
+                case '"': builder.Append("\\\""); break;
+                case '\\': builder.Append("\\\\"); break;
+                case '\0': builder.Append("\\0"); break;
+                case '\a': builder.Append("\\a"); break;
+                case '\b': builder.Append("\\b"); break;
+                case '\f': builder.Append("\\f"); break;
+                case '\n': builder.Append("\\n"); break;
+                case '\r': builder.Append("\\r"); break;
+                case '\t': builder.Append("\\t"); break;
+                case '\v': builder.Append("\\v"); break;
+                default:
+                    if (c < ' ')
+                        builder.Append("\\u").Append(((int)c).ToString("x4"));
+                    else
+                        builder.Append(c);
+                    break;
+            }
+        }
+
+        builder.Append('"');
+        return builder.ToString();
     }
 
     private static IEnumerable<string> ExtractTypeParamNames(string typeParamList)
