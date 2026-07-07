@@ -447,6 +447,81 @@ MonoBehaviour:
     _assemblyQualifiedName: Aspid.FastTools.Samples.SerializeReferences.Pistol, Aspid.FastTools.Samples.SerializeReferences
 ";
 
+        // A scene whose required fields live INSIDE a plain [Serializable] container (_loadout) — both unset: the
+        // managed reference (primary) at the null id, the string (typeName) empty. Unity writes the container as a
+        // nested mapping, so the keys sit one indent level below the document's top-level fields (ASP-52).
+        public const string RequiredSceneNestedUnset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+  _loadout:
+    primary:
+      rid: -2
+    typeName:
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+";
+
+        // The same nested-container scene with both fields set: primary points at a real rid, typeName holds a name.
+        // No violations expected.
+        public const string RequiredSceneNestedSet =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+  _loadout:
+    primary:
+      rid: 5001
+    typeName: 'Aspid.FastTools.Samples.SerializeReferences.Pistol, Aspid.FastTools.Samples.SerializeReferences'
+  references:
+    version: 2
+    RefIds:
+    - rid: 5001
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 5
+";
+
+        // The nested-container scene with the WHOLE _loadout key absent (object saved before the container field was
+        // added). Like a top-level absent key, this needs a reserialize, not a build failure — no violations expected.
+        public const string RequiredSceneNestedContainerAbsent =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+";
+
         // The same scene where BOTH required keys are ABSENT from the MonoBehaviour — the shape Unity writes when the
         // object was last saved before the [TypeSelector(Required = true)] fields were added (also stripped / nested-prefab
         // docs). Reserializing fills the defaults; until then the gate must NOT flag the missing keys, so no violations
