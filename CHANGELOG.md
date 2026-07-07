@@ -21,6 +21,9 @@ This release is centred on the **SerializeReference toolchain**: `[TypeSelector]
   - `Required = true` is honoured: an unset `SerializableType` shows the inline "required" notice and counts as a build/CI-gate violation — in the inspector, in saved assets and in the pure-YAML scene scan.
   - The analyzer accepts `SerializableType` as a valid third field shape (no `AFT0001`).
 
+#### `ISerializableType` interface
+- `SerializableType` and `SerializableType<T>` now implement the new `ISerializableType` interface (`BaseType` + `Type`), so an API can accept either wrapper polymorphically. Editor tooling (the type-picker drawers and the required-field gate) detects wrapper fields through the interface instead of matching the two concrete types.
+
 #### `[TypeSelector]` on `[SerializeReference]` fields
 - `[TypeSelector]` now also drives `[SerializeReference]` managed-reference fields (and arrays / `List<T>` of them) — the Inspector replaces the default managed-reference UI with a hierarchical type-selector dropdown (reusing `TypeSelectorWindow`).
   - Picking a concrete implementation instantiates it; `<None>` clears the reference; the assigned instance's nested properties draw inline under a foldout; hovering the dropdown shows the full `Namespace.Class, Assembly` identity.
