@@ -1,3 +1,5 @@
+using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
@@ -26,6 +28,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string ItemIconCollapsedModifier = ItemIconClass + "--collapsed";
 
         private const string TypeFallbackIcon = "d_cs Script Icon";
+        private const string ScriptableObjectFallbackIcon = "d_ScriptableObject Icon";
         private const string ContainerFallbackIcon = "d_Folder Icon";
         private const string ContainerOpenFallbackIcon = "d_FolderOpened Icon";
         private const string FavoritesCollapsedIcon = "d_Favorite";
@@ -183,9 +186,17 @@ namespace Aspid.FastTools.Types.Editors
 
                 if (texture is null)
                 {
-                    var fallback = FallbackIconName(node);
-                    if (fallback == ContainerFallbackIcon && isSelected) fallback = ContainerOpenFallbackIcon;
-                    texture = TypeSelectorIconResolver.Resolve(fallback);
+                    if (node.IsType)
+                    {
+                        texture = ResolveTypeFallbackIcon(node.AssemblyQualifiedName);
+                    }
+                    else
+                    {
+                        var fallback = node.HasChildren
+                            ? (isSelected ? ContainerOpenFallbackIcon : ContainerFallbackIcon)
+                            : null;
+                        texture = TypeSelectorIconResolver.Resolve(fallback);
+                    }
                 }
             }
 
@@ -195,10 +206,46 @@ namespace Aspid.FastTools.Types.Editors
                 .SetDisplay(texture is not null ? DisplayStyle.Flex : DisplayStyle.None);
         }
 
-        private static string FallbackIconName(TreeNode node)
+        // Type rows get the icon Unity itself paints for the type: AssetPreview.GetMiniTypeThumbnail honors a custom
+        // icon assigned on the script's .meta (like the Aspid scripts) and yields the ScriptableObject icon for
+        // ScriptableObject-derived types; everything without one falls through to the C# script icon. Results are cached
+        // per assembly-qualified name to keep row binding cheap; a destroyed cached texture is dropped so a
+        // later-imported / re-assigned icon is picked up on the next bind.
+        private static readonly Dictionary<string, Texture> _typeFallbackCache = new();
+
+        private static Texture ResolveTypeFallbackIcon(string assemblyQualifiedName)
         {
-            if (node.IsType) return TypeFallbackIcon;
-            return node.HasChildren ? ContainerFallbackIcon : null;
+            if (string.IsNullOrEmpty(assemblyQualifiedName))
+                return TypeSelectorIconResolver.Resolve(TypeFallbackIcon);
+
+            if (_typeFallbackCache.TryGetValue(assemblyQualifiedName, out var cached))
+            {
+                if (cached) return cached;
+                _typeFallbackCache.Remove(assemblyQualifiedName);
+            }
+
+            var texture = LoadTypeFallbackIcon(assemblyQualifiedName);
+
+            if (texture is not null)
+                _typeFallbackCache[assemblyQualifiedName] = texture;
+
+            return texture;
+        }
+
+        private static Texture LoadTypeFallbackIcon(string assemblyQualifiedName)
+        {
+            var type = Type.GetType(assemblyQualifiedName);
+            if (type is not null)
+            {
+                var thumbnail = AssetPreview.GetMiniTypeThumbnail(type);
+                if (thumbnail is not null) return thumbnail;
+
+                // Safety net when Unity has no cached thumbnail for the type yet.
+                if (typeof(ScriptableObject).IsAssignableFrom(type))
+                    return TypeSelectorIconResolver.Resolve(ScriptableObjectFallbackIcon);
+            }
+
+            return TypeSelectorIconResolver.Resolve(TypeFallbackIcon);
         }
 
         private static string SectionIcon(string sectionKey, bool collapsed)

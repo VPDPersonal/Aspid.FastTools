@@ -227,7 +227,6 @@ namespace Aspid.FastTools.Types.Editors
             var rightNone = right.DisplayName == TypeSelectorHelpers.NoneOption;
 
             if (leftNone != rightNone) return leftNone ? -1 : 1;
-
             return string.Compare(left.DisplayName, right.DisplayName, StringComparison.OrdinalIgnoreCase);
         }
     }

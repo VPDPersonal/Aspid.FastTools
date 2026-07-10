@@ -12,8 +12,7 @@ namespace Aspid.FastTools.Types.Editors
     /// hierarchy supplies the constraint dynamically (value shapes: <see cref="Type"/>, <see cref="Type"/>[],
     /// <c>string</c>, <c>string[]</c>, <see cref="ISerializableType"/> and arrays of it); only when no member
     /// matches is the string treated as an assembly-qualified type name for <see cref="Type.GetType(string)"/>.
-    /// A name that resolves to nothing is reported through the warnings list so the drawer can surface it —
-    /// the compile-time mirror of this contract is analyzer rules AFT0006–AFT0008.
+    /// A name that resolves to nothing is reported through the warnings list so the drawer can surface it.
     /// </summary>
     internal static class TypeSelectorConstraintResolver
     {
@@ -121,8 +120,11 @@ namespace Aspid.FastTools.Types.Editors
                 case ISerializableType[] serializableTypes:
                 {
                     foreach (var wrapper in serializableTypes)
+                    {
                         if (wrapper?.Type is { } element)
                             types.Add(element);
+                    }
+
                     break;
                 }
             }
@@ -160,15 +162,16 @@ namespace Aspid.FastTools.Types.Editors
                 typeof(ISerializableType).IsAssignableFrom(memberType);
         }
 
-        // The same syntactic split the analyzer uses: a valid C# identifier is a member reference,
-        // anything else is a type name.
+        // Syntactic split: a valid C# identifier is a member reference, anything else is a type name.
         private static bool IsValidIdentifier(string name)
         {
             if (!char.IsLetter(name[0]) && name[0] != '_') return false;
 
             for (var i = 1; i < name.Length; i++)
+            {
                 if (!char.IsLetterOrDigit(name[i]) && name[i] != '_')
                     return false;
+            }
 
             return true;
         }

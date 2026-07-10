@@ -1,9 +1,9 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using Aspid.FastTools.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.UIElements;
 using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
@@ -20,8 +20,7 @@ namespace Aspid.FastTools.Types.Editors
     /// <para>
     /// The attribute's string arguments are resolved by <see cref="TypeSelectorConstraintResolver"/> (member-first,
     /// then assembly-qualified name). Any argument that resolves to nothing surfaces as a quiet warning notice below
-    /// the field — the runtime fallback for the compile-time analyzer rules <c>AFT0006</c>–<c>AFT0008</c>, which the
-    /// analyzer cannot enforce on precompiled assemblies or after a member is renamed.
+    /// the field.
     /// </para>
     /// </summary>
     [CustomPropertyDrawer(typeof(TypeSelectorAttribute))]

@@ -548,21 +548,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // IMGUI clips a too-long caption at its RIGHT edge, which would cut the informative class-name tail — so
         // mirror the UIToolkit start-ellipsis by hand: binary-search how many leading characters to drop behind "…".
-        private static readonly GUIContent MeasureContent = new();
+        private static readonly GUIContent _measureContent = new();
 
         private static string FitCaptionFromLeft(GUIStyle style, string text, float width)
         {
-            MeasureContent.text = text;
-            if (style.CalcSize(MeasureContent).x <= width) return text;
+            _measureContent.text = text;
+            if (style.CalcSize(_measureContent).x <= width) return text;
 
             // low..high — candidate counts of dropped leading characters; find the smallest that fits.
             int low = 1, high = text.Length;
             while (low < high)
             {
                 var mid = (low + high) / 2;
-                MeasureContent.text = "…" + text.Substring(mid);
+                _measureContent.text = "…" + text.Substring(mid);
 
-                if (style.CalcSize(MeasureContent).x <= width) high = mid;
+                if (style.CalcSize(_measureContent).x <= width) high = mid;
                 else low = mid + 1;
             }
 
@@ -594,7 +594,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const float StripeInsetY = 2f;
 
         // Dim grey for the non-actionable mixed-types info hint, mirroring the UIToolkit info notice's --aspid-colors-text-dark.
-        private static readonly Color InfoNoticeColor = new(150f / 255f, 150f / 255f, 150f / 255f);
+        private static readonly Color _infoNoticeColor = new(150f / 255f, 150f / 255f, 150f / 255f);
 
         private static GUIStyle _messageStyle;
         private static GUIStyle _actionStyle;
@@ -608,7 +608,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static void DrawInfoNotice(Rect rect, string message, string detail)
         {
             _infoMessageStyle ??= new GUIStyle(EditorStyles.label) { wordWrap = false };
-            _infoMessageStyle.normal.textColor = InfoNoticeColor;
+            _infoMessageStyle.normal.textColor = _infoNoticeColor;
 
             const float iconSize = 16f;
             var iconRect = new Rect(rect.x, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize);

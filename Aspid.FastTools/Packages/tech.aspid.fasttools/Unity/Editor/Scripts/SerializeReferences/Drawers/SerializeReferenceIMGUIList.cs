@@ -45,9 +45,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// so a list nested inside another list's element restores the outer box's edge when it finishes.
         /// </summary>
         internal static float CurrentElementRightLimit =>
-            ElementRightLimits.Count > 0 ? ElementRightLimits.Peek() : float.NaN;
+            _elementRightLimits.Count > 0 ? _elementRightLimits.Peek() : float.NaN;
 
-        private static readonly Stack<float> ElementRightLimits = new();
+        private static readonly Stack<float> _elementRightLimits = new();
 
         /// <summary>
         /// Draws <paramref name="listProperty"/> (a <c>[SerializeReference]</c> list/array) with a picker-backed "+".
@@ -126,14 +126,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 // Drawn through the standard field, so the element still routes through the [TypeSelector] drawer;
                 // the pushed limit tells that drawer where this row's box ends (see CurrentElementRightLimit).
-                ElementRightLimits.Push(boxRightEdge);
+                _elementRightLimits.Push(boxRightEdge);
                 try
                 {
                     EditorGUI.PropertyField(rect, element, new GUIContent($"Element {index}"), includeChildren: true);
                 }
                 finally
                 {
-                    ElementRightLimits.Pop();
+                    _elementRightLimits.Pop();
                 }
             };
 

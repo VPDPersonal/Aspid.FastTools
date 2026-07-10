@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Collections.Generic;
+using UnityEditor;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
@@ -23,7 +24,7 @@ namespace Aspid.FastTools.Types.Editors
 
         // Normalized [TypeSelectorDisplay(Name)] per type (null = no override). Attributes only change with a
         // recompile, which resets this with the domain; IMGUI resolves the caption every repaint, hence the cache.
-        private static readonly Dictionary<Type, string> CustomDisplayNames = new();
+        private static readonly Dictionary<Type, string> _customDisplayNames = new();
 
         /// <summary>
         /// The normalized <see cref="TypeSelectorDisplayAttribute.Name"/> override for <paramref name="value"/>,
@@ -36,7 +37,7 @@ namespace Aspid.FastTools.Types.Editors
         public static string GetCustomDisplayName(Type value)
         {
             if (value is null) return null;
-            if (CustomDisplayNames.TryGetValue(value, out var cached)) return cached;
+            if (_customDisplayNames.TryGetValue(value, out var cached)) return cached;
 
             var attribute = value.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false);
             var name = string.IsNullOrWhiteSpace(attribute?.Name) ? null : attribute.Name.Trim();
@@ -50,7 +51,7 @@ namespace Aspid.FastTools.Types.Editors
                 if (angle >= 0) name += formatted[angle..];
             }
 
-            CustomDisplayNames[value] = name;
+            _customDisplayNames[value] = name;
             return name;
         }
 
