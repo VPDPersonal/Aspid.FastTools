@@ -9,15 +9,18 @@ namespace Aspid.FastTools.Types
     /// a picker group, a tooltip and an icon.
     /// </summary>
     /// <remarks>
-    /// Only compiled in editor assemblies (<c>UNITY_EDITOR</c>); the attribute carries no
-    /// runtime behaviour and references no <c>UnityEditor</c> types (the <see cref="Icon"/> is a
-    /// plain string the editor resolves lazily).
+    /// Usages are stripped from player builds (<c>[Conditional("UNITY_EDITOR")]</c>);
+    /// the attribute carries no runtime behaviour and references no <c>UnityEditor</c> types
+    /// (the <see cref="Icon"/> is a plain string the editor resolves lazily).
     /// </remarks>
     /// <example>
     /// Rename the type in the picker, place it under an explicit group and give it a tooltip and an icon:
     /// <code>
-    /// [TypeSelectorDisplay(Name = "Damage ×", Group = "Combat/Modifiers",
-    ///     Tooltip = "Scales incoming damage", Icon = "d_ScriptableObject Icon")]
+    /// [TypeSelectorDisplay(
+    ///     Name = "Damage ×",
+    ///     Group = "Combat/Modifiers",
+    ///     Tooltip = "Scales incoming damage",
+    ///     Icon = "d_ScriptableObject Icon")]
     /// public sealed class DamageModifier { }
     /// </code>
     /// </example>

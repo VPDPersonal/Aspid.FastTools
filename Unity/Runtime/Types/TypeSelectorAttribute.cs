@@ -10,8 +10,10 @@ namespace Aspid.FastTools.Types
     /// Instructs the Unity Editor to use the type-selector window.
     /// </summary>
     /// <remarks>
-    /// Only compiled in editor assemblies (<c>UNITY_EDITOR</c>).
-    /// One or more base types can be supplied; the picker will show only their subtypes.
+    /// Usages are stripped from player builds (<c>[Conditional("UNITY_EDITOR")]</c>),
+    /// so the attribute adds no runtime metadata.
+    /// One or more base types can be supplied; the picker shows only types
+    /// assignable to <b>all</b> of them.
     /// </remarks>
     /// <example>
     /// Constrain to a single base type:
@@ -26,7 +28,7 @@ namespace Aspid.FastTools.Types
     /// [SerializeField] private string _anyType;
     /// </code>
     ///
-    /// Allow multiple independent base types:
+    /// Constrain to the intersection of several base types:
     /// <code>
     /// [TypeSelector(typeof(IDisposable), typeof(ScriptableObject))]
     /// [SerializeField] private string _type;
@@ -51,19 +53,25 @@ namespace Aspid.FastTools.Types
         public TypeAllow Allow { get; set; } = TypeAllow.All;
 
         /// <summary>
-        /// When <see langword="true"/>, an unset field is flagged: a <c>[SerializeReference]</c> managed reference left
-        /// null, or a <c>string</c> field left empty, shows an inline "required" warning in the inspector and counts as a
-        /// violation for the build/CI gate. A present-but-missing managed-reference type is not a required violation here —
-        /// it has its own missing-type notice/gate. Defaults to <see langword="false"/>.
-        /// <para>
-        /// Also covers a <see cref="SerializableType"/> / <see cref="SerializableType{T}"/> field: an unset one — its stored
-        /// type name left empty — shows the same inline notice and counts as a build/CI gate violation.
-        /// </para>
+        /// Requires the field to hold a value. When <see langword="true"/>, an unset field shows an inline "required"
+        /// warning in the inspector and counts as a violation for the build/CI gate. Defaults to <see langword="false"/>
+        /// (the field may be left empty).
         /// </summary>
+        /// <remarks>
+        /// What counts as "unset" depends on the field shape this attribute drives:
+        /// <list type="bullet">
+        ///   <item><description>a <c>[SerializeReference]</c> managed reference — unset when it is <see langword="null"/>;</description></item>
+        ///   <item><description>a <c>string</c> field (assembly-qualified name) — unset when it is empty;</description></item>
+        ///   <item><description>a <see cref="SerializableType"/> / <see cref="SerializableType{T}"/> field — unset when its stored type name is empty.</description></item>
+        /// </list>
+        /// A managed reference that <i>is</i> set but whose type can no longer be resolved (renamed or deleted class) is
+        /// <b>not</b> a <c>Required</c> violation: that broken-data case is handled by the separate missing-type
+        /// notice/gate, which fires regardless of this flag.
+        /// </remarks>
         /// <example>
         /// <code>
-        /// [SerializeReference, TypeSelector(typeof(IWeapon), Required = true)]
-        /// private IWeapon _weapon;
+        /// [TypeSelector(typeof(IWeapon), Required = true)]
+        /// [SerializeReference] private IWeapon _weapon;
         ///
         /// [TypeSelector(typeof(MonoBehaviour), Required = true)]
         /// [SerializeField] private string _behaviourType;
@@ -105,21 +113,22 @@ namespace Aspid.FastTools.Types
         /// the constraint at inspector time — see the constructor remarks.
         /// </param>
         /// <remarks>
-        /// The string is resolved <b>member-first</b>: if it is a valid C# identifier and matches an instance field or
-        /// property on the target object, that member's <i>current value</i> supplies the base type(s) — the constraint
-        /// becomes dynamic, driven by another field. Otherwise the string is treated as an assembly-qualified type name.
-        /// A member may be of type <see cref="System.Type"/>, <c>Type[]</c>, <c>string</c> (an assembly-qualified name),
-        /// <c>string[]</c>, or a <see cref="SerializableType"/> / <see cref="SerializableType{T}"/> (and arrays of these).
-        /// Prefer <c>nameof(...)</c> so a rename keeps the reference intact. When <c>typeof(...)</c> is possible, the
-        /// <see cref="TypeSelectorAttribute(System.Type)"/> overload is safer; the string overloads exist for types the
-        /// call site cannot reference (e.g. across an editor/asmdef boundary). Misuse (an unknown member, or a member of
-        /// an unusable type) is reported at compile time by analyzer rules <c>AFT0006</c>–<c>AFT0008</c>, and as a quiet
-        /// inline notice in the inspector for cases the analyzer cannot see (precompiled assemblies, renamed members).
+        /// Resolved <b>member-first</b>: if the string is a C# identifier matching an instance field or property on the
+        /// target object, that member's current value supplies the base type(s) — so the constraint can be driven live by
+        /// another field. Otherwise it is treated as an assembly-qualified type name.
+        /// <para>
+        /// A member may be a <see cref="System.Type"/>, <c>string</c> (assembly-qualified name),
+        /// <see cref="SerializableType"/> / <see cref="SerializableType{T}"/>, or an array of any of these.
+        /// Prefer <c>nameof(...)</c> so a rename keeps the reference intact; use the
+        /// <see cref="TypeSelectorAttribute(System.Type)"/> overload when <c>typeof(...)</c> is possible.
+        /// </para>
+        /// A name that resolves to nothing is surfaced as an inline inspector notice.
         /// </remarks>
         /// <example>
         /// <code>
         /// // Constrain the picker to the value of another field, resolved live:
         /// [SerializeField] private SerializableType _category;
+        ///
         /// [TypeSelector(nameof(_category))]
         /// [SerializeField] private string _subType;
         /// </code>
