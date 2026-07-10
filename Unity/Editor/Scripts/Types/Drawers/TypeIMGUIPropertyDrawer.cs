@@ -11,7 +11,7 @@ namespace Aspid.FastTools.Types.Editors
     {
         private const string FolderClosedIconPath = "d_Folder Icon";
         private const string FolderOpenedIconPath = "d_FolderOpened Icon";
-        
+
         public static void DrawOpenScriptButton(Rect rect, Type type)
         {
             var clicked = GUI.Button(rect, GUIContent.none);
@@ -20,7 +20,7 @@ namespace Aspid.FastTools.Types.Editors
             {
                 var isHover = rect.Contains(Event.current.mousePosition);
                 var icon = EditorGUIUtility.IconContent(isHover ? FolderOpenedIconPath : FolderClosedIconPath).image;
-               
+
                 GUI.DrawTexture(rect, icon, ScaleMode.ScaleToFit);
             }
 
@@ -88,10 +88,7 @@ namespace Aspid.FastTools.Types.Editors
                     screenRect: screenRect,
                     filter: filter,
                     currentAqn: current,
-                    onSelected: assemblyQualifiedName =>
-                    {
-                        persistent.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
-                    });
+                    onSelected: assemblyQualifiedName => persistent.SetStringAndApply(assemblyQualifiedName ?? string.Empty));
             }
 
             if (hasValidType)

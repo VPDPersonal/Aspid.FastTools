@@ -6,11 +6,14 @@ namespace Aspid.FastTools.Editors
     public static partial class SerializePropertyExtensions
     {
         /// <summary>
-        /// Returns <c>true</c> when the property renders as an expandable foldout — a
-        /// <see cref="SerializedPropertyType.Generic"/> value (a serializable struct/class) that
-        /// exposes visible children. Single-line values (primitives, object references, and
-        /// child-less generics) return <c>false</c>.
+        /// Returns <c>true</c> when the property is a <see cref="SerializedPropertyType.Generic"/>
+        /// value (a plain serializable struct/class) with visible children — i.e. draws as an
+        /// expandable foldout. Single-line values return <c>false</c>.
         /// </summary>
+        /// <remarks>
+        /// Managed references (<see cref="SerializedPropertyType.ManagedReference"/>) also render
+        /// with a foldout but are not covered by this check.
+        /// </remarks>
         /// <param name="property">The property whose drawing shape is being queried.</param>
         /// <returns><c>true</c> if the property draws with a foldout arrow; otherwise <c>false</c>.</returns>
         public static bool HasFoldout(this SerializedProperty property) =>

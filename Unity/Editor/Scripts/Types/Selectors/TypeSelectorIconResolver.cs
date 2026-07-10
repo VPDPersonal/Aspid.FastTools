@@ -18,19 +18,19 @@ namespace Aspid.FastTools.Types.Editors
     /// </summary>
     internal static class TypeSelectorIconResolver
     {
-        private static readonly Dictionary<string, Texture> Cache = new();
+        private static readonly Dictionary<string, Texture> _cache = new();
 
         public static Texture Resolve(string icon)
         {
             if (string.IsNullOrWhiteSpace(icon)) return null;
 
-            if (Cache.TryGetValue(icon, out var cached))
+            if (_cache.TryGetValue(icon, out var cached))
             {
                 // Unity-lifetime check, not a C# null check: a cached texture can be DESTROYED later (asset deleted,
                 // Resources unloaded on play-mode load) — serving it binds an invisible icon forever. Drop the entry
                 // and fall through to a reload (or an uncached retry on the next bind).
                 if (cached) return cached;
-                Cache.Remove(icon);
+                _cache.Remove(icon);
             }
 
             var texture = LoadIcon(icon);
@@ -38,7 +38,7 @@ namespace Aspid.FastTools.Types.Editors
             // Only cache hits: a miss may be a not-yet-imported / freshly-renamed asset, so leave it uncached and
             // retry on the next bind instead of pinning a null for the whole domain lifetime.
             if (texture is not null)
-                Cache[icon] = texture;
+                _cache[icon] = texture;
 
             return texture;
         }
@@ -68,7 +68,6 @@ namespace Aspid.FastTools.Types.Editors
             // return an empty content whose image is null.
             var content = EditorGUIUtility.IconContent(icon);
             return content?.image ?? Resources.Load<Texture>(icon);
-
         }
     }
 }
