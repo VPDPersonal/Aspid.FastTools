@@ -56,6 +56,8 @@ Plus: `Tests/Editor/` — Unity-side editor tests (Unity Test Runner); `Samples~
 
 **PropertyDrawers:** Always `internal sealed class`. Complex drawers split into a static helper `{Feature}Drawer` with `DrawIMGUI()` and `DrawUIToolkit()` methods — see `SerializableTypeDrawer.cs` as reference.
 
+**XML doc comments:** `<summary>` — 1–2 sentences, what/why, no implementation details. `<remarks>` — only for non-obvious behavior, invariants, or gotchas; omit if it would just restate the summary or the code. `<example>` — only for non-trivial usage patterns where the shape of usage isn't obvious from the signature. Follow Microsoft's Framework Design Guidelines conventions.
+
 **USS:** styling goes in USS, code only applies `.AddClass()`. Naming (BEM classes + variable grammar) and loading conventions: `Aspid.FastTools/Packages/tech.aspid.fasttools/Unity/Editor/Resources/UI/CLAUDE.md` — read it before touching any `.uss` file or USS class names / `--aspid-*` variables in code.
 
 **README files:** keep 4 in sync: root `README.md`/`README_RU.md` and `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/EN|RU/README.md`. Image paths differ: root files use `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/...`, inner ones `../Images/...`. Per-feature references live alongside each README inside `EN/`/`RU/`.
