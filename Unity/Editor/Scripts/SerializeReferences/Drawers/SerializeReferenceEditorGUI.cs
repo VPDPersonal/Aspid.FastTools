@@ -90,12 +90,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         private static Type GetElementType(SerializedProperty property)
         {
-            if (property.GetMemberInfo() is System.Reflection.FieldInfo field)
+            if (property.GetFieldInfo() is { } field)
             {
-                var fieldType = field.FieldType;
-                if (fieldType.IsArray) return fieldType.GetElementType();
-                if (fieldType.IsGenericType && fieldType.GetGenericArguments() is { Length: 1 } arguments)
-                    return arguments[0];
+                var elementType = field.FieldType.GetCollectionElementType();
+                if (elementType != field.FieldType) return elementType;
             }
 
             return property.arraySize > 0

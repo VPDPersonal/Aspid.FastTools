@@ -1344,9 +1344,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var builder = new StringBuilder();
 
-            // Unity serializes a list element as "field.Array.data[i]"; fold that to "field[i]" first so the split
-            // below yields one segment per field, with the element index riding its list's segment.
-            var segments = propertyPath.Replace(".Array.data[", "[").Split('.');
+            var segments = SerializePropertyExtensions.SimplifyPropertyPath(propertyPath).Split('.');
 
             foreach (var segment in segments)
             {
