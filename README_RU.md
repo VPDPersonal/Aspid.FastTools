@@ -750,7 +750,7 @@ property
 - **Enum-сеттеры** — `SetEnumFlag` и `SetEnumIndex` (каждый + `AndApply`).
 - **Массивы** — `SetArraySize`, `AddArraySize`, `RemoveArraySize` (каждый + `AndApply`).
 - **Ссылки** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, а также `SetBoxed` (Unity 6+).
-- **Рефлексионные хелперы** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` для разрешения C#-члена и runtime-экземпляра, стоящих за property.
+- **Рефлексионные хелперы** — `GetPropertyType`, `GetFieldInfo`, `GetDeclaringInstance` для разрешения C#-члена и runtime-экземпляра, стоящих за property.
 
 > Полный справочник по методам: [SerializedPropertyExtensions.md](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/SerializedPropertyExtensions.md)
 

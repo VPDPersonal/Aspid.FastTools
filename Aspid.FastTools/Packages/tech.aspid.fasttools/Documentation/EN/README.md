@@ -747,7 +747,7 @@ The package covers:
 - **Enum setters** — `SetEnumFlag` and `SetEnumIndex` (each + `AndApply`).
 - **Arrays** — `SetArraySize`, `AddArraySize`, `RemoveArraySize` (each + `AndApply`).
 - **References** — `SetManagedReference`, `SetObjectReference`, `SetExposedReference`, and `SetBoxed` (Unity 6+).
-- **Reflection helpers** — `GetPropertyType`, `GetMemberInfo`, `GetClassInstance` for resolving the C# member and runtime instance behind a property.
+- **Reflection helpers** — `GetPropertyType`, `GetFieldInfo`, `GetDeclaringInstance` for resolving the C# member and runtime instance behind a property.
 
 > Full method-by-method reference: [SerializedPropertyExtensions.md](SerializedPropertyExtensions.md)
 

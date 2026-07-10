@@ -1,159 +1,108 @@
 using System;
 using UnityEditor;
-using System.Linq;
 using System.Reflection;
 using System.Collections;
-using System.Collections.Generic;
-using Aspid.FastTools.Reflection;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
     public static partial class SerializePropertyExtensions
     {
-        private const BindingFlags BindingFlags =
-            System.Reflection.BindingFlags.Instance
-            | System.Reflection.BindingFlags.Public
-            | System.Reflection.BindingFlags.NonPublic;
-
         /// <summary>
-        /// Returns the <see cref="Type"/> of the field or property that backs this <see cref="SerializedProperty"/>.
+        /// Returns the <see cref="Type"/> of the field that backs this <see cref="SerializedProperty"/>.
         /// For an array/list element property the element type is returned.
         /// </summary>
         /// <param name="serializedProperty">The property to inspect.</param>
         /// <returns>
-        /// The <see cref="FieldInfo.FieldType"/> or <see cref="PropertyInfo.PropertyType"/> of the backing member
+        /// The <see cref="FieldInfo.FieldType"/> of the backing field
         /// (the element type when the property is an array/list element),
-        /// or <see langword="null"/> if the member cannot be resolved.
+        /// or <see langword="null"/> if the field cannot be resolved.
         /// </returns>
         public static Type GetPropertyType(this SerializedProperty serializedProperty)
         {
-            var type = GetMemberInfo(serializedProperty) switch
-            {
-                FieldInfo field => field.FieldType,
-                PropertyInfo property => property.PropertyType,
-                _ => null
-            };
-
-            return IsArrayElement(serializedProperty) ? GetElementType(type) : type;
+            var type = serializedProperty.GetFieldInfo()?.FieldType;
+            return IsArrayElement(serializedProperty) ? type?.GetCollectionElementType() : type;
         }
 
         /// <summary>
-        /// Uses reflection to find the <see cref="MemberInfo"/> (field or property) on the owning class
-        /// that corresponds to this <see cref="SerializedProperty"/>.
-        /// For an array/list element property the collection field itself is returned.
+        /// Resolves the <see cref="FieldInfo"/> that backs this <see cref="SerializedProperty"/>,
+        /// looked up on the runtime type of the property's declaring instance (see <see cref="GetDeclaringInstance"/>).
         /// </summary>
-        /// <param name="serializedProperty">The property whose backing member should be located.</param>
+        /// <remarks>
+        /// Base classes are searched too. For a list/array element the collection field itself is returned
+        /// (matching <c>PropertyDrawer.fieldInfo</c>); a <c>[SerializeReference]</c> segment resolves naturally
+        /// through the live managed reference's runtime type.
+        /// </remarks>
+        /// <param name="property">The property whose backing field should be located.</param>
+        /// <returns>The resolved <see cref="FieldInfo"/>, or <see langword="null"/> if it cannot be found.</returns>
+        public static FieldInfo GetFieldInfo(this SerializedProperty property)
+        {
+            var owner = property.GetDeclaringInstance();
+            return owner is null ? null : GetFieldIncludingBaseClasses(owner.GetType(), property.GetMemberName());
+        }
+
+        /// <summary>
+        /// Traverses the <see cref="SerializedProperty.propertyPath"/> to return the runtime object on which the
+        /// property's backing field is declared — the direct container, not the root <c>targetObject</c>.
+        /// For an array/list element property the instance owning the collection field is returned.
+        /// </summary>
+        /// <remarks>
+        /// When the declaring instance is a struct, the returned object is a boxed <b>copy</b> — mutating it does not
+        /// affect the serialized object. Any resolution failure (missing field, a <see langword="null"/> value
+        /// or an out-of-range element index along the path) returns <see langword="null"/>.
+        /// </remarks>
+        /// <param name="property">The property whose declaring instance should be resolved.</param>
         /// <returns>
-        /// The <see cref="MemberInfo"/> whose name matches <see cref="SerializedProperty.name"/>
-        /// (the collection field when the property is an array/list element),
-        /// or <see langword="null"/> if it cannot be found.
+        /// The instance declaring the property's backing field (the root <c>targetObject</c> for a top-level property),
+        /// or <see langword="null"/> if the path cannot be resolved.
         /// </returns>
-        public static MemberInfo GetMemberInfo(this SerializedProperty serializedProperty)
+        /// <example>
+        /// For <c>_inventory._slots.Array.data[2]._weapon</c> the returned instance is the slot element
+        /// <c>_slots[2]</c> — the object whose class declares the <c>_weapon</c> field:
+        /// <code>
+        /// var slot = property.GetDeclaringInstance() as InventorySlot;
+        /// </code>
+        /// </example>
+        public static object GetDeclaringInstance(this SerializedProperty property)
         {
-            var instance = serializedProperty.GetClassInstance();
-            if (instance is null) return null;
+            object current = property.serializedObject.targetObject;
 
-            var memberName = GetMemberName(serializedProperty);
-            return instance.GetType()
-                .GetMembersInfosIncludingBaseClasses(BindingFlags)
-                .FirstOrDefault(member => member.Name == memberName);
-        }
-
-        /// <summary>
-        /// Traverses the <see cref="SerializedProperty.propertyPath"/> to return the runtime object instance
-        /// that directly owns this property (i.e., the containing class instance, not the root target).
-        /// Supports nested objects, arrays, and generic <see cref="List{T}"/> fields;
-        /// for an array/list element property the instance owning the collection field is returned.
-        /// </summary>
-        /// <param name="property">The property whose owning instance should be resolved.</param>
-        /// <returns>The runtime object that contains the field represented by <paramref name="property"/>.</returns>
-        public static object GetClassInstance(this SerializedProperty property)
-        {
-            var target = property.serializedObject.targetObject;
-            var path = property.propertyPath.Replace(".Array.data[", "[");
-
+            // The simplified path minus its last segment (the property itself).
+            var path = property.SimplifyPropertyPath();
             var lastDotIndex = path.LastIndexOf('.');
-            if (lastDotIndex < 0) return target;
+            if (lastDotIndex < 0) return current;
 
-            path = path.Remove(lastDotIndex);
-
-            object current = target;
-
-            foreach (var part in path.Split('.'))
+            foreach (var part in path[..lastDotIndex].Split('.'))
             {
-                if (part.Contains("["))
-                {
-                    var startPartIndex = part.IndexOf("[", StringComparison.Ordinal) + 1;
-                    var length = part.IndexOf("]", StringComparison.Ordinal) - startPartIndex;
+                if (current is null) return null;
 
-                    var index = int.Parse(part.Substring(startPartIndex, length));
-                    current = FindInstance(part[..(startPartIndex - 1)], index);
-                }
-                else
+                var bracket = part.IndexOf('[');
+                var name = bracket < 0 ? part : part[..bracket];
+
+                current = GetFieldIncludingBaseClasses(current.GetType(), name)?.GetValue(current);
+
+                if (bracket >= 0 && current is IList list)
                 {
-                    current = FindInstance(part);
+                    // A stale path can point past the end of a shrunk list — a resolution failure, not an exception.
+                    var index = int.Parse(part[(bracket + 1)..^1]);
+                    current = index < list.Count ? list[index] : null;
                 }
             }
 
             return current;
-
-            object FindInstance(string name, int index = -1)
-            {
-                if (current is null) return null;
-
-                var field = FindField(current.GetType(), name);
-                if (field is null) return null;
-
-                var value = field.GetValue(current);
-                return index > -1 && value is IList list
-                    ? list[index]
-                    : value;
-            }
-
-            FieldInfo FindField(Type type, string name)
-            {
-                return type?.GetMembersInfosIncludingBaseClasses(BindingFlags)
-                    .OfType<FieldInfo>()
-                    .FirstOrDefault(field => field.Name == name);
-            }
         }
 
-        /// <summary>
-        /// The name of the member that backs <paramref name="property"/>: <see cref="SerializedProperty.name"/>
-        /// for a regular property, the collection field's name for an array/list element
-        /// (whose path ends with <c>Array.data[i]</c> while its name is just <c>data</c>).
-        /// </summary>
-        private static string GetMemberName(SerializedProperty property)
+        private static FieldInfo GetFieldIncludingBaseClasses(Type type, string name)
         {
-            if (!IsArrayElement(property)) return property.name;
+            const BindingFlags BindingAttr = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
-            var path = property.propertyPath.Replace(".Array.data[", "[");
-            var lastDotIndex = path.LastIndexOf('.');
-            var lastSegment = lastDotIndex < 0 ? path : path[(lastDotIndex + 1)..];
+            for (var current = type; current is not null; current = current.BaseType)
+            {
+                var field = current.GetField(name, BindingAttr);
+                if (field is not null) return field;
+            }
 
-            return lastSegment[..lastSegment.IndexOf('[')];
-        }
-
-        /// <summary>
-        /// True when <paramref name="property"/> is itself an element of an array or <see cref="List{T}"/>
-        /// (its <see cref="SerializedProperty.propertyPath"/> ends with an <c>Array.data[i]</c> segment).
-        /// </summary>
-        private static bool IsArrayElement(SerializedProperty property) =>
-            property.propertyPath.EndsWith("]", StringComparison.Ordinal);
-
-        /// <summary>
-        /// Unwraps the element type of an array or single-argument generic collection type;
-        /// returns <paramref name="collectionType"/> unchanged when it is not one.
-        /// </summary>
-        private static Type GetElementType(Type collectionType)
-        {
-            if (collectionType is null) return null;
-            if (collectionType.IsArray) return collectionType.GetElementType();
-
-            return collectionType.IsGenericType && collectionType.GetGenericArguments() is { Length: 1 } arguments
-                ? arguments[0]
-                : collectionType;
+            return null;
         }
     }
 }

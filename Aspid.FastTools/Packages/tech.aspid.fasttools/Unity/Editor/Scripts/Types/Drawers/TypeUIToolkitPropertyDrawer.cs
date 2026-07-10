@@ -22,11 +22,11 @@ namespace Aspid.FastTools.Types.Editors
             var field = new InspectorTypeField(label, property)
             {
                 Allow = allow,
-                Types = types
+                Types = types,
             };
 
-            // No required marker → return the bare field, with no notice scaffolding or per-change tracking.
-            if (!SerializeReferenceRequiredGate.TryGetRequired(property, out _)) return field;
+            if (!SerializeReferenceRequiredGate.TryGetRequired(property, out _))
+                return field;
 
             // A [TypeSelector(Required = true)] string left empty shows a non-actionable warning below the field,
             // reusing the managed-reference notice; the dropdown above is the implied fix.
