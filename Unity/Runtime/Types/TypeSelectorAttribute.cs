@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using UnityEngine;
 using System.Linq;
@@ -10,8 +11,6 @@ namespace Aspid.FastTools.Types
     /// Instructs the Unity Editor to use the type-selector window.
     /// </summary>
     /// <remarks>
-    /// Usages are stripped from player builds (<c>[Conditional("UNITY_EDITOR")]</c>),
-    /// so the attribute adds no runtime metadata.
     /// One or more base types can be supplied; the picker shows only types
     /// assignable to <b>all</b> of them.
     /// </remarks>
@@ -98,10 +97,10 @@ namespace Aspid.FastTools.Types
         /// <param name="types">The base constraint types.</param>
         public TypeSelectorAttribute(params Type[] types)
         {
-            AssemblyQualifiedNames = types
+            AssemblyQualifiedNames = types?
                 .Where(type => type is not null)
                 .Select(type => type.AssemblyQualifiedName)
-                .ToArray();
+                .ToArray() ?? Array.Empty<string>();
         }
 
         /// <summary>
@@ -115,10 +114,10 @@ namespace Aspid.FastTools.Types
         /// <remarks>
         /// Resolved <b>member-first</b>: if the string is a C# identifier matching an instance field or property on the
         /// target object, that member's current value supplies the base type(s) — so the constraint can be driven live by
-        /// another field. Otherwise it is treated as an assembly-qualified type name.
+        /// another field. Otherwise, it is treated as an assembly-qualified type name.
         /// <para>
         /// A member may be a <see cref="System.Type"/>, <c>string</c> (assembly-qualified name),
-        /// <see cref="SerializableType"/> / <see cref="SerializableType{T}"/>, or an array of any of these.
+        /// <see cref="SerializableType"/> / <see cref="SerializableType{T}"/>, or an array of these.
         /// Prefer <c>nameof(...)</c> so a rename keeps the reference intact; use the
         /// <see cref="TypeSelectorAttribute(System.Type)"/> overload when <c>typeof(...)</c> is possible.
         /// </para>
@@ -146,7 +145,7 @@ namespace Aspid.FastTools.Types
         /// </param>
         public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
         {
-            AssemblyQualifiedNames = assemblyQualifiedNames;
+            AssemblyQualifiedNames = assemblyQualifiedNames ?? Array.Empty<string>();
         }
     }
 }

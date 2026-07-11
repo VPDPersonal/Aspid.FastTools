@@ -64,11 +64,9 @@ namespace Aspid.FastTools.Types
         // Unity deserialization coerces the field to "", but a code-constructed instance still holds
         // null — and Type.GetType(null) throws ArgumentNullException regardless of throwOnError,
         // breaking the "or null" contract above for a plain `new SerializableType()`.
-        internal static Type? GetTypeFromAssemblyQualifiedName(string? assemblyQualifiedName)
-        {
-            if (string.IsNullOrWhiteSpace(assemblyQualifiedName)) return null;
-            return Type.GetType(assemblyQualifiedName, throwOnError: false);
-        }
+        internal static Type? GetTypeFromAssemblyQualifiedName(string? assemblyQualifiedName) => string.IsNullOrWhiteSpace(assemblyQualifiedName)
+            ? null
+            : Type.GetType(assemblyQualifiedName, throwOnError: false);
     }
 
     /// <summary>
@@ -76,10 +74,6 @@ namespace Aspid.FastTools.Types
     /// constrained to types assignable to <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The base constraint type. The editor picker offers only types assignable to it.</typeparam>
-    /// <remarks>
-    /// The <typeparamref name="T"/> constraint is enforced only by the editor picker;
-    /// <see cref="Type"/> does not re-validate assignability at runtime.
-    /// </remarks>
     /// <example>
     /// Constrain the picker to <c>MonoBehaviour</c> subtypes only:
     /// <code>

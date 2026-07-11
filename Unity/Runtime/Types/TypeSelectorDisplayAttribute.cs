@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Diagnostics;
 
@@ -8,11 +9,6 @@ namespace Aspid.FastTools.Types
     /// Supplies presentation metadata for a type shown in the type-selector window: a display name,
     /// a picker group, a tooltip and an icon.
     /// </summary>
-    /// <remarks>
-    /// Usages are stripped from player builds (<c>[Conditional("UNITY_EDITOR")]</c>);
-    /// the attribute carries no runtime behaviour and references no <c>UnityEditor</c> types
-    /// (the <see cref="Icon"/> is a plain string the editor resolves lazily).
-    /// </remarks>
     /// <example>
     /// Rename the type in the picker, place it under an explicit group and give it a tooltip and an icon:
     /// <code>
@@ -25,7 +21,7 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     [Conditional(conditionString: "UNITY_EDITOR")]
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
+    [AttributeUsage(validOn: AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
     public sealed class TypeSelectorDisplayAttribute : Attribute
     {
         /// <summary>
@@ -35,7 +31,7 @@ namespace Aspid.FastTools.Types
         /// arguments (or parameters) are appended after the custom name (<c>Mod&lt;T&gt;</c>, <c>Mod&lt;Single&gt;</c>).
         /// <see langword="null"/> or whitespace means no override.
         /// </summary>
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         /// <summary>
         /// Explicit picker path for the type, with <c>/</c> separating levels (e.g. <c>"Combat/Melee"</c>).
@@ -43,12 +39,12 @@ namespace Aspid.FastTools.Types
         /// appears only under this path. Empty segments are ignored; <see langword="null"/> or whitespace
         /// means the type stays under its namespace.
         /// </summary>
-        public string Group { get; set; }
+        public string? Group { get; set; }
 
         /// <summary>
         /// Tooltip shown when hovering the type's row. <see langword="null"/> means no tooltip override.
         /// </summary>
-        public string Tooltip { get; set; }
+        public string? Tooltip { get; set; }
 
         /// <summary>
         /// Editor icon to show left of the label. One of: an <c>EditorGUIUtility.IconContent</c> name
@@ -57,6 +53,6 @@ namespace Aspid.FastTools.Types
         /// texture path without extension (e.g. <c>"Icons/Damage"</c>). The editor resolves the value lazily;
         /// <see langword="null"/> means no icon.
         /// </summary>
-        public string Icon { get; set; }
+        public string? Icon { get; set; }
     }
 }
