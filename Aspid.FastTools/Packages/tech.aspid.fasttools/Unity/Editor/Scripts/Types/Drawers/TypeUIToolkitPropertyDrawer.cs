@@ -11,7 +11,7 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class TypeUIToolkitPropertyDrawer
     {
-        public static VisualElement Draw(
+        internal static VisualElement Draw(
             string label,
             SerializedProperty property,
             TypeAllow allow = TypeAllow.All,
@@ -28,14 +28,9 @@ namespace Aspid.FastTools.Types.Editors
             if (!SerializeReferenceRequiredGate.TryGetRequired(property, out _))
                 return field;
 
-            // A [TypeSelector(Required = true)] string left empty shows a non-actionable warning below the field,
-            // reusing the managed-reference notice; the dropdown above is the implied fix.
             var container = new VisualElement().AddChild(field);
             var notice = new SerializeReferenceNotice();
 
-            // The tracked callback hands over a FRESH property each tick — closing over the ctor-time one would read
-            // a disposed SerializedObject once the element outlives its source editor (the Persistent() contract).
-            // The initial pass gets its own persistent copy for the same reason.
             container.TrackPropertyValue(property, Refresh);
             Refresh(property.Persistent());
 

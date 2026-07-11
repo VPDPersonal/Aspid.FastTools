@@ -27,18 +27,48 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// Resolves the <c>[TypeSelector]</c> attribute on this property's declared field when it opts in with
         /// <see cref="TypeSelectorAttribute.Required"/>; returns <see langword="false"/> otherwise.
         /// </summary>
-        public static bool TryGetRequired(SerializedProperty property, out TypeSelectorAttribute selector)
+        internal static bool TryGetRequired(SerializedProperty property, out TypeSelectorAttribute selector)
         {
             selector = null;
             if (property is null) return false;
             if (property.propertyType is not (SerializedPropertyType.ManagedReference or SerializedPropertyType.String))
                 return false;
 
-            var typeSelector = SerializableTypeUtility.GetAttributeField(property)?.GetCustomAttribute<TypeSelectorAttribute>();
+            var typeSelector = GetAttributeField(property)?.GetCustomAttribute<TypeSelectorAttribute>();
             if (typeSelector is null || !typeSelector.Required) return false;
 
             selector = typeSelector;
             return true;
+        }
+
+        // The backing string field a SerializableType / SerializableType<T> serializes its type name into.
+        private const string TypeNameBackingField = "_assemblyQualifiedName";
+
+        /// <summary>
+        /// The field that carries user attributes for <paramref name="property"/> — normally its backing field
+        /// as resolved by <see cref="SerializePropertyExtensions.GetFieldInfo(SerializedProperty)"/>.
+        /// </summary>
+        /// <remarks>
+        /// The backing <c>_assemblyQualifiedName</c> string nested inside an <see cref="ISerializableType"/>
+        /// wrapper is redirected to the wrapper field itself — that is where the attributes
+        /// (e.g. <c>[TypeSelector]</c>) are declared.
+        /// </remarks>
+        private static FieldInfo GetAttributeField(SerializedProperty property)
+        {
+            var field = property.GetFieldInfo();
+            if (field?.Name != TypeNameBackingField) return field;
+
+            // The property targets the string inside the wrapper — its parent property is the wrapper field itself.
+            var path = property.propertyPath;
+            var lastDotIndex = path.LastIndexOf('.');
+            if (lastDotIndex < 0) return field;
+
+            using var parentProperty = property.serializedObject.FindProperty(path[..lastDotIndex]);
+            var parentField = parentProperty?.GetFieldInfo();
+
+            return parentField is not null && IsSerializableTypeField(parentField.FieldType)
+                ? parentField
+                : field;
         }
 
         /// <summary>
@@ -46,7 +76,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// (a missing-type reference is NOT a required violation — it has its own notice/gate); for a string type field
         /// it means a null-or-empty assembly-qualified name.
         /// </summary>
-        public static bool IsViolation(SerializedProperty property)
+        internal static bool IsViolation(SerializedProperty property)
         {
             if (!TryGetRequired(property, out _)) return false;
 
@@ -70,7 +100,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// document's top-level mapping (indexed elements / <c>RefIds</c> data). Cached per type (stable until a
         /// domain reload).
         /// </summary>
-        public static IReadOnlyList<RequiredFieldDescriptor> GetRequiredFields(Type type)
+        internal static IReadOnlyList<RequiredFieldDescriptor> GetRequiredFields(Type type)
         {
             if (type is null) return Array.Empty<RequiredFieldDescriptor>();
             if (RequiredFieldCache.TryGetValue(type, out var cached)) return cached;

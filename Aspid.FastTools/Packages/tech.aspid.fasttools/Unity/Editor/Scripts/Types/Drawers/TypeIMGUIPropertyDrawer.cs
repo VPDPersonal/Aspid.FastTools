@@ -12,7 +12,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string FolderClosedIconPath = "d_Folder Icon";
         private const string FolderOpenedIconPath = "d_FolderOpened Icon";
 
-        public static void DrawOpenScriptButton(Rect rect, Type type)
+        internal static void DrawOpenScriptButton(Rect rect, Type type)
         {
             var clicked = GUI.Button(rect, GUIContent.none);
 
@@ -27,10 +27,7 @@ namespace Aspid.FastTools.Types.Editors
             if (clicked) type.OpenInScriptEditor();
         }
 
-        /// <summary>
-        /// Row height: one line, plus a second line for the required-notice when the field is in violation.
-        /// </summary>
-        public static float GetHeight(SerializedProperty property)
+        internal static float GetHeight(SerializedProperty property)
         {
             var height = EditorGUIUtility.singleLineHeight;
             if (SerializeReferenceRequiredGate.IsViolation(property))
@@ -39,14 +36,13 @@ namespace Aspid.FastTools.Types.Editors
             return height;
         }
 
-        public static void Draw(
+        internal static void Draw(
             Rect position,
             GUIContent label,
             SerializedProperty property,
             TypeAllow allow = TypeAllow.All,
             params Type[] types)
         {
-            // The field is always a single line; a required-notice (when shown) sits on its own row below.
             var rowRect = position;
             rowRect.height = EditorGUIUtility.singleLineHeight;
 
@@ -68,8 +64,6 @@ namespace Aspid.FastTools.Types.Editors
             if (hasValidType)
                 dropdownRect.width -= openButtonSize + 1f;
 
-            // Reuses the resolve above: for an unresolvable AQN every Type.GetType is a full loaded-assembly scan,
-            // so a second lookup inside the caption would double that cost per <Missing> field per repaint.
             var caption = TypeSelectorHelpers.GetTypeSelectorTitle(currentType, property.stringValue);
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption), FocusType.Passive))
             {
@@ -97,13 +91,12 @@ namespace Aspid.FastTools.Types.Editors
                 DrawOpenScriptButton(openButtonRect, currentType);
             }
 
-            // A [TypeSelector(Required = true)] string left empty shows a non-actionable warning below the row, matching
-            // the managed-reference required notice; the dropdown above is the implied fix.
             if (!SerializeReferenceRequiredGate.IsViolation(property)) return;
 
-            var message = "Required type is not set";
+            const string message = "Required type is not set";
             var noticeRect = new Rect(position.x, rowRect.yMax + EditorGUIUtility.standardVerticalSpacing,
                 position.width, EditorGUIUtility.singleLineHeight);
+
             SerializeReferenceIMGUIPropertyDrawer.DrawRequiredNotice(noticeRect, message,
                 "This [TypeSelector] field is marked required but has no type.");
         }

@@ -9,26 +9,10 @@ using Aspid.FastTools.SerializeReferences.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    /// <summary>
-    /// Property drawer for <see cref="TypeSelectorAttribute"/>. Dispatches on the property kind: a
-    /// <c>[SerializeReference]</c> managed reference gets the hierarchical instance selector (the attribute's
-    /// base types optionally narrow the candidates below the declared field type), while a <c>string</c> field —
-    /// or a <see cref="SerializableType"/> / <see cref="SerializableType{T}"/> container, whose backing
-    /// <c>_assemblyQualifiedName</c> string this drawer targets — gets the assembly-qualified-name picker
-    /// constrained by the attribute's base types (intersected with the generic argument <c>T</c>) and
-    /// <see cref="TypeAllow"/>.
-    /// <para>
-    /// The attribute's string arguments are resolved by <see cref="TypeSelectorConstraintResolver"/> (member-first,
-    /// then assembly-qualified name). Any argument that resolves to nothing surfaces as a quiet warning notice below
-    /// the field.
-    /// </para>
-    /// </summary>
     [CustomPropertyDrawer(typeof(TypeSelectorAttribute))]
     internal sealed class TypeSelectorPropertyDrawer : PropertyDrawer
     {
-        // Config warnings depend only on the attribute strings and the target type — both fixed for this drawer
-        // instance — so they are resolved once (null until the first GetTypesFromAttribute call) and reused.
-        private List<string> _constraintWarnings;
+        private IReadOnlyList<string> _constraintWarnings;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
@@ -67,8 +51,6 @@ namespace Aspid.FastTools.Types.Editors
             return container.AddChild(notice);
         }
 
-        // IMGUI field portion (no config notice). Drawn into a rect of exactly GetFieldHeight, so each sub-drawer
-        // receives its natural height at its natural origin regardless of the notice reserved below.
         private void DrawField(Rect position, SerializedProperty property, GUIContent label)
         {
             if (TryGetSerializableTypeContainer(property, out var nameProperty, out var genericBaseType))
@@ -102,7 +84,6 @@ namespace Aspid.FastTools.Types.Editors
                 types: GetTypesFromAttribute(property));
         }
 
-        // UIToolkit field portion (no config notice).
         private VisualElement CreateField(SerializedProperty property)
         {
             if (TryGetSerializableTypeContainer(property, out var nameProperty, out var genericBaseType))
@@ -159,11 +140,6 @@ namespace Aspid.FastTools.Types.Editors
             return typeSelectorAttribute.Allow;
         }
 
-        // A SerializableType / SerializableType<T> serializes as a Generic property with a child
-        // _assemblyQualifiedName string. Unity picks this attribute drawer over SerializableTypePropertyDrawer,
-        // so this is where [TypeSelector] on a SerializableType field is handled — we drive the string picker on
-        // the child name property instead of throwing on the Generic kind. Detection reads the field type (arrays
-        // and List<T> unwrapped to their element) so an element in a SerializableType[] / List<SerializableType> matches too.
         private bool TryGetSerializableTypeContainer(SerializedProperty property, out SerializedProperty nameProperty, out Type genericBaseType)
         {
             nameProperty = null;
@@ -174,15 +150,11 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!SerializableTypeUtility.TryGetBaseType(fieldInfo.FieldType, out var baseType)) return false;
 
-            // typeof(object) is the unconstrained wrapper's BaseType — nothing to narrow the picker with.
             genericBaseType = baseType == typeof(object) ? null : baseType;
             nameProperty = property.FindPropertyRelative("_assemblyQualifiedName");
             return nameProperty is not null;
         }
 
-        // Base types for a SerializableType picker: the attribute's types plus the generic argument T (for
-        // SerializableType<T>). The picker intersects — a candidate must be assignable to ALL entries
-        // (TypeInfo.GetAllTypeInfos) — so appending T narrows the attribute's set to T's subtypes.
         private Type[] GetSerializableTypeBaseTypes(SerializedProperty property, Type genericBaseType)
         {
             var attributeTypes = GetTypesFromAttribute(property);
@@ -193,31 +165,21 @@ namespace Aspid.FastTools.Types.Editors
             return types.ToArray();
         }
 
-        // Resolves the attribute's base types against the target object each call (member values can change between
-        // repaints); the accompanying config warnings are computed once and cached in _constraintWarnings.
         private Type[] GetTypesFromAttribute(SerializedProperty property)
         {
             var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
 
             if (typeSelectorAttribute.AssemblyQualifiedNames.Length is 0)
             {
-                _constraintWarnings ??= new List<string>();
+                _constraintWarnings ??= Array.Empty<string>();
                 return Array.Empty<Type>();
             }
 
-            var targetObject = property.serializedObject.targetObject;
+            var resolution = TypeSelectorConstraintResolver.Resolve(
+                property.serializedObject.targetObject, typeSelectorAttribute.AssemblyQualifiedNames);
 
-            if (_constraintWarnings is null)
-            {
-                var warnings = new List<string>();
-                var typesWithWarnings = TypeSelectorConstraintResolver.Resolve(
-                    typeSelectorAttribute.AssemblyQualifiedNames, targetObject, warnings);
-                _constraintWarnings = warnings;
-                return typesWithWarnings;
-            }
-
-            return TypeSelectorConstraintResolver.Resolve(
-                typeSelectorAttribute.AssemblyQualifiedNames, targetObject);
+            _constraintWarnings ??= resolution.Warnings;
+            return resolution.Types;
         }
 
         private IReadOnlyList<string> GetConstraintWarnings(SerializedProperty property)
