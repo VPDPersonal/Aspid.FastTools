@@ -9,7 +9,7 @@ namespace Aspid.FastTools.Types.Editors
     /// </summary>
     internal static class TypeSelectorFooterHint
     {
-        public static string Build(
+        internal static string Build(
             bool searchFocused,
             TreeNode selected,
             bool isSelectedSectionCollapsed,
@@ -30,8 +30,8 @@ namespace Aspid.FastTools.Types.Editors
             if (!searchFocused && selected is { IsType: true })
             {
                 parts.Add(TypeSelectorPreferences.IsFavorite(selected.AssemblyQualifiedName)
-                    ? TypeSelectorGlyphs.StarFilled + " Space Unfavorite"
-                    : TypeSelectorGlyphs.StarEmpty + " Space Favorite");
+                    ? TypeSelectorHelpers.StarFilled + " Space Unfavorite"
+                    : TypeSelectorHelpers.StarEmpty + " Space Favorite");
             }
 
             if (isSearching)
@@ -50,7 +50,7 @@ namespace Aspid.FastTools.Types.Editors
                 parts.Add("Esc Close");
             }
 
-            // The single-space separator matches the dot-joined summaries elsewhere in the package and keeps the line
+            // The " · " separator matches the dot-joined summaries elsewhere in the package and keeps the line
             // narrow enough to share the footer with the settings gear.
             return string.Join(" · ", parts);
         }

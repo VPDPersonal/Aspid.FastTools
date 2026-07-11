@@ -16,17 +16,19 @@ namespace Aspid.FastTools.Types.Editors
     /// window) add it inline and collapse it through the dismiss callback.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Selecting an open generic definition (injected via <see cref="TypeSelectorFilter.AdditionalTypes"/>) is not a final selection;
     /// instead it drills into an argument-selection flow — one hierarchical page per type parameter,
     /// reusing the same search/keyboard/navigation — and emits the constructed closed type once every argument
     /// is resolved. The argument flow stays dormant unless open generics are present, so the ordinary
     /// type-selection contract is unchanged.
-    /// </remarks>
-    /// <remarks>
+    /// </para>
+    /// <para>
     /// The implementation is split across partial files by concern: this file owns construction and the shared
     /// state; <c>.Rows</c> binds list rows; <c>.Input</c> handles the search chrome and keyboard; <c>.Navigation</c>
     /// drives drill-down and selection; <c>.Generics</c> hosts the argument-resolution page stack; <c>.View</c>
     /// renders breadcrumbs, the footer hint and errors.
+    /// </para>
     /// </remarks>
     internal sealed partial class TypeSelectorView : VisualElement
     {
@@ -86,7 +88,7 @@ namespace Aspid.FastTools.Types.Editors
         /// <param name="currentAqn">Assembly-qualified name of the currently selected type, used to pre-navigate to that type's location. Pass <c>null</c> or empty to start at the root.</param>
         /// <param name="onSelected">Callback invoked with the assembly-qualified name of the selected type, or <c>null</c> if the user chose <c>&lt;None&gt;</c>. When an open generic is resolved, the assembly-qualified name of the constructed closed type is passed.</param>
         /// <param name="onDismiss">Invoked when the selector is done — after a selection is emitted, or when the user cancels with Escape. The host closes its window or collapses the inline panel here.</param>
-        public TypeSelectorView(
+        internal TypeSelectorView(
             TypeSelectorFilter filter = default,
             string currentAqn = "",
             Action<string> onSelected = null,
@@ -162,7 +164,7 @@ namespace Aspid.FastTools.Types.Editors
         /// Gives the picker keyboard focus so the arrow keys navigate and any printable key starts a search (the search
         /// field stays collapsed until then). Call after the view is attached to a panel.
         /// </summary>
-        public void FocusPicker()
+        internal void FocusPicker()
         {
             if (Nav.CurrentItems.Count > 0)
             {
@@ -273,8 +275,6 @@ namespace Aspid.FastTools.Types.Editors
                 UpdateFooterHint();
             };
         }
-
-        // Shared selection primitives used across the partial files.
 
         private TreeNode SelectedNode()
         {

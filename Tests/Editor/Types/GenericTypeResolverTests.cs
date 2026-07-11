@@ -2,7 +2,7 @@ using NUnit.Framework;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {
-    // Test-only generic hierarchy: a struct-constrained box and an unconstrained one.
+    // Test-only generic hierarchy: a structure-constrained box and an unconstrained variant. 
     internal interface IResolverThing { }
 
     [System.Serializable]
@@ -11,7 +11,19 @@ namespace Aspid.FastTools.Types.Editors.Tests
     [System.Serializable]
     internal sealed class ResolverClass : IResolverThing { }
 
-    internal sealed class StructBox<T> where T : struct, IResolverThing { }
+    internal sealed class ResolverNoDefaultCtor : IResolverThing
+    {
+        public ResolverNoDefaultCtor(int _) { }
+    }
+
+    internal sealed class StructBox<T>
+        where T : struct, IResolverThing { }
+
+    internal sealed class ClassBox<T>
+        where T : class { }
+
+    internal sealed class CtorBox<T>
+        where T : new() { }
 
     internal sealed class OpenBox<T> { }
 
@@ -31,6 +43,30 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 "A value type must satisfy a 'struct' constraint.");
             Assert.IsFalse(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(ResolverClass)),
                 "A reference type must not satisfy a 'struct' constraint.");
+        }
+
+        [Test]
+        public void SatisfiesSpecialConstraints_ClassConstraint_AcceptsClass_RejectsValueType()
+        {
+            var parameter = typeof(ClassBox<>).GetGenericArguments()[0];
+
+            Assert.IsTrue(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(ResolverClass)),
+                "A reference type must satisfy a 'class' constraint.");
+            Assert.IsFalse(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(ResolverStruct)),
+                "A value type must not satisfy a 'class' constraint.");
+        }
+
+        [Test]
+        public void SatisfiesSpecialConstraints_NewConstraint_RequiresAParameterlessConstructor()
+        {
+            var parameter = typeof(CtorBox<>).GetGenericArguments()[0];
+
+            Assert.IsTrue(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(ResolverClass)),
+                "A class with a public parameterless constructor must satisfy 'new()'.");
+            Assert.IsTrue(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(ResolverStruct)),
+                "A value type always satisfies 'new()'.");
+            Assert.IsFalse(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(ResolverNoDefaultCtor)),
+                "A class without a parameterless constructor must not satisfy 'new()'.");
         }
 
         [Test]
@@ -80,6 +116,36 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             Assert.IsTrue(GenericTypeResolver.TryInferFromFieldType(typeof(OpenBox<int>), typeof(OpenBox<>), out var closed));
             Assert.AreEqual(typeof(OpenBox<int>), closed);
+        }
+
+        [Test]
+        public void TryInferFromFieldType_NonGenericField_Fails()
+        {
+            Assert.IsFalse(GenericTypeResolver.TryInferFromFieldType(typeof(IResolverThing), typeof(OpenBox<>), out var closed));
+            Assert.IsNull(closed);
+        }
+
+        [Test]
+        public void TryInferFromFieldType_UnrelatedDefinition_Fails()
+        {
+            Assert.IsFalse(GenericTypeResolver.TryInferFromFieldType(typeof(OpenBox<int>), typeof(StructBox<>), out var closed));
+            Assert.IsNull(closed);
+        }
+
+        [Test]
+        public void IsAssignableToFieldTypes_ChecksEveryMeaningfulEntry()
+        {
+            Assert.IsTrue(GenericTypeResolver.IsAssignableToFieldTypes(typeof(ResolverClass), new[] { typeof(IResolverThing) }));
+            Assert.IsFalse(GenericTypeResolver.IsAssignableToFieldTypes(typeof(OpenBox<int>), new[] { typeof(IResolverThing) }));
+        }
+
+        [Test]
+        public void IsAssignableToFieldTypes_NullsAndObject_ImposeNoRestriction()
+        {
+            Assert.IsTrue(GenericTypeResolver.IsAssignableToFieldTypes(typeof(ResolverClass), fieldTypes: null));
+            Assert.IsTrue(GenericTypeResolver.IsAssignableToFieldTypes(typeof(ResolverClass), new[] { null, typeof(object) }));
+            Assert.IsFalse(GenericTypeResolver.IsAssignableToFieldTypes(null, fieldTypes: null),
+                "No closed type can never pass the guard, whatever the field types.");
         }
     }
 }

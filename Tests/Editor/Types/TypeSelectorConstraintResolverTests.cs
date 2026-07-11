@@ -1,6 +1,5 @@
 using System;
 using NUnit.Framework;
-using System.Collections.Generic;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {
@@ -43,137 +42,139 @@ namespace Aspid.FastTools.Types.Editors.Tests
             private Type _nullType = null;
             private int _count = 3;
             private static Type _staticType = typeof(int);
+
+            private Type WeaponProperty => typeof(int);
         }
 #pragma warning restore CS0169, CS0414, CS0649
 
-        private static Type[] Resolve(string name, object target, List<string> warnings = null) =>
-            TypeSelectorConstraintResolver.Resolve(new[] { name }, target, warnings);
+        private static TypeSelectorConstraintResolver.Result Resolve(string name, object target) =>
+            TypeSelectorConstraintResolver.Resolve(target, new[] { name });
 
         [Test]
         public void TypeFieldMember_ReturnsItsValue()
         {
-            var types = Resolve("_weaponType", new Host());
-            CollectionAssert.AreEquivalent(new[] { typeof(int) }, types);
+            var result = Resolve("_weaponType", new Host());
+            CollectionAssert.AreEquivalent(new[] { typeof(int) }, result.Types);
+        }
+
+        [Test]
+        public void TypePropertyMember_ReturnsItsValue()
+        {
+            var result = Resolve("WeaponProperty", new Host());
+            CollectionAssert.AreEquivalent(new[] { typeof(int) }, result.Types);
         }
 
         [Test]
         public void TypeArrayMember_ReturnsEveryElement()
         {
-            var types = Resolve("_weaponTypes", new Host());
-            CollectionAssert.AreEquivalent(new[] { typeof(int), typeof(long) }, types);
+            var result = Resolve("_weaponTypes", new Host());
+            CollectionAssert.AreEquivalent(new[] { typeof(int), typeof(long) }, result.Types);
         }
 
         [Test]
         public void StringMember_ResolvesTheAssemblyQualifiedName()
         {
-            var types = Resolve("_typeName", new Host());
-            CollectionAssert.AreEquivalent(new[] { typeof(int) }, types);
+            var result = Resolve("_typeName", new Host());
+            CollectionAssert.AreEquivalent(new[] { typeof(int) }, result.Types);
         }
 
         [Test]
         public void StringArrayMember_ResolvesEveryName()
         {
-            var types = Resolve("_typeNames", new Host());
-            CollectionAssert.AreEquivalent(new[] { typeof(int), typeof(long) }, types);
+            var result = Resolve("_typeNames", new Host());
+            CollectionAssert.AreEquivalent(new[] { typeof(int), typeof(long) }, result.Types);
         }
 
         [Test]
         public void SerializableTypeMember_ReturnsTheWrappedType()
         {
-            var types = Resolve("_wrapper", new Host());
-            CollectionAssert.AreEquivalent(new[] { typeof(int) }, types);
+            var result = Resolve("_wrapper", new Host());
+            CollectionAssert.AreEquivalent(new[] { typeof(int) }, result.Types);
         }
 
         [Test]
         public void SerializableTypeArrayMember_ReturnsEveryWrappedType()
         {
-            var types = Resolve("_wrappers", new Host());
-            CollectionAssert.AreEquivalent(new[] { typeof(int), typeof(long) }, types);
+            var result = Resolve("_wrappers", new Host());
+            CollectionAssert.AreEquivalent(new[] { typeof(int), typeof(long) }, result.Types);
         }
 
         [Test]
         public void InheritedMember_IsResolvedThroughTheBaseType()
         {
-            var types = Resolve("_inheritedType", new Host());
-            CollectionAssert.AreEquivalent(new[] { typeof(short) }, types);
+            var result = Resolve("_inheritedType", new Host());
+            CollectionAssert.AreEquivalent(new[] { typeof(short) }, result.Types);
         }
 
         [Test]
         public void AssemblyQualifiedName_NotAMember_ResolvesAsAType()
         {
-            var types = Resolve(typeof(int).AssemblyQualifiedName, new Host());
-            CollectionAssert.AreEquivalent(new[] { typeof(int) }, types);
+            var result = Resolve(typeof(int).AssemblyQualifiedName, new Host());
+            CollectionAssert.AreEquivalent(new[] { typeof(int) }, result.Types);
         }
 
         [Test]
         public void UnknownIdentifier_AddsAWarningAndNoType()
         {
-            var warnings = new List<string>();
-            var types = Resolve("_missing", new Host(), warnings);
+            var result = Resolve("_missing", new Host());
 
-            CollectionAssert.IsEmpty(types);
-            Assert.AreEqual(1, warnings.Count);
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(1, result.Warnings.Count);
         }
 
         [Test]
         public void UnsuitableMember_AddsAWarningAndNoType()
         {
-            var warnings = new List<string>();
-            var types = Resolve("_count", new Host(), warnings);
+            var result = Resolve("_count", new Host());
 
-            CollectionAssert.IsEmpty(types);
-            Assert.AreEqual(1, warnings.Count);
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(1, result.Warnings.Count);
         }
 
         [Test]
         public void StaticMember_IsInvisibleToTheInstanceLookup_AndWarns()
         {
-            var warnings = new List<string>();
-            var types = Resolve("_staticType", new Host(), warnings);
+            var result = Resolve("_staticType", new Host());
 
-            CollectionAssert.IsEmpty(types);
-            Assert.AreEqual(1, warnings.Count);
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(1, result.Warnings.Count);
         }
 
         [Test]
         public void SuitableMemberWithNullValue_AddsNoWarning()
         {
-            var warnings = new List<string>();
-            var types = Resolve("_nullType", new Host(), warnings);
+            var result = Resolve("_nullType", new Host());
 
-            CollectionAssert.IsEmpty(types);
-            CollectionAssert.IsEmpty(warnings);
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(0, result.Warnings.Count);
         }
 
         [Test]
         public void SuitableWrapperWithNullType_AddsNoWarning()
         {
-            var warnings = new List<string>();
-            var types = Resolve("_unsetWrapper", new Host(), warnings);
+            var result = Resolve("_unsetWrapper", new Host());
 
-            CollectionAssert.IsEmpty(types);
-            CollectionAssert.IsEmpty(warnings);
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(0, result.Warnings.Count);
         }
 
         [Test]
         public void BlankName_IsSkippedWithoutWarning()
         {
-            var warnings = new List<string>();
-            var types = TypeSelectorConstraintResolver.Resolve(new[] { "", "   " }, new Host(), warnings);
+            var result = TypeSelectorConstraintResolver.Resolve(new Host(), new[] { "", "   " });
 
-            CollectionAssert.IsEmpty(types);
-            CollectionAssert.IsEmpty(warnings);
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(0, result.Warnings.Count);
         }
 
         [Test]
         public void MultipleArguments_AppendEveryResolvedConstraint()
         {
-            var warnings = new List<string>();
-            var types = TypeSelectorConstraintResolver.Resolve(
-                new[] { "_weaponType", "_inheritedType" }, new Host(), warnings);
+            var result = TypeSelectorConstraintResolver.Resolve(
+                new Host(), new[] { "_weaponType", "_inheritedType" });
 
-            CollectionAssert.AreEquivalent(new[] { typeof(int), typeof(short) }, types);
-            CollectionAssert.IsEmpty(warnings);
+            CollectionAssert.AreEquivalent(new[] { typeof(int), typeof(short) }, result.Types);
+            Assert.AreEqual(0, result.Warnings.Count);
         }
     }
 }

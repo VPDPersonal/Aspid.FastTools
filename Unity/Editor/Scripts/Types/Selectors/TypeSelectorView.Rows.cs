@@ -49,7 +49,7 @@ namespace Aspid.FastTools.Types.Editors
             var label = new Label()
                 .AddClass(ItemTitleClass);
 
-            var check = new Label(TypeSelectorGlyphs.Check)
+            var check = new Label(TypeSelectorHelpers.Check)
                 .AddClass(ItemCheckClass)
                 .SetPickingMode(PickingMode.Ignore);
 
@@ -59,7 +59,7 @@ namespace Aspid.FastTools.Types.Editors
 
             var favorite = new Button()
                 .AddClass(FavoriteToggleClass)
-                .SetText(TypeSelectorGlyphs.StarEmpty);
+                .SetText(TypeSelectorHelpers.StarEmpty);
 
             var arrow = new Label("›")
                 .AddClass(ItemArrowClass);
@@ -166,7 +166,7 @@ namespace Aspid.FastTools.Types.Editors
             if (node.DisplayName == TypeSelectorHelpers.NoneOption)
             {
                 icon.SetDisplay(DisplayStyle.None);
-                glyph.SetText(TypeSelectorGlyphs.None).SetDisplay(DisplayStyle.Flex);
+                glyph.SetText(TypeSelectorHelpers.None).SetDisplay(DisplayStyle.Flex);
                 return;
             }
 
@@ -271,7 +271,7 @@ namespace Aspid.FastTools.Types.Editors
 
             favorite
                 .SetDisplay(DisplayStyle.Flex)
-                .SetText(isFavorite ? TypeSelectorGlyphs.StarFilled : TypeSelectorGlyphs.StarEmpty)
+                .SetText(isFavorite ? TypeSelectorHelpers.StarFilled : TypeSelectorHelpers.StarEmpty)
                 .EnableInClass(FavoriteToggleOnModifier, isFavorite);
         }
 

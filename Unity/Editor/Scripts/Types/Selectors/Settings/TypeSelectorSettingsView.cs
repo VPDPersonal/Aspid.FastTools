@@ -8,21 +8,9 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    /// <summary>
-    /// Builds the type selector's settings controls bound to <see cref="TypeSelectorSettings"/> — the "Type Selector"
-    /// section of the window's Settings tab and of the Preferences page. Every row is a per-user preference
-    /// (<see cref="AspidSettingsUI.UserScopeClass"/>): the Favorites section toggle, the recents capacity (whose 0
-    /// doubles as the Recent section's off switch, so no separate toggle exists), and a maintenance row that clears
-    /// the stored per-project Favorites / Recent lists.
-    /// </summary>
-    internal static class TypeSelectorSettingsUI
+    internal static class TypeSelectorSettingsView
     {
-        /// <summary>
-        /// Appends the Favorites toggle, the recents-capacity slider and the clear-saved-lists maintenance row to
-        /// <paramref name="container"/>, each wired straight to <see cref="TypeSelectorSettings"/> /
-        /// <see cref="TypeSelectorPreferences"/>.
-        /// </summary>
-        public static void BuildControls(VisualElement container)
+        internal static void BuildControls(VisualElement container)
         {
             var showFavorites = new AspidSwitch("Favorites section")
             {
@@ -54,7 +42,6 @@ namespace Aspid.FastTools.Types.Editors
             container.Add(BuildClearRow());
         }
 
-        // The two destructive clear actions sit behind a count-naming confirmation — a wiped list is not undoable.
         private static VisualElement BuildClearRow()
         {
             var row = new VisualElement().AddClass(AspidSettingsUI.RowClass).AddClass(AspidSettingsUI.UserScopeClass);
@@ -89,7 +76,6 @@ namespace Aspid.FastTools.Types.Editors
             TypeSelectorPreferences.ClearRecents();
         }
 
-        // The confirmation names the raw stored count — clearing also drops entries kept for unresolvable types.
         private static bool ConfirmClear(string list, int count)
         {
             var title = $"Clear {list}";
@@ -107,7 +93,6 @@ namespace Aspid.FastTools.Types.Editors
                 "Cancel");
         }
 
-        // Shorthand over the shared live-sync helper, binding to this store's Changed signal.
         private static void SyncFromSettings<TControl, TValue>(TControl control, Func<TValue> read)
             where TControl : VisualElement, INotifyValueChanged<TValue>
         {

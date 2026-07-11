@@ -9,23 +9,6 @@ namespace Aspid.FastTools
     public static class TypeExtensions
     {
         /// <summary>
-        /// Unwraps the element type of an array or <see cref="List{T}"/>;
-        /// returns <paramref name="type"/> unchanged when it is neither.
-        /// </summary>
-        /// <remarks>
-        /// <see cref="List{T}"/> is matched by its open definition, so a single-argument generic wrapper
-        /// is not mistaken for a collection and unwrapped by accident.
-        /// </remarks>
-        public static Type GetCollectionElementType(this Type type)
-        {
-            if (type.IsArray) return type.GetElementType()!;
-
-            return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>)
-                ? type.GetGenericArguments()[0]
-                : type;
-        }
-
-        /// <summary>
         /// Returns the members of <paramref name="type"/> and its base classes in declaration order (base → derived),
         /// matching the Unity inspector's traversal order.
         /// </summary>
@@ -41,7 +24,7 @@ namespace Aspid.FastTools
             while (currentType != stopAt)
             {
                 if (currentType is null) break;
-                
+
                 typeChain.Add(currentType);
                 currentType = currentType.BaseType;
             }

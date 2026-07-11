@@ -9,44 +9,44 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal sealed class TypeInfo
     {
-        public readonly string Name;
-        public readonly string Assembly;
-        public readonly string Namespace;
-        public readonly string AssemblyQualifiedName;
+        internal readonly string Name;
+        internal readonly string Assembly;
+        internal readonly string Namespace;
+        internal readonly string AssemblyQualifiedName;
 
         /// <summary>
         /// Tooltip override from <see cref="TypeSelectorDisplayAttribute.Tooltip"/>; falls back to
         /// <see cref="Type.FullName"/> when no override is supplied.
         /// </summary>
-        public readonly string Tooltip;
+        internal readonly string Tooltip;
 
         /// <summary>
         /// Raw icon identifier from <see cref="TypeSelectorDisplayAttribute.Icon"/>; <see langword="null"/>
         /// when no icon was requested.
         /// </summary>
-        public readonly string Icon;
+        internal readonly string Icon;
 
         /// <summary>
         /// Normalized display-name override from <see cref="TypeSelectorDisplayAttribute.Name"/>;
         /// <see langword="null"/> when the type keeps its real name.
         /// </summary>
-        public readonly string CustomName;
+        internal readonly string CustomName;
 
         /// <summary>
         /// Normalized <see cref="TypeSelectorDisplayAttribute.Group"/> path segments (split on <c>/</c>,
         /// trimmed, empty segments dropped); <see langword="null"/> when the type stays under its namespace.
         /// </summary>
-        public readonly string[] GroupPath;
+        internal readonly string[] GroupPath;
 
         /// <summary>
         /// The label the picker shows for this type: the <see cref="CustomName"/> override when present,
         /// the real (short) type name otherwise.
         /// </summary>
-        public string Label => CustomName ?? Name;
+        internal string Label => CustomName ?? Name;
 
-        public TypeInfo(Type type)
+        internal TypeInfo(Type type)
         {
-            Name = TypeExtensions.FormatGenericName(type);
+            Name = TypeUtility.FormatGenericName(type);
             Assembly = type.Assembly.GetName().Name;
             AssemblyQualifiedName = type.AssemblyQualifiedName;
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
@@ -90,7 +90,7 @@ namespace Aspid.FastTools.Types.Editors
         /// entries — such as open generic definitions — that the standard <see cref="Type.IsAssignableFrom"/>
         /// scan cannot match.
         /// </summary>
-        public static List<TypeInfo> GetAllTypeInfos(
+        internal static List<TypeInfo> GetAllTypeInfos(
             Type[] baseTypes,
             TypeAllow allow,
             Func<Type, bool> filter = null,
@@ -98,7 +98,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             var result = new List<TypeInfo>();
 
-            result.AddRange(TypeExtensions.EnumerateDomainTypes()
+            result.AddRange(TypeUtility.EnumerateDomainTypes()
                 .Where(t => baseTypes.All(baseType => baseType.IsAssignableFrom(t)) &&
                     !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
                     !t.Name.Contains("<") &&

@@ -8,72 +8,44 @@ using System.Runtime.CompilerServices;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// General-purpose helpers for resolving an open generic type definition into a concrete closed type
-    /// inside the <see cref="TypeSelectorWindow"/> argument-selection flow: enumerating the open generic
-    /// definitions assignable to a field, inferring arguments from a closed-generic field, computing a
-    /// parameter's constraint base types and special-constraint filter, and constructing/validating the
-    /// closed type. Carries no dependency on any particular feature (e.g. <c>[SerializeReference]</c>);
-    /// the Unity-serializability of an argument is supplied by the caller as a separate filter.
+    /// Helpers for resolving an open generic type definition into a concrete closed type inside the
+    /// <see cref="TypeSelectorWindow"/> argument-selection flow: candidate definitions, argument
+    /// inference, constraint filters and closed-type construction/validation.
     /// </summary>
+    /// <remarks>
+    /// Carries no dependency on any particular feature (e.g. <c>[SerializeReference]</c>); the
+    /// Unity-serializability of an argument is supplied by the caller as a separate filter.
+    /// </remarks>
     internal static class GenericTypeResolver
     {
-        /// <summary>
-        /// Predicate identifying open generic type definitions that can be offered for a field once closed
-        /// over concrete arguments: non-abstract generic classes that are neither
-        /// <see cref="UnityEngine.Object"/> nor delegates, and that are not compiler-generated
-        /// (anonymous types, closure/iterator display classes such as <c>&lt;&gt;c__11&lt;T&gt;</c> or
-        /// <c>&lt;&gt;f__AnonymousType0&lt;…&gt;</c>) — these are added verbatim via the selector's
-        /// <c>additionalTypes</c> path, which bypasses the name/<see cref="CompilerGeneratedAttribute"/>
-        /// checks applied to ordinary candidates, so they must be excluded here.
-        /// </summary>
-        private static bool IsAssignableGenericDefinition(Type type) =>
-            type is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: true } &&
-            !typeof(UnityEngine.Object).IsAssignableFrom(type) &&
-            !typeof(Delegate).IsAssignableFrom(type) &&
-            !IsCompilerGenerated(type);
+        // Cached once per domain: the open-generic flow sweeps every domain type per parameter page (twice, with the
+        // candidate scan), which stalls large projects. Static state is cleared on every domain reload, so the cache is
+        // implicitly invalidated whenever assemblies could change. Built lazily so touching the constraint-only helpers
+        // never pays for (or fails on) the full domain sweep.
+        private static List<Type> _domainTypes;
 
-        // Returns true for compiler-emitted types that should never surface in the selector:
-        // those marked CompilerGeneratedAttribute or whose name carries the angle-bracket marker
-        // of an anonymous type / closure display class.
-        private static bool IsCompilerGenerated(Type type) =>
-            type.IsDefined(typeof(CompilerGeneratedAttribute), false) ||
-            type.Name.Contains('<') ||
-            type.Name.Contains('>');
+        private static List<Type> DomainTypes => _domainTypes ??= TypeUtility.EnumerateDomainTypes().ToList();
 
         /// <summary>
         /// Enumerates the open generic type definitions whose closed form could be assigned to
-        /// <paramref name="fieldType"/> — i.e. generic classes that implement/inherit the field's type
-        /// (matched by generic definition for a generic field, or directly for a non-generic field).
-        /// When <paramref name="narrowTypes"/> are supplied, the definition must additionally be closeable to
-        /// every one of them, so a narrowing constraint applied to the candidate scan is honoured here too
-        /// (these definitions are injected verbatim via the selector's <c>additionalTypes</c> path, which
-        /// otherwise bypasses that filter).
+        /// <paramref name="fieldType"/> and, when <paramref name="narrowTypes"/> are supplied,
+        /// to every one of them.
         /// </summary>
-        public static IEnumerable<Type> GetAssignableGenericDefinitions(Type fieldType, params Type[] narrowTypes)
+        /// <remarks>
+        /// The narrowing check matters because these definitions are injected verbatim via the selector's
+        /// <c>additionalTypes</c> path, which otherwise bypasses the narrowing filter applied to the
+        /// ordinary candidate scan.
+        /// </remarks>
+        internal static IEnumerable<Type> GetAssignableGenericDefinitions(Type fieldType, params Type[] narrowTypes)
         {
             if (fieldType is null) yield break;
 
-            foreach (var type in EnumerateDomainTypes())
+            foreach (var type in DomainTypes)
             {
                 if (!IsAssignableGenericDefinition(type)) continue;
                 if (!CanCloseToFieldType(type, fieldType)) continue;
                 if (CanCloseToAllNarrowing(type, narrowTypes)) yield return type;
             }
-        }
-
-        // True when the open definition can close to every meaningful narrowing base type. Nulls and the
-        // unconstrained `object` sentinel impose no restriction, mirroring the concrete-type narrowing filter.
-        private static bool CanCloseToAllNarrowing(Type openDefinition, Type[] narrowTypes)
-        {
-            if (narrowTypes is null) return true;
-
-            foreach (var narrowType in narrowTypes)
-            {
-                if (narrowType is null || narrowType == typeof(object)) continue;
-                if (!CanCloseToFieldType(openDefinition, narrowType)) return false;
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -82,7 +54,7 @@ namespace Aspid.FastTools.Types.Editors
         /// argument of a <c>Modifier&lt;&gt;</c> candidate). Returns <see langword="false"/> when the field is
         /// not a closed generic or the inferred type would not be assignable.
         /// </summary>
-        public static bool TryInferFromFieldType(Type fieldType, Type openDefinition, out Type closed)
+        internal static bool TryInferFromFieldType(Type fieldType, Type openDefinition, out Type closed)
         {
             closed = null;
 
@@ -115,7 +87,7 @@ namespace Aspid.FastTools.Types.Editors
         /// other type parameters), or <c>{ typeof(object) }</c> when it has none. Used as the base-type filter
         /// for the argument's candidate list.
         /// </summary>
-        public static Type[] GetConstraintBaseTypes(Type parameter)
+        internal static Type[] GetConstraintBaseTypes(Type parameter)
         {
             var constraints = parameter.GetGenericParameterConstraints()
                 .Where(constraint => !constraint.IsGenericParameter && !constraint.ContainsGenericParameters)
@@ -128,7 +100,7 @@ namespace Aspid.FastTools.Types.Editors
         /// Returns <see langword="true"/> when <paramref name="candidate"/> satisfies the special
         /// (<c>struct</c>/<c>class</c>/<c>new()</c>) constraints declared on <paramref name="parameter"/>.
         /// </summary>
-        public static bool SatisfiesSpecialConstraints(Type parameter, Type candidate)
+        internal static bool SatisfiesSpecialConstraints(Type parameter, Type candidate)
         {
             if (candidate is null) return false;
 
@@ -149,7 +121,7 @@ namespace Aspid.FastTools.Types.Editors
         /// human-readable <paramref name="error"/> when construction throws (a violated parameter constraint)
         /// or the closed type is not assignable to the field.
         /// </summary>
-        public static bool TryConstruct(Type openDefinition, Type[] arguments, Type[] fieldTypes, out Type closed, out string error)
+        internal static bool TryConstruct(Type openDefinition, Type[] arguments, Type[] fieldTypes, out Type closed, out string error)
         {
             closed = null;
             error = null;
@@ -188,7 +160,7 @@ namespace Aspid.FastTools.Types.Editors
         /// restriction). Mirrors the assignability guard <see cref="TryConstruct"/> applies, for callers that already
         /// hold a constructed closed type and only need to validate it.
         /// </summary>
-        public static bool IsAssignableToFieldTypes(Type closed, Type[] fieldTypes)
+        internal static bool IsAssignableToFieldTypes(Type closed, Type[] fieldTypes)
         {
             if (closed is null) return false;
             if (fieldTypes is null) return true;
@@ -203,11 +175,49 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         /// <summary>
+        /// Predicate identifying open generic type definitions that can be offered for a field once closed
+        /// over concrete arguments: non-abstract generic classes that are neither
+        /// <see cref="UnityEngine.Object"/> nor delegates, and that are not compiler-generated.
+        /// </summary>
+        /// <remarks>
+        /// Compiler-emitted types (anonymous types, closure/iterator display classes such as
+        /// <c>&lt;&gt;c__11&lt;T&gt;</c> or <c>&lt;&gt;f__AnonymousType0&lt;…&gt;</c>) must be excluded
+        /// here because these definitions are added verbatim via the selector's <c>additionalTypes</c>
+        /// path, which bypasses the name/<see cref="CompilerGeneratedAttribute"/> checks applied to
+        /// ordinary candidates.
+        /// </remarks>
+        private static bool IsAssignableGenericDefinition(Type type) =>
+            type is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: true } &&
+            !typeof(UnityEngine.Object).IsAssignableFrom(type) &&
+            !typeof(Delegate).IsAssignableFrom(type) &&
+            !IsCompilerGenerated(type);
+
+        private static bool IsCompilerGenerated(Type type) =>
+            type.IsDefined(typeof(CompilerGeneratedAttribute), false)
+            || type.Name.Contains('<')
+            || type.Name.Contains('>');
+
+        // Nulls and the unconstrained `object` sentinel impose no restriction, mirroring the
+        // concrete-type narrowing filter.
+        private static bool CanCloseToAllNarrowing(Type openDefinition, Type[] narrowTypes)
+        {
+            if (narrowTypes is null) return true;
+
+            foreach (var narrowType in narrowTypes)
+            {
+                if (narrowType is null || narrowType == typeof(object)) continue;
+                if (!CanCloseToFieldType(openDefinition, narrowType)) return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Short display form of an open definition with its parameter names (<c>Modifier&lt;T&gt;</c>).
         /// </summary>
         private static string FormatDefinitionName(Type definition)
         {
-            var baseName = TypeExtensions.StripArity(definition.Name);
+            var baseName = TypeUtility.StripArity(definition.Name);
             var arguments = string.Join(", ", definition.GetGenericArguments().Select(argument => argument.Name));
             return $"{baseName}<{arguments}>";
         }
@@ -229,8 +239,6 @@ namespace Aspid.FastTools.Types.Editors
             return false;
         }
 
-        // Enumerates the generic-type-definition view of openDefinition itself, its base class
-        // chain, and its interfaces (only the generic ones, reduced to their definitions).
         private static IEnumerable<Type> GenericBaseDefinitions(Type openDefinition)
         {
             if (openDefinition.IsGenericType)
@@ -248,13 +256,5 @@ namespace Aspid.FastTools.Types.Editors
                     yield return contract.GetGenericTypeDefinition();
             }
         }
-
-        // Cached once per domain: the open-generic flow sweeps every domain type per parameter page (twice, with the
-        // candidate scan), which stalls large projects. Static state is cleared on every domain reload, so the cache is
-        // implicitly invalidated whenever assemblies could change.
-        private static List<Type> _domainTypes;
-
-        private static IReadOnlyList<Type> EnumerateDomainTypes() =>
-            _domainTypes ??= TypeExtensions.EnumerateDomainTypes().ToList();
     }
 }

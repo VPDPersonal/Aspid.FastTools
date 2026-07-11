@@ -8,35 +8,40 @@ namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
     /// Resolves the string arguments of a <see cref="TypeSelectorAttribute"/> into base-constraint types.
-    /// Each name is resolved member-first: a field or property with that name on the target object's type
-    /// hierarchy supplies the constraint dynamically (value shapes: <see cref="Type"/>, <see cref="Type"/>[],
-    /// <c>string</c>, <c>string[]</c>, <see cref="ISerializableType"/> and arrays of it); only when no member
-    /// matches is the string treated as an assembly-qualified type name for <see cref="Type.GetType(string)"/>.
-    /// A name that resolves to nothing is reported through the warnings list so the drawer can surface it.
+    /// Each name is resolved member-first — a field or property with that name on the target object's type
+    /// hierarchy supplies the constraint dynamically; only when no member matches is the string treated
+    /// as an assembly-qualified type name for <see cref="Type.GetType(string)"/>.
     /// </summary>
     internal static class TypeSelectorConstraintResolver
     {
         /// <summary>
         /// Resolves <paramref name="assemblyQualifiedNames"/> against <paramref name="targetObject"/>.
-        /// Blank names are skipped. When <paramref name="warnings"/> is non-null, every name that yields
-        /// no constraint (unknown member and unresolvable type, or a member the drawer cannot read) appends
-        /// a human-readable message.
         /// </summary>
-        public static Type[] Resolve(IReadOnlyList<string> assemblyQualifiedNames, object targetObject, List<string> warnings = null)
+        /// <remarks>
+        /// Blank names are skipped. Every name that cannot supply constraints — an unreadable member, or a name
+        /// that is neither a member nor a resolvable type — adds a message to <see cref="Result.Warnings"/>.
+        /// A suitable member whose current value is empty is not a warning — it means "no constraint yet".
+        /// </remarks>
+        internal static Result Resolve(object targetObject, IReadOnlyList<string> assemblyQualifiedNames)
         {
             var types = new List<Type>();
+            List<string> warnings = null;
             var targetType = targetObject.GetType();
 
             foreach (var name in assemblyQualifiedNames)
             {
                 if (string.IsNullOrWhiteSpace(name)) continue;
-
                 var member = GetMemberFromHierarchy(targetType, name);
+
                 if (member is not null)
                 {
-                    if (!AddTypesFromMember(types, member, targetObject) && !IsSuitableMember(member))
+                    var count = types.Count;
+                    AddTypesFromMember(targetObject, member, types);
+                    var isAdded = types.Count > count;
+
+                    if (!isAdded && !IsSuitableMember(member))
                     {
-                        warnings?.Add(
+                        (warnings ??= new List<string>()).Add(
                             $"Member '{name}' cannot supply base types — it must be an instance field or property " +
                             "of type Type, Type[], string, string[], SerializableType or SerializableType<T>.");
                     }
@@ -45,42 +50,41 @@ namespace Aspid.FastTools.Types.Editors
                 }
 
                 var type = Type.GetType(name, throwOnError: false);
+
                 if (type is not null)
                 {
                     types.Add(type);
-                    continue;
                 }
+                else
+                {
+                    var message = IsValidIdentifier(name)
+                        ? $"'{name}' is neither a member of {targetType.Name} nor a resolvable type name — " +
+                          $"if a type was intended, qualify it with its assembly (\"{name}, MyAssembly\")."
+                        : $"Type '{name}' could not be resolved to any loaded type.";
 
-                warnings?.Add(IsValidIdentifier(name)
-                    ? $"'{name}' is neither a member of {targetType.Name} nor a resolvable type name — " +
-                      $"if a type was intended, qualify it with its assembly (\"{name}, MyAssembly\")."
-                    : $"Type '{name}' could not be resolved to any loaded type.");
+                    (warnings ??= new List<string>()).Add(message);
+                }
             }
 
-            return types.ToArray();
+            return new Result(types.ToArray(), warnings);
         }
 
         private static MemberInfo GetMemberFromHierarchy(Type type, string memberName)
         {
             const BindingFlags bindingAttr = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly;
 
-            var currentType = type;
-            while (currentType is not null)
+            for (var current = type; current is not null; current = current.BaseType)
             {
-                var members = currentType.GetMember(memberName, bindingAttr);
+                var members = current.GetMember(memberName, bindingAttr);
+
                 if (members.Length > 0)
                     return members[0];
-
-                currentType = currentType.BaseType;
             }
 
             return null;
         }
 
-        // Reads the member's current value and appends every type it names. Returns true when at least one
-        // type was appended — a suitable member holding null / empty values is legitimate ("no constraint yet")
-        // and is reported as success by IsSuitableMember instead.
-        private static bool AddTypesFromMember(List<Type> types, MemberInfo member, object targetObject)
+        private static void AddTypesFromMember(object targetObject, MemberInfo member, List<Type> types)
         {
             var value = member switch
             {
@@ -88,8 +92,6 @@ namespace Aspid.FastTools.Types.Editors
                 PropertyInfo propertyInfo => propertyInfo.GetValue(targetObject),
                 _ => null
             };
-
-            var count = types.Count;
 
             switch (value)
             {
@@ -102,19 +104,21 @@ namespace Aspid.FastTools.Types.Editors
                     break;
 
                 case string assemblyQualifiedName:
-                    AddTypeFromName(types, assemblyQualifiedName);
+                    AddTypeFromName(assemblyQualifiedName, types);
                     break;
 
                 case string[] assemblyQualifiedNames:
                 {
                     foreach (var assemblyQualifiedName in assemblyQualifiedNames)
-                        AddTypeFromName(types, assemblyQualifiedName);
+                        AddTypeFromName(assemblyQualifiedName, types);
+
                     break;
                 }
 
                 case ISerializableType serializableType:
                     if (serializableType.Type is { } resolved)
                         types.Add(resolved);
+
                     break;
 
                 case ISerializableType[] serializableTypes:
@@ -128,11 +132,9 @@ namespace Aspid.FastTools.Types.Editors
                     break;
                 }
             }
-
-            return types.Count > count;
         }
 
-        private static void AddTypeFromName(List<Type> types, string assemblyQualifiedName)
+        private static void AddTypeFromName(string assemblyQualifiedName, List<Type> types)
         {
             if (string.IsNullOrWhiteSpace(assemblyQualifiedName)) return;
 
@@ -141,9 +143,20 @@ namespace Aspid.FastTools.Types.Editors
                 types.Add(type);
         }
 
-        // A member the drawer can read at all: an instance field or property whose declared (element) type is
-        // Type, string or an ISerializableType wrapper. A declared type of object still passes when the value
-        // matched in AddTypesFromMember; here only the static shape is judged.
+        private static bool IsValidIdentifier(string name)
+        {
+            if (!char.IsLetter(name[0]) && name[0] != '_')
+                return false;
+
+            for (var i = 1; i < name.Length; i++)
+            {
+                if (!char.IsLetterOrDigit(name[i]) && name[i] != '_')
+                    return false;
+            }
+
+            return true;
+        }
+
         private static bool IsSuitableMember(MemberInfo member)
         {
             var memberType = member switch
@@ -153,27 +166,31 @@ namespace Aspid.FastTools.Types.Editors
                 _ => null
             };
 
-            if (memberType is null) return false;
-            if (memberType.IsArray) memberType = memberType.GetElementType();
+            if (memberType?.IsArray ?? false)
+                memberType = memberType.GetElementType();
+
             if (memberType is null) return false;
 
-            return memberType == typeof(string) ||
-                memberType == typeof(Type) ||
-                typeof(ISerializableType).IsAssignableFrom(memberType);
+            return memberType == typeof(string)
+                || memberType == typeof(Type)
+                || typeof(ISerializableType).IsAssignableFrom(memberType);
         }
 
-        // Syntactic split: a valid C# identifier is a member reference, anything else is a type name.
-        private static bool IsValidIdentifier(string name)
+        /// <summary>
+        /// The outcome of <see cref="Resolve"/>: the constraint types plus a warning for every name
+        /// that could not supply any.
+        /// </summary>
+        internal readonly struct Result
         {
-            if (!char.IsLetter(name[0]) && name[0] != '_') return false;
+            internal Type[] Types { get; }
 
-            for (var i = 1; i < name.Length; i++)
+            internal IReadOnlyList<string> Warnings { get; }
+
+            internal Result(Type[] types, IReadOnlyList<string> warnings)
             {
-                if (!char.IsLetterOrDigit(name[i]) && name[i] != '_')
-                    return false;
+                Types = types;
+                Warnings = warnings ?? Array.Empty<string>();
             }
-
-            return true;
         }
     }
 }

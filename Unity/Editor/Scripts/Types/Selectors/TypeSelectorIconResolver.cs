@@ -7,20 +7,19 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// Resolves the <see cref="TypeSelectorDisplayAttribute.Icon"/> string to a <see cref="Texture"/>. A project-relative
-    /// asset path (starting with <c>Assets/</c> or <c>Packages/</c>) is loaded straight through the
-    /// <see cref="AssetDatabase"/>, so an icon may live anywhere — not only inside a <c>Resources</c> folder. Otherwise a
-    /// plain name is tried as an editor built-in icon (<see cref="EditorGUIUtility.IconContent"/>) first and a
-    /// <c>Resources</c> texture path second; a path-shaped value (one containing <c>/</c>) reverses that order, so probing
-    /// a Resources path through <see cref="EditorGUIUtility.IconContent"/> does not spam the console with "Unable to load
-    /// icon" warnings on every miss. Successful lookups are cached for the lifetime of the domain to keep row binding
-    /// cheap; misses are not cached, so an icon whose asset is imported or renamed later is picked up on the next bind.
+    /// Resolves the <see cref="TypeSelectorDisplayAttribute.Icon"/> string to a <see cref="Texture"/>:
+    /// a project-relative asset path (<c>Assets/…</c>, <c>Packages/…</c>), a <c>Resources</c> texture
+    /// path, or a built-in editor icon name.
     /// </summary>
+    /// <remarks>
+    /// Successful lookups are cached for the lifetime of the domain to keep row binding cheap; misses are
+    /// not cached, so an icon whose asset is imported or renamed later is picked up on the next bind.
+    /// </remarks>
     internal static class TypeSelectorIconResolver
     {
         private static readonly Dictionary<string, Texture> _cache = new();
 
-        public static Texture Resolve(string icon)
+        internal static Texture Resolve(string icon)
         {
             if (string.IsNullOrWhiteSpace(icon)) return null;
 

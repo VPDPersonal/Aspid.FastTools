@@ -17,7 +17,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
     /// the Recent section only while the capacity is above 0 (its off switch — no separate toggle exists);</item>
     /// <item>the row counters: <see cref="TreeNode.TypeCount"/> counts the pickable type leaves under a container
     /// recursively, and a composed section title carries the number of rows the section actually surfaced;</item>
-    /// <item>the controls built by <see cref="TypeSelectorSettingsUI"/> mirror the store live, matching the References
+    /// <item>the controls built by <see cref="TypeSelectorSettingsView"/> mirror the store live, matching the References
     /// section's live-sync contract.</item>
     /// </list>
     /// </summary>
@@ -294,7 +294,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             TypeSelectorSettings.RecentsCapacity = 8;
 
             var container = new VisualElement();
-            TypeSelectorSettingsUI.BuildControls(container);
+            TypeSelectorSettingsView.BuildControls(container);
 
             var switches = container.Query<AspidSwitch>().ToList();
             Assert.AreEqual(1, switches.Count,

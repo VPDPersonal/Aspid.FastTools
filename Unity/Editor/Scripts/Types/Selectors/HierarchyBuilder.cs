@@ -7,7 +7,7 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class HierarchyBuilder
     {
-        public static TreeNode Build(
+        internal static TreeNode Build(
             Type[] types,
             TypeAllow allow,
             Func<Type, bool> filter = null,
@@ -211,7 +211,6 @@ namespace Aspid.FastTools.Types.Editors
             SearchName = type.Name,
         };
 
-        // Sorts children alphabetically at every level, keeping <None> pinned to the top.
         private static void SortNode(TreeNode node)
         {
             node.Children.Sort(CompareNodes);

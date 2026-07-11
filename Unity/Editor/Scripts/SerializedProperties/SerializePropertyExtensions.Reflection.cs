@@ -21,7 +21,7 @@ namespace Aspid.FastTools.Editors
         public static Type GetPropertyType(this SerializedProperty serializedProperty)
         {
             var type = serializedProperty.GetFieldInfo()?.FieldType;
-            return IsArrayElement(serializedProperty) ? type?.GetCollectionElementType() : type;
+            return IsArrayElement(serializedProperty) ? type?.GetCollectionElementTypeOrSelf() : type;
         }
 
         /// <summary>
@@ -94,11 +94,11 @@ namespace Aspid.FastTools.Editors
 
         private static FieldInfo GetFieldIncludingBaseClasses(Type type, string name)
         {
-            const BindingFlags BindingAttr = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            const BindingFlags bindingAttr = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
             for (var current = type; current is not null; current = current.BaseType)
             {
-                var field = current.GetField(name, BindingAttr);
+                var field = current.GetField(name, bindingAttr);
                 if (field is not null) return field;
             }
 
