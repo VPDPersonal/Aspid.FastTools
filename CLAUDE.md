@@ -54,6 +54,8 @@ Plus: `Tests/Editor/` — Unity-side editor tests (Unity Test Runner); `Samples~
 
 ### Editor Code Conventions
 
+**Member accessibility:** in an `internal` class, members must be declared `internal` (or narrower), never `public` — the member's own modifier should show its real accessibility without checking the containing class.
+
 **PropertyDrawers:** Always `internal sealed class`. Complex drawers split into a static helper `{Feature}Drawer` with `DrawIMGUI()` and `DrawUIToolkit()` methods — see `SerializableTypeDrawer.cs` as reference.
 
 **XML doc comments:** `<summary>` — 1–2 sentences, what/why, no implementation details. `<remarks>` — only for non-obvious behavior, invariants, or gotchas; omit if it would just restate the summary or the code. `<example>` — only for non-trivial usage patterns where the shape of usage isn't obvious from the signature. Follow Microsoft's Framework Design Guidelines conventions.
