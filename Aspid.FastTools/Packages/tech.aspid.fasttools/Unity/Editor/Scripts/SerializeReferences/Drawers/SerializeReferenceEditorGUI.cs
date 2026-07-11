@@ -92,7 +92,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (property.GetFieldInfo() is { } field)
             {
-                var elementType = field.FieldType.GetCollectionElementType();
+                var elementType = field.FieldType.GetCollectionElementTypeOrSelf();
                 if (elementType != field.FieldType) return elementType;
             }
 

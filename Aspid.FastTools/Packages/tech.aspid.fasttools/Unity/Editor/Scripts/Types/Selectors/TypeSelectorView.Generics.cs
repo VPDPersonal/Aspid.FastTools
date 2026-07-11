@@ -128,7 +128,7 @@ namespace Aspid.FastTools.Types.Editors
             var custom = TypeSelectorHelpers.GetCustomDisplayName(openDefinition);
             var angle = custom?.IndexOf('<') ?? -1;
             var baseName = custom is null
-                ? TypeExtensions.StripArity(openDefinition.Name)
+                ? TypeUtility.StripArity(openDefinition.Name)
                 : angle < 0 ? custom : custom[..angle];
 
             var parts = new string[parameters.Length];

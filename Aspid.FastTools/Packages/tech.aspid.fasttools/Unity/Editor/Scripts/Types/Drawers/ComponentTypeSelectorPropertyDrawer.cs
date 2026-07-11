@@ -56,20 +56,11 @@ namespace Aspid.FastTools.Types.Editors
 
             field.RegisterValueChangedCallback(evt =>
                 ReplaceComponentScript(persistent, currentType, evt.newValue));
-
-            // The built-in "Script" row is redundant here: the dropdown above owns type-swapping
-            // by rewriting m_Script, so let the user edit the type only through it. Hide the sibling
-            // m_Script field once this drawer joins the inspector's visual tree.
             field.RegisterCallback<AttachToPanelEvent>(_ => HideScriptField(field));
 
             return field;
         }
 
-        /// <summary>
-        /// Hides the inspector's default "Script" (<c>m_Script</c>) row for the component that owns
-        /// <paramref name="field"/>. UIToolkit-only: the IMGUI inspector draws that row itself, out of
-        /// reach of a field-level drawer, so <see cref="OnGUI"/> cannot suppress it.
-        /// </summary>
         private static void HideScriptField(VisualElement field)
         {
             var inspector = field.GetFirstAncestorOfType<InspectorElement>();
@@ -80,8 +71,6 @@ namespace Aspid.FastTools.Types.Editors
                 .ForEach(propertyField => propertyField.style.display = DisplayStyle.None);
         }
 
-        /// <param name="property">Must own its <see cref="SerializedObject"/> (see <c>Persistent()</c>) —
-        /// it is read one <see cref="EditorApplication.delayCall"/> tick later.</param>
         private static void ReplaceComponentScript(SerializedProperty property, Type oldType, Type newType)
         {
             if (newType is null || newType == oldType) return;
