@@ -35,3 +35,34 @@ jobs:
 
       - name: Run ${{ matrix.name }} tests
         run: dotnet test "${{ matrix.path }}" --nologo
+
+  unity-tests:
+    name: Unity EditMode
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Library/ is regenerated from Packages + ProjectSettings; a stale restore still saves most of the reimport,
+      # hence the bare restore-keys fallback.
+      - uses: actions/cache@v4
+        with:
+          path: Aspid.FastTools/Library
+          key: unity-library-${{ hashFiles('Aspid.FastTools/Packages/packages-lock.json', 'Aspid.FastTools/ProjectSettings/ProjectVersion.txt') }}
+          restore-keys: unity-library-
+
+      # Requires the UNITY_LICENSE secret (personal-license .ulf contents) — see docs in the PR that added this job.
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: Aspid.FastTools
+          testMode: editmode
+          artifactsPath: unity-test-results
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Unity EditMode results
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-test-results
+          path: unity-test-results
