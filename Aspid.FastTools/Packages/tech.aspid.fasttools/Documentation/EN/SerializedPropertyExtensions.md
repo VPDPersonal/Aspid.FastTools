@@ -1,4 +1,4 @@
-# SerializedProperty Extensions — full reference
+# SerializedProperty Extensions
 
 Chainable extension methods on `SerializedProperty` for synchronizing the owning `SerializedObject`, setting values, and reflecting on the underlying field.
 
