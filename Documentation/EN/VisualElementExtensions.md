@@ -1,4 +1,4 @@
-# VisualElement Extensions — full reference
+# VisualElement Extensions
 
 Fluent extension methods for building UIToolkit trees in code. All methods return `T` (the element itself) for chaining.
 
