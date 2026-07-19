@@ -597,6 +597,9 @@ public class MyBehaviourEditor : Editor
 
 Если вы используете [Claude Code](https://docs.claude.com/en/docs/claude-code), сопутствующий маркетплейс [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) поставляет плагин `aspid-fasttools` — набор скиллов, которые обучают Claude Code конвенциям и API этого пакета.
 
+> [!WARNING]
+> Плагин всё ещё находится в бета-версии — его скиллы и команды могут меняться между релизами.
+
 Добавьте маркетплейс и установите плагин:
 
 ```sh

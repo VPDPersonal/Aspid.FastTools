@@ -592,6 +592,9 @@ public class MyBehaviourEditor : Editor
 
 If you use [Claude Code](https://docs.claude.com/en/docs/claude-code), the companion [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) marketplace ships the `aspid-fasttools` plugin — a set of skills that teach Claude Code this package's conventions and APIs.
 
+> [!WARNING]
+> The plugin is still in beta — its skills and commands may change between releases.
+
 Add the marketplace and install the plugin:
 
 ```sh
