@@ -185,6 +185,8 @@ Picking an open generic walks through its argument page and returns the construc
 
 ![Picking an open generic via its argument page](../Images/aspid_fasttools_type_selector_generic.gif)
 
+> The argument page only lists types Unity can serialize as a field value: primitives, `enum`, `string`, `UnityEngine.Object`-derived references, and `[Serializable]` classes/structs. Abstract types, interfaces, open generics, and delegates never appear as candidates. Give a candidate type the `[Serializable]` attribute to make it selectable.
+
 The window is available as a public API — open it from any editor code (custom inspectors, `EditorWindow`, menu items) when you need a type picker outside the standard `SerializableType` / `[TypeSelector]` flow.
 
 ```csharp
