@@ -4,7 +4,7 @@ description: Verify and update Aspid.FastTools README files against the actual c
 user-invocable: false
 ---
 
-The package ships **fourteen** README files (4 main + 10 sample) that drift from the code easily. Use after any change touching namespaces of public types, public API surface, `[CreateAssetMenu]` paths, source generator output, or sample structure.
+The package ships **sixteen** README files (4 main + 12 sample) that drift from the code easily. Use after any change touching namespaces of public types, public API surface, `[CreateAssetMenu]` paths, source generator output, or sample structure.
 
 ## Files in scope
 
@@ -28,7 +28,7 @@ Expected structural differences between root and Documentation copies (not drift
 - **Image paths** — see table above.
 - **Feature-reference links** — root uses the full `Documentation/EN/...` path; Documentation copies link to the bare filename (same folder).
 
-**Sample READMEs** — one EN + one RU per sample folder under `Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/` (`Types/`, `Ids/`, `EnumValues/`, `ProfilerMarkers/`, `VisualElements/`).
+**Sample READMEs** — one EN + one RU per sample folder under `Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/` (`Types/`, `Ids/`, `EnumValues/`, `ProfilerMarkers/`, `VisualElements/`, `SerializeReferences/`).
 
 ## Workflow
 
@@ -47,7 +47,6 @@ For every fact the README states, prove it from the code:
 Where READMEs historically lie (re-verify these even if the text looks plausible):
 
 - **Namespaces** — they are split per feature (runtime and editor alike); never assume a type sits in the root `Aspid.FastTools`. Check the `using` lines in samples.
-- **The two ID registries** — `StringIdRegistry` and `IdRegistry` have different APIs, menu paths, and runtime behavior; don't conflate them — read both sources.
 - **Sample asset menu paths** — samples use their own menu segment order; always re-grep `[CreateAssetMenu]` instead of trusting the existing README.
 
 ### 2. Apply edits to all matching files
