@@ -17,12 +17,14 @@ The package ships **fourteen** README files (4 main + 10 sample) that drift from
 | `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/EN/README.md` | EN | `../Images/` |
 | `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/README.md` | RU | `../Images/` |
 
-Per-feature references (`SerializedPropertyExtensions.md`, `VisualElementExtensions.md`) live alongside the Documentation copies inside `Documentation/EN/` and `Documentation/RU/`.
+Per-feature references (`Types.md`, `SerializeReferences.md`, `Ids.md`, `SerializedPropertyExtensions.md`, `VisualElementExtensions.md`) live alongside the Documentation copies inside `Documentation/EN/` and `Documentation/RU/`.
 
 Expected structural differences between root and Documentation copies (not drift):
 
-- **Badge block** (Unity / Release / License shields) — only in the root copies.
-- **`## Source Code` / `## Исходный код` block** linking to the GitHub repo — only in the Documentation copies.
+- **Badge block** (Unity / Stable / Preview / License shields) — only in the root copies.
+- **Language switcher** under the banner — root links `README.md` / `README_RU.md`; Documentation copies link the sibling locale as `../RU/README.md` / `../EN/README.md`.
+- **Source-code link row** (`[Source Code](…) · [Unity Asset Store](…) · [Releases](…)`, RU: `Исходный код`) under the one-liner — only in the Documentation copies.
+- **LICENSE / CHANGELOG links** (in `## License` / `## Лицензия`) — root uses repo-relative paths; Documentation copies use absolute `github.com/.../blob/main/...` URLs.
 - **Image paths** — see table above.
 - **Feature-reference links** — root uses the full `Documentation/EN/...` path; Documentation copies link to the bare filename (same folder).
 
