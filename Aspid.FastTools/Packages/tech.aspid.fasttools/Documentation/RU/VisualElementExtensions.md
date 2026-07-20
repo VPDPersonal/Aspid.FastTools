@@ -581,6 +581,7 @@ image.AddOpenScriptCommand(target);
 | Метод | Цель | Описание |
 |-------|------|----------|
 | `AddOpenScriptCommand(Object)` | `VisualElement` | Регистрирует обработчик двойного клика, открывающий исходный скрипт `MonoBehaviour` / `ScriptableObject` в IDE. |
+| `GetOwnerWindow()` | `VisualElement` | Возвращает `EditorWindow`, чья панель содержит элемент (для отсоединённых элементов — откат на окно в фокусе / под курсором). Используйте вместо `EditorWindow.focusedWindow` при привязке попапов к элементу — pointer-события приходят до переключения фокуса на кликнутое окно. |
 | `BindTo(SerializedObject)` | `VisualElement` | Вызывает `BindingExtensions.Bind` на элементе. |
 | `BindTo(SerializedObject, string propertyPath)` | `IBindable` | Устанавливает `bindingPath` и привязывается к указанному `SerializedObject`. |
 | `BindPropertyTo(SerializedProperty)` | `IBindable` | Вызывает `BindingExtensions.BindProperty` для переданного property. |
