@@ -5,6 +5,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -151,10 +152,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             if (_isReadOnly || evt.button is not 0) return;
 
-            var window = EditorWindow.focusedWindow != null
-                ? EditorWindow.focusedWindow
-                : EditorWindow.mouseOverWindow;
-            
+            var window = _visualInput.GetOwnerWindow();
             if (!window) return;
 
             var filter = new TypeSelectorFilter

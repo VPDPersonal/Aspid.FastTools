@@ -7,6 +7,7 @@ using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.UIElements.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -721,9 +722,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void OpenFixSelector()
         {
-            var window = EditorWindow.focusedWindow != null
-                ? EditorWindow.focusedWindow
-                : EditorWindow.mouseOverWindow;
+            var window = _missingNotice.GetOwnerWindow();
             if (!window) return;
 
             // Anchor from the notice's yMin + its own size so ShowAsDropDown opens flush below it — anchoring from
@@ -748,10 +747,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (evt.button is not 0) return;
 
-            var window = EditorWindow.focusedWindow != null
-                ? EditorWindow.focusedWindow
-                : EditorWindow.mouseOverWindow;
-
+            var window = _dropdown.GetOwnerWindow();
             if (!window) return;
 
             // Under mixed types there is no single "current" type to pre-highlight in the picker — open it unselected.
