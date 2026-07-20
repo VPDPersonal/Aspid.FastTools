@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.Types.Editors;
+using Aspid.FastTools.UIElements.Editors;
 using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
@@ -55,7 +56,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Shared with SerializeReferenceListField, whose "+" needs the same picker anchored the same way.
         public static void OpenAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, VisualElement anchor)
         {
-            var window = EditorWindow.mouseOverWindow != null ? EditorWindow.mouseOverWindow : EditorWindow.focusedWindow;
+            var window = anchor.GetOwnerWindow();
             if (window == null) return;
 
             // Anchor the picker to the ListView (spanning its width) rather than the small "+" button, so it opens as
