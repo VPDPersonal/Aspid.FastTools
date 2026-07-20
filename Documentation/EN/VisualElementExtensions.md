@@ -581,6 +581,7 @@ image.AddOpenScriptCommand(target);
 | Method | Target | Description |
 |--------|--------|-------------|
 | `AddOpenScriptCommand(Object)` | `VisualElement` | Registers a double-click handler that opens the source script for the given `MonoBehaviour` / `ScriptableObject` in the IDE. |
+| `GetOwnerWindow()` | `VisualElement` | Returns the `EditorWindow` whose panel hosts the element (falls back to the focused / mouse-over window for detached elements). Use it instead of `EditorWindow.focusedWindow` when anchoring popups to an element — pointer events arrive before focus moves to the clicked window. |
 | `BindTo(SerializedObject)` | `VisualElement` | Calls `BindingExtensions.Bind` on the element. |
 | `BindTo(SerializedObject, string propertyPath)` | `IBindable` | Sets `bindingPath` and binds to the given `SerializedObject`. |
 | `BindPropertyTo(SerializedProperty)` | `IBindable` | Calls `BindingExtensions.BindProperty` with the supplied property. |
