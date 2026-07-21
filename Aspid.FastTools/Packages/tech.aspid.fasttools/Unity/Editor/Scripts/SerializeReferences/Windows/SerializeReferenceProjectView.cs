@@ -54,6 +54,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string GroupClass = RootClass + "__group";
         private const string GroupPickingClass = GroupClass + "--picking";
         private const string GroupHeaderRowClass = RootClass + "__group-header-row";
+        private const string GroupHeaderRowStaticClass = GroupHeaderRowClass + "--static";
         private const string GroupHeaderClass = RootClass + "__group-header";
         private const string GroupCountClass = RootClass + "__group-count";
         private const string GroupFixAllClass = RootClass + "__group-fix-all";
@@ -246,7 +247,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         private static string BuildCountText(int count, string noun) =>
-            count == 1 ? $"1 {noun}" : $"{count} {noun}s";
+            count == 1 ? $"1 {noun}" : $"{count} {(noun.EndsWith("y") ? noun[..^1] + "ies" : noun + "s")}";
 
         private static string BuildResultsHeaderText(int missingCount, int requiredCount)
         {
@@ -924,6 +925,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var info = new VisualElement()
                 .AddClass(GroupHeaderRowClass)
+                .AddClass(GroupHeaderRowStaticClass)
                 .AddChild(header)
                 .AddChild(count);
             info.pickingMode = PickingMode.Ignore;
