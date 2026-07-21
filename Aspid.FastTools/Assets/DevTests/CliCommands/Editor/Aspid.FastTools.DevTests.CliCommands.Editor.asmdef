@@ -1,0 +1,19 @@
+{
+    "name": "Aspid.FastTools.DevTests.CliCommands.Editor",
+    "references": [
+        "Aspid.FastTools.Unity.Editor",
+        "Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml",
+        "Unity.Pipeline"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
