@@ -6,3 +6,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Aspid.FastTools.Unity.Editor")]
 [assembly: InternalsVisibleTo("Aspid.FastTools.Unity.Editor.SerializeReferences.Tests")]
 [assembly: InternalsVisibleTo("Aspid.FastTools.Unity.Editor.Tests")]
+[assembly: InternalsVisibleTo("Aspid.FastTools.DevTests.CliCommands.Editor")]
