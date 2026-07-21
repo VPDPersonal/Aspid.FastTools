@@ -664,19 +664,13 @@
     -unity-text-align:                                     middle-right;
 }
 
-/* A required-violation row's "Component.field" column. Unlike __group-entry-rid ("rid 1234", short and uniform),
-   this text varies widely in length (a bare field name vs. "Component.nested.field"), so right-aligning it in an
-   auto-width box left every row's text starting at a different x — reading as unaligned. A fixed width anchors
-   every row's text to the same left edge instead; white-space:normal wraps the rare entry that overflows it,
-   matching how the path column wraps. */
+/* A required-violation row's "Component.field" column — same dim, right-pinned treatment as __group-entry-rid, one
+   column over for a different row shape (Required violations card has no rid). */
 .aspid-fasttools-repair-references__group-entry-field {
-    width:                                                 260px;
     flex-shrink:                                           0;
-    flex-grow:                                             0;
     margin-left:                                           10px;
     color:                                                 var(--aspid-colors-text-dark);
-    white-space:                                           normal;
-    -unity-text-align:                                     middle-left;
+    -unity-text-align:                                     middle-right;
 }
 
 /* A compatible MonoScript dragged over the field highlights the header as a valid drop target. */
