@@ -1,15 +1,15 @@
 # Serializable Type System
 
-В Unity нельзя сериализовать `System.Type` из коробки — Serializable Type System закрывает
+В Unity нельзя сериализовать `System.Type` из коробки — **Serializable Type System** закрывает
 этот пробел: тип выбирается в Инспекторе через иерархическое окно с поиском, хранится как
-assembly-qualified name и лениво разрешается в `System.Type` при первом обращении.
+**assembly-qualified name** и лениво разрешается в `System.Type` при первом обращении.
 
 **Разделы справочника:**
 
 * [`SerializableType`](#serializabletype) — сериализуемое поле-обёртка над `System.Type`;
 * [`TypeSelectorAttribute`](#typeselectorattribute) — кнопка выбора типа у `string`,
   `SerializableType` и `[SerializeReference]` полей, включая
-  [динамические базовые типы через ссылки на члены](#dynamic-base-types-via-member-references);
+  [динамический базовый тип из поля или свойства](#dynamic-base-types-via-member-references);
 * [`TypeSelectorDisplay`](#typeselectordisplay) — имя, группа, tooltip и иконка типа-кандидата
   в пикере;
 * [`TypeSelectorWindow`](#typeselectorwindow) — то же окно выбора как публичный API для
@@ -65,6 +65,8 @@ public sealed class AbilitySelector : MonoBehaviour
 using UnityEngine;
 using Aspid.FastTools.Types;
 
+public interface IStackable { }
+
 public abstract class AbilityModifier
 {
     public abstract void Apply();
@@ -81,8 +83,16 @@ public sealed class AbilitySelector : MonoBehaviour
     [TypeSelector(typeof(AbilityModifier))]
     [SerializeField] private SerializableType _modifierType;
 
-    // [SerializeReference] — выбранный тип сразу инстанцируется в поле;
-    // без аргументов кандидаты по умолчанию — объявленный тип поля.
+    // SerializableType<T> — T сам сужает picker; базовые типы атрибута
+    // пересекаются с ним: подойдут только реализации AbilityModifier,
+    // которые заодно являются IStackable.
+    [TypeSelector(typeof(IStackable))]
+    [SerializeField] private SerializableType<AbilityModifier> _stackableModifierType;
+
+    // Для [SerializeReference]-поля выбор типа сразу создаёт его экземпляр
+    // и записывает в поле. Атрибут без аргументов предлагает наследников
+    // типа поля (здесь — AbilityModifier). Required = true помечает
+    // незаполненное поле: предупреждение в инспекторе + нарушение CI-гейта.
     [TypeSelector(Required = true)]
     [SerializeReference] private AbilityModifier _modifier;
 }
@@ -118,6 +128,10 @@ public enum TypeAllow
 |----------|----------|
 | `Allow` | Какие специальные категории типов (абстрактные классы, интерфейсы) включаются в список выбора в дополнение к обычным конкретным классам. По умолчанию: `TypeAllow.All` (поле-имя типа показывает и абстрактные классы, и интерфейсы; укажите `TypeAllow.None`, чтобы ограничить только конкретными типами). Игнорируется на managed-ссылке `[SerializeReference]` |
 | `Required` | Помечает незаполненное поле: managed reference `[SerializeReference]`, оставшийся `null`, или пустое `string`-поле показывает предупреждение «required» в инспекторе и считается нарушением для build/CI-гейта. Также покрывает поле `SerializableType` (когда сохранённое имя типа пустое). По умолчанию: `false` |
+
+#### Предупреждение Required
+
+Так выглядит пустое поле с `Required = true` в Инспекторе:
 
 ![Заполненное поле пикера рядом с пустым Required-полем с inline-предупреждением](../Images/aspid_fasttools_type_selector_required.png)
 

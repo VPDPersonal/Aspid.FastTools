@@ -122,6 +122,8 @@ public sealed class AbilitySelector : MonoBehaviour
 using UnityEngine;
 using Aspid.FastTools.Types;
 
+public interface IStackable { }
+
 public abstract class AbilityModifier
 {
     public abstract void Apply();
@@ -138,14 +140,22 @@ public sealed class AbilitySelector : MonoBehaviour
     [TypeSelector(typeof(AbilityModifier))]
     [SerializeField] private SerializableType _modifierType;
 
-    // [SerializeReference] — выбранный тип сразу инстанцируется в поле;
-    // без аргументов кандидаты по умолчанию — объявленный тип поля.
+    // SerializableType<T> — T сам сужает picker; базовые типы атрибута
+    // пересекаются с ним: подойдут только реализации AbilityModifier,
+    // которые заодно являются IStackable.
+    [TypeSelector(typeof(IStackable))]
+    [SerializeField] private SerializableType<AbilityModifier> _stackableModifierType;
+
+    // Для [SerializeReference]-поля выбор типа сразу создаёт его экземпляр
+    // и записывает в поле. Атрибут без аргументов предлагает наследников
+    // типа поля (здесь — AbilityModifier). Required = true помечает
+    // незаполненное поле: предупреждение в инспекторе + нарушение CI-гейта.
     [TypeSelector(Required = true)]
     [SerializeReference] private AbilityModifier _modifier;
 }
 ```
 
-Помимо базовых типов, у атрибута есть `Allow` (показывать ли абстрактные классы и интерфейсы) и `Required` (незаполненное поле — inline-предупреждение и нарушение для build/CI-гейта). Отдельно в справочнике: [динамические базовые типы через ссылки на члены](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/Types.md#dynamic-base-types-via-member-references) и настройка вида типа в пикере через [`[TypeSelectorDisplay]`](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/Types.md#typeselectordisplay).
+Помимо базовых типов, у атрибута есть `Allow` (показывать ли абстрактные классы и интерфейсы) и `Required` (незаполненное поле — inline-предупреждение и нарушение для build/CI-гейта). Отдельно в справочнике: [динамический базовый тип из поля или свойства](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/Types.md#dynamic-base-types-via-member-references) и настройка вида типа в пикере через [`[TypeSelectorDisplay]`](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/Types.md#typeselectordisplay).
 
 ### TypeSelectorWindow
 

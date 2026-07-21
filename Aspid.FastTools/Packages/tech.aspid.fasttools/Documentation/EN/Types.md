@@ -63,6 +63,8 @@ The attribute is editor-only (`[Conditional("UNITY_EDITOR")]`) and carries no ru
 using UnityEngine;
 using Aspid.FastTools.Types;
 
+public interface IStackable { }
+
 public abstract class AbilityModifier
 {
     public abstract void Apply();
@@ -79,8 +81,17 @@ public sealed class AbilitySelector : MonoBehaviour
     [TypeSelector(typeof(AbilityModifier))]
     [SerializeField] private SerializableType _modifierType;
 
-    // [SerializeReference] — the selected type is instantiated into the field;
-    // with no arguments, candidates default to the field's declared type.
+    // SerializableType<T> — T already narrows the picker on its own; the base
+    // types of the attribute intersect with it: only AbilityModifier
+    // implementations that are also IStackable qualify.
+    [TypeSelector(typeof(IStackable))]
+    [SerializeField] private SerializableType<AbilityModifier> _stackableModifierType;
+
+    // For a [SerializeReference] field picking a type immediately creates
+    // an instance and assigns it to the field. With no arguments the attribute
+    // offers subtypes of the field's own type (here — AbilityModifier).
+    // Required = true flags an unset field: an inspector warning
+    // plus a violation for the build/CI gate.
     [TypeSelector(Required = true)]
     [SerializeReference] private AbilityModifier _modifier;
 }
@@ -116,6 +127,10 @@ public enum TypeAllow
 |----------|-------------|
 | `Allow` | Which special type categories (abstract classes, interfaces) the picker includes in addition to plain concrete classes. Default: `TypeAllow.All` (a type-name field lists abstract classes and interfaces too; set `TypeAllow.None` to restrict it to concrete types). Ignored on a `[SerializeReference]` managed reference |
 | `Required` | Flags an unset field: a `[SerializeReference]` managed reference left `null`, or a `string` field left empty, shows an inline "required" warning in the Inspector and counts as a violation for the build/CI gate. Also covers a `SerializableType` field (its stored type name left empty). Default: `false` |
+
+#### The Required notice
+
+An empty field with `Required = true` looks like this in the Inspector:
 
 ![A filled picker field next to an empty Required field showing the inline notice](../Images/aspid_fasttools_type_selector_required.png)
 
