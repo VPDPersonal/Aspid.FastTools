@@ -434,13 +434,6 @@
     background-color:                                     var(--aspid-colors-status-info-dark);
 }
 
-/* Unset [TypeSelector(Required = true)] managed reference — same warning tone as --missing (unused today), on an
-   empty slot's band instead of a resolved node's. */
-.aspid-fasttools-reference-graph__badge--required {
-    color:                                                var(--aspid-colors-status-warning-text-lightness);
-    background-color:                                     var(--aspid-colors-status-warning-dark);
-}
-
 /* The deterministic per-rid colour chip beside the SHARED badge (its background colour is set inline from code). */
 .aspid-fasttools-reference-graph__chip {
     width:                                                8px;
@@ -482,38 +475,6 @@
     -unity-text-align:                                    middle-center;
 }
 
-/* --- Required-only group ---
-   Trailing card for required violations with no graph node (string / SerializableType fields) — same warm
-   translucent-fill treatment as the Orphaned group, so it reads as the same "warning zone" family, but a flat list
-   of rows (no node cards / bands: these fields have no picker here, they edit through the normal Inspector). */
-.aspid-fasttools-reference-graph__required-only-group.aspid-fasttools-background {
-    flex-grow:                                            0;
-    margin-top:                                           6px;
-    padding:                                               8px 10px;
-    border-radius:                                        8px;
-    border-width:                                         1px;
-    border-color:                                         var(--aspid-colors-status-warning-shade-darkness);
-    background-color:                                     rgba(45, 30, 5, 0.3);
-}
-
-.aspid-fasttools-reference-graph__required-only-group-header {
-    margin-bottom:                                        4px;
-}
-
-.aspid-fasttools-reference-graph__required-only-entry {
-    flex-direction:                                       row;
-    align-items:                                          center;
-    justify-content:                                      space-between;
-    padding:                                               2px 4px;
-}
-
-.aspid-fasttools-reference-graph__required-only-entry-path {
-    flex-grow:                                            1;
-    flex-shrink:                                           1;
-    min-width:                                             0;
-    color:                                                var(--aspid-colors-text-light);
-    white-space:                                           normal;
-}
 
 /* --- Inline type picker (mirrors the Project Audit picker exactly) ---
    The selector view expanded inline, welded into the card being fixed (see TogglePicker): translucent dark fill,
