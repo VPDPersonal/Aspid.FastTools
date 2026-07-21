@@ -63,6 +63,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string GroupEntryClass = RootClass + "__group-entry";
         private const string GroupEntryPathClass = RootClass + "__group-entry-path";
         private const string GroupEntryRidClass = RootClass + "__group-entry-rid";
+        private const string GroupEntryFieldClass = RootClass + "__group-entry-field";
 
         // Chevron on the "Fix all (N)" dropdown button; only the glyph differs between the two states.
         private const string FixArrowCollapsed = "▼";
@@ -82,6 +83,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private AspidGradientButton _openPickerRow;
         private VisualElement _openPickerCard;
         private readonly AspidGradientButton _scanButton;
+
+        // Required-violations audit has no incrementally-maintained index like SerializeReferenceTypeUsageIndex, so it
+        // is only (re)scanned on an explicit Scan/Rescan click, not on every Initialize() (tab switch would otherwise
+        // pay for a full project sweep). Static so the result survives the view being rebuilt on a tab switch.
+        private static bool _requiredIsWarm;
+        private static IReadOnlyList<GateViolation> _requiredViolationsCache = Array.Empty<GateViolation>();
+
+        private static IReadOnlyList<GateViolation> RequiredViolationsForRender =>
+            _requiredIsWarm ? _requiredViolationsCache : Array.Empty<GateViolation>();
 
         /// <summary>
         /// Jump from a project-audit result row to that asset's Inspect graph. Wired by the host window.
@@ -162,7 +172,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // results survive a tab switch. The breakage-notification deep-link bypasses this and calls ScanProject directly.
         public void Initialize()
         {
-            if (SerializeReferenceTypeUsageIndex.IsWarm) RenderWarmGroups();
+            if (SerializeReferenceTypeUsageIndex.IsWarm || _requiredIsWarm) RenderWarmGroups();
             else ShowIdle();
         }
 
@@ -177,6 +187,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             ClosePicker();
             ClearSummaries();
+
+            // Unlike the missing-type index, the required-field scan has nothing incremental behind it — this is the
+            // one deliberate moment it pays for a full project sweep (see RequiredViolationsForRender).
+            _requiredViolationsCache = CollectRequiredViolations();
+            _requiredIsWarm = true;
+
             RenderWarmGroups();
         }
 
@@ -187,35 +203,88 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
 
             var groups = CollectProjectGroups(out var canceled);
-            RenderGroups(groups, canceled);
+            RenderGroups(groups, RequiredViolationsForRender, canceled);
         }
 
-        // Paints a collected group set: count header + hint + one card per group, or the terminal hero when empty.
-        // ApplyGroupFix special-cases the came-back-clean case so its summary HelpBox survives (see there).
-        private void RenderGroups(List<ProjectGroup> groups, bool canceled)
+        // Full project sweep for unset [TypeSelector(Required = true)] fields, reusing the same headless scanner the
+        // build/CI gate uses. Skipped entirely when the gate is switched Off — a required audit nobody wants to fail
+        // or warn on shouldn't cost a full-project YAML sweep on every Scan click either.
+        private static IReadOnlyList<GateViolation> CollectRequiredViolations() =>
+            SerializeReferenceSettings.BuildSeverity == GateSeverity.Off
+                ? Array.Empty<GateViolation>()
+                : SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly);
+
+        // Paints a collected group set: count header + hint + one card per broken-type group plus one Required
+        // violations card, or the terminal hero when both are empty. ApplyGroupFix/ClearGroupToNull special-case the
+        // came-back-clean case so their summary HelpBox survives (see there).
+        private void RenderGroups(List<ProjectGroup> groups, IReadOnlyList<GateViolation> requiredViolations, bool canceled)
         {
             _list.Clear();
 
-            if (groups.Count == 0)
+            var missingCount = groups.Sum(group => group.Entries.Count);
+            var requiredCount = requiredViolations.Count;
+
+            if (missingCount == 0 && requiredCount == 0)
             {
                 ShowEmptyState(
                     success: !canceled,
                     title: canceled ? "Scan canceled" : "Project clean",
                     message: canceled
                         ? "The project scan was canceled before finding any missing references."
-                        : "No missing managed references found anywhere under Assets/.");
+                        : "No missing managed references or unset required fields found anywhere under Assets/.");
                 return;
             }
 
-            var entryCount = groups.Sum(group => group.Entries.Count);
-            ShowResults(entryCount == 1 ? "1 missing reference" : $"{entryCount} missing references",
-                SerializeReferenceCanvasStyle.Warning);
-            _resultsHint.text = canceled
-                ? "Scan canceled — showing partial results. Each group is a broken type; Fix all re-points every entry (or pick <None> to clear them to null) across every file at once."
-                : "Each group is a broken stored type. Fix all picks one replacement and re-points every entry across every affected file at once — or pick <None> to clear them to null.";
+            ShowResults(BuildResultsHeaderText(missingCount, requiredCount), SerializeReferenceCanvasStyle.Warning);
+            _resultsHint.text = BuildResultsHintText(canceled, requiredCount > 0);
 
             foreach (var group in groups)
                 _list.AddChild(BuildGroupCard(group));
+
+            if (requiredCount > 0)
+                _list.AddChild(BuildRequiredGroupCard(requiredViolations));
+        }
+
+        private static string BuildCountText(int count, string noun) =>
+            count == 1 ? $"1 {noun}" : $"{count} {noun}s";
+
+        private static string BuildResultsHeaderText(int missingCount, int requiredCount)
+        {
+            var missingText = BuildCountText(missingCount, "missing reference");
+            var requiredText = BuildCountText(requiredCount, "required violation");
+
+            if (missingCount > 0 && requiredCount > 0) return $"{missingText}, {requiredText}";
+            return missingCount > 0 ? missingText : requiredText;
+        }
+
+        private static string BuildResultsHintText(bool canceled, bool hasRequiredViolations)
+        {
+            var hint = canceled
+                ? "Scan canceled — showing partial results. Each group is a broken type; Fix all re-points every entry (or pick <None> to clear them to null) across every file at once."
+                : "Each group is a broken stored type. Fix all picks one replacement and re-points every entry across every affected file at once — or pick <None> to clear them to null.";
+
+            if (hasRequiredViolations)
+                hint += " Required violations below list every unset [TypeSelector(Required = true)] field the same scan found — click a row to jump to its asset.";
+
+            return hint;
+        }
+
+        // Shared "no missing references left" branch for ApplyGroupFix/ClearGroupToNull: stays in the results region
+        // (not the clean-state hero) so the fix's summary receipt survives, while still surfacing whatever Required
+        // violations card RequiredViolationsForRender currently reports (empty right after ClearGroupToNull, which
+        // invalidates the cache instead of risking a stale under-report — see its _requiredIsWarm = false).
+        private void ShowMissingReferencesClean()
+        {
+            _list.Clear();
+            var requiredViolations = RequiredViolationsForRender;
+
+            ShowResults(
+                requiredViolations.Count == 0 ? "No missing references" : $"No missing references, {BuildCountText(requiredViolations.Count, "required violation")}",
+                SerializeReferenceCanvasStyle.Success);
+            _resultsHint.text = "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+
+            if (requiredViolations.Count > 0)
+                _list.AddChild(BuildRequiredGroupCard(requiredViolations));
         }
 
         // Groups every unresolved managed reference by stored type, backed by the shared usage index. The out
@@ -456,14 +525,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 // The fix cleared the last broken type. Stay in the results region instead of the "Project clean"
                 // hero, which would hide the summary HelpBox receipt; the hero is reserved for an explicit Rescan.
-                _list.Clear();
-                ShowResults("No missing references", SerializeReferenceCanvasStyle.Success);
-                _resultsHint.text =
-                    "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+                ShowMissingReferencesClean();
             }
             else
             {
-                RenderGroups(groups, canceled);
+                RenderGroups(groups, RequiredViolationsForRender, canceled);
             }
 
             ShowSummary(summaryTitle, summaryBody, Undo);
@@ -510,7 +576,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (cleared == 0)
             {
                 if (_scanButton is not null) _scanButton.Text = RescanLabel;
-                RenderGroups(CollectProjectGroups(out var rescanCanceled), rescanCanceled);
+                RenderGroups(CollectProjectGroups(out var rescanCanceled), RequiredViolationsForRender, rescanCanceled);
                 return;
             }
 
@@ -521,20 +587,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ? " 1 was nulled in memory — save the asset to persist it (still listed until saved)."
                     : $" {clearedInMemory} were nulled in memory — save the assets to persist them (still listed until saved).";
 
+            // Unlike Fix all (which only swaps a stored type name, never nulls anything), Clear to null CAN turn a
+            // required field that held a broken-but-non-null reference into a genuine unset-required violation — drop
+            // the stale cache so the Required violations card doesn't under-report until the user rescans.
+            _requiredIsWarm = false;
+
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
             var groups = CollectProjectGroups(out var canceled);
 
             if (groups.Count == 0)
             {
                 // Same came-back-clean handling as ApplyGroupFix: keep the receipt visible instead of the hero.
-                _list.Clear();
-                ShowResults("No missing references", SerializeReferenceCanvasStyle.Success);
-                _resultsHint.text =
-                    "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+                ShowMissingReferencesClean();
             }
             else
             {
-                RenderGroups(groups, canceled);
+                RenderGroups(groups, RequiredViolationsForRender, canceled);
             }
 
             // No Undo: clearing discards the broken payload (see ClearGroupToNull). The receipt is a plain record.
@@ -768,7 +836,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // never _summaries, so the surviving receipts stay put.
             receipt?.RemoveFromHierarchy();
             var groups = CollectProjectGroups(out var canceled);
-            RenderGroups(groups, canceled);
+            RenderGroups(groups, RequiredViolationsForRender, canceled);
 
             // BatchRewriteEntries can come up short if a file changed between the check and the write — report the real count.
             var undoTitle = reverted == 1 ? "Reverted 1 reference" : $"Reverted {reverted} references";
@@ -829,6 +897,108 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             suggestion = ranked[0];
             return true;
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Required violations
+        // ---------------------------------------------------------------------------------------------------------
+
+        // Flat read-only list of every unset [TypeSelector(Required = true)] field, fed by the same headless scanner
+        // as the build/CI gate. No bulk fix here — unlike a broken type, an empty required field has nothing sensible
+        // to auto-assign, so the row's only affordance is jumping to the offending asset.
+        private VisualElement BuildRequiredGroupCard(IReadOnlyList<GateViolation> violations)
+        {
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(GroupClass);
+
+            var header = new AspidLabel("Required violations", AspidLabelPreset.Default
+                    .SetLabelStatus(StatusStyle.Type.Warning)
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                    .SetLineSize(AspidDividingLineSizeStyle.Type.None))
+                .AddClass(GroupHeaderClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            var count = new Label(BuildCountText(violations.Count, "entry"))
+                .AddClass(GroupCountClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            var info = new VisualElement()
+                .AddClass(GroupHeaderRowClass)
+                .AddChild(header)
+                .AddChild(count);
+            info.pickingMode = PickingMode.Ignore;
+
+            card.AddChild(info);
+
+            // Per-card memo, keyed by asset path: several violations commonly share one asset (e.g. a prefab with
+            // multiple unset required fields), so this keeps LoadAllAssetsAtPath to once per distinct file instead of
+            // once per row.
+            var componentCache = new Dictionary<string, Object[]>(StringComparer.Ordinal);
+            foreach (var violation in violations)
+                card.AddChild(BuildRequiredViolationRow(violation, componentCache));
+
+            return card;
+        }
+
+        // Read-only entry row: asset path on the left, "Component.field" on the right; the whole row jumps to the
+        // asset — same cross-link as a broken-reference row (BuildGroupEntryRow).
+        private VisualElement BuildRequiredViolationRow(GateViolation violation, Dictionary<string, Object[]> componentCache)
+        {
+            var row = new VisualElement().AddClass(GroupEntryClass);
+
+            var path = new Label(violation.AssetPath)
+                .AddClass(GroupEntryPathClass);
+            path.tooltip = violation.AssetPath;
+
+            var field = new Label(BuildRequiredViolationFieldText(violation, componentCache))
+                .AddClass(GroupEntryFieldClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            row.AddChild(path).AddChild(field);
+            row.RegisterCallback<ClickEvent>(_ =>
+            {
+                var asset = AssetDatabase.LoadMainAssetAtPath(violation.AssetPath);
+                if (asset is null) return;
+
+                // Cross-link: jump to the asset's full Inspect graph; ping as a fallback when hosted standalone.
+                if (OnInspectAsset is not null) OnInspectAsset(asset);
+                else EditorGUIUtility.PingObject(asset);
+            });
+
+            return row;
+        }
+
+        // "Component.field" for the entry row's right column; GateViolation itself carries no owning-object type,
+        // only the asset path and file id, so the component name is resolved on demand for display.
+        private static string BuildRequiredViolationFieldText(GateViolation violation, Dictionary<string, Object[]> componentCache)
+        {
+            var component = ResolveComponentName(violation, componentCache);
+            return string.IsNullOrEmpty(component) ? violation.FieldPath : $"{component}.{violation.FieldPath}";
+        }
+
+        // Best-effort owning-object type name. Saved assets are object-loaded (once per distinct path, memoised in
+        // componentCache) and matched by file id — the same lookup
+        // SerializeReferenceGateScanner.CollectRequiredViolations uses internally to build each violation, just for
+        // display here. Scenes cannot be object-loaded (see SerializeReferenceHelpers.IsScene), so a scene row shows
+        // the field path alone rather than guessing a component name.
+        private static string ResolveComponentName(GateViolation violation, Dictionary<string, Object[]> componentCache)
+        {
+            if (SerializeReferenceHelpers.IsScene(violation.AssetPath)) return string.Empty;
+
+            if (!componentCache.TryGetValue(violation.AssetPath, out var assets))
+            {
+                assets = AssetDatabase.LoadAllAssetsAtPath(violation.AssetPath);
+                componentCache[violation.AssetPath] = assets;
+            }
+
+            foreach (var asset in assets)
+            {
+                if (asset == null) continue;
+                if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out _, out long fileId) && fileId == violation.FileId)
+                    return asset.GetType().Name;
+            }
+
+            return string.Empty;
         }
 
         // ---------------------------------------------------------------------------------------------------------

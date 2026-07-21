@@ -664,6 +664,15 @@
     -unity-text-align:                                     middle-right;
 }
 
+/* A required-violation row's "Component.field" column — same dim, right-pinned treatment as __group-entry-rid, one
+   column over for a different row shape (Required violations card has no rid). */
+.aspid-fasttools-repair-references__group-entry-field {
+    flex-shrink:                                           0;
+    margin-left:                                           10px;
+    color:                                                 var(--aspid-colors-text-dark);
+    -unity-text-align:                                     middle-right;
+}
+
 /* A compatible MonoScript dragged over the field highlights the header as a valid drop target. */
 .aspid-fasttools-serialize-reference--drop-target {
     background-color:                                      var(--aspid-colors-bg-light);
