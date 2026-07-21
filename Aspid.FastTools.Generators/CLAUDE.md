@@ -16,16 +16,6 @@ Deploy pipeline: `Aspid.FastTools.Generators/ILRepack.targets` merges `Aspid.Gen
 
 A repo-level PostToolUse hook (`.claude/hooks/rebuild-generators-on-change.sh`) also runs `dotnet build` automatically after any `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`. The hook intentionally **does not** trigger for tests, the Sample project, or Unity-side edits — keep that scope if you modify it.
 
-## Solution Structure
-
-```
-Aspid.FastTools.Generators/        ← generator implementation (+ ILRepack.targets deploy merge)
-Aspid.FastTools.Generators.Tests/  ← unit tests + GeneratorTestHost helper
-Aspid.FastTools.Generators.Sample/ ← manual smoke-test project
-Aspid.FastTools.Generators.sln
-Directory.Build.targets            ← copies the merged DLL into the Unity package
-```
-
 ## Target Framework
 
 `netstandard2.0` — required by Roslyn. No Unity assemblies, no runtime packages.
@@ -95,32 +85,7 @@ Pipeline data passed between stages **must be value-equatable**. Roslyn caches r
 - `Equals` and `GetHashCode` over every field
 - For nested arrays use `ImmutableArray<T>` with element-wise comparison (or `EquatableArray<T>` if introduced)
 
-Reference shapes:
-
-```csharp
-internal readonly struct TypeData : IEquatable<TypeData>
-{
-    public readonly string TypeKey;            // "Foo.Outer.Inner"
-    public readonly string TypeName;
-    public readonly string? Namespace;
-    public readonly string ContainingTypeChain; // "Outer.Middle." or ""
-    public readonly string FullyQualifiedDisplay;
-    public readonly string TypeParamList;       // "<T,U>" or ""
-    public readonly string ConstraintsClause;
-    public readonly int Arity;
-    // ... ctor + IEquatable<TypeData> Equals/GetHashCode over all fields
-}
-
-internal readonly struct IdStructData : IEquatable<IdStructData>
-{
-    public readonly string StructName;
-    public readonly string TypeParameters;    // "<T>" or ""
-    public readonly int Arity;
-    public readonly string? Namespace;
-    public readonly ImmutableArray<ContainingTypeInfo> ContainingTypes;
-    // ... IEquatable<IdStructData> walks ContainingTypes element-wise
-}
-```
+Reference shapes: `TypeData` and `IdStructData` in the generator sources.
 
 Cache stability is regression-tested in `IncrementalCacheTests` — that test runs each generator twice over compilations differing only in an unrelated source file, and asserts every output step is `Cached`/`Unchanged`. Adding a non-equatable field to any pipeline struct will fail it.
 
