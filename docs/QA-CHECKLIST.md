@@ -73,6 +73,7 @@
 - [ ] **Welcome**: auto-shows once per package version (incl. after an update), Auto-show toggle, samples list read from package.json, the menu entry always works.
 - [ ] **Asset References**: YAML-driven graph — roots/nested/shared/orphaned, `MISSING`/`SHARED` badges, per-rid colours, `<None>` slots, full field paths; inline constrained Fix, Clear on orphaned entries, Open Source Prefab; pending-migration card (info pill, `Migrate → Type`), headline counts migrations separately; tab and inspected asset persist across tab switches and domain reloads.
 - [ ] **Project References**: Scan Project over `.prefab`/`.asset`/`.unity`, grouping by type, `Fix all (N)` with confirm + diff preview + Undo (the undo receipt reverts only untouched entries and reports the actual count), per-group Smart Fix quick-apply, open scenes / Prefab Mode entries skipped, `Migrate all (N) → Type` for [MovedFrom]; a result links to that asset's Asset References graph.
+- [ ] **Project References — Required violations**: a separate card lists every unset `[TypeSelector(Required = true)]` field found by the same gate scan (asset path + component + field path), skipped entirely when the build/CI gate is Off, respects `Excluded Folders`; clicking a row pings/opens the asset like a broken-reference row (no bulk fix — nothing sensible to auto-assign); only (re)scanned on an explicit Scan/Rescan click, not on a tab switch.
 - [ ] **Settings**: see section 6.
 - [ ] Ctrl+Tab / Ctrl+Shift+Tab switch tabs.
 

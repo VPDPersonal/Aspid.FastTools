@@ -586,6 +586,14 @@
     align-items:                                           center;
 }
 
+/* The Required-violations card has no Fix all button hosting its header row, so the static row carries the same
+   4px horizontal padding and 6px gap the button gives the broken-type cards — keeping every card's header and
+   entry paths on one shared left edge. */
+.aspid-fasttools-repair-references__group-header-row--static {
+    padding:                                               4px 4px;
+    margin-bottom:                                         6px;
+}
+
 .aspid-fasttools-repair-references__group-header {
     flex-shrink:                                           1;
 }
@@ -658,6 +666,15 @@
 
 /* flex-shrink:0 keeps the rid at its natural width and pinned to the right however many lines the path wraps to. */
 .aspid-fasttools-repair-references__group-entry-rid {
+    flex-shrink:                                           0;
+    margin-left:                                           10px;
+    color:                                                 var(--aspid-colors-text-dark);
+    -unity-text-align:                                     middle-right;
+}
+
+/* A required-violation row's "Component.field" column — same dim, right-pinned treatment as __group-entry-rid, one
+   column over for a different row shape (Required violations card has no rid). */
+.aspid-fasttools-repair-references__group-entry-field {
     flex-shrink:                                           0;
     margin-left:                                           10px;
     color:                                                 var(--aspid-colors-text-dark);
