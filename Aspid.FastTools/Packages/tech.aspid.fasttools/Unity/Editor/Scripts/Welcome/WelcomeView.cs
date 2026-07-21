@@ -37,11 +37,14 @@ namespace Aspid.FastTools.Editors
         private const string ToastVisibleClass = "aspid-fasttools-welcome__toast--visible";
 
         private const string SampleCardClass = "aspid-fasttools-welcome__sample";
-        private const string SampleBodyClass = "aspid-fasttools-welcome__sample-body";
+        private const string SampleHeaderHoverClass = "aspid-fasttools-welcome__sample--header-hover";
+        private const string SampleHeaderRowClass = "aspid-fasttools-welcome__sample-header-row";
         private const string SampleHeaderClass = "aspid-fasttools-welcome__sample-header";
+        private const string SampleHeaderRemoveClass = "aspid-fasttools-welcome__sample-header--remove";
         private const string SampleTitleClass = "aspid-fasttools-welcome__sample-title";
-        private const string SampleActionClass = "aspid-fasttools-welcome__sample-action";
         private const string SampleDividerClass = "aspid-fasttools-welcome__sample-divider";
+        private const string SampleSweepClass = "aspid-fasttools-welcome__sample-sweep";
+        private const string SampleSweepRemoveClass = "aspid-fasttools-welcome__sample-sweep--remove";
         private const string SampleDescriptionClass = "aspid-fasttools-welcome__sample-description";
 
         private Label _toast;
@@ -61,10 +64,6 @@ namespace Aspid.FastTools.Editors
             }
 
             tree.CloneTree(this);
-
-            // The host window already paints one shared dotted canvas behind every tab; drop the Welcome UXML's
-            // own background so the tabs read over a single continuous canvas instead of a doubled-up layer.
-            this.Q<AspidAnimatedDotsBackground>()?.RemoveFromHierarchy();
 
             _toast = this.Q<Label>(ToastName);
             if (_toast != null)
@@ -170,10 +169,10 @@ namespace Aspid.FastTools.Editors
         private void AddUpmSamples(PackageInfo package)
         {
             foreach (var sample in Sample.FindByPackage(package.name, package.version))
-                _samplesList.Add(CreateUpmSampleButton(sample));
+                _samplesList.Add(CreateUpmSampleCard(sample));
         }
 
-        private AspidGradientButton CreateUpmSampleButton(Sample sample)
+        private VisualElement CreateUpmSampleCard(Sample sample)
         {
             var displayName = sample.displayName;
             var description = sample.description;
@@ -181,31 +180,11 @@ namespace Aspid.FastTools.Editors
 
             if (sample.isImported)
             {
-                // The sample already lives under Assets — re-importing overwrites it, so mirror the Package
-                // Manager and confirm before clobbering any local edits the user may have made to the copy.
-                return CreateSampleCard(displayName, description, "Reimport  ▼", evt =>
-                {
-                    var pointer = GetMousePosition(evt);
-                    var target = ToProjectRelativePath(captured.importPath);
-
-                    var confirmed = EditorUtility.DisplayDialog(
-                        $"Reimport “{displayName}”",
-                        $"This overwrites “{target}”, discarding any local changes to the sample. Continue?",
-                        "Reimport",
-                        "Cancel");
-
-                    if (!confirmed) return;
-
-                    if (!captured.Import(Sample.ImportOptions.OverridePreviousImports | Sample.ImportOptions.HideImportWindow))
-                    {
-                        ShowToast($"Failed to reimport “{displayName}”", pointer);
-                        return;
-                    }
-
-                    AssetDatabase.Refresh();
-                    ShowToast($"“{displayName}” reimported into Assets/Samples", pointer);
-                    RebuildSamplesList();
-                });
+                // An imported sample's one action is taking the copy back out — deletion is confirmed and the
+                // sample stays reimportable right after, so the direct verb replaces a Reimport/Remove menu.
+                return CreateSampleCard(displayName, description, "Remove",
+                    evt => RemoveSample(captured, displayName, GetMousePosition(evt)),
+                    SampleHeaderRemoveClass);
             }
 
             return CreateSampleCard(displayName, description, "Import  ▼", evt =>
@@ -225,70 +204,81 @@ namespace Aspid.FastTools.Editors
         }
 
         /// <summary>
-        /// Builds a two-line sample row: the display name on the first line, the package.json description (when
-        /// present) wrapping below it, and the <paramref name="trailingText"/> action pinned to the right edge.
-        /// The name + description live in a flex-grow leading column so the trailing action stays right-aligned;
-        /// the <see cref="SampleCardClass"/> USS rule relaxes the gradient button's fixed single-line height.
+        /// Builds a sample card in the References group-card idiom: a glass box whose whole header row is one flat
+        /// clickable button (the display name on the left, the <paramref name="actionText"/> verb pinned to the
+        /// right, an accent glow on hover), with the package.json description (when present) wrapping below.
         /// </summary>
-        private AspidGradientButton CreateSampleCard(string displayName, string description, string actionText, Action<EventBase> onClick)
+        private static VisualElement CreateSampleCard(
+            string displayName,
+            string description,
+            string actionText,
+            Action<EventBase> onClick,
+            string headerModifierClass = null)
         {
-            var card = new AspidGradientButton(string.Empty, onClick)
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(SampleCardClass);
 
-            var body = new VisualElement()
-                .AddClass(SampleBodyClass)
-                .SetPickingMode(PickingMode.Ignore);
+            var action = new AspidGradientButton(actionText, onClick)
+                .AddClass(SampleHeaderClass);
+            if (!string.IsNullOrEmpty(headerModifierClass))
+                action.AddClass(headerModifierClass);
+
+            // The sweep sits outside the button (riding the divider below), so USS :hover can't reach it —
+            // the button mirrors its hover onto a card modifier the sweep rule listens to instead.
+            action.RegisterCallback<MouseEnterEvent>(_ => card.AddToClassList(SampleHeaderHoverClass));
+            action.RegisterCallback<MouseLeaveEvent>(_ => card.RemoveFromClassList(SampleHeaderHoverClass));
+            action.AddLeadingContent(new Label(displayName)
+                .AddClass(SampleTitleClass)
+                .SetPickingMode(PickingMode.Ignore));
 
             var header = new VisualElement()
-                .AddClass(SampleHeaderClass)
-                .SetPickingMode(PickingMode.Ignore);
+                .AddClass(SampleHeaderRowClass)
+                .AddChild(action);
 
-            var title = new Label(displayName)
-                .AddClass(SampleTitleClass)
-                .SetPickingMode(PickingMode.Ignore);
-            header.Add(title);
-
-            Label action = null;
-            if (!string.IsNullOrEmpty(actionText))
-            {
-                action = new Label(actionText)
-                    .AddClass(SampleActionClass)
-                    .SetPickingMode(PickingMode.Ignore);
-                header.Add(action);
-            }
-
-            body.Add(header);
+            card.AddChild(header);
 
             if (!string.IsNullOrEmpty(description))
             {
-                body.Add(new AspidDividingLine(AspidDividingLinePreset.Default
+                card.AddChild(new AspidDividingLine(AspidDividingLinePreset.Default
                         .SetTheme(ThemeStyle.Type.Light)
                         .SetSize(AspidDividingLineSizeStyle.Type.Thin))
-                    .AddClass(SampleDividerClass)
-                    .SetPickingMode(PickingMode.Ignore));
+                    .AddClass(SampleDividerClass));
 
-                body.Add(new Label(description)
-                    .AddClass(SampleDescriptionClass)
-                    .SetPickingMode(PickingMode.Ignore));
+                // The accent sweep riding the divider: a hairline that scales in from the left while the card
+                // is hovered (pure USS :hover, see __sample-sweep). Red on a Remove card, brand green otherwise.
+                var sweep = new VisualElement().AddClass(SampleSweepClass);
+                if (headerModifierClass == SampleHeaderRemoveClass)
+                    sweep.AddClass(SampleSweepRemoveClass);
+                card.AddChild(sweep);
+
+                card.AddChild(new Label(description)
+                    .AddClass(SampleDescriptionClass));
             }
 
-            card.AddLeadingContent(body);
-            card.FillWithLeadingContent();
-
-            // The action/title now live in the leading content instead of the button's own labels, so the
-            // button's built-in hover recolor no longer reaches them — mirror it here against the accent color.
-            card.RegisterCallback<MouseEnterEvent>(_ =>
-            {
-                title.style.color = card.Accent;
-                if (action is not null) action.style.color = card.Accent;
-            });
-            card.RegisterCallback<MouseLeaveEvent>(_ =>
-            {
-                title.style.color = StyleKeyword.Null;
-                if (action is not null) action.style.color = StyleKeyword.Null;
-            });
-
             return card;
+        }
+
+        private void RemoveSample(Sample sample, string displayName, Vector2 pointer)
+        {
+            var target = ToProjectRelativePath(sample.importPath);
+
+            var confirmed = EditorUtility.DisplayDialog(
+                $"Remove “{displayName}”",
+                $"This deletes “{target}” from the project, discarding any local changes to the copy. Continue?",
+                "Remove",
+                "Cancel");
+
+            if (!confirmed) return;
+
+            if (!AssetDatabase.DeleteAsset(target))
+            {
+                ShowToast($"Failed to remove “{displayName}”", pointer);
+                return;
+            }
+
+            AssetDatabase.Refresh();
+            ShowToast($"“{displayName}” removed from Assets/Samples", pointer);
+            RebuildSamplesList();
         }
 
         private void AddLocalSamples()
@@ -298,7 +288,7 @@ namespace Aspid.FastTools.Editors
                 var fileName = Path.GetFileName(subfolder);
                 if (string.IsNullOrEmpty(fileName)) continue;
 
-                _samplesList.Add(CreateSampleCard(fileName, null, string.Empty, evt =>
+                _samplesList.Add(CreateSampleCard(fileName, null, "Show", evt =>
                 {
                     PingAsset(subfolder);
                     ShowToast($"“{fileName}” selected in the Project window", GetMousePosition(evt));
