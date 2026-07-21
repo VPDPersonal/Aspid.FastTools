@@ -1,15 +1,4 @@
 {
-  "extraKnownMarketplaces": {
-    "unicli": {
-      "source": {
-        "source": "github",
-        "repo": "yucchiy/UniCli"
-      }
-    }
-  },
-  "enabledPlugins": {
-    "unicli@unicli": true
-  },
   "hooks": {
     "PostToolUse": [
       {
