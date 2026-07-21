@@ -1,7 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
     <Style src="project://database/Packages/tech.aspid.fasttools/Unity/Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss?fileID=7433441132597879392&amp;guid=a58072b37b804991bbb887d0fd65e2f8&amp;type=3#Aspid-FastTools-Default-Dark"/>
     <Style src="project://database/Packages/tech.aspid.fasttools/Unity/Editor/Resources/UI/Windows/Welcome/Aspid-FastTools-Welcome.uss?fileID=7433441132597879392&amp;guid=74929072ccf9442f6a07a76964c94928&amp;type=3#Aspid-FastTools-Welcome"/>
-    <Aspid.FastTools.UIElements.Editors.Internal.AspidAnimatedDotsBackground/>
     <ui:VisualElement name="welcome-content" class="aspid-fasttools-welcome__content">
         <ui:ScrollView name="welcome-scroll" class="aspid-fasttools-welcome__scroll">
             <ui:VisualElement name="welcome-hero" class="aspid-fasttools-welcome__hero">

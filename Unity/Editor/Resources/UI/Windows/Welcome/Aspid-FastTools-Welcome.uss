@@ -1,11 +1,3 @@
-:root {
-    --aspid-fasttools-colors-bg: rgb(0, 0, 0);
-}
-
-AspidAnimatedDotsBackground {
-    background-color: var(--aspid-fasttools-colors-bg);
-}
-
 .aspid-fasttools-welcome__scroll {
     flex-grow: 1;
 }
@@ -39,50 +31,72 @@ AspidAnimatedTitle {
     -unity-font-style: bold;
 }
 
+/* Keep the animated gradient inside the brand green family: the red/amber stops read as status colors
+   everywhere else in the window, so the title cycles dark → light green instead of the logo's traffic-light
+   triplet. Scoped under __hero to outrank the component's own :root defaults on specificity. */
+.aspid-fasttools-welcome__hero AspidAnimatedTitle {
+    --aspid-fasttools-colors-animated_title-color_1: var(--aspid-colors-status-success-text-darkness);
+    --aspid-fasttools-colors-animated_title-color_2: var(--aspid-colors-status-success-text-dark);
+    --aspid-fasttools-colors-animated_title-color_3: var(--aspid-colors-status-success-text-light);
+}
+
+/* The hero blurb reads directly over the dotted canvas — no plate behind it. */
 .aspid-fasttools-welcome__description {
     white-space: normal;
-    border-radius: 10px;
-    background-color: var(--aspid-fasttools-colors-bg);
 }
 
 .aspid-fasttools-welcome__card {
     padding: 10px;
-    border-radius: 10px;
 }
 
-/* Scoped under __card so it outranks the gradient button's own :root height/padding on the class tie,
-   letting a sample row grow past one line to fit its wrapped description. */
-.aspid-fasttools-welcome__card .aspid-fasttools-welcome__sample {
-    height: auto;
-    min-height: 36px;
+/* Sample cards share the References group-card surface: translucent dark fill, neutral border, 8px radius —
+   overriding AspidBox's opaque darkness fill and its 10px --rounded (the double class outranks the box's own rules). */
+.aspid-fasttools-welcome__sample.aspid-fasttools-background {
+    flex-grow: 0;
+    margin-bottom: 10px;
     padding: 8px 10px;
-    align-items: center;
+    border-radius: 8px;
+    border-width: 1px;
+    border-color: var(--aspid-colors-shade-darkness);
+    background-color: rgba(20, 20, 20, 0.55);
 }
 
-.aspid-fasttools-welcome__sample-body {
-    flex-grow: 1;
-}
-
-.aspid-fasttools-welcome__sample-header {
+.aspid-fasttools-welcome__sample-header-row {
     flex-direction: row;
     align-items: center;
 }
 
-.aspid-fasttools-welcome__sample-title {
+/* The whole header line is one flat clickable button, mirroring the References "Fix all" row: the gradient
+   fill is set transparent so it matches the card surface and the accent only drives the soft full-width hover
+   glow. Scoped under __sample because the button's own stylesheet sets height/padding/margin on :root, which
+   ties with a lone class — the descendant selector raises specificity to override them. */
+.aspid-fasttools-welcome__sample .aspid-fasttools-welcome__sample-header {
     flex-grow: 1;
+    flex-direction: row;
+    align-items: center;
+    height: auto;
+    margin: 0;
+    padding: 4px 4px;
+    --aspid-fasttools-colors-gradient_button-bg: rgba(0, 0, 0, 0);
+}
+
+/* The action verb ("Import ▼") right-aligns inside the header button's flex-grow label. */
+.aspid-fasttools-welcome__sample-header .aspid-fasttools-gradient-button__label {
+    -unity-text-align: middle-right;
+}
+
+/* An imported sample's header verb is "Remove" — a destructive direct action, so its hover glow goes error
+   instead of the default success accent. */
+.aspid-fasttools-welcome__sample .aspid-fasttools-welcome__sample-header--remove {
+    --aspid-fasttools-colors-gradient_button-accent: var(--aspid-colors-status-error-text-light);
+}
+
+.aspid-fasttools-welcome__sample-title {
     font-size: 14px;
     -unity-font-style: bold;
     color: var(--aspid-colors-text-light);
 }
 
-.aspid-fasttools-welcome__sample-action {
-    flex-shrink: 0;
-    margin-left: 10px;
-    font-size: 14px;
-    -unity-font-style: bold;
-    -unity-text-align: middle-right;
-    color: var(--aspid-colors-text-light);
-}
 
 .aspid-fasttools-welcome__sample-divider {
     flex-grow: 0;
@@ -90,8 +104,36 @@ AspidAnimatedTitle {
     margin-bottom: 2px;
 }
 
+/* The hover sweep: an accent hairline lying exactly on the divider line (pulled up over it by the negative
+   margin), scaling in from the left edge while the header button is hovered — the cards' echo of the tab
+   strip's active underline. Triggered by the --header-hover card modifier (mirrored from the button in code),
+   since the sweep is the button's sibling and :hover can't reach across. */
+.aspid-fasttools-welcome__sample-sweep {
+    height: 1px;
+    margin-top: -1px;
+    margin-bottom: 0;
+    background-color: var(--aspid-colors-status-success-text-dark);
+    transform-origin: left;
+    scale: 0 1;
+    transition-property: scale;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out;
+}
+
+.aspid-fasttools-welcome__sample--header-hover .aspid-fasttools-welcome__sample-sweep {
+    scale: 1 1;
+}
+
+/* A Remove card sweeps in the destructive tone, matching its header accent. */
+.aspid-fasttools-welcome__sample-sweep--remove {
+    background-color: var(--aspid-colors-status-error-text-dark);
+}
+
+/* Shares the header's 4px horizontal inset so the description's left edge lines up with the title above;
+   the 6px top margin (+2px divider margin) mirrors the 8px of air above the line. */
 .aspid-fasttools-welcome__sample-description {
-    margin-top: 2px;
+    margin-top: 6px;
+    padding: 0 4px;
     font-size: 12px;
     white-space: normal;
     -unity-font-style: normal;
