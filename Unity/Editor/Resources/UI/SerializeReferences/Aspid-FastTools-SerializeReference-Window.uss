@@ -71,15 +71,15 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--active:hover 
 
 /* Underline accent: a 2px child bar pinned to the tab's bottom edge. Toggling a child's background-color via the
    parent's --active class repaints reliably, whereas flipping a border-bottom-color did not redraw until the next
-   relayout (the underline only appeared after a window resize). A grey baseline marks every (inactive) tab; the
-   active tab swaps it for the signature green. */
+   relayout (the underline only appeared after a window resize). Inactive tabs keep only a near-invisible
+   baseline (the card-border tone) so the active tab's signature green owns the hierarchy. */
 .aspid-fasttools-serialize-reference-window__tab-underline {
     position:                                             absolute;
     left:                                                 0;
     right:                                                0;
     bottom:                                               0;
     height:                                               2px;
-    background-color:                                     var(--aspid-colors-shade-light);
+    background-color:                                     var(--aspid-colors-shade-darkness);
 }
 
 Button.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-underline {

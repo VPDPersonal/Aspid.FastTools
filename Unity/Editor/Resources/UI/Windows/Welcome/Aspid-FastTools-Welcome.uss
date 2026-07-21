@@ -45,6 +45,32 @@ AspidAnimatedTitle {
     white-space: normal;
 }
 
+/* Quick links under the blurb, styled like the footer's GitHub link: signature green, brighter on hover. */
+.aspid-fasttools-welcome__hero-links {
+    margin-top: 6px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.aspid-fasttools-welcome__hero-link {
+    padding: 0;
+    cursor: link;
+    font-size: 13px;
+    -unity-font-style: bold;
+    color: var(--aspid-colors-status-success-text-dark);
+}
+
+.aspid-fasttools-welcome__hero-link:hover {
+    color: var(--aspid-colors-status-success-text-light);
+}
+
+.aspid-fasttools-welcome__hero-link-separator {
+    margin: 0 6px;
+    padding: 0;
+    font-size: 13px;
+    color: var(--aspid-colors-text-darkness);
+}
+
 .aspid-fasttools-welcome__card {
     padding: 10px;
 }
@@ -91,10 +117,35 @@ AspidAnimatedTitle {
     --aspid-fasttools-colors-gradient_button-accent: var(--aspid-colors-status-error-text-light);
 }
 
+/* The title + status badge line living as the header button's leading content. */
+.aspid-fasttools-welcome__sample-info {
+    flex-direction: row;
+    align-items: center;
+}
+
 .aspid-fasttools-welcome__sample-title {
     font-size: 14px;
     -unity-font-style: bold;
     color: var(--aspid-colors-text-light);
+}
+
+/* Not-yet-imported marker ahead of the title: a single brand-blue dot quoting the dotted canvas — the
+   unread-marker idiom, so fresh samples catch the eye and the dot disappears once imported. */
+.aspid-fasttools-welcome__sample-import-dot {
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    margin-right: 8px;
+    border-radius: 3px;
+    background-color: var(--aspid-colors-status-info-text-dark);
+    transition-property: background-color;
+    transition-duration: 0.25s;
+    transition-timing-function: ease-out;
+}
+
+/* Hovering the header verb turns the dot the Import accent green — "about to become imported". */
+.aspid-fasttools-welcome__sample--header-hover .aspid-fasttools-welcome__sample-import-dot {
+    background-color: var(--aspid-colors-status-success-text-dark);
 }
 
 
@@ -110,8 +161,10 @@ AspidAnimatedTitle {
    since the sweep is the button's sibling and :hover can't reach across. */
 .aspid-fasttools-welcome__sample-sweep {
     height: 1px;
-    margin-top: -1px;
-    margin-bottom: 0;
+    /* Pulled up past the divider's 2px bottom margin plus its 1px line so the sweep sits exactly ON the
+       line; the 2px bottom margin gives the swallowed gap back, keeping the description rhythm intact. */
+    margin-top: -3px;
+    margin-bottom: 2px;
     background-color: var(--aspid-colors-status-success-text-dark);
     transform-origin: left;
     scale: 0 1;

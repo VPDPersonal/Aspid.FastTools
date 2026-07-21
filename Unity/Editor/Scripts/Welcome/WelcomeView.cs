@@ -28,6 +28,12 @@ namespace Aspid.FastTools.Editors
 
         private const string SamplesPath = PackageRootPath + "/Samples";
         private const string AssetStoreUrl = "https://assetstore.unity.com/packages/slug/365584";
+        private const string GitHubUrl = "https://github.com/VPDPersonal/Aspid.FastTools";
+        private const string DocumentationUrl = GitHubUrl + "/blob/main/Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/EN/README.md";
+
+        private const string DocsLinkName = "welcome-link-docs";
+        private const string GitHubLinkName = "welcome-link-github";
+        private const string StoreLinkName = "welcome-link-store";
 
         private const string UxmlResourcePath = "UI/Windows/Welcome/Aspid-FastTools-Welcome";
 
@@ -41,7 +47,9 @@ namespace Aspid.FastTools.Editors
         private const string SampleHeaderRowClass = "aspid-fasttools-welcome__sample-header-row";
         private const string SampleHeaderClass = "aspid-fasttools-welcome__sample-header";
         private const string SampleHeaderRemoveClass = "aspid-fasttools-welcome__sample-header--remove";
+        private const string SampleInfoClass = "aspid-fasttools-welcome__sample-info";
         private const string SampleTitleClass = "aspid-fasttools-welcome__sample-title";
+        private const string SampleImportDotClass = "aspid-fasttools-welcome__sample-import-dot";
         private const string SampleDividerClass = "aspid-fasttools-welcome__sample-divider";
         private const string SampleSweepClass = "aspid-fasttools-welcome__sample-sweep";
         private const string SampleSweepRemoveClass = "aspid-fasttools-welcome__sample-sweep--remove";
@@ -77,12 +85,26 @@ namespace Aspid.FastTools.Editors
 
             PopulateSamples(this);
             SetUpLogoLink(this);
+            SetUpHeroLinks(this);
         }
 
         private static void SetUpLogoLink(VisualElement root)
         {
             var logo = root.Q<AspidAnimatedLogo>(LogoName);
             logo?.AddManipulator(new Clickable(() => Application.OpenURL(AssetStoreUrl)));
+        }
+
+        private static void SetUpHeroLinks(VisualElement root)
+        {
+            SetUpLink(root, DocsLinkName, DocumentationUrl);
+            SetUpLink(root, GitHubLinkName, GitHubUrl);
+            SetUpLink(root, StoreLinkName, AssetStoreUrl);
+        }
+
+        private static void SetUpLink(VisualElement root, string name, string url)
+        {
+            var link = root.Q<Label>(name);
+            link?.AddManipulator(new Clickable(() => Application.OpenURL(url)));
         }
 
         private void ShowToast(string message, Vector2 mousePosition)
@@ -184,10 +206,10 @@ namespace Aspid.FastTools.Editors
                 // sample stays reimportable right after, so the direct verb replaces a Reimport/Remove menu.
                 return CreateSampleCard(displayName, description, "Remove",
                     evt => RemoveSample(captured, displayName, GetMousePosition(evt)),
-                    SampleHeaderRemoveClass);
+                    imported: true);
             }
 
-            return CreateSampleCard(displayName, description, "Import  ▼", evt =>
+            return CreateSampleCard(displayName, description, "Import", imported: false, onClick: evt =>
             {
                 var pointer = GetMousePosition(evt);
 
@@ -207,29 +229,49 @@ namespace Aspid.FastTools.Editors
         /// Builds a sample card in the References group-card idiom: a glass box whose whole header row is one flat
         /// clickable button (the display name on the left, the <paramref name="actionText"/> verb pinned to the
         /// right, an accent glow on hover), with the package.json description (when present) wrapping below.
+        /// A not-yet-imported sample (<paramref name="imported"/> is <see langword="false"/>) is flagged by a
+        /// small brand-blue dot ahead of the title — the unread-marker idiom; an imported one drops the dot and
+        /// its destructive verb hovers in the error tone. <see langword="null"/> means the state doesn't apply
+        /// (local, non-UPM samples).
         /// </summary>
         private static VisualElement CreateSampleCard(
             string displayName,
             string description,
             string actionText,
             Action<EventBase> onClick,
-            string headerModifierClass = null)
+            bool? imported = null)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(SampleCardClass);
 
             var action = new AspidGradientButton(actionText, onClick)
                 .AddClass(SampleHeaderClass);
-            if (!string.IsNullOrEmpty(headerModifierClass))
-                action.AddClass(headerModifierClass);
+            if (imported == true)
+                action.AddClass(SampleHeaderRemoveClass);
 
             // The sweep sits outside the button (riding the divider below), so USS :hover can't reach it —
             // the button mirrors its hover onto a card modifier the sweep rule listens to instead.
             action.RegisterCallback<MouseEnterEvent>(_ => card.AddToClassList(SampleHeaderHoverClass));
             action.RegisterCallback<MouseLeaveEvent>(_ => card.RemoveFromClassList(SampleHeaderHoverClass));
-            action.AddLeadingContent(new Label(displayName)
+
+            var info = new VisualElement()
+                .AddClass(SampleInfoClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            if (imported == false)
+            {
+                // Kept pickable (no click handler — presses bubble through to the header button) so its
+                // tooltip can explain the state.
+                var dot = new VisualElement().AddClass(SampleImportDotClass);
+                dot.tooltip = "Not imported yet";
+                info.AddChild(dot);
+            }
+
+            info.AddChild(new Label(displayName)
                 .AddClass(SampleTitleClass)
                 .SetPickingMode(PickingMode.Ignore));
+
+            action.AddLeadingContent(info);
 
             var header = new VisualElement()
                 .AddClass(SampleHeaderRowClass)
@@ -244,10 +286,11 @@ namespace Aspid.FastTools.Editors
                         .SetSize(AspidDividingLineSizeStyle.Type.Thin))
                     .AddClass(SampleDividerClass));
 
-                // The accent sweep riding the divider: a hairline that scales in from the left while the card
-                // is hovered (pure USS :hover, see __sample-sweep). Red on a Remove card, brand green otherwise.
+                // The accent sweep riding the divider: a hairline that scales in from the left while the header
+                // button is hovered (via the --header-hover card modifier). Red on an imported (Remove) card,
+                // brand green otherwise.
                 var sweep = new VisualElement().AddClass(SampleSweepClass);
-                if (headerModifierClass == SampleHeaderRemoveClass)
+                if (imported == true)
                     sweep.AddClass(SampleSweepRemoveClass);
                 card.AddChild(sweep);
 
