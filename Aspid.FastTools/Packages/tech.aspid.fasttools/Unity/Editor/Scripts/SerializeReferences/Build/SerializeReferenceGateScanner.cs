@@ -57,6 +57,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return violations;
         }
 
+        /// <summary>
+        /// Scoped required-field scan for a single asset, without a full project sweep.
+        /// </summary>
+        /// <remarks>
+        /// Reuses <see cref="Scan"/>'s per-path dispatch for <see cref="GateOptions.ScanRequiredFields"/>. Used by the
+        /// Inspect Asset graph, which needs one asset's violations on every Rescan; skipped for a path that is not
+        /// itself a scan candidate, matching every other consumer's <see cref="SerializeReferenceHelpers.IsScanCandidate"/>.
+        /// </remarks>
+        public static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath)
+        {
+            var violations = new List<GateViolation>();
+            if (string.IsNullOrEmpty(assetPath) || !SerializeReferenceHelpers.IsScanCandidate(assetPath)) return violations;
+
+            ScriptRequiredFieldsCache.Clear();
+
+            if (SerializeReferenceHelpers.IsScene(assetPath)) CollectSceneRequiredViolations(assetPath, violations);
+            else CollectRequiredViolations(assetPath, violations);
+
+            return violations;
+        }
+
         // A stored name claimed by exactly one declared [MovedFrom] is a pending migration, not a violation —
         // Unity migrates it in memory at load — provided the target still fits the field's declared type.
         // Scenes cannot be object-loaded to recover constraints, so a scene entry claimed by a rename is trusted.

@@ -73,6 +73,7 @@
 - [ ] **Welcome**: авто-показ раз на версию пакета (и после апдейта), toggle Auto-show, список сэмплов из package.json, меню работает всегда.
 - [ ] **Asset References**: граф по YAML — roots/nested/shared/orphaned, бейджи `MISSING`/`SHARED`, rid-цвета, `<None>`-слоты, полный field-path; inline Fix (констрейнутый), Clear на orphaned, Open Source Prefab; pending-migration карточка (info-pill, `Migrate → Type`), headline считает миграции отдельно; персист вкладки и ассета через tab-switch и domain reload.
 - [ ] **Project References**: Scan Project по `.prefab`/`.asset`/`.unity`, группировка по типу, `Fix all (N)` с confirm + diff-preview + Undo (undo-квитанция ревертит только неизменённые записи и репортит фактическое число), Smart Fix quick-apply на группе, skip открытых сцен/Prefab Mode, `Migrate all (N) → Type` для [MovedFrom]; линк из результата в Asset References.
+- [ ] **Project References — Required violations**: отдельная карточка со всеми незаполненными `[TypeSelector(Required = true)]`-полями из того же gate-скана (путь ассета + компонент + field path), полностью пропускается при выключенном (Off) build/CI gate, учитывает `Excluded Folders`; клик по строке пингует/открывает ассет как строка broken-reference (без bulk-fix — нечего осмысленно назначить автоматически); (пере)сканируется только по явному клику Scan/Rescan, не при переключении вкладки.
 - [ ] **Settings**: см. раздел 6.
 - [ ] Ctrl+Tab / Ctrl+Shift+Tab — переключение вкладок.
 

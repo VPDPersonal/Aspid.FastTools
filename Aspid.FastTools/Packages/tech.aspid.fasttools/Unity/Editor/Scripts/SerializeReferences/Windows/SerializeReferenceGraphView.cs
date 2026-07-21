@@ -80,11 +80,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string BadgeClass = RootClass + "__badge";
         private const string BadgeSharedClass = BadgeClass + "--shared";
+        private const string BadgeRequiredClass = BadgeClass + "--required";
 
         private const string ChipClass = RootClass + "__chip";
         private const string ClearOrphanClass = RootClass + "__clear-orphan";
         private const string OrphanGroupClass = RootClass + "__orphan-group";
         private const string OrphanGroupHeaderClass = RootClass + "__orphan-group-header";
+        private const string RequiredOnlyGroupClass = RootClass + "__required-only-group";
+        private const string RequiredOnlyGroupHeaderClass = RootClass + "__required-only-group-header";
+        private const string RequiredOnlyEntryClass = RootClass + "__required-only-entry";
+        private const string RequiredOnlyEntryPathClass = RootClass + "__required-only-entry-path";
         private const string PickerClass = RootClass + "__picker";
         private const string PickerAttachedClass = PickerClass + "--attached";
 
@@ -126,6 +131,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Per-asset constraint map cache: BuildConstraintMap does a LoadAllAssetsAtPath + full SerializedObject walk,
         // so each Fix-Missing picker open must not re-scan. Cleared on every Rescan / apply so rewritten YAML is re-read.
         private readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _constraintCache = new(StringComparer.Ordinal);
+
+        // Unset [SerializeReference, TypeSelector(Required = true)] fields for the current asset, refreshed on every
+        // Rescan. Populated straight from SerializeReferenceGateScanner — the same required-field check the Project
+        // References audit and the build/CI gate use — so a required badge here always agrees with them. A
+        // [TypeSelector(Required = true)] string/SerializableType field has no rid and so no graph node to badge; it
+        // still surfaces via the Inspector notice and the Project References "Required violations" group.
+        private IReadOnlyList<GateViolation> _requiredViolations = Array.Empty<GateViolation>();
 
         public SerializeReferenceGraphView(Object target, Action<Color> onCanvasTone, Action<Object> onTargetChanged = null)
         {
@@ -229,6 +241,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Drop the constraint maps so a rescan after a fix / clear re-reads the rewritten YAML, not a stale map.
             _constraintCache.Clear();
             _list.Clear();
+            _requiredViolations = Array.Empty<GateViolation>();
 
             var assetPath = _target ? AssetDatabase.GetAssetPath(_target) : null;
             if (string.IsNullOrEmpty(assetPath))
@@ -256,7 +269,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             var documents = prebuilt ?? SerializeReferenceGraphScanner.Build(assetPath);
-            if (documents.Count == 0)
+
+            // Same headless scanner as the Project References audit and the build/CI gate, scoped to this one asset.
+            // Read before the empty-graph bail: a string / SerializableType required field has no rid and so never
+            // produces a document (SerializeReferenceGraphScanner only emits one for an object with a RefIds block),
+            // so it can be the ONLY thing this asset has to show even when the managed-reference graph is empty.
+            _requiredViolations = SerializeReferenceGateScanner.ScanAssetRequiredFields(assetPath);
+
+            if (documents.Count == 0 && _requiredViolations.Count == 0)
             {
                 ShowEmpty(
                     "No managed references",
@@ -274,6 +294,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var empties = 0;
             var migrations = 0;
 
+            // Every empty managed-reference slot's normalized path, gathered up front so the required-only group
+            // below can tell "already badged on a graph card" apart from "no graph node exists for this field at
+            // all" (a string / SerializableType required field, or an empty slot under a document the scanner
+            // failed to reach) without re-walking the tree per violation.
+            var emptySlotPaths = CollectEmptySlotPaths(documents);
+
             var showHeaders = documents.Count > 1;
             foreach (var document in documents)
             {
@@ -289,13 +315,61 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             ShowOverview(total, missing, orphans, empties, migrations);
 
+            // Fields the graph has no node for at all: string / SerializableType required fields (never threaded
+            // into RefIds) plus, defensively, any managed-reference violation the graph walk could not place.
+            var ungraphedRequired = _requiredViolations
+                .Where(v => !emptySlotPaths.Contains((v.FileId, v.FieldPath)))
+                .ToList();
+            if (ungraphedRequired.Count > 0)
+                _list.AddChild(BuildRequiredOnlyGroup(ungraphedRequired));
+
             // Pending migrations are not breakages — a graph whose only annotations are migrations reads info-blue,
             // matching the Project References group card; anything actually missing / orphaned keeps the amber wash.
             _onCanvasTone?.Invoke(missing - migrations > 0 || orphans > 0
                 ? SerializeReferenceCanvasStyle.Warning
                 : migrations > 0
                     ? SerializeReferenceCanvasStyle.Info
-                    : SerializeReferenceCanvasStyle.Success);
+                    : ungraphedRequired.Count > 0
+                        ? SerializeReferenceCanvasStyle.Warning
+                        : SerializeReferenceCanvasStyle.Success);
+        }
+
+        // Every empty managed-reference slot's normalized field path across every document, root and nested edge
+        // (mirrors the AppendNode walk, minus the card building) — the lookup set BuildEmptySlotCard's badges are
+        // checked against, reused here to find the required violations no graph card exists for.
+        private static HashSet<(long fileId, string path)> CollectEmptySlotPaths(List<ReferenceGraphDocument> documents)
+        {
+            var paths = new HashSet<(long, string)>();
+
+            foreach (var document in documents)
+            {
+                foreach (var root in document.Roots)
+                {
+                    if (root.IsEmpty)
+                        paths.Add((document.FileId, ToSerializedPropertyPath(root.Label)));
+                    else
+                        WalkForEmptySlots(document, root.Rid, root.Label, new HashSet<long>(), paths);
+                }
+            }
+
+            return paths;
+        }
+
+        private static void WalkForEmptySlots(ReferenceGraphDocument document, long rid, string pathLabel,
+            HashSet<long> visited, HashSet<(long fileId, string path)> paths)
+        {
+            if (!visited.Add(rid)) return;
+
+            foreach (var edge in document.ChildrenOf(rid))
+            {
+                var childPath = CombinePath(pathLabel, edge.Label);
+                if (edge.IsEmpty)
+                    paths.Add((document.FileId, ToSerializedPropertyPath(childPath)));
+                else
+                    WalkForEmptySlots(document, edge.Rid, childPath, visited, paths);
+            }
+
+            visited.Remove(rid);
         }
 
         // Ranked Smart Fix for a missing node, via the shared per-(path, fileId, rid) cache so a rescan and the
@@ -735,6 +809,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
+        // Matches an empty slot's graph field path (list indices as "[i]") against a GateViolation's FieldPath (Unity's
+        // native SerializedProperty form, "Array.data[i]") for the same document — the same normalization
+        // TryResolveLiveProperty already applies to reach the live property at this path. Best-effort: a slot whose
+        // path could not be recovered by the YAML walk (SerializeReferenceGraphScanner's "reference" fallback) never
+        // matches a real property path, so its badge is silently skipped rather than false-positiving — the same
+        // violation still shows correctly in the Project References tab.
+        private bool IsFieldRequiredUnset(long fileId, string pathLabel)
+        {
+            if (string.IsNullOrEmpty(pathLabel) || _requiredViolations.Count == 0) return false;
+
+            var propertyPath = ToSerializedPropertyPath(pathLabel);
+            foreach (var violation in _requiredViolations)
+            {
+                if (violation.FileId == fileId && violation.FieldPath == propertyPath) return true;
+            }
+
+            return false;
+        }
+
         // An unassigned [SerializeReference] slot — a field whose pointer is the null sentinel (rid -2). Its band is
         // still a dropdown assigning a type through the live serialization API; a slot whose field path could not be
         // recovered stays static (nothing to target).
@@ -753,6 +846,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(NodeBandRowClass)
                 .AddChild(typeLabel);
             bandRow.pickingMode = PickingMode.Ignore;
+
+            if (IsFieldRequiredUnset(fileId, pathLabel))
+            {
+                var badges = new VisualElement().AddClass(NodeBadgesClass).SetPickingMode(PickingMode.Ignore);
+                var required = new Label("REQUIRED").AddClass(BadgeClass).AddClass(BadgeRequiredClass);
+                required.tooltip = "Required reference is not set";
+                badges.AddChild(required);
+                bandRow.AddChild(badges);
+            }
 
             if (string.IsNullOrEmpty(pathLabel))
             {
@@ -786,6 +888,69 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             card.AddChild(meta);
 
             return card;
+        }
+
+        // Trailing card for required violations the graph has no node for — a string / SerializableType required
+        // field (never threaded into RefIds, so SerializeReferenceGraphScanner never emits a document for a
+        // component whose only serialized-reference-worthy fields are these) has nothing to badge a card with, so
+        // it gets a flat row here instead. Same visual family as the Orphaned group: a standalone warning-toned box.
+        private VisualElement BuildRequiredOnlyGroup(IReadOnlyList<GateViolation> violations)
+        {
+            var group = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(RequiredOnlyGroupClass);
+
+            group.AddChild(new AspidLabel("Required", AspidLabelPreset.Default
+                    .SetLabelStatus(StatusStyle.Type.Warning)
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                    .SetLineSize(AspidDividingLineSizeStyle.Type.None))
+                .AddClass(RequiredOnlyGroupHeaderClass));
+
+            // Per-card memo, keyed by asset path: several violations commonly share one component, so this keeps
+            // LoadAllAssetsAtPath to once per distinct file instead of once per row.
+            var componentCache = new Dictionary<string, Object[]>(StringComparer.Ordinal);
+            foreach (var violation in violations)
+                group.AddChild(BuildRequiredOnlyRow(violation, componentCache));
+
+            return group;
+        }
+
+        // A plain row: "Component.field" on the left, a REQUIRED badge on the right. No band/picker — the field
+        // is a string / SerializableType, edited through the normal Inspector, not this graph's live-property API.
+        private static VisualElement BuildRequiredOnlyRow(GateViolation violation, Dictionary<string, Object[]> componentCache)
+        {
+            var row = new VisualElement().AddClass(RequiredOnlyEntryClass);
+
+            var component = ResolveComponentName(violation, componentCache);
+            var text = string.IsNullOrEmpty(component) ? violation.FieldPath : $"{component}.{violation.FieldPath}";
+
+            var path = new Label(text).AddClass(RequiredOnlyEntryPathClass);
+            var badge = new Label("REQUIRED").AddClass(BadgeClass).AddClass(BadgeRequiredClass);
+
+            row.AddChild(path).AddChild(badge);
+            return row;
+        }
+
+        // Best-effort owning-object type name, mirroring SerializeReferenceProjectView's resolver: saved assets are
+        // object-loaded (once per distinct path, memoised in componentCache) and matched by file id. Scenes cannot
+        // be object-loaded (see SerializeReferenceHelpers.IsScene), so a scene row shows the field path alone.
+        private static string ResolveComponentName(GateViolation violation, Dictionary<string, Object[]> componentCache)
+        {
+            if (SerializeReferenceHelpers.IsScene(violation.AssetPath)) return string.Empty;
+
+            if (!componentCache.TryGetValue(violation.AssetPath, out var assets))
+            {
+                assets = AssetDatabase.LoadAllAssetsAtPath(violation.AssetPath);
+                componentCache[violation.AssetPath] = assets;
+            }
+
+            foreach (var asset in assets)
+            {
+                if (asset == null) continue;
+                if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out _, out long fileId) && fileId == violation.FileId)
+                    return asset.GetType().Name;
+            }
+
+            return string.Empty;
         }
 
         // Warning-tinted group for rids no root reaches. Each orphan is a full node card (so a missing orphan is still
