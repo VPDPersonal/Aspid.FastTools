@@ -475,6 +475,7 @@
     -unity-text-align:                                    middle-center;
 }
 
+
 /* --- Inline type picker (mirrors the Project Audit picker exactly) ---
    The selector view expanded inline, welded into the card being fixed (see TogglePicker): translucent dark fill,
    neutral border, 8px radius and a fixed height (the ListView needs bounds to virtualize). padding:0 plus the header /

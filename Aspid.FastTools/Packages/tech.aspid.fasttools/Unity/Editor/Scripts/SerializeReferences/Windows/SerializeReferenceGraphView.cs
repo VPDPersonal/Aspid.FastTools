@@ -93,6 +93,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ChangeCollapsedText = "Change  ▼";
         private const string AssignCollapsedText = "Assign  ▼";
 
+        // A required slot's band verb names what the amber is about: the field must be assigned, not merely can be.
+        private const string AssignRequiredCollapsedText = "Assign Required  ▼";
+
         // A pending-migration card is not missing (Unity migrates it in memory; only the file is stale), so no "Missing".
         private const string MigrateFixCollapsedText = "Fix  ▼";
         private const char BandChevronCollapsed = '▼';
@@ -126,6 +129,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Per-asset constraint map cache: BuildConstraintMap does a LoadAllAssetsAtPath + full SerializedObject walk,
         // so each Fix-Missing picker open must not re-scan. Cleared on every Rescan / apply so rewritten YAML is re-read.
         private readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _constraintCache = new(StringComparer.Ordinal);
+
+        // Unset [TypeSelector(Required = true)] fields for the current asset, refreshed on every Rescan. Populated
+        // straight from SerializeReferenceGateScanner — the same required-field check the Project References audit
+        // and the build/CI gate use — so the amber required styling here always agrees with them. A required
+        // string/SerializableType field has no rid and so no graph node; it gets its own trailing card instead
+        // (BuildRequiredOnlyCard).
+        private IReadOnlyList<GateViolation> _requiredViolations = Array.Empty<GateViolation>();
 
         public SerializeReferenceGraphView(Object target, Action<Color> onCanvasTone, Action<Object> onTargetChanged = null)
         {
@@ -229,6 +239,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Drop the constraint maps so a rescan after a fix / clear re-reads the rewritten YAML, not a stale map.
             _constraintCache.Clear();
             _list.Clear();
+            _requiredViolations = Array.Empty<GateViolation>();
 
             var assetPath = _target ? AssetDatabase.GetAssetPath(_target) : null;
             if (string.IsNullOrEmpty(assetPath))
@@ -256,7 +267,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             var documents = prebuilt ?? SerializeReferenceGraphScanner.Build(assetPath);
-            if (documents.Count == 0)
+
+            // Same headless scanner as the Project References audit and the build/CI gate, scoped to this one asset.
+            // Read before the empty-graph bail: a string / SerializableType required field has no rid and so never
+            // produces a document (SerializeReferenceGraphScanner only emits one for an object with a RefIds block),
+            // so it can be the ONLY thing this asset has to show even when the managed-reference graph is empty.
+            _requiredViolations = SerializeReferenceGateScanner.ScanAssetRequiredFields(assetPath);
+
+            if (documents.Count == 0 && _requiredViolations.Count == 0)
             {
                 ShowEmpty(
                     "No managed references",
@@ -274,6 +292,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var empties = 0;
             var migrations = 0;
 
+            // Every empty managed-reference slot's normalized path, gathered up front so the required-only cards
+            // below can tell "already badged on a graph card" apart from "no graph node exists for this field at
+            // all" (a string / SerializableType required field, or an empty slot under a document the scanner
+            // failed to reach) without re-walking the tree per violation.
+            var emptySlotPaths = CollectEmptySlotPaths(documents);
+
             var showHeaders = documents.Count > 1;
             foreach (var document in documents)
             {
@@ -287,15 +311,73 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 empties += CountEmptySlots(document);
             }
 
-            ShowOverview(total, missing, orphans, empties, migrations);
+            // Fields the graph has no node for at all: string / SerializableType required fields (never threaded
+            // into RefIds) plus, defensively, any managed-reference violation the graph walk could not place.
+            var ungraphedRequired = _requiredViolations
+                .Where(v => !emptySlotPaths.Contains((v.FileId, v.FieldPath)))
+                .ToList();
+
+            // The headline's "unassigned fields" note counts only slots that are allowed to stay empty — a required
+            // empty slot is reported through the required count instead, never twice.
+            var required = _requiredViolations.Count;
+            var graphedRequired = required - ungraphedRequired.Count;
+            ShowOverview(total, missing, orphans, Math.Max(0, empties - graphedRequired), migrations, required);
+
+            if (ungraphedRequired.Count > 0)
+            {
+                // Per-card memo, keyed by asset path: several violations commonly share one component, so this keeps
+                // LoadAllAssetsAtPath to once per distinct file instead of once per card.
+                var componentCache = new Dictionary<string, Object[]>(StringComparer.Ordinal);
+                foreach (var violation in ungraphedRequired)
+                    _list.AddChild(BuildRequiredOnlyCard(violation, componentCache));
+            }
 
             // Pending migrations are not breakages — a graph whose only annotations are migrations reads info-blue,
-            // matching the Project References group card; anything actually missing / orphaned keeps the amber wash.
-            _onCanvasTone?.Invoke(missing - migrations > 0 || orphans > 0
+            // matching the Project References group card; anything missing / orphaned / required-unset keeps the
+            // amber wash (same issue set that tips the ShowOverview headline).
+            _onCanvasTone?.Invoke(missing - migrations > 0 || orphans > 0 || required > 0
                 ? SerializeReferenceCanvasStyle.Warning
                 : migrations > 0
                     ? SerializeReferenceCanvasStyle.Info
                     : SerializeReferenceCanvasStyle.Success);
+        }
+
+        // Every empty managed-reference slot's normalized field path across every document, root and nested edge
+        // (mirrors the AppendNode walk, minus the card building) — the lookup set BuildEmptySlotCard's badges are
+        // checked against, reused here to find the required violations no graph card exists for.
+        private static HashSet<(long fileId, string path)> CollectEmptySlotPaths(List<ReferenceGraphDocument> documents)
+        {
+            var paths = new HashSet<(long, string)>();
+
+            foreach (var document in documents)
+            {
+                foreach (var root in document.Roots)
+                {
+                    if (root.IsEmpty)
+                        paths.Add((document.FileId, ToSerializedPropertyPath(root.Label)));
+                    else
+                        WalkForEmptySlots(document, root.Rid, root.Label, new HashSet<long>(), paths);
+                }
+            }
+
+            return paths;
+        }
+
+        private static void WalkForEmptySlots(ReferenceGraphDocument document, long rid, string pathLabel,
+            HashSet<long> visited, HashSet<(long fileId, string path)> paths)
+        {
+            if (!visited.Add(rid)) return;
+
+            foreach (var edge in document.ChildrenOf(rid))
+            {
+                var childPath = CombinePath(pathLabel, edge.Label);
+                if (edge.IsEmpty)
+                    paths.Add((document.FileId, ToSerializedPropertyPath(childPath)));
+                else
+                    WalkForEmptySlots(document, edge.Rid, childPath, visited, paths);
+            }
+
+            visited.Remove(rid);
         }
 
         // Ranked Smart Fix for a missing node, via the shared per-(path, fileId, rid) cache so a rescan and the
@@ -407,12 +489,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _list.RemoveClass(ListHiddenClass);
         }
 
-        private void ShowOverview(int total, int missing, int orphans, int empties, int migrations)
+        private void ShowOverview(int total, int missing, int orphans, int empties, int migrations, int required)
         {
-            // Only genuinely missing / orphaned references are "issues" that tip the headline and divider to amber;
-            // pending migrations are stale files, not breakages (info), and empty slots are unassigned, not broken.
+            // Genuinely missing / orphaned references and unset required fields are "issues" that tip the headline
+            // and divider to amber; pending migrations are stale files, not breakages (info), and non-required empty
+            // slots are unassigned, not broken.
             var broken = missing - migrations;
-            var status = broken > 0 || orphans > 0
+            var status = broken > 0 || orphans > 0 || required > 0
                 ? StatusStyle.Type.Warning
                 : migrations > 0
                     ? StatusStyle.Type.Info
@@ -422,18 +505,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ? broken == 1 ? "1 missing reference" : $"{broken} missing references"
                 : orphans > 0
                     ? orphans == 1 ? "1 orphaned reference" : $"{orphans} orphaned references"
-                    : migrations > 0
-                        ? migrations == 1 ? "1 pending migration" : $"{migrations} pending migrations"
-                        : "No missing references";
+                    : required > 0
+                        ? required == 1 ? "1 required field unassigned" : $"{required} required fields unassigned"
+                        : migrations > 0
+                            ? migrations == 1 ? "1 pending migration" : $"{migrations} pending migrations"
+                            : "No missing references";
 
             _overviewTitle.LabelStatus = status;
             _overviewTitle.LineStatus = status;
 
-            _overviewHint.text = BuildOverviewHint(total, missing, orphans, empties, migrations);
+            _overviewHint.text = BuildOverviewHint(total, missing, orphans, empties, migrations, required);
             _overview.RemoveClass(OverviewHiddenClass);
         }
 
-        private static string BuildOverviewHint(int total, int missing, int orphans, int empties, int migrations)
+        private static string BuildOverviewHint(int total, int missing, int orphans, int empties, int migrations, int required)
         {
             var references = total == 1 ? "1 managed reference" : $"{total} managed references";
             var emptyNote = empties switch
@@ -443,22 +528,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _ => $" · {empties} unassigned fields"
             };
 
-            if (missing == 0 && orphans == 0)
+            if (missing == 0 && orphans == 0 && required == 0)
                 return $"{references} mapped{emptyNote} — every [SerializeReference] type resolves.";
 
             var broken = missing - migrations;
 
-            var parts = new List<string>(4);
+            var parts = new List<string>(5);
             if (broken > 0) parts.Add(broken == 1 ? "1 missing type" : $"{broken} missing types");
             if (migrations > 0) parts.Add(migrations == 1 ? "1 pending [MovedFrom] migration" : $"{migrations} pending [MovedFrom] migrations");
             if (orphans > 0) parts.Add(orphans == 1 ? "1 orphaned rid" : $"{orphans} orphaned rids");
+            if (required > 0) parts.Add(required == 1 ? "1 required field unassigned" : $"{required} required fields unassigned");
             if (empties > 0) parts.Add(empties == 1 ? "1 unassigned field" : $"{empties} unassigned fields");
 
             var action = broken > 0
                 ? "Fix a missing type inline from its card."
-                : migrations > 0
-                    ? "Migrate a renamed type from its card — the Inspector already loads it; only the file is stale."
-                    : "Clear an orphaned rid from its card.";
+                : required > 0
+                    ? "Assign each required field from its amber card."
+                    : migrations > 0
+                        ? "Migrate a renamed type from its card — the Inspector already loads it; only the file is stale."
+                        : "Clear an orphaned rid from its card.";
 
             return $"{references} mapped · {string.Join(" · ", parts)}. {action}";
         }
@@ -735,19 +823,48 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
+        // Matches an empty slot's graph field path (list indices as "[i]") against a GateViolation's FieldPath (Unity's
+        // native SerializedProperty form, "Array.data[i]") for the same document — the same normalization
+        // TryResolveLiveProperty already applies to reach the live property at this path. Best-effort: a slot whose
+        // path could not be recovered by the YAML walk (SerializeReferenceGraphScanner's "reference" fallback) never
+        // matches a real property path, so its badge is silently skipped rather than false-positiving — the same
+        // violation still shows correctly in the Project References tab.
+        private bool IsFieldRequiredUnset(long fileId, string pathLabel)
+        {
+            if (string.IsNullOrEmpty(pathLabel) || _requiredViolations.Count == 0) return false;
+
+            var propertyPath = ToSerializedPropertyPath(pathLabel);
+            foreach (var violation in _requiredViolations)
+            {
+                if (violation.FileId == fileId && violation.FieldPath == propertyPath) return true;
+            }
+
+            return false;
+        }
+
         // An unassigned [SerializeReference] slot — a field whose pointer is the null sentinel (rid -2). Its band is
         // still a dropdown assigning a type through the live serialization API; a slot whose field path could not be
-        // recovered stays static (nothing to target).
+        // recovered stays static (nothing to target). A required slot wears the missing card's clothes — amber
+        // "<None>" header and amber band accent, no badge — so every "fix this" card in the graph reads the same.
         private VisualElement BuildEmptySlotCard(string assetPath, long fileId, string pathLabel)
         {
-            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
-                .AddClass(NodeClass)
-                .AddClass(NodeEmptyClass);
+            var isRequired = IsFieldRequiredUnset(fileId, pathLabel);
 
-            // A plain Label so the --empty USS rule tints it, rather than an AspidLabel painting its own status colour.
-            var typeLabel = new Label(EmptySlotText)
-                .AddClass(NodeTypeClass)
-                .SetPickingMode(PickingMode.Ignore);
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(NodeClass);
+            if (!isRequired) card.AddClass(NodeEmptyClass);
+
+            // A plain Label on an ordinary empty slot so the --empty USS rule tints it; a required slot paints its
+            // own amber status via AspidLabel, exactly like a missing card's type header.
+            var typeLabel = isRequired
+                ? (VisualElement)new AspidLabel(EmptySlotText, AspidLabelPreset.Default
+                        .SetLabelStatus(StatusStyle.Type.Warning)
+                        .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                        .SetLineSize(AspidDividingLineSizeStyle.Type.None))
+                    .AddClass(NodeTypeClass)
+                : new Label(EmptySlotText).AddClass(NodeTypeClass);
+            typeLabel.SetPickingMode(PickingMode.Ignore);
+            if (isRequired) typeLabel.tooltip = "Required reference is not set";
 
             var bandRow = new VisualElement()
                 .AddClass(NodeBandRowClass)
@@ -764,8 +881,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // <None> is a no-op here — the slot is already unset.
                 var graphPath = pathLabel;
                 AspidGradientButton band = null;
-                band = new AspidGradientButton(AssignCollapsedText, _ => OpenLivePicker(assetPath, fileId, graphPath, band))
+                band = new AspidGradientButton(isRequired ? AssignRequiredCollapsedText : AssignCollapsedText,
+                        _ => OpenLivePicker(assetPath, fileId, graphPath, band))
                     .AddClass(NodeBandClass);
+                if (isRequired) band.AddClass(NodeBandMissingClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
             }
@@ -786,6 +905,201 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             card.AddChild(meta);
 
             return card;
+        }
+
+        // Trailing cards for required violations the graph has no node for — a string / SerializableType required
+        // field is never threaded into RefIds, so SerializeReferenceGraphScanner never emits a document for a
+        // component whose only serialized-reference-worthy fields are these.
+        // Mirrors a required BuildEmptySlotCard line for line — amber "<None>" header, amber "Assign ▼" band,
+        // "Component.field:" + "unassigned" on the footer — so a required string / SerializableType field reads
+        // exactly like a required managed-reference slot (and both echo the missing card's clothes). The pick writes
+        // the type's assembly-qualified name into the backing string; a scene asset cannot be object-loaded (see
+        // TryResolveRequiredStringProperty), so its band stays a static line edited through the normal Inspector.
+        private VisualElement BuildRequiredOnlyCard(GateViolation violation, Dictionary<string, Object[]> componentCache)
+        {
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(NodeClass);
+
+            var typeLabel = new AspidLabel(EmptySlotText, AspidLabelPreset.Default
+                    .SetLabelStatus(StatusStyle.Type.Warning)
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H5)
+                    .SetLineSize(AspidDividingLineSizeStyle.Type.None))
+                .AddClass(NodeTypeClass)
+                .SetPickingMode(PickingMode.Ignore);
+            typeLabel.tooltip = "Required type is not set";
+
+            var bandRow = new VisualElement()
+                .AddClass(NodeBandRowClass)
+                .AddChild(typeLabel);
+            bandRow.pickingMode = PickingMode.Ignore;
+
+            if (SerializeReferenceHelpers.IsScene(violation.AssetPath))
+            {
+                // Not reachable through the live serialization API — leave the band a static "<None>" line.
+                card.AddChild(bandRow);
+            }
+            else
+            {
+                AspidGradientButton band = null;
+                band = new AspidGradientButton(AssignRequiredCollapsedText, _ => OpenRequiredStringPicker(violation, band))
+                    .AddClass(NodeBandClass)
+                    .AddClass(NodeBandMissingClass);
+                band.AddLeadingContent(bandRow);
+                card.AddChild(band);
+            }
+
+            var component = ResolveComponentName(violation, componentCache);
+            var text = string.IsNullOrEmpty(component) ? violation.FieldPath : $"{component}.{violation.FieldPath}";
+
+            var meta = new VisualElement().AddClass(NodeFooterClass);
+            meta.AddChild(new Label($"{text}:")
+                .AddClass(NodeRootLabelClass)
+                .SetPickingMode(PickingMode.Ignore));
+            meta.AddChild(new Label("unassigned")
+                .AddClass(NodeRidClass)
+                .SetPickingMode(PickingMode.Ignore));
+            card.AddChild(meta);
+
+            return card;
+        }
+
+        // Constraint and current value are read from the live string property; a field the API cannot reach opens an
+        // unconstrained picker and surfaces the failure on apply (mirrors OpenLivePicker).
+        private void OpenRequiredStringPicker(GateViolation violation, AspidGradientButton anchor)
+        {
+            var filter = default(TypeSelectorFilter);
+            var currentAqn = string.Empty;
+
+            if (TryResolveRequiredStringProperty(violation, out var serializedObject, out var property))
+                using (serializedObject)
+                {
+                    currentAqn = property.stringValue ?? string.Empty;
+                    filter = BuildRequiredStringFilter(serializedObject, property);
+                }
+
+            TogglePicker(anchor, filter, currentAqn,
+                assemblyQualifiedName => ApplyRequiredString(violation, assemblyQualifiedName));
+        }
+
+        // The same candidate set the field's own [TypeSelector] dropdown offers: the attribute's constraints resolved
+        // member-first against the owning object (TypeSelectorConstraintResolver), the wrapper's T for a
+        // SerializableType<T> field, and the attribute's kind filter. Resolution warnings are the Inspector notice's
+        // concern — here an unresolvable constraint just widens the picker.
+        private static TypeSelectorFilter BuildRequiredStringFilter(SerializedObject serializedObject, SerializedProperty property)
+        {
+            if (!SerializeReferenceRequiredGate.TryGetRequired(property, out var selector)) return default;
+
+            var types = new List<Type>();
+
+            // The backing string of a SerializableType<T> wrapper carries the wrapper's generic constraint.
+            var path = property.propertyPath;
+            var lastDotIndex = path.LastIndexOf('.');
+            if (lastDotIndex >= 0)
+            {
+                using var parentProperty = serializedObject.FindProperty(path[..lastDotIndex]);
+                var parentField = parentProperty?.GetFieldInfo();
+                if (parentField is not null &&
+                    SerializableTypeUtility.TryGetBaseType(parentField.FieldType, out var wrapperBase) &&
+                    wrapperBase is not null && wrapperBase != typeof(object))
+                    types.Add(wrapperBase);
+            }
+
+            types.AddRange(TypeSelectorConstraintResolver.Resolve(
+                serializedObject.targetObject, selector.AssemblyQualifiedNames).Types);
+
+            return new TypeSelectorFilter
+            {
+                Types = types.Count > 0 ? types.ToArray() : null,
+                Allow = selector.Allow,
+            };
+        }
+
+        private void ApplyRequiredString(GateViolation violation, string assemblyQualifiedName)
+        {
+            // A non-empty name that fails to load is an unresolved pick, not a clear — leave the field untouched.
+            // <None> (empty) writes an empty name: for a required field that just keeps the violation visible.
+            if (!string.IsNullOrEmpty(assemblyQualifiedName) &&
+                Type.GetType(assemblyQualifiedName, throwOnError: false) is null)
+                return;
+
+            if (!TryResolveRequiredStringProperty(violation, out var serializedObject, out var property))
+            {
+                EditorUtility.DisplayDialog(
+                    "Assign Required Type",
+                    "This field cannot be edited here — it is not reachable through the serialization API. " +
+                    "Edit it in the Inspector instead.",
+                    "OK");
+                return;
+            }
+
+            using (serializedObject)
+            {
+                property.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
+
+                var target = serializedObject.targetObject;
+                EditorUtility.SetDirty(target);
+                PersistEdit(violation.AssetPath, target);
+            }
+
+            SerializeReferenceYamlProbeCache.ClearCache();
+            Rescan();
+        }
+
+        // Resolves the live document at the violation's file id and the string property at its field path — which is
+        // already a SerializedProperty path (the gate scanner records iterator.propertyPath verbatim), so unlike
+        // TryResolveLiveProperty no graph-path conversion applies. Returns false for a scene asset (not object-loadable).
+        private static bool TryResolveRequiredStringProperty(GateViolation violation,
+            out SerializedObject serializedObject, out SerializedProperty property)
+        {
+            serializedObject = null;
+            property = null;
+
+            if (SerializeReferenceHelpers.IsScene(violation.AssetPath)) return false;
+
+            foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(violation.AssetPath))
+            {
+                if (obj == null) continue;
+                if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out _, out var id) || id != violation.FileId) continue;
+
+                var serialized = new SerializedObject(obj);
+                var found = serialized.FindProperty(violation.FieldPath);
+                if (found is { propertyType: SerializedPropertyType.String })
+                {
+                    serializedObject = serialized;
+                    property = found;
+                    return true;
+                }
+
+                // The document matched but the path did not resolve to a string — no other document shares this
+                // file id, so bail rather than scan on.
+                serialized.Dispose();
+                return false;
+            }
+
+            return false;
+        }
+
+        // Best-effort owning-object type name, mirroring SerializeReferenceProjectView's resolver: saved assets are
+        // object-loaded (once per distinct path, memoised in componentCache) and matched by file id. Scenes cannot
+        // be object-loaded (see SerializeReferenceHelpers.IsScene), so a scene row shows the field path alone.
+        private static string ResolveComponentName(GateViolation violation, Dictionary<string, Object[]> componentCache)
+        {
+            if (SerializeReferenceHelpers.IsScene(violation.AssetPath)) return string.Empty;
+
+            if (!componentCache.TryGetValue(violation.AssetPath, out var assets))
+            {
+                assets = AssetDatabase.LoadAllAssetsAtPath(violation.AssetPath);
+                componentCache[violation.AssetPath] = assets;
+            }
+
+            foreach (var asset in assets)
+            {
+                if (asset == null) continue;
+                if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(asset, out _, out long fileId) && fileId == violation.FileId)
+                    return asset.GetType().Name;
+            }
+
+            return string.Empty;
         }
 
         // Warning-tinted group for rids no root reaches. Each orphan is a full node card (so a missing orphan is still
@@ -849,7 +1163,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Missing card: opens the YAML fix picker, constrained to the rid's declared field type so a repair cannot
         // pick an incompatible type that would null on import; an unresolvable field type falls back to unconstrained.
         private void OpenMissingPicker(string assetPath, long fileId, long rid, AspidGradientButton anchor) =>
-            TogglePicker(anchor, ResolveConstraint(assetPath, fileId, rid),
+            TogglePicker(anchor, BuildManagedReferenceFilter(ResolveConstraint(assetPath, fileId, rid)),
                 currentAqn: null, // a missing entry has no current value — nothing (not even <None>) wears the check
                 assemblyQualifiedName => ApplyFix(assetPath, fileId, rid, assemblyQualifiedName));
 
@@ -867,28 +1181,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     currentAqn = property.managedReferenceValue?.GetType().AssemblyQualifiedName ?? string.Empty;
                 }
 
-            TogglePicker(anchor, constraint, currentAqn,
+            TogglePicker(anchor, BuildManagedReferenceFilter(constraint), currentAqn,
                 assemblyQualifiedName => ApplyLive(assetPath, fileId, graphPath, assemblyQualifiedName));
         }
 
+        // The candidate filter every managed-reference picker shares: concrete types assignable to the field's declared
+        // type, plus the open generic definitions that can close over it. An unresolvable constraint falls back to
+        // unconstrained (any managed-reference type).
+        private static TypeSelectorFilter BuildManagedReferenceFilter(Type constraint)
+        {
+            var baseType = constraint ?? typeof(object);
+
+            return new TypeSelectorFilter
+            {
+                Types = new[] { baseType },
+                Predicate = SerializeReferenceHelpers.IsAssignableManagedReference,
+                AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
+                ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
+            };
+        }
+
         // The picker expands inline under the clicked card's band, one panel at a time. Generic over the source of
-        // truth: the caller supplies the constraint, the type to pre-navigate to, and what a pick does.
-        private void TogglePicker(AspidGradientButton anchor, Type constraint, string currentAqn, Action<string> onSelected)
+        // truth: the caller supplies the candidate filter, the type to pre-navigate to, and what a pick does.
+        private void TogglePicker(AspidGradientButton anchor, TypeSelectorFilter filter, string currentAqn, Action<string> onSelected)
         {
             var wasOpen = _openPickerRow == anchor;
             ClosePicker();
             if (wasOpen) return;
 
-            var baseType = constraint ?? typeof(object);
-
             var view = new TypeSelectorView(
-                filter: new TypeSelectorFilter
-                {
-                    Types = new[] { baseType },
-                    Predicate = SerializeReferenceHelpers.IsAssignableManagedReference,
-                    AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
-                    ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
-                },
+                filter: filter,
                 currentAqn: currentAqn, // null (no current-value concept) and "" (holds <None>) both pass through as-is
                 onSelected: onSelected,
                 onDismiss: ClosePicker);
