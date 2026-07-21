@@ -51,6 +51,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The Aspid brand mark shown beside the window title; padded variant so it doesn't dominate the tab.
         private const string WindowIconPath = "Icons/aspid_icon_window_tab_green_1022x1011";
 
+        // Below this the toolbar tabs and cards degrade into slivers; applied in CreateGUI so every instance
+        // gets it — including panes restored from a saved layout, which never pass through Reveal.
+        private static readonly Vector2 MinWindowSize = new(480f, 360f);
+
         // ShortcutManager ids for the tab-switch bindings. They surface under this category in Edit > Shortcuts and are
         // user-rebindable; the visible tab badges read the live binding back from these ids (see BindingLabel).
         private const string ShortcutCategory = "Aspid FastTools/Managed References/";
@@ -126,15 +130,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static SerializeReferenceWindow Reveal()
         {
+            // Title and minSize are owned by CreateGUI, so every instance gets them — including panes restored
+            // from a saved layout or created by scripts, which never pass through here.
             var window = GetWindow<SerializeReferenceWindow>();
-            window.titleContent = new GUIContent("Aspid FastTools", Resources.Load<Texture2D>(WindowIconPath));
-            window.minSize = new Vector2(480f, 360f);
             window.Show();
             return window;
         }
 
         private void CreateGUI()
         {
+            minSize = MinWindowSize;
+            titleContent = new GUIContent("Aspid FastTools", Resources.Load<Texture2D>(WindowIconPath));
+
             var root = rootVisualElement;
             root.AddAspidThemeStyleSheets()
                 .AddStyleSheetsFromResource(WindowStyleSheetPath)
