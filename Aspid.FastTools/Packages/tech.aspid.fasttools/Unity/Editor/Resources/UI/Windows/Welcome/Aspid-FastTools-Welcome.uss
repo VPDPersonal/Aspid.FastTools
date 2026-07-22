@@ -129,9 +129,9 @@ AspidAnimatedTitle {
     color: var(--aspid-colors-text-light);
 }
 
-/* Not-yet-imported marker ahead of the title: a single brand-blue dot quoting the dotted canvas — the
-   unread-marker idiom, so fresh samples catch the eye and the dot disappears once imported. */
-.aspid-fasttools-welcome__sample-import-dot {
+/* State marker ahead of the title: a single dot quoting the dotted canvas — the unread-marker idiom, brand
+   blue while the sample is still waiting to be imported, so fresh samples catch the eye. */
+.aspid-fasttools-welcome__sample-state-dot {
     width: 6px;
     height: 6px;
     flex-shrink: 0;
@@ -144,8 +144,19 @@ AspidAnimatedTitle {
 }
 
 /* Hovering the header verb turns the dot the Import accent green — "about to become imported". */
-.aspid-fasttools-welcome__sample--header-hover .aspid-fasttools-welcome__sample-import-dot {
+.aspid-fasttools-welcome__sample--header-hover .aspid-fasttools-welcome__sample-state-dot {
     background-color: var(--aspid-colors-status-success-text-dark);
+}
+
+/* Once imported the dot stays green — the sample is in the project. */
+.aspid-fasttools-welcome__sample-state-dot--imported {
+    background-color: var(--aspid-colors-status-success-text-dark);
+}
+
+/* An imported card's verb is Remove, so hovering it previews the destructive tone instead of the green
+   (equal specificity with the hover rule above — this one wins by coming later). */
+.aspid-fasttools-welcome__sample--header-hover .aspid-fasttools-welcome__sample-state-dot--imported {
+    background-color: var(--aspid-colors-status-error-text-dark);
 }
 
 

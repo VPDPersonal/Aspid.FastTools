@@ -49,7 +49,8 @@ namespace Aspid.FastTools.Editors
         private const string SampleHeaderRemoveClass = "aspid-fasttools-welcome__sample-header--remove";
         private const string SampleInfoClass = "aspid-fasttools-welcome__sample-info";
         private const string SampleTitleClass = "aspid-fasttools-welcome__sample-title";
-        private const string SampleImportDotClass = "aspid-fasttools-welcome__sample-import-dot";
+        private const string SampleStateDotClass = "aspid-fasttools-welcome__sample-state-dot";
+        private const string SampleStateDotImportedClass = "aspid-fasttools-welcome__sample-state-dot--imported";
         private const string SampleDividerClass = "aspid-fasttools-welcome__sample-divider";
         private const string SampleSweepClass = "aspid-fasttools-welcome__sample-sweep";
         private const string SampleSweepRemoveClass = "aspid-fasttools-welcome__sample-sweep--remove";
@@ -229,9 +230,9 @@ namespace Aspid.FastTools.Editors
         /// Builds a sample card in the References group-card idiom: a glass box whose whole header row is one flat
         /// clickable button (the display name on the left, the <paramref name="actionText"/> verb pinned to the
         /// right, an accent glow on hover), with the package.json description (when present) wrapping below.
-        /// A not-yet-imported sample (<paramref name="imported"/> is <see langword="false"/>) is flagged by a
-        /// small brand-blue dot ahead of the title — the unread-marker idiom; an imported one drops the dot and
-        /// its destructive verb hovers in the error tone. <see langword="null"/> means the state doesn't apply
+        /// A state dot ahead of the title carries <paramref name="imported"/>: brand-blue while the sample is
+        /// not imported yet (the unread-marker idiom), green once it is; an imported card's destructive verb
+        /// also hovers in the error tone. <see langword="null"/> drops the dot — the state doesn't apply
         /// (local, non-UPM samples).
         /// </summary>
         private static VisualElement CreateSampleCard(
@@ -258,12 +259,16 @@ namespace Aspid.FastTools.Editors
                 .AddClass(SampleInfoClass)
                 .SetPickingMode(PickingMode.Ignore);
 
-            if (imported == false)
+            if (imported.HasValue)
             {
                 // Kept pickable (no click handler — presses bubble through to the header button) so its
                 // tooltip can explain the state.
-                var dot = new VisualElement().AddClass(SampleImportDotClass);
-                dot.tooltip = "Not imported yet";
+                var dot = new VisualElement().AddClass(SampleStateDotClass);
+
+                if (imported.Value)
+                    dot.AddClass(SampleStateDotImportedClass);
+
+                dot.tooltip = imported.Value ? "Imported" : "Not imported yet";
                 info.AddChild(dot);
             }
 

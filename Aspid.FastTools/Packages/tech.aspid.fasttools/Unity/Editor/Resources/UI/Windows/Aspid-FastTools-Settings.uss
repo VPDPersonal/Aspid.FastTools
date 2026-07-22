@@ -50,6 +50,10 @@
     /* Centre every row's caption against its control so the captions sit at one height across all rows. The switches
        already centre via inline styles; this brings the EnumField row (which has none) onto the same baseline. */
     align-items:                                          center;
+    /* The hover lift fades in and out on the window's shared 0.25s ease-out beat instead of snapping. */
+    transition-property:                                  background-color;
+    transition-duration:                                  0.25s;
+    transition-timing-function:                           ease-out;
 }
 
 .aspid-fasttools-settings__section-content > .unity-base-field:hover,
@@ -126,6 +130,10 @@
     border-color:                                         var(--aspid-colors-shade-dark);
     border-radius:                                        8px;
     color:                                                var(--aspid-colors-text-light);
+    /* The status wash (fill, frame and text together) fades on the same 0.25s ease-out beat as the row cards. */
+    transition-property:                                  background-color, border-color, color;
+    transition-duration:                                  0.25s;
+    transition-timing-function:                           ease-out;
 }
 
 .aspid-fasttools-settings__action:hover {
