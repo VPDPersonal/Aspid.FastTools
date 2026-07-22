@@ -791,12 +791,11 @@
     color:                                                 var(--aspid-colors-status-info-text-light);
 }
 
-/* A single broken reference inside a group: asset path on the left, dim rid on the right; the whole row pings. The
-   path wraps to as many lines as it needs while the rid stays pinned to the right, so align-items sits at the top to
-   anchor the rid to the path's first line rather than floating it against the middle of a multi-line block. */
+/* A single broken reference inside a group: asset path on the left, dim rid on the right; the whole row pings.
+   The path is start-elided to one line (see __group-entry-path), so the row is always single-line. */
 .aspid-fasttools-repair-references__group-entry {
     flex-direction:                                        row;
-    align-items:                                           flex-start;
+    align-items:                                           center;
     padding:                                               2px 4px;
     border-radius:                                         3px;
     cursor:                                                link;
@@ -810,15 +809,17 @@
     background-color:                                      var(--aspid-colors-bg-dark);
 }
 
-/* min-width:0 lets the path shrink below its content's intrinsic width so a long path wraps to multiple lines within
-   the row instead of overrunning it and shoving the rid off the right edge (default min-width:auto would refuse to
-   shrink). white-space:normal does the wrapping; the rid keeps its full width beside it. */
+/* min-width:0 lets the path shrink below its content's intrinsic width (default min-width:auto would refuse), and a
+   long path stays on one line: the START is elided so the filename — the part that identifies the asset — survives
+   the cut. The full path lives in the tooltip and in selection-copy. */
 .aspid-fasttools-repair-references__group-entry-path {
     flex-grow:                                             1;
     flex-shrink:                                           1;
     min-width:                                             0;
     color:                                                 var(--aspid-colors-text-light);
-    white-space:                                           normal;
+    overflow:                                              hidden;
+    text-overflow:                                         ellipsis;
+    -unity-text-overflow-position:                         start;
     /* Entry text is selectable for copying (paths are the payload); the I-beam signals that over the row's link cursor. */
     cursor:                                                text;
 }
