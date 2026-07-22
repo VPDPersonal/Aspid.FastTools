@@ -210,7 +210,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(property);
                 var canFix = SerializeReferenceHelpers.TryGetRepairLocation(property, out _, out _, out _);
 
-                // Smart Fix suggestion ("· → Pistol?"). The ranking is cached per (asset, rid), so this stays cheap
+                // Smart Fix suggestion ("· → Pistol"). The ranking is cached per (asset, rid), so this stays cheap
                 // across IMGUI's per-frame repaints; the candidate is pre-declared so it stays definitely assigned
                 // when the short-circuit skips the probe.
                 SerializeReferenceRepairSuggestions.RepairCandidate suggestion = default;
@@ -622,7 +622,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Draws a compact single-row notice, mirroring the UIToolkit <see cref="SerializeReferenceNotice"/>: a terse
         /// message, then a bold, right-pinned clickable action word (underlined; it lightens on hover) and — for a
-        /// missing-type notice with a Smart Fix candidate — an optional trailing suggestion word ("· → Pistol?")
+        /// missing-type notice with a Smart Fix candidate — an optional trailing suggestion word ("· → Pistol")
         /// clustered just after it at the right edge. The full <paramref name="detail"/> rides each segment's hover
         /// tooltip. Without <paramref name="ridColor"/> the row is a warning: a yellow triangle icon and the warning
         /// amber palette (missing-type / required). With <paramref name="ridColor"/> it is the shared-reference variant:

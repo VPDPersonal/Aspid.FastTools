@@ -368,6 +368,45 @@
     white-space:                                           normal;
 }
 
+/* Accent legend under the hint — decodes the two card tones (amber = broken/required, blue = pending migration).
+   Rendered only when both bands are on screen at once (see RenderGroups), so an all-amber or all-blue result list
+   never carries a key explaining a color it doesn't show. Tucked into the hint's 10px gap: its own 10px bottom
+   margin replaces the spacing to the cards below. */
+.aspid-fasttools-repair-references__legend {
+    flex-direction:                                        row;
+    align-items:                                           center;
+    margin-top:                                            -4px;
+    margin-bottom:                                         10px;
+}
+
+.aspid-fasttools-repair-references__legend--hidden {
+    display:                                               none;
+}
+
+.aspid-fasttools-repair-references__legend-item {
+    flex-direction:                                        row;
+    align-items:                                           center;
+    margin-right:                                          16px;
+}
+
+/* Same 6px dot idiom as the Welcome sample-state markers; the muted -text-dark swatches match the header sweeps
+   rather than the bright title text, keeping the key quieter than the cards it explains. */
+.aspid-fasttools-repair-references__legend-dot {
+    width:                                                 6px;
+    height:                                                6px;
+    border-radius:                                         3px;
+    margin-right:                                          6px;
+    background-color:                                      var(--aspid-colors-status-warning-text-dark);
+}
+
+.aspid-fasttools-repair-references__legend-dot--info {
+    background-color:                                      var(--aspid-colors-status-info-text-dark);
+}
+
+.aspid-fasttools-repair-references__legend-text {
+    color:                                                 var(--aspid-colors-text-dark);
+}
+
 /* One receipt per bulk Fix all, stacked in the summary list (newest at the bottom); the margin both spaces stacked
    receipts apart and holds the gap from the last one to the group list / empty area below. The list container itself
    has no styling — empty until the first fix, so it leaves no footprint then. */
@@ -780,6 +819,8 @@
     min-width:                                             0;
     color:                                                 var(--aspid-colors-text-light);
     white-space:                                           normal;
+    /* Entry text is selectable for copying (paths are the payload); the I-beam signals that over the row's link cursor. */
+    cursor:                                                text;
 }
 
 /* flex-shrink:0 keeps the rid at its natural width and pinned to the right however many lines the path wraps to. */
@@ -788,6 +829,7 @@
     margin-left:                                           10px;
     color:                                                 var(--aspid-colors-text-dark);
     -unity-text-align:                                     middle-right;
+    cursor:                                                text;
 }
 
 /* A required-violation row's "Component.field" column — same dim, right-pinned treatment as __group-entry-rid, one
@@ -797,6 +839,7 @@
     margin-left:                                           10px;
     color:                                                 var(--aspid-colors-text-dark);
     -unity-text-align:                                     middle-right;
+    cursor:                                                text;
 }
 
 /* --- Keyboard navigation ---
