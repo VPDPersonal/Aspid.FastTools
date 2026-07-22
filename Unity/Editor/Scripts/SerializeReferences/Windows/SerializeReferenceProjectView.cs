@@ -70,6 +70,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string GroupEntryPathClass = RootClass + "__group-entry-path";
         private const string GroupEntryRidClass = RootClass + "__group-entry-rid";
         private const string GroupEntryFieldClass = RootClass + "__group-entry-field";
+        private const string NavTargetClass = RootClass + "__nav-target";
+        private const string NavTargetFocusedClass = NavTargetClass + "--focused";
 
         // Chevron on the "Fix all (N)" dropdown button; only the glyph differs between the two states.
         private const string FixArrowCollapsed = "▼";
@@ -89,6 +91,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private AspidGradientButton _openPickerRow;
         private VisualElement _openPickerCard;
         private readonly AspidGradientButton _scanButton;
+        private readonly ScrollView _scroll;
+
+        // Keyboard navigation: one flat focus ring over every actionable element in visual order — Rescan first,
+        // then each card's Fix all / action row / entry rows. -1 means nothing is highlighted.
+        private readonly List<(VisualElement Element, Action Activate)> _navTargets = new();
+        private int _navIndex = -1;
 
         // Required-violations audit has no incrementally-maintained index like SerializeReferenceTypeUsageIndex, so it
         // is only (re)scanned on an explicit Scan/Rescan click, not on every Initialize() (tab switch would otherwise
@@ -167,10 +175,120 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(_empty)
                 .AddChild(_results);
 
-            var scroll = new ScrollView().AddClass(ScrollClass);
-            scroll.AddChild(content);
+            _scroll = new ScrollView().AddClass(ScrollClass);
+            _scroll.AddChild(content);
 
-            root.AddChild(scroll);
+            root.AddChild(_scroll);
+
+            // Arrow-key navigation: the root holds keyboard focus (grabbed on attach, re-grabbed when the picker
+            // closes) so key events reach OnNavKeyDown even before anything is highlighted; events from focused
+            // descendants bubble here too.
+            focusable = true;
+            RegisterCallback<KeyDownEvent>(OnNavKeyDown);
+            RegisterCallback<AttachToPanelEvent>(_ => schedule.Execute(() => Focus()));
+
+            ResetNavTargets();
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Keyboard navigation
+        // ---------------------------------------------------------------------------------------------------------
+
+        private void OnNavKeyDown(KeyDownEvent evt)
+        {
+            // The open type picker owns the keyboard (its own search + list navigation) — stay out of its way.
+            if (_openPicker is not null) return;
+
+            // FunctionKey rides along with arrows on some platforms; any real modifier means the key is not ours.
+            if ((evt.modifiers & ~EventModifiers.FunctionKey) != 0) return;
+
+            switch (evt.keyCode)
+            {
+                case KeyCode.DownArrow:
+                    MoveNavFocus(+1);
+                    evt.StopPropagation();
+                    break;
+
+                case KeyCode.UpArrow:
+                    MoveNavFocus(-1);
+                    evt.StopPropagation();
+                    break;
+
+                case KeyCode.Return or KeyCode.KeypadEnter when _navIndex >= 0:
+                    _navTargets[_navIndex].Activate();
+                    evt.StopPropagation();
+                    break;
+
+                case KeyCode.Escape when _navIndex >= 0:
+                    ClearNavFocus();
+                    evt.StopPropagation();
+                    break;
+            }
+        }
+
+        // First press (nothing highlighted) lands on Rescan whichever arrow is hit; after that the ring clamps at
+        // both ends instead of wrapping.
+        private void MoveNavFocus(int delta)
+        {
+            if (_navTargets.Count == 0) return;
+            SetNavFocus(_navIndex < 0 ? 0 : Mathf.Clamp(_navIndex + delta, 0, _navTargets.Count - 1));
+        }
+
+        private void SetNavFocus(int index, bool scrollTo = true)
+        {
+            if (_navIndex == index) return;
+
+            ClearNavFocus();
+            _navIndex = index;
+
+            var element = _navTargets[index].Element;
+            // Gradient buttons paint their hover in code (accent overlay + tinted labels); the focused class's flat
+            // fill would just show through their fading gradient as a gray pill, so they take ONLY the programmatic
+            // hover and the plain rows take ONLY the class.
+            if (element is AspidGradientButton button) button.Highlighted = true;
+            else element.AddToClassList(NavTargetFocusedClass);
+            SetHeaderSweep(element, on: true);
+            if (scrollTo) _scroll.ScrollTo(element);
+        }
+
+        private void ClearNavFocus()
+        {
+            if (_navIndex >= 0 && _navIndex < _navTargets.Count)
+            {
+                var element = _navTargets[_navIndex].Element;
+                if (element is AspidGradientButton button) button.Highlighted = false;
+                else element.RemoveFromClassList(NavTargetFocusedClass);
+                SetHeaderSweep(element, on: false);
+            }
+
+            _navIndex = -1;
+        }
+
+        // A focused Fix all header also lights its card's divider sweep — the same card-level hover mirror the
+        // mouse path drives in CreateHeaderSweep — so keyboard focus and mouse hover render identically.
+        private static void SetHeaderSweep(VisualElement element, bool on)
+        {
+            if (element.ClassListContains(GroupFixAllClass))
+                element.parent?.EnableInClassList(GroupHeaderHoverClass, on);
+        }
+
+        // Every render pass rebuilds the ring from scratch (the old elements are gone with _list.Clear()). Rescan is
+        // always slot 0; a highlight sitting on it survives the rebuild, so Enter-on-Rescan keeps its highlight.
+        private void ResetNavTargets()
+        {
+            var keepScanFocus = _navIndex == 0;
+            ClearNavFocus();
+            _navTargets.Clear();
+
+            RegisterNavTarget(_scanButton, ScanProject);
+            if (keepScanFocus) SetNavFocus(0, scrollTo: false);
+        }
+
+        private void RegisterNavTarget(VisualElement element, Action activate)
+        {
+            // EnableInClassList (not AddToClassList): Rescan is re-registered on every reset and must not stack copies.
+            element.EnableInClassList(NavTargetClass, true);
+            _navTargets.Add((element, activate));
         }
 
         // Cold index: open idle and wait for a deliberate Scan click — the cold sweep parses every asset's YAML behind
@@ -226,6 +344,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void RenderGroups(List<ProjectGroup> groups, IReadOnlyList<GateViolation> requiredViolations, bool canceled)
         {
             _list.Clear();
+            ResetNavTargets();
 
             var missingCount = groups.Sum(group => group.Entries.Count);
             var requiredCount = requiredViolations.Count;
@@ -301,6 +420,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void ShowMissingReferencesClean()
         {
             _list.Clear();
+            ResetNavTargets();
             var requiredViolations = RequiredViolationsForRender;
 
             ShowResults(
@@ -367,6 +487,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(GroupFixAllClass);
             // A migration card keeps its calm info tone end to end — the amber Fix all accent is the "broken" alarm.
             if (isMigration) fixAll.AddClass(GroupFixAllMigrateClass);
+            RegisterNavTarget(fixAll, () => ToggleGroupPicker(group, constraint, fixAll));
             fixAll.tooltip = constraint == typeof(object)
                 ? $"{displayName}\nMixed or unresolvable field types — the picker is unconstrained (any managed-reference type)."
                 : $"{displayName}\nConstrained to {constraint.FullName}.";
@@ -434,28 +555,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The accent hairline that scales in under a flat header button while it is hovered — shared idiom with the
         // Welcome sample cards. The sweep is the button's sibling, so USS :hover can't reach it; the button mirrors
         // its hover onto a container modifier (resolved lazily via parent, at event time) the sweep rule listens to.
-        private static VisualElement CreateHeaderSweep(AspidGradientButton header, string sweepClass, string hoverClass)
+        private VisualElement CreateHeaderSweep(AspidGradientButton header, string sweepClass, string hoverClass)
         {
             var sweep = new VisualElement()
                 .AddClass(sweepClass)
                 .SetPickingMode(PickingMode.Ignore);
 
             header.RegisterCallback<MouseEnterEvent>(_ => header.parent?.AddToClassList(hoverClass));
-            header.RegisterCallback<MouseLeaveEvent>(_ => header.parent?.RemoveFromClassList(hoverClass));
+            // Composes with the keyboard ring: while the header is the nav-focused element the sweep stays lit
+            // after the mouse leaves (mirrors AspidGradientButton.Highlighted keeping the glow on).
+            header.RegisterCallback<MouseLeaveEvent>(_ =>
+            {
+                if (IsNavFocused(header)) return;
+                header.parent?.RemoveFromClassList(hoverClass);
+            });
 
             return sweep;
         }
+
+        private bool IsNavFocused(VisualElement element) =>
+            _navIndex >= 0 && _navIndex < _navTargets.Count && _navTargets[_navIndex].Element == element;
 
         // A one-click bulk action (Smart Fix / Migrate all) as a member of the entry-row family: a left-aligned
         // accent verb over the same flat hover fill as the ping rows below it, instead of a filled gradient pill
         // floating over the glass card. Each card keeps one accent: warning amber for a Smart Fix guess on a
         // broken card, info for a pending migration.
-        private static VisualElement BuildGroupActionRow(string text, string tooltipText, bool info, Action onClick)
+        private VisualElement BuildGroupActionRow(string text, string tooltipText, bool info, Action onClick)
         {
             var row = new Label(text).AddClass(GroupActionClass);
             if (info) row.AddClass(GroupActionInfoClass);
             row.tooltip = tooltipText;
             row.RegisterCallback<ClickEvent>(_ => onClick());
+            RegisterNavTarget(row, onClick);
             return row;
         }
 
@@ -487,8 +618,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(GroupEntryRidClass)
                 .SetPickingMode(PickingMode.Ignore);
 
-            row.AddChild(path).AddChild(rid);
-            row.RegisterCallback<ClickEvent>(_ =>
+            void Jump()
             {
                 var asset = AssetDatabase.LoadMainAssetAtPath(entry.AssetPath);
                 if (asset is null) return;
@@ -496,7 +626,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Cross-link: jump to the asset's full Inspect graph; ping as a fallback when hosted standalone.
                 if (OnInspectAsset is not null) OnInspectAsset(asset);
                 else EditorGUIUtility.PingObject(asset);
-            });
+            }
+
+            row.AddChild(path).AddChild(rid);
+            row.RegisterCallback<ClickEvent>(_ => Jump());
+            RegisterNavTarget(row, Jump);
 
             return row;
         }
@@ -1031,8 +1165,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(GroupEntryFieldClass)
                 .SetPickingMode(PickingMode.Ignore);
 
-            row.AddChild(path).AddChild(field);
-            row.RegisterCallback<ClickEvent>(_ =>
+            void Jump()
             {
                 var asset = AssetDatabase.LoadMainAssetAtPath(violation.AssetPath);
                 if (asset is null) return;
@@ -1040,7 +1173,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Cross-link: jump to the asset's full Inspect graph; ping as a fallback when hosted standalone.
                 if (OnInspectAsset is not null) OnInspectAsset(asset);
                 else EditorGUIUtility.PingObject(asset);
-            });
+            }
+
+            row.AddChild(path).AddChild(field);
+            row.RegisterCallback<ClickEvent>(_ => Jump());
+            RegisterNavTarget(row, Jump);
 
             return row;
         }
@@ -1135,6 +1272,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _openPicker = null;
             _openPickerRow = null;
             _openPickerCard = null;
+
+            // The dismissed picker leaves keyboard focus dangling on its (removed) search field; reclaim it so the
+            // arrow-key ring keeps working. Guarded — ClosePicker also runs from render paths before attach.
+            if (panel is not null) Focus();
         }
 
         private static Type ResolveType(string assemblyQualifiedName) =>
@@ -1144,6 +1285,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void ShowEmptyState(bool success, string title, string message)
         {
+            ResetNavTargets();
             _results.AddClass(ResultsHiddenClass);
             _empty.RemoveClass(EmptyHiddenClass);
             _empty.Clear();

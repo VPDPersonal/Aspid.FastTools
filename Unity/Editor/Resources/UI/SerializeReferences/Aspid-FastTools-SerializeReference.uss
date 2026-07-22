@@ -799,6 +799,27 @@
     -unity-text-align:                                     middle-right;
 }
 
+/* --- Keyboard navigation ---
+   Arrow keys walk one flat focus ring over every actionable element in the audit (Rescan, each card's Fix all,
+   Smart Fix / Migrate rows, entry rows); Enter activates the highlighted one, Escape drops the highlight. The
+   highlight mirrors each element's own hover treatment so keyboard focus and mouse hover read as one state:
+   rows take the flat hover fill from the class below; the gradient-button ring members (Rescan, Fix all) never
+   carry the focused class at all — their hover is painted in code, and SetNavFocus drives it through
+   AspidGradientButton.Highlighted (the same accent overlay + label tint as a real mouse hover), because this
+   flat fill would show through their fading gradient as a gray pill. */
+.aspid-fasttools-repair-references__nav-target--focused {
+    background-color:                                      var(--aspid-colors-bg-dark);
+}
+
+/* The action rows also lighten their accent text on hover — mirror that for the keyboard highlight too. */
+.aspid-fasttools-repair-references__group-action.aspid-fasttools-repair-references__nav-target--focused {
+    color:                                                 var(--aspid-colors-status-warning-text-light);
+}
+
+.aspid-fasttools-repair-references__group-action--info.aspid-fasttools-repair-references__nav-target--focused {
+    color:                                                 var(--aspid-colors-status-info-text-light);
+}
+
 /* A compatible MonoScript dragged over the field highlights the header as a valid drop target. */
 .aspid-fasttools-serialize-reference--drop-target {
     background-color:                                      var(--aspid-colors-bg-light);
