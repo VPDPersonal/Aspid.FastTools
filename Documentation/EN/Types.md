@@ -134,6 +134,9 @@ An empty field with `Required = true` looks like this in the Inspector:
 
 ![A filled picker field next to an empty Required field showing the inline notice](../Images/aspid_fasttools_type_selector_required.png)
 
+To find and fix such violations project-wide from the FastTools window instead of chasing them
+one Inspector at a time, see [Bulk repair tabs](SerializeReferenceTooling.md#bulk-repair-tabs).
+
 ## Dynamic base types via member references
 
 The string constructors resolve **member-first**: when the string is a valid C# identifier that matches an instance field or property on the same object, that member's *current value* supplies the base type(s) — so one field can constrain another's picker, live in the Inspector. Any other string is treated as an assembly-qualified type name (`Type.GetType`), which is what you need for a type the call site cannot reference with `typeof` (across an editor or asmdef boundary).
