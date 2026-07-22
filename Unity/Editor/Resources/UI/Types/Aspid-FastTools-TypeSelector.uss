@@ -1,4 +1,8 @@
+/* row_bg: the per-row state fill (transparent at rest, hover grey, selection accent) — set by the state rules in
+   the Item section and painted by the row root / the divider row's backplate. Declared here so every row resolves
+   a value even at rest. */
 .aspid-fasttools-type-selector {
+    --aspid-fasttools-colors-type_selector-row_bg: rgba(0, 0, 0, 0);
     padding:                5px 2px;
     flex-grow:              1;
     flex-direction:         column;
@@ -214,46 +218,87 @@ ToolbarSearchField TextElement {
 }
 
 /* ------------------------------------------------------ Item ------------------------------------------------------ */
-/* The padding-left is kept tight so the rows sit close to the picker's left edge. Hover lifts the surface a small grey
-   step; the selected row lifts to a clearly lighter neutral grey, far enough above the hover tone to read as the picked
-   row without leaning on a colour accent. */
+/* Each row is a transparent SHELL (the collection-view item, which doubles as the makeItem root) holding one
+   __item-content wrapper that carries everything visual: the horizontal layout, the tight edge padding and the
+   state fill. The fill is carried by the --aspid-fasttools-colors-type_selector-row_bg variable — the hover and
+   selected rules SET it on the shell, the content wrapper PAINTS it (hosts recolour selection by overriding the
+   variable, never background-color). The split exists for the divider row: the ListView owns its items' box
+   (DynamicHeight slots rows by measured height, ignores their margins, and interferes with their padding), so
+   the divider zone is made of shell height alone — the shell grows and the content wrapper, pinned to its
+   bottom, stays an ordinary 22px row that hover/selection light up without ever flooding the divider's air. */
 .aspid-fasttools-type-selector .unity-collection-view__item {
     height:                 22px;
+    padding:                0;
+    align-items:            stretch;
+    justify-content:        flex-end;
+    flex-direction:         column;
+}
+
+/* The shell never paints — these mirror every state selector Unity's default theme fills at, so the stock grey
+   and selection blue can't leak through the transparent shell in any hover/selected/focused combination. */
+.aspid-fasttools-type-selector .unity-collection-view__item:hover,
+.aspid-fasttools-type-selector .unity-collection-view__item--selected,
+.aspid-fasttools-type-selector .unity-collection-view__item--selected:hover,
+.aspid-fasttools-type-selector .unity-collection-view:focus .unity-collection-view__item--selected {
+    background-color:       rgba(0, 0, 0, 0);
+}
+
+/* The row's visual body. The padding-left is kept tight so the rows sit close to the picker's left edge. */
+.aspid-fasttools-type-selector__item-content {
+    height:                 22px;
+    flex-shrink:            0;
     align-items:            center;
     flex-direction:         row;
     padding-left:           1px;
     padding-right:          5px;
+    background-color:       var(--aspid-fasttools-colors-type_selector-row_bg);
 }
 
+/* Hover lifts the surface a dim step of the picker's interactive accent — the same hue as the selection fill
+   below, one tone darker, so hovered and selected read as two strengths of one accent instead of grey vs colour. */
 .aspid-fasttools-type-selector .unity-collection-view__item:hover {
-    background-color:       var(--aspid-colors-bg-light);
+    --aspid-fasttools-colors-type_selector-row_bg: var(--aspid-colors-status-info-shade-darkness);
 }
 
-/* The old selected grey sat only one step above hover and washed out against it; this lifts the selected row to a
-   clearly lighter neutral grey so the pick stands apart from a merely-hovered row by tone alone, no colour accent
-   needed. */
+/* The selected row wears the picker's interactive accent (the same info blue as the focused-search frame and the
+   link hovers) as a dark fill, so keyboard selection reads as "active" in the picker's own hue instead of a grey
+   step that washed out against hover. */
 .aspid-fasttools-type-selector .unity-collection-view__item--selected,
-.aspid-fasttools-type-selector .unity-collection-view__item--selected:hover {
-    background-color:       var(--aspid-colors-shade-light);
+.aspid-fasttools-type-selector .unity-collection-view__item--selected:hover,
+.aspid-fasttools-type-selector .unity-collection-view:focus .unity-collection-view__item--selected {
+    --aspid-fasttools-colors-type_selector-row_bg: var(--aspid-colors-status-info-shade-dark);
 }
 
-/* The first ordinary root category after the pinned block (<None>, Favorites, Recent) draws the divider
-   line that separates the pinned rows from the namespace hierarchy (toggled in code on the row root, which
-   doubles as the collection-view item): 1px line flush under the pinned block, 4px of air, then the usual
-   22px row — the height covers exactly border + padding + content so the row grid below is undisturbed.
-   The wrapper class rides along in the selector to outweigh the 22px height in the base row rule above. */
+/* The first ordinary root category after the pinned block (<None>, Favorites, Recent) carries the divider zone
+   as extra shell height above its bottom-pinned content: 4px of air, the 1px line, 4px of air, then the usual
+   22px row. The modifier is toggled in code on the shell. */
 .aspid-fasttools-type-selector
     .unity-collection-view__item.aspid-fasttools-type-selector__item--after-pinned {
-    height:                 27px;
-    padding-top:            4px;
-    border-top-width:       1px;
-    border-top-color:       var(--aspid-colors-shade-darkness);
+    height:                 31px;
 }
 
+/* The divider hairline: present in every row template, shown only on the row wearing --after-pinned. Absolutely
+   positioned in the divider zone (line at 4px: 4px of air to the pinned block above and to the content below),
+   so it takes no part in the row layout, ignores the content's border-radius and sits outside every fill. */
+.aspid-fasttools-type-selector__item-divider {
+    display:                none;
+    position:               absolute;
+    top:                    4px;
+    left:                   0;
+    right:                  0;
+    height:                 1px;
+    background-color:       var(--aspid-colors-shade-darkness);
+}
+
+.aspid-fasttools-type-selector__item--after-pinned > .aspid-fasttools-type-selector__item-divider {
+    display:                flex;
+}
+
+/* The block class on the shell exists for the modifier grammar (--after-pinned, --in-section, --current) and
+   descendant hooks; the shell's own layout lives in the collection-view__item rules above, the horizontal row
+   layout in __item-content. */
 .aspid-fasttools-type-selector__item {
     flex-grow:              1;
-    align-items:            center;
-    flex-direction:         row;
 }
 
 .aspid-fasttools-type-selector__item-icon {
@@ -365,8 +410,6 @@ ToolbarSearchField TextElement {
    the list — set apart only by its leading collapse chevron, a bold weight and a slightly dimmer caption. No caps, no
    shrunken font, no special fill, so the list stays visually uniform. */
 .aspid-fasttools-type-selector__section-title {
-    align-items:            center;
-    flex-direction:         row;
     background-color:       rgba(0, 0, 0, 0);
     cursor:                 link;
 }
