@@ -25,6 +25,23 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly AspidGradientButtonColorsStyle _colors;
 
         private Texture2D _gradientTexture;
+        private bool _highlighted;
+        private bool _hovered;
+
+        /// <summary>
+        /// Shows the hover visual (accent overlay + accent-tinted labels) programmatically, for host-driven states
+        /// like a keyboard focus ring.
+        /// </summary>
+        /// <remarks>Mouse hover and this flag compose: the visual stays on while either is active.</remarks>
+        internal bool Highlighted
+        {
+            get => _highlighted;
+            set
+            {
+                _highlighted = value;
+                ApplyHoverVisual(_highlighted || _hovered);
+            }
+        }
 
         /// <summary>
         /// Gets or sets the button label text.
@@ -189,16 +206,22 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private void OnMouseEnter(MouseEnterEvent _)
         {
-            _overlay.SetTarget(1f);
-            _label.style.color = _colors.Accent;
-            _trailingLabel.style.color = _colors.Accent;
+            _hovered = true;
+            ApplyHoverVisual(true);
         }
 
         private void OnMouseLeave(MouseLeaveEvent _)
         {
-            _overlay.SetTarget(0f);
-            _label.style.color = StyleKeyword.Null;
-            _trailingLabel.style.color = StyleKeyword.Null;
+            _hovered = false;
+            ApplyHoverVisual(_highlighted);
+        }
+
+        private void ApplyHoverVisual(bool on)
+        {
+            _overlay.SetTarget(on ? 1f : 0f);
+            var labelColor = on ? new StyleColor(_colors.Accent) : new StyleColor(StyleKeyword.Null);
+            _label.style.color = labelColor;
+            _trailingLabel.style.color = labelColor;
         }
 
         private void OnAttachToPanel(AttachToPanelEvent _)
