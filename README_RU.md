@@ -272,7 +272,7 @@ public sealed class Loadout : MonoBehaviour
 
 **`Project Settings → Aspid FastTools → SerializeReference`** управляет breakage detection, авто-расщеплением дублированных элементов списков, исключёнными из сканов папками и build/CI-гейтом (`Off` / `Warn` / `Fail`) — коммитимые значения хранятся в `ProjectSettings/SerializeReferenceSharedSettings.asset`, так что команда и CI ведут себя одинаково. Те же опции продублированы во вкладке **Settings** окна и на странице **`Preferences → Aspid FastTools`**; в headless-CI ту же проверку запускает `SerializeReferenceCiGate.RunCheck`.
 
-> Полный справочник: [SerializeReferences.md](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/SerializeReferences.md)
+> Полный справочник: [SerializeReferences.md](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/SerializeReferences.md) · вкладки окна, настройки и CI-гейт: [SerializeReferenceTooling.md](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/SerializeReferenceTooling.md)
 
 ---
 

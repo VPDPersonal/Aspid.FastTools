@@ -17,7 +17,7 @@ The package ships **sixteen** README files (4 main + 12 sample) that drift from 
 | `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/EN/README.md` | EN | `../Images/` |
 | `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/RU/README.md` | RU | `../Images/` |
 
-Per-feature references (`Types.md`, `SerializeReferences.md`, `Ids.md`, `SerializedPropertyExtensions.md`, `VisualElementExtensions.md`) live alongside the Documentation copies inside `Documentation/EN/` and `Documentation/RU/`.
+Per-feature references (`Types.md`, `SerializeReferences.md`, `SerializeReferenceTooling.md`, `Ids.md`, `SerializedPropertyExtensions.md`, `VisualElementExtensions.md`) live alongside the Documentation copies inside `Documentation/EN/` and `Documentation/RU/`.
 
 Expected structural differences between root and Documentation copies (not drift):
 

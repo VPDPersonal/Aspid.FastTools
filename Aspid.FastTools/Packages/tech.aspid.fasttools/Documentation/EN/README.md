@@ -268,7 +268,7 @@ A missing type (renamed or deleted) shows a yellow notice instead of a silent cl
 
 **`Project Settings → Aspid FastTools → SerializeReference`** controls breakage detection, auto de-aliasing of duplicated list elements, excluded scan folders, and the build/CI gate (`Off` / `Warn` / `Fail`) — committed values live in `ProjectSettings/SerializeReferenceSharedSettings.asset`, so teammates and CI behave identically. The same options are mirrored in the window's **Settings** tab and at **`Preferences → Aspid FastTools`**; headless CI runs the same check via `SerializeReferenceCiGate.RunCheck`.
 
-> Full reference: [SerializeReferences.md](SerializeReferences.md)
+> Full reference: [SerializeReferences.md](SerializeReferences.md) · window tabs, settings & CI gate: [SerializeReferenceTooling.md](SerializeReferenceTooling.md)
 
 ---
 

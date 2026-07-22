@@ -135,6 +135,9 @@ public enum TypeAllow
 
 ![Заполненное поле пикера рядом с пустым Required-полем с inline-предупреждением](../Images/aspid_fasttools_type_selector_required.png)
 
+Как находить и чинить такие нарушения по всему проекту из окна FastTools, а не по одному
+инспектору за раз, — см. [Bulk repair tabs](SerializeReferenceTooling.md#bulk-repair-tabs).
+
 ## Dynamic base types via member references
 
 Строковые конструкторы резолвят строку **member-first**: если строка — корректный C#-идентификатор и совпадает с instance-полем или свойством того же объекта, *текущее значение* этого члена задаёт базовый тип(ы) — так одно поле ограничивает пикер другого прямо в Инспекторе, вживую. Любая другая строка трактуется как assembly-qualified имя типа (`Type.GetType`) — то, что нужно для типа, на который в месте вызова нельзя сослаться через `typeof` (за границей editor-сборки или asmdef).
