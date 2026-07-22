@@ -44,6 +44,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ResultsHiddenClass = ResultsClass + "--hidden";
         private const string ResultsHeaderClass = RootClass + "__results-header";
         private const string ResultsHintClass = RootClass + "__results-hint";
+        private const string LegendClass = RootClass + "__legend";
+        private const string LegendHiddenClass = LegendClass + "--hidden";
+        private const string LegendItemClass = RootClass + "__legend-item";
+        private const string LegendDotClass = RootClass + "__legend-dot";
+        private const string LegendDotInfoClass = LegendDotClass + "--info";
+        private const string LegendTextClass = RootClass + "__legend-text";
         private const string SummaryListClass = RootClass + "__summary-list";
         private const string SummaryClass = RootClass + "__summary";
         private const string SummaryUndoClass = RootClass + "__summary-undo";
@@ -86,6 +92,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly AspidLabel _resultsHeader;
         private readonly VisualElement _summaries;
         private readonly Label _resultsHint;
+        private readonly VisualElement _legend;
         private readonly VisualElement _list;
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
@@ -156,6 +163,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _resultsHint = new Label(string.Empty).AddClass(ResultsHintClass);
 
+            // Color key for the two card accents; only shown when both are actually on screen (see RenderGroups).
+            _legend = new VisualElement()
+                .AddClass(LegendClass)
+                .AddClass(LegendHiddenClass)
+                .AddChild(BuildLegendItem("Broken — pick a replacement", info: false))
+                .AddChild(BuildLegendItem("Renamed — one-click migrate", info: true));
+
             // Receipt stack: one help-box per bulk Fix all, kept across chained fixes and cleared only on a fresh scan.
             _summaries = new VisualElement().AddClass(SummaryListClass);
 
@@ -165,6 +179,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(ResultsClass)
                 .AddChild(_resultsHeader)
                 .AddChild(_resultsHint)
+                .AddChild(_legend)
                 .AddChild(_summaries)
                 .AddChild(_list);
 
@@ -360,9 +375,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            ShowResults(BuildResultsHeaderText(missingCount, requiredCount), SerializeReferenceCanvasStyle.Warning);
-            _resultsHint.text = BuildResultsHintText(canceled, requiredCount > 0);
-
             // Pending migrations sink to the very bottom, below the Required violations card too: the whole amber
             // band (broken groups, then required fields) stacks first and the calm blue one-click cards close the
             // list. Each band keeps the scanner's order.
@@ -372,6 +384,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (IsMigrationGroup(group)) migrations.Add(group);
                 else _list.AddChild(BuildGroupCard(group));
             }
+
+            // The header splits the migration entries out of the missing count — a [MovedFrom] rename with a
+            // one-click fix shouldn't inflate the alarm number.
+            var migrationCount = migrations.Sum(group => group.Entries.Count);
+            ShowResults(
+                BuildResultsHeaderText(missingCount - migrationCount, migrationCount, requiredCount),
+                SerializeReferenceCanvasStyle.Warning);
+            _resultsHint.text = BuildResultsHintText(canceled, requiredCount > 0);
+
+            // The amber/blue key only earns its row when both accents are on screen at once.
+            var hasAmber = groups.Count > migrations.Count || requiredCount > 0;
+            _legend.EnableInClassList(LegendHiddenClass, migrations.Count == 0 || !hasAmber);
 
             if (requiredCount > 0)
                 _list.AddChild(BuildRequiredGroupCard(requiredViolations));
@@ -392,25 +416,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static string BuildCountText(int count, string noun) =>
             count == 1 ? $"1 {noun}" : $"{count} {(noun.EndsWith("y") ? noun[..^1] + "ies" : noun + "s")}";
 
-        private static string BuildResultsHeaderText(int missingCount, int requiredCount)
+        // Only non-zero parts make the header; brokenCount is the missing total MINUS the pending-migration entries,
+        // which get their own calmer "pending migration" wording.
+        private static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount)
         {
-            var missingText = BuildCountText(missingCount, "missing reference");
-            var requiredText = BuildCountText(requiredCount, "required violation");
+            var parts = new List<string>(3);
+            if (brokenCount > 0) parts.Add(BuildCountText(brokenCount, "missing reference"));
+            if (migrationCount > 0) parts.Add(BuildCountText(migrationCount, "pending migration"));
+            if (requiredCount > 0) parts.Add(BuildCountText(requiredCount, "required violation"));
 
-            if (missingCount > 0 && requiredCount > 0) return $"{missingText}, {requiredText}";
-            return missingCount > 0 ? missingText : requiredText;
+            return string.Join(", ", parts);
         }
 
         private static string BuildResultsHintText(bool canceled, bool hasRequiredViolations)
         {
             var hint = canceled
-                ? "Scan canceled — showing partial results. Each group is a broken type; Fix all re-points every entry (or pick <None> to clear them to null) across every file at once."
-                : "Each group is a broken stored type. Fix all picks one replacement and re-points every entry across every affected file at once — or pick <None> to clear them to null.";
+                ? "Scan canceled — showing partial results. Fix all re-points a group's every entry to one replacement, or to <None>."
+                : "Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.";
 
             if (hasRequiredViolations)
-                hint += " Required violations below list every unset [TypeSelector(Required = true)] field the same scan found — click a row to jump to its asset.";
+                hint += " Click a required-violation row to jump to its asset.";
 
             return hint;
+        }
+
+        // One dot + caption pair of the accent legend: amber (default) for the broken/required band, info blue for
+        // the pending-migration cards.
+        private static VisualElement BuildLegendItem(string text, bool info)
+        {
+            var dot = new VisualElement().AddClass(LegendDotClass);
+            if (info) dot.AddClass(LegendDotInfoClass);
+
+            return new VisualElement()
+                .AddClass(LegendItemClass)
+                .AddChild(dot)
+                .AddChild(new Label(text).AddClass(LegendTextClass));
         }
 
         // Shared "no missing references left" branch for ApplyGroupFix/ClearGroupToNull: stays in the results region
@@ -427,6 +467,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 requiredViolations.Count == 0 ? "No missing references" : $"No missing references, {BuildCountText(requiredViolations.Count, "required violation")}",
                 SerializeReferenceCanvasStyle.Success);
             _resultsHint.text = "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+            _legend.AddClass(LegendHiddenClass);
 
             if (requiredViolations.Count > 0)
                 _list.AddChild(BuildRequiredGroupCard(requiredViolations));
@@ -610,29 +651,67 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var row = new VisualElement().AddClass(GroupEntryClass);
 
-            var path = new Label(entry.AssetPath)
-                .AddClass(GroupEntryPathClass);
+            var path = MakeSelectable(new Label(entry.AssetPath)
+                .AddClass(GroupEntryPathClass));
             path.tooltip = entry.AssetPath;
 
-            var rid = new Label($"rid {entry.Entry.Rid}")
-                .AddClass(GroupEntryRidClass)
-                .SetPickingMode(PickingMode.Ignore);
-
-            void Jump()
-            {
-                var asset = AssetDatabase.LoadMainAssetAtPath(entry.AssetPath);
-                if (asset is null) return;
-
-                // Cross-link: jump to the asset's full Inspect graph; ping as a fallback when hosted standalone.
-                if (OnInspectAsset is not null) OnInspectAsset(asset);
-                else EditorGUIUtility.PingObject(asset);
-            }
+            var rid = MakeSelectable(new Label($"rid {entry.Entry.Rid}")
+                .AddClass(GroupEntryRidClass));
 
             row.AddChild(path).AddChild(rid);
-            row.RegisterCallback<ClickEvent>(_ => Jump());
-            RegisterNavTarget(row, Jump);
+            RegisterEntryRowClick(row, entry.AssetPath);
 
             return row;
+        }
+
+        // The path is the payload users most often need outside Unity, so entry-row text is selectable for copying.
+        // A drag-select ends in the same ClickEvent as a plain click, so the row's jump only fires when the click
+        // lands on text without leaving a selection behind.
+        private static Label MakeSelectable(Label label)
+        {
+            label.selection.isSelectable = true;
+            label.selection.doubleClickSelectsWord = true;
+            label.selection.tripleClickSelectsLine = true;
+            return label;
+        }
+
+        private void RegisterEntryRowClick(VisualElement row, string assetPath)
+        {
+            row.RegisterCallback<ClickEvent>(evt =>
+            {
+                if (evt.target is TextElement text && text.selection.HasSelection()) return;
+                JumpToAsset(assetPath);
+            });
+
+            RegisterNavTarget(row, () => JumpToAsset(assetPath));
+            row.AddManipulator(new ContextualMenuManipulator(evt => PopulateEntryContextMenu(evt, assetPath)));
+        }
+
+        // Right-click alternatives to the row's default left-click jump. Runs after the selectable labels populate
+        // their own items (bubble-up), so the menu is wiped first to drop their Copy entry — Cmd+C on a selection
+        // still copies, and the menu stays the same three items wherever the click lands.
+        private void PopulateEntryContextMenu(ContextualMenuPopulateEvent evt, string assetPath)
+        {
+            for (var i = evt.menu.MenuItems().Count - 1; i >= 0; i--)
+                evt.menu.RemoveItemAt(i);
+
+            evt.menu.AppendAction("Open in Asset References", _ => JumpToAsset(assetPath));
+
+            evt.menu.AppendAction(
+                "Open in Prefab Mode",
+                _ => UnityEditor.SceneManagement.PrefabStageUtility.OpenPrefab(assetPath),
+                assetPath.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase)
+                    ? DropdownMenuAction.Status.Normal
+                    : DropdownMenuAction.Status.Disabled);
+
+            evt.menu.AppendAction("Select in Project", _ =>
+            {
+                var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
+                if (asset is null) return;
+
+                Selection.activeObject = asset;
+                EditorGUIUtility.PingObject(asset);
+            });
         }
 
         // The group's bulk picker, inline below the Fix all button, constrained to the group's intersected field type.
@@ -1108,7 +1187,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Flat read-only list of every unset [TypeSelector(Required = true)] field, fed by the same headless scanner
         // as the build/CI gate. No bulk fix here — unlike a broken type, an empty required field has nothing sensible
-        // to auto-assign, so the row's only affordance is jumping to the offending asset.
+        // to auto-assign, so the row's only affordance is jumping to the offending asset (where the graph's inline
+        // Assign Required picker lives).
         private VisualElement BuildRequiredGroupCard(IReadOnlyList<GateViolation> violations)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -1121,7 +1201,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(GroupHeaderClass)
                 .SetPickingMode(PickingMode.Ignore);
 
-            var count = new Label(BuildCountText(violations.Count, "entry"))
+            var files = violations.Select(violation => violation.AssetPath).Distinct(StringComparer.Ordinal).Count();
+            var count = new Label($"{BuildCountText(violations.Count, "entry")} · {(files == 1 ? "1 file" : $"{files} files")}")
                 .AddClass(GroupCountClass)
                 .SetPickingMode(PickingMode.Ignore);
 
@@ -1157,29 +1238,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var row = new VisualElement().AddClass(GroupEntryClass);
 
-            var path = new Label(violation.AssetPath)
-                .AddClass(GroupEntryPathClass);
+            var path = MakeSelectable(new Label(violation.AssetPath)
+                .AddClass(GroupEntryPathClass));
             path.tooltip = violation.AssetPath;
 
-            var field = new Label(BuildRequiredViolationFieldText(violation, componentCache))
-                .AddClass(GroupEntryFieldClass)
-                .SetPickingMode(PickingMode.Ignore);
-
-            void Jump()
-            {
-                var asset = AssetDatabase.LoadMainAssetAtPath(violation.AssetPath);
-                if (asset is null) return;
-
-                // Cross-link: jump to the asset's full Inspect graph; ping as a fallback when hosted standalone.
-                if (OnInspectAsset is not null) OnInspectAsset(asset);
-                else EditorGUIUtility.PingObject(asset);
-            }
+            var field = MakeSelectable(new Label(BuildRequiredViolationFieldText(violation, componentCache))
+                .AddClass(GroupEntryFieldClass));
 
             row.AddChild(path).AddChild(field);
-            row.RegisterCallback<ClickEvent>(_ => Jump());
-            RegisterNavTarget(row, Jump);
+            RegisterEntryRowClick(row, violation.AssetPath);
 
             return row;
+        }
+
+        // Cross-link shared by every read-only audit row: jump to the asset's full Inspect graph; ping as a
+        // fallback when hosted standalone.
+        private void JumpToAsset(string assetPath)
+        {
+            var asset = AssetDatabase.LoadMainAssetAtPath(assetPath);
+            if (asset is null) return;
+
+            if (OnInspectAsset is not null) OnInspectAsset(asset);
+            else EditorGUIUtility.PingObject(asset);
         }
 
         // "Component.field" for the entry row's right column; GateViolation itself carries no owning-object type,
