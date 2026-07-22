@@ -52,15 +52,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string PickerAttachedClass = PickerClass + "--attached";
 
         private const string GroupClass = RootClass + "__group";
+        private const string GroupMigrateClass = GroupClass + "--migrate";
         private const string GroupPickingClass = GroupClass + "--picking";
+        private const string GroupHeaderHoverClass = GroupClass + "--header-hover";
+        private const string GroupDividerClass = RootClass + "__group-divider";
+        private const string GroupSweepClass = RootClass + "__group-sweep";
+        private const string GroupSweepMigrateClass = GroupSweepClass + "--migrate";
         private const string GroupHeaderRowClass = RootClass + "__group-header-row";
         private const string GroupHeaderRowStaticClass = GroupHeaderRowClass + "--static";
         private const string GroupHeaderClass = RootClass + "__group-header";
         private const string GroupCountClass = RootClass + "__group-count";
         private const string GroupFixAllClass = RootClass + "__group-fix-all";
         private const string GroupFixAllMigrateClass = GroupFixAllClass + "--migrate";
-        private const string GroupSuggestClass = RootClass + "__group-suggest";
-        private const string GroupMigrateClass = RootClass + "__group-migrate";
+        private const string GroupActionClass = RootClass + "__group-action";
+        private const string GroupActionInfoClass = GroupActionClass + "--info";
         private const string GroupEntryClass = RootClass + "__group-entry";
         private const string GroupEntryPathClass = RootClass + "__group-entry-path";
         private const string GroupEntryRidClass = RootClass + "__group-entry-rid";
@@ -239,11 +244,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ShowResults(BuildResultsHeaderText(missingCount, requiredCount), SerializeReferenceCanvasStyle.Warning);
             _resultsHint.text = BuildResultsHintText(canceled, requiredCount > 0);
 
+            // Pending migrations sink to the very bottom, below the Required violations card too: the whole amber
+            // band (broken groups, then required fields) stacks first and the calm blue one-click cards close the
+            // list. Each band keeps the scanner's order.
+            var migrations = new List<ProjectGroup>();
             foreach (var group in groups)
-                _list.AddChild(BuildGroupCard(group));
+            {
+                if (IsMigrationGroup(group)) migrations.Add(group);
+                else _list.AddChild(BuildGroupCard(group));
+            }
 
             if (requiredCount > 0)
                 _list.AddChild(BuildRequiredGroupCard(requiredViolations));
+
+            foreach (var group in migrations)
+                _list.AddChild(BuildGroupCard(group));
+        }
+
+        // An authoritative [MovedFrom] rename whose target also fits the group's field constraint — the same gate
+        // BuildGroupCard applies before offering Migrate all (see there for why the constraint matters).
+        private static bool IsMigrationGroup(ProjectGroup group)
+        {
+            var constraint = group.ResolveConstraint();
+            return SerializeReferenceMovedFromResolver.TryResolve(group.StoredType, out var target) &&
+                (constraint == typeof(object) || constraint.IsAssignableFrom(target));
         }
 
         private static string BuildCountText(int count, string noun) =>
@@ -332,9 +356,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var isMigration = SerializeReferenceMovedFromResolver.TryResolve(group.StoredType, out var migrationTarget) &&
                 (constraint == typeof(object) || constraint.IsAssignableFrom(migrationTarget));
 
+            // Card-level modifier so card-wide states (the --picking accent frame) can follow the card's own
+            // accent — a migration card is info-toned end to end, never the broken-card amber.
+            if (isMigration) card.AddClass(GroupMigrateClass);
+
             // Built first so the type name + count can be docked into its body; the captured local is assigned before use.
             AspidGradientButton fixAll = null;
-            fixAll = new AspidGradientButton(BuildFixAllLabel(group, expanded: false),
+            fixAll = new AspidGradientButton(BuildFixAllLabel(group, expanded: false, isMigration),
                     _ => ToggleGroupPicker(group, constraint, fixAll))
                 .AddClass(GroupFixAllClass);
             // A migration card keeps its calm info tone end to end — the amber Fix all accent is the "broken" alarm.
@@ -364,33 +392,71 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             fixAll.AddLeadingContent(info);
             card.AddChild(fixAll);
 
+            // Header divider + its underline sweep (the Welcome cards' idiom): the sweep rides the divider line,
+            // amber for a broken group, the calm info tone on a migration card. Both hide while the picker is
+            // docked — the dropdown is inserted right after the header and they would land under it.
+            card.AddChild(new AspidDividingLine(AspidDividingLinePreset.Default
+                    .SetTheme(ThemeStyle.Type.Light)
+                    .SetSize(AspidDividingLineSizeStyle.Type.Thin))
+                .AddClass(GroupDividerClass));
+
+            var sweep = CreateHeaderSweep(fixAll, GroupSweepClass, GroupHeaderHoverClass);
+            if (isMigration) sweep.AddClass(GroupSweepMigrateClass);
+            card.AddChild(sweep);
+
             if (isMigration)
             {
                 // Not a guess, so it replaces the Smart Fix row: same confirm + diff preview + Undo flow as a picked fix.
-                var migrate = new AspidGradientButton(
-                        $"Migrate all ({group.Entries.Count}) → {migrationTarget.Name}",
-                        _ => ApplyGroupFix(group, migrationTarget))
-                    .AddClass(GroupMigrateClass);
-                migrate.tooltip =
+                card.AddChild(BuildGroupActionRow(
+                    $"Migrate all ({group.Entries.Count}) → {migrationTarget.Name}",
                     $"Every entry resolves to {migrationTarget.FullName} via its declared [MovedFrom] — Unity already " +
                     "migrates them in memory when the asset loads. Migrating rewrites the stored type name in the " +
-                    "files so they match the code; the attribute can be removed once no file stores the old name.";
-                card.AddChild(migrate);
+                    "files so they match the code; the attribute can be removed once no file stores the old name.",
+                    info: true,
+                    () => ApplyGroupFix(group, migrationTarget)));
             }
             else if (TryGetGroupSuggestion(group, constraint, out var suggestion))
             {
                 // Reuse the shared label/detail builders so the Smart Fix copy never drifts from the inspector notice.
-                var suggest = new AspidGradientButton(SerializeReferenceHelpers.GetSuggestionLabel(suggestion),
-                        _ => ApplyGroupFix(group, suggestion.Type))
-                    .AddClass(GroupSuggestClass);
-                suggest.tooltip = SerializeReferenceHelpers.GetSuggestionDetail(suggestion);
-                card.AddChild(suggest);
+                card.AddChild(BuildGroupActionRow(
+                    $"Smart Fix {SerializeReferenceHelpers.GetSuggestionLabel(suggestion)}",
+                    SerializeReferenceHelpers.GetSuggestionDetail(suggestion),
+                    info: false,
+                    () => ApplyGroupFix(group, suggestion.Type)));
             }
 
             foreach (var entry in group.Entries)
                 card.AddChild(BuildGroupEntryRow(entry));
 
             return card;
+        }
+
+        // The accent hairline that scales in under a flat header button while it is hovered — shared idiom with the
+        // Welcome sample cards. The sweep is the button's sibling, so USS :hover can't reach it; the button mirrors
+        // its hover onto a container modifier (resolved lazily via parent, at event time) the sweep rule listens to.
+        private static VisualElement CreateHeaderSweep(AspidGradientButton header, string sweepClass, string hoverClass)
+        {
+            var sweep = new VisualElement()
+                .AddClass(sweepClass)
+                .SetPickingMode(PickingMode.Ignore);
+
+            header.RegisterCallback<MouseEnterEvent>(_ => header.parent?.AddToClassList(hoverClass));
+            header.RegisterCallback<MouseLeaveEvent>(_ => header.parent?.RemoveFromClassList(hoverClass));
+
+            return sweep;
+        }
+
+        // A one-click bulk action (Smart Fix / Migrate all) as a member of the entry-row family: a left-aligned
+        // accent verb over the same flat hover fill as the ping rows below it, instead of a filled gradient pill
+        // floating over the glass card. Each card keeps one accent: warning amber for a Smart Fix guess on a
+        // broken card, info for a pending migration.
+        private static VisualElement BuildGroupActionRow(string text, string tooltipText, bool info, Action onClick)
+        {
+            var row = new Label(text).AddClass(GroupActionClass);
+            if (info) row.AddClass(GroupActionInfoClass);
+            row.tooltip = tooltipText;
+            row.RegisterCallback<ClickEvent>(_ => onClick());
+            return row;
         }
 
         private static string BuildGroupCountText(ProjectGroup group)
@@ -402,9 +468,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{entryText} · {fileText}";
         }
 
-        // "Fix all (N)" plus a trailing chevron; only the glyph changes when the picker opens (ClosePicker relies on that).
-        private static string BuildFixAllLabel(ProjectGroup group, bool expanded) =>
-            $"Fix all ({group.Entries.Count})  {(expanded ? FixArrowExpanded : FixArrowCollapsed)}";
+        // The header verb plus a trailing chevron; only the glyph changes when the picker opens (ClosePicker relies
+        // on that). A broken group's picker fixes ("Fix all"); on a migration card nothing is broken and the picker
+        // is the manual escape hatch beside the one-click Migrate all row, so its verb is "Reassign all".
+        private static string BuildFixAllLabel(ProjectGroup group, bool expanded, bool isMigration) =>
+            $"{(isMigration ? "Reassign all" : "Fix all")} ({group.Entries.Count})  {(expanded ? FixArrowExpanded : FixArrowCollapsed)}";
 
         // Read-only entry row: clicking jumps to the asset — the bulk Fix above is the only mutation in project mode.
         private VisualElement BuildGroupEntryRow(ProjectEntry entry)
@@ -454,7 +522,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             });
 
             OpenPickerBelow(button, view);
-            button.Text = BuildFixAllLabel(group, expanded: true);
+            button.Text = BuildFixAllLabel(group, expanded: true, IsMigrationGroup(group));
         }
 
         // Rewrites every entry in the group to newType after a mandatory confirmation. Rewrites are batched per file
@@ -931,6 +999,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             info.pickingMode = PickingMode.Ignore;
 
             card.AddChild(info);
+
+            // Same header divider as the Fix-all cards, keeping every card's header/body split on one line — but no
+            // sweep: this header row is static, there is nothing to hover.
+            card.AddChild(new AspidDividingLine(AspidDividingLinePreset.Default
+                    .SetTheme(ThemeStyle.Type.Light)
+                    .SetSize(AspidDividingLineSizeStyle.Type.Thin))
+                .AddClass(GroupDividerClass));
 
             // Per-card memo, keyed by asset path: several violations commonly share one asset (e.g. a prefab with
             // multiple unset required fields), so this keeps LoadAllAssetsAtPath to once per distinct file instead of
