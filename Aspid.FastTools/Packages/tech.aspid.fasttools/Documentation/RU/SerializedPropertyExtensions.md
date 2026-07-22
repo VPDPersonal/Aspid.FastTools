@@ -1,4 +1,4 @@
-# SerializedProperty Extensions — full reference
+# SerializedProperty Extensions
 
 Цепочные методы расширения над `SerializedProperty` для синхронизации владеющего `SerializedObject`, установки значений и рефлексии над полем-источником.
 
