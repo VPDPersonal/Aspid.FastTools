@@ -2,14 +2,16 @@
     flex-grow: 1;
 }
 
+/* 12px matches the References tabs' content padding; inner sections keep vertical padding only so the
+   cards' side inset stays this single value across tabs. */
 .aspid-fasttools-welcome__content {
-    padding: 10px;
+    padding: 12px;
     flex-grow: 1;
     align-items: stretch;
 }
 
 .aspid-fasttools-welcome__hero {
-    padding: 10px;
+    padding: 10px 0;
     align-items: center;
     flex-direction: row;
 }
@@ -72,7 +74,7 @@ AspidAnimatedTitle {
 }
 
 .aspid-fasttools-welcome__card {
-    padding: 10px;
+    padding: 10px 0;
 }
 
 /* Sample cards share the References group-card surface: translucent dark fill, neutral border, 8px radius —
