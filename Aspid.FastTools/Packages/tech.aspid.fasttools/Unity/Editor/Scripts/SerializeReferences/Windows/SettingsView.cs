@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
-using System.Collections.Generic;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
@@ -26,10 +25,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private readonly ScrollView _scroll;
 
-        // Keyboard navigation: one flat focus ring in visual order. Activate fires on Enter; Adjust (sliders only)
-        // on ←/→ with the step sign; Remove (excluded-folder rows only) on Delete/Backspace.
-        private readonly List<(VisualElement Element, Action Activate, Action<int> Adjust, Action Remove)> _navTargets = new();
-        private int _navIndex = -1;
+        // Keyboard navigation: one flat focus ring in visual order, shared with the other window tabs. Activate fires
+        // on Enter; Adjust (sliders only) on ←/→ with the step sign; Remove (excluded-folder rows only) on Delete/Backspace.
+        private readonly NavRing _ring;
 
         public SettingsView()
         {
@@ -43,11 +41,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Pinned under the scroll, so the reset affordance stays reachable however long the tab grows.
             Add(AspidSettingsUI.BuildResetFooter());
 
-            // Arrow-key navigation: the root holds keyboard focus (grabbed on attach) so key events reach
-            // OnNavKeyDown even before anything is highlighted; events from focused descendants bubble here too.
-            focusable = true;
-            RegisterCallback<KeyDownEvent>(OnNavKeyDown);
-            RegisterCallback<AttachToPanelEvent>(_ => schedule.Execute(() => Focus()));
+            // The shared keyboard ring: the root holds focus (grabbed on attach) so keys reach it before anything is
+            // highlighted. A focused row takes the focused class; the ring also covers the reset footer pinned OUTSIDE
+            // the scroll, where ScrollTo throws on non-descendants — so the scroll is gated on containment.
+            _ring = new NavRing(
+                host: this,
+                navTargetClass: AspidSettingsUI.NavTargetClass,
+                paint: (element, on) => element.EnableInClassList(AspidSettingsUI.NavTargetFocusedClass, on),
+                scrollTo: element => { if (IsInScrollContent(element)) _scroll.ScrollTo(element); });
 
             // The surface's controls are stable for the tab's lifetime (the excluded-folders panel rebuilds only its
             // internal rows), so the ring is collected once, in tree (= visual) order.
@@ -58,89 +59,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Keyboard navigation
         // ---------------------------------------------------------------------------------------------------------
 
-        private void OnNavKeyDown(KeyDownEvent evt)
-        {
-            // A control being edited owns the keyboard: arrows/Enter inside the slider (or its inline value box)
-            // adjust and commit there — stay out of the way. Escape still clears the ring below because an editing
-            // control never keeps focus past Escape.
-            if (IsEditingControlFocused()) return;
-
-            // FunctionKey rides along with arrows on some platforms; any real modifier means the key is not ours.
-            if ((evt.modifiers & ~EventModifiers.FunctionKey) != 0) return;
-
-            switch (evt.keyCode)
-            {
-                case KeyCode.DownArrow:
-                    MoveNavFocus(+1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.UpArrow:
-                    MoveNavFocus(-1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.LeftArrow when _navIndex >= 0 && _navTargets[_navIndex].Adjust is { } decrease:
-                    decrease(-1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.RightArrow when _navIndex >= 0 && _navTargets[_navIndex].Adjust is { } increase:
-                    increase(+1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.Return or KeyCode.KeypadEnter when _navIndex >= 0 && _navTargets[_navIndex].Activate is { } activate:
-                    activate();
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.Delete or KeyCode.Backspace when _navIndex >= 0 && _navTargets[_navIndex].Remove is { } remove:
-                    remove();
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.Escape when _navIndex >= 0:
-                    ClearNavFocus();
-                    evt.StopPropagation();
-                    break;
-            }
-        }
-
-        private bool IsEditingControlFocused()
-        {
-            if (focusController?.focusedElement is not VisualElement focused) return false;
-
-            for (var element = focused; element != null; element = element.parent)
-                if (element is ITextEdition or TextElement or SliderInt)
-                    return true;
-
-            return false;
-        }
-
-        // First press (nothing highlighted) lands on the first row whichever arrow is hit; after that the ring
-        // clamps at both ends instead of wrapping.
-        private void MoveNavFocus(int delta)
-        {
-            if (_navTargets.Count == 0) return;
-            SetNavFocus(_navIndex < 0 ? 0 : Mathf.Clamp(_navIndex + delta, 0, _navTargets.Count - 1));
-        }
-
-        private void SetNavFocus(int index)
-        {
-            if (_navIndex == index) return;
-
-            ClearNavFocus();
-            _navIndex = index;
-
-            var element = _navTargets[index].Element;
-            element.AddToClassList(AspidSettingsUI.NavTargetFocusedClass);
-
-            // The ring also covers the reset footer pinned OUTSIDE the scroll; ScrollTo throws on non-descendants.
-            if (IsInScrollContent(element))
-                _scroll.ScrollTo(element);
-        }
-
         private bool IsInScrollContent(VisualElement element)
         {
             for (var parent = element.parent; parent != null; parent = parent.parent)
@@ -148,14 +66,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return true;
 
             return false;
-        }
-
-        private void ClearNavFocus()
-        {
-            if (_navIndex >= 0 && _navIndex < _navTargets.Count)
-                _navTargets[_navIndex].Element.RemoveFromClassList(AspidSettingsUI.NavTargetFocusedClass);
-
-            _navIndex = -1;
         }
 
         // Walks the tree in order and registers every actionable control by type, stopping the descent at each one so
@@ -168,15 +78,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             switch (element)
             {
                 case AspidSwitch toggle:
-                    RegisterNavTarget(toggle, () => toggle.value = !toggle.value);
+                    _ring.Register(toggle, () => toggle.value = !toggle.value);
                     return;
 
                 case EnumField dropdown:
-                    RegisterNavTarget(dropdown, () => CycleEnum(dropdown));
+                    _ring.Register(dropdown, () => CycleEnum(dropdown));
                     return;
 
                 case SliderInt slider:
-                    RegisterNavTarget(
+                    _ring.Register(
                         slider,
                         activate: null,
                         adjust: delta => slider.value = Mathf.Clamp(slider.value + delta, slider.lowValue, slider.highValue));
@@ -184,7 +94,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 case SerializeReferenceExcludedFoldersField folders:
                     foreach (var (target, activate, remove) in folders.GetNavTargets())
-                        RegisterNavTarget(target, activate, remove: remove);
+                        _ring.Register(target, activate, remove: remove);
 
                     // -= then += keeps the subscription single across re-collections (this case re-runs on every
                     // rebuild of the ring).
@@ -193,7 +103,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return;
 
                 case Button button when button.ClassListContains(AspidSettingsUI.ActionClass):
-                    RegisterNavTarget(button, () => Submit(button));
+                    _ring.Register(button, () => Submit(button));
                     return;
             }
 
@@ -201,26 +111,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 CollectNavTargets(child);
         }
 
-        private void RegisterNavTarget(VisualElement element, Action activate, Action<int> adjust = null, Action remove = null)
-        {
-            // EnableInClassList (not AddToClassList): stable elements are re-registered on every ring rebuild and
-            // must not stack copies.
-            element.EnableInClassList(AspidSettingsUI.NavTargetClass, true);
-            _navTargets.Add((element, activate, adjust, remove));
-        }
-
         // Re-collects the whole ring after the excluded-folders rows are replaced. A highlight is restored to the
         // same position, clamped — so deleting a folder row with the keyboard lands the highlight on the next row
         // instead of dropping it.
         private void RebuildNavTargets()
         {
-            var restore = _navIndex;
-            ClearNavFocus();
-            _navTargets.Clear();
+            var restore = _ring.Index;
+            _ring.Clear();
             CollectNavTargets(this);
 
-            if (restore >= 0 && _navTargets.Count > 0)
-                SetNavFocus(Mathf.Min(restore, _navTargets.Count - 1));
+            if (restore >= 0 && _ring.Count > 0)
+                _ring.Focus(Mathf.Min(restore, _ring.Count - 1));
         }
 
         // Enter on the gate dropdown steps to the next value (wrapping) instead of opening the popup — the popup is

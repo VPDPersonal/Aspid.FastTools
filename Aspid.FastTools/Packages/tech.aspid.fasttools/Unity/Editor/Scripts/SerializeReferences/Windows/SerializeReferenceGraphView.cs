@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using System.Linq;
 using Object = UnityEngine.Object;
+using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAuditUI;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -144,11 +145,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private AspidGradientButton _openPickerRow;
         private VisualElement _openPickerCard;
 
-        // Keyboard navigation: one flat focus ring over every actionable element in visual order — Rescan first,
-        // then each document header, node band, action row and orphan Clear. -1 means nothing is highlighted.
-        // Mirrors SerializeReferenceProjectView so the two references tabs drive identically from the keyboard.
-        private readonly List<(VisualElement Element, Action Activate)> _navTargets = new();
-        private int _navIndex = -1;
+        // Keyboard navigation: one flat focus ring over every actionable element in visual order — Rescan first, then
+        // each document header, node band, action row and orphan Clear — shared with the other window tabs, so a
+        // member hidden inside a collapsed document band drops out of the ring (see NavRing).
+        private readonly NavRing _ring;
+
+        // The legend's block-specific USS class names for the shared item builder.
+        private static readonly LegendClasses LegendClassSet = new(LegendItemClass, LegendDotClass, LegendDotInfoClass, LegendTextClass);
 
         // Per-asset constraint map cache: BuildConstraintMap does a LoadAllAssetsAtPath + full SerializedObject walk,
         // so each Fix-Missing picker open must not re-scan. Cleared on every Rescan / apply so rewritten YAML is re-read.
@@ -223,8 +226,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _legend = new VisualElement()
                 .AddClass(LegendClass)
                 .AddClass(LegendHiddenClass)
-                .AddChild(BuildLegendItem("Broken — pick a replacement", info: false))
-                .AddChild(BuildLegendItem("Renamed — one-click migrate", info: true));
+                .AddChild(BuildLegendItem("Broken — pick a replacement", info: false, LegendClassSet))
+                .AddChild(BuildLegendItem("Renamed — one-click migrate", info: true, LegendClassSet));
 
             _overview = new VisualElement()
                 .AddClass(OverviewClass)
@@ -249,12 +252,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             root.AddChild(_scroll);
 
-            // Arrow-key navigation: the root holds keyboard focus (grabbed on attach, re-grabbed when the picker
-            // closes) so key events reach OnNavKeyDown even before anything is highlighted; events from focused
-            // descendants bubble here too.
-            focusable = true;
-            RegisterCallback<KeyDownEvent>(OnNavKeyDown);
-            RegisterCallback<AttachToPanelEvent>(_ => schedule.Execute(() => Focus()));
+            // The shared keyboard ring: the root holds focus (grabbed on attach, re-grabbed when the picker closes)
+            // so keys reach it before anything is highlighted. Suspended while a type picker owns the keyboard.
+            _ring = new NavRing(
+                host: this,
+                navTargetClass: NavTargetClass,
+                paint: PaintNavFocus,
+                scrollTo: element => _scroll.ScrollTo(element),
+                isSuspended: () => _openPicker is not null);
 
             Rescan();
         }
@@ -263,74 +268,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Keyboard navigation (mirrors SerializeReferenceProjectView)
         // ---------------------------------------------------------------------------------------------------------
 
-        private void OnNavKeyDown(KeyDownEvent evt)
+        // Gradient buttons paint their hover in code (accent overlay + tinted labels); the focused class's flat fill
+        // would just show through their fading gradient as a gray pill, so they take ONLY the programmatic hover and
+        // the plain rows take ONLY the class. A focused node band also lights its card's divider sweep.
+        private static void PaintNavFocus(VisualElement element, bool on)
         {
-            // The open type picker owns the keyboard (its own search + list navigation) — stay out of its way.
-            if (_openPicker is not null) return;
-
-            // FunctionKey rides along with arrows on some platforms; any real modifier means the key is not ours.
-            if ((evt.modifiers & ~EventModifiers.FunctionKey) != 0) return;
-
-            switch (evt.keyCode)
-            {
-                case KeyCode.DownArrow:
-                    MoveNavFocus(+1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.UpArrow:
-                    MoveNavFocus(-1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.Return or KeyCode.KeypadEnter when _navIndex >= 0:
-                    _navTargets[_navIndex].Activate();
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.Escape when _navIndex >= 0:
-                    ClearNavFocus();
-                    evt.StopPropagation();
-                    break;
-            }
-        }
-
-        // First press (nothing highlighted) lands on Rescan whichever arrow is hit; after that the ring clamps at
-        // both ends instead of wrapping.
-        private void MoveNavFocus(int delta)
-        {
-            if (_navTargets.Count == 0) return;
-            SetNavFocus(_navIndex < 0 ? 0 : Mathf.Clamp(_navIndex + delta, 0, _navTargets.Count - 1));
-        }
-
-        private void SetNavFocus(int index, bool scrollTo = true)
-        {
-            if (_navIndex == index) return;
-
-            ClearNavFocus();
-            _navIndex = index;
-
-            var element = _navTargets[index].Element;
-            // Gradient buttons paint their hover in code (accent overlay + tinted labels); the focused class's flat
-            // fill would just show through their fading gradient as a gray pill, so they take ONLY the programmatic
-            // hover and the plain rows take ONLY the class.
-            if (element is AspidGradientButton button) button.Highlighted = true;
-            else element.AddToClassList(NavTargetFocusedClass);
-            SetBandSweep(element, on: true);
-            if (scrollTo) _scroll.ScrollTo(element);
-        }
-
-        private void ClearNavFocus()
-        {
-            if (_navIndex >= 0 && _navIndex < _navTargets.Count)
-            {
-                var element = _navTargets[_navIndex].Element;
-                if (element is AspidGradientButton button) button.Highlighted = false;
-                else element.RemoveFromClassList(NavTargetFocusedClass);
-                SetBandSweep(element, on: false);
-            }
-
-            _navIndex = -1;
+            if (element is AspidGradientButton button) button.Highlighted = on;
+            else element.EnableInClassList(NavTargetFocusedClass, on);
+            SetBandSweep(element, on);
         }
 
         // A focused node band also lights its card's divider sweep — the same card-level hover mirror the mouse
@@ -345,23 +290,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // always slot 0; a highlight sitting on it survives the rebuild, so Enter-on-Rescan keeps its highlight.
         private void ResetNavTargets()
         {
-            var keepScanFocus = _navIndex == 0;
-            ClearNavFocus();
-            _navTargets.Clear();
+            var keepScanFocus = _ring.Index == 0;
+            _ring.Clear();
 
             RegisterNavTarget(_rescanButton, () => Rescan());
-            if (keepScanFocus) SetNavFocus(0, scrollTo: false);
+            if (keepScanFocus) _ring.Focus(0, scrollTo: false);
         }
 
-        private void RegisterNavTarget(VisualElement element, Action activate)
-        {
-            // EnableInClassList (not AddToClassList): Rescan is re-registered on every reset and must not stack copies.
-            element.EnableInClassList(NavTargetClass, true);
-            _navTargets.Add((element, activate));
-        }
-
-        private bool IsNavFocused(VisualElement element) =>
-            _navIndex >= 0 && _navIndex < _navTargets.Count && _navTargets[_navIndex].Element == element;
+        private void RegisterNavTarget(VisualElement element, Action activate) => _ring.Register(element, activate);
 
         private void SetTarget(Object target)
         {
@@ -674,22 +610,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (migrations > 0) parts.Add(BuildCountText(migrations, "pending migration"));
 
             return parts.Count > 0 ? string.Join(", ", parts) : "No missing references";
-        }
-
-        private static string BuildCountText(int count, string noun) =>
-            count == 1 ? $"1 {noun}" : $"{count} {(noun.EndsWith("y") ? noun[..^1] + "ies" : noun + "s")}";
-
-        // One dot + caption pair of the accent legend: amber (default) for the broken/orphaned/required band, info
-        // blue for the pending-migration cards.
-        private static VisualElement BuildLegendItem(string text, bool info)
-        {
-            var dot = new VisualElement().AddClass(LegendDotClass);
-            if (info) dot.AddClass(LegendDotInfoClass);
-
-            return new VisualElement()
-                .AddClass(LegendItemClass)
-                .AddChild(dot)
-                .AddChild(new Label(text).AddClass(LegendTextClass));
         }
 
         private static string BuildOverviewHint(int total, int missing, int orphans, int empties, int migrations, int required)
@@ -1028,24 +948,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (sweepModifier is not null) sweep.AddClass(sweepModifier);
             card.AddChild(sweep);
 
-            band.RegisterCallback<MouseEnterEvent>(_ => band.parent?.AddToClassList(NodeHeaderHoverClass));
-            // Composes with the keyboard ring: while the band is the nav-focused element the sweep stays lit after
-            // the mouse leaves (mirrors AspidGradientButton.Highlighted keeping the glow on).
-            band.RegisterCallback<MouseLeaveEvent>(_ =>
-            {
-                if (IsNavFocused(band)) return;
-                band.parent?.RemoveFromClassList(NodeHeaderHoverClass);
-            });
-        }
-
-        // Footer text (field paths, rids) is the payload users copy out of the graph, so it is selectable; a
-        // drag-select never conflicts with a click — node footers carry no row-level click action.
-        private static Label MakeSelectable(Label label)
-        {
-            label.selection.isSelectable = true;
-            label.selection.doubleClickSelectsWord = true;
-            label.selection.tripleClickSelectsLine = true;
-            return label;
+            // HoverSweep mirrors the band's hover onto the card modifier the sweep rule listens to, keeping it lit
+            // while the band is the nav-focused ring member.
+            HoverSweep.MirrorHover(band, () => band.parent, NodeHeaderHoverClass, () => _ring.IsFocused(band));
         }
 
         // A back-edge to a rid already on the current render path — a single dim, italic line (no footer) so cycles

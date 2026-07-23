@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using Object = UnityEngine.Object;
+using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAuditUI;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -101,9 +102,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly ScrollView _scroll;
 
         // Keyboard navigation: one flat focus ring over every actionable element in visual order — Rescan first,
-        // then each card's Fix all / action row / entry rows. -1 means nothing is highlighted.
-        private readonly List<(VisualElement Element, Action Activate)> _navTargets = new();
-        private int _navIndex = -1;
+        // then each card's Fix all / action row / entry rows — shared with the other window tabs.
+        private readonly NavRing _ring;
+
+        // The legend's block-specific USS class names for the shared item builder.
+        private static readonly LegendClasses LegendClassSet = new(LegendItemClass, LegendDotClass, LegendDotInfoClass, LegendTextClass);
 
         // Required-violations audit has no incrementally-maintained index like SerializeReferenceTypeUsageIndex, so it
         // is only (re)scanned on an explicit Scan/Rescan click, not on every Initialize() (tab switch would otherwise
@@ -167,8 +170,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _legend = new VisualElement()
                 .AddClass(LegendClass)
                 .AddClass(LegendHiddenClass)
-                .AddChild(BuildLegendItem("Broken — pick a replacement", info: false))
-                .AddChild(BuildLegendItem("Renamed — one-click migrate", info: true));
+                .AddChild(BuildLegendItem("Broken — pick a replacement", info: false, LegendClassSet))
+                .AddChild(BuildLegendItem("Renamed — one-click migrate", info: true, LegendClassSet));
 
             // Receipt stack: one help-box per bulk Fix all, kept across chained fixes and cleared only on a fresh scan.
             _summaries = new VisualElement().AddClass(SummaryListClass);
@@ -195,12 +198,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             root.AddChild(_scroll);
 
-            // Arrow-key navigation: the root holds keyboard focus (grabbed on attach, re-grabbed when the picker
-            // closes) so key events reach OnNavKeyDown even before anything is highlighted; events from focused
-            // descendants bubble here too.
-            focusable = true;
-            RegisterCallback<KeyDownEvent>(OnNavKeyDown);
-            RegisterCallback<AttachToPanelEvent>(_ => schedule.Execute(() => Focus()));
+            // The shared keyboard ring: the root holds focus (grabbed on attach, re-grabbed when the picker closes)
+            // so keys reach it before anything is highlighted. Suspended while a type picker owns the keyboard.
+            _ring = new NavRing(
+                host: this,
+                navTargetClass: NavTargetClass,
+                paint: PaintNavFocus,
+                scrollTo: element => _scroll.ScrollTo(element),
+                isSuspended: () => _openPicker is not null);
 
             ResetNavTargets();
         }
@@ -209,74 +214,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Keyboard navigation
         // ---------------------------------------------------------------------------------------------------------
 
-        private void OnNavKeyDown(KeyDownEvent evt)
+        // Gradient buttons paint their hover in code (accent overlay + tinted labels); the focused class's flat fill
+        // would just show through their fading gradient as a gray pill, so they take ONLY the programmatic hover and
+        // the plain rows take ONLY the class. A focused Fix all header also lights its card's divider sweep.
+        private static void PaintNavFocus(VisualElement element, bool on)
         {
-            // The open type picker owns the keyboard (its own search + list navigation) — stay out of its way.
-            if (_openPicker is not null) return;
-
-            // FunctionKey rides along with arrows on some platforms; any real modifier means the key is not ours.
-            if ((evt.modifiers & ~EventModifiers.FunctionKey) != 0) return;
-
-            switch (evt.keyCode)
-            {
-                case KeyCode.DownArrow:
-                    MoveNavFocus(+1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.UpArrow:
-                    MoveNavFocus(-1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.Return or KeyCode.KeypadEnter when _navIndex >= 0:
-                    _navTargets[_navIndex].Activate();
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.Escape when _navIndex >= 0:
-                    ClearNavFocus();
-                    evt.StopPropagation();
-                    break;
-            }
-        }
-
-        // First press (nothing highlighted) lands on Rescan whichever arrow is hit; after that the ring clamps at
-        // both ends instead of wrapping.
-        private void MoveNavFocus(int delta)
-        {
-            if (_navTargets.Count == 0) return;
-            SetNavFocus(_navIndex < 0 ? 0 : Mathf.Clamp(_navIndex + delta, 0, _navTargets.Count - 1));
-        }
-
-        private void SetNavFocus(int index, bool scrollTo = true)
-        {
-            if (_navIndex == index) return;
-
-            ClearNavFocus();
-            _navIndex = index;
-
-            var element = _navTargets[index].Element;
-            // Gradient buttons paint their hover in code (accent overlay + tinted labels); the focused class's flat
-            // fill would just show through their fading gradient as a gray pill, so they take ONLY the programmatic
-            // hover and the plain rows take ONLY the class.
-            if (element is AspidGradientButton button) button.Highlighted = true;
-            else element.AddToClassList(NavTargetFocusedClass);
-            SetHeaderSweep(element, on: true);
-            if (scrollTo) _scroll.ScrollTo(element);
-        }
-
-        private void ClearNavFocus()
-        {
-            if (_navIndex >= 0 && _navIndex < _navTargets.Count)
-            {
-                var element = _navTargets[_navIndex].Element;
-                if (element is AspidGradientButton button) button.Highlighted = false;
-                else element.RemoveFromClassList(NavTargetFocusedClass);
-                SetHeaderSweep(element, on: false);
-            }
-
-            _navIndex = -1;
+            if (element is AspidGradientButton button) button.Highlighted = on;
+            else element.EnableInClassList(NavTargetFocusedClass, on);
+            SetHeaderSweep(element, on);
         }
 
         // A focused Fix all header also lights its card's divider sweep — the same card-level hover mirror the
@@ -291,20 +236,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // always slot 0; a highlight sitting on it survives the rebuild, so Enter-on-Rescan keeps its highlight.
         private void ResetNavTargets()
         {
-            var keepScanFocus = _navIndex == 0;
-            ClearNavFocus();
-            _navTargets.Clear();
+            var keepScanFocus = _ring.Index == 0;
+            _ring.Clear();
 
             RegisterNavTarget(_scanButton, ScanProject);
-            if (keepScanFocus) SetNavFocus(0, scrollTo: false);
+            if (keepScanFocus) _ring.Focus(0, scrollTo: false);
         }
 
-        private void RegisterNavTarget(VisualElement element, Action activate)
-        {
-            // EnableInClassList (not AddToClassList): Rescan is re-registered on every reset and must not stack copies.
-            element.EnableInClassList(NavTargetClass, true);
-            _navTargets.Add((element, activate));
-        }
+        private void RegisterNavTarget(VisualElement element, Action activate) => _ring.Register(element, activate);
 
         // Cold index: open idle and wait for a deliberate Scan click — the cold sweep parses every asset's YAML behind
         // a blocking bar, so it must never run unasked. Warm index: re-deriving groups is a cheap in-memory filter, so
@@ -378,16 +317,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Pending migrations sink to the very bottom, below the Required violations card too: the whole amber
             // band (broken groups, then required fields) stacks first and the calm blue one-click cards close the
             // list. Each band keeps the scanner's order.
-            var migrations = new List<ProjectGroup>();
+            var migrations = new List<(ProjectGroup Group, GroupMigration Migration)>();
             foreach (var group in groups)
             {
-                if (IsMigrationGroup(group)) migrations.Add(group);
-                else _list.AddChild(BuildGroupCard(group));
+                // Resolve constraint + migration ONCE per group and reuse it for the card and picker label below, so
+                // the partition and the card can never disagree on whether a group is a migration.
+                var migration = new GroupMigration(group);
+                if (migration.IsMigration) migrations.Add((group, migration));
+                else _list.AddChild(BuildGroupCard(group, migration));
             }
 
             // The header splits the migration entries out of the missing count — a [MovedFrom] rename with a
             // one-click fix shouldn't inflate the alarm number.
-            var migrationCount = migrations.Sum(group => group.Entries.Count);
+            var migrationCount = migrations.Sum(entry => entry.Group.Entries.Count);
             ShowResults(
                 BuildResultsHeaderText(missingCount - migrationCount, migrationCount, requiredCount),
                 SerializeReferenceCanvasStyle.Warning);
@@ -400,21 +342,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (requiredCount > 0)
                 _list.AddChild(BuildRequiredGroupCard(requiredViolations));
 
-            foreach (var group in migrations)
-                _list.AddChild(BuildGroupCard(group));
+            foreach (var (group, migration) in migrations)
+                _list.AddChild(BuildGroupCard(group, migration));
         }
 
-        // An authoritative [MovedFrom] rename whose target also fits the group's field constraint — the same gate
-        // BuildGroupCard applies before offering Migrate all (see there for why the constraint matters).
-        private static bool IsMigrationGroup(ProjectGroup group)
+        // Resolves a group's picker constraint and whether it reads as a one-click [MovedFrom] migration ONCE, so the
+        // partition in RenderGroups, the card body and the picker label share one computation and can never disagree.
+        // A migration is an authoritative [MovedFrom] rename whose target also fits the group's field constraint —
+        // Migrate all bypasses the picker's assignability guarantee, and an incompatible target would be nulled by
+        // Unity at load, so the constraint gate matters.
+        private readonly struct GroupMigration
         {
-            var constraint = group.ResolveConstraint();
-            return SerializeReferenceMovedFromResolver.TryResolve(group.StoredType, out var target) &&
-                (constraint == typeof(object) || constraint.IsAssignableFrom(target));
-        }
+            public readonly Type Constraint;
+            public readonly bool IsMigration;
+            public readonly Type Target; // the [MovedFrom] target when IsMigration; otherwise null.
 
-        private static string BuildCountText(int count, string noun) =>
-            count == 1 ? $"1 {noun}" : $"{count} {(noun.EndsWith("y") ? noun[..^1] + "ies" : noun + "s")}";
+            public GroupMigration(ProjectGroup group)
+            {
+                Constraint = group.ResolveConstraint();
+                IsMigration = SerializeReferenceMovedFromResolver.TryResolve(group.StoredType, out var target) &&
+                    (Constraint == typeof(object) || Constraint.IsAssignableFrom(target));
+                Target = IsMigration ? target : null;
+            }
+        }
 
         // Only non-zero parts make the header; brokenCount is the missing total MINUS the pending-migration entries,
         // which get their own calmer "pending migration" wording.
@@ -438,19 +388,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 hint += " Click a required-violation row to jump to its asset.";
 
             return hint;
-        }
-
-        // One dot + caption pair of the accent legend: amber (default) for the broken/required band, info blue for
-        // the pending-migration cards.
-        private static VisualElement BuildLegendItem(string text, bool info)
-        {
-            var dot = new VisualElement().AddClass(LegendDotClass);
-            if (info) dot.AddClass(LegendDotInfoClass);
-
-            return new VisualElement()
-                .AddClass(LegendItemClass)
-                .AddChild(dot)
-                .AddChild(new Label(text).AddClass(LegendTextClass));
         }
 
         // Shared "no missing references left" branch for ApplyGroupFix/ClearGroupToNull: stays in the results region
@@ -503,19 +440,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // A broken-type group card: the whole header is one clickable row that toggles the type picker, with the bulk
         // "Fix all (N) ▼" action on the right. Entries are deliberately not individually fixable in project mode —
         // the per-row Fix affordance is reserved for single-asset mode.
-        private VisualElement BuildGroupCard(ProjectGroup group)
+        private VisualElement BuildGroupCard(ProjectGroup group, GroupMigration migration)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(GroupClass);
 
-            var constraint = group.ResolveConstraint();
+            // Constraint + migration were resolved once in RenderGroups (see GroupMigration) and are reused here so
+            // the card can never disagree with the partition. A migration is an authoritative [MovedFrom] rename:
+            // Unity already migrates these in memory at load — only the files still store the old name — and its
+            // target fits the group's field constraint (Migrate all bypasses the picker's assignability guarantee).
+            var constraint = migration.Constraint;
             var displayName = group.DisplayName;
-
-            // An authoritative [MovedFrom] rename: Unity already migrates these in memory at load — only the files
-            // still store the old name. The target must also fit the group's field constraint: Migrate all bypasses
-            // the picker's assignability guarantee, and an incompatible target would be nulled by Unity at load.
-            var isMigration = SerializeReferenceMovedFromResolver.TryResolve(group.StoredType, out var migrationTarget) &&
-                (constraint == typeof(object) || constraint.IsAssignableFrom(migrationTarget));
+            var isMigration = migration.IsMigration;
+            var migrationTarget = migration.Target;
 
             // Card-level modifier so card-wide states (the --picking accent frame) can follow the card's own
             // accent — a migration card is info-toned end to end, never the broken-card amber.
@@ -524,11 +461,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Built first so the type name + count can be docked into its body; the captured local is assigned before use.
             AspidGradientButton fixAll = null;
             fixAll = new AspidGradientButton(BuildFixAllLabel(group, expanded: false, isMigration),
-                    _ => ToggleGroupPicker(group, constraint, fixAll))
+                    _ => ToggleGroupPicker(group, constraint, fixAll, isMigration))
                 .AddClass(GroupFixAllClass);
             // A migration card keeps its calm info tone end to end — the amber Fix all accent is the "broken" alarm.
             if (isMigration) fixAll.AddClass(GroupFixAllMigrateClass);
-            RegisterNavTarget(fixAll, () => ToggleGroupPicker(group, constraint, fixAll));
+            RegisterNavTarget(fixAll, () => ToggleGroupPicker(group, constraint, fixAll, isMigration));
             fixAll.tooltip = constraint == typeof(object)
                 ? $"{displayName}\nMixed or unresolvable field types — the picker is unconstrained (any managed-reference type)."
                 : $"{displayName}\nConstrained to {constraint.FullName}.";
@@ -594,28 +531,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The accent hairline that scales in under a flat header button while it is hovered — shared idiom with the
-        // Welcome sample cards. The sweep is the button's sibling, so USS :hover can't reach it; the button mirrors
-        // its hover onto a container modifier (resolved lazily via parent, at event time) the sweep rule listens to.
+        // Welcome sample cards. The sweep is the button's sibling, so USS :hover can't reach it; HoverSweep mirrors
+        // the hover onto the card modifier (the header's live parent) the sweep rule listens to, keeping it lit while
+        // the header is the nav-focused ring member.
         private VisualElement CreateHeaderSweep(AspidGradientButton header, string sweepClass, string hoverClass)
         {
             var sweep = new VisualElement()
                 .AddClass(sweepClass)
                 .SetPickingMode(PickingMode.Ignore);
 
-            header.RegisterCallback<MouseEnterEvent>(_ => header.parent?.AddToClassList(hoverClass));
-            // Composes with the keyboard ring: while the header is the nav-focused element the sweep stays lit
-            // after the mouse leaves (mirrors AspidGradientButton.Highlighted keeping the glow on).
-            header.RegisterCallback<MouseLeaveEvent>(_ =>
-            {
-                if (IsNavFocused(header)) return;
-                header.parent?.RemoveFromClassList(hoverClass);
-            });
+            HoverSweep.MirrorHover(header, () => header.parent, hoverClass, () => _ring.IsFocused(header));
 
             return sweep;
         }
-
-        private bool IsNavFocused(VisualElement element) =>
-            _navIndex >= 0 && _navIndex < _navTargets.Count && _navTargets[_navIndex].Element == element;
 
         // A one-click bulk action (Smart Fix / Migrate all) as a member of the entry-row family: a left-aligned
         // accent verb over the same flat hover fill as the ping rows below it, instead of a filled gradient pill
@@ -664,17 +592,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return row;
         }
 
-        // The path is the payload users most often need outside Unity, so entry-row text is selectable for copying.
-        // A drag-select ends in the same ClickEvent as a plain click, so the row's jump only fires when the click
-        // lands on text without leaving a selection behind.
-        private static Label MakeSelectable(Label label)
-        {
-            label.selection.isSelectable = true;
-            label.selection.doubleClickSelectsWord = true;
-            label.selection.tripleClickSelectsLine = true;
-            return label;
-        }
-
         private void RegisterEntryRowClick(VisualElement row, string assetPath)
         {
             row.RegisterCallback<ClickEvent>(evt =>
@@ -715,7 +632,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The group's bulk picker, inline below the Fix all button, constrained to the group's intersected field type.
-        private void ToggleGroupPicker(ProjectGroup group, Type constraint, AspidGradientButton button)
+        private void ToggleGroupPicker(ProjectGroup group, Type constraint, AspidGradientButton button, bool isMigration)
         {
             var wasOpen = _openPickerRow == button;
             ClosePicker();
@@ -735,7 +652,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             });
 
             OpenPickerBelow(button, view);
-            button.Text = BuildFixAllLabel(group, expanded: true, IsMigrationGroup(group));
+            button.Text = BuildFixAllLabel(group, expanded: true, isMigration);
         }
 
         // Rewrites every entry in the group to newType after a mandatory confirmation. Rewrites are batched per file
