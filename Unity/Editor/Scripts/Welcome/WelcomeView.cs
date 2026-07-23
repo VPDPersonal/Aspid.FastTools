@@ -67,9 +67,8 @@ namespace Aspid.FastTools.Editors
         private IVisualElementScheduledItem _toastHide;
 
         // Keyboard navigation: one flat focus ring over the sample cards' header buttons in list order (hero
-        // links stay mouse-only). -1 means nothing is highlighted.
-        private readonly List<(VisualElement Element, Action Activate)> _navTargets = new();
-        private int _navIndex = -1;
+        // links stay mouse-only), shared with the other window tabs.
+        private readonly NavRing _ring;
 
         public WelcomeView()
         {
@@ -96,83 +95,29 @@ namespace Aspid.FastTools.Editors
 
             _scroll = this.Q<ScrollView>(ScrollName);
 
+            // The shared keyboard ring: the view holds focus (grabbed on attach) so keys reach it before anything is
+            // highlighted. Built before PopulateSamples, which registers the sample cards onto it.
+            _ring = new NavRing(
+                host: this,
+                navTargetClass: NavTargetClass,
+                paint: PaintNavFocus,
+                scrollTo: element => _scroll?.ScrollTo(element));
+
             PopulateSamples(this);
             SetUpLogoLink(this);
             SetUpHeroLinks(this);
-
-            // Arrow-key navigation: the view holds keyboard focus (grabbed on attach) so key events reach
-            // OnNavKeyDown even before anything is highlighted; events from focused descendants bubble here too.
-            focusable = true;
-            RegisterCallback<KeyDownEvent>(OnNavKeyDown);
-            RegisterCallback<AttachToPanelEvent>(_ => schedule.Execute(() => Focus()));
         }
 
         // ---------------------------------------------------------------------------------------------------------
         // Keyboard navigation
         // ---------------------------------------------------------------------------------------------------------
 
-        private void OnNavKeyDown(KeyDownEvent evt)
+        // Sample headers paint their hover in code (accent overlay + tinted labels + divider sweep), so keyboard focus
+        // drives that same programmatic hover instead of a USS focused class.
+        private static void PaintNavFocus(VisualElement element, bool on)
         {
-            // FunctionKey rides along with arrows on some platforms; any real modifier means the key is not ours.
-            if ((evt.modifiers & ~EventModifiers.FunctionKey) != 0) return;
-
-            switch (evt.keyCode)
-            {
-                case KeyCode.DownArrow:
-                    MoveNavFocus(+1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.UpArrow:
-                    MoveNavFocus(-1);
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.Return or KeyCode.KeypadEnter when _navIndex >= 0:
-                    _navTargets[_navIndex].Activate();
-                    evt.StopPropagation();
-                    break;
-
-                case KeyCode.Escape when _navIndex >= 0:
-                    ClearNavFocus();
-                    evt.StopPropagation();
-                    break;
-            }
-        }
-
-        // First press (nothing highlighted) lands on the first sample whichever arrow is hit; after that the
-        // ring clamps at both ends instead of wrapping.
-        private void MoveNavFocus(int delta)
-        {
-            if (_navTargets.Count == 0) return;
-            SetNavFocus(_navIndex < 0 ? 0 : Mathf.Clamp(_navIndex + delta, 0, _navTargets.Count - 1));
-        }
-
-        private void SetNavFocus(int index, bool scrollTo = true)
-        {
-            if (_navIndex == index) return;
-
-            ClearNavFocus();
-            _navIndex = index;
-
-            var element = _navTargets[index].Element;
-            // Sample headers paint their hover in code (accent overlay + tinted labels), so keyboard focus
-            // drives that same programmatic hover instead of a USS focused class.
-            if (element is AspidGradientButton button) button.Highlighted = true;
-            SetHeaderSweep(element, on: true);
-            if (scrollTo) _scroll?.ScrollTo(element);
-        }
-
-        private void ClearNavFocus()
-        {
-            if (_navIndex >= 0 && _navIndex < _navTargets.Count)
-            {
-                var element = _navTargets[_navIndex].Element;
-                if (element is AspidGradientButton button) button.Highlighted = false;
-                SetHeaderSweep(element, on: false);
-            }
-
-            _navIndex = -1;
+            if (element is AspidGradientButton button) button.Highlighted = on;
+            SetHeaderSweep(element, on);
         }
 
         // A focused sample header also lights its card's divider sweep — the same card-level hover mirror the
@@ -187,20 +132,6 @@ namespace Aspid.FastTools.Editors
                 ancestor.EnableInClassList(SampleHeaderHoverClass, on);
                 return;
             }
-        }
-
-        // The samples list is rebuilt after every Import/Remove, so the ring is rebuilt with it: sample headers
-        // in list order. Hero links are deliberately not in the ring — they are mouse-only decoration.
-        private void ResetNavTargets()
-        {
-            ClearNavFocus();
-            _navTargets.Clear();
-        }
-
-        private void RegisterNavTarget(VisualElement element, Action activate)
-        {
-            element.AddToClassList(NavTargetClass);
-            _navTargets.Add((element, activate));
         }
 
         private static void SetUpLogoLink(VisualElement root)
@@ -294,17 +225,17 @@ namespace Aspid.FastTools.Editors
             // An Import/Remove triggered from the keyboard rebuilds the very ring it came from — put the
             // highlight back on the same slot (clamped: Remove may shrink nothing, but stay safe) so the
             // keyboard flow continues from where it acted.
-            var keepIndex = _navIndex;
+            var keepIndex = _ring.Index;
 
             _samplesList.Clear();
-            ResetNavTargets();
+            _ring.Clear();
 
             var package = PackageInfo.FindForPackageName(PackageName);
             if (package is not null) AddUpmSamples(package);
             else if (AssetDatabase.IsValidFolder(SamplesPath)) AddLocalSamples();
 
-            if (keepIndex >= 0 && _navTargets.Count > 0)
-                SetNavFocus(Mathf.Min(keepIndex, _navTargets.Count - 1), scrollTo: false);
+            if (keepIndex >= 0 && _ring.Count > 0)
+                _ring.Focus(Mathf.Min(keepIndex, _ring.Count - 1), scrollTo: false);
         }
 
         private void AddUpmSamples(PackageInfo package)
@@ -364,14 +295,14 @@ namespace Aspid.FastTools.Editors
 
             var action = new AspidGradientButton(actionText, evt => onClick(GetMousePosition(evt)))
                 .AddClass(SampleHeaderClass);
-            RegisterNavTarget(action, () => onClick(action.worldBound.center));
+            _ring.Register(action, () => onClick(action.worldBound.center));
             if (imported == true)
                 action.AddClass(SampleHeaderRemoveClass);
 
-            // The sweep sits outside the button (riding the divider below), so USS :hover can't reach it —
-            // the button mirrors its hover onto a card modifier the sweep rule listens to instead.
-            action.RegisterCallback<MouseEnterEvent>(_ => card.AddToClassList(SampleHeaderHoverClass));
-            action.RegisterCallback<MouseLeaveEvent>(_ => card.RemoveFromClassList(SampleHeaderHoverClass));
+            // The sweep sits outside the button (riding the divider below), so USS :hover can't reach it — the button
+            // mirrors its hover onto a card modifier the sweep rule listens to, staying lit while the card is the
+            // nav-focused ring member (else a mouse pass over a keyboard-focused card would half-extinguish it).
+            HoverSweep.MirrorHover(action, () => card, SampleHeaderHoverClass, () => _ring.IsFocused(action));
 
             var info = new VisualElement()
                 .AddClass(SampleInfoClass)
