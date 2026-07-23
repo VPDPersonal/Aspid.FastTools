@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using System.Collections.Generic;
 using UnityEngine.UIElements;
 using Aspid.FastTools.UIElements;
 using UnityEditor.PackageManager.UI;
@@ -39,8 +40,11 @@ namespace Aspid.FastTools.Editors
 
         private const string LogoName = "welcome-logo";
         private const string ToastName = "welcome-toast";
+        private const string ScrollName = "welcome-scroll";
         private const string SamplesListName = "welcome-samples-list";
         private const string ToastVisibleClass = "aspid-fasttools-welcome__toast--visible";
+
+        private const string NavTargetClass = "aspid-fasttools-welcome__nav-target";
 
         private const string SampleCardClass = "aspid-fasttools-welcome__sample";
         private const string SampleHeaderHoverClass = "aspid-fasttools-welcome__sample--header-hover";
@@ -57,9 +61,15 @@ namespace Aspid.FastTools.Editors
         private const string SampleDescriptionClass = "aspid-fasttools-welcome__sample-description";
 
         private Label _toast;
+        private ScrollView _scroll;
         private VisualElement _samplesList;
         private IVisualElementScheduledItem _toastShow;
         private IVisualElementScheduledItem _toastHide;
+
+        // Keyboard navigation: one flat focus ring over the sample cards' header buttons in list order (hero
+        // links stay mouse-only). -1 means nothing is highlighted.
+        private readonly List<(VisualElement Element, Action Activate)> _navTargets = new();
+        private int _navIndex = -1;
 
         public WelcomeView()
         {
@@ -84,9 +94,113 @@ namespace Aspid.FastTools.Editors
                 _toast.SetPickingMode(PickingMode.Ignore);
             }
 
+            _scroll = this.Q<ScrollView>(ScrollName);
+
             PopulateSamples(this);
             SetUpLogoLink(this);
             SetUpHeroLinks(this);
+
+            // Arrow-key navigation: the view holds keyboard focus (grabbed on attach) so key events reach
+            // OnNavKeyDown even before anything is highlighted; events from focused descendants bubble here too.
+            focusable = true;
+            RegisterCallback<KeyDownEvent>(OnNavKeyDown);
+            RegisterCallback<AttachToPanelEvent>(_ => schedule.Execute(() => Focus()));
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Keyboard navigation
+        // ---------------------------------------------------------------------------------------------------------
+
+        private void OnNavKeyDown(KeyDownEvent evt)
+        {
+            // FunctionKey rides along with arrows on some platforms; any real modifier means the key is not ours.
+            if ((evt.modifiers & ~EventModifiers.FunctionKey) != 0) return;
+
+            switch (evt.keyCode)
+            {
+                case KeyCode.DownArrow:
+                    MoveNavFocus(+1);
+                    evt.StopPropagation();
+                    break;
+
+                case KeyCode.UpArrow:
+                    MoveNavFocus(-1);
+                    evt.StopPropagation();
+                    break;
+
+                case KeyCode.Return or KeyCode.KeypadEnter when _navIndex >= 0:
+                    _navTargets[_navIndex].Activate();
+                    evt.StopPropagation();
+                    break;
+
+                case KeyCode.Escape when _navIndex >= 0:
+                    ClearNavFocus();
+                    evt.StopPropagation();
+                    break;
+            }
+        }
+
+        // First press (nothing highlighted) lands on the first sample whichever arrow is hit; after that the
+        // ring clamps at both ends instead of wrapping.
+        private void MoveNavFocus(int delta)
+        {
+            if (_navTargets.Count == 0) return;
+            SetNavFocus(_navIndex < 0 ? 0 : Mathf.Clamp(_navIndex + delta, 0, _navTargets.Count - 1));
+        }
+
+        private void SetNavFocus(int index, bool scrollTo = true)
+        {
+            if (_navIndex == index) return;
+
+            ClearNavFocus();
+            _navIndex = index;
+
+            var element = _navTargets[index].Element;
+            // Sample headers paint their hover in code (accent overlay + tinted labels), so keyboard focus
+            // drives that same programmatic hover instead of a USS focused class.
+            if (element is AspidGradientButton button) button.Highlighted = true;
+            SetHeaderSweep(element, on: true);
+            if (scrollTo) _scroll?.ScrollTo(element);
+        }
+
+        private void ClearNavFocus()
+        {
+            if (_navIndex >= 0 && _navIndex < _navTargets.Count)
+            {
+                var element = _navTargets[_navIndex].Element;
+                if (element is AspidGradientButton button) button.Highlighted = false;
+                SetHeaderSweep(element, on: false);
+            }
+
+            _navIndex = -1;
+        }
+
+        // A focused sample header also lights its card's divider sweep — the same card-level hover mirror the
+        // mouse path drives in CreateSampleCard — so keyboard focus and mouse hover render identically.
+        private static void SetHeaderSweep(VisualElement element, bool on)
+        {
+            if (!element.ClassListContains(SampleHeaderClass)) return;
+
+            for (var ancestor = element.parent; ancestor is not null; ancestor = ancestor.parent)
+            {
+                if (!ancestor.ClassListContains(SampleCardClass)) continue;
+                ancestor.EnableInClassList(SampleHeaderHoverClass, on);
+                return;
+            }
+        }
+
+        // The samples list is rebuilt after every Import/Remove, so the ring is rebuilt with it: sample headers
+        // in list order. Hero links are deliberately not in the ring — they are mouse-only decoration.
+        private void ResetNavTargets()
+        {
+            ClearNavFocus();
+            _navTargets.Clear();
+        }
+
+        private void RegisterNavTarget(VisualElement element, Action activate)
+        {
+            element.AddToClassList(NavTargetClass);
+            _navTargets.Add((element, activate));
         }
 
         private static void SetUpLogoLink(VisualElement root)
@@ -176,17 +290,21 @@ namespace Aspid.FastTools.Editors
         private void RebuildSamplesList()
         {
             if (_samplesList is null) return;
+
+            // An Import/Remove triggered from the keyboard rebuilds the very ring it came from — put the
+            // highlight back on the same slot (clamped: Remove may shrink nothing, but stay safe) so the
+            // keyboard flow continues from where it acted.
+            var keepIndex = _navIndex;
+
             _samplesList.Clear();
+            ResetNavTargets();
 
             var package = PackageInfo.FindForPackageName(PackageName);
-            if (package is not null)
-            {
-                AddUpmSamples(package);
-                return;
-            }
+            if (package is not null) AddUpmSamples(package);
+            else if (AssetDatabase.IsValidFolder(SamplesPath)) AddLocalSamples();
 
-            if (AssetDatabase.IsValidFolder(SamplesPath))
-                AddLocalSamples();
+            if (keepIndex >= 0 && _navTargets.Count > 0)
+                SetNavFocus(Mathf.Min(keepIndex, _navTargets.Count - 1), scrollTo: false);
         }
 
         private void AddUpmSamples(PackageInfo package)
@@ -206,14 +324,12 @@ namespace Aspid.FastTools.Editors
                 // An imported sample's one action is taking the copy back out — deletion is confirmed and the
                 // sample stays reimportable right after, so the direct verb replaces a Reimport/Remove menu.
                 return CreateSampleCard(displayName, description, "Remove",
-                    evt => RemoveSample(captured, displayName, GetMousePosition(evt)),
+                    pointer => RemoveSample(captured, displayName, pointer),
                     imported: true);
             }
 
-            return CreateSampleCard(displayName, description, "Import", imported: false, onClick: evt =>
+            return CreateSampleCard(displayName, description, "Import", imported: false, onClick: pointer =>
             {
-                var pointer = GetMousePosition(evt);
-
                 if (!captured.Import(Sample.ImportOptions.HideImportWindow))
                 {
                     ShowToast($"Failed to import “{displayName}”", pointer);
@@ -233,20 +349,22 @@ namespace Aspid.FastTools.Editors
         /// A state dot ahead of the title carries <paramref name="imported"/>: brand-blue while the sample is
         /// not imported yet (the unread-marker idiom), green once it is; an imported card's destructive verb
         /// also hovers in the error tone. <see langword="null"/> drops the dot — the state doesn't apply
-        /// (local, non-UPM samples).
+        /// (local, non-UPM samples). <paramref name="onClick"/> receives the panel-space anchor for the result
+        /// toast: the cursor on a mouse click, the header's center on a keyboard Enter.
         /// </summary>
-        private static VisualElement CreateSampleCard(
+        private VisualElement CreateSampleCard(
             string displayName,
             string description,
             string actionText,
-            Action<EventBase> onClick,
+            Action<Vector2> onClick,
             bool? imported = null)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(SampleCardClass);
 
-            var action = new AspidGradientButton(actionText, onClick)
+            var action = new AspidGradientButton(actionText, evt => onClick(GetMousePosition(evt)))
                 .AddClass(SampleHeaderClass);
+            RegisterNavTarget(action, () => onClick(action.worldBound.center));
             if (imported == true)
                 action.AddClass(SampleHeaderRemoveClass);
 
@@ -336,10 +454,10 @@ namespace Aspid.FastTools.Editors
                 var fileName = Path.GetFileName(subfolder);
                 if (string.IsNullOrEmpty(fileName)) continue;
 
-                _samplesList.Add(CreateSampleCard(fileName, null, "Show", evt =>
+                _samplesList.Add(CreateSampleCard(fileName, null, "Show", pointer =>
                 {
                     PingAsset(subfolder);
-                    ShowToast($"“{fileName}” selected in the Project window", GetMousePosition(evt));
+                    ShowToast($"“{fileName}” selected in the Project window", pointer);
                 }));
             }
         }
