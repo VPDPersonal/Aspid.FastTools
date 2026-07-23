@@ -27,7 +27,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static void BuildControls(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
         {
             if ((scope & AspidSettingsScope.User) != 0)
+            {
                 container.Add(CreateBreakageDetectionSwitch());
+                container.Add(AspidSettingsUI.CreateRowNote(
+                    "Watches for references broken by script renames / deletes and points at Repair."));
+            }
 
             if ((scope & AspidSettingsScope.Shared) == 0) return;
 
@@ -37,10 +41,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 tooltip = "Give a duplicated list element its own independent instance instead of sharing the original's rid.\n"
                     + "Stored in a committed ProjectSettings asset, so every teammate (and CI) sees the same behaviour.",
             };
-            autoDeAlias.AddClass(AspidSettingsUI.SharedScopeClass);
+            autoDeAlias.WithScopeStripe(AspidSettingsUI.SharedScopeClass);
             autoDeAlias.RegisterValueChangedCallback(evt => SerializeReferenceSettings.AutoDeAliasEnabled = evt.newValue);
             SyncFromSettings(autoDeAlias, () => SerializeReferenceSettings.AutoDeAliasEnabled);
             container.Add(autoDeAlias);
+            container.Add(AspidSettingsUI.CreateRowNote(
+                "A duplicated list element gets its own instance instead of sharing the original's reference."));
 
             var severity = new EnumField("Build / CI gate", SerializeReferenceSettings.BuildSeverity)
             {
@@ -48,13 +54,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     + "Stored in a committed ProjectSettings asset, so it travels to a clean CI runner. "
                     + "CLI flags -srGateWarnOnly / -srGateFail override it per run.",
             };
-            severity.AddClass(AspidSettingsUI.SharedScopeClass);
+            severity.WithScopeStripe(AspidSettingsUI.SharedScopeClass);
             severity.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BuildSeverity = (GateSeverity)evt.newValue);
             SyncFromSettings<EnumField, Enum>(severity, () => SerializeReferenceSettings.BuildSeverity);
             container.Add(severity);
+            container.Add(AspidSettingsUI.CreateRowNote(
+                "Off — never check · Warn — log missing / unset-required references · Fail — abort the build / CI job."));
 
-            // The excluded-folders panel carries its own "Excluded scan folders" header inside its frame.
-            container.Add(new SerializeReferenceExcludedFoldersField().AddClass(AspidSettingsUI.SharedScopeClass));
+            // The excluded-folders control carries its own "Excluded scan folders" header row.
+            container.Add(new SerializeReferenceExcludedFoldersField().WithScopeStripe(AspidSettingsUI.SharedScopeClass));
         }
 
         // Built by one definition so the window tab and the Preferences page both render (and live-sync) the same
@@ -68,7 +76,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     + "toast pointing at Repair. Turn off to silence the domain-reload / import-time detection entirely.\n"
                     + "Per-user setting — stored locally, never committed.",
             };
-            breakageDetection.AddClass(AspidSettingsUI.UserScopeClass);
+            breakageDetection.WithScopeStripe(AspidSettingsUI.UserScopeClass);
             breakageDetection.RegisterValueChangedCallback(evt => SerializeReferenceSettings.BreakageDetectionEnabled = evt.newValue);
             SyncFromSettings(breakageDetection, () => SerializeReferenceSettings.BreakageDetectionEnabled);
             return breakageDetection;

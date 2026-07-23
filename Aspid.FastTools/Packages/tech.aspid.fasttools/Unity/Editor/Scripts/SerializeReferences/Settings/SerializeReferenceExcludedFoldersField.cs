@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
@@ -10,13 +11,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
     /// Editable list of scan-excluded project folders, replacing the free-text "one path per line" field with a proper
-    /// add/remove list. A compact translucent panel carries its own "Excluded scan folders" header, then stacks one
-    /// zebra-striped entry per excluded folder (path on the left, an ✕ remove on the right) over a matching add-row
-    /// entry whose "+" sits at the right edge; while empty the add row carries the "No excluded folders" hint instead.
-    /// Folder rows and the add row are the same entry element, and their light/dark wash alternates down the list so
-    /// adjacent rows read as separate elements. Clicking the add row (the "+" or its hint) opens a folder picker and
-    /// stores the project-relative path; clicking a folder row re-opens the picker to re-point that entry in place.
-    /// Reads and writes <see cref="SerializeReferenceSettings.ExcludedFolders"/> and rebuilds on
+    /// add/remove list. A flat member of its settings section card — no panel frame of its own: a header row pairs the
+    /// "Excluded scan folders" caption with a dim status hint and a "+" pinned at the right edge (the whole header is
+    /// the add target and washes green on hover), then one indented flat row per excluded folder (path on the left, an
+    /// ✕ remove on the right). Clicking the header opens a folder picker and stores the project-relative path;
+    /// clicking a folder row re-opens the picker to re-point that entry in place. Reads and writes
+    /// <see cref="SerializeReferenceSettings.ExcludedFolders"/> and rebuilds on
     /// <see cref="SerializeReferenceSettings.ExcludedFoldersChanged"/>, so the in-window Settings tab and the Project
     /// Settings page stay mirrored. Self-contained styling (palette + own USS) so it renders on both surfaces.
     /// </summary>
@@ -26,25 +26,34 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             "UI/SerializeReferences/Aspid-FastTools-SerializeReference-ExcludedFolders";
 
         private const string RootClass = "aspid-fasttools-excluded-folders";
-        private const string TitleClass = "aspid-fasttools-excluded-folders__title";
+        private const string HeaderClass = "aspid-fasttools-excluded-folders__header";
+        private const string HeaderCaptionClass = "aspid-fasttools-excluded-folders__header-caption";
+        private const string HeaderAddClass = "aspid-fasttools-excluded-folders__header--add";
         private const string ListClass = "aspid-fasttools-excluded-folders__list";
         private const string EntryClass = "aspid-fasttools-excluded-folders__entry";
-        private const string EntryEvenClass = "aspid-fasttools-excluded-folders__entry--even";
-        private const string EntryOddClass = "aspid-fasttools-excluded-folders__entry--odd";
         private const string EntryHoverClass = "aspid-fasttools-excluded-folders__entry--hover";
         private const string EntryDangerClass = "aspid-fasttools-excluded-folders__entry--danger";
-        private const string EntryAddClass = "aspid-fasttools-excluded-folders__entry--add";
         private const string HintClass = "aspid-fasttools-excluded-folders__hint";
         private const string PathClass = "aspid-fasttools-excluded-folders__path";
         private const string RemoveClass = "aspid-fasttools-excluded-folders__remove";
         private const string AddButtonClass = "aspid-fasttools-excluded-folders__add";
 
-        // The three mutually-exclusive full-row hover tints; SetTint is their single writer.
-        private static readonly string[] HoverTints = { EntryHoverClass, EntryDangerClass, EntryAddClass };
+        // The two mutually-exclusive full-row hover tints on folder rows; SetTint is their single writer.
+        private static readonly string[] HoverTints = { EntryHoverClass, EntryDangerClass };
 
         private readonly VisualElement _list;
-        private readonly VisualElement _addRow;
+        private readonly VisualElement _header;
         private readonly Label _hint;
+
+        // The current folder rows with their paths, refreshed by Rebuild — the source for GetNavTargets, so the
+        // keyboard ring can walk the rows exactly as the pointer can.
+        private readonly List<(VisualElement Row, string Path)> _rows = new();
+
+        /// <summary>
+        /// Raised after the folder rows are rebuilt (add / remove / external change). The hosting keyboard ring
+        /// listens to re-collect its targets, since every rebuild replaces the row elements.
+        /// </summary>
+        internal event Action RowsRebuilt;
 
         public SerializeReferenceExcludedFoldersField()
         {
@@ -52,22 +61,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddAspidThemeStyleSheets();
 
-            var title = new Label("Excluded scan folders").AddClass(TitleClass);
-            _list = new VisualElement().AddClass(ListClass);
-
-            // The whole add row is the click target; the "+" is a passive glyph (a Label, not a Button) so its click
-            // bubbles up to the row instead of firing a second add.
+            // The whole header row is the add target (the flat action-row idiom); the "+" and the dim status hint are
+            // passive Labels so their clicks bubble up to the row instead of firing a second add. The green add-intent
+            // wash is code-toggled (--add) so the keyboard ring can mirror it via the same class family.
             _hint = new Label { tooltip = "Add folder" }.AddClass(HintClass);
+            var caption = new Label("Excluded scan folders").AddClass(HeaderCaptionClass);
             var addGlyph = new Label("+") { tooltip = "Add folder" }.AddClass(AddButtonClass);
-            _addRow = new VisualElement().AddClass(EntryClass)
+
+            _header = new VisualElement().AddClass(HeaderClass)
+                .AddChild(caption)
                 .AddChild(_hint)
                 .AddChild(addGlyph);
-            _addRow.RegisterCallback<ClickEvent>(_ => AddFolder());
-            TintWhileOver(_addRow, _addRow, EntryAddClass, null);
+            _header.RegisterCallback<ClickEvent>(_ => AddFolder());
+            _header.RegisterCallback<PointerEnterEvent>(_ => _header.AddToClassList(HeaderAddClass));
+            _header.RegisterCallback<PointerLeaveEvent>(_ => _header.RemoveFromClassList(HeaderAddClass));
 
-            Add(title);
+            _list = new VisualElement().AddClass(ListClass);
+
+            Add(_header);
             Add(_list);
-            Add(_addRow);
 
             Rebuild();
 
@@ -99,14 +111,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void Rebuild()
         {
             _list.Clear();
+            _rows.Clear();
 
             var folders = SerializeReferenceSettings.ExcludedFolders;
             _hint.text = folders.Length == 0 ? "No excluded folders" : string.Empty;
 
-            for (var i = 0; i < folders.Length; i++)
+            foreach (var path in folders)
             {
-                var path = folders[i];
-
                 // The path label fills the row left of the ✕ (full height), so clicking it anywhere edits.
                 var label = new Label(path) { tooltip = path }.AddClass(PathClass);
                 label.RegisterCallback<ClickEvent>(_ => Edit(path));
@@ -120,20 +131,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 TintWhileOver(row, label, EntryHoverClass, null);
                 TintWhileOver(row, remove, EntryDangerClass, null);
 
-                ApplyStripe(row, i);
                 _list.Add(row);
+                _rows.Add((row, path));
             }
 
-            // The add row continues the zebra right after the last folder row.
-            ApplyStripe(_addRow, folders.Length);
-        }
-
-        // Zebra-stripes an entry by its position in the visible list so adjacent rows read as separate elements.
-        private static void ApplyStripe(VisualElement entry, int index)
-        {
-            var even = index % 2 == 0;
-            entry.EnableInClassList(EntryEvenClass, even);
-            entry.EnableInClassList(EntryOddClass, !even);
+            RowsRebuilt?.Invoke();
         }
 
         // Tints the whole entry while the pointer is over the zone (leaving falls back to fallback; null clears) —
@@ -148,6 +150,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static void SetTint(VisualElement entry, string tint)
         {
             foreach (var cls in HoverTints) entry.EnableInClassList(cls, cls == tint);
+        }
+
+        /// <summary>
+        /// The control's keyboard-ring members in visual order, mirroring the pointer affordances exactly: the header
+        /// row first (activate = the add-folder picker), then one member per folder row (activate = the edit picker —
+        /// what clicking the row does; remove = what its ✕ does, for the ring's Delete/Backspace). Re-collect on
+        /// <see cref="RowsRebuilt"/> — a rebuild replaces every row element.
+        /// </summary>
+        internal IEnumerable<(VisualElement Element, Action Activate, Action Remove)> GetNavTargets()
+        {
+            yield return (_header, AddFolder, null);
+
+            foreach (var (row, path) in _rows)
+                yield return (row, () => Edit(path), () => Remove(path));
         }
 
         private void AddFolder()
