@@ -11,8 +11,8 @@ namespace Aspid.FastTools.Editors
 {
     /// <summary>
     /// The shared vocabulary and composition of the package's settings surfaces — the SerializeReference window's
-    /// Settings tab, the <c>Preferences → Aspid FastTools</c> page and the
-    /// <c>Project Settings → Aspid FastTools → SerializeReference</c> page. Owns the surface's stylesheet path and USS
+    /// Settings tab, the <c>Preferences → Aspid.FastTools</c> page and the
+    /// <c>Project Settings → Aspid.FastTools → SerializeReference</c> page. Owns the surface's stylesheet path and USS
     /// class names (sections, legend, row/action primitives, and the storage-scope markers), the one definition of
     /// the surface's content (<see cref="BuildSurfaceContent"/>: the legend and every package area's section, filtered
     /// by <see cref="AspidSettingsScope"/>), its per-scope reset footer (<see cref="BuildResetFooter"/>), the branded
@@ -111,6 +111,40 @@ namespace Aspid.FastTools.Editors
         /// </summary>
         public static void BuildProviderPage(VisualElement root, AspidSettingsScope scope)
         {
+            BuildProviderHost(root, surface =>
+            {
+                var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1 } };
+                BuildSurfaceContent(scroll.contentContainer, scope);
+
+                surface.Add(scroll);
+                surface.Add(BuildResetFooter(scope));
+            });
+        }
+
+        /// <summary>
+        /// Composes a Unity settings page for one package area — the child pages under
+        /// <c>Preferences → Aspid.FastTools</c>: the branded host, the area's name as the underlined page header
+        /// (with the scope legend for the page's per-user rows) and one untitled section card that
+        /// <paramref name="buildControls"/> fills — the card skips its own title so the page header isn't repeated
+        /// right under itself. No reset footer: the per-scope reset lives on the parent aggregate page.
+        /// </summary>
+        public static void BuildAreaProviderPage(VisualElement root, string title, Action<VisualElement> buildControls)
+        {
+            BuildProviderHost(root, surface =>
+            {
+                var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1 } };
+                var content = scroll.contentContainer;
+
+                content.Add(BuildSurfaceHeader(AspidSettingsScope.User, title, description: null));
+                AddSection(content, title: null, buildControls);
+                surface.Add(scroll);
+            });
+        }
+
+        // The branded page host every Unity-native settings page shares: the window's dotted canvas as the backdrop
+        // (the branded cards read wrong over Unity's native grey panel) with the surface that fill composes over it.
+        private static void BuildProviderHost(VisualElement root, Action<VisualElement> fill)
+        {
             // The theme sheets make a user override apply to this page too.
             root.AddAspidThemeStyleSheets();
             root.style.flexGrow = 1;
@@ -126,12 +160,12 @@ namespace Aspid.FastTools.Editors
             canvas.SetTone(SerializeReferenceCanvasStyle.Info);
 
             var surface = new VisualElement().AddClass(RootClass);
-            var scroll = new ScrollView(ScrollViewMode.Vertical) { style = { flexGrow = 1 } };
-            BuildSurfaceContent(scroll.contentContainer, scope);
+            fill(surface);
 
-            surface.Add(scroll);
-            surface.Add(BuildResetFooter(scope));
-            host.AddChild(canvas).AddChild(surface);
+            // The window's version footer closes the page too — sans the keyboard-ring key: the Unity-native pages
+            // don't run the ring. A sibling of the surface, not a child, so its hairline spans the page edge to edge
+            // clear of the surface's side padding (the window mounts it at root level the same way).
+            host.AddChild(canvas).AddChild(surface).AddChild(new AspidWindowFooter(showKeysHint: false));
             root.Add(host);
         }
 
@@ -144,9 +178,12 @@ namespace Aspid.FastTools.Editors
         /// </summary>
         public static void BuildSurfaceContent(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
         {
-            container.Add(BuildSurfaceHeader(scope));
+            container.Add(BuildSurfaceHeader(
+                scope,
+                title: "Settings",
+                description: "Every FastTools setting in one place. The stripe on each row shows where the value is stored."));
 
-            AddSection(container, "References", content => SerializeReferenceSettingsUI.BuildControls(content, scope));
+            AddSection(container, "SerializeReference", content => SerializeReferenceSettingsUI.BuildControls(content, scope));
 
             // The remaining areas are per-user through and through, so a shared-only surface simply has no sections
             // for them rather than empty headers.
@@ -166,39 +203,42 @@ namespace Aspid.FastTools.Editors
         /// row stripes below. Only the scopes the surface renders get a legend item, so a single-scope page never
         /// explains a stripe it doesn't show.
         /// </summary>
-        private static VisualElement BuildSurfaceHeader(AspidSettingsScope scope)
+        private static VisualElement BuildSurfaceHeader(AspidSettingsScope scope, string title, string description)
         {
-            var title = new AspidLabel("Settings", AspidLabelPreset.Default
+            var heading = new AspidLabel(title, AspidLabelPreset.Default
                     .SetLabelTheme(ThemeStyle.Type.Lightness)
                     .SetLabelSize(AspidLabelSizeStyle.Type.H4)
                     .SetLineTheme(ThemeStyle.Type.Dark))
                 .AddClass(HeaderTitleClass);
 
-            var description = new Label(
-                    "Every FastTools setting in one place. The stripe on each row shows where the value is stored.")
-                .AddClass(HeaderDescriptionClass);
+            var header = new VisualElement().AddClass(HeaderClass)
+                .AddChild(heading);
 
-            return new VisualElement().AddClass(HeaderClass)
-                .AddChild(title)
-                .AddChild(description)
-                .AddChild(BuildScopeLegend(scope));
+            if (description != null)
+                header.AddChild(new Label(description).AddClass(HeaderDescriptionClass));
+
+            return header.AddChild(BuildScopeLegend(scope));
         }
 
         /// <summary>
         /// Appends a titled settings section: a glass group card — the window's card idiom (the Project References
         /// group cards, the Welcome sample cards) — with the section title as its static header row, the shared dim
         /// header divider under it, and a content container that <paramref name="buildContent"/> fills with flat
-        /// settings rows. Each package area (References, Type Selector, Appearance, Welcome) gets its own card so a
-        /// surface reads as one grouped composition from a single definition per area.
+        /// settings rows. Each package area (SerializeReference, Type Selector, Appearance, Welcome) gets its own
+        /// card so a surface reads as one grouped composition from a single definition per area. A <c>null</c>
+        /// <paramref name="title"/> skips the header row — the per-area provider pages already carry the area's name
+        /// as the page header.
         /// </summary>
         public static void AddSection(VisualElement container, string title, Action<VisualElement> buildContent)
         {
-            var card = new VisualElement().AddClass(SectionClass)
-                .AddChild(new Label(title).AddClass(SectionTitleClass))
-                .AddChild(new AspidDividingLine(AspidDividingLinePreset.Default
-                        .SetTheme(ThemeStyle.Type.Light)
-                        .SetSize(AspidDividingLineSizeStyle.Type.Thin))
-                    .AddClass(SectionDividerClass));
+            var card = new VisualElement().AddClass(SectionClass);
+
+            if (title != null)
+                card.AddChild(new Label(title).AddClass(SectionTitleClass))
+                    .AddChild(new AspidDividingLine(AspidDividingLinePreset.Default
+                            .SetTheme(ThemeStyle.Type.Light)
+                            .SetSize(AspidDividingLineSizeStyle.Type.Thin))
+                        .AddClass(SectionDividerClass));
 
             var content = new VisualElement().AddClass(SectionContentClass);
             buildContent(content);

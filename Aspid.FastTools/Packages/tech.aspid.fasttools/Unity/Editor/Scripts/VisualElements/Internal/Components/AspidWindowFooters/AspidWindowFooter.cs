@@ -35,7 +35,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         /// <summary>
         /// Builds the footer, reads the package version, and wires the version and GitHub links.
         /// </summary>
-        public AspidWindowFooter()
+        public AspidWindowFooter() : this(showKeysHint: true) { }
+
+        /// <param name="showKeysHint">Whether to show the centred keyboard-ring key. Hosts without the ring
+        /// (the Unity-native settings pages) pass <c>false</c> so the footer never promises keys that do nothing.</param>
+        public AspidWindowFooter(bool showKeysHint)
         {
             this.AddAspidThemeStyleSheets()
                 .AddStyleSheetsFromResource(StyleSheetPath)
@@ -53,15 +57,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var githubLabel = new Label("GitHub").AddClass(LinkClass);
             githubLabel.AddManipulator(new Clickable(() => Application.OpenURL(GitHubUrl)));
 
+            var row = new VisualElement().AddClass(RowClass);
+            row.AddChild(versionLabel);
+
             // The keyboard-ring key: every hosting window drives its tabs with the same ring, and the ring is
             // otherwise invisible until the first arrow press. Absolutely centred over the row (see the USS) and
             // click-transparent, so the version / GitHub links keep their edges and their hits.
-            var keysHint = new Label("↑↓ navigate   ⏎ activate   esc dismiss")
-                .AddClass(KeysClass)
-                .SetPickingMode(PickingMode.Ignore);
+            if (showKeysHint)
+                row.AddChild(new Label("↑↓ navigate   ⏎ activate   esc dismiss")
+                    .AddClass(KeysClass)
+                    .SetPickingMode(PickingMode.Ignore));
 
-            var row = new VisualElement().AddClass(RowClass);
-            row.AddChild(versionLabel).AddChild(keysHint).AddChild(githubLabel);
+            row.AddChild(githubLabel);
 
             this.AddChild(new AspidDividingLine(AspidDividingLinePreset.Default.SetTheme(ThemeStyle.Type.Darkness)))
                 .AddChild(row);
