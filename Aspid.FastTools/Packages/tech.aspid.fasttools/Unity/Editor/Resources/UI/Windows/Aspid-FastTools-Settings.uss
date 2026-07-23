@@ -157,7 +157,7 @@
    corner radius — absolutely pinned to the row's left edge with a small vertical inset, so it stays a straight line
    whatever the row's rounding, and the rows' left padding keeps a clear gap between the line and the content. The
    scope utility classes are applied by the section builders; the stripes only paint inside this window — the Project
-   Settings page never loads this sheet. The legend in the reset footer decodes the two colours. */
+   Settings page never loads this sheet. The legend in the surface header decodes the two colours. */
 .aspid-fasttools-settings__scope-stripe {
     position:                                             absolute;
     /* Pinned inside the row's box (some field types clip children to their bounds, so it cannot hang outside);
