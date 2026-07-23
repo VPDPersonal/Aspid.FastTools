@@ -33,7 +33,12 @@ namespace Aspid.FastTools.Editors
         // dotted canvas): the host fills the page, the background gives the dots their black base.
         public const string CanvasClass = "aspid-fasttools-settings-canvas";
         public const string CanvasBackgroundClass = "aspid-fasttools-settings-canvas__background";
+        public const string HeaderClass = "aspid-fasttools-settings__header";
+        public const string HeaderTitleClass = "aspid-fasttools-settings__header-title";
+        public const string HeaderDescriptionClass = "aspid-fasttools-settings__header-description";
+        public const string SectionClass = "aspid-fasttools-settings__section";
         public const string SectionTitleClass = "aspid-fasttools-settings__section-title";
+        public const string SectionDividerClass = "aspid-fasttools-settings__section-divider";
         public const string SectionContentClass = "aspid-fasttools-settings__section-content";
         public const string LegendClass = "aspid-fasttools-settings__legend";
         public const string LegendItemClass = "aspid-fasttools-settings__legend-item";
@@ -45,10 +50,21 @@ namespace Aspid.FastTools.Editors
         public const string SharedScopeClass = "aspid-fasttools-settings-scope--shared";
         public const string UserScopeClass = "aspid-fasttools-settings-scope--user";
 
+        // The stripe element a scoped row mounts on its left edge, and the backplate that carries the row's
+        // hover/keyboard-focus fill clear of the stripe (see WithScopeStripe).
+        public const string ScopeStripeClass = "aspid-fasttools-settings__scope-stripe";
+        public const string RowBackplateClass = "aspid-fasttools-settings__row-backplate";
+
+        // Keyboard ring markers (the other tabs' nav idiom): the window's Settings tab walks a flat focus ring over
+        // the actionable elements; the focused class mirrors each element's hover treatment in USS.
+        public const string NavTargetClass = "aspid-fasttools-settings__nav-target";
+        public const string NavTargetFocusedClass = "aspid-fasttools-settings__nav-target--focused";
+
         // Row primitives for non-BaseField settings rows (e.g. action rows of buttons), styled to match the field
         // rows. Danger = red hover family for destructive actions; info = blue for per-user-scope actions.
         public const string RowClass = "aspid-fasttools-settings__row";
         public const string RowCaptionClass = "aspid-fasttools-settings__row-caption";
+        public const string RowNoteClass = "aspid-fasttools-settings__row-note";
         public const string ActionClass = "aspid-fasttools-settings__action";
         public const string ActionDangerClass = "aspid-fasttools-settings__action--danger";
         public const string ActionInfoClass = "aspid-fasttools-settings__action--info";
@@ -59,6 +75,32 @@ namespace Aspid.FastTools.Editors
         /// </summary>
         public static T AsSurface<T>(this T element) where T : VisualElement =>
             element.AddStyleSheetsFromResource(StyleSheetPath).AddClass(RootClass);
+
+        /// <summary>
+        /// Marks a settings row with its storage scope: applies <paramref name="scopeClass"/> and mounts two absolute
+        /// children — the stripe on the row's left edge (a separate element, not a border-left, so it stays a straight
+        /// line whatever the row's corner radius) and, behind the content, the backplate that carries the row's
+        /// hover / keyboard-focus fill. The fill lives on the backplate — inset past the stripe — rather than on the
+        /// row itself, so a lit row never touches its stripe. (The stripe also cannot hang outside the row's box in a
+        /// margin gutter: some field types, e.g. AspidSwitch and EnumField, clip children to their bounds.)
+        /// </summary>
+        public static T WithScopeStripe<T>(this T element, string scopeClass) where T : VisualElement
+        {
+            element.AddClass(scopeClass);
+
+            // hierarchy, not Add: a BaseField routes Add through its (closed) contentContainer, but both mounts
+            // belong on the row element itself — they position absolutely against the row's box. The backplate goes
+            // in at index 0 so it paints behind the row's content; the stripe appends last, over everything.
+            element.hierarchy.Insert(0, new VisualElement()
+                .AddClass(RowBackplateClass)
+                .SetPickingMode(PickingMode.Ignore));
+
+            element.hierarchy.Add(new VisualElement()
+                .AddClass(ScopeStripeClass)
+                .AddClass(scopeClass)
+                .SetPickingMode(PickingMode.Ignore));
+            return element;
+        }
 
         /// <summary>
         /// Composes a whole Unity settings page (Preferences or Project Settings) hosting the branded surface for
@@ -102,7 +144,8 @@ namespace Aspid.FastTools.Editors
         /// </summary>
         public static void BuildSurfaceContent(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
         {
-            container.Add(BuildScopeLegend(scope));
+            container.Add(BuildSurfaceHeader(scope));
+
             AddSection(container, "References", content => SerializeReferenceSettingsUI.BuildControls(content, scope));
 
             // The remaining areas are per-user through and through, so a shared-only surface simply has no sections
@@ -118,23 +161,62 @@ namespace Aspid.FastTools.Editors
         }
 
         /// <summary>
-        /// Appends a titled settings section: a header label over a content container that
-        /// <paramref name="buildContent"/> fills. Each package area (References, Type Selector, Appearance, Welcome)
-        /// gets its own section so a surface reads as one grouped composition from a single definition per area.
+        /// The surface's header — the audit tabs' results-header idiom: an underlined heading over the bare canvas
+        /// (no card), a one-line dim description and, right where the reader starts, the scope legend decoding the
+        /// row stripes below. Only the scopes the surface renders get a legend item, so a single-scope page never
+        /// explains a stripe it doesn't show.
         /// </summary>
-        public static void AddSection(VisualElement container, string title, Action<VisualElement> buildContent)
+        private static VisualElement BuildSurfaceHeader(AspidSettingsScope scope)
         {
-            container.Add(new Label(title).AddClass(SectionTitleClass));
+            var title = new AspidLabel("Settings", AspidLabelPreset.Default
+                    .SetLabelTheme(ThemeStyle.Type.Lightness)
+                    .SetLabelSize(AspidLabelSizeStyle.Type.H4)
+                    .SetLineTheme(ThemeStyle.Type.Dark))
+                .AddClass(HeaderTitleClass);
 
-            var content = new VisualElement().AddClass(SectionContentClass);
-            buildContent(content);
-            container.Add(content);
+            var description = new Label(
+                    "Every FastTools setting in one place. The stripe on each row shows where the value is stored.")
+                .AddClass(HeaderDescriptionClass);
+
+            return new VisualElement().AddClass(HeaderClass)
+                .AddChild(title)
+                .AddChild(description)
+                .AddChild(BuildScopeLegend(scope));
         }
 
         /// <summary>
-        /// The one-line key to the rows' scope stripes: each item pairs a swatch painted by the same scope class the
-        /// rows wear with a caption naming what that colour means for persistence. Only the scopes the surface renders
-        /// get an item, so a single-scope page never explains a stripe it doesn't show.
+        /// Appends a titled settings section: a glass group card — the window's card idiom (the Project References
+        /// group cards, the Welcome sample cards) — with the section title as its static header row, the shared dim
+        /// header divider under it, and a content container that <paramref name="buildContent"/> fills with flat
+        /// settings rows. Each package area (References, Type Selector, Appearance, Welcome) gets its own card so a
+        /// surface reads as one grouped composition from a single definition per area.
+        /// </summary>
+        public static void AddSection(VisualElement container, string title, Action<VisualElement> buildContent)
+        {
+            var card = new VisualElement().AddClass(SectionClass)
+                .AddChild(new Label(title).AddClass(SectionTitleClass))
+                .AddChild(new AspidDividingLine(AspidDividingLinePreset.Default
+                        .SetTheme(ThemeStyle.Type.Light)
+                        .SetSize(AspidDividingLineSizeStyle.Type.Thin))
+                    .AddClass(SectionDividerClass));
+
+            var content = new VisualElement().AddClass(SectionContentClass);
+            buildContent(content);
+            container.Add(card.AddChild(content));
+        }
+
+        /// <summary>
+        /// One dim line under a settings row surfacing what its tooltip would otherwise hide — the meaning of a
+        /// row's values or a team-wide toggle's real effect. For the few rows whose caption alone doesn't carry the
+        /// stakes; self-explanatory rows stay bare so the notes keep their weight.
+        /// </summary>
+        public static Label CreateRowNote(string text) => new Label(text).AddClass(RowNoteClass);
+
+        /// <summary>
+        /// The one-line key to the rows' scope stripes: each item pairs a dot painted by the same scope class the
+        /// rows wear with a caption naming what that colour means for persistence. Lives in the surface header, so
+        /// the reader meets the key before the first striped row. Only the scopes the surface renders get an item,
+        /// so a single-scope page never explains a stripe it doesn't show.
         /// </summary>
         public static VisualElement BuildScopeLegend(AspidSettingsScope scope = AspidSettingsScope.All)
         {
@@ -192,7 +274,9 @@ namespace Aspid.FastTools.Editors
                 row.AddChild(user.AddClass(ActionClass).AddClass(ActionInfoClass).AddClass(UserScopeClass));
             }
 
-            return new VisualElement().AddClass(FooterClass).AddChild(row);
+            // The scope legend lives in the surface header (BuildSurfaceHeader); the footer is just the reset row.
+            return new VisualElement().AddClass(FooterClass)
+                .AddChild(row);
         }
 
         private static void ResetSharedToDefaults()
