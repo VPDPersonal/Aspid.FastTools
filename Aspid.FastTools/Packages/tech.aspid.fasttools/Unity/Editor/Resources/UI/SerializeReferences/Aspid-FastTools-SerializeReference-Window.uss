@@ -71,15 +71,15 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--active:hover 
 
 /* Underline accent: a 2px child bar pinned to the tab's bottom edge. Toggling a child's background-color via the
    parent's --active class repaints reliably, whereas flipping a border-bottom-color did not redraw until the next
-   relayout (the underline only appeared after a window resize). A grey baseline marks every (inactive) tab; the
-   active tab swaps it for the signature green. */
+   relayout (the underline only appeared after a window resize). Inactive tabs keep only a near-invisible
+   baseline (the card-border tone) so the active tab's signature green owns the hierarchy. */
 .aspid-fasttools-serialize-reference-window__tab-underline {
     position:                                             absolute;
     left:                                                 0;
     right:                                                0;
     bottom:                                               0;
     height:                                               2px;
-    background-color:                                     var(--aspid-colors-shade-light);
+    background-color:                                     var(--aspid-colors-shade-darkness);
 }
 
 Button.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-underline {
@@ -146,4 +146,58 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--square:hover 
    selected edge tab reads green just like the mode tabs' active accent. */
 Button.aspid-fasttools-serialize-reference-window__toolbar-button--square.aspid-fasttools-serialize-reference-window__toolbar-button--active .aspid-fasttools-serialize-reference-window__tab-icon {
     -unity-background-image-tint-color:                   var(--aspid-colors-status-success-text-light);
+}
+
+/* --- Scrollbar ---
+   Every vertical scroller in the window re-dressed from Unity's bright default into the window's quiet family: no
+   step buttons, no track — just a slim translucent thumb that brightens while the scroller is hovered. The settings
+   sheet mirrors these rules for the Preferences page, which lives outside this window. Scoped to the scroller so no
+   real slider (a base-slider too) is touched. */
+.aspid-fasttools-serialize-reference-window .unity-scroller--vertical {
+    width:                                                12px;
+    margin:                                               0;
+    border-width:                                         0;
+    background-color:                                     rgba(0, 0, 0, 0);
+}
+
+.aspid-fasttools-serialize-reference-window .unity-scroller--vertical > .unity-scroller__low-button,
+.aspid-fasttools-serialize-reference-window .unity-scroller--vertical > .unity-scroller__high-button {
+    display:                                              none;
+}
+
+/* With the step buttons gone, the slider re-pins to the scroller's full height (the default offsets reserve room
+   for them). */
+.aspid-fasttools-serialize-reference-window .unity-scroller--vertical .unity-scroller__slider {
+    margin:                                               0;
+    padding:                                              0;
+    width:                                                12px;
+    min-width:                                            12px;
+    top:                                                  0;
+    bottom:                                               0;
+}
+
+.aspid-fasttools-serialize-reference-window .unity-scroller--vertical .unity-base-slider__tracker {
+    border-width:                                         0;
+    background-color:                                     rgba(0, 0, 0, 0);
+}
+
+/* The thumb: slim, rounded, translucent white so it reads over both the bare canvas and the glass cards; hover
+   brightens it on the shared 0.25s beat. The default focus halo is dropped with the rest of the chrome. */
+.aspid-fasttools-serialize-reference-window .unity-scroller--vertical .unity-base-slider__dragger {
+    left:                                                 3px;
+    width:                                                6px;
+    border-width:                                         0;
+    border-radius:                                        3px;
+    background-color:                                     rgba(255, 255, 255, 0.12);
+    transition-property:                                  background-color;
+    transition-duration:                                  0.25s;
+    transition-timing-function:                           ease-out;
+}
+
+.aspid-fasttools-serialize-reference-window .unity-scroller--vertical:hover .unity-base-slider__dragger {
+    background-color:                                     rgba(255, 255, 255, 0.28);
+}
+
+.aspid-fasttools-serialize-reference-window .unity-scroller--vertical .unity-base-slider__dragger-border {
+    display:                                              none;
 }

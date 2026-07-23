@@ -76,13 +76,16 @@
 - [ ] **Project References — Required violations**: a separate card lists every unset `[TypeSelector(Required = true)]` field found by the same gate scan (asset path + component + field path), skipped entirely when the build/CI gate is Off, respects `Excluded Folders`; clicking a row pings/opens the asset like a broken-reference row (no bulk fix — nothing sensible to auto-assign); only (re)scanned on an explicit Scan/Rescan click, not on a tab switch.
 - [ ] **Settings**: see section 6.
 - [ ] Ctrl+Tab / Ctrl+Shift+Tab switch tabs.
+- [ ] **Keyboard navigation**: ↑/↓ move the focus ring over rows/cards on every tab (Welcome samples, both audits, Settings), Enter activates, Esc drops focus; Welcome hero links stay outside the ring; the Settings Excluded Folders list also takes Enter (add) and Del (remove); the window footer shows the key hints.
+- [ ] **Audit entry affordances**: entry text is selectable/copyable; the row context menu offers Open in Asset References / Open in Prefab Mode / Select in Project; long asset paths elide at the start (the file name stays visible).
+- [ ] **Audit legend & counts**: both audit tabs decode entry colours in the header legend (amber = missing, blue = pending migration) and the headline splits missing / migration / required counts.
 
 ## 6. Settings — three mirrors
 
-> Verify on **each** of the three surfaces: the window's Settings tab, `Preferences → Aspid FastTools`, `Project Settings → Aspid FastTools → SerializeReference` (the last one — References only, native look).
+> Verify on **each** of the three surfaces: the window's Settings tab, `Preferences → Aspid.FastTools` (aggregate page + SerializeReference / Type Selector / Welcome subpages), `Project Settings → Aspid.FastTools → SerializeReference` (the last one — References only, native look).
 
 - [ ] The mirrors sync live (a change on one surface shows on the others), survive dock moves and switch clicks.
-- [ ] Scope stripes (green = ProjectSettings, blue = EditorPrefs) + legend; per-scope Reset to defaults behind a confirm naming the exact defaults; Favorites/Recent survive a reset.
+- [ ] Scope stripes (green = ProjectSettings, blue = EditorPrefs) + the legend in the surface header; per-scope Reset to defaults behind a confirm naming the exact defaults; Favorites/Recent survive a reset.
 - [ ] References: auto de-alias, breakage detection (per-user), gate severity Off/Warn/Fail (shared asset), excluded folders (list + selector).
 - [ ] Type Selector: hide Favorites, Recent capacity, Saved lists maintenance (confirm with counts).
 - [ ] Appearance: theme override StyleSheet (live, per-project), Create template…; Welcome: auto-show.

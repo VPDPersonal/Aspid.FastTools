@@ -21,6 +21,8 @@ namespace Aspid.FastTools.Types.Editors
         private const string ItemCheckClass = BlockClass + "__item-check";
         private const string ItemCountClass = BlockClass + "__item-count";
         private const string ItemArrowClass = BlockClass + "__item-arrow";
+        private const string ItemDividerClass = BlockClass + "__item-divider";
+        private const string ItemContentClass = BlockClass + "__item-content";
         private const string RowAfterPinnedModifier = BlockClass + "__item--after-pinned";
         private const string SectionTitleClass = BlockClass + "__section-title";
         private const string FavoriteToggleClass = BlockClass + "__favorite-toggle";
@@ -38,6 +40,14 @@ namespace Aspid.FastTools.Types.Editors
 
         private VisualElement CreateListItem()
         {
+            // The pinned-block divider rides inside the row shell (absolutely positioned in its extra top zone,
+            // shown only via --after-pinned) rather than as a border: a border-top would curve along the content's
+            // rounded corners. All visuals live on the content wrapper pinned to the shell's bottom — see the
+            // stylesheet's Item section for why the shell itself must stay bare.
+            var divider = new VisualElement()
+                .AddClass(ItemDividerClass)
+                .SetPickingMode(PickingMode.Ignore);
+
             var icon = new Image()
                 .AddClass(ItemIconClass)
                 .SetPickingMode(PickingMode.Ignore);
@@ -64,8 +74,8 @@ namespace Aspid.FastTools.Types.Editors
             var arrow = new Label("›")
                 .AddClass(ItemArrowClass);
 
-            var row = new VisualElement()
-                .AddClass(ItemClass)
+            var content = new VisualElement()
+                .AddClass(ItemContentClass)
                 .AddChild(icon)
                 .AddChild(glyph)
                 .AddChild(label)
@@ -73,6 +83,11 @@ namespace Aspid.FastTools.Types.Editors
                 .AddChild(count)
                 .AddChild(favorite)
                 .AddChild(arrow);
+
+            var row = new VisualElement()
+                .AddClass(ItemClass)
+                .AddChild(divider)
+                .AddChild(content);
 
             row.RegisterCallback<ClickEvent>(OnRowClicked);
 

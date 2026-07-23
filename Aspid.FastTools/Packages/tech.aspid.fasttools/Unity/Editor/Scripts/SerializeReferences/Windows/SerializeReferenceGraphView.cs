@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using System.Linq;
 using Object = UnityEngine.Object;
+using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAuditUI;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -64,13 +65,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NodeClass = RootClass + "__node";
         private const string NodeBackEdgeClass = NodeClass + "--back-edge";
         private const string NodeEmptyClass = NodeClass + "--empty";
+        private const string NodeMigrateCardClass = NodeClass + "--migrate";
         private const string NodePickingClass = NodeClass + "--picking";
+        private const string NodeHeaderHoverClass = NodeClass + "--header-hover";
         private const string NodeBandClass = RootClass + "__node-band";
         private const string NodeBandMissingClass = NodeBandClass + "--missing";
         private const string NodeBandMigrateClass = NodeBandClass + "--migrate";
         private const string NodeBandRowClass = RootClass + "__node-band-row";
-        private const string NodeMigrateClass = RootClass + "__node-migrate";
-        private const string NodeSuggestClass = RootClass + "__node-suggest";
+        private const string NodeDividerClass = RootClass + "__node-divider";
+        private const string NodeSweepClass = RootClass + "__node-sweep";
+        private const string NodeSweepMissingClass = NodeSweepClass + "--missing";
+        private const string NodeSweepMigrateClass = NodeSweepClass + "--migrate";
+        private const string NodeActionClass = RootClass + "__node-action";
+        private const string NodeActionInfoClass = NodeActionClass + "--info";
         private const string NodeHeaderClass = RootClass + "__node-header";
         private const string NodeFooterClass = RootClass + "__node-footer";
         private const string NodeRootLabelClass = RootClass + "__node-root-label";
@@ -80,6 +87,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string BadgeClass = RootClass + "__badge";
         private const string BadgeSharedClass = BadgeClass + "--shared";
+
+        private const string LegendClass = RootClass + "__legend";
+        private const string LegendHiddenClass = LegendClass + "--hidden";
+        private const string LegendItemClass = RootClass + "__legend-item";
+        private const string LegendDotClass = RootClass + "__legend-dot";
+        private const string LegendDotInfoClass = LegendDotClass + "--info";
+        private const string LegendTextClass = RootClass + "__legend-text";
+        private const string NavTargetClass = RootClass + "__nav-target";
+        private const string NavTargetFocusedClass = NavTargetClass + "--focused";
 
         private const string ChipClass = RootClass + "__chip";
         private const string ClearOrphanClass = RootClass + "__clear-orphan";
@@ -116,15 +132,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private Object _target;
         private readonly ObjectField _assetField;
+        private readonly AspidGradientButton _rescanButton;
         private readonly VisualElement _empty;
         private readonly VisualElement _overview;
         private readonly AspidLabel _overviewTitle;
         private readonly Label _overviewHint;
+        private readonly VisualElement _legend;
         private readonly VisualElement _list;
+        private readonly ScrollView _scroll;
 
         private VisualElement _openPicker;
         private AspidGradientButton _openPickerRow;
         private VisualElement _openPickerCard;
+
+        // Keyboard navigation: one flat focus ring over every actionable element in visual order — Rescan first, then
+        // each document header, node band, action row and orphan Clear — shared with the other window tabs, so a
+        // member hidden inside a collapsed document band drops out of the ring (see NavRing).
+        private readonly NavRing _ring;
+
+        // The legend's block-specific USS class names for the shared item builder.
+        private static readonly LegendClasses LegendClassSet = new(LegendItemClass, LegendDotClass, LegendDotInfoClass, LegendTextClass);
 
         // Per-asset constraint map cache: BuildConstraintMap does a LoadAllAssetsAtPath + full SerializedObject walk,
         // so each Fix-Missing picker open must not re-scan. Cleared on every Rescan / apply so rewritten YAML is re-read.
@@ -172,16 +199,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // dragging an asset in doesn't bubble to the button's Clickable and re-run Rescan.
             _assetField.RegisterCallback<PointerDownEvent>(evt => evt.StopPropagation());
 
-            var rescanButton = new AspidGradientButton("Rescan", _ => Rescan())
+            _rescanButton = new AspidGradientButton("Rescan", _ => Rescan())
                 .AddClass(RescanClass);
-            rescanButton.AddTrailingContent(_assetField);
-            rescanButton.FillWithTrailingContent();
+            _rescanButton.AddTrailingContent(_assetField);
+            _rescanButton.FillWithTrailingContent();
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(CardClass)
                 .AddChild(cardTitle)
                 .AddChild(cardDescription)
-                .AddChild(rescanButton);
+                .AddChild(_rescanButton);
 
             _empty = new VisualElement().AddClass(EmptyClass);
 
@@ -194,11 +221,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _overviewHint = new Label(string.Empty).AddClass(OverviewHintClass);
 
+            // Color key for the two card accents; only shown when both are actually on screen (see ShowOverview) —
+            // the same amber/blue legend the Project References audit renders under its hint.
+            _legend = new VisualElement()
+                .AddClass(LegendClass)
+                .AddClass(LegendHiddenClass)
+                .AddChild(BuildLegendItem("Broken — pick a replacement", info: false, LegendClassSet))
+                .AddChild(BuildLegendItem("Renamed — one-click migrate", info: true, LegendClassSet));
+
             _overview = new VisualElement()
                 .AddClass(OverviewClass)
                 .AddClass(OverviewHiddenClass)
                 .AddChild(_overviewTitle)
-                .AddChild(_overviewHint);
+                .AddChild(_overviewHint)
+                .AddChild(_legend);
 
             _list = new VisualElement().AddClass(ListClass);
 
@@ -211,13 +247,57 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(_overview)
                 .AddChild(_list);
 
-            var scroll = new ScrollView().AddClass(ScrollClass);
-            scroll.AddChild(content);
+            _scroll = new ScrollView().AddClass(ScrollClass);
+            _scroll.AddChild(content);
 
-            root.AddChild(scroll);
+            root.AddChild(_scroll);
+
+            // The shared keyboard ring: the root holds focus (grabbed on attach, re-grabbed when the picker closes)
+            // so keys reach it before anything is highlighted. Suspended while a type picker owns the keyboard.
+            _ring = new NavRing(
+                host: this,
+                navTargetClass: NavTargetClass,
+                paint: PaintNavFocus,
+                scrollTo: element => _scroll.ScrollTo(element),
+                isSuspended: () => _openPicker is not null);
 
             Rescan();
         }
+
+        // ---------------------------------------------------------------------------------------------------------
+        // Keyboard navigation (mirrors SerializeReferenceProjectView)
+        // ---------------------------------------------------------------------------------------------------------
+
+        // Gradient buttons paint their hover in code (accent overlay + tinted labels); the focused class's flat fill
+        // would just show through their fading gradient as a gray pill, so they take ONLY the programmatic hover and
+        // the plain rows take ONLY the class. A focused node band also lights its card's divider sweep.
+        private static void PaintNavFocus(VisualElement element, bool on)
+        {
+            if (element is AspidGradientButton button) button.Highlighted = on;
+            else element.EnableInClassList(NavTargetFocusedClass, on);
+            SetBandSweep(element, on);
+        }
+
+        // A focused node band also lights its card's divider sweep — the same card-level hover mirror the mouse
+        // path drives in AddBandDivider — so keyboard focus and mouse hover render identically.
+        private static void SetBandSweep(VisualElement element, bool on)
+        {
+            if (element.ClassListContains(NodeBandClass))
+                element.parent?.EnableInClassList(NodeHeaderHoverClass, on);
+        }
+
+        // Every render pass rebuilds the ring from scratch (the old elements are gone with _list.Clear()). Rescan is
+        // always slot 0; a highlight sitting on it survives the rebuild, so Enter-on-Rescan keeps its highlight.
+        private void ResetNavTargets()
+        {
+            var keepScanFocus = _ring.Index == 0;
+            _ring.Clear();
+
+            RegisterNavTarget(_rescanButton, () => Rescan());
+            if (keepScanFocus) _ring.Focus(0, scrollTo: false);
+        }
+
+        private void RegisterNavTarget(VisualElement element, Action activate) => _ring.Register(element, activate);
 
         private void SetTarget(Object target)
         {
@@ -239,6 +319,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Drop the constraint maps so a rescan after a fix / clear re-reads the rewritten YAML, not a stale map.
             _constraintCache.Clear();
             _list.Clear();
+            ResetNavTargets();
             _requiredViolations = Array.Empty<GateViolation>();
 
             var assetPath = _target ? AssetDatabase.GetAssetPath(_target) : null;
@@ -255,8 +336,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     info.Message = "This is a prefab instance — its managed references live in the source prefab.";
                     _list.AddChild(info);
 
-                    _list.AddChild(new AspidGradientButton("Open Source Prefab",
-                        _ => SetTarget(AssetDatabase.LoadAssetAtPath<Object>(sourcePath))));
+                    var openSource = new AspidGradientButton("Open Source Prefab",
+                        _ => SetTarget(AssetDatabase.LoadAssetAtPath<Object>(sourcePath)));
+                    RegisterNavTarget(openSource, () => SetTarget(AssetDatabase.LoadAssetAtPath<Object>(sourcePath)));
+                    _list.AddChild(openSource);
                     return;
                 }
 
@@ -501,21 +584,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ? StatusStyle.Type.Info
                     : StatusStyle.Type.Success;
 
-            _overviewTitle.Text = broken > 0
-                ? broken == 1 ? "1 missing reference" : $"{broken} missing references"
-                : orphans > 0
-                    ? orphans == 1 ? "1 orphaned reference" : $"{orphans} orphaned references"
-                    : required > 0
-                        ? required == 1 ? "1 required field unassigned" : $"{required} required fields unassigned"
-                        : migrations > 0
-                            ? migrations == 1 ? "1 pending migration" : $"{migrations} pending migrations"
-                            : "No missing references";
+            _overviewTitle.Text = BuildOverviewTitle(broken, orphans, migrations, required);
 
             _overviewTitle.LabelStatus = status;
             _overviewTitle.LineStatus = status;
 
             _overviewHint.text = BuildOverviewHint(total, missing, orphans, empties, migrations, required);
+
+            // The amber/blue key only earns its row when both accents are on screen at once (see the Project
+            // References legend).
+            var hasAmber = broken > 0 || orphans > 0 || required > 0;
+            _legend.EnableInClassList(LegendHiddenClass, migrations == 0 || !hasAmber);
+
             _overview.RemoveClass(OverviewHiddenClass);
+        }
+
+        // Only non-zero parts make the headline, joined like the Project References results header — so an asset
+        // carrying several finding kinds names all of them instead of hiding the rest in the hint.
+        private static string BuildOverviewTitle(int broken, int orphans, int migrations, int required)
+        {
+            var parts = new List<string>(4);
+            if (broken > 0) parts.Add(BuildCountText(broken, "missing reference"));
+            if (orphans > 0) parts.Add(BuildCountText(orphans, "orphaned reference"));
+            if (required > 0) parts.Add(BuildCountText(required, "required violation"));
+            if (migrations > 0) parts.Add(BuildCountText(migrations, "pending migration"));
+
+            return parts.Count > 0 ? string.Join(", ", parts) : "No missing references";
         }
 
         private static string BuildOverviewHint(int total, int missing, int orphans, int empties, int migrations, int required)
@@ -565,6 +659,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var body = new VisualElement().AddClass(DocumentBodyClass);
 
+            // The header is built (and registered on the nav ring) BEFORE the body cards, so the keyboard order
+            // matches the visual order — the band sits above the cards it collapses.
+            AspidGradientButton header = null;
+            if (showHeader)
+            {
+                // The self-reference lets the click handler flip its own chevron alongside toggling the body.
+                var collapsed = false;
+                var toggle = new Action(() =>
+                {
+                    collapsed = !collapsed;
+                    body.style.display = collapsed ? DisplayStyle.None : DisplayStyle.Flex;
+                    header.Text = collapsed ? DocumentChevronCollapsed : DocumentChevronExpanded;
+                });
+                header = new AspidGradientButton(DocumentChevronExpanded, _ => toggle())
+                    .AddClass(DocumentHeaderClass);
+                if (hasIssues) header.AddClass(DocumentHeaderIssuesClass);
+                header.tooltip = $"fileId {document.FileId}";
+                RegisterNavTarget(header, toggle);
+
+                // Ignored for picking so clicks fall through to the band's own handler.
+                header.AddLeadingContent(new VisualElement()
+                    .AddClass(DocumentHeaderRowClass)
+                    .SetPickingMode(PickingMode.Ignore)
+                    .AddChild(new Label(document.TypeName)
+                        .AddClass(DocumentTitleClass)
+                        .SetPickingMode(PickingMode.Ignore))
+                    .AddChild(new Label(BuildDocumentCountText(document, broken, migrations))
+                        .AddClass(DocumentCountClass)
+                        .SetPickingMode(PickingMode.Ignore)));
+            }
+
             // Missing roots render first. Two passes over the asset's field order keep the partition stable between
             // rescans; empty (unassigned) roots are not missing, so they fall to the second pass.
             foreach (var root in document.Roots)
@@ -591,31 +716,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (orphans is not null) body.AddChild(orphans);
 
             // Single-document asset: no header band — the ObjectField above already names it. Always expanded.
-            if (!showHeader)
+            if (header is null)
                 return new VisualElement().AddClass(DocumentClass).AddChild(body);
-
-            // The self-reference lets the click handler flip its own chevron alongside toggling the body.
-            AspidGradientButton header = null;
-            var collapsed = false;
-            header = new AspidGradientButton(DocumentChevronExpanded, _ =>
-            {
-                collapsed = !collapsed;
-                body.style.display = collapsed ? DisplayStyle.None : DisplayStyle.Flex;
-                header.Text = collapsed ? DocumentChevronCollapsed : DocumentChevronExpanded;
-            }).AddClass(DocumentHeaderClass);
-            if (hasIssues) header.AddClass(DocumentHeaderIssuesClass);
-            header.tooltip = $"fileId {document.FileId}";
-
-            // Ignored for picking so clicks fall through to the band's own handler.
-            header.AddLeadingContent(new VisualElement()
-                .AddClass(DocumentHeaderRowClass)
-                .SetPickingMode(PickingMode.Ignore)
-                .AddChild(new Label(document.TypeName)
-                    .AddClass(DocumentTitleClass)
-                    .SetPickingMode(PickingMode.Ignore))
-                .AddChild(new Label(BuildDocumentCountText(document, broken, migrations))
-                    .AddClass(DocumentCountClass)
-                    .SetPickingMode(PickingMode.Ignore)));
 
             return new VisualElement()
                 .AddClass(DocumentClass)
@@ -686,6 +788,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass);
+            // Card-level modifier so card-wide states (the --picking accent frame, the picker's accent-follow rules)
+            // read the calm info tone on a migration card instead of the broken-card amber.
+            if (isMigration) card.AddClass(NodeMigrateCardClass);
 
             var typePreset = AspidLabelPreset.Default
                 .SetLabelSize(AspidLabelSizeStyle.Type.H5)
@@ -736,28 +841,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     .AddClass(isMigration ? NodeBandMigrateClass : NodeBandMissingClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
+                RegisterNavTarget(band, () => OpenMissingPicker(assetPath, fileId, rid, band));
+                AddBandDivider(card, band, isMigration ? NodeSweepMigrateClass : NodeSweepMissingClass);
 
                 if (isMigration)
                 {
                     // The same YAML rewrite a picker pick performs — no confirm, matching the picker's own apply.
-                    var migrate = new AspidGradientButton($"Migrate  →  {migrationTarget.Name}",
-                            _ => ApplyFix(assetPath, fileId, rid, migrationTarget.AssemblyQualifiedName))
-                        .AddClass(NodeMigrateClass);
-                    migrate.tooltip =
+                    card.AddChild(BuildNodeActionRow(
+                        $"Migrate → {migrationTarget.Name}",
                         $"This entry resolves to {migrationTarget.FullName} via its declared [MovedFrom] — Unity " +
                         "already migrates it in memory when the asset loads. Migrating rewrites the stored type " +
-                        "name in the file so it matches the code.";
-                    card.AddChild(migrate);
+                        "name in the file so it matches the code.",
+                        info: true,
+                        () => ApplyFix(assetPath, fileId, rid, migrationTarget.AssemblyQualifiedName)));
                 }
                 else if (TryGetNodeSuggestion(assetPath, document.FileId, rid, node.Value.StoredType, out var suggestion))
                 {
                     // Safe to hand straight to ApplyFix: Rank's pool is constraint-filtered, so the suggestion is
                     // always a type the picker itself would offer.
-                    var suggest = new AspidGradientButton(SerializeReferenceHelpers.GetSuggestionLabel(suggestion),
-                            _ => ApplyFix(assetPath, fileId, rid, suggestion.Type.AssemblyQualifiedName))
-                        .AddClass(NodeSuggestClass);
-                    suggest.tooltip = SerializeReferenceHelpers.GetSuggestionDetail(suggestion);
-                    card.AddChild(suggest);
+                    card.AddChild(BuildNodeActionRow(
+                        $"Smart Fix {SerializeReferenceHelpers.GetSuggestionLabel(suggestion)}",
+                        SerializeReferenceHelpers.GetSuggestionDetail(suggestion),
+                        info: false,
+                        () => ApplyFix(assetPath, fileId, rid, suggestion.Type.AssemblyQualifiedName)));
                 }
             }
             else if (!isOrphan)
@@ -771,12 +877,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     .AddClass(NodeBandClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
+                RegisterNavTarget(band, () => OpenLivePicker(assetPath, fileId, graphPath, band));
+                AddBandDivider(card, band, sweepModifier: null);
             }
             else
             {
                 // An orphan has no field pointing at it, so there is no live property to edit — its band stays static
-                // and the footer Clear (below) drops the dangling entry.
+                // and the footer Clear (below) drops the dangling entry. The divider still splits band from footer,
+                // but with no hover source there is no sweep.
                 card.AddChild(bandRow);
+                AddBandDivider(card, band: null, sweepModifier: null);
             }
 
             // Healthy and empty slots are cleared through their band's picker (<None>), so no separate button here.
@@ -784,26 +894,63 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (!string.IsNullOrEmpty(pathLabel))
             {
-                meta.AddChild(new Label($"{pathLabel}:")
-                    .AddClass(NodeRootLabelClass)
-                    .SetPickingMode(PickingMode.Ignore));
+                meta.AddChild(MakeSelectable(new Label($"{pathLabel}:")
+                    .AddClass(NodeRootLabelClass)));
             }
 
-            meta.AddChild(new Label($"rid {rid}")
-                .AddClass(NodeRidClass)
-                .SetPickingMode(PickingMode.Ignore));
+            meta.AddChild(MakeSelectable(new Label($"rid {rid}")
+                .AddClass(NodeRidClass)));
 
             if (isOrphan)
             {
                 // Drop a dangling RefIds entry no field points at. File edit, so it is confirmed and not undoable.
                 var fileId = document.FileId;
-                meta.AddChild(new AspidGradientButton("Clear", _ => ClearOrphan(assetPath, fileId, rid))
-                    .AddClass(ClearOrphanClass));
+                var clear = new AspidGradientButton("Clear", _ => ClearOrphan(assetPath, fileId, rid))
+                    .AddClass(ClearOrphanClass);
+                RegisterNavTarget(clear, () => ClearOrphan(assetPath, fileId, rid));
+                meta.AddChild(clear);
             }
 
             card.AddChild(meta);
 
             return card;
+        }
+
+        // A one-click action (Smart Fix / Migrate) as a flat accent verb over the same hover fill the Project
+        // References action rows use, instead of a filled gradient pill floating over the glass card. Each card
+        // keeps one accent: warning amber for a Smart Fix guess on a broken card, info for a pending migration.
+        private VisualElement BuildNodeActionRow(string text, string tooltipText, bool info, Action onClick)
+        {
+            var row = new Label(text).AddClass(NodeActionClass);
+            if (info) row.AddClass(NodeActionInfoClass);
+            row.tooltip = tooltipText;
+            row.RegisterCallback<ClickEvent>(_ => onClick());
+            RegisterNavTarget(row, onClick);
+            return row;
+        }
+
+        // The dim hairline between a card's band and its body, plus — when the band is interactive — the accent
+        // underline sweep that scales in while the band is hovered (the Project References group cards' idiom).
+        // The sweep is the band's sibling, so USS :hover can't reach it; the band mirrors its hover onto a card
+        // modifier the sweep rule listens to. Both hide while the picker is docked (see the --picking USS rules).
+        private void AddBandDivider(VisualElement card, AspidGradientButton band, string sweepModifier)
+        {
+            card.AddChild(new AspidDividingLine(AspidDividingLinePreset.Default
+                    .SetTheme(ThemeStyle.Type.Light)
+                    .SetSize(AspidDividingLineSizeStyle.Type.Thin))
+                .AddClass(NodeDividerClass));
+
+            if (band is null) return;
+
+            var sweep = new VisualElement()
+                .AddClass(NodeSweepClass)
+                .SetPickingMode(PickingMode.Ignore);
+            if (sweepModifier is not null) sweep.AddClass(sweepModifier);
+            card.AddChild(sweep);
+
+            // HoverSweep mirrors the band's hover onto the card modifier the sweep rule listens to, keeping it lit
+            // while the band is the nav-focused ring member.
+            HoverSweep.MirrorHover(band, () => band.parent, NodeHeaderHoverClass, () => _ring.IsFocused(band));
         }
 
         // A back-edge to a rid already on the current render path — a single dim, italic line (no footer) so cycles
@@ -875,6 +1022,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 // No recoverable field path to target — leave the slot a static "<None>" leaf.
                 card.AddChild(bandRow);
+                AddBandDivider(card, band: null, sweepModifier: null);
             }
             else
             {
@@ -887,20 +1035,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (isRequired) band.AddClass(NodeBandMissingClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
+                RegisterNavTarget(band, () => OpenLivePicker(assetPath, fileId, graphPath, band));
+                AddBandDivider(card, band, isRequired ? NodeSweepMissingClass : null);
             }
 
             var meta = new VisualElement().AddClass(NodeFooterClass);
 
             if (!string.IsNullOrEmpty(pathLabel))
             {
-                meta.AddChild(new Label($"{pathLabel}:")
-                    .AddClass(NodeRootLabelClass)
-                    .SetPickingMode(PickingMode.Ignore));
+                meta.AddChild(MakeSelectable(new Label($"{pathLabel}:")
+                    .AddClass(NodeRootLabelClass)));
             }
 
-            meta.AddChild(new Label("unassigned")
-                .AddClass(NodeRidClass)
-                .SetPickingMode(PickingMode.Ignore));
+            meta.AddChild(MakeSelectable(new Label("unassigned")
+                .AddClass(NodeRidClass)));
 
             card.AddChild(meta);
 
@@ -937,6 +1085,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 // Not reachable through the live serialization API — leave the band a static "<None>" line.
                 card.AddChild(bandRow);
+                AddBandDivider(card, band: null, sweepModifier: null);
             }
             else
             {
@@ -946,18 +1095,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     .AddClass(NodeBandMissingClass);
                 band.AddLeadingContent(bandRow);
                 card.AddChild(band);
+                RegisterNavTarget(band, () => OpenRequiredStringPicker(violation, band));
+                AddBandDivider(card, band, NodeSweepMissingClass);
             }
 
             var component = ResolveComponentName(violation, componentCache);
             var text = string.IsNullOrEmpty(component) ? violation.FieldPath : $"{component}.{violation.FieldPath}";
 
             var meta = new VisualElement().AddClass(NodeFooterClass);
-            meta.AddChild(new Label($"{text}:")
-                .AddClass(NodeRootLabelClass)
-                .SetPickingMode(PickingMode.Ignore));
-            meta.AddChild(new Label("unassigned")
-                .AddClass(NodeRidClass)
-                .SetPickingMode(PickingMode.Ignore));
+            meta.AddChild(MakeSelectable(new Label($"{text}:")
+                .AddClass(NodeRootLabelClass)));
+            meta.AddChild(MakeSelectable(new Label("unassigned")
+                .AddClass(NodeRidClass)));
             card.AddChild(meta);
 
             return card;
@@ -1223,17 +1372,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Glyph-only swap (▼→▲) so the same replace works for every band label.
             if (anchor is not null) anchor.Text = anchor.Text.Replace(BandChevronCollapsed, BandChevronExpanded);
 
-            // Drop the picker right below the band inside the card (the ?? fallback keeps a sane target if the band is
-            // ever hosted outside a card). On a migration / suggestion card the one-click row stays welded under the
-            // band, so the picker slots in after it.
+            // Drop the picker directly below the band inside the card (the ?? fallback keeps a sane target if the
+            // band is ever hosted outside a card). The band's divider + sweep hide while the card is picking (USS
+            // --picking rules), and the action / footer rows sit below the docked selector — mirroring the Project
+            // References card whose picker docks under the header with the entry rows below it.
             var card = anchor?.parent;
             var container = card ?? _list;
-            var insertAt = container.IndexOf(anchor) + 1;
-            if (insertAt < container.childCount &&
-                (container[insertAt].ClassListContains(NodeMigrateClass) ||
-                 container[insertAt].ClassListContains(NodeSuggestClass)))
-                insertAt++;
-            container.InsertChild(insertAt, _openPicker);
+            container.InsertChild(container.IndexOf(anchor) + 1, _openPicker);
 
             if (card is not null)
             {
@@ -1256,6 +1401,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _openPicker = null;
             _openPickerRow = null;
             _openPickerCard = null;
+
+            // The dismissed picker leaves keyboard focus dangling on its (removed) search field; reclaim it so the
+            // arrow-key ring keeps working. Guarded — ClosePicker also runs from render paths before attach.
+            if (panel is not null) Focus();
         }
 
         private void ApplyFix(string assetPath, long fileId, long rid, string assemblyQualifiedName)

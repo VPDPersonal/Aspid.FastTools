@@ -76,13 +76,16 @@
 - [ ] **Project References — Required violations**: отдельная карточка со всеми незаполненными `[TypeSelector(Required = true)]`-полями из того же gate-скана (путь ассета + компонент + field path), полностью пропускается при выключенном (Off) build/CI gate, учитывает `Excluded Folders`; клик по строке пингует/открывает ассет как строка broken-reference (без bulk-fix — нечего осмысленно назначить автоматически); (пере)сканируется только по явному клику Scan/Rescan, не при переключении вкладки.
 - [ ] **Settings**: см. раздел 6.
 - [ ] Ctrl+Tab / Ctrl+Shift+Tab — переключение вкладок.
+- [ ] **Клавиатурная навигация**: ↑/↓ двигают фокус-кольцо по строкам/карточкам на каждой вкладке (сэмплы Welcome, оба аудита, Settings), Enter активирует, Esc сбрасывает фокус; hero-ссылки Welcome вне кольца; список Excluded Folders в Settings дополнительно принимает Enter (добавить) и Del (удалить); подсказки клавиш — в футере окна.
+- [ ] **Аффордансы записей аудита**: текст записи выделяется/копируется; контекст-меню строки — Open in Asset References / Open in Prefab Mode / Select in Project; длинные пути ассетов элидируются с начала (имя файла остаётся видно).
+- [ ] **Легенда и счётчики аудита**: обе вкладки аудита расшифровывают цвета записей легендой в шапке (янтарный = missing, синий = pending migration), headline раздельно считает missing / migration / required.
 
 ## 6. Settings — три зеркала
 
-> Проверить на **каждой** из трёх поверхностей: вкладка Settings окна, `Preferences → Aspid FastTools`, `Project Settings → Aspid FastTools → SerializeReference` (последняя — только References, нативный вид).
+> Проверить на **каждой** из трёх поверхностей: вкладка Settings окна, `Preferences → Aspid.FastTools` (сводная страница + подстраницы SerializeReference / Type Selector / Welcome), `Project Settings → Aspid.FastTools → SerializeReference` (последняя — только References, нативный вид).
 
 - [ ] Зеркала синхронны live (изменение на одной поверхности видно на другой), переживают dock-move и клики по свитчу.
-- [ ] Scope-полоски (зелёная = ProjectSettings, синяя = EditorPrefs) + легенда; Reset to defaults раздельно per-scope с confirm, называющим дефолты; Favorites/Recent переживают reset.
+- [ ] Scope-полоски (зелёная = ProjectSettings, синяя = EditorPrefs) + легенда в шапке поверхности; Reset to defaults раздельно per-scope с confirm, называющим дефолты; Favorites/Recent переживают reset.
 - [ ] References: auto de-alias, breakage detection (per-user), gate severity Off/Warn/Fail (shared asset), excluded folders (список + селектор).
 - [ ] Type Selector: hide Favorites, Recent capacity, Saved lists maintenance (confirm с количеством).
 - [ ] Appearance: theme override StyleSheet (live, per-project), Create template…; Welcome: auto-show.

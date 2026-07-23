@@ -24,7 +24,7 @@ namespace Aspid.FastTools.Editors
                     + "Turning it off suppresses every future auto-show; Tools → Aspid 🐍 → FastTools → Welcome keeps working.\n"
                     + "Per-user setting — stored locally, never committed.",
             };
-            autoShow.AddClass(AspidSettingsUI.UserScopeClass);
+            autoShow.WithScopeStripe(AspidSettingsUI.UserScopeClass);
             autoShow.RegisterValueChangedCallback(evt => WelcomeSettings.AutoShowEnabled = evt.newValue);
             SyncFromSettings(autoShow, () => WelcomeSettings.AutoShowEnabled);
             container.Add(autoShow);

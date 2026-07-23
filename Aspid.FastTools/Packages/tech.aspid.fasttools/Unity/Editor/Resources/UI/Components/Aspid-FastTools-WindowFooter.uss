@@ -30,6 +30,20 @@
     color:                                                var(--aspid-colors-text-light);
 }
 
+/* The keyboard-ring key, absolutely centred over the whole row (independent of the side links' widths) in the
+   quietest text tone — present for discoverability, but quieter than the version so it never competes. Click-
+   transparent from code so the links keep their hits. */
+.aspid-fasttools-window-footer__keys {
+    position:                                             absolute;
+    left:                                                 0;
+    right:                                                0;
+    top:                                                  0;
+    bottom:                                               0;
+    font-size:                                            11px;
+    color:                                                var(--aspid-colors-text-darkness);
+    -unity-text-align:                                    middle-center;
+}
+
 /* GitHub link: the signature green, brightening on hover. */
 .aspid-fasttools-window-footer__link {
     color:                                                var(--aspid-colors-status-success-text-dark);
