@@ -22,13 +22,13 @@ The Unity package itself has no CLI build — Unity compiles it when the project
 
 | Assembly | Location | Purpose |
 |---|---|---|
-| `Aspid.FastTools` | `Source/` | Pure C# type extensions, no Unity dependency |
-| `Aspid.FastTools.Unity` | `Unity/Runtime/` | Runtime: Types, Enums, Ids, ProfilerMarkers, VisualElements — ships with player builds |
-| `Aspid.FastTools.Unity.VisualElements.Math` | `Unity/Runtime/VisualElements/Extensions/INotifyValueChanged/Math/` | Satellite: `INotifyValueChanged` extensions for `float2/3/4` etc. |
-| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | All editor-only tooling, excluded from builds |
-| `Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml` | `Unity/Editor/Scripts/SerializeReferences/Yaml/` | Asset-YAML parsing, isolated in its own assembly |
+| `Aspid.FastTools` | `Source/` | Pure C#, no Unity dependency |
+| `Aspid.FastTools.Unity` | `Unity/Runtime/` | Ships with player builds |
+| `Aspid.FastTools.Unity.VisualElements.Math` | `Unity/Runtime/VisualElements/Extensions/INotifyValueChanged/Math/` | Satellite: `INotifyValueChanged` for `float2/3/4` etc. |
+| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Editor-only, excluded from builds |
+| `Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml` | `Unity/Editor/Scripts/SerializeReferences/Yaml/` | Asset-YAML parsing, isolated on purpose |
 
-Plus: `Tests/Editor/` — Unity-side editor tests (Unity Test Runner); `Samples~/` — optional samples (UPM tilde convention, imported via Package Manager); `Unity/Editor/Resources/UI|Icons/` — editor stylesheets and icon assets.
+Plus: `Tests/Editor/` (Unity Test Runner), `Samples~/` (UPM tilde convention — imported via Package Manager), `Unity/Editor/Resources/UI|Icons/`.
 
 **Assembly boundary rule:** `Unity/Runtime/` code must NOT reference `UnityEditor` — it ships with player builds.
 
@@ -36,21 +36,18 @@ Plus: `Tests/Editor/` — Unity-side editor tests (Unity Test Runner); `Samples~
 
 ### Feature map
 
-| Feature | Location | Non-obvious bits |
-|---|---|---|
-| ProfilerMarkers | `Unity/Runtime/ProfilerMarkers/` | `this.Marker()` returns a call-site-unique `ProfilerMarker`; the source generator creates one per (class, method, line) |
-| SerializableType | `Unity/Runtime/Types/` | Wraps `System.Type` via assembly-qualified name, lazy resolution; `SerializableType<T>` adds generic constraints |
-| TypeSelector | `Unity/Editor/Scripts/Types/` | `[TypeSelector]` drives two field shapes: a `string` (AQN, also backing `SerializableType`) and a `[SerializeReference]` managed reference (picking a type instantiates it; candidate list defaults to the field's declared type, base types like `[TypeSelector(typeof(IMelee))]` narrow it). `TypeSelectorPropertyDrawer` dispatches on `SerializedProperty.propertyType`; the managed-reference path lives under `SerializeReferences/`. Settings in `Types/Selectors/TypeSelectorSettings*`; usage validated by analyzer `AFT*` rules |
-| SerializeReference tooling | `Unity/Editor/Scripts/SerializeReferences/` | `SerializeReferenceWindow` (menu `Tools/Aspid 🐍/FastTools/…`), tabs: Welcome / Asset References / Project References / Settings. Subsystems: `Windows/`, `Index/`, `Diagnostics/`, `Yaml/` (own asmdef) |
-| Settings / Preferences | `Unity/Editor/Scripts/Settings/` | `AspidFastToolsPreferencesProvider` + `AspidSettingsUI`; per-feature settings live next to their feature, the window's **Settings** tab aggregates them |
-| EnumValues\<TValue\> | `Unity/Runtime/Enums/` | Serializable enum→value dictionary; handles `[Flags]` |
-| Id Registries | `Unity/Runtime/Ids/` + `Unity/Editor/Scripts/Ids/` | `IdRegistry` (ScriptableObject) maps names to stable int IDs; each `IId` struct binds to exactly **one** registry (enforced by `IdRegistryResolver`); `IdStructGenerator` emits struct boilerplate. Editor internals: `Unity/Editor/Scripts/Ids/CLAUDE.md` |
-| SerializedProperty extensions | `Unity/Editor/Scripts/SerializedProperties/` | Fluent chainable (`.SetValue()`, `.Apply()`), split across partial files |
-| VisualElement extensions | `Unity/Runtime/VisualElements/Extensions/` | Fluent UIToolkit API; subdirectories by element type plus top-level partials. Editor-side command extensions in `Unity/Editor/Scripts/VisualElements/Extensions/` |
-| Internal editor components | `Unity/Editor/Scripts/VisualElements/Internal/` | One subfolder per component: element class + `{Name}Preset` + fluent extensions + `Styles/` structs for USS bindings. Shared helpers in `Styles/` (`AspidStyles`, `StatusStyle`, `ThemeStyle`, `InlineStyle<T>`); `ICustomStyleExtensions` lives in runtime (`Extensions/ICustomStyle/`). All components load `AspidStyles.DefaultStyleSheet` first; enums are nested `Type` on their `Style` structs |
-| IMGUI scopes | `Unity/Editor/Scripts/IMGUI/` | Disposable `VerticalScope`/`HorizontalScope`/`ScrollViewScope` with `Rect` properties |
-| Editor extensions | `Unity/Editor/Scripts/Extensions/` | `GetScriptName()` / `GetScriptNameWithIndex()` — respects `[AddComponentMenu]`, index suffix for duplicates |
-| Welcome view | `Unity/Editor/Scripts/Welcome/` | **Welcome** tab of `SerializeReferenceWindow` + `WelcomeWindowStartup` (auto-show on first import); lists installable samples from `package.json` |
+Feature folders under `Unity/Runtime/` and `Unity/Editor/Scripts/` are named after the feature (`Enums`, `Ids`, `ProfilerMarkers`, `Types`, `VisualElements`, `IMGUI`, `SerializedProperties`, `Settings`, `Welcome`, `SerializeReferences`, `Extensions`) — `ls` finds a feature faster than this file can list it. Only what the layout does *not* tell you:
+
+| Feature | Non-obvious bits |
+|---|---|
+| ProfilerMarkers | `this.Marker()` returns a call-site-unique `ProfilerMarker` — the source generator emits one per (class, method, line) |
+| TypeSelector | One attribute, two field shapes — a `string` (AQN) and a `[SerializeReference]` managed reference. **The managed-reference path lives under `SerializeReferences/`, not `Types/`.** Details: `Unity/Editor/Scripts/Types/CLAUDE.md` |
+| SerializeReference tooling | `SerializeReferenceWindow` (menu `Tools/Aspid 🐍/FastTools/…`), tabs Welcome / Asset References / Project References / Settings; subsystems `Windows/`, `Index/`, `Diagnostics/`, `Yaml/` (own asmdef) |
+| Id Registries | Spans `Unity/Runtime/Ids/` + `Unity/Editor/Scripts/Ids/`. `IdRegistry` (ScriptableObject) maps names to stable int IDs; each `IId` struct binds to exactly **one** registry (enforced by `IdRegistryResolver`); `IdStructGenerator` emits the struct boilerplate. Editor internals: `Unity/Editor/Scripts/Ids/CLAUDE.md` |
+| Settings / Preferences | Per-feature settings live next to their feature; `AspidFastToolsPreferencesProvider` + `AspidSettingsUI` and the window's **Settings** tab only aggregate them |
+| Internal editor components | Strict four-part layout per component (element + `{Name}Preset` + fluent extensions + `Styles/`) — follow it when adding one. Conventions: `Unity/Editor/Scripts/VisualElements/Internal/CLAUDE.md` |
+| VisualElement extensions | Runtime fluent API in `Unity/Runtime/VisualElements/Extensions/`; editor-side command extensions in `Unity/Editor/Scripts/VisualElements/Extensions/` |
+| Welcome view | Not its own window — a tab of `SerializeReferenceWindow`, plus `WelcomeWindowStartup` (auto-show on first import); lists installable samples from `package.json` |
 
 ### Editor Code Conventions
 
@@ -70,3 +67,7 @@ PostToolUse hooks (wired in `.claude/settings.json`):
 
 - `.claude/hooks/rebuild-generators-on-change.sh` — on `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, rebuilds the generator and redeploys the DLL into the Unity package. Tests and Sample are skipped — keep that scope when changing the hook.
 - `.claude/hooks/rebuild-analyzers-on-change.sh` — same for the analyzer submodule (Tests/Sample skipped): rebuilds and copies the DLL into the package.
+
+Skills in `.claude/skills/`: `build-generator` / `build-analyzer` (build + deploy the Roslyn DLLs), `sync-readmes`, `unity-pipeline` (drive the live Editor via the `unity` CLI + `com.unity.pipeline` — recompile/test loop, `eval`, `sr_gate`, authoring `[CliCommand]`s), `editor-media-capture` (docs screenshots/GIFs of editor windows).
+
+**Driving the Editor:** several Editors run at once (main checkout + `.claude/worktrees/shared-*`), so every `unity command` needs `--project-path`. Use `unity status` for liveness, not `unity pipeline list`. Details and gotchas live in the `unity-pipeline` skill.
