@@ -1,7 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
     <Style src="project://database/Packages/tech.aspid.fasttools/Unity/Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss?fileID=7433441132597879392&amp;guid=a58072b37b804991bbb887d0fd65e2f8&amp;type=3#Aspid-FastTools-Default-Dark"/>
     <Style src="project://database/Packages/tech.aspid.fasttools/Unity/Editor/Resources/UI/Windows/Welcome/Aspid-FastTools-Welcome.uss?fileID=7433441132597879392&amp;guid=74929072ccf9442f6a07a76964c94928&amp;type=3#Aspid-FastTools-Welcome"/>
-    <Aspid.FastTools.UIElements.Editors.Internal.AspidAnimatedDotsBackground/>
     <ui:VisualElement name="welcome-content" class="aspid-fasttools-welcome__content">
         <ui:ScrollView name="welcome-scroll" class="aspid-fasttools-welcome__scroll">
             <ui:VisualElement name="welcome-hero" class="aspid-fasttools-welcome__hero">
@@ -9,6 +8,13 @@
                 <ui:VisualElement class="aspid-fasttools-welcome__hero-text">
                     <Aspid.FastTools.UIElements.Editors.Internal.AspidAnimatedTitle text="Welcome to Aspid.FastTools"/>
                     <Aspid.FastTools.UIElements.Editors.Internal.AspidLabel text="A compact toolkit for reducing routine Unity code and editor setup. Typed selectors, enum helpers, string ID tooling, profiler markers, SerializedProperty utilities, IMGUI scopes, and UIElements extensions." label-font-style="Normal" label-theme="Light" line-size="None" selectable="true" class="aspid-fasttools-welcome__description"/>
+                    <ui:VisualElement name="welcome-links" class="aspid-fasttools-welcome__hero-links">
+                        <ui:Label name="welcome-link-docs" text="Documentation" class="aspid-fasttools-welcome__hero-link"/>
+                        <ui:Label text="·" class="aspid-fasttools-welcome__hero-link-separator"/>
+                        <ui:Label name="welcome-link-github" text="GitHub" class="aspid-fasttools-welcome__hero-link"/>
+                        <ui:Label text="·" class="aspid-fasttools-welcome__hero-link-separator"/>
+                        <ui:Label name="welcome-link-store" text="Asset Store" class="aspid-fasttools-welcome__hero-link"/>
+                    </ui:VisualElement>
                 </ui:VisualElement>
             </ui:VisualElement>
             <ui:VisualElement name="welcome-samples" class="aspid-fasttools-welcome__card">

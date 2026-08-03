@@ -398,7 +398,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             UpdateSuggestion(canFix);
         }
 
-        // The Smart Fix suggestion rides the missing notice as a second clickable segment ("· → Pistol?"): the
+        // The Smart Fix suggestion rides the missing notice as a second clickable segment ("· → Pistol"): the
         // highest ranked existing type the reference most likely became, applied through the same repair path as Fix.
         private void UpdateSuggestion(bool canFix)
         {
