@@ -156,5 +156,5 @@
 
 - [ ] Unity EditMode: `Aspid.FastTools.Unity.Editor.Tests` + `…SerializeReferences.Tests` — зелёные.
 - [ ] `dotnet test` для Generators — зелёный.
-- [ ] `dotnet test` для Analyzers (сабмодуль) — зелёный.
+- [ ] `dotnet test` для Analyzers — зелёный.
 - [ ] Компиляция проекта без warnings от пакета.

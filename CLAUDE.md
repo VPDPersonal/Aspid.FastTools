@@ -4,7 +4,7 @@
 
 1. **`Aspid.FastTools/`** — Unity project with the package source (Runtime + Editor)
 2. **`Aspid.FastTools.Generators/`** — standalone .NET solution with Roslyn source generators; pipeline patterns and per-generator details in `Aspid.FastTools.Generators/CLAUDE.md`
-3. **`Aspid.FastTools.Analyzers/`** — git submodule (`VPDPersonal/Aspid.FastTools.Analyzers`) with Roslyn analyzers validating package-attribute usage (`AFT*` diagnostics)
+3. **`Aspid.FastTools.Analyzers/`** — standalone .NET solution with Roslyn analyzers validating package-attribute usage (`AFT*` diagnostics)
 
 Repo-internal working documents (roadmap, release checklist, `QA-CHECKLIST.md`/`QA-CHECKLIST_RU.md`, `DESIGN.md`) live in `docs/` — distinct from the package's user-facing `Documentation/`. A new feature must add its QA-checklist item in **both** languages before its branch merges.
 
@@ -13,7 +13,7 @@ Repo-internal working documents (roadmap, release checklist, `QA-CHECKLIST.md`/`
 The Unity package itself has no CLI build — Unity compiles it when the project is open. Both Roslyn DLLs ship prebuilt inside the package; the `build-generator` / `build-analyzer` skills hold the exact build/test/deploy commands (PostToolUse hooks also rebuild them automatically on edit — see *Local Claude Code automation*).
 
 - **Generator** (`Aspid.FastTools.Generators/`): on build, `ILRepack.targets` merges the `Aspid.Generators.Helper*` dependencies into a single-file DLL and `Directory.Build.targets` auto-copies it into the Unity package. Never reference `SourceGenerator.Foundations` — its injected `Console` logging deadlocks Unity's compiler server.
-- **Analyzer** (`Aspid.FastTools.Analyzers/` git submodule — `git submodule update --init` after cloning): intentionally has **no** auto-copy targets (keeps the submodule independent of this repo's layout), so the DLL is copied into the package manually after build.
+- **Analyzer** (`Aspid.FastTools.Analyzers/`): `Directory.Build.targets` auto-copies the DLL into the Unity package. The copy is **Release-only** on purpose — the Tests and Sample projects reference the analyzer, so a Debug `dotnet test` run would otherwise overwrite the shipped Release DLL.
 - The committed `*.dll.meta` files carry the `RoslynAnalyzer` label with every platform excluded. Diagnostic ID prefixes: analyzer `AFT*`, generator `AFID*`.
 
 ## Architecture
@@ -66,7 +66,7 @@ Feature folders under `Unity/Runtime/` and `Unity/Editor/Scripts/` are named aft
 PostToolUse hooks (wired in `.claude/settings.json`):
 
 - `.claude/hooks/rebuild-generators-on-change.sh` — on `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, rebuilds the generator and redeploys the DLL into the Unity package. Tests and Sample are skipped — keep that scope when changing the hook.
-- `.claude/hooks/rebuild-analyzers-on-change.sh` — same for the analyzer submodule (Tests/Sample skipped): rebuilds and copies the DLL into the package.
+- `.claude/hooks/rebuild-analyzers-on-change.sh` — same for the analyzer (Tests/Sample skipped): rebuilds it, and `Directory.Build.targets` deploys the DLL.
 
 Skills in `.claude/skills/`: `build-generator` / `build-analyzer` (build + deploy the Roslyn DLLs), `sync-readmes`, `unity-pipeline` (drive the live Editor via the `unity` CLI + `com.unity.pipeline` — recompile/test loop, `eval`, `sr_gate`, authoring `[CliCommand]`s), `editor-media-capture` (docs screenshots/GIFs of editor windows).
 
