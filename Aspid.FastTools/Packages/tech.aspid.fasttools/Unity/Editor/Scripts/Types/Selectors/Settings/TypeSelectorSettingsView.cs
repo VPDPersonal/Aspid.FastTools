@@ -20,7 +20,7 @@ namespace Aspid.FastTools.Types.Editors
                     + "Per-user setting — stored locally, never committed.",
             };
 
-            showFavorites.AddClass(AspidSettingsUI.UserScopeClass);
+            showFavorites.WithScopeStripe(AspidSettingsUI.UserScopeClass);
             showFavorites.RegisterValueChangedCallback(evt => TypeSelectorSettings.ShowFavorites = evt.newValue);
             SyncFromSettings(showFavorites, () => TypeSelectorSettings.ShowFavorites);
             container.Add(showFavorites);
@@ -34,7 +34,7 @@ namespace Aspid.FastTools.Types.Editors
                     + "Per-user setting — stored locally, never committed.",
             };
 
-            capacity.AddClass(AspidSettingsUI.UserScopeClass);
+            capacity.WithScopeStripe(AspidSettingsUI.UserScopeClass);
             capacity.RegisterValueChangedCallback(evt => TypeSelectorSettings.RecentsCapacity = evt.newValue);
             SyncFromSettings(capacity, () => TypeSelectorSettings.RecentsCapacity);
             container.Add(capacity);
@@ -44,7 +44,7 @@ namespace Aspid.FastTools.Types.Editors
 
         private static VisualElement BuildClearRow()
         {
-            var row = new VisualElement().AddClass(AspidSettingsUI.RowClass).AddClass(AspidSettingsUI.UserScopeClass);
+            var row = new VisualElement().AddClass(AspidSettingsUI.RowClass).WithScopeStripe(AspidSettingsUI.UserScopeClass);
             row.tooltip = "The Favorites / Recent lists are saved per user and per project.\n"
                 + "Clearing removes every stored entry, including ones kept for types that don't currently resolve.";
 

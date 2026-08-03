@@ -7,10 +7,10 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// The package's Project Settings page (<c>Project Settings → Aspid FastTools → SerializeReference</c>) — the
+    /// The package's Project Settings page (<c>Project Settings → Aspid.FastTools → SerializeReference</c>) — the
     /// team-wide half of the settings, matching the page's <see cref="SettingsScope.Project"/>: auto de-alias, the
     /// build/CI gate severity and the excluded scan folders, all persisted in the committed ProjectSettings asset.
-    /// The per-user controls live on the <c>Preferences → Aspid FastTools</c> page instead, and the window's Settings
+    /// The per-user controls live on the <c>Preferences → Aspid.FastTools</c> pages instead, and the window's Settings
     /// tab shows both scopes as the one full overview. <see cref="AspidSettingsUI.BuildProviderPage"/> composes the
     /// same branded page (dotted canvas, legend, sections, pinned reset footer) both Unity-native pages share.
     /// Backed by <see cref="SerializeReferenceSettings"/>.
@@ -29,7 +29,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         [SettingsProvider]
         public static SettingsProvider Create() =>
-            new("Project/Aspid FastTools/SerializeReference", SettingsScope.Project)
+            new("Project/Aspid.FastTools/SerializeReference", SettingsScope.Project)
             {
                 label = "SerializeReference",
                 keywords = new HashSet<string>(new[]

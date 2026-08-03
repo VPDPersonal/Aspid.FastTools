@@ -23,8 +23,6 @@ jobs:
             path: Aspid.FastTools.Analyzers
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
 
       # The test projects target net6.0; the 8.0 SDK builds them, the 6.0 runtime runs them.
       - uses: actions/setup-dotnet@v4
