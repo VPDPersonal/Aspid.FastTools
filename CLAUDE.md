@@ -1,73 +1,76 @@
-## Repository Overview
+## Обзор репозитория
 
-**Aspid.FastTools** is a Unity package (`tech.aspid.fasttools`) that minimizes routine boilerplate code. Three components:
+**Aspid.FastTools** — Unity-пакет (`tech.aspid.fasttools`), минимизирующий рутинный шаблонный код. Три компонента:
 
-1. **`Aspid.FastTools/`** — Unity project with the package source (Runtime + Editor)
-2. **`Aspid.FastTools.Generators/`** — standalone .NET solution with Roslyn source generators; pipeline patterns and per-generator details in `Aspid.FastTools.Generators/CLAUDE.md`
-3. **`Aspid.FastTools.Analyzers/`** — git submodule (`VPDPersonal/Aspid.FastTools.Analyzers`) with Roslyn analyzers validating package-attribute usage (`AFT*` diagnostics)
+1. **`Aspid.FastTools/`** — Unity-проект с исходниками пакета (Runtime + Editor)
+2. **`Aspid.FastTools.Generators/`** — отдельное .NET-решение с генераторами исходного кода Roslyn; паттерны конвейера и детали по каждому генератору — в `Aspid.FastTools.Generators/CLAUDE.md`
+3. **`Aspid.FastTools.Analyzers/`** — git-подмодуль (`VPDPersonal/Aspid.FastTools.Analyzers`) с анализаторами Roslyn, проверяющими использование атрибутов пакета (диагностики `AFT*`)
 
-Repo-internal working documents (roadmap, release checklist, `QA-CHECKLIST.md`/`QA-CHECKLIST_RU.md`, `DESIGN.md`) live in `docs/` — distinct from the package's user-facing `Documentation/`. A new feature must add its QA-checklist item in **both** languages before its branch merges.
+Внутренние рабочие документы репозитория (roadmap, чек-лист релиза, `QA-CHECKLIST.md`/`QA-CHECKLIST_RU.md`, `DESIGN.md`) живут в `docs/` — в отличие от пользовательской `Documentation/` пакета. Новая функциональность обязана добавить свой пункт в QA-чек-лист на **обоих** языках до того, как её ветка будет влита.
 
-### Building
+### Сборка
 
-The Unity package itself has no CLI build — Unity compiles it when the project is open. Both Roslyn DLLs ship prebuilt inside the package; the `build-generator` / `build-analyzer` skills hold the exact build/test/deploy commands (PostToolUse hooks also rebuild them automatically on edit — see *Local Claude Code automation*).
+У самого Unity-пакета нет CLI-сборки — Unity компилирует его, когда проект открыт. Обе Roslyn-DLL поставляются внутри пакета уже собранными; скиллы `build-generator` / `build-analyzer` хранят точные команды сборки/тестов/развёртывания (хуки PostToolUse также пересобирают их автоматически при редактировании — см. *Локальная автоматизация Claude Code*).
 
-- **Generator** (`Aspid.FastTools.Generators/`): on build, `ILRepack.targets` merges the `Aspid.Generators.Helper*` dependencies into a single-file DLL and `Directory.Build.targets` auto-copies it into the Unity package. Never reference `SourceGenerator.Foundations` — its injected `Console` logging deadlocks Unity's compiler server.
-- **Analyzer** (`Aspid.FastTools.Analyzers/` git submodule — `git submodule update --init` after cloning): intentionally has **no** auto-copy targets (keeps the submodule independent of this repo's layout), so the DLL is copied into the package manually after build.
-- The committed `*.dll.meta` files carry the `RoslynAnalyzer` label with every platform excluded. Diagnostic ID prefixes: analyzer `AFT*`, generator `AFID*`.
+- **Генератор** (`Aspid.FastTools.Generators/`): при сборке `ILRepack.targets` сливает зависимости `Aspid.Generators.Helper*` в однофайловую DLL, а `Directory.Build.targets` автоматически копирует её в Unity-пакет. Никогда не ссылайся на `SourceGenerator.Foundations` — его внедряемое логирование через `Console` вводит сервер компиляции Unity во взаимную блокировку.
+- **Анализатор** (`Aspid.FastTools.Analyzers/`, git-подмодуль — `git submodule update --init` после клонирования): намеренно **не имеет** targets для автокопирования (это сохраняет независимость подмодуля от структуры данного репозитория), поэтому DLL копируется в пакет вручную после сборки.
+- Закоммиченные файлы `*.dll.meta` несут метку `RoslynAnalyzer` со всеми исключёнными платформами. Префиксы идентификаторов диагностик: анализатор — `AFT*`, генератор — `AFID*`.
 
-## Architecture
+## Архитектура
 
-### Assemblies (package root: `Aspid.FastTools/Packages/tech.aspid.fasttools/`)
+### Сборки (корень пакета: `Aspid.FastTools/Packages/tech.aspid.fasttools/`)
 
-| Assembly | Location | Purpose |
+| Сборка | Расположение | Назначение |
 |---|---|---|
-| `Aspid.FastTools` | `Source/` | Pure C#, no Unity dependency |
-| `Aspid.FastTools.Unity` | `Unity/Runtime/` | Ships with player builds |
-| `Aspid.FastTools.Unity.VisualElements.Math` | `Unity/Runtime/VisualElements/Extensions/INotifyValueChanged/Math/` | Satellite: `INotifyValueChanged` for `float2/3/4` etc. |
-| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Editor-only, excluded from builds |
-| `Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml` | `Unity/Editor/Scripts/SerializeReferences/Yaml/` | Asset-YAML parsing, isolated on purpose |
+| `Aspid.FastTools` | `Source/` | Чистый C#, без зависимости от Unity |
+| `Aspid.FastTools.Unity` | `Unity/Runtime/` | Поставляется со сборками игры |
+| `Aspid.FastTools.Unity.VisualElements.Math` | `Unity/Runtime/VisualElements/Extensions/INotifyValueChanged/Math/` | Сателлит: `INotifyValueChanged` для `float2/3/4` и т.д. |
+| `Aspid.FastTools.Unity.Editor` | `Unity/Editor/Scripts/` | Только редактор, исключается из сборок |
+| `Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml` | `Unity/Editor/Scripts/SerializeReferences/Yaml/` | Разбор YAML ассетов, изолирован намеренно |
 
-Plus: `Tests/Editor/` (Unity Test Runner), `Samples~/` (UPM tilde convention — imported via Package Manager), `Unity/Editor/Resources/UI|Icons/`.
+Плюс: `Tests/Editor/` (Unity Test Runner), `Samples~/` (соглашение UPM с тильдой — импортируется через Package Manager), `Unity/Editor/Resources/UI|Icons/`.
 
-**Assembly boundary rule:** `Unity/Runtime/` code must NOT reference `UnityEditor` — it ships with player builds.
+**Правило границы сборок:** код в `Unity/Runtime/` НЕ должен ссылаться на `UnityEditor` — он поставляется со сборками игры.
 
-**Optional Mathematics integration:** new Mathematics-dependent code goes in the satellite `Aspid.FastTools.Unity.VisualElements.Math` assembly, compiled only when `com.unity.mathematics` is installed (via `versionDefines` declaring `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION`). Only the satellite asmdef declares that symbol — the main runtime asmdef does not.
+**Опциональная интеграция с Mathematics:** новый код, зависящий от Mathematics, размещается в сателлитной сборке `Aspid.FastTools.Unity.VisualElements.Math`, компилируемой только когда установлен `com.unity.mathematics` (через `versionDefines`, объявляющий `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION`). Только asmdef сателлита объявляет этот символ — основной runtime-asmdef этого не делает.
 
-### Feature map
+### Карта функциональности
 
-Feature folders under `Unity/Runtime/` and `Unity/Editor/Scripts/` are named after the feature (`Enums`, `Ids`, `ProfilerMarkers`, `Types`, `VisualElements`, `IMGUI`, `SerializedProperties`, `Settings`, `Welcome`, `SerializeReferences`, `Extensions`) — `ls` finds a feature faster than this file can list it. Only what the layout does *not* tell you:
+Папки функциональности внутри `Unity/Runtime/` и `Unity/Editor/Scripts/` названы по самой функциональности (`Enums`, `Ids`, `ProfilerMarkers`, `Types`, `VisualElements`, `IMGUI`, `SerializedProperties`, `Settings`, `Windows`, `SerializeReferences`, `Extensions`) — `ls` найдёт нужное быстрее, чем этот файл сможет всё перечислить. Только то, о чём структура папок *не* говорит:
 
-| Feature | Non-obvious bits |
+| Функциональность | Неочевидные детали |
 |---|---|
-| ProfilerMarkers | `this.Marker()` returns a call-site-unique `ProfilerMarker` — the source generator emits one per (class, method, line) |
-| TypeSelector | One attribute, two field shapes — a `string` (AQN) and a `[SerializeReference]` managed reference. **The managed-reference path lives under `SerializeReferences/`, not `Types/`.** Details: `Unity/Editor/Scripts/Types/CLAUDE.md` |
-| SerializeReference tooling | `SerializeReferenceWindow` (menu `Tools/Aspid 🐍/FastTools/…`), tabs Welcome / Asset References / Project References / Settings; subsystems `Windows/`, `Index/`, `Diagnostics/`, `Yaml/` (own asmdef) |
-| Id Registries | Spans `Unity/Runtime/Ids/` + `Unity/Editor/Scripts/Ids/`. `IdRegistry` (ScriptableObject) maps names to stable int IDs; each `IId` struct binds to exactly **one** registry (enforced by `IdRegistryResolver`); `IdStructGenerator` emits the struct boilerplate. Editor internals: `Unity/Editor/Scripts/Ids/CLAUDE.md` |
-| Settings / Preferences | Per-feature settings live next to their feature; `AspidFastToolsPreferencesProvider` + `AspidSettingsUI` and the window's **Settings** tab only aggregate them |
-| Internal editor components | Strict four-part layout per component (element + `{Name}Preset` + fluent extensions + `Styles/`) — follow it when adding one. Conventions: `Unity/Editor/Scripts/VisualElements/Internal/CLAUDE.md` |
-| VisualElement extensions | Runtime fluent API in `Unity/Runtime/VisualElements/Extensions/`; editor-side command extensions in `Unity/Editor/Scripts/VisualElements/Extensions/` |
-| Welcome view | Not its own window — a tab of `SerializeReferenceWindow`, plus `WelcomeWindowStartup` (auto-show on first import); lists installable samples from `package.json` |
+| ProfilerMarkers | `this.Marker()` возвращает уникальный для места вызова `ProfilerMarker` — генератор исходников выпускает по одному на (класс, метод, строку) |
+| TypeSelector | Один атрибут, две формы поля — `string` (AQN) и управляемая ссылка `[SerializeReference]`. **Путь управляемых ссылок живёт в `SerializeReferences/`, а не в `Types/`.** Детали: `Unity/Editor/Scripts/Types/CLAUDE.md` |
+| Инструментарий SerializeReference | Всё, что стоит за поверхностью инспектора — `Drawers/`, `VisualElements/` (поля + промпт имени), `Index/`, `Diagnostics/`, `Settings/`, `Editing/`, `Yaml/` (собственный asmdef). **Окно, которое всё это представляет, живёт в `Unity/Editor/Scripts/Windows/`, а не здесь** |
+| Правки SerializeReference | `SerializeReferences/Editing/` владеет каждой мутацией, свободен от UI и вызываем из тестов: `SerializeReferenceGraphEditor` (по одной записи за раз), `SerializeReferenceBatchEditor` (пакеты по файлам), `MissingReferenceGroup` (модель сканирования проекта), `SerializeReferenceOpenCopyGuard` (никогда не переписывать файл, чья открытая копия его затрёт), `SerializeReferenceConstraintCache`. **Представление никогда не редактирует ассет само** — оно обращается сюда и решает лишь, перерисовываться ли |
+| Окно редактора и вкладки | `Unity/Editor/Scripts/Windows/` — `SerializeReferenceWindow` (меню `Tools/Aspid 🐍/FastTools/…`) плюс каждая размещаемая в нём вкладка, по одной подпапке на каждую: `Welcome/`, `References/`, `Settings/`. Каждое представление сообщает окну `StatusStyle.Type`, а окно заливает им общий точечный холст — цвета заливки живут в USS компонента холста, никогда в коде представлений. Навигация с клавиатуры — общий `NavRing` |
+| Вкладка References | `Windows/References/` делится натрое: `Asset/` и `Project/` содержат по одному представлению аудита — `partial` на каждую зону ответственности (обвязка+сканирование / карточки / пикер или действия) плюс чистые `*Summary` (тексты) и `*Analysis` (подсчёт), — а `Shared/` содержит то, что носят оба: `SerializeReferenceAuditUI` (формулировки счётчиков, выделяемые строки, легенда, янтарно-синий вердикт `ResolveStatus`), `AuditPickerHost` (стыковка встроенного пикера), `ManagedReferenceFilter`, `ViolationFieldLabels`. Добавление формы карточки означает новый `Build*` в partial-файле карточек вкладки, а не новую ветку в представлении |
+| Реестры Id | Охватывают `Unity/Runtime/Ids/` + `Unity/Editor/Scripts/Ids/`. `IdRegistry` (ScriptableObject) сопоставляет имена со стабильными целочисленными ID; каждая структура `IId` привязывается ровно к **одному** реестру (обеспечивается `IdRegistryResolver`); `IdStructGenerator` выпускает шаблонный код структур. Внутренности редактора: `Unity/Editor/Scripts/Ids/CLAUDE.md` |
+| Settings / Preferences | Настройки каждой функциональности живут рядом с ней; `AspidFastToolsPreferencesProvider` + `AspidSettingsUI` и вкладка **Settings** окна только агрегируют их |
+| Внутренние компоненты редактора | Строгая четырёхчастная структура на компонент (элемент + `{Name}Preset` + fluent-расширения + `Styles/`) — следуй ей при добавлении нового. Соглашения: `Unity/Editor/Scripts/VisualElements/Internal/CLAUDE.md` |
+| Расширения VisualElement | Runtime fluent API в `Unity/Runtime/VisualElements/Extensions/`; командные расширения на стороне редактора в `Unity/Editor/Scripts/VisualElements/Extensions/` |
+| Представление Welcome | Не отдельное окно — вкладка `SerializeReferenceWindow` (`Windows/Welcome/`), плюс `WelcomeWindowStartup` (автопоказ при первом импорте); перечисляет устанавливаемые примеры из `package.json` |
 
-### Editor Code Conventions
+### Соглашения по коду редактора
 
-**Member accessibility:** in an `internal` class, members must be declared `internal` (or narrower), never `public` — the member's own modifier should show its real accessibility without checking the containing class.
+**Доступность членов:** в `internal` классе члены должны объявляться как `internal` (или уже), никогда как `public` — собственный модификатор члена должен показывать его реальную доступность без проверки содержащего класса.
 
-**PropertyDrawers:** Always `internal sealed class`. Complex drawers split into a static helper `{Feature}Drawer` with `DrawIMGUI()` and `DrawUIToolkit()` methods — see `SerializableTypeDrawer.cs` as reference.
+**PropertyDrawer'ы:** всегда `internal sealed class`. Сложные drawer'ы разделяются на статический помощник `{Feature}Drawer` с методами `DrawIMGUI()` и `DrawUIToolkit()` — см. `SerializableTypeDrawer.cs` как образец.
 
-**XML doc comments:** `<summary>` — 1–2 sentences, what/why, no implementation details. `<remarks>` — only for non-obvious behavior, invariants, or gotchas; omit if it would just restate the summary or the code. `<example>` — only for non-trivial usage patterns where the shape of usage isn't obvious from the signature. Follow Microsoft's Framework Design Guidelines conventions.
+**XML doc-комментарии:** обязательны на каждом `public` члене, экономны на `internal`. `<summary>` — 1–2 предложения, что/зачем, без деталей реализации. `<remarks>` — только для неочевидного поведения, инвариантов или подводных камней; опускай, если это лишь повторит summary или код. `<example>` — только для нетривиальных сценариев использования, где форма применения неочевидна из сигнатуры. Следуй соглашениям Microsoft Framework Design Guidelines.
 
-**USS:** styling goes in USS, code only applies `.AddClass()`. Naming (BEM classes + variable grammar) and loading conventions: `Aspid.FastTools/Packages/tech.aspid.fasttools/Unity/Editor/Resources/UI/CLAUDE.md` — read it before touching any `.uss` file or USS class names / `--aspid-*` variables in code.
+**USS:** стилизация идёт в USS, код только применяет `.AddClass()`. Именование (BEM-классы + грамматика переменных) и соглашения по загрузке: `Aspid.FastTools/Packages/tech.aspid.fasttools/Unity/Editor/Resources/UI/CLAUDE.md` — прочитай перед тем, как трогать любой `.uss` файл или имена USS-классов / переменные `--aspid-*` в коде.
 
-**README files:** keep 4 in sync: root `README.md`/`README_RU.md` and `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/EN|RU/README.md`. Image paths differ: root files use `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/...`, inner ones `../Images/...`. Per-feature references live alongside each README inside `EN/`/`RU/`.
+**README-файлы:** держи 4 файла синхронными: корневые `README.md`/`README_RU.md` и `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/EN|RU/README.md`. Пути к изображениям различаются: корневые файлы используют `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/...`, внутренние — `../Images/...`. Справочники по каждой функциональности живут рядом с соответствующим README внутри `EN/`/`RU/`.
 
-### Local Claude Code automation
+### Локальная автоматизация Claude Code
 
-PostToolUse hooks (wired in `.claude/settings.json`):
+Хуки PostToolUse (подключены в `.claude/settings.json`):
 
-- `.claude/hooks/rebuild-generators-on-change.sh` — on `Edit`/`Write` to `*.cs` under `Aspid.FastTools.Generators/Aspid.FastTools.Generators/`, rebuilds the generator and redeploys the DLL into the Unity package. Tests and Sample are skipped — keep that scope when changing the hook.
-- `.claude/hooks/rebuild-analyzers-on-change.sh` — same for the analyzer submodule (Tests/Sample skipped): rebuilds and copies the DLL into the package.
+- `.claude/hooks/rebuild-generators-on-change.sh` — при `Edit`/`Write` файлов `*.cs` внутри `Aspid.FastTools.Generators/Aspid.FastTools.Generators/` пересобирает генератор и переразвёртывает DLL в Unity-пакет. Tests и Sample пропускаются — сохраняй эту область при изменении хука.
+- `.claude/hooks/rebuild-analyzers-on-change.sh` — то же самое для подмодуля анализатора (Tests/Sample пропускаются): пересобирает и копирует DLL в пакет.
 
-Skills in `.claude/skills/`: `build-generator` / `build-analyzer` (build + deploy the Roslyn DLLs), `sync-readmes`, `unity-pipeline` (drive the live Editor via the `unity` CLI + `com.unity.pipeline` — recompile/test loop, `eval`, `sr_gate`, authoring `[CliCommand]`s), `editor-media-capture` (docs screenshots/GIFs of editor windows).
+Скиллы в `.claude/skills/`: `build-generator` / `build-analyzer` (сборка + развёртывание Roslyn-DLL), `sync-readmes`, `unity-pipeline` (управление живым редактором через CLI `unity` + `com.unity.pipeline` — цикл перекомпиляции/тестов, `eval`, `sr_gate`, написание `[CliCommand]`), `editor-media-capture` (скриншоты/GIF окон редактора для документации).
 
-**Driving the Editor:** several Editors run at once (main checkout + `.claude/worktrees/shared-*`), so every `unity command` needs `--project-path`. Use `unity status` for liveness, not `unity pipeline list`. Details and gotchas live in the `unity-pipeline` skill.
+**Управление редактором:** одновременно работают несколько редакторов (основной checkout + `.claude/worktrees/shared-*`), поэтому каждой `unity command` нужен `--project-path`. Для проверки живости используй `unity status`, а не `unity pipeline list`. Детали и подводные камни живут в скилле `unity-pipeline`.

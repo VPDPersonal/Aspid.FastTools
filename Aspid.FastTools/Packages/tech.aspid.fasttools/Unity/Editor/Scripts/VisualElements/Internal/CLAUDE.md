@@ -26,7 +26,7 @@ Components/AspidGradientButton/
 |---|---|
 | `Styles/AspidStyles.cs` | default stylesheet + shared USS constants |
 | `Styles/StatusStyle.cs`, `ThemeStyle.cs`, `InlineStyle<T>` | shared style helpers |
-| `NavRing.cs`, `HoverSweep.cs` | keyboard nav ring and hover sweep, shared across window tabs |
+| `NavRing.cs` | keyboard nav ring, shared across window tabs |
 | `DoubleClickTracker.cs` | double-click detection |
 
 `ICustomStyleExtensions` is **not** here — it ships in runtime, at

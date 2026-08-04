@@ -102,4 +102,4 @@
 - Ранжировщик подсказок: `SerializeReferences/Extensions/SerializeReferenceRepairSuggestions.cs` — `[MovedFrom]` даёт 1.0; тот же 1.0 достижим как 0.8 «same type name» + 0.2 field-shape.
 - Триггер: `SerializeReferences/Diagnostics/SerializeReferenceBreakageDetector.cs` (обнаружение newly-missing).
 - Применение: YAML-rewriter в `SerializeReferences/Yaml/` (`SerializeReferenceYamlEditor.TryRewriteType`).
-- Проектный охват: `SerializeReferences/Index/SerializeReferenceTypeUsageIndex.cs` + Project-свип с готовым **Fix all** (`SerializeReferences/Windows/SerializeReferenceProjectView.cs`).
+- Проектный охват: `SerializeReferences/Index/SerializeReferenceTypeUsageIndex.cs` + Project-свип с готовым **Fix all** (`Windows/References/SerializeReferenceProjectView.cs`).
