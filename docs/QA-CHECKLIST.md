@@ -156,5 +156,5 @@
 
 - [ ] Unity EditMode: `Aspid.FastTools.Unity.Editor.Tests` + `…SerializeReferences.Tests` — green.
 - [ ] `dotnet test` for the Generators — green.
-- [ ] `dotnet test` for the Analyzers (submodule) — green.
+- [ ] `dotnet test` for the Analyzers — green.
 - [ ] The project compiles with no warnings from the package.

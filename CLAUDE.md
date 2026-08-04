@@ -4,7 +4,7 @@
 
 1. **`Aspid.FastTools/`** — Unity-проект с исходниками пакета (Runtime + Editor)
 2. **`Aspid.FastTools.Generators/`** — отдельное .NET-решение с генераторами исходного кода Roslyn; паттерны конвейера и детали по каждому генератору — в `Aspid.FastTools.Generators/CLAUDE.md`
-3. **`Aspid.FastTools.Analyzers/`** — git-подмодуль (`VPDPersonal/Aspid.FastTools.Analyzers`) с анализаторами Roslyn, проверяющими использование атрибутов пакета (диагностики `AFT*`)
+3. **`Aspid.FastTools.Analyzers/`** — отдельное .NET-решение с анализаторами Roslyn, проверяющими использование атрибутов пакета (диагностики `AFT*`)
 
 Внутренние рабочие документы репозитория (roadmap, чек-лист релиза, `QA-CHECKLIST.md`/`QA-CHECKLIST_RU.md`, `DESIGN.md`) живут в `docs/` — в отличие от пользовательской `Documentation/` пакета. Новая функциональность обязана добавить свой пункт в QA-чек-лист на **обоих** языках до того, как её ветка будет влита.
 
@@ -13,7 +13,7 @@
 У самого Unity-пакета нет CLI-сборки — Unity компилирует его, когда проект открыт. Обе Roslyn-DLL поставляются внутри пакета уже собранными; скиллы `build-generator` / `build-analyzer` хранят точные команды сборки/тестов/развёртывания (хуки PostToolUse также пересобирают их автоматически при редактировании — см. *Локальная автоматизация Claude Code*).
 
 - **Генератор** (`Aspid.FastTools.Generators/`): при сборке `ILRepack.targets` сливает зависимости `Aspid.Generators.Helper*` в однофайловую DLL, а `Directory.Build.targets` автоматически копирует её в Unity-пакет. Никогда не ссылайся на `SourceGenerator.Foundations` — его внедряемое логирование через `Console` вводит сервер компиляции Unity во взаимную блокировку.
-- **Анализатор** (`Aspid.FastTools.Analyzers/`, git-подмодуль — `git submodule update --init` после клонирования): намеренно **не имеет** targets для автокопирования (это сохраняет независимость подмодуля от структуры данного репозитория), поэтому DLL копируется в пакет вручную после сборки.
+- **Анализатор** (`Aspid.FastTools.Analyzers/`): `Directory.Build.targets` автоматически копирует DLL в Unity-пакет. Копирование намеренно происходит **только для Release** — проекты Tests и Sample ссылаются на анализатор, поэтому прогон `dotnet test` в Debug иначе затёр бы поставляемую Release-DLL.
 - Закоммиченные файлы `*.dll.meta` несут метку `RoslynAnalyzer` со всеми исключёнными платформами. Префиксы идентификаторов диагностик: анализатор — `AFT*`, генератор — `AFID*`.
 
 ## Архитектура
@@ -69,7 +69,7 @@
 Хуки PostToolUse (подключены в `.claude/settings.json`):
 
 - `.claude/hooks/rebuild-generators-on-change.sh` — при `Edit`/`Write` файлов `*.cs` внутри `Aspid.FastTools.Generators/Aspid.FastTools.Generators/` пересобирает генератор и переразвёртывает DLL в Unity-пакет. Tests и Sample пропускаются — сохраняй эту область при изменении хука.
-- `.claude/hooks/rebuild-analyzers-on-change.sh` — то же самое для подмодуля анализатора (Tests/Sample пропускаются): пересобирает и копирует DLL в пакет.
+- `.claude/hooks/rebuild-analyzers-on-change.sh` — то же самое для анализатора (Tests/Sample пропускаются): пересобирает его, а `Directory.Build.targets` разворачивает DLL.
 
 Скиллы в `.claude/skills/`: `build-generator` / `build-analyzer` (сборка + развёртывание Roslyn-DLL), `sync-readmes`, `unity-pipeline` (управление живым редактором через CLI `unity` + `com.unity.pipeline` — цикл перекомпиляции/тестов, `eval`, `sr_gate`, написание `[CliCommand]`), `editor-media-capture` (скриншоты/GIF окон редактора для документации).
 
