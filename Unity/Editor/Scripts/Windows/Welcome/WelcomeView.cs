@@ -13,7 +13,7 @@ namespace Aspid.FastTools.Editors
 {
     /// <summary>
     /// The Welcome panel as a reusable element: hero, samples list, the logo asset-store link and the cursor toast.
-    /// Hosted as the leftmost "home" tab of the Managed References window (see SerializeReferenceWindow).
+    /// Hosted as the leftmost "home" tab of the Managed References window (see TabWindow).
     /// The UI is cloned from the same UXML the standalone window used; only the toast positioning is
     /// retargeted from the window root to this view (the view sits below the tab strip).
     /// </summary>
