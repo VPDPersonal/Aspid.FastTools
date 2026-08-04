@@ -213,7 +213,7 @@ namespace Aspid.FastTools.Types.Editors
             _settingsButton.clicked += () =>
             {
                 _onDismiss?.Invoke();
-                SerializeReferences.Editors.SerializeReferenceWindow.OpenSettings();
+                SerializeReferences.Editors.TabWindow.OpenSettings();
             };
             _breadcrumbBar.RegisterCallback<ClickEvent>(_ => OpenSearch());
 
