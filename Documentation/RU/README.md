@@ -63,7 +63,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 Конкретные preview-версии используют ту же схему per-release тегов:
 
 ```
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.5
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.6
 ```
 
 </details>

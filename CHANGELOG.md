@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.6] — 2026-08-06
+
 This release is centred on the **SerializeReference toolchain**: `[TypeSelector]` now drives managed-reference and `SerializableType` fields, a repair/diagnostics workbench finds and fixes missing managed references project-wide, and a build/CI gate keeps them out of builds.
 
 > Unless noted otherwise, every inspector feature below works in **both IMGUI and UIToolkit** inspectors.
@@ -283,7 +285,8 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 [#147]: https://github.com/VPDPersonal/Aspid.FastTools/pull/147
 [#148]: https://github.com/VPDPersonal/Aspid.FastTools/pull/148
 [#150]: https://github.com/VPDPersonal/Aspid.FastTools/pull/150
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...HEAD
+[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.6...HEAD
+[1.0.0-rc.6]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...v1.0.0-rc.6
 [1.0.0-rc.5]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...v1.0.0-rc.4
 [1.0.0-rc.3]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.2...v1.0.0-rc.3
