@@ -1,6 +1,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.UIElements;
@@ -35,20 +36,48 @@ namespace Aspid.FastTools.Types.Editors
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var field = CreateField(property);
+            var field = CreateField(property, out var applyResolvedTypes);
 
-            var warnings = GetConstraintWarnings(property);
-            if (warnings.Count == 0) return field;
+            // Without string arguments the constraint is static — nothing to re-resolve, no warnings possible.
+            var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
+            if (typeSelectorAttribute.AssemblyQualifiedNames.Length is 0) return field;
 
             var container = new VisualElement().AddChild(field);
             var notice = new SerializeReferenceNotice();
-            notice.Set(
-                message: GetNoticeMessage(warnings),
-                actionText: string.Empty,
-                detail: GetNoticeDetail(warnings),
-                onAction: null);
 
-            return container.AddChild(notice);
+            // A string argument may reference a member of the target object whose value changes while the
+            // inspector is open; every change to the object re-resolves the constraint and pushes the fresh
+            // base types and warnings into the field (the IMGUI path re-resolves per OnGUI instead).
+            container.TrackSerializedObjectValue(property.serializedObject, OnSerializedObjectChanged);
+            UpdateNotice();
+
+            return container;
+
+            void OnSerializedObjectChanged(SerializedObject serializedObject)
+            {
+                if (serializedObject.targetObject == null) return;
+
+                applyResolvedTypes();
+                UpdateNotice();
+            }
+
+            void UpdateNotice()
+            {
+                var warnings = _constraintWarnings;
+                if (warnings.Count == 0)
+                {
+                    notice.RemoveFromHierarchy();
+                    return;
+                }
+
+                notice.Set(
+                    message: GetNoticeMessage(warnings),
+                    actionText: string.Empty,
+                    detail: GetNoticeDetail(warnings),
+                    onAction: null);
+
+                if (notice.parent is null) container.AddChild(notice);
+            }
         }
 
         private void DrawField(Rect position, SerializedProperty property, GUIContent label)
@@ -84,32 +113,46 @@ namespace Aspid.FastTools.Types.Editors
                 types: GetTypesFromAttribute(property));
         }
 
-        private VisualElement CreateField(SerializedProperty property)
+        // applyResolvedTypes re-resolves the constraint and pushes the result into the created field,
+        // so member-referenced base types stay live while the inspector is open (see CreatePropertyGUI).
+        private VisualElement CreateField(SerializedProperty property, out Action applyResolvedTypes)
         {
             if (TryGetSerializableTypeContainer(property, out var nameProperty, out var genericBaseType))
             {
-                return TypeUIToolkitPropertyDrawer.Draw(
+                var element = TypeUIToolkitPropertyDrawer.Draw(
                     label: preferredLabel,
                     property: nameProperty,
                     allow: GetTypeAllow(),
-                    types: GetSerializableTypeBaseTypes(property, genericBaseType));
+                    types: GetSerializableTypeBaseTypes(property, genericBaseType),
+                    field: out var containerTypeField);
+
+                applyResolvedTypes = () => containerTypeField.Types = GetSerializableTypeBaseTypes(property, genericBaseType);
+                return element;
             }
 
             ThrowExceptionIfInvalidProperty(property);
 
             if (property.propertyType == SerializedPropertyType.ManagedReference)
             {
-                return SerializeReferenceUIToolkitPropertyDrawer.Draw(
+                var element = SerializeReferenceUIToolkitPropertyDrawer.Draw(
                     label: preferredLabel,
                     property: property,
-                    baseTypes: GetTypesFromAttribute(property));
+                    baseTypes: GetTypesFromAttribute(property),
+                    field: out var referenceField);
+
+                applyResolvedTypes = () => referenceField.SetBaseTypes(GetTypesFromAttribute(property));
+                return element;
             }
 
-            return TypeUIToolkitPropertyDrawer.Draw(
+            var stringElement = TypeUIToolkitPropertyDrawer.Draw(
                 label: preferredLabel,
                 property: property,
                 allow: GetTypeAllow(),
-                types: GetTypesFromAttribute(property));
+                types: GetTypesFromAttribute(property),
+                field: out var stringTypeField);
+
+            applyResolvedTypes = () => stringTypeField.Types = GetTypesFromAttribute(property);
+            return stringElement;
         }
 
         private float GetFieldHeight(SerializedProperty property)
@@ -171,14 +214,16 @@ namespace Aspid.FastTools.Types.Editors
 
             if (typeSelectorAttribute.AssemblyQualifiedNames.Length is 0)
             {
-                _constraintWarnings ??= Array.Empty<string>();
+                _constraintWarnings = Array.Empty<string>();
                 return Array.Empty<Type>();
             }
 
             var resolution = TypeSelectorConstraintResolver.Resolve(
                 property.serializedObject.targetObject, typeSelectorAttribute.AssemblyQualifiedNames);
 
-            _constraintWarnings ??= resolution.Warnings;
+            // Overwrite (never ??=): a member-referenced constraint re-resolves while the inspector is
+            // open, and the warnings must follow the latest resolution rather than freeze on the first.
+            _constraintWarnings = resolution.Warnings;
             return resolution.Types;
         }
 

@@ -16,10 +16,20 @@ namespace Aspid.FastTools.Types.Editors
             SerializedProperty property,
             TypeAllow allow = TypeAllow.All,
             params Type[] types)
+            => Draw(label, property, allow, types, out _);
+
+        // The out overload hands the created field to callers that keep updating its Types after
+        // creation (live member-referenced constraints — see TypeSelectorPropertyDrawer).
+        internal static VisualElement Draw(
+            string label,
+            SerializedProperty property,
+            TypeAllow allow,
+            Type[] types,
+            out InspectorTypeField field)
         {
             label = string.IsNullOrWhiteSpace(label) ? null : label;
 
-            var field = new InspectorTypeField(label, property)
+            field = new InspectorTypeField(label, property)
             {
                 Allow = allow,
                 Types = types,
