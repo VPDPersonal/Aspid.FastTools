@@ -18,6 +18,7 @@ env:
   PACKAGE_PATH: Aspid.FastTools/Packages/tech.aspid.fasttools
   CHANGELOG_PATH: CHANGELOG.md
   GENERATORS_SOLUTION_DIR: Aspid.FastTools.Generators
+  ANALYZERS_SOLUTION_DIR: Aspid.FastTools.Analyzers
 
 jobs:
   release:
@@ -110,24 +111,54 @@ jobs:
 
           echo "CHANGELOG section for $VERSION extracted ($(echo "$NOTES" | wc -l) lines)."
 
+      - name: Verify package CHANGELOG is in sync
+        run: |
+          set -euo pipefail
+          PKG_CHANGELOG="$PACKAGE_PATH/CHANGELOG.md"
+          if [[ ! -f "$PKG_CHANGELOG" ]]; then
+            echo "Package CHANGELOG.md does not exist yet; skipping sync check."
+            exit 0
+          fi
+          if ! diff -u "$CHANGELOG_PATH" "$PKG_CHANGELOG"; then
+            echo "::error file=$PKG_CHANGELOG::Package CHANGELOG.md is out of sync with the root $CHANGELOG_PATH. Sync them before releasing."
+            exit 1
+          fi
+          echo "Package CHANGELOG.md matches the root $CHANGELOG_PATH."
+
+      # The test projects target net6.0; the SDK pinned in global.json builds them,
+      # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          global-json-file: global.json
+          dotnet-version: '6.0.x'
 
-      - name: Build generators
-        run: dotnet build -c Release
+      # Tests run in Debug on purpose: the Directory.Build.targets deploy of the Roslyn
+      # DLLs into the Unity package is Release-only, so a Debug test run can never
+      # interfere with the DLL freshness verification below.
+      - name: Run generator tests
+        run: dotnet test --nologo
         working-directory: ${{ env.GENERATORS_SOLUTION_DIR }}
 
-      - name: Verify deployed generator DLL is present
+      - name: Run analyzer tests
+        run: dotnet test --nologo
+        working-directory: ${{ env.ANALYZERS_SOLUTION_DIR }}
+
+      # Rebuilding in Release re-deploys both DLLs into the package checkout
+      # (Directory.Build.targets); a clean `git diff` then proves the committed
+      # DLLs were built from the sources being released.
+      - name: Verify committed Roslyn DLLs match sources
         run: |
           set -euo pipefail
-          DEPLOYED="$PACKAGE_PATH/Aspid.FastTools.Generators.dll"
-          if [[ ! -s "$DEPLOYED" ]]; then
-            echo "::error file=$DEPLOYED::Generator DLL is missing from the package. Run 'dotnet build -c Release' in $GENERATORS_SOLUTION_DIR and commit the updated DLL before releasing."
+          dotnet build "$GENERATORS_SOLUTION_DIR/Aspid.FastTools.Generators" -c Release --nologo
+          dotnet build "$ANALYZERS_SOLUTION_DIR/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers" -c Release --nologo
+          GENERATORS_DLL="$PACKAGE_PATH/Aspid.FastTools.Generators.dll"
+          ANALYZERS_DLL="$PACKAGE_PATH/Aspid.FastTools.Analyzers.dll"
+          if ! git diff --exit-code -- "$GENERATORS_DLL" "$ANALYZERS_DLL"; then
+            echo "::error::Committed Roslyn DLLs do not match a fresh Release build of the sources. Rebuild with the SDK pinned in global.json ('dotnet build -c Release' in $GENERATORS_SOLUTION_DIR and $ANALYZERS_SOLUTION_DIR) and commit the updated DLLs before releasing."
             exit 1
           fi
-          echo "Deployed generator DLL: $(stat -c '%s bytes' "$DEPLOYED")"
+          echo "Committed Roslyn DLLs match a fresh Release build."
 
       - name: Create and push release tag
         if: github.event_name == 'workflow_dispatch'
