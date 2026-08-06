@@ -24,12 +24,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # The test projects target net6.0; the 8.0 SDK builds them, the 6.0 runtime runs them.
+      # The test projects target net6.0; the SDK pinned in global.json builds them,
+      # the 6.0 runtime (installed via the 6.0.x SDK) runs them.
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            6.0.x
-            8.0.x
+          global-json-file: global.json
+          dotnet-version: 6.0.x
 
       - name: Run ${{ matrix.name }} tests
         run: dotnet test "${{ matrix.path }}" --nologo
