@@ -9,6 +9,8 @@
 
 ## [Unreleased]
 
+## [1.0.0-rc.6] — 2026-08-06
+
 Этот релиз сосредоточен на **инструментарии SerializeReference**: `[TypeSelector]` теперь работает с managed-reference-полями и `SerializableType`, workbench диагностики и починки находит и исправляет потерянные managed-ссылки по всему проекту, а build/CI-гейт не пропускает их в сборки.
 
 > Если не указано иное, каждая инспекторная фича ниже работает **и в IMGUI-, и в UIToolkit-инспекторе**.
@@ -283,7 +285,8 @@
 [#147]: https://github.com/VPDPersonal/Aspid.FastTools/pull/147
 [#148]: https://github.com/VPDPersonal/Aspid.FastTools/pull/148
 [#150]: https://github.com/VPDPersonal/Aspid.FastTools/pull/150
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...HEAD
+[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.6...HEAD
+[1.0.0-rc.6]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...v1.0.0-rc.6
 [1.0.0-rc.5]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...v1.0.0-rc.4
 [1.0.0-rc.3]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.2...v1.0.0-rc.3
