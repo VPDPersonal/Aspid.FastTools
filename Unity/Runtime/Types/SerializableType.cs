@@ -53,8 +53,9 @@ namespace Aspid.FastTools.Types
 
         /// <summary>
         /// Resolves and returns the wrapped type; equivalent to <see cref="Type"/>.
+        /// A <see langword="null"/> wrapper converts to <see langword="null"/>.
         /// </summary>
-        public static implicit operator Type?(SerializableType type) => type.Type;
+        public static implicit operator Type?(SerializableType? type) => type?.Type;
 
         void ISerializationCallbackReceiver.OnAfterDeserialize() =>
             _type = null;
@@ -118,8 +119,9 @@ namespace Aspid.FastTools.Types
 
         /// <summary>
         /// Resolves and returns the wrapped type; equivalent to <see cref="Type"/>.
+        /// A <see langword="null"/> wrapper converts to <see langword="null"/>.
         /// </summary>
-        public static implicit operator Type?(SerializableType<T> type) => type.Type;
+        public static implicit operator Type?(SerializableType<T>? type) => type?.Type;
 
         void ISerializationCallbackReceiver.OnAfterDeserialize() =>
             _type = null;
