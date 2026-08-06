@@ -154,10 +154,11 @@ namespace Aspid.FastTools.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddClass(CanvasClass);
 
+            // A settings page carries no status of its own; the calm idle wash keeps the canvas neutral here.
             var canvas = new AspidAnimatedDotsBackground()
+                .SetStatus(StatusStyle.Type.Info)
                 .AddClass(CanvasBackgroundClass)
                 .SetPickingMode(PickingMode.Ignore);
-            canvas.SetTone(SerializeReferenceCanvasStyle.Info);
 
             var surface = new VisualElement().AddClass(RootClass);
             fill(surface);

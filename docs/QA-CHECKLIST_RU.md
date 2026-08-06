@@ -68,7 +68,7 @@
 - [ ] YAML-editor hardening: отказ писать в не-Unity YAML (нет `%TAG !u!`), bail на tab/mixed-индентации.
 - [ ] Graph-вью отказывается от YAML-rewrite, пока ассет открыт в сцене/Prefab Mode.
 
-## 5. Окно SerializeReferenceWindow (4 вкладки)
+## 5. Окно TabWindow (4 вкладки)
 
 - [ ] **Welcome**: авто-показ раз на версию пакета (и после апдейта), toggle Auto-show, список сэмплов из package.json, меню работает всегда.
 - [ ] **Asset References**: граф по YAML — roots/nested/shared/orphaned, бейджи `MISSING`/`SHARED`, rid-цвета, `<None>`-слоты, полный field-path; inline Fix (констрейнутый), Clear на orphaned, Open Source Prefab; pending-migration карточка (info-pill, `Migrate → Type`), headline считает миграции отдельно; персист вкладки и ассета через tab-switch и domain reload.
