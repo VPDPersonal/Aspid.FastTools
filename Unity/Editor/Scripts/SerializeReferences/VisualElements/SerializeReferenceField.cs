@@ -89,8 +89,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly VisualElement _notices;
         private readonly SerializedProperty _property;
         private readonly Type _fieldType;
-        private readonly Type[] _baseTypes;
-        private readonly Func<Type, bool> _filter;
+
+        // Mutable on purpose: a [TypeSelector] member-referenced constraint re-resolves while the
+        // inspector is open and replaces both through SetBaseTypes.
+        private Type[] _baseTypes;
+        private Func<Type, bool> _filter;
 
         private SerializeReferenceNotice _missingNotice;
         private SerializeReferenceNotice _sharedNotice;
@@ -189,9 +192,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RegisterDragAndDrop(toggle);
 
             // When this field is a list element, replace the list's "+" with a picker-backed add (kills duplicate-last
-            // rid aliasing at the source). Installed on attach, once per ListView.
+            // rid aliasing at the source). Installed on attach, once per ListView; the provider is consulted when the
+            // picker opens, so the append picker honours a constraint re-resolved after installation.
             RegisterCallback<AttachToPanelEvent>(_ =>
-                SerializeReferenceListAddBehavior.TryInstall(this, _property, _fieldType, _baseTypes));
+                SerializeReferenceListAddBehavior.TryInstall(this, _property, _fieldType, () => _baseTypes));
 
             this.AddChild(_foldout);
 
@@ -220,6 +224,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Undo.undoRedoPerformed -= OnUndoRedo;
                 LiveFields.Remove(this);
             });
+        }
+
+        /// <summary>
+        /// Replaces the base-type constraint after construction, so a re-resolved <c>[TypeSelector]</c>
+        /// member reference narrows every picker this field spawns from now on.
+        /// </summary>
+        internal void SetBaseTypes(Type[] baseTypes)
+        {
+            _baseTypes = baseTypes;
+            _filter = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes);
         }
 
         // The arrow sits in-flow before the aligned label, so the dropdown overshoots the value column by the
