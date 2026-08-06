@@ -176,5 +176,26 @@ namespace Aspid.FastTools.Types.Editors.Tests
             CollectionAssert.AreEquivalent(new[] { typeof(int), typeof(short) }, result.Types);
             Assert.AreEqual(0, result.Warnings.Count);
         }
+
+        // The live-constraint contract the drawers depend on: Resolve holds no state between calls, so
+        // each call reads the member's CURRENT value — that is what lets the pickers re-resolve while
+        // the inspector is open.
+        [Test]
+        public void MemberValueChange_IsReflectedByTheNextResolve()
+        {
+            var host = new MutableHost { Constraint = typeof(int) };
+            var before = Resolve(nameof(MutableHost.Constraint), host);
+
+            host.Constraint = typeof(long);
+            var after = Resolve(nameof(MutableHost.Constraint), host);
+
+            CollectionAssert.AreEquivalent(new[] { typeof(int) }, before.Types);
+            CollectionAssert.AreEquivalent(new[] { typeof(long) }, after.Types);
+        }
+
+        private sealed class MutableHost
+        {
+            public Type Constraint { get; set; }
+        }
     }
 }
