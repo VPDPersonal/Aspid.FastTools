@@ -23,7 +23,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// for non-list elements, multi-object selections (handled by the de-alias guard), or when an override is
         /// already present.
         /// </summary>
-        public static void TryInstall(VisualElement elementField, SerializedProperty elementProperty, Type elementType, Type[] baseTypes)
+        /// <remarks>
+        /// The base types come through a provider consulted when the picker opens — a member-referenced
+        /// <c>[TypeSelector]</c> constraint can re-resolve long after the "+" override is installed.
+        /// </remarks>
+        public static void TryInstall(VisualElement elementField, SerializedProperty elementProperty, Type elementType, Func<Type[]> baseTypesProvider)
         {
             if (elementField is null || elementProperty is null) return;
 
@@ -49,7 +53,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (listView.overridingAddButtonBehavior != null) return;
 
                 listView.overridingAddButtonBehavior = (_, button) =>
-                    OpenAppendPicker(target, arrayPath, elementType, baseTypes, button);
+                    OpenAppendPicker(target, arrayPath, elementType, baseTypesProvider(), button);
             });
         }
 
