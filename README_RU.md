@@ -36,6 +36,8 @@
 
 Установите Aspid.FastTools через UPM: в Package Manager нажмите **+ → Install package from git URL…** и вставьте один из URL ниже.
 
+> **Миграция с `com.aspid.fasttools`:** в мае 2026 пакет переименован в `tech.aspid.fasttools`. Для Unity это другой пакет, поэтому установки со старым id не получают обновлений — удалите запись `com.aspid.fasttools` из `Packages/manifest.json` и установите `tech.aspid.fasttools` по одному из URL ниже.
+
 ### Stable
 
 Ветка `upm` всегда указывает на последний **стабильный** релиз:
@@ -44,10 +46,10 @@
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm
 ```
 
-Чтобы установить конкретную версию, укажите неизменяемый per-release тег (список доступных версий — на странице [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)):
+Чтобы установить конкретную версию, укажите неизменяемый per-release тег `upm/<version>` — например, `upm/1.0.0` после выхода релиза 1.0.0 (список доступных версий — на странице [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)):
 
 ```
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm/1.0.0
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm/<version>
 ```
 
 Предпочитаете установку вручную? Скачайте `.unitypackage` со страницы [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) или возьмите пакет в [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584).
