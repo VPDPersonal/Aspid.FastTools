@@ -1,4 +1,4 @@
-<img src="../Images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
+<img src="https://raw.githubusercontent.com/VPDPersonal/Aspid.FastTools/main/docs/images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
 [English](../EN/README.md) | [Русский](README.md)
 
