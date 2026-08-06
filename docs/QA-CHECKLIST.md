@@ -68,7 +68,7 @@
 - [ ] YAML-editor hardening: refuses to write non-Unity YAML (no `%TAG !u!`), bails on tab/mixed indentation.
 - [ ] The graph view refuses YAML rewrites while the asset is open in a scene / Prefab Mode.
 
-## 5. SerializeReferenceWindow (4 tabs)
+## 5. TabWindow (4 tabs)
 
 - [ ] **Welcome**: auto-shows once per package version (incl. after an update), Auto-show toggle, samples list read from package.json, the menu entry always works.
 - [ ] **Asset References**: YAML-driven graph — roots/nested/shared/orphaned, `MISSING`/`SHARED` badges, per-rid colours, `<None>` slots, full field paths; inline constrained Fix, Clear on orphaned entries, Open Source Prefab; pending-migration card (info pill, `Migrate → Type`), headline counts migrations separately; tab and inspected asset persist across tab switches and domain reloads.
