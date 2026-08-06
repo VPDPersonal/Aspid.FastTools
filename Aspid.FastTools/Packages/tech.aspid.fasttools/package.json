@@ -5,6 +5,9 @@
   "description": "Unity tools to cut boilerplate \u2014 source-generated ProfilerMarkers, serializable type/enum/ID systems, and a fluent UIToolkit API.",
   "unity": "6000.0",
   "license": "MIT",
+  "dependencies": {
+    "com.unity.modules.uielements": "1.0.0"
+  },
   "licensesUrl": "https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE",
   "documentationUrl": "https://github.com/VPDPersonal/Aspid.FastTools/blob/main/README.md",
   "changelogUrl": "https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md",
