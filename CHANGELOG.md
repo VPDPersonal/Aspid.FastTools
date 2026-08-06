@@ -65,12 +65,17 @@ This release is centred on the **SerializeReference toolchain**: `[TypeSelector]
   - Severity (`Off` / `Warn` / `Fail`, Warn by default) is stored in the committed `ProjectSettings/SerializeReferenceSharedSettings.asset` — not per-machine `EditorPrefs` — so it travels to a clean CI runner: `Off` skips, `Warn` logs but exits 0, `Fail` exits 1 on violations.
   - The `-srGateRequired` check covers prefabs, ScriptableObjects **and scenes** — a `.unity` is read through a pure-YAML pass (resolving each MonoBehaviour's required fields by its `m_Script` guid), since scene objects cannot be loaded for inspection.
   - Flags `-srGateReport <path>`, `-srGateWarnOnly` (force exit 0) and `-srGateFail` (force exit 1 on violations) override the committed severity per run.
+- **Required-violations audit**: the **Project References** tab gains a "Required violations" card listing every unset `[TypeSelector(Required = true)]` field the build/CI-gate scan finds (asset path + component + field path) — the project-wide audit without running a build. **Asset References** badges an unset required `[SerializeReference]` slot right on its graph card, with a separate flat "Required" card for required `string` / `SerializableType` fields (they have no graph node). The scan honours the gate's `Off` severity and the Excluded Folders list, and (re)runs only on an explicit Scan/Rescan click — never on a tab switch. ([#148])
+- **Keyboard navigation across the workbench**: Ctrl+Tab / Ctrl+Shift+Tab switch tabs; ↑/↓ move a focus ring over rows and cards on every tab (Welcome samples, both audits, Settings), Enter activates, Esc drops focus; the Settings Excluded Folders list also takes Enter (add) and Del (remove); the window footer shows the key hints. ([#150])
+- **Audit entry affordances**: entry text is selectable/copyable; a row context menu offers **Open in Asset References** / **Open in Prefab Mode** / **Select in Project**; long asset paths elide at the start so the file name stays visible. ([#150])
+- **Audit legend & counts**: both audit tabs decode entry colours in a header legend (amber = missing, blue = pending migration) and split the headline into separate missing / migration / required counts. ([#150])
 
 #### Type picker UX
 - **`[TypeSelectorDisplay]` attribute** (`Aspid.FastTools.Types`, editor-only `[Conditional("UNITY_EDITOR")]`) for tuning how a type appears in the picker: a `Name` display override for rows and the closed dropdown's caption (search still matches the real type name; the hover tooltip keeps the real `Namespace.Class, Assembly` identity), a `Group` path (e.g. `"Combat/Melee"`) placing the type under an explicit hierarchy **instead of** its namespace (path segments are shared between types, so related types meet under one node), a `Tooltip` on the type's row and an `Icon` (an `EditorGUIUtility.IconContent` name, a project-relative asset path with extension, or a `Resources` texture path without one).
 - **Favorites & Recent** sections on the picker's root page: a hover-revealed ★ toggle pins a type to Favorites; the last picked types (5 by default, configurable) keep MRU order under Recent. Both persist per project in `EditorPrefs`, are pruned of types that no longer resolve, surface only types in the current candidate set, and hide while searching.
 - **Richer rows**: Favorites/Recent headers and namespace rows show a dim right-aligned count of the types they hold (recursive for namespaces, visible while collapsed); the field's current value wears a green ✓ and a bold caption (`<None>` gets it when the field is empty) so the stored value reads apart from the keyboard highlight; a divider separates the pinned block (`<None>`, Favorites, Recent) from the namespace hierarchy.
 - `TypeSelectorWindow.Show` gained an optional `TypeSelectorFilter` parameter: its `Predicate` further narrows the candidate list after the base-type and `TypeAllow` checks (the SerializeReference drawer uses it to exclude `UnityEngine.Object`, strings and delegates), and its `AdditionalTypes` injects entries the assignability scan cannot match (such as open generic definitions).
+- **Member references in `[TypeSelector]` string arguments** are documented and hardened: a string argument resolves **member-first** — a `Type` / `Type[]` / `string` / `string[]` / `SerializableType` / `SerializableType<T>` instance member on the edited object supplies the picker constraint live — falling back to reading the string as an assembly-qualified type name; `SerializableType` members are newly supported. A string argument that resolves to nothing now shows a quiet inline warning under the field — the runtime fallback for cases the compile-time `AFT0006`–`AFT0008` checks cannot see (precompiled DLLs, a member renamed after compilation). ([#140])
 
 #### Settings & Preferences
 - **Settings tab — Type Selector section**: a toggle that hides the root page's Favorites section (the stored list survives and comes back), a Recent-items capacity slider (0–20, default 5; 0 doubles as the off switch — hides the section and pauses recording without wiping history) and a Saved-lists maintenance row that clears the stored Favorites / Recent lists behind a count-naming confirmation.
@@ -83,6 +88,9 @@ This release is centred on the **SerializeReference toolchain**: `[TypeSelector]
 Shipped in the prebuilt `Aspid.FastTools.Analyzers` Roslyn DLL:
 - `AFT0004` (error) — `[SerializeReference]` + `[TypeSelector]` on a type deriving from `UnityEngine.Object`, which Unity does not serialize as a managed reference.
 - `AFT0005` (warning) — no visible concrete, Unity-serializable type satisfies both the `typeof(...)` base and the field's element type, so the picker would be empty.
+- `AFT0006` (error) — a `[TypeSelector("...")]` string argument resolves to nothing: it is neither a member of the declaring type nor an assembly-qualified type name, so the typo would silently drop the constraint. ([#139])
+- `AFT0007` (error) — the member a `[TypeSelector("...")]` string argument names cannot supply base types — it must be a readable instance field or property of type `Type`, `string`, `SerializableType` (or an array of these). ([#139], [#140])
+- `AFT0008` (warning) — a non-identifier `[TypeSelector("...")]` string argument is not a valid assembly-qualified type name. ([#139])
 
 #### Samples
 - New installable **SerializeReferences** sample (imported via Package Manager) demonstrating the managed-reference picker across single fields, `List<T>`, abstract bases, narrowing, nested references, generics and `Required`, in both inspectors, with a step-by-step `TUTORIAL` and a guided `TypeSelectorTutorial` scene.
@@ -91,6 +99,7 @@ Shipped in the prebuilt `Aspid.FastTools.Analyzers` Roslyn DLL:
 ### Changed
 - The Welcome tab auto-opens once per package **version** instead of once per project — after installing *or updating* the package, the next editor launch shows it again. The **Auto-show Welcome** toggle still suppresses every auto-open; the menu entry is unaffected.
 - The **Repair Missing References** and **Managed References** windows are merged into a single workbench whose tabs are individual menu entries under `Tools → Aspid 🐍 → FastTools`: **Welcome**, **Asset References** (the reference graph with inline Fix / Clear / Open Source Prefab — subsumes the old per-asset repair list), **Project References** (the project-wide grouped bulk fix) and **Settings**. A Project References result links straight to that asset's Asset References graph.
+- The workbench window's tabs now share one visual design: **Welcome** is rebuilt on the glass-card idiom (hero links, sample cards with two-state install markers, unified hover transitions), **Asset References** / **Project References** are brought to one audit layout (flat entry rows, composite headers), **Settings** is rebuilt on the same design system (static card headers, flat rows, custom scrollbar), and the TypeSelector picker chrome follows the card accents (hover/selection fills, row dividers, search-border accent). The Unity-native pages are restructured under `Preferences → Aspid.FastTools` with SerializeReference / Type Selector / Welcome subpages. ([#150])
 - The per-property missing-type probe now caches the asset YAML by path + write-time, eliminating a `File.ReadAllLines` on every IMGUI repaint.
 - The confirm dialog for clearing a missing managed reference now names how many fields it will null, so an aliased reference shared across several slots makes its all-pointer clear explicit before the irreversible YAML edit (the clear still nulls every aliased field — only the wording changed).
 - `[TypeSelector].Allow` now defaults to `TypeAllow.All` instead of `TypeAllow.None`: a type-name field (`string` / `string[]` / `SerializableType`) now lists abstract classes and interfaces in the picker by default — pass `Allow = TypeAllow.None` to restrict it to concrete types. This aligns the raw-`string` picker with `SerializableType`, which already offered them. A `[SerializeReference]` managed reference is unaffected: that path never offered abstract/interface types and ignores `Allow` entirely.
@@ -106,6 +115,11 @@ Shipped in the prebuilt `Aspid.FastTools.Analyzers` Roslyn DLL:
 - Shared-reference bookkeeping got honest: empty fields no longer form phantom "shared groups" (badge numbering had holes); the IMGUI Make-unique / Smart-Fix paths drop the per-frame alias memo so a same-frame repaint never shows a stale notice; undo/redo invalidates that memo once globally instead of once per live field; the missing-type probe is memoised per repaint (legitimately empty fields paid a full YAML + location resolution per call); clicking a shared notice scrolls the inspector's own scroller (list members were never brought into view); the Smart-Fix ranking cache clears when assets change externally (e.g. a `git checkout`).
 - The Asset References graph refuses YAML rewrites while the asset is open in a scene or Prefab Mode — the open copy's next save would silently clobber the fix (the Project view already guarded this). The Project References undo receipt only reverts entries that still hold the exact type it applied (an older receipt can no longer destroy a newer fix) and reports the count it actually touched; the bulk diff preview counts only computable entries.
 - Assorted correctness: `SerializableType.Type` no longer throws for a code-constructed instance (null stored name); the required string-field notice no longer captures a disposable `SerializedProperty` in its deferred callbacks; Recent picks record a constructed generic's open definition (the closed form could never surface and silently evicted real entries); Prefab Mode repairs bail when the stage is dirty (the sibling-index replay could land on the wrong asset object); the duplicate guard fires only on exact single-element growth, so a bulk restore (Paste Component Values, Revert) no longer silently de-aliases intentional sharing; settings mirrors survive dock moves and a clicked switch (the focus guard now skips only in-progress text edits); the theme override is stored per project; `AspidSwitch` neutrals flip with the editor skin so the handle stays visible on the light theme; the `<None>` row no longer wears the current-value ✓ in pickers that have no current value at all (a list `+` append, a missing-type Fix, the bulk project picker).
+- Type / Id / SerializeReference selector dropdowns now anchor to the window that actually hosts the field. With an unfocused floating inspector the anchor was built from `EditorWindow.focusedWindow` — but UIToolkit dispatches the pointer event *before* focus moves, so the dropdown opened in the previously focused window's coordinate space (e.g. over the Project panel). A new `VisualElementExtensions.GetOwnerWindow()` resolves the element's real host for every dropdown anchor (field dropdowns, the Fix selector, the list `+` picker). ([#147])
+- The ProfilerMarkers generator now escapes the `.WithName("...")` label when emitting source — a label containing quotes, backslashes or braces previously produced generated code that failed to compile (on a generic type, braces were treated as interpolation holes; the runtime marker string is unchanged). ([#143])
+
+### Documentation
+- The READMEs are reworked around new self-contained per-feature references — `Types.md`, `Ids.md`, `SerializeReferences.md`, plus `SerializeReferenceTooling.md` for the project-wide side (bulk-repair tabs, project settings, build/CI gate, headless CI) — with new picker and SerializeReferences screenshots and GIFs, in both languages. ([#146])
 
 ### Added (internal)
 - First package test coverage: an `Aspid.FastTools.Unity.Editor.SerializeReferences.Tests` EditMode assembly exercising the `SerializeReferenceYamlEditor` parser (missing-type discovery, propertyPath → rid resolution incl. nested/list, stored-type reading, round-trip rewrite, entry removal, aliased-pointer nulling + the dialog pointer-count helper, diff-preview consistency) plus the YAML probe cache, and the write-path hardening (non-Unity-file refusal, tab-indent bail).
@@ -155,9 +169,15 @@ This release expands the **VisualElement fluent API** and adds a **UPM preview c
 - Preview-branch documentation and installation examples added to all four READMEs. ([#32])
 
 ### Changed
-- Reorganized `BaseFieldExtensions` into `BaseFields/` subdirectory.- Renamed `Unbind<T>` extension to `UnbindFrom<T>` for consistency with `BindTo`.- Tightened `BindPropertyTo` generic constraint from `where T : IBindable` to `where T : VisualElement, IBindable`.
+- Reorganized `BaseFieldExtensions` into `BaseFields/` subdirectory.
+- Renamed `Unbind<T>` extension to `UnbindFrom<T>` for consistency with `BindTo`.
+- Tightened `BindPropertyTo` generic constraint from `where T : IBindable` to `where T : VisualElement, IBindable`.
+
 ### Fixed
-- `SetMinSize` parameter naming bug (`maxHeight` → `minHeight`).- Null-safety in `FocusableExtensions.IsFocus` — `focusController` is now null-checked to prevent `NullReferenceException`.- `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` now log a warning and return gracefully instead of throwing when the stylesheet path is not found.
+- `SetMinSize` parameter naming bug (`maxHeight` → `minHeight`).
+- Null-safety in `FocusableExtensions.IsFocus` — `focusController` is now null-checked to prevent `NullReferenceException`.
+- `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` now log a warning and return gracefully instead of throwing when the stylesheet path is not found.
+
 ## [1.0.0-rc.2] — 2026-05-18
 
 Release-workflow validation build. No functional changes versus `1.0.0-rc.1`.
@@ -174,40 +194,79 @@ First release candidate for `1.0.0`. Marketed as a preview while the **ID System
 ### Added
 
 #### ProfilerMarkers
-- `this.Marker()` extension method that resolves to a `ProfilerMarker` unique to the call-site (enclosing type + method/field/property + line number).- `ProfilerMarkersGenerator` (Roslyn incremental source generator) that emits one `ProfilerMarker` field per call-site and a per-type dispatcher.
+- `this.Marker()` extension method that resolves to a `ProfilerMarker` unique to the call-site (enclosing type + method/field/property + line number).
+- `ProfilerMarkersGenerator` (Roslyn incremental source generator) that emits one `ProfilerMarker` field per call-site and a per-type dispatcher.
   - Walks through lambdas and local functions; supports `.WithName(literal)` and plain `$"..."` interpolated names.
-  - Deduplicates fields when several call-sites share a line.- Semantic gating: only `ProfilerMarkerExtensionsForGenerator.Marker` is rewritten, user-defined `Marker()` extensions are left untouched.- The generated dispatcher is wrapped in `#if ENABLE_PROFILER` and falls back to `return default;`, so non-development builds carry no per-call cost.
+  - Deduplicates fields when several call-sites share a line.
+- Semantic gating: only `ProfilerMarkerExtensionsForGenerator.Marker` is rewritten, user-defined `Marker()` extensions are left untouched.
+- The generated dispatcher is wrapped in `#if ENABLE_PROFILER` and falls back to `return default;`, so non-development builds carry no per-call cost.
+
 #### Serializable Type System
-- `SerializableType` — `[Serializable]` wrapper around `System.Type` that stores the assembly-qualified name and resolves the type lazily on first access; implicit conversion to `Type`.- `SerializableType<T>` — generic variant with a base-type constraint enforced both at compile time and in the editor picker.- `TypeSelectorAttribute` — `PropertyAttribute` (editor-only via `[Conditional("UNITY_EDITOR")]`) that drives the type picker on `string` fields and lets you constrain the picker to one or more base types.- `TypeAllow` — `[Flags]` enum that opts the picker into abstract classes (`Abstract`), interfaces (`Interface`) or both (`All`); defaults to concrete classes only.- `ComponentTypeSelector` — `[Serializable]` helper that surfaces a `Component`-typed sibling on the same `GameObject` through the inspector.- `TypeSelectorWindow` — `EditorWindow`-based hierarchical type picker with namespace tree, fuzzy search, keyboard navigation and a public `Show(...)` API for invoking it from custom editors.- Property drawers for `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector` and `[TypeSelector]` strings (IMGUI + UI Toolkit). UI Toolkit drawer renders a reusable `TypeField` / `InspectorTypeField` element.
+- `SerializableType` — `[Serializable]` wrapper around `System.Type` that stores the assembly-qualified name and resolves the type lazily on first access; implicit conversion to `Type`.
+- `SerializableType<T>` — generic variant with a base-type constraint enforced both at compile time and in the editor picker.
+- `TypeSelectorAttribute` — `PropertyAttribute` (editor-only via `[Conditional("UNITY_EDITOR")]`) that drives the type picker on `string` fields and lets you constrain the picker to one or more base types.
+- `TypeAllow` — `[Flags]` enum that opts the picker into abstract classes (`Abstract`), interfaces (`Interface`) or both (`All`); defaults to concrete classes only.
+- `ComponentTypeSelector` — `[Serializable]` helper that surfaces a `Component`-typed sibling on the same `GameObject` through the inspector.
+- `TypeSelectorWindow` — `EditorWindow`-based hierarchical type picker with namespace tree, fuzzy search, keyboard navigation and a public `Show(...)` API for invoking it from custom editors.
+- Property drawers for `SerializableType`, `SerializableType<T>`, `ComponentTypeSelector` and `[TypeSelector]` strings (IMGUI + UI Toolkit). UI Toolkit drawer renders a reusable `TypeField` / `InspectorTypeField` element.
+
 #### Enum System
-- `EnumValues<TValue>` — `[Serializable]` enum-keyed dictionary that survives Unity serialization and handles `[Flags]` enums.- `EnumValue<TKey, TValue>` — single-entry building block used by the dictionary and exposed for standalone use.- Custom property drawers for both types with inline editing in the inspector.
+- `EnumValues<TValue>` — `[Serializable]` enum-keyed dictionary that survives Unity serialization and handles `[Flags]` enums.
+- `EnumValue<TKey, TValue>` — single-entry building block used by the dictionary and exposed for standalone use.
+- Custom property drawers for both types with inline editing in the inspector.
+
 #### ID System (Beta)
-- `IId` marker interface and `[UniqueId]` attribute for ID-struct types (one struct ↔ one `IdRegistry`).- `IdRegistry` (`ScriptableObject`) holding the canonical `int ↔ string` map; runtime lookups via `TryGetId`, `TryGetName`, `Contains(int)`, `Contains(string)`.- `IdRegistryResolver` — lazily builds a `Type AQN → registry` index on first lookup and keeps it incrementally up to date through an `AssetPostprocessor`.
-  - `IdRegistry.OnEnable` marks the cache dirty so re-imports are picked up.- `UniqueIdIndex` — sibling index used by the editor to detect `[UniqueId]` field-value collisions across registries.- `IdStructGenerator` (Roslyn incremental source generator) emits the struct-side boilerplate (`_id`, `Id`, `__stringId`, equality, conversions) and supports generic target structs as well as generic containing types.- Analyzer diagnostics: `AFID001` (the target `IId` struct must be `partial`) and `AFID002` (one of the generated members is already declared by the user).- Editor UI driven by `RegistryEditorCore`:
+- `IId` marker interface and `[UniqueId]` attribute for ID-struct types (one struct ↔ one `IdRegistry`).
+- `IdRegistry` (`ScriptableObject`) holding the canonical `int ↔ string` map; runtime lookups via `TryGetId`, `TryGetName`, `Contains(int)`, `Contains(string)`.
+- `IdRegistryResolver` — lazily builds a `Type AQN → registry` index on first lookup and keeps it incrementally up to date through an `AssetPostprocessor`.
+  - `IdRegistry.OnEnable` marks the cache dirty so re-imports are picked up.
+- `UniqueIdIndex` — sibling index used by the editor to detect `[UniqueId]` field-value collisions across registries.
+- `IdStructGenerator` (Roslyn incremental source generator) emits the struct-side boilerplate (`_id`, `Id`, `__stringId`, equality, conversions) and supports generic target structs as well as generic containing types.
+- Analyzer diagnostics: `AFID001` (the target `IId` struct must be `partial`) and `AFID002` (one of the generated members is already declared by the user).
+- Editor UI driven by `RegistryEditorCore`:
   - C#-identifier name validation, full Undo, explicit clean-up flow for invalid/duplicate entries.
-  - Sort/Group toolbar, manual next-id entry with backward-step warning, Open-Registry shortcut from the `IdStruct` property drawer.- `Assets → Create → Aspid/Id Registry/Id Registry` menu entry for creating registry assets.
+  - Sort/Group toolbar, manual next-id entry with backward-step warning, Open-Registry shortcut from the `IdStruct` property drawer.
+- `Assets → Create → Aspid/Id Registry/Id Registry` menu entry for creating registry assets.
+
 #### VisualElement fluent extensions
-- Extensive UI Toolkit fluent API on `VisualElement` and friends — layout, sizing, style, borders, colors, transitions, callbacks, USS classes/sheets, child management.- Per-element helper sets: `Button`, `Field`, `Focusable`, `Foldout`, `HelpBox`, `Image`, `IMGUIContainer`, `IMixedValueSupport`, `INotifyValueChanged`, `IStyle`, `List`, `Manipulators`, `ProgressBar`, `Slider`, `TextElement`, `CallbackEventHandler`, `ICustomStyle`.- Style preset helpers via `VisualElementExtensions.Style.Preset.cs` and reusable `ICustomStyle.TryGetByEnum<T>` extension for USS-driven enum bindings.- Editor-side `VisualElement` command extensions in `Unity.Editor/Scripts/VisualElements/Extensions/`.
+- Extensive UI Toolkit fluent API on `VisualElement` and friends — layout, sizing, style, borders, colors, transitions, callbacks, USS classes/sheets, child management.
+- Per-element helper sets: `Button`, `Field`, `Focusable`, `Foldout`, `HelpBox`, `Image`, `IMGUIContainer`, `IMixedValueSupport`, `INotifyValueChanged`, `IStyle`, `List`, `Manipulators`, `ProgressBar`, `Slider`, `TextElement`, `CallbackEventHandler`, `ICustomStyle`.
+- Style preset helpers via `VisualElementExtensions.Style.Preset.cs` and reusable `ICustomStyle.TryGetByEnum<T>` extension for USS-driven enum bindings.
+- Editor-side `VisualElement` command extensions in `Unity.Editor/Scripts/VisualElements/Extensions/`.
+
 #### Optional Mathematics integration
-- Satellite assembly `Aspid.FastTools.Unity.VisualElements.Math` adds `INotifyValueChanged` extensions (`SetValue`, `ValueChanged`) for `Unity.Mathematics` types (`float2/3/4`, `int2/3/4`, etc.).- Compiled only when `com.unity.mathematics` is installed (`versionDefines` gate, define symbol `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION`).
+- Satellite assembly `Aspid.FastTools.Unity.VisualElements.Math` adds `INotifyValueChanged` extensions (`SetValue`, `ValueChanged`) for `Unity.Mathematics` types (`float2/3/4`, `int2/3/4`, etc.).
+- Compiled only when `com.unity.mathematics` is installed (`versionDefines` gate, define symbol `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION`).
+
 #### Internal editor components
 Shared UI Toolkit elements used across the package's editor surfaces, all built on the base palette `Aspid-FastTools-Default-Dark.uss`:
 
-- `AspidLabel`, `AspidBox`, `AspidGradientButton`, `AspidHelpBox`, `AspidInspectorHeader`, `AspidDividingLine`, `AspidAnimatedLogo`, `AspidAnimatedTitle`, `AspidAnimatedDotsBackground`, `AspidHoverGradientOverlay`.- USS-driven style structs (`AspidLabelSizeStyle`, `AspidLabelFontStyle`, `AspidDividingLineSizeStyle`, `AspidDividingLineDirectionStyle`, `AspidAnimatedLogoPulseSpeedStyle`, `AspidAnimatedLogoPulseHoverAmplitudeStyle`, `AspidAnimatedLogoLayerImageStyle`, `StatusStyle`, `ThemeStyle`, …).- Shared helpers: `AspidStyles` (single source of truth for USS class/property names), `InlineStyle<T>` (USS-vs-code precedence helper), `DoubleClickTracker`.
+- `AspidLabel`, `AspidBox`, `AspidGradientButton`, `AspidHelpBox`, `AspidInspectorHeader`, `AspidDividingLine`, `AspidAnimatedLogo`, `AspidAnimatedTitle`, `AspidAnimatedDotsBackground`, `AspidHoverGradientOverlay`.
+- USS-driven style structs (`AspidLabelSizeStyle`, `AspidLabelFontStyle`, `AspidDividingLineSizeStyle`, `AspidDividingLineDirectionStyle`, `AspidAnimatedLogoPulseSpeedStyle`, `AspidAnimatedLogoPulseHoverAmplitudeStyle`, `AspidAnimatedLogoLayerImageStyle`, `StatusStyle`, `ThemeStyle`, …).
+- Shared helpers: `AspidStyles` (single source of truth for USS class/property names), `InlineStyle<T>` (USS-vs-code precedence helper), `DoubleClickTracker`.
+
 #### SerializedProperty extensions
 - Fluent chainable helpers in `SerializePropertyExtensions` (`SetValue`, `Apply`, `Persistent`) and a `Reflection` partial that exposes the backing field/value behind a `SerializedProperty`.
+
 #### IMGUI scopes
 - Disposable `VerticalScope`, `HorizontalScope`, `ScrollViewScope` wrappers that expose the layout `Rect` for hit-testing.
+
 #### Editor helper extensions
 - `MonoScript.GetScriptName()` and `MonoScript.GetScriptNameWithIndex()` — respect `[AddComponentMenu]` and append an index suffix when several copies of the same component live on one `GameObject`.
+
 #### Welcome window
-- `WelcomeWindow` editor window (menu `Tools/Aspid FastTools/Welcome`) listing the package's installable samples by parsing `package.json`.- `WelcomeWindowStartup` shows the window automatically on first import.
+- `WelcomeWindow` editor window (menu `Tools/Aspid FastTools/Welcome`) listing the package's installable samples by parsing `package.json`.
+- `WelcomeWindowStartup` shows the window automatically on first import.
+
 #### Samples
 Five installable samples shipped under `Samples~/` (UPM convention, imported via Package Manager):
 
 - `Types`, `EnumValues`, `Ids`, `ProfilerMarkers`, `VisualElements`.
+
 #### Documentation
-- EN and RU READMEs at the package root and at `Documentation/EN/` and `Documentation/RU/`, mirroring the same content with language-appropriate image paths.- Per-feature reference documents next to each README: `SerializedPropertyExtensions.md`, `VisualElementExtensions.md`.
+- EN and RU READMEs at the package root and at `Documentation/EN/` and `Documentation/RU/`, mirroring the same content with language-appropriate image paths.
+- Per-feature reference documents next to each README: `SerializedPropertyExtensions.md`, `VisualElementExtensions.md`.
+
 [#8]: https://github.com/VPDPersonal/Aspid.FastTools/pull/8
 [#30]: https://github.com/VPDPersonal/Aspid.FastTools/pull/30
 [#31]: https://github.com/VPDPersonal/Aspid.FastTools/pull/31
@@ -217,6 +276,13 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 [#43]: https://github.com/VPDPersonal/Aspid.FastTools/pull/43
 [#44]: https://github.com/VPDPersonal/Aspid.FastTools/pull/44
 [#51]: https://github.com/VPDPersonal/Aspid.FastTools/pull/51
+[#139]: https://github.com/VPDPersonal/Aspid.FastTools/pull/139
+[#140]: https://github.com/VPDPersonal/Aspid.FastTools/pull/140
+[#143]: https://github.com/VPDPersonal/Aspid.FastTools/pull/143
+[#146]: https://github.com/VPDPersonal/Aspid.FastTools/pull/146
+[#147]: https://github.com/VPDPersonal/Aspid.FastTools/pull/147
+[#148]: https://github.com/VPDPersonal/Aspid.FastTools/pull/148
+[#150]: https://github.com/VPDPersonal/Aspid.FastTools/pull/150
 [Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...HEAD
 [1.0.0-rc.5]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...v1.0.0-rc.4
