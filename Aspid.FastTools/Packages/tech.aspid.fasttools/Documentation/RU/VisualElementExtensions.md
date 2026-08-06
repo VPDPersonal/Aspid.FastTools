@@ -1,4 +1,4 @@
-# VisualElement Extensions — full reference
+# VisualElement Extensions
 
 Fluent-методы расширения для построения UIToolkit-деревьев в коде. Все методы возвращают `T` (сам элемент) для цепочки вызовов.
 
