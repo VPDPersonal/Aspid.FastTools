@@ -9,6 +9,13 @@
         <RootNamespace>Aspid.FastTools</RootNamespace>
         <!-- RS2008 expects analyzer release tracking files; this is a private in-tree generator, not a published analyzer package. -->
         <NoWarn>$(NoWarn);RS2008</NoWarn>
+
+        <!-- The built DLL is committed into the Unity package, so identical sources must yield an
+             identical binary on any machine: map local checkout paths out of the PE (PathMap) and
+             keep the git SHA of the build tree out of InformationalVersion. -->
+        <Deterministic>true</Deterministic>
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     </PropertyGroup>
 
     <ItemGroup>

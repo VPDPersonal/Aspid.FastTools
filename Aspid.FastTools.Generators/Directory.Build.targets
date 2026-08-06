@@ -1,7 +1,10 @@
 <Project>
 
-    <!-- Ships the merged single-file analyzer DLL produced by ILRepack.targets into the Unity package. -->
-    <Target Name="CopyToUnity" AfterTargets="ILRepacker" Condition="'$(IsRoslynComponent)' == 'true'">
+    <!-- Ships the merged single-file analyzer DLL produced by ILRepack.targets into the Unity package.
+         Release-only: the Tests and Sample projects reference the generator, so a Debug `dotnet test`
+         run would otherwise overwrite the shipped Release DLL with a Debug build. -->
+    <Target Name="CopyToUnity" AfterTargets="ILRepacker"
+            Condition="'$(IsRoslynComponent)' == 'true' And '$(Configuration)' == 'Release'">
         <PropertyGroup>
             <_UnityDestination>$(MSBuildThisFileDirectory)../Aspid.FastTools/Packages/tech.aspid.fasttools/</_UnityDestination>
         </PropertyGroup>
