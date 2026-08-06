@@ -152,7 +152,7 @@ public sealed class AbilitySelector : MonoBehaviour
 }
 ```
 
-Помимо базовых типов, у атрибута есть `Allow` (показывать ли абстрактные классы и интерфейсы) и `Required` (незаполненное поле — inline-предупреждение и нарушение для build/CI-гейта). Отдельно в справочнике: [динамический базовый тип из поля или свойства](Types.md#dynamic-base-types-via-member-references) и настройка вида типа в пикере через [`[TypeSelectorDisplay]`](Types.md#typeselectordisplay).
+Помимо базовых типов, у атрибута есть `Allow` (показывать ли абстрактные классы и интерфейсы) и `Required` (незаполненное поле — inline-предупреждение и нарушение для build/CI-гейта). Отдельно в справочнике: [динамический базовый тип из поля или свойства](Types.md#dynamic-base-types-via-member-references) и настройка вида типа в пикере — или полное исключение типа из пикера — через [`[TypeSelectorDisplay]`](Types.md#typeselectordisplay).
 
 ### TypeSelectorWindow
 

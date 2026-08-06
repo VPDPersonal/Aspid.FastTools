@@ -41,6 +41,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static Type GetCurrentType(SerializedProperty property) =>
             property.managedReferenceValue?.GetType();
 
+        // SerializedProperty.arrayElementType for a [SerializeReference] array/list — the only array shape whose
+        // elements are managed references.
+        private const string ManagedReferenceElementPrefix = "managedReference<";
+
+        /// <summary>
+        /// Returns <see langword="true"/> when <paramref name="property"/> is an array or list whose elements are
+        /// managed references.
+        /// </summary>
+        public static bool IsManagedReferenceArray(SerializedProperty property) =>
+            property is { isArray: true, propertyType: not SerializedPropertyType.String } &&
+            property.arrayElementType.StartsWith(ManagedReferenceElementPrefix, StringComparison.Ordinal);
+
+        /// <summary>
+        /// The declared element type of a managed-reference list/array — what constrains the add-picker on a list
+        /// that may currently be empty (a non-empty list's elements resolve their own field type). Read from the
+        /// reflected field's array/List&lt;T&gt; shape; falls back to the first element's declared typename, then to
+        /// <see cref="object"/>.
+        /// </summary>
+        public static Type GetArrayElementType(SerializedProperty property)
+        {
+            if (property.GetFieldInfo() is { } field)
+            {
+                var elementType = field.FieldType.GetCollectionElementTypeOrSelf();
+                if (elementType != field.FieldType) return elementType;
+            }
+
+            return property.arraySize > 0
+                ? GetFieldType(property.GetArrayElementAtIndex(0))
+                : typeof(object);
+        }
+
         #region Project scan helpers
         /// <summary>
         /// Returns <see langword="true"/> when <paramref name="path"/> is a project asset whose extension can host
@@ -321,13 +352,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         /// <summary>
         /// Predicate identifying types that can legally be assigned to a <c>[SerializeReference]</c> field:
-        /// concrete reference types that are neither <see cref="Object"/>, open generics, strings, nor delegates.
+        /// concrete reference types that are neither <see cref="Object"/>, open generics, strings, nor delegates,
+        /// and that Unity will actually serialize — which means carrying <see cref="SerializableAttribute"/>.
         /// </summary>
+        /// <remarks>
+        /// The <see cref="SerializableAttribute"/> check is what keeps helper classes out of the picker: a type
+        /// without it can be assigned, but Unity drops the value on the next reload, so offering it is a trap.
+        /// The attribute is not inherited, and Unity likewise requires it on the concrete type, so the
+        /// <c>inherit: false</c> lookup matches Unity's own rule.
+        /// </remarks>
         public static bool IsAssignableManagedReference(Type type) =>
             type is { IsClass: true, IsAbstract: false, ContainsGenericParameters: false } &&
             type != typeof(string) &&
             !typeof(Object).IsAssignableFrom(type) &&
-            !typeof(Delegate).IsAssignableFrom(type);
+            !typeof(Delegate).IsAssignableFrom(type) &&
+            type.IsDefined(typeof(SerializableAttribute), inherit: false);
 
         /// <summary>
         /// Builds the candidate predicate for the type picker: the structural <see cref="IsAssignableManagedReference"/>

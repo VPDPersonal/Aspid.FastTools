@@ -153,7 +153,7 @@ public sealed class AbilitySelector : MonoBehaviour
 }
 ```
 
-Beyond the base types, the attribute exposes `Allow` (whether abstract classes and interfaces are listed) and `Required` (an unset field — an inline warning and a violation for the build/CI gate). Covered separately in the reference: [dynamic base types via member references](Types.md#dynamic-base-types-via-member-references) and tuning a candidate type's look in the picker with [`[TypeSelectorDisplay]`](Types.md#typeselectordisplay).
+Beyond the base types, the attribute exposes `Allow` (whether abstract classes and interfaces are listed) and `Required` (an unset field — an inline warning and a violation for the build/CI gate). Covered separately in the reference: [dynamic base types via member references](Types.md#dynamic-base-types-via-member-references) and tuning how a candidate type appears in the picker — or keeping it out of the picker entirely — with [`[TypeSelectorDisplay]`](Types.md#typeselectordisplay).
 
 ### TypeSelectorWindow
 

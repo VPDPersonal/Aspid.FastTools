@@ -61,44 +61,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static VisualElement CreateList(SerializedProperty property, string label = null, params Type[] baseTypes)
         {
             if (property is null) throw new ArgumentNullException(nameof(property));
-            if (!IsManagedReferenceArray(property))
+            if (!SerializeReferenceHelpers.IsManagedReferenceArray(property))
                 throw new ArgumentException("CreateList expects an array/list property whose elements are [SerializeReference] managed references.", nameof(property));
 
             return new SerializeReferenceListField(
                 label ?? property.displayName,
                 property,
-                GetElementType(property),
+                SerializeReferenceHelpers.GetArrayElementType(property),
                 baseTypes);
-        }
-
-        // SerializedProperty.arrayElementType for a [SerializeReference] array/list — the only array shape whose
-        // elements are managed references.
-        private const string ManagedReferenceElementPrefix = "managedReference<";
-
-        /// <summary>
-        /// True when <paramref name="property"/> is an array/list whose elements are managed references.
-        /// </summary>
-        private static bool IsManagedReferenceArray(SerializedProperty property) =>
-            property.isArray &&
-            property.arrayElementType.StartsWith(ManagedReferenceElementPrefix, StringComparison.Ordinal);
-
-        /// <summary>
-        /// The declared element type of a managed-reference list/array — what constrains the add-picker on a list
-        /// that may currently be empty (a non-empty list's elements resolve their own field type). Read from the
-        /// reflected field's array/List&lt;T&gt; shape; falls back to the first element's declared typename, then to
-        /// <see cref="object"/>.
-        /// </summary>
-        private static Type GetElementType(SerializedProperty property)
-        {
-            if (property.GetFieldInfo() is { } field)
-            {
-                var elementType = field.FieldType.GetCollectionElementTypeOrSelf();
-                if (elementType != field.FieldType) return elementType;
-            }
-
-            return property.arraySize > 0
-                ? SerializeReferenceHelpers.GetFieldType(property.GetArrayElementAtIndex(0))
-                : typeof(object);
         }
 
         /// <summary>
