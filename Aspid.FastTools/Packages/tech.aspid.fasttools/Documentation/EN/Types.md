@@ -177,6 +177,14 @@ public sealed class DamageModifier { }
 | `Group` | Explicit picker path with `/` separating levels (e.g. `"Combat/Melee"`). **Replaces** the type's namespace placement — the type appears only under this path, and path segments are shared between types. `null` or whitespace keeps the namespace placement. |
 | `Tooltip` | Tooltip shown when hovering the type's row. `null` means no tooltip override. |
 | `Icon` | Editor icon shown left of the label — an `EditorGUIUtility.IconContent` name, a project-relative asset path with extension (loaded via `AssetDatabase`), or a `Resources` texture path without extension. `null` means no icon. |
+| `Hidden` | When `true`, the picker never offers the type. Not inherited, so hiding a base type leaves the subclasses meant to replace it offered as usual. Assigning the type from code is unaffected, and a value already stored in a field keeps rendering. |
+
+Use `Hidden` for a type that is assignable but not meant to be authored in the Inspector — a delegate-backed adapter, a test double, a base implementation kept only for code:
+
+```csharp
+[TypeSelectorDisplay(Hidden = true)]
+public sealed class DelegateModifier : IModifier { }
+```
 
 In the picker, the `DamageModifier` from the example above appears under `Combat/Modifiers` as "Damage ×" with its icon — next to siblings that keep their default look:
 

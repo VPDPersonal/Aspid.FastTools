@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`[TypeSelectorDisplay(Hidden = true)]`** keeps a type out of the picker entirely — for types that are technically assignable but not meant to be authored in the Inspector (a delegate-backed adapter, a test double, a base implementation kept for code). It applies to both paths the picker collects from — the domain scan and the injected open generic definitions — and is not inherited, so hiding a base type never hides the subclasses meant to replace it. Assigning such a type from code is unaffected and an already stored value keeps rendering.
+
+### Changed
+
+- The picker no longer offers a type Unity cannot serialize: a `[SerializeReference]` candidate must now carry `[Serializable]`. Assigning one was always a trap — the value appeared to be set and was gone after the next reload.
+- A `[SerializeReference]` field whose type declares **no** serialized fields no longer draws an expand arrow. The arrow promised content that never appeared; it now behaves like an empty reference.
+
+### Fixed
+
+- **Nested managed references get the type dropdown too.** An assigned instance's own `[SerializeReference]` fields (and arrays/lists of them) were drawn as plain `PropertyField`s — and since Unity ships no type picker of its own, those were dead rows: no way to choose a type, and for a list no way to fill the elements `+` added. A child declaring `[TypeSelector]` still goes through its drawer, keeping the attribute's narrowing.
+- **Open generic arguments are inferred through the field's interfaces**, not only from the field's own type arguments. A field declared as `IConverter<string, string>` now closes a `SequenceConverters<T> : IConverter<T, T>` candidate directly — one parameter bound from two arguments, which the previous positional copy could not express, so the picker fell back to asking for `T` on a second page. Inference still refuses anything that violates a constraint or is not assignable to the field.
+- **The open-script button works for nested types.** A nested type owns no script asset — the asset search matches file names and `MonoScript.GetClass()` only reports a file's top-level type — so the button silently did nothing. The lookup now walks out to the declaring type, whose script is the file the nested declaration sits in, and still jumps to the declaration's own line.
+
 ## [1.0.0-rc.6] — 2026-08-06
 
 This release is centred on the **SerializeReference toolchain**: `[TypeSelector]` now drives managed-reference and `SerializableType` fields, a repair/diagnostics workbench finds and fixes missing managed references project-wide, and a build/CI gate keeps them out of builds.

@@ -18,7 +18,9 @@ namespace Aspid.FastTools.Types.Editors
         /// </summary>
         /// <remarks>
         /// Falls back to scanning script text when <see cref="MonoScript.GetClass"/> yields no match,
-        /// so types whose file name differs from the type name are still found.
+        /// so types whose file name differs from the type name are still found. A nested type owns no script
+        /// asset at all — neither the asset search nor <see cref="MonoScript.GetClass"/> can reach it — so the
+        /// lookup walks out to the declaring type, whose script is the file the nested declaration sits in.
         /// </remarks>
         /// <param name="type">The type to locate a script asset for.</param>
         /// <returns>
@@ -53,7 +55,12 @@ namespace Aspid.FastTools.Types.Editors
                 return script;
             }
 
-            return null;
+            // A nested type never has a script of its own: the asset search matches file names, and
+            // MonoScript.GetClass() only ever reports a file's top-level type. Its declaration still lives in the
+            // declaring type's file, which the caller then scans for the nested declaration's own line.
+            return lookupType.DeclaringType is { } declaringType
+                ? declaringType.FindMonoScript()
+                : null;
         }
 
         /// <summary>

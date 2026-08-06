@@ -49,37 +49,132 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         /// <summary>
-        /// Attempts to close <paramref name="openDefinition"/> using the type arguments of a closed-generic
-        /// <paramref name="fieldType"/> (e.g. a <c>Modifier&lt;float&gt;</c> field directly determines the
-        /// argument of a <c>Modifier&lt;&gt;</c> candidate). Returns <see langword="false"/> when the field is
-        /// not a closed generic or the inferred type would not be assignable.
+        /// Attempts to close <paramref name="openDefinition"/> against <paramref name="fieldType"/>, so a field
+        /// that already determines the arguments skips the argument-selection page entirely (e.g. a
+        /// <c>Modifier&lt;float&gt;</c> field determines the argument of a <c>Modifier&lt;&gt;</c> candidate).
+        /// Returns <see langword="false"/> when the field leaves any parameter undetermined, or when the
+        /// inferred type violates a constraint or is not assignable to the field.
         /// </summary>
+        /// <remarks>
+        /// The arguments are unified rather than copied positionally, so the field need not name the definition
+        /// itself: a non-generic <c>IConverterString : IConverter&lt;string, string&gt;</c> field still determines
+        /// <c>T</c> of a <c>SequenceConverters&lt;T&gt; : IConverter&lt;T, T&gt;</c> candidate — one parameter
+        /// bound from two arguments, which positional copying cannot express.
+        /// </remarks>
         internal static bool TryInferFromFieldType(Type fieldType, Type openDefinition, out Type closed)
         {
             closed = null;
 
-            if (fieldType is null || !fieldType.IsGenericType || fieldType.ContainsGenericParameters) return false;
+            if (fieldType is null || fieldType.ContainsGenericParameters) return false;
 
-            var fieldArguments = fieldType.GetGenericArguments();
-            if (fieldArguments.Length != openDefinition.GetGenericArguments().Length) return false;
-
-            var fieldDefinition = fieldType.GetGenericTypeDefinition();
-            var matchesDefinition = GenericBaseDefinitions(openDefinition)
-                .Any(definition => definition == fieldDefinition);
-
-            if (!matchesDefinition) return false;
-
-            try
+            foreach (var view in ClosedGenericViews(fieldType))
             {
-                closed = openDefinition.MakeGenericType(fieldArguments);
+                if (!TryBindParameters(openDefinition, view, out var arguments)) continue;
+                if (TryConstruct(openDefinition, arguments, new[] { fieldType }, out closed, out _)) return true;
             }
-            catch (Exception)
-            {
-                closed = null;
+
+            closed = null;
+            return false;
+        }
+
+        /// <summary>
+        /// Enumerates the closed generic types <paramref name="type"/> is known by — itself when generic, then its
+        /// base types, then its interfaces — most specific first. These are the shapes an open definition can be
+        /// unified against.
+        /// </summary>
+        private static IEnumerable<Type> ClosedGenericViews(Type type)
+        {
+            if (type.IsGenericType) yield return type;
+
+            for (var current = type.BaseType; current is not null; current = current.BaseType)
+                if (current.IsGenericType) yield return current;
+
+            foreach (var contract in type.GetInterfaces())
+                if (contract.IsGenericType) yield return contract;
+        }
+
+        /// <summary>
+        /// Binds every type parameter of <paramref name="openDefinition"/> by unifying the open form of
+        /// <paramref name="closedView"/>'s definition — as <paramref name="openDefinition"/> implements it —
+        /// with <paramref name="closedView"/>'s own arguments.
+        /// </summary>
+        private static bool TryBindParameters(Type openDefinition, Type closedView, out Type[] arguments)
+        {
+            arguments = null;
+
+            var viewDefinition = closedView.GetGenericTypeDefinition();
+            var openView = OpenGenericViews(openDefinition)
+                .FirstOrDefault(view => view.GetGenericTypeDefinition() == viewDefinition);
+
+            if (openView is null) return false;
+
+            var parameters = openDefinition.GetGenericArguments();
+            var bindings = new Type[parameters.Length];
+
+            if (!TryBind(openView.GetGenericArguments(), closedView.GetGenericArguments(), parameters, bindings))
                 return false;
+
+            // A view can leave parameters untouched (e.g. `Pair<TKey, TValue> : IKeyed<TKey>` seen as IKeyed<string>);
+            // an undetermined parameter is exactly what the argument-selection page exists to collect.
+            foreach (var binding in bindings)
+                if (binding is null) return false;
+
+            arguments = bindings;
+            return true;
+        }
+
+        /// <summary>
+        /// Enumerates the generic types <paramref name="openDefinition"/> is known by, still carrying its own
+        /// parameters (<c>SequenceConverters&lt;T&gt;</c> is also known as <c>IConverter&lt;T, T&gt;</c>).
+        /// </summary>
+        private static IEnumerable<Type> OpenGenericViews(Type openDefinition)
+        {
+            if (openDefinition.IsGenericType) yield return openDefinition;
+
+            for (var current = openDefinition.BaseType; current is not null; current = current.BaseType)
+                if (current.IsGenericType) yield return current;
+
+            foreach (var contract in openDefinition.GetInterfaces())
+                if (contract.IsGenericType) yield return contract;
+        }
+
+        /// <summary>
+        /// Structurally matches an open argument list against a concrete one, recording what each parameter of the
+        /// definition must be. A parameter appearing twice must resolve to the same type both times.
+        /// </summary>
+        private static bool TryBind(Type[] openArguments, Type[] concreteArguments, Type[] parameters, Type[] bindings)
+        {
+            if (openArguments.Length != concreteArguments.Length) return false;
+
+            for (var index = 0; index < openArguments.Length; index++)
+            {
+                var open = openArguments[index];
+                var concrete = concreteArguments[index];
+
+                if (open.IsGenericParameter)
+                {
+                    var parameterIndex = Array.IndexOf(parameters, open);
+                    if (parameterIndex < 0) return false;
+
+                    if (bindings[parameterIndex] is null) bindings[parameterIndex] = concrete;
+                    else if (bindings[parameterIndex] != concrete) return false;
+
+                    continue;
+                }
+
+                if (open.ContainsGenericParameters)
+                {
+                    if (!open.IsGenericType || !concrete.IsGenericType) return false;
+                    if (open.GetGenericTypeDefinition() != concrete.GetGenericTypeDefinition()) return false;
+                    if (!TryBind(open.GetGenericArguments(), concrete.GetGenericArguments(), parameters, bindings)) return false;
+
+                    continue;
+                }
+
+                if (open != concrete) return false;
             }
 
-            return fieldType.IsAssignableFrom(closed);
+            return true;
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using Aspid.FastTools.Types;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
@@ -31,6 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string BlockClass = "aspid-fasttools-serialize-reference";
         private const string EmptyClass = BlockClass + "--empty";
+        private const string ChildlessClass = BlockClass + "--childless";
         private const string DropdownClass = BlockClass + "__dropdown";
 
         // Missing stored type: tints the caption the warning amber and flips its ellipsis to the start,
@@ -327,15 +329,42 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
             {
                 enterChildren = false;
-
-                var child = iterator.Copy();
-
-                var field = new PropertyField(child);
-                field.BindProperty(child);
-
-                _content.Add(field);
+                _content.Add(CreateChildField(iterator.Copy()));
             }
+
+            // A type with no serialized fields has nothing to expand, and an empty reference has nothing yet —
+            // in both cases the arrow only promises content that never appears.
+            EnableInClassList(ChildlessClass, _content.childCount == 0);
         }
+
+        // Unity ships no type picker of its own for a managed reference, so a nested one drawn as a plain
+        // PropertyField is a dead row: no way to choose a type, and for a list no way to fill the elements the
+        // "+" adds. Nested references therefore get the same dropdown this field is — unless the child declares
+        // [TypeSelector], whose drawer already draws it and additionally narrows the candidates.
+        private static VisualElement CreateChildField(SerializedProperty child)
+        {
+            if (!DeclaresTypeSelector(child))
+            {
+                if (child.propertyType is SerializedPropertyType.ManagedReference)
+                    return new SerializeReferenceField(child.displayName, child);
+
+                if (SerializeReferenceHelpers.IsManagedReferenceArray(child))
+                {
+                    return new SerializeReferenceListField(
+                        child.displayName,
+                        child,
+                        SerializeReferenceHelpers.GetArrayElementType(child));
+                }
+            }
+
+            var field = new PropertyField(child);
+            field.BindProperty(child);
+
+            return field;
+        }
+
+        private static bool DeclaresTypeSelector(SerializedProperty property) =>
+            property.GetFieldInfo()?.IsDefined(typeof(TypeSelectorAttribute), inherit: true) ?? false;
 
         private void UpdateMixedBox(bool mixedTypes)
         {
