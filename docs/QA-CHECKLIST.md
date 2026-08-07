@@ -51,7 +51,6 @@
 - [ ] A type with no serialized fields draws no expand arrow; a type with fields still expands.
 - [ ] Nested managed references inside an assigned instance get the dropdown as well, including an array/list of them (`+` opens the picker and the appended element is fillable); a nested field declaring `[TypeSelector]` keeps its narrowing.
 - [ ] A nested child Unity has a drawer for keeps it: a `[CustomPropertyDrawer]` registered for the child's declared type still draws the row, and `[Header]` / `[Space]` / `[Tooltip]` on a nested reference render **without** costing it the dropdown.
-- [ ] A nested reference on a prefab instance shows the overridden treatment and offers Revert / Apply from its context menu.
 - [ ] Children appear on first expansion (a collapsed reference builds nothing); a deep chain stops nesting at 8 levels and falls back to Unity's drawing rather than hanging or crashing.
 - [ ] The open-script button opens a nested type (declared inside another type) at its declaration line, not just top-level types; a nested type declared in another file of a `partial` outer reports "not found" instead of opening the wrong file.
 - [ ] `ComponentTypeSelector`: picking a nested subclass either swaps the component correctly or logs "MonoScript not found" — never silently assigns the declaring type's script.

@@ -73,10 +73,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // header above a nested reference is indistinguishable from one Unity drew.
         private const string HeaderClass = "unity-header-drawer__label";
 
-        // Unity's own "this value is overridden on the prefab instance" class. The top-level field gets it from the
-        // PropertyField Unity wraps around the drawer; a nested one is not bound through that path, so it is
-        // applied here instead (see UpdatePrefabOverride).
-        private const string PrefabOverrideClass = "unity-binding--prefab-override";
+        // No prefab-override treatment is applied anywhere in this field, nested or not. Unity records an override
+        // inside a managed reference under `managedReferences[rid].<field>`, which no SerializedProperty path in the
+        // subtree matches, so `SerializedProperty.prefabOverride` reports false for every property under a
+        // [SerializeReference] — verified on 6000.4: true for an ordinary field, false for one inside a managed
+        // reference and for the reference itself. Unity's own binding reads that same flag, so there is nothing to
+        // restore here; showing the bar would mean matching the modification list by rid ourselves.
 
         private const float DropdownGap = 2f;
 
@@ -311,7 +313,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             UpdateMixedBox(mixedTypes);
             UpdateRequiredBox();
             UpdateStripe();
-            UpdatePrefabOverride();
 
             // A mixed selection never renders child fields (Unity's per-field multi-edit cannot merge different
             // types); the content is rebuilt only when the (shared) type actually changes.
@@ -322,38 +323,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _mixedTypes = mixedTypes;
                 RebuildContent(hasValue && !mixedTypes);
             }
-        }
-
-        // Unity's prefab-override treatment rides on its binding system, which a nested field never goes through:
-        // only the top-level one is wrapped in a PropertyField (by the drawer's caller), and that wrapper is what
-        // normally paints the override and offers Revert/Apply. Both are restored by hand — the bold treatment
-        // here, the menu entries in BuildContextMenu — so an override on a nested reference is neither invisible
-        // nor stuck.
-        private void UpdatePrefabOverride() =>
-            EnableInClassList(PrefabOverrideClass, _depth > 0 && IsPrefabOverride());
-
-        private bool IsPrefabOverride()
-        {
-            try { return _property.prefabOverride; }
-            catch (Exception) { return false; }
-        }
-
-        private void RevertPrefabOverride()
-        {
-            PrefabUtility.RevertPropertyOverride(_property, InteractionMode.UserAction);
-            ApplyReferenceChange();
-        }
-
-        private void ApplyPrefabOverride()
-        {
-            var root = PrefabUtility.GetNearestPrefabInstanceRoot(_property.serializedObject.targetObject);
-            if (!root) return;
-
-            var assetPath = PrefabUtility.GetPrefabAssetPathOfNearestInstanceRoot(root);
-            if (string.IsNullOrEmpty(assetPath)) return;
-
-            PrefabUtility.ApplyPropertyOverride(_property, assetPath, InteractionMode.UserAction);
-            ApplyReferenceChange();
         }
 
         // The property's SerializedObject can be torn down out from under this field (e.g. a saved-asset repair
@@ -947,15 +916,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             evt.menu.AppendAction("Paste Serialize Reference",
                 _ => PasteFromClipboard(),
                 canPaste ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
-
-            // A nested field is drawn outside Unity's binding, so the Revert/Apply entries a bound PropertyField
-            // gets for free are added here — without them an override on a nested reference cannot be undone from
-            // the inspector at all.
-            if (_depth > 0 && IsPrefabOverride())
-            {
-                evt.menu.AppendAction("Revert Property Override", _ => RevertPrefabOverride());
-                evt.menu.AppendAction("Apply Property Override to Prefab", _ => ApplyPrefabOverride());
-            }
 
             // Make-unique is single-target only; under a multi-object selection the shared notice is already suppressed.
             if (SerializeReferenceHelpers.NoticesApply(_property) &&
