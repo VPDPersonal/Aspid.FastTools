@@ -40,7 +40,7 @@
 - [ ] Current value: green ✓ + bold caption; divider between the pinned block and the namespace hierarchy.
 - [ ] The window footer and header are not squashed by content; the header has no stray corner rounding.
 - [ ] `TypeSelectorDisplay`: `Name` (rows and closed-dropdown caption, tooltip still reveals the real identity), `Group` (replaces the namespace path, segments shared between types), `Tooltip`, `Icon` (all 3 sources: IconContent / asset path / Resources).
-- [ ] `TypeSelectorDisplay(Hidden = true)`: the type is absent from the picker on every path — the plain scan, search, an injected open generic definition, and the managed-reference picker; a subclass of a hidden type is still offered, and a value already stored as the hidden type keeps rendering. Applies to an interface as well as a class/struct, and survives in a type compiled outside Unity (a precompiled `.dll`).
+- [ ] `TypeSelectorDisplay(Hidden = true)`: the type is absent from the picker on every path — the plain scan, search, an injected open generic definition, and the managed-reference picker; a subclass of a hidden type is still offered, and a value already stored as the hidden type keeps rendering. Applies to an interface as well as a class/struct.
 - [ ] `Hidden` and repair: a missing-reference **Fix** picker and the References window's bulk group fix **do** offer hidden types (data holding one must stay re-pointable), while **Smart Fix** never suggests one.
 - [ ] Disambiguation of two types sharing one display name.
 

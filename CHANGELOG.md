@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - A `[SerializeReference]` field whose type declares **no** serialized fields no longer draws an expand arrow. The arrow promised content that never appeared; it now behaves like an empty reference.
-- `[TypeSelectorDisplay]` is no longer `[Conditional("UNITY_EDITOR")]`, and now applies to interfaces as well as classes and structs. The compiler omits a conditional attribute's usages wherever the symbol is undefined at the use site, which silently erased the metadata from any assembly built outside Unity — a precompiled gameplay `.dll`. That only looked wrong for `Name`; for `Hidden` it put a type back in the picker its author had taken out.
+- `[TypeSelectorDisplay]` now applies to **interfaces** as well as classes and structs. `TypeAllow.Interface` exists to offer interfaces, so the settings — `Hidden` above all — have to be expressible on one; writing the attribute on an interface used to be compile error CS0592.
 
 ### Fixed
 

@@ -1,5 +1,6 @@
 #nullable enable
 using System;
+using System.Diagnostics;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types
@@ -26,12 +27,13 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     /// <remarks>
-    /// Deliberately <b>not</b> <c>[Conditional("UNITY_EDITOR")]</c>: the compiler drops a conditional attribute's
-    /// usages wherever the symbol is undefined at the use site, which silently erases this metadata from any
-    /// assembly built outside Unity — a precompiled gameplay <c>.dll</c>, the ordinary plugin workflow. A stripped
-    /// <see cref="Name"/> only looks wrong; a stripped <see cref="Hidden"/> puts a type back in the picker its
-    /// author took out, so the attribute has to survive into metadata to be worth declaring.
+    /// <c>[Conditional("UNITY_EDITOR")]</c> keeps this editor-only metadata out of player builds, matching the
+    /// other attributes in the package. The compiler evaluates the symbol at the <i>use</i> site, which also
+    /// means a type compiled outside Unity — a plugin <c>.dll</c> built by <c>dotnet build</c> — carries no
+    /// usage at all, so none of these settings apply to it, <see cref="Hidden"/> included. Declare the attribute
+    /// from inside the Unity project.
     /// </remarks>
+    [Conditional(conditionString: "UNITY_EDITOR")]
     [AttributeUsage(
         validOn: AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface,
         Inherited = false)]
