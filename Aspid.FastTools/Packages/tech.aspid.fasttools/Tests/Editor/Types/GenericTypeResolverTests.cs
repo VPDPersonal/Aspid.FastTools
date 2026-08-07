@@ -39,6 +39,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
     internal sealed class ResolverPair<TKey, TValue> : IResolverKeyed<TKey> { }
 
+    // One definition implemented twice with non-unifiable arguments — legal C#, and the shape that exposes any
+    // dependence on the order Type.GetInterfaces() happens to return.
+    internal interface IResolverThingOf<T> { }
+
+    internal sealed class ResolverMulti<T> : IResolverThingOf<System.Collections.Generic.List<T>>, IResolverThingOf<int> { }
+
     /// <summary>
     /// Coverage for <see cref="GenericTypeResolver"/> — pure reflection logic that gates which closed generic types the
     /// picker may instantiate. A regression here lets the picker construct a managed reference Unity silently nulls.
@@ -131,8 +137,10 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
-        public void TryInferFromFieldType_NonGenericField_Fails()
+        public void TryInferFromFieldType_FieldWithNoGenericView_Fails()
         {
+            // IResolverThing is generic in no way at all — neither itself nor through a base or interface — so
+            // there is nothing to unify against and the argument page is still needed.
             Assert.IsFalse(GenericTypeResolver.TryInferFromFieldType(typeof(IResolverThing), typeof(OpenBox<>), out var closed));
             Assert.IsNull(closed);
         }
@@ -184,6 +192,39 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 typeof(IResolverKeyed<string>), typeof(ResolverPair<,>), out var closed));
 
             Assert.IsNull(closed);
+        }
+
+        [Test]
+        public void TryInferFromFieldType_ArgumentRejectedByFilter_Fails()
+        {
+            // Inference never shows the argument page, so the predicate that page applies to its candidates has to
+            // hold here as well — otherwise a field shape that determines its arguments bypasses the rule entirely.
+            Assert.IsFalse(GenericTypeResolver.TryInferFromFieldType(
+                typeof(IResolverConverter<string, string>), typeof(ResolverSequence<>), out var closed,
+                argumentFilter: argument => argument != typeof(string)));
+
+            Assert.IsNull(closed);
+        }
+
+        [Test]
+        public void TryInferFromFieldType_ArgumentAcceptedByFilter_InfersArguments()
+        {
+            Assert.IsTrue(GenericTypeResolver.TryInferFromFieldType(
+                typeof(IResolverConverter<string, string>), typeof(ResolverSequence<>), out var closed,
+                argumentFilter: argument => argument == typeof(string)));
+
+            Assert.AreEqual(typeof(ResolverSequence<string>), closed);
+        }
+
+        [Test]
+        public void TryInferFromFieldType_DefinitionImplementedTwice_TriesEveryView()
+        {
+            // ResolverMulti<T> is known as IResolverThingOf<> twice; only one of those views binds T. Stopping at
+            // whichever one reflection lists first would make this succeed or fail non-reproducibly.
+            Assert.IsTrue(GenericTypeResolver.TryInferFromFieldType(
+                typeof(IResolverThingOf<System.Collections.Generic.List<string>>), typeof(ResolverMulti<>), out var closed));
+
+            Assert.AreEqual(typeof(ResolverMulti<string>), closed);
         }
 
         [Test]

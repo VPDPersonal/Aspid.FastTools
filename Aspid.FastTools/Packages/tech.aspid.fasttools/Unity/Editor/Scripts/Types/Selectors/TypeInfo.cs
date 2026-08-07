@@ -85,13 +85,6 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> when the type opts out of the picker via
-        /// <see cref="TypeSelectorDisplayAttribute.Hidden"/>.
-        /// </summary>
-        internal static bool IsHidden(Type type) =>
-            type.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false)?.Hidden ?? false;
-
-        /// <summary>
         /// Collects the type infos shown in the selector. <paramref name="additionalTypes"/> are appended
         /// verbatim (bypassing the base-type, name and <paramref name="allow"/> checks) so callers can inject
         /// entries — such as open generic definitions — that the standard <see cref="Type.IsAssignableFrom"/>
@@ -99,13 +92,16 @@ namespace Aspid.FastTools.Types.Editors
         /// </summary>
         /// <remarks>
         /// A <see cref="TypeSelectorDisplayAttribute.Hidden"/> type is dropped from both paths — the scan and the
-        /// injected entries — since opting out of the picker must hold however a type reaches it.
+        /// injected entries — since opting out of the picker must hold however a type reaches it. Repair pickers
+        /// pass <paramref name="includeHidden"/>: their job is to re-point data that already holds such a type, and
+        /// filtering it out there would leave the reference unfixable from the editor at all.
         /// </remarks>
         internal static List<TypeInfo> GetAllTypeInfos(
             Type[] baseTypes,
             TypeAllow allow,
             Func<Type, bool> filter = null,
-            IEnumerable<Type> additionalTypes = null)
+            IEnumerable<Type> additionalTypes = null,
+            bool includeHidden = false)
         {
             var result = new List<TypeInfo>();
 
@@ -116,7 +112,7 @@ namespace Aspid.FastTools.Types.Editors
                     !t.Name.Contains(">") &&
                     (allow.HasFlag(TypeAllow.Abstract) || t.IsInterface || !t.IsAbstract) &&
                     (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
-                    !IsHidden(t) &&
+                    (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(t)) &&
                     (filter is null || filter(t)))
                 .Select(type => new TypeInfo(type)));
 
@@ -125,7 +121,9 @@ namespace Aspid.FastTools.Types.Editors
                 var existing = new HashSet<string>(result.Select(info => info.AssemblyQualifiedName));
 
                 result.AddRange(additionalTypes
-                    .Where(type => type is not null && !IsHidden(type) && existing.Add(type.AssemblyQualifiedName))
+                    .Where(type => type is not null &&
+                        (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(type)) &&
+                        existing.Add(type.AssemblyQualifiedName))
                     .Select(type => new TypeInfo(type)));
             }
 

@@ -18,20 +18,30 @@ namespace Aspid.FastTools.Types.Editors.Tests
     [TypeSelectorDisplay(Hidden = true)]
     internal sealed class HiddenPickerBox<T> : IPickerFilterContract { }
 
-    // Hidden is not inherited, so a subclass of a hidden type is still offered.
+    // Hidden is not inherited: the subclass really derives from the hidden type, so the scan below proves the
+    // opt-out stops at the type that declared it rather than passing down the hierarchy.
     [System.Serializable]
-    internal sealed class OfferedSubtypeOfHidden : IPickerFilterContract { }
+    [TypeSelectorDisplay(Hidden = true)]
+    internal class HiddenPickerBase : IPickerFilterContract { }
+
+    [System.Serializable]
+    internal sealed class OfferedSubtypeOfHidden : HiddenPickerBase { }
 
     /// <summary>
-    /// Coverage for <see cref="TypeSelectorDisplayAttribute.Hidden"/> — a type that opts out must not reach the
-    /// picker through either path <see cref="TypeInfo.GetAllTypeInfos"/> feeds it: the domain scan or the
-    /// verbatim <c>additionalTypes</c> injection used for open generic definitions.
+    /// Coverage for <see cref="TypeSelectorDisplayAttribute.Hidden"/> — a type that opts out must not reach an
+    /// authoring picker through either path <see cref="TypeInfo.GetAllTypeInfos"/> feeds it (the domain scan or the
+    /// verbatim <c>additionalTypes</c> injection used for open generic definitions), while a repair picker asking
+    /// for <c>includeHidden</c> still sees it, or data already holding that type could never be re-pointed.
     /// </summary>
     [TestFixture]
     internal sealed class TypeSelectorPickerFilterTests
     {
         private static string[] ScanNames(params System.Type[] additionalTypes) =>
-            TypeInfo.GetAllTypeInfos(new[] { typeof(IPickerFilterContract) }, TypeAllow.None, additionalTypes: additionalTypes)
+            Scan(includeHidden: false, additionalTypes);
+
+        private static string[] Scan(bool includeHidden, params System.Type[] additionalTypes) =>
+            TypeInfo.GetAllTypeInfos(new[] { typeof(IPickerFilterContract) }, TypeAllow.None,
+                    additionalTypes: additionalTypes, includeHidden: includeHidden)
                 .Select(info => info.Name)
                 .ToArray();
 
@@ -57,11 +67,44 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
-        public void IsHidden_IsNotInherited()
+        public void GetAllTypeInfos_IncludeHidden_OffersHiddenTypesOnBothPaths()
         {
-            Assert.IsTrue(TypeInfo.IsHidden(typeof(HiddenPickerType)));
-            Assert.IsFalse(TypeInfo.IsHidden(typeof(OfferedSubtypeOfHidden)),
+            // What a repair picker sees: the same scan, minus the opt-out, on the scan and the injected path alike.
+            var names = Scan(includeHidden: true, typeof(HiddenPickerBox<>));
+
+            CollectionAssert.Contains(names, nameof(HiddenPickerType),
+                "A repair picker must be able to re-point a reference to the hidden type it already holds.");
+            CollectionAssert.Contains(names, TypeUtility.FormatGenericName(typeof(HiddenPickerBox<>)),
+                "The injected path must lift the opt-out with the scan, or the two disagree on the same picker.");
+        }
+
+        [Test]
+        public void GetAllTypeInfos_HiddenBase_StillOffersItsSubtype()
+        {
+            var names = ScanNames();
+
+            CollectionAssert.DoesNotContain(names, nameof(HiddenPickerBase));
+            CollectionAssert.Contains(names, nameof(OfferedSubtypeOfHidden),
                 "Hiding a type must never hide the types meant to be picked instead of it.");
         }
+
+        [Test]
+        public void IsHiddenFromPicker_IsNotInherited()
+        {
+            Assert.IsTrue(TypeSelectorHelpers.IsHiddenFromPicker(typeof(HiddenPickerBase)));
+            Assert.IsFalse(TypeSelectorHelpers.IsHiddenFromPicker(typeof(OfferedSubtypeOfHidden)),
+                "The attribute is declared Inherited = false, so a subclass must read as visible.");
+        }
+
+        [Test]
+        public void HiddenAttribute_AppliesToInterfaces()
+        {
+            // TypeAllow.Interface exists to offer interfaces, so the opt-out has to be expressible on one —
+            // AttributeTargets.Class does not cover interfaces, and omitting the flag makes this a compile error.
+            Assert.IsTrue(TypeSelectorHelpers.IsHiddenFromPicker(typeof(IHiddenPickerContract)));
+        }
     }
+
+    [TypeSelectorDisplay(Hidden = true)]
+    internal interface IHiddenPickerContract { }
 }

@@ -23,9 +23,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             new(PickerClass, PickerAttachedClass, NodePickingClass);
 
         // Missing card: constrained to the rid's declared field type so a repair cannot pick an incompatible type that
-        // would null on import; an unresolvable field type falls back to unconstrained.
+        // would null on import; an unresolvable field type falls back to unconstrained. Hidden types are offered here
+        // and nowhere else on this view — a repair target is not authoring, and withholding it strands the entry.
         private void OpenMissingPicker(string assetPath, long fileId, long rid, AspidGradientButton anchor) =>
-            TogglePicker(anchor, ManagedReferenceFilter.For(_constraints.Resolve(assetPath, fileId, rid)),
+            TogglePicker(anchor, ManagedReferenceFilter.For(_constraints.Resolve(assetPath, fileId, rid), includeHidden: true),
                 currentAqn: null, // a missing entry has no current value — nothing (not even <None>) wears the check
                 assemblyQualifiedName => ApplyFix(assetPath, fileId, rid, assemblyQualifiedName));
 

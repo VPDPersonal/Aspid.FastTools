@@ -26,10 +26,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly Type[] _baseTypes;
         private readonly SerializedProperty _property;
 
-        public SerializeReferenceListField(string label, SerializedProperty property, Type elementType, Type[] baseTypes = null)
+        // Carried through to the element fields so a graph nested through lists counts toward the same depth cap
+        // as one nested through plain fields — see SerializeReferenceField.
+        private readonly int _depth;
+
+        public SerializeReferenceListField(string label, SerializedProperty property, Type elementType,
+            Type[] baseTypes = null, int depth = 0)
         {
             _property = property;
             _baseTypes = baseTypes;
+            _depth = depth;
 
             this.AddClass(BlockClass);
 
@@ -77,7 +83,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var elementProperty = GetElementProperty(index);
             if (elementProperty is null) return;
 
-            element.Add(new SerializeReferenceField(elementProperty.displayName, elementProperty, _baseTypes));
+            element.Add(new SerializeReferenceField(elementProperty.displayName, elementProperty, _baseTypes, _depth));
         }
 
         // Null while the view and the data disagree (a just-removed tail element, a torn-down SerializedObject

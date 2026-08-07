@@ -20,7 +20,13 @@ namespace Aspid.FastTools.Types.Editors
         /// Falls back to scanning script text when <see cref="MonoScript.GetClass"/> yields no match,
         /// so types whose file name differs from the type name are still found. A nested type owns no script
         /// asset at all — neither the asset search nor <see cref="MonoScript.GetClass"/> can reach it — so the
-        /// lookup walks out to the declaring type, whose script is the file the nested declaration sits in.
+        /// lookup walks out to the declaring type, and accepts that script only when its text really declares
+        /// the nested type.
+        /// </remarks>
+        /// <remarks>
+        /// The result is the file a type is <i>declared in</i>, which for a nested type is not the file whose own
+        /// class it is: a caller writing the result into <c>m_Script</c> must compare
+        /// <see cref="MonoScript.GetClass"/> against the type it asked for.
         /// </remarks>
         /// <param name="type">The type to locate a script asset for.</param>
         /// <returns>
@@ -57,10 +63,16 @@ namespace Aspid.FastTools.Types.Editors
 
             // A nested type never has a script of its own: the asset search matches file names, and
             // MonoScript.GetClass() only ever reports a file's top-level type. Its declaration still lives in the
-            // declaring type's file, which the caller then scans for the nested declaration's own line.
-            return lookupType.DeclaringType is { } declaringType
-                ? declaringType.FindMonoScript()
-                : null;
+            // declaring type's file — but not always the file the declaring type resolves to: a `partial` outer is
+            // split across several, and a generated nested type has no source line anywhere. The declaring script
+            // is therefore accepted only once its text carries the nested declaration itself, so a miss keeps
+            // answering "not found" instead of pointing at an unrelated file.
+            if (lookupType.DeclaringType is not { } declaringType) return null;
+
+            var declaringScript = declaringType.FindMonoScript();
+            if (declaringScript is null || string.IsNullOrWhiteSpace(declaringScript.text)) return null;
+
+            return Regex.IsMatch(declaringScript.text, pattern) ? declaringScript : null;
         }
 
         /// <summary>

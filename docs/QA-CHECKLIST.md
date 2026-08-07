@@ -40,17 +40,21 @@
 - [ ] Current value: green ✓ + bold caption; divider between the pinned block and the namespace hierarchy.
 - [ ] The window footer and header are not squashed by content; the header has no stray corner rounding.
 - [ ] `TypeSelectorDisplay`: `Name` (rows and closed-dropdown caption, tooltip still reveals the real identity), `Group` (replaces the namespace path, segments shared between types), `Tooltip`, `Icon` (all 3 sources: IconContent / asset path / Resources).
-- [ ] `TypeSelectorDisplay(Hidden = true)`: the type is absent from the picker on every path — the plain scan, search, an injected open generic definition, and the managed-reference picker; a subclass of a hidden type is still offered, and a value already stored as the hidden type keeps rendering.
+- [ ] `TypeSelectorDisplay(Hidden = true)`: the type is absent from the picker on every path — the plain scan, search, an injected open generic definition, and the managed-reference picker; a subclass of a hidden type is still offered, and a value already stored as the hidden type keeps rendering. Applies to an interface as well as a class/struct, and survives in a type compiled outside Unity (a precompiled `.dll`).
+- [ ] `Hidden` and repair: a missing-reference **Fix** picker and the References window's bulk group fix **do** offer hidden types (data holding one must stay re-pointable), while **Smart Fix** never suggests one.
 - [ ] Disambiguation of two types sharing one display name.
 
 ## 3. SerializeReference dropdown *(2×UI throughout)*
 
 - [ ] Single field, `List<T>`/array, abstract base, interface, narrowing by base types.
 - [ ] Picking a type instantiates it; nested properties under a foldout; hover tooltip shows the full `Namespace.Class, Assembly` identity.
-- [ ] Only `[Serializable]` types are offered — a candidate without the attribute (which Unity would drop on reload) never appears in the picker.
 - [ ] A type with no serialized fields draws no expand arrow; a type with fields still expands.
 - [ ] Nested managed references inside an assigned instance get the dropdown as well, including an array/list of them (`+` opens the picker and the appended element is fillable); a nested field declaring `[TypeSelector]` keeps its narrowing.
-- [ ] The open-script button opens a nested type (declared inside another type) at its declaration line, not just top-level types.
+- [ ] A nested child Unity has a drawer for keeps it: a `[CustomPropertyDrawer]` registered for the child's declared type still draws the row, and `[Header]` / `[Space]` / `[Tooltip]` on a nested reference render **without** costing it the dropdown.
+- [ ] A nested reference on a prefab instance shows the overridden treatment and offers Revert / Apply from its context menu.
+- [ ] Children appear on first expansion (a collapsed reference builds nothing); a deep chain stops nesting at 8 levels and falls back to Unity's drawing rather than hanging or crashing.
+- [ ] The open-script button opens a nested type (declared inside another type) at its declaration line, not just top-level types; a nested type declared in another file of a `partial` outer reports "not found" instead of opening the wrong file.
+- [ ] `ComponentTypeSelector`: picking a nested subclass either swaps the component correctly or logs "MonoScript not found" — never silently assigns the declaring type's script.
 - [ ] Keep-data on type switch (fields matching by name and serialized shape carry over); nested `[SerializeReference]` children are not dropped.
 - [ ] Open generics: inference from a closed-generic field; a second in-picker page for choosing arguments honouring constraints; validation against the field type.
 - [ ] Copy/Paste via the context menu: paste creates an independent instance, disabled for an incompatible clipboard type.

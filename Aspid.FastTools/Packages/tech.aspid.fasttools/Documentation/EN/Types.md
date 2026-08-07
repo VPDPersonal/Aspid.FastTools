@@ -186,6 +186,8 @@ Use `Hidden` for a type that is assignable but not meant to be authored in the I
 public sealed class DelegateModifier : IModifier { }
 ```
 
+`Hidden` governs authoring, not recovery. A **repair** picker — the missing-reference **Fix** and the References window's bulk fix — still offers hidden types, because a reference already stored as one has to stay re-pointable. **Smart Fix**, which proposes a type rather than letting you choose, never suggests one.
+
 In the picker, the `DamageModifier` from the example above appears under `Combat/Modifiers` as "Damage ×" with its icon — next to siblings that keep their default look:
 
 ![Custom name, icon and group in the picker via TypeSelectorDisplay](../Images/aspid_fasttools_type_selector_display.png)
