@@ -1,6 +1,5 @@
 #nullable enable
 using System;
-using System.Diagnostics;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types
@@ -26,8 +25,16 @@ namespace Aspid.FastTools.Types
     /// public sealed class DelegateModifier : IModifier { }
     /// </code>
     /// </example>
-    [Conditional(conditionString: "UNITY_EDITOR")]
-    [AttributeUsage(validOn: AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
+    /// <remarks>
+    /// Deliberately <b>not</b> <c>[Conditional("UNITY_EDITOR")]</c>: the compiler drops a conditional attribute's
+    /// usages wherever the symbol is undefined at the use site, which silently erases this metadata from any
+    /// assembly built outside Unity — a precompiled gameplay <c>.dll</c>, the ordinary plugin workflow. A stripped
+    /// <see cref="Name"/> only looks wrong; a stripped <see cref="Hidden"/> puts a type back in the picker its
+    /// author took out, so the attribute has to survive into metadata to be worth declaring.
+    /// </remarks>
+    [AttributeUsage(
+        validOn: AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface,
+        Inherited = false)]
     public sealed class TypeSelectorDisplayAttribute : Attribute
     {
         /// <summary>

@@ -26,8 +26,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (_picker.ToggleClosed(button)) return;
 
+            // Every entry in the group is a missing reference, so this is a repair picker: a hidden type stays
+            // offered here, or a group stored as one could never be re-pointed.
             _picker.Open(button, new TypeSelectorView(
-                filter: ManagedReferenceFilter.For(constraint),
+                filter: ManagedReferenceFilter.For(constraint, includeHidden: true),
                 currentAqn: null, // the bulk group picker has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>
                 {

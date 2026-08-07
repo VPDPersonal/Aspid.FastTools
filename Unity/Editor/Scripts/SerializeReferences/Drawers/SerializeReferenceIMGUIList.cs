@@ -62,7 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (listProperty is null || !listProperty.isArray) return;
 
-            var list = GetOrCreate(listProperty, label, elementType, baseTypes);
+            var list = GetOrCreate(listProperty, label, elementType, baseTypes, depth: 0);
 
             // The SerializedProperty instance is rebuilt every OnInspectorGUI (a fresh iterator/FindProperty); re-point
             // the cached list at the current one so its callbacks never touch a disposed property.
@@ -70,7 +70,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             list.DoLayoutList();
         }
 
-        private static ReorderableList GetOrCreate(SerializedProperty listProperty, GUIContent label, Type elementType, Type[] baseTypes)
+        // Fixed-rect twin of Draw, for a list nested inside a managed reference the drawer is already laying out —
+        // a PropertyDrawer measures before it paints, so a layout list cannot be used there.
+        internal static void Draw(Rect position, SerializedProperty listProperty, GUIContent label, Type elementType,
+            Type[] baseTypes, int depth)
+        {
+            if (listProperty is null || !listProperty.isArray) return;
+
+            var list = GetOrCreate(listProperty, label, elementType, baseTypes, depth);
+            list.serializedProperty = listProperty;
+            list.DoList(position);
+        }
+
+        internal static float GetHeight(SerializedProperty listProperty, GUIContent label, Type elementType,
+            Type[] baseTypes, int depth)
+        {
+            if (listProperty is null || !listProperty.isArray) return 0f;
+
+            var list = GetOrCreate(listProperty, label, elementType, baseTypes, depth);
+            list.serializedProperty = listProperty;
+
+            return list.GetHeight();
+        }
+
+        private static ReorderableList GetOrCreate(SerializedProperty listProperty, GUIContent label, Type elementType,
+            Type[] baseTypes, int depth)
         {
             var serializedObject = listProperty.serializedObject;
 
@@ -113,8 +137,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             list.elementHeightCallback = index =>
             {
                 var element = list.serializedProperty.GetArrayElementAtIndex(index);
-                return EditorGUI.GetPropertyHeight(element, includeChildren: true) +
-                       EditorGUIUtility.standardVerticalSpacing * 2f;
+                return ElementHeight(element, depth) + EditorGUIUtility.standardVerticalSpacing * 2f;
             };
 
             list.drawElementCallback = (rect, index, _, _) =>
@@ -122,14 +145,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var element = list.serializedProperty.GetArrayElementAtIndex(index);
                 rect.xMin += PropertyDrawerPadding;
                 rect.y += EditorGUIUtility.standardVerticalSpacing;
-                rect.height = EditorGUI.GetPropertyHeight(element, includeChildren: true);
+                rect.height = ElementHeight(element, depth);
 
                 // Drawn through the standard field, so the element still routes through the [TypeSelector] drawer;
                 // the pushed limit tells that drawer where this row's box ends (see CurrentElementRightLimit).
                 _elementRightLimits.Push(boxRightEdge);
                 try
                 {
-                    EditorGUI.PropertyField(rect, element, new GUIContent($"Element {index}"), includeChildren: true);
+                    var content = new GUIContent($"Element {index}");
+
+                    // A list reached by nesting has no [TypeSelector] on its elements for Unity to route through,
+                    // so the header is drawn here instead — the same choice the UIToolkit list makes for its rows.
+                    if (SerializeReferenceNesting.DrawsOwnHeader(element, depth))
+                        SerializeReferenceIMGUIPropertyDrawer.Draw(rect, content, element, depth + 1, baseTypes);
+                    else
+                        EditorGUI.PropertyField(rect, element, content, includeChildren: true);
                 }
                 finally
                 {
@@ -151,6 +181,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Lists[key] = list;
             return list;
         }
+
+        // Measured the same way the row is drawn, or the reserved rect and the painted content disagree.
+        private static float ElementHeight(SerializedProperty element, int depth) =>
+            SerializeReferenceNesting.DrawsOwnHeader(element, depth)
+                ? SerializeReferenceIMGUIPropertyDrawer.GetHeight(element, depth + 1)
+                : EditorGUI.GetPropertyHeight(element, includeChildren: true);
 
         private static void EvictDeadEntries()
         {

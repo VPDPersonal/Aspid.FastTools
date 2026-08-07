@@ -12,9 +12,10 @@ namespace Aspid.FastTools.Types.Editors
             TypeAllow allow,
             Func<Type, bool> filter = null,
             IEnumerable<Type> additionalTypes = null,
-            bool includeNoneOption = true)
+            bool includeNoneOption = true,
+            bool includeHidden = false)
         {
-            var allTypes = TypeInfo.GetAllTypeInfos(types, allow, filter, additionalTypes);
+            var allTypes = TypeInfo.GetAllTypeInfos(types, allow, filter, additionalTypes, includeHidden);
 
             var root = new TreeNode("/");
 

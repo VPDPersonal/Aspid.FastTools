@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEngine;
 using System.Reflection;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -103,6 +104,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Same eligibility rules the type picker enforces, so a suggestion can never be a type the field would refuse.
+        // [TypeSelectorDisplay(Hidden = true)] is honoured here even though the repair PICKER offers such types: the
+        // picker answers a choice the user made, whereas a suggestion is the package proposing a type — and proposing
+        // one the author took out of circulation, on a control that applies it in a single click, is not a repair the
+        // package gets to volunteer.
         private static IEnumerable<Type> EnumerateCandidates(Type constraint)
         {
             var pool = constraint == typeof(object)
@@ -112,6 +117,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var type in pool)
             {
                 if (!SerializeReferenceHelpers.IsAssignableManagedReference(type)) continue;
+                if (TypeSelectorHelpers.IsHiddenFromPicker(type)) continue;
                 if (constraint != typeof(object) && !constraint.IsAssignableFrom(type)) continue;
                 yield return type;
             }

@@ -60,8 +60,15 @@ namespace Aspid.FastTools.Types.Editors
         /// itself: a non-generic <c>IConverterString : IConverter&lt;string, string&gt;</c> field still determines
         /// <c>T</c> of a <c>SequenceConverters&lt;T&gt; : IConverter&lt;T, T&gt;</c> candidate — one parameter
         /// bound from two arguments, which positional copying cannot express.
+        /// <para>
+        /// <paramref name="argumentFilter"/> is the same predicate the argument-selection page applies to the
+        /// types it offers. Inference emits its result without ever showing that page, so the predicate has to be
+        /// enforced here too, or a field shape that happens to determine its arguments would silently accept what
+        /// the manual path refuses.
+        /// </para>
         /// </remarks>
-        internal static bool TryInferFromFieldType(Type fieldType, Type openDefinition, out Type closed)
+        internal static bool TryInferFromFieldType(Type fieldType, Type openDefinition, out Type closed,
+            Func<Type, bool> argumentFilter = null)
         {
             closed = null;
 
@@ -69,7 +76,7 @@ namespace Aspid.FastTools.Types.Editors
 
             foreach (var view in ClosedGenericViews(fieldType))
             {
-                if (!TryBindParameters(openDefinition, view, out var arguments)) continue;
+                if (!TryBindParameters(openDefinition, view, argumentFilter, out var arguments)) continue;
                 if (TryConstruct(openDefinition, arguments, new[] { fieldType }, out closed, out _)) return true;
             }
 
@@ -98,28 +105,55 @@ namespace Aspid.FastTools.Types.Editors
         /// <paramref name="closedView"/>'s definition — as <paramref name="openDefinition"/> implements it —
         /// with <paramref name="closedView"/>'s own arguments.
         /// </summary>
-        private static bool TryBindParameters(Type openDefinition, Type closedView, out Type[] arguments)
+        /// <remarks>
+        /// One definition can be implemented more than once (<c>Multi&lt;T&gt; : IThing&lt;List&lt;T&gt;&gt;,
+        /// IThing&lt;int&gt;</c>), and <see cref="Type.GetInterfaces"/> returns interfaces in no particular order,
+        /// so every matching view is tried: settling for the first would make inference depend on reflection
+        /// order and behave differently between recompiles or machines.
+        /// </remarks>
+        private static bool TryBindParameters(Type openDefinition, Type closedView, Func<Type, bool> argumentFilter,
+            out Type[] arguments)
         {
             arguments = null;
 
             var viewDefinition = closedView.GetGenericTypeDefinition();
-            var openView = OpenGenericViews(openDefinition)
-                .FirstOrDefault(view => view.GetGenericTypeDefinition() == viewDefinition);
-
-            if (openView is null) return false;
-
             var parameters = openDefinition.GetGenericArguments();
-            var bindings = new Type[parameters.Length];
 
-            if (!TryBind(openView.GetGenericArguments(), closedView.GetGenericArguments(), parameters, bindings))
-                return false;
+            foreach (var openView in OpenGenericViews(openDefinition))
+            {
+                if (openView.GetGenericTypeDefinition() != viewDefinition) continue;
 
-            // A view can leave parameters untouched (e.g. `Pair<TKey, TValue> : IKeyed<TKey>` seen as IKeyed<string>);
-            // an undetermined parameter is exactly what the argument-selection page exists to collect.
+                var bindings = new Type[parameters.Length];
+                if (!TryBind(openView.GetGenericArguments(), closedView.GetGenericArguments(), parameters, bindings))
+                    continue;
+
+                if (!IsFullyBound(bindings)) continue;
+                if (!PassesArgumentFilter(bindings, argumentFilter)) continue;
+
+                arguments = bindings;
+                return true;
+            }
+
+            return false;
+        }
+
+        // A view can leave parameters untouched (e.g. `Pair<TKey, TValue> : IKeyed<TKey>` seen as IKeyed<string>);
+        // an undetermined parameter is exactly what the argument-selection page exists to collect.
+        private static bool IsFullyBound(Type[] bindings)
+        {
             foreach (var binding in bindings)
                 if (binding is null) return false;
 
-            arguments = bindings;
+            return true;
+        }
+
+        private static bool PassesArgumentFilter(Type[] bindings, Func<Type, bool> argumentFilter)
+        {
+            if (argumentFilter is null) return true;
+
+            foreach (var binding in bindings)
+                if (!argumentFilter(binding)) return false;
+
             return true;
         }
 

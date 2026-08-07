@@ -78,6 +78,7 @@ namespace Aspid.FastTools.Types.Editors
         private readonly Func<Type, bool> _argumentFilter;
         private readonly Type[] _fieldTypes;
         private readonly string _currentAqn;
+        private readonly bool _includeHidden;
 
         private NavigationController Nav => _pages[^1].Navigation;
 
@@ -104,10 +105,12 @@ namespace Aspid.FastTools.Types.Editors
             // and currently holds <None>. Only the latter may put the current-value check on the <None> row.
             _currentAqn = currentAqn;
             _fieldTypes = types;
+            _includeHidden = filter.IncludeHidden;
 
             BuildUI();
 
-            var hierarchy = HierarchyBuilder.Build(types, filter.Allow, filter.Predicate, filter.AdditionalTypes);
+            var hierarchy = HierarchyBuilder.Build(types, filter.Allow, filter.Predicate, filter.AdditionalTypes,
+                includeHidden: _includeHidden);
             var navigation = new NavigationController(hierarchy, composeSections: true);
 
             if (!string.IsNullOrWhiteSpace(_currentAqn))

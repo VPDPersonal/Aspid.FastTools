@@ -27,5 +27,15 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.IsNotNull(script);
             StringAssert.Contains(nameof(MonoScriptLookupFixtures), UnityEditor.AssetDatabase.GetAssetPath(script));
         }
+
+        [Test]
+        public void FindMonoScript_NestedTypeDeclaredElsewhere_ReportsNotFound()
+        {
+            // Detached sits in the other half of the partial fixture, so the declaring type's script does not
+            // contain its declaration. Answering with that script would send the open-script button to line 1 of a
+            // file the type is not in — a wrong answer is worse than the warning a null produces.
+            Assert.IsNull(typeof(MonoScriptLookupFixtures.Detached).FindMonoScript(),
+                "A declaring script that does not declare the nested type must not be offered as its script.");
+        }
     }
 }

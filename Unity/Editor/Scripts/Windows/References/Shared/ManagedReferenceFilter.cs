@@ -15,7 +15,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// close over it. A <see langword="null"/> or <see cref="object"/> constraint falls back to unconstrained
         /// (any managed-reference type).
         /// </summary>
-        public static TypeSelectorFilter For(Type constraint)
+        /// <param name="constraint">The declared field type the candidates must be assignable to.</param>
+        /// <param name="includeHidden">
+        /// Pass <see langword="true"/> from a picker that <b>repairs</b> an entry — a missing card or a bulk group
+        /// fix. A <c>[TypeSelectorDisplay(Hidden = true)]</c> type is withheld from authoring, but data already
+        /// holding it has to stay re-pointable, or the gate keeps failing with no way to clear it.
+        /// </param>
+        public static TypeSelectorFilter For(Type constraint, bool includeHidden = false)
         {
             var baseType = constraint ?? typeof(object);
 
@@ -25,6 +31,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Predicate = SerializeReferenceHelpers.IsAssignableManagedReference,
                 AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
                 ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
+                IncludeHidden = includeHidden,
             };
         }
     }
