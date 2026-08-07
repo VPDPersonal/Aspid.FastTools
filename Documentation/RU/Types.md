@@ -158,7 +158,7 @@ public sealed class Loadout : MonoBehaviour
 
 ## TypeSelectorDisplay
 
-Пометьте тип-кандидат атрибутом `[TypeSelectorDisplay]`, чтобы настроить, как он показывается в селекторе — это editor-only атрибут (`[Conditional("UNITY_EDITOR")]`) в `Aspid.FastTools.Types`, не несущий стоимости в рантайме:
+Пометьте тип-кандидат атрибутом `[TypeSelectorDisplay]`, чтобы настроить, как он показывается в селекторе — это editor-only атрибут (`[Conditional("UNITY_EDITOR")]`) в `Aspid.FastTools.Types`, не несущий стоимости в рантайме. Компилятор проверяет это условие там, где атрибут *написан*, поэтому объявляйте его внутри Unity-проекта: у типа, собранного вне Unity (плагин-`.dll` из `dotnet build`), не действует ни одна из этих настроек, включая `Hidden`.
 
 ```csharp
 using Aspid.FastTools.Types;

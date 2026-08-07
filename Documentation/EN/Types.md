@@ -157,7 +157,7 @@ The referenced member must be an instance field or property of type `Type`, `str
 
 ## TypeSelectorDisplay
 
-Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost:
+Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost. The compiler evaluates that condition where the attribute is *written*, so declare it from inside the Unity project: a type compiled outside Unity — a plugin `.dll` built by `dotnet build` — carries none of these settings, `Hidden` included.
 
 ```csharp
 using Aspid.FastTools.Types;
