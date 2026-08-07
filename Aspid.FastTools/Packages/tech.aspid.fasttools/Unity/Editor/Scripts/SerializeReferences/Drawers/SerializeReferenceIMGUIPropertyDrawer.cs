@@ -14,7 +14,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// </summary>
     internal static class SerializeReferenceIMGUIPropertyDrawer
     {
-        public static float GetHeight(SerializedProperty property)
+        public static float GetHeight(SerializedProperty property) => GetHeight(property, depth: 0);
+
+        // depth counts the managed-reference levels between this row and the field the drawer was invoked on; see
+        // SerializeReferenceNesting.
+        internal static float GetHeight(SerializedProperty property, int depth)
         {
             var spacing = EditorGUIUtility.standardVerticalSpacing;
             var height = EditorGUIUtility.singleLineHeight;
@@ -38,12 +42,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             if (property.managedReferenceValue is not null && property.isExpanded)
-                height += GetChildrenHeight(property, spacing);
+                height += GetChildrenHeight(property, spacing, depth);
 
             return height;
         }
 
-        public static void Draw(Rect position, GUIContent label, SerializedProperty property, params Type[] baseTypes)
+        public static void Draw(Rect position, GUIContent label, SerializedProperty property, params Type[] baseTypes) =>
+            Draw(position, label, property, depth: 0, baseTypes);
+
+        internal static void Draw(Rect position, GUIContent label, SerializedProperty property, int depth, Type[] baseTypes)
         {
             // Auto-de-alias a freshly duplicated list element: on a rid collision within the array, the guard queues a
             // swap to an independent clone on the next editor tick — never mutating the SerializedObject mid-draw.
@@ -104,14 +111,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
             }
 
+            // A type with no serialized fields has nothing to expand — the arrow would only promise content that
+            // never appears — so it is drawn flat, matching the UIToolkit field's --childless modifier.
+            var expandable = hasValue && SerializeReferenceNesting.HasVisibleChildren(property);
+
             var labelRect = new Rect(line.x, line.y, EditorGUIUtility.labelWidth, line.height);
-            if (hasValue)
+            if (expandable)
             {
                 property.isExpanded = EditorGUI.Foldout(labelRect, property.isExpanded, label, toggleOnLabelClick: true);
             }
             else
             {
-                // A flat (missing / required) field has no foldout arrow — pull its label left onto the arrow's spot.
+                // A flat (missing / required / childless) field has no foldout arrow — pull its label left onto
+                // the arrow's spot.
                 var labelPull = flat ? FoldoutArrowIndent : 0f;
                 EditorGUI.LabelField(new Rect(labelRect.x - labelPull, labelRect.y,
                     labelRect.width + labelPull, labelRect.height), label);
@@ -256,10 +268,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
-            if (hasValue && property.isExpanded)
+            if (expandable && property.isExpanded)
             {
                 EditorGUI.indentLevel++;
-                DrawChildren(property, body.x, body.width, spacing, ref y);
+                DrawChildren(property, body.x, body.width, spacing, ref y, depth);
                 EditorGUI.indentLevel--;
             }
 
@@ -318,7 +330,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        private static void DrawChildren(SerializedProperty property, float x, float width, float spacing, ref float y)
+        private static void DrawChildren(SerializedProperty property, float x, float width, float spacing, ref float y, int depth)
         {
             var iterator = property.Copy();
             var end = property.GetEndProperty();
@@ -328,13 +340,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 enterChildren = false;
 
+                var child = iterator.Copy();
+
+                // A nested managed reference (or a list of them) gets this package's own header, matching the
+                // UIToolkit field: Unity ships no picker of its own, so PropertyField would draw a row with no way
+                // to choose a type — and a list whose "+" appends elements nothing can fill.
+                if (SerializeReferenceNesting.DrawsOwnHeader(child, depth))
+                {
+                    var nestedHeight = ChildHeight(child, depth);
+                    var nestedRect = new Rect(x, y, width, nestedHeight);
+                    var content = new GUIContent(child.displayName);
+
+                    if (child.isArray)
+                    {
+                        SerializeReferenceIMGUIList.Draw(nestedRect, child, content,
+                            SerializeReferenceHelpers.GetArrayElementType(child), Array.Empty<Type>(), depth + 1);
+                    }
+                    else
+                    {
+                        Draw(nestedRect, content, child, depth + 1, Array.Empty<Type>());
+                    }
+
+                    y += nestedHeight + spacing;
+                    continue;
+                }
+
                 var height = EditorGUI.GetPropertyHeight(iterator, includeChildren: true);
                 EditorGUI.PropertyField(new Rect(x, y, width, height), iterator, includeChildren: true);
                 y += height + spacing;
             }
         }
 
-        private static float GetChildrenHeight(SerializedProperty property, float spacing)
+        private static float GetChildrenHeight(SerializedProperty property, float spacing, int depth)
         {
             var height = 0f;
             var iterator = property.Copy();
@@ -344,10 +381,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
             {
                 enterChildren = false;
-                height += EditorGUI.GetPropertyHeight(iterator, includeChildren: true) + spacing;
+                height += ChildHeight(iterator.Copy(), depth) + spacing;
             }
 
             return height;
+        }
+
+        // Measured exactly as DrawChildren draws, or the reserved space and the painted rows drift apart.
+        private static float ChildHeight(SerializedProperty child, int depth)
+        {
+            if (!SerializeReferenceNesting.DrawsOwnHeader(child, depth))
+                return EditorGUI.GetPropertyHeight(child, includeChildren: true);
+
+            return child.isArray
+                ? SerializeReferenceIMGUIList.GetHeight(child, new GUIContent(child.displayName),
+                    SerializeReferenceHelpers.GetArrayElementType(child), Array.Empty<Type>(), depth + 1)
+                : GetHeight(child, depth + 1);
         }
 
         private static void ShowSelector(SerializedProperty property, Type fieldType, Type[] baseTypes, Type currentType, Rect dropdownRect)

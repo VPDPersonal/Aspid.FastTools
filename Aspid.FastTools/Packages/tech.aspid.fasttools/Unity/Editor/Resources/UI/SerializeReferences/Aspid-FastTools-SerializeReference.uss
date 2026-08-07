@@ -42,10 +42,14 @@
     color:                                                  var(--aspid-colors-status-warning-text-light);
 }
 
-/* Collapse the expand arrow when the reference is empty — there is nothing to expand. display:none (not just
-   visibility:hidden) so the arrow reserves NO space either, letting the label slide left to hug the status stripe
-   instead of trailing behind an empty arrow slot (matches the IMGUI drawer's flat missing / required layout). */
+/* Collapse the expand arrow when there is nothing to expand: the reference is empty, or the assigned type declares
+   no serialized fields at all. display:none (not just visibility:hidden) so the arrow reserves NO space either,
+   letting the label slide left to hug the status stripe instead of trailing behind an empty arrow slot (matches the
+   IMGUI drawer's flat missing / required layout). */
 .aspid-fasttools-serialize-reference--empty
+    .unity-foldout__toggle
+    .unity-foldout__checkmark,
+.aspid-fasttools-serialize-reference--childless
     .unity-foldout__toggle
     .unity-foldout__checkmark {
     display:                                                none;

@@ -7,7 +7,8 @@ namespace Aspid.FastTools.Types
 {
     /// <summary>
     /// Supplies presentation metadata for a type shown in the type-selector window: a display name,
-    /// a picker group, a tooltip and an icon.
+    /// a picker group, a tooltip and an icon — or, with <see cref="Hidden"/>, keeps the type out of the
+    /// picker altogether.
     /// </summary>
     /// <example>
     /// Rename the type in the picker, place it under an explicit group and give it a tooltip and an icon:
@@ -19,9 +20,23 @@ namespace Aspid.FastTools.Types
     ///     Icon = "d_ScriptableObject Icon")]
     /// public sealed class DamageModifier { }
     /// </code>
+    /// Keep an adapter that only makes sense from code out of the picker:
+    /// <code>
+    /// [TypeSelectorDisplay(Hidden = true)]
+    /// public sealed class DelegateModifier : IModifier { }
+    /// </code>
     /// </example>
+    /// <remarks>
+    /// <c>[Conditional("UNITY_EDITOR")]</c> keeps this editor-only metadata out of player builds, matching the
+    /// other attributes in the package. The compiler evaluates the symbol at the <i>use</i> site, which also
+    /// means a type compiled outside Unity — a plugin <c>.dll</c> built by <c>dotnet build</c> — carries no
+    /// usage at all, so none of these settings apply to it, <see cref="Hidden"/> included. Declare the attribute
+    /// from inside the Unity project.
+    /// </remarks>
     [Conditional(conditionString: "UNITY_EDITOR")]
-    [AttributeUsage(validOn: AttributeTargets.Class | AttributeTargets.Struct, Inherited = false)]
+    [AttributeUsage(
+        validOn: AttributeTargets.Class | AttributeTargets.Struct | AttributeTargets.Interface,
+        Inherited = false)]
     public sealed class TypeSelectorDisplayAttribute : Attribute
     {
         /// <summary>
@@ -54,5 +69,17 @@ namespace Aspid.FastTools.Types
         /// <see langword="null"/> means no icon.
         /// </summary>
         public string? Icon { get; set; }
+
+        /// <summary>
+        /// When <see langword="true"/>, the picker never offers this type — for types that are technically
+        /// assignable but not meant to be authored in the Inspector, such as a delegate-backed adapter or a
+        /// base implementation kept only for code. Assigning the type from code is unaffected, and a value
+        /// already stored in a field keeps rendering.
+        /// </summary>
+        /// <remarks>
+        /// Not inherited, matching this attribute's <see cref="AttributeUsage"/>: hiding a base type never hides
+        /// the subclasses meant to be picked instead of it.
+        /// </remarks>
+        public bool Hidden { get; set; }
     }
 }

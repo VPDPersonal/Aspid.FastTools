@@ -41,5 +41,12 @@ namespace Aspid.FastTools.Types.Editors
         /// <c>null</c> to accept any constraint-satisfying type.
         /// </summary>
         public Func<Type, bool> ArgumentFilter { get; set; }
+
+        /// <summary>
+        /// Includes types marked <c>[TypeSelectorDisplay(Hidden = true)]</c>, which the picker leaves out by default.
+        /// Set it only on a picker that <b>repairs</b> a reference rather than authors one: hiding a type means "do
+        /// not offer this for new work", not "make existing data holding it unfixable".
+        /// </summary>
+        public bool IncludeHidden { get; set; }
     }
 }

@@ -41,6 +41,37 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static Type GetCurrentType(SerializedProperty property) =>
             property.managedReferenceValue?.GetType();
 
+        // SerializedProperty.arrayElementType for a [SerializeReference] array/list — the only array shape whose
+        // elements are managed references.
+        private const string ManagedReferenceElementPrefix = "managedReference<";
+
+        /// <summary>
+        /// Returns <see langword="true"/> when <paramref name="property"/> is an array or list whose elements are
+        /// managed references.
+        /// </summary>
+        public static bool IsManagedReferenceArray(SerializedProperty property) =>
+            property is { isArray: true, propertyType: not SerializedPropertyType.String } &&
+            property.arrayElementType.StartsWith(ManagedReferenceElementPrefix, StringComparison.Ordinal);
+
+        /// <summary>
+        /// The declared element type of a managed-reference list/array — what constrains the add-picker on a list
+        /// that may currently be empty (a non-empty list's elements resolve their own field type). Read from the
+        /// reflected field's array/List&lt;T&gt; shape; falls back to the first element's declared typename, then to
+        /// <see cref="object"/>.
+        /// </summary>
+        public static Type GetArrayElementType(SerializedProperty property)
+        {
+            if (property.GetFieldInfo() is { } field)
+            {
+                var elementType = field.FieldType.GetCollectionElementTypeOrSelf();
+                if (elementType != field.FieldType) return elementType;
+            }
+
+            return property.arraySize > 0
+                ? GetFieldType(property.GetArrayElementAtIndex(0))
+                : typeof(object);
+        }
+
         #region Project scan helpers
         /// <summary>
         /// Returns <see langword="true"/> when <paramref name="path"/> is a project asset whose extension can host
@@ -323,6 +354,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// Predicate identifying types that can legally be assigned to a <c>[SerializeReference]</c> field:
         /// concrete reference types that are neither <see cref="Object"/>, open generics, strings, nor delegates.
         /// </summary>
+        /// <remarks>
+        /// Deliberately does <b>not</b> require <see cref="SerializableAttribute"/>: unlike an ordinary nested
+        /// field, a managed reference is serialized through the asset's <c>references</c> registry, which records
+        /// the concrete type identity and its data with no attribute involved. Requiring the attribute here would
+        /// also narrow the callers that ask the structural question rather than the picker one —
+        /// <see cref="SerializeReferenceMovedFromResolver"/>'s rename migration and the drag-drop handler.
+        /// The attribute <i>is</i> required of a generic argument, which lands in an ordinary field; that rule
+        /// lives in <see cref="IsValidGenericArgument"/>.
+        /// </remarks>
         public static bool IsAssignableManagedReference(Type type) =>
             type is { IsClass: true, IsAbstract: false, ContainsGenericParameters: false } &&
             type != typeof(string) &&
@@ -800,6 +840,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// chosen type is written into the asset YAML (re-pointing the reference and keeping its stored data);
         /// <paramref name="onFixed"/> runs on success.
         /// </summary>
+        /// <remarks>
+        /// Unlike the authoring dropdown, this picker also offers <c>[TypeSelectorDisplay(Hidden = true)]</c> types:
+        /// the field already holds data whose type no longer resolves, and a hidden type may be exactly what it
+        /// should become. Hiding governs what may be authored, not what a broken reference may be repaired to.
+        /// </remarks>
         public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed, Type[] baseTypes = null)
         {
             var fieldType = GetFieldType(property);
@@ -812,6 +857,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     Predicate = BuildAssignableFilter(baseTypes),
                     AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes),
                     ArgumentFilter = IsValidGenericArgument,
+                    IncludeHidden = true,
                 },
                 currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>

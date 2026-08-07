@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`[TypeSelectorDisplay(Hidden = true)]`** keeps a type out of the picker entirely — for types that are technically assignable but not meant to be authored in the Inspector (a delegate-backed adapter, a test double, a base implementation kept for code). It applies to both paths the picker collects from — the domain scan and the injected open generic definitions — and is not inherited, so hiding a base type never hides the subclasses meant to replace it. Assigning such a type from code is unaffected and an already stored value keeps rendering. Hiding governs **authoring**, not recovery: a missing-reference **Fix** picker and the References window's bulk fix still offer hidden types, so data already holding one stays repairable, while **Smart Fix** — a type the package proposes rather than one you chose — never suggests one.
+
+### Changed
+
+- A `[SerializeReference]` field whose type declares **no** serialized fields no longer draws an expand arrow. The arrow promised content that never appeared; it now behaves like an empty reference.
+- `[TypeSelectorDisplay]` now applies to **interfaces** as well as classes and structs. `TypeAllow.Interface` exists to offer interfaces, so the settings — `Hidden` above all — have to be expressible on one; writing the attribute on an interface used to be compile error CS0592.
+
+### Fixed
+
+- **Nested managed references get the type dropdown too**, in both inspector modes. An assigned instance's own `[SerializeReference]` fields (and arrays/lists of them) were drawn as plain `PropertyField`s — and since Unity ships no type picker of its own, those were dead rows: no way to choose a type, and for a list no way to fill the elements `+` added. Unity keeps the row wherever it has something of its own to draw with — a `[TypeSelector]` on the child, or a `[CustomPropertyDrawer]` registered for its type — so a custom drawer is never replaced; `[Header]`, `[Space]` and `[Tooltip]` are re-emitted, so adding one never costs the field its dropdown. Nesting follows the graph 8 levels deep, past which Unity's own drawing resumes: a managed-reference graph may be cyclic, and an unbounded descent would take the Editor down with it.
+- **Children of an assigned instance are built on first expansion** rather than with the field. Every level re-ran the full notice pass — a missing-type probe against the asset YAML, the required gate, a repair suggestion — and then descended into its own children, so selecting an object or switching a type paid for the whole subtree whether or not it was ever opened.
+- **Open generic arguments are inferred through the field's interfaces**, not only from the field's own type arguments. A field declared as `IConverter<string, string>` now closes a `SequenceConverters<T> : IConverter<T, T>` candidate directly — one parameter bound from two arguments, which the previous positional copy could not express, so the picker fell back to asking for `T` on a second page. Inference still refuses anything that violates a constraint, is not assignable to the field, or would use an argument the argument-selection page itself would not offer. A candidate implementing one generic interface twice is unified against every view it presents, instead of whichever one reflection happened to list first.
+- **The open-script button works for nested types.** A nested type owns no script asset — the asset search matches file names and `MonoScript.GetClass()` only reports a file's top-level type — so the button silently did nothing. The lookup now walks out to the declaring type and, once that file really declares the nested type, jumps to the declaration's own line; a `partial` outer split across files still reports "not found" rather than opening the wrong one.
+
 ## [1.0.0-rc.6] — 2026-08-06
 
 This release is centred on the **SerializeReference toolchain**: `[TypeSelector]` now drives managed-reference and `SerializableType` fields, a repair/diagnostics workbench finds and fixes missing managed references project-wide, and a build/CI gate keeps them out of builds.

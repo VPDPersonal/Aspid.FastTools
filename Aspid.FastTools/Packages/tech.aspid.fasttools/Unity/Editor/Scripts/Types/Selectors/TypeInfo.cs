@@ -90,11 +90,18 @@ namespace Aspid.FastTools.Types.Editors
         /// entries — such as open generic definitions — that the standard <see cref="Type.IsAssignableFrom"/>
         /// scan cannot match.
         /// </summary>
+        /// <remarks>
+        /// A <see cref="TypeSelectorDisplayAttribute.Hidden"/> type is dropped from both paths — the scan and the
+        /// injected entries — since opting out of the picker must hold however a type reaches it. Repair pickers
+        /// pass <paramref name="includeHidden"/>: their job is to re-point data that already holds such a type, and
+        /// filtering it out there would leave the reference unfixable from the editor at all.
+        /// </remarks>
         internal static List<TypeInfo> GetAllTypeInfos(
             Type[] baseTypes,
             TypeAllow allow,
             Func<Type, bool> filter = null,
-            IEnumerable<Type> additionalTypes = null)
+            IEnumerable<Type> additionalTypes = null,
+            bool includeHidden = false)
         {
             var result = new List<TypeInfo>();
 
@@ -105,6 +112,7 @@ namespace Aspid.FastTools.Types.Editors
                     !t.Name.Contains(">") &&
                     (allow.HasFlag(TypeAllow.Abstract) || t.IsInterface || !t.IsAbstract) &&
                     (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
+                    (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(t)) &&
                     (filter is null || filter(t)))
                 .Select(type => new TypeInfo(type)));
 
@@ -113,7 +121,9 @@ namespace Aspid.FastTools.Types.Editors
                 var existing = new HashSet<string>(result.Select(info => info.AssemblyQualifiedName));
 
                 result.AddRange(additionalTypes
-                    .Where(type => type is not null && existing.Add(type.AssemblyQualifiedName))
+                    .Where(type => type is not null &&
+                        (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(type)) &&
+                        existing.Add(type.AssemblyQualifiedName))
                     .Select(type => new TypeInfo(type)));
             }
 

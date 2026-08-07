@@ -53,6 +53,19 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> when <paramref name="value"/> opts out of the picker via
+        /// <see cref="TypeSelectorDisplayAttribute.Hidden"/>.
+        /// </summary>
+        /// <remarks>
+        /// Governs what may be <b>authored</b>, not what may be repaired: a picker re-pointing a broken reference
+        /// deliberately ignores this (see <c>TypeSelectorFilter.IncludeHidden</c>), while the Smart Fix suggestion —
+        /// a type the package proposes rather than one the user chose — honours it. Not inherited, so hiding a base
+        /// type leaves the subclasses meant to replace it offered.
+        /// </remarks>
+        internal static bool IsHiddenFromPicker(Type value) =>
+            value?.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false)?.Hidden ?? false;
+
+        /// <summary>
         /// Formats a caption for the type-selector dropdown.
         /// Returns the type's <see cref="TypeSelectorDisplayAttribute.Name"/> override (or its short name)
         /// when <paramref name="value"/> is resolved, a <c>&lt;Missing ...&gt;</c> marker when the

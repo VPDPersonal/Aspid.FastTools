@@ -62,8 +62,9 @@ see [TypeSelectorAttribute](Types.md#typeselectorattribute).
 
 | Feature | What it does |
 |---|---|
-| **Implementation picking** | The list shows concrete non-`UnityEngine.Object` classes compatible with the field type. `[TypeSelector(typeof(IMelee))]` narrows it to `IMelee` implementations. |
-| **Open generics** | `Modifier<T>` and friends: arguments are inferred from a closed generic field, or picked on the selector's second page. |
+| **Implementation picking** | The list shows concrete non-`UnityEngine.Object` classes compatible with the field type. `[TypeSelector(typeof(IMelee))]` narrows it to `IMelee` implementations, and `[TypeSelectorDisplay(Hidden = true)]` keeps an individual type out of the picker. |
+| **Open generics** | `Modifier<T>` and friends: arguments are inferred from the field — including through the interfaces it implements, so an `IConverter<string, string>` field closes a `Sequence<T> : IConverter<T, T>` candidate directly — or picked on the selector's second page when the field leaves a parameter undetermined. |
+| **Nested references** | A `[SerializeReference]` field (or array/list) *inside* the assigned instance gets the same dropdown, so a graph can be authored all the way down without annotating every level — 8 levels deep, past which Unity's own drawing resumes. A child Unity already has a drawer for (its own `[TypeSelector]`, or a `[CustomPropertyDrawer]` registered for its type) keeps that drawer. |
 | **Data preservation** | On a type switch, fields matching by name and serialized shape carry over instead of resetting to defaults. |
 | **Copy / Paste** | Right-clicking the header copies the value and pastes it as an independent instance into any compatible field. |
 | **Multi-selection** | A mixed selection shows a mixed dropdown state; a pick or paste applies to every object in a single Undo group. |

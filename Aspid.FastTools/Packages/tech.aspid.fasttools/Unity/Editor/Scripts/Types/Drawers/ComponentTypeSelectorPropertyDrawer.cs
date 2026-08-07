@@ -77,7 +77,11 @@ namespace Aspid.FastTools.Types.Editors
 
             var script = newType.FindMonoScript();
 
-            if (script is null)
+            // FindMonoScript answers with the file a type is DECLARED in, which for a nested type is the declaring
+            // type's file. m_Script must name the script whose own class is the component, so a script reporting a
+            // different class is a miss, not a near-miss: writing it would swap the component for another class and
+            // reinterpret its serialized data without a word.
+            if (script is null || script.GetClass() != newType)
             {
                 Debug.LogWarning($"[ComponentTypeSelector] MonoScript not found for type: {newType.AssemblyQualifiedName}");
                 return;

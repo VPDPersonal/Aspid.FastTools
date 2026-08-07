@@ -1,6 +1,7 @@
 using System;
 using UnityEditor;
 using UnityEngine;
+using System.Reflection;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using Aspid.FastTools.Editors;
@@ -31,6 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string BlockClass = "aspid-fasttools-serialize-reference";
         private const string EmptyClass = BlockClass + "--empty";
+        private const string ChildlessClass = BlockClass + "--childless";
         private const string DropdownClass = BlockClass + "__dropdown";
 
         // Missing stored type: tints the caption the warning amber and flips its ellipsis to the start,
@@ -67,6 +69,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // same flex/indent the EnumField theme rules target on a real field's visualInput.
         private const string BaseFieldInputClass = "unity-base-field__input";
 
+        // Unity's own [Header] decorator class, reused verbatim by the re-emitted header (see WithDecorators) so a
+        // header above a nested reference is indistinguishable from one Unity drew.
+        private const string HeaderClass = "unity-header-drawer__label";
+
+        // No prefab-override treatment is applied anywhere in this field, nested or not. Unity records an override
+        // inside a managed reference under `managedReferences[rid].<field>`, which no SerializedProperty path in the
+        // subtree matches, so `SerializedProperty.prefabOverride` reports false for every property under a
+        // [SerializeReference] — verified on 6000.4: true for an ordinary field, false for one inside a managed
+        // reference and for the reference itself. Unity's own binding reads that same flag, so there is nothing to
+        // restore here; showing the bar would mean matching the modification list by rid ourselves.
+
         private const float DropdownGap = 2f;
 
         // The group-navigation pulse: the tint holds at full strength for FlashHoldFraction before fading (an
@@ -90,6 +103,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly SerializedProperty _property;
         private readonly Type _fieldType;
 
+        // How many managed-reference levels lie between this field and the one the drawer created; the cap that
+        // bounds it lives in SerializeReferenceNesting, shared with the IMGUI drawer.
+        private readonly int _depth;
+
         // Mutable on purpose: a [TypeSelector] member-referenced constraint re-resolves while the
         // inspector is open and replaces both through SetBaseTypes.
         private Type[] _baseTypes;
@@ -103,6 +120,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private VisualElement _flashOverlay;
         private Type _currentType;
         private bool _contentBuilt;
+        private bool _childrenBuilt;
         private bool _mixedTypes;
 
         // Stripe inputs: written by the notice updates, consumed by UpdateStripe.
@@ -123,11 +141,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Advancing from the cursor — not the clicked field — lets repeated clicks on the same notice walk the group.
         private static readonly Dictionary<(int target, long rid), string> NavigationCursor = new();
 
-        public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null)
+        public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null, int depth = 0)
         {
             _property = property;
             _fieldType = SerializeReferenceHelpers.GetFieldType(_property);
             _baseTypes = baseTypes;
+            _depth = depth;
             _filter = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes);
 
             this.AddClass(BlockClass)
@@ -318,7 +337,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             _content.Clear();
             _contentBuilt = true;
-            if (!hasValue) return;
+            _childrenBuilt = false;
+
+            // A type with no serialized fields has nothing to expand, and an empty reference has nothing yet — in
+            // both cases the arrow only promises content that never appears. Answered by walking the property,
+            // which costs nothing next to building the fields.
+            var hasChildren = hasValue && SerializeReferenceNesting.HasVisibleChildren(_property);
+            EnableInClassList(ChildlessClass, !hasChildren);
+
+            if (hasChildren && _foldout.value) BuildChildren();
+        }
+
+        // Deferred to the first expansion rather than run from the constructor. Every nested field re-runs the
+        // whole notice pass on construction — a stylesheet load, the missing-type YAML probe, the required gate,
+        // a repair suggestion — and then descends into its own children, so building eagerly charges the entire
+        // subtree to every refresh (and every type switch triggers one). Laziness also breaks the constructor
+        // recursion outright: a cyclic managed-reference graph can no longer expand itself without the user.
+        private void BuildChildren()
+        {
+            if (_childrenBuilt) return;
+            _childrenBuilt = true;
 
             var iterator = _property.Copy();
             var end = _property.GetEndProperty();
@@ -327,14 +365,60 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             while (iterator.NextVisible(enterChildren) && !SerializedProperty.EqualContents(iterator, end))
             {
                 enterChildren = false;
-
-                var child = iterator.Copy();
-
-                var field = new PropertyField(child);
-                field.BindProperty(child);
-
-                _content.Add(field);
+                _content.Add(CreateChildField(iterator.Copy(), _depth));
             }
+        }
+
+        // Unity ships no type picker of its own for a managed reference, so a nested one drawn as a plain
+        // PropertyField is a dead row: no way to choose a type, and for a list no way to fill the elements the
+        // "+" adds. Nested references therefore get the same dropdown this field is — on the shared terms the
+        // IMGUI drawer applies too, so an asset never edits differently between the two inspector modes.
+        private static VisualElement CreateChildField(SerializedProperty child, int depth)
+        {
+            if (SerializeReferenceNesting.DrawsOwnHeader(child, depth))
+            {
+                if (child.propertyType is SerializedPropertyType.ManagedReference)
+                    return WithDecorators(child, new SerializeReferenceField(child.displayName, child, depth: depth + 1));
+
+                return WithDecorators(child, new SerializeReferenceListField(
+                    child.displayName,
+                    child,
+                    SerializeReferenceHelpers.GetArrayElementType(child),
+                    depth: depth + 1));
+            }
+
+            var field = new PropertyField(child);
+            field.BindProperty(child);
+
+            return field;
+        }
+
+        // Drawing a child ourselves bypasses Unity's decorator drawers, so the plain decorators are re-emitted
+        // here. Without this, adding a [Header] to a nested reference would silently delete it from the inspector
+        // — and the alternative, letting any attribute send the child back to Unity, would silently delete the
+        // dropdown instead.
+        private static VisualElement WithDecorators(SerializedProperty property, VisualElement field)
+        {
+            var info = property.GetFieldInfo();
+            if (info is null) return field;
+
+            if (info.GetCustomAttribute<TooltipAttribute>(inherit: true) is { } tooltip)
+                field.tooltip = tooltip.tooltip;
+
+            var header = info.GetCustomAttribute<HeaderAttribute>(inherit: true);
+            var space = info.GetCustomAttribute<SpaceAttribute>(inherit: true);
+
+            if (header is null && space is null) return field;
+
+            var group = new VisualElement();
+
+            if (space is not null)
+                group.AddChild(new VisualElement().SetHeight(space.height));
+
+            if (header is not null)
+                group.AddChild(new Label(header.header).AddClass(HeaderClass));
+
+            return group.AddChild(field);
         }
 
         private void UpdateMixedBox(bool mixedTypes)
@@ -755,6 +839,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (evt.target != _foldout) return;
             _property.isExpanded = evt.newValue;
+
+            // The children were deferred until now (see BuildChildren); an expansion is what pays for them.
+            if (evt.newValue) BuildChildren();
         }
 
         private void OnDropdownClicked(PointerDownEvent evt)

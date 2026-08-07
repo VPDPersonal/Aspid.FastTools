@@ -157,7 +157,7 @@ The referenced member must be an instance field or property of type `Type`, `str
 
 ## TypeSelectorDisplay
 
-Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost:
+Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost. The compiler evaluates that condition where the attribute is *written*, so declare it from inside the Unity project: a type compiled outside Unity — a plugin `.dll` built by `dotnet build` — carries none of these settings, `Hidden` included.
 
 ```csharp
 using Aspid.FastTools.Types;
@@ -177,6 +177,16 @@ public sealed class DamageModifier { }
 | `Group` | Explicit picker path with `/` separating levels (e.g. `"Combat/Melee"`). **Replaces** the type's namespace placement — the type appears only under this path, and path segments are shared between types. `null` or whitespace keeps the namespace placement. |
 | `Tooltip` | Tooltip shown when hovering the type's row. `null` means no tooltip override. |
 | `Icon` | Editor icon shown left of the label — an `EditorGUIUtility.IconContent` name, a project-relative asset path with extension (loaded via `AssetDatabase`), or a `Resources` texture path without extension. `null` means no icon. |
+| `Hidden` | When `true`, the picker never offers the type. Not inherited, so hiding a base type leaves the subclasses meant to replace it offered as usual. Assigning the type from code is unaffected, and a value already stored in a field keeps rendering. |
+
+Use `Hidden` for a type that is assignable but not meant to be authored in the Inspector — a delegate-backed adapter, a test double, a base implementation kept only for code:
+
+```csharp
+[TypeSelectorDisplay(Hidden = true)]
+public sealed class DelegateModifier : IModifier { }
+```
+
+`Hidden` governs authoring, not recovery. A **repair** picker — the missing-reference **Fix** and the References window's bulk fix — still offers hidden types, because a reference already stored as one has to stay re-pointable. **Smart Fix**, which proposes a type rather than letting you choose, never suggests one.
 
 In the picker, the `DamageModifier` from the example above appears under `Combat/Modifiers` as "Damage ×" with its icon — next to siblings that keep their default look:
 
