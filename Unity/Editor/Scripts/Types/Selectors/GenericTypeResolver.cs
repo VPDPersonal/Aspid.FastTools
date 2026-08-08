@@ -27,16 +27,27 @@ namespace Aspid.FastTools.Types.Editors
         private static List<Type> DomainTypes => _domainTypes ??= TypeUtility.EnumerateDomainTypes().ToList();
 
         /// <summary>
-        /// Enumerates the open generic type definitions whose closed form could be assigned to
-        /// <paramref name="fieldType"/> and, when <paramref name="narrowTypes"/> are supplied,
-        /// to every one of them.
+        /// Enumerates the generic candidates whose closed form could be assigned to <paramref name="fieldType"/>
+        /// and, when <paramref name="narrowTypes"/> are supplied, to every one of them. A candidate the field
+        /// already determines is returned closed (<c>Converter&lt;String, String&gt;</c>); one that still needs a
+        /// choice is returned as its open definition (<c>Converter&lt;TFrom, TTo&gt;</c>).
         /// </summary>
         /// <remarks>
-        /// The narrowing check matters because these definitions are injected verbatim via the selector's
+        /// The narrowing check matters because these entries are injected verbatim via the selector's
         /// <c>additionalTypes</c> path, which otherwise bypasses the narrowing filter applied to the
         /// ordinary candidate scan.
+        /// <para>
+        /// Closing here is what makes the row honest: selecting a determined candidate never opens the argument
+        /// page, so listing it under its parameter names promises a choice the picker will not offer. The
+        /// substitution repeats the checks that page would have applied — <paramref name="argumentFilter"/> and
+        /// assignability to every narrowing type — so a row is only closed when the same arguments would have
+        /// survived the manual path.
+        /// </para>
         /// </remarks>
-        internal static IEnumerable<Type> GetAssignableGenericDefinitions(Type fieldType, params Type[] narrowTypes)
+        internal static IEnumerable<Type> GetAssignableGenericDefinitions(
+            Type fieldType,
+            Type[] narrowTypes,
+            Func<Type, bool> argumentFilter = null)
         {
             if (fieldType is null) yield break;
 
@@ -44,7 +55,12 @@ namespace Aspid.FastTools.Types.Editors
             {
                 if (!IsAssignableGenericDefinition(type)) continue;
                 if (!CanCloseToFieldType(type, fieldType)) continue;
-                if (CanCloseToAllNarrowing(type, narrowTypes)) yield return type;
+                if (!CanCloseToAllNarrowing(type, narrowTypes)) continue;
+
+                yield return TryInferFromFieldType(fieldType, type, out var closed, argumentFilter) &&
+                             IsAssignableToFieldTypes(closed, narrowTypes)
+                    ? closed
+                    : type;
             }
         }
 

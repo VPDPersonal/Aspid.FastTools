@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 
 namespace Aspid.FastTools.Types.Editors.Tests
@@ -182,6 +183,44 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 typeof(IResolverConverter<string, int>), typeof(ResolverSequence<>), out var closed));
 
             Assert.IsNull(closed);
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_DeterminedCandidate_IsOfferedClosed()
+        {
+            // Selecting this candidate never opens the argument page, so the row must not advertise parameters.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<string, string>), null)
+                .ToArray();
+
+            CollectionAssert.Contains(offered, typeof(ResolverSequence<string>),
+                "A candidate the field fully determines must be offered closed.");
+            CollectionAssert.DoesNotContain(offered, typeof(ResolverSequence<>),
+                "…and its open definition must not be offered alongside it.");
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_UndeterminedCandidate_StaysOpen()
+        {
+            // IResolverKeyed<string> pins TKey but not TValue — the argument page is still the only way to finish.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverKeyed<string>), null)
+                .ToArray();
+
+            CollectionAssert.Contains(offered, typeof(ResolverPair<,>));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_ArgumentRejectedByFilter_StaysOpen()
+        {
+            // The filter is the argument page's own rule; closing a row must not slip an argument past it.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<string, string>), null, _ => false)
+                .ToArray();
+
+            CollectionAssert.DoesNotContain(offered, typeof(ResolverSequence<string>));
+            CollectionAssert.Contains(offered, typeof(ResolverSequence<>),
+                "A candidate whose inferred argument the filter rejects must keep offering the argument page.");
         }
 
         [Test]

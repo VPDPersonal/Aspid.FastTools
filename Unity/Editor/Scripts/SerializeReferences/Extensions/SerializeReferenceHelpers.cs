@@ -855,7 +855,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     Types = new[] { fieldType },
                     Predicate = BuildAssignableFilter(baseTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes),
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsValidGenericArgument),
                     ArgumentFilter = IsValidGenericArgument,
                     IncludeHidden = true,
                 },

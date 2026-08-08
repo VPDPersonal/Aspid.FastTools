@@ -101,7 +101,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     Types = new[] { elementType },
                     Predicate = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(elementType, baseTypes),
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(elementType, baseTypes, SerializeReferenceHelpers.IsValidGenericArgument),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                 },
                 currentAqn: null, // a "+" append has no current value — nothing (not even <None>) wears the check
