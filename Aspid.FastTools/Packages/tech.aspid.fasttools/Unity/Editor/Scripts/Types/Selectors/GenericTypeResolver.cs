@@ -367,12 +367,53 @@ namespace Aspid.FastTools.Types.Editors
             return $"{baseName}<{arguments}>";
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> when <paramref name="openDefinition"/> could, under some choice of its
+        /// arguments, produce a type assignable to <paramref name="fieldType"/>. A pre-filter for the candidate
+        /// sweep: it rules a definition out from shape alone, it never promises the closed type exists.
+        /// </summary>
+        /// <remarks>
+        /// For a generic field, matching the two generic <em>definitions</em> is not enough. A candidate can
+        /// implement the field's definition while fixing an argument itself:
+        /// <c>ToString&lt;TFrom&gt; : IConverter&lt;TFrom, string&gt;</c> is an <c>IConverter&lt;,&gt;</c>, yet no
+        /// <c>TFrom</c> turns it into an <c>IConverter&lt;float, float&gt;</c>. Letting such a candidate through
+        /// leaves a dead row in the picker: inference fails (correctly), the caller falls back to the open
+        /// definition, and then every argument the user picks on the argument page is refused by
+        /// <see cref="TryConstruct"/>. So the arguments are compared here too, position by position.
+        /// <para>
+        /// The comparison honours declared variance, because assignability does: with
+        /// <c>IConverter&lt;in TFrom, out TTo&gt;</c> an <c>ObjectToString : IConverter&lt;object, string&gt;</c>
+        /// <em>is</em> an <c>IConverter&lt;string, string&gt;</c>. Demanding that a candidate spell its arguments
+        /// exactly as the field does would trade this defect for its mirror image — a usable candidate missing
+        /// from the list.
+        /// </para>
+        /// <para>
+        /// A position that still admits a family of arguments is never rejected: which one it takes is precisely
+        /// what inference, or the argument page, is there to decide, and proving that none of them converts would
+        /// mean sweeping the domain — work the page already does, validating each choice through
+        /// <see cref="TryConstruct"/>. Constraints are left to that same validation: the check here is about what
+        /// the field demands, not about what a parameter accepts.
+        /// </para>
+        /// </remarks>
         private static bool CanCloseToFieldType(Type openDefinition, Type fieldType)
         {
             if (fieldType.IsGenericType)
             {
                 var fieldDefinition = fieldType.GetGenericTypeDefinition();
-                return GenericBaseDefinitions(openDefinition).Any(definition => definition == fieldDefinition);
+                var fieldArguments = fieldType.GetGenericArguments();
+                var fieldParameters = fieldDefinition.GetGenericArguments();
+                var parameters = openDefinition.GetGenericArguments();
+
+                foreach (var openView in OpenGenericViews(openDefinition))
+                {
+                    if (openView.GetGenericTypeDefinition() != fieldDefinition) continue;
+
+                    if (CanCloseArguments(openView.GetGenericArguments(), fieldArguments, fieldParameters,
+                            parameters, new Type[parameters.Length]))
+                        return true;
+                }
+
+                return false;
             }
 
             if (fieldType.IsAssignableFrom(openDefinition)) return true;
@@ -384,22 +425,141 @@ namespace Aspid.FastTools.Types.Editors
             return false;
         }
 
-        private static IEnumerable<Type> GenericBaseDefinitions(Type openDefinition)
+        /// <summary>
+        /// Compares one view's arguments against the field's, position by position, under the variance the field's
+        /// definition declares for each. <paramref name="bindings"/> collects what the pinned positions force each
+        /// parameter of the candidate to be, so a parameter demanded to be two types at once is rejected.
+        /// </summary>
+        /// <remarks>
+        /// Pinned positions are taken first and the variant ones judged afterwards, because a parameter is only
+        /// judgeable once something has forced it: <c>Sequence&lt;T&gt; : IConverter&lt;T, T&gt;</c> against an
+        /// <c>IConverter&lt;float, string&gt;</c> field is impossible only when the value-typed first position —
+        /// which may be declared second — has already fixed <c>T</c> as <c>float</c>. Running in one pass would make
+        /// the verdict depend on the order the parameters happen to be declared in.
+        /// <para>
+        /// Partial bindings are deliberately accepted — <c>Pair&lt;TKey, TValue&gt; : IKeyed&lt;TKey&gt;</c> against
+        /// an <c>IKeyed&lt;string&gt;</c> field leaves <c>TValue</c> free, and that undetermined parameter is the
+        /// whole reason the argument page exists. Requiring a full binding here would delete exactly the rows the
+        /// page is meant to finish.
+        /// </para>
+        /// </remarks>
+        private static bool CanCloseArguments(Type[] openArguments, Type[] fieldArguments, Type[] fieldParameters,
+            Type[] parameters, Type[] bindings)
         {
-            if (openDefinition.IsGenericType)
-                yield return openDefinition.GetGenericTypeDefinition();
+            if (openArguments.Length != fieldArguments.Length) return false;
 
-            for (var current = openDefinition.BaseType; current is not null; current = current.BaseType)
+            for (var index = 0; index < openArguments.Length; index++)
             {
-                if (current.IsGenericType)
-                    yield return current.GetGenericTypeDefinition();
+                if (!PinsArgumentExactly(fieldParameters[index], fieldArguments[index])) continue;
+                if (!CanBindPinnedArgument(openArguments[index], fieldArguments[index], parameters, bindings))
+                    return false;
             }
 
-            foreach (var contract in openDefinition.GetInterfaces())
+            for (var index = 0; index < openArguments.Length; index++)
             {
-                if (contract.IsGenericType)
-                    yield return contract.GetGenericTypeDefinition();
+                if (PinsArgumentExactly(fieldParameters[index], fieldArguments[index])) continue;
+
+                // Only a position that has resolved to a concrete type can be judged. An unbound parameter, or one
+                // still spelled through another generic (`List<T>`), leaves a family of arguments open — see the
+                // remarks on CanCloseToFieldType for why that family is left to the argument page.
+                var open = openArguments[index];
+                var resolved = open.IsGenericParameter ? Binding(open, parameters, bindings) : open;
+                if (resolved is null || resolved.ContainsGenericParameters) continue;
+
+                if (!IsVarianceCompatible(resolved, fieldArguments[index], Variance(fieldParameters[index])))
+                    return false;
             }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> when the field admits exactly one argument at this position, so the
+        /// candidate has to name it: an invariant parameter, or any parameter the field closed over a value type.
+        /// </summary>
+        /// <remarks>
+        /// The value-type half is what makes variance stop at the boundary of the reference world: an
+        /// <c>IConverter&lt;in TFrom, out TTo&gt;</c> field closed as <c>IConverter&lt;float, …&gt;</c> accepts a
+        /// candidate converting from <c>float</c> and nothing else, exactly as an invariant position would.
+        /// </remarks>
+        private static bool PinsArgumentExactly(Type fieldParameter, Type fieldArgument) =>
+            Variance(fieldParameter) is GenericParameterAttributes.None || fieldArgument.IsValueType;
+
+        private static GenericParameterAttributes Variance(Type fieldParameter) =>
+            fieldParameter.GenericParameterAttributes & GenericParameterAttributes.VarianceMask;
+
+        private static Type Binding(Type parameter, Type[] parameters, Type[] bindings)
+        {
+            var parameterIndex = Array.IndexOf(parameters, parameter);
+            return parameterIndex < 0 ? null : bindings[parameterIndex];
+        }
+
+        /// <summary>
+        /// Matches one argument of a pinned position, where assignability leaves no slack: the closed candidate has
+        /// to name the field's argument exactly. Records what that forces each parameter of the candidate to be, and
+        /// rejects a second, conflicting demand on the same parameter.
+        /// </summary>
+        private static bool CanBindPinnedArgument(Type openArgument, Type fieldArgument, Type[] parameters,
+            Type[] bindings)
+        {
+            if (openArgument.IsGenericParameter)
+            {
+                // A parameter the definition does not own (an enclosing type's, on a nested generic) cannot be
+                // recorded against these bindings — nothing is proven, so nothing is rejected.
+                var parameterIndex = Array.IndexOf(parameters, openArgument);
+                if (parameterIndex < 0) return true;
+
+                bindings[parameterIndex] ??= fieldArgument;
+                return bindings[parameterIndex] == fieldArgument;
+            }
+
+            if (!openArgument.ContainsGenericParameters) return openArgument == fieldArgument;
+
+            if (openArgument.IsArray)
+            {
+                return fieldArgument.IsArray &&
+                       openArgument.GetArrayRank() == fieldArgument.GetArrayRank() &&
+                       CanBindPinnedArgument(openArgument.GetElementType(), fieldArgument.GetElementType(),
+                           parameters, bindings);
+            }
+
+            if (!openArgument.IsGenericType || !fieldArgument.IsGenericType) return false;
+            if (openArgument.GetGenericTypeDefinition() != fieldArgument.GetGenericTypeDefinition()) return false;
+
+            // Identity is required all the way down, so a nested definition's own variance never applies here:
+            // `IThingOf<List<T>>` is the field's `IThingOf<List<string>>` only for T = string exactly.
+            var nestedOpen = openArgument.GetGenericArguments();
+            var nestedField = fieldArgument.GetGenericArguments();
+            if (nestedOpen.Length != nestedField.Length) return false;
+
+            for (var index = 0; index < nestedOpen.Length; index++)
+                if (!CanBindPinnedArgument(nestedOpen[index], nestedField[index], parameters, bindings)) return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> when a candidate spelling <paramref name="openArgument"/> where the field
+        /// spells <paramref name="fieldArgument"/> is still assignable to the field, given the position's
+        /// <paramref name="variance"/>.
+        /// </summary>
+        /// <remarks>
+        /// The CLR applies variance only across an implicit <em>reference</em> conversion, so a value type on either
+        /// side leaves identity as the only match — a <c>Sequence&lt;T&gt;</c> whose <c>T</c> another position already
+        /// pinned to <c>float</c> cannot answer a covariant <c>string</c>. <see cref="Type.IsAssignableFrom"/> on its
+        /// own would accept it, counting the boxing conversion from <c>float</c> to a reference type, hence the
+        /// explicit guard in front of it. A field argument that is itself a value type never reaches here:
+        /// <see cref="PinsArgumentExactly"/> has already routed that position to the exact match.
+        /// </remarks>
+        private static bool IsVarianceCompatible(Type openArgument, Type fieldArgument,
+            GenericParameterAttributes variance)
+        {
+            if (openArgument == fieldArgument) return true;
+            if (openArgument.IsValueType || fieldArgument.IsValueType) return false;
+
+            return variance is GenericParameterAttributes.Covariant
+                ? fieldArgument.IsAssignableFrom(openArgument)
+                : openArgument.IsAssignableFrom(fieldArgument);
         }
     }
 }
