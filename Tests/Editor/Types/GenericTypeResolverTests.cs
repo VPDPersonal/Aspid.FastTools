@@ -325,6 +325,22 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
+        public void GetAssignableGenericDefinitions_UnityNativeArgument_IsOfferedClosed()
+        {
+            // End-to-end with the real argument filter, on the shape the picker reported: a Vector2 converter field
+            // determines T, but the filter used to refuse Vector2 for lacking [Serializable], so the row fell back to
+            // its open definition — and the argument page refused Vector2 as well, leaving nothing to pick.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<UnityEngine.Vector2, UnityEngine.Vector2>),
+                    null, SerializeReferences.Editors.SerializeReferenceHelpers.IsValidGenericArgument)
+                .ToArray();
+
+            CollectionAssert.Contains(offered, typeof(ResolverSequence<UnityEngine.Vector2>));
+            CollectionAssert.DoesNotContain(offered, typeof(ResolverSequence<>),
+                "…and its open definition must not be offered beside it.");
+        }
+
+        [Test]
         public void GetAssignableGenericDefinitions_ValueTypePinningAVariantPosition_DropsTheCandidate()
         {
             // ResolverVariantSequence<T> : IResolverVariant<T, T>. The field's float pins T — variance buys a value
