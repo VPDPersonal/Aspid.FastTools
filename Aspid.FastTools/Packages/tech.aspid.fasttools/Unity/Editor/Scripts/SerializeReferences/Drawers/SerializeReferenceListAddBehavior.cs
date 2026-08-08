@@ -101,8 +101,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     Types = new[] { elementType },
                     Predicate = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(elementType, baseTypes, SerializeReferenceHelpers.IsValidGenericArgument),
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(elementType, baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
+                    InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
                 },
                 currentAqn: null, // a "+" append has no current value — nothing (not even <None>) wears the check
                 onSelected: aqn => Append(target, arrayPath, aqn));

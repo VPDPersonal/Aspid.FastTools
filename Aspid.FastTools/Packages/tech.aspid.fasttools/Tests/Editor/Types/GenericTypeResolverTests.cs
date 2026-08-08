@@ -36,6 +36,21 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
     internal sealed class ResolverSequence<T> : IResolverConverter<T, T> { }
 
+    // The same shape twice, differing only in where T lands: one keeps it as serialized data, the other only ever
+    // as a managed reference. What the field may close them over differs accordingly.
+#pragma warning disable CS0169
+    [System.Serializable]
+    internal sealed class ResolverValueSequence<T> : IResolverConverter<T, T>
+    {
+        [UnityEngine.SerializeField] private T _value;
+    }
+
+    internal sealed class ResolverReferenceSequence<T> : IResolverConverter<T, T>
+    {
+        [UnityEngine.SerializeReference] private IResolverConverter<T, T>[] _items;
+    }
+#pragma warning restore CS0169
+
     // A candidate that fixes one of the definition's arguments itself: it is an IResolverConverter<,> like any
     // other, yet no TFrom turns it into an IResolverConverter<float, float>.
     internal sealed class ResolverToString<TFrom> : IResolverConverter<TFrom, string> { }
@@ -231,7 +246,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             // The filter is the argument page's own rule; closing a row must not slip an argument past it.
             var offered = GenericTypeResolver
-                .GetAssignableGenericDefinitions(typeof(IResolverConverter<string, string>), null, _ => false)
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<string, string>), null, (_, _, _) => false)
                 .ToArray();
 
             CollectionAssert.DoesNotContain(offered, typeof(ResolverSequence<string>));
@@ -327,17 +342,33 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void GetAssignableGenericDefinitions_UnityNativeArgument_IsOfferedClosed()
         {
-            // End-to-end with the real argument filter, on the shape the picker reported: a Vector2 converter field
-            // determines T, but the filter used to refuse Vector2 for lacking [Serializable], so the row fell back to
-            // its open definition — and the argument page refused Vector2 as well, leaving nothing to pick.
+            // End-to-end with the real argument filter, on the shape the picker reported. ResolverValueSequence
+            // stores T, so Vector2 has to clear the serializability bar — and before the engine's own types were
+            // recognised it did not, leaving the row open with an argument page that refused Vector2 as well.
             var offered = GenericTypeResolver
                 .GetAssignableGenericDefinitions(typeof(IResolverConverter<UnityEngine.Vector2, UnityEngine.Vector2>),
-                    null, SerializeReferences.Editors.SerializeReferenceHelpers.IsValidGenericArgument)
+                    null, SerializeReferences.Editors.SerializeReferenceHelpers.IsAcceptableGenericArgument)
                 .ToArray();
 
-            CollectionAssert.Contains(offered, typeof(ResolverSequence<UnityEngine.Vector2>));
-            CollectionAssert.DoesNotContain(offered, typeof(ResolverSequence<>),
+            CollectionAssert.Contains(offered, typeof(ResolverValueSequence<UnityEngine.Vector2>));
+            CollectionAssert.DoesNotContain(offered, typeof(ResolverValueSequence<>),
                 "…and its open definition must not be offered beside it.");
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_ParameterOnlyBehindAReference_ClosesOverAnUnserializableArgument()
+        {
+            // Two candidates of identical shape against one field. Ray is a type Unity does not serialize, which
+            // matters only for the candidate that would store it: the one holding nothing but a
+            // [SerializeReference] array closes over Ray happily, and refusing it would hide a usable row.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<UnityEngine.Ray, UnityEngine.Ray>),
+                    null, SerializeReferences.Editors.SerializeReferenceHelpers.IsAcceptableGenericArgument)
+                .ToArray();
+
+            CollectionAssert.Contains(offered, typeof(ResolverReferenceSequence<UnityEngine.Ray>));
+            CollectionAssert.DoesNotContain(offered, typeof(ResolverValueSequence<UnityEngine.Ray>),
+                "The candidate that stores T must not be closed over an argument Unity would drop.");
         }
 
         [Test]
@@ -414,7 +445,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             // hold here as well — otherwise a field shape that determines its arguments bypasses the rule entirely.
             Assert.IsFalse(GenericTypeResolver.TryInferFromFieldType(
                 typeof(IResolverConverter<string, string>), typeof(ResolverSequence<>), out var closed,
-                argumentFilter: argument => argument != typeof(string)));
+                argumentFilter: (_, _, argument) => argument != typeof(string)));
 
             Assert.IsNull(closed);
         }
@@ -424,7 +455,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             Assert.IsTrue(GenericTypeResolver.TryInferFromFieldType(
                 typeof(IResolverConverter<string, string>), typeof(ResolverSequence<>), out var closed,
-                argumentFilter: argument => argument == typeof(string)));
+                argumentFilter: (_, _, argument) => argument == typeof(string)));
 
             Assert.AreEqual(typeof(ResolverSequence<string>), closed);
         }

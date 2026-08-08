@@ -411,8 +411,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     Types = new[] { fieldType },
                     Predicate = SerializeReferenceHelpers.BuildAssignableFilter(baseTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, SerializeReferenceHelpers.IsValidGenericArgument),
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
+                    InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
                 },
                 currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)

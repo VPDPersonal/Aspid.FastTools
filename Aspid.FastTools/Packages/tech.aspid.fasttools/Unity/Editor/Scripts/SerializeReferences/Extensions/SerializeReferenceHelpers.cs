@@ -634,6 +634,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                    (type.IsClass && type.IsSerializable);
         }
 
+        /// <summary>
+        /// Whether <paramref name="argument"/> may close <paramref name="parameter"/> of
+        /// <paramref name="openDefinition"/>. Supplied to the selector as its
+        /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorFilter.InferredArgumentFilter"/>.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="IsValidGenericArgument"/> answers a different question — which types the argument <i>page</i>
+        /// offers — and demands serializability of every one of them, because a page has to stay a list a human can
+        /// read. That is the wrong bar for an argument the field already determines: nobody is browsing, and whether
+        /// the argument must be serializable at all depends on where the parameter lands, which
+        /// <see cref="GenericArgumentRequirement"/> works out. A <c>SequenceConverters&lt;T&gt;</c> holding nothing
+        /// but a <c>[SerializeReference] IConverter&lt;T, T&gt;[]</c> stores no <c>T</c> whatsoever, so an
+        /// <c>IConverter&lt;Ray, Ray&gt;</c> field closes it as readily as a <c>Vector2</c> one.
+        /// <para>
+        /// The structural half is not a matter of taste: an open definition, a pointer, a by-ref and
+        /// <see langword="void"/> are refused by <see cref="Type.MakeGenericType"/> itself.
+        /// </para>
+        /// </remarks>
+        public static bool IsAcceptableGenericArgument(Type openDefinition, Type parameter, Type argument)
+        {
+            if (argument is null || argument.ContainsGenericParameters) return false;
+            if (argument.IsPointer || argument.IsByRef || argument == typeof(void)) return false;
+
+            return !GenericArgumentRequirement.RequiresSerializableArgument(openDefinition, parameter) ||
+                   IsValidGenericArgument(argument);
+        }
+
         #region Missing-type repair
         /// <summary>
         /// Resolves the stored (now unloadable) type identity of this property's missing managed reference, read from
@@ -885,8 +912,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     Types = new[] { fieldType },
                     Predicate = BuildAssignableFilter(baseTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsValidGenericArgument),
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsAcceptableGenericArgument),
                     ArgumentFilter = IsValidGenericArgument,
+                    InferredArgumentFilter = IsAcceptableGenericArgument,
                     IncludeHidden = true,
                 },
                 currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check

@@ -76,6 +76,7 @@ namespace Aspid.FastTools.Types.Editors
         private readonly Action _onDismiss;
         private readonly Action<string> _onSelected;
         private readonly Func<Type, bool> _argumentFilter;
+        private readonly GenericArgumentFilter _inferredArgumentFilter;
         private readonly Type[] _fieldTypes;
         private readonly string _currentAqn;
         private readonly bool _includeHidden;
@@ -100,6 +101,7 @@ namespace Aspid.FastTools.Types.Editors
             _onDismiss = onDismiss;
             _onSelected = onSelected;
             _argumentFilter = filter.ArgumentFilter;
+            _inferredArgumentFilter = filter.InferredArgumentFilter;
             // Null and "" mean DIFFERENT things and both flow through unchanged: null = the host has no current-value
             // concept at all (a list "+" append, a missing-type Fix, the bulk project picker), "" = the field exists
             // and currently holds <None>. Only the latter may put the current-value check on the <None> row.

@@ -29,8 +29,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 Types = new[] { baseType },
                 Predicate = SerializeReferenceHelpers.IsAssignableManagedReference,
-                AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType, null, SerializeReferenceHelpers.IsValidGenericArgument),
+                AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType, null, SerializeReferenceHelpers.IsAcceptableGenericArgument),
                 ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
+                InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
                 IncludeHidden = includeHidden,
             };
         }
