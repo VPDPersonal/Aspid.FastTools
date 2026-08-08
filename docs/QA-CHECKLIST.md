@@ -56,6 +56,7 @@
 - [ ] `ComponentTypeSelector`: picking a nested subclass either swaps the component correctly or logs "MonoScript not found" — never silently assigns the declaring type's script.
 - [ ] Keep-data on type switch (fields matching by name and serialized shape carry over); nested `[SerializeReference]` children are not dropped.
 - [ ] Open generics: inference from a closed-generic field; a second in-picker page for choosing arguments honouring constraints; validation against the field type.
+- [ ] A determined candidate is listed closed (`Converter<String, String>`) and picks in one click; an undetermined one still lists as `Converter<T>` and opens the argument page.
 - [ ] Copy/Paste via the context menu: paste creates an independent instance, disabled for an incompatible clipboard type.
 - [ ] Multi-object editing: mixed-state dropdown, a pick applies independent instances in one Undo group; per-asset notices suppressed.
 - [ ] Duplicating a list element (Duplicate/Ctrl+D/`+`) does not alias the reference; bulk restore (Paste Component Values, Revert) does not de-alias intentional sharing.

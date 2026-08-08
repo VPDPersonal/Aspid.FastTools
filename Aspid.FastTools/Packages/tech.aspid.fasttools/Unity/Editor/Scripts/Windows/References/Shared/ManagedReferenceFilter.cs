@@ -29,7 +29,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 Types = new[] { baseType },
                 Predicate = SerializeReferenceHelpers.IsAssignableManagedReference,
-                AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType),
+                AdditionalTypes = baseType == typeof(object) ? null : GenericTypeResolver.GetAssignableGenericDefinitions(baseType, null, SerializeReferenceHelpers.IsValidGenericArgument),
                 ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                 IncludeHidden = includeHidden,
             };

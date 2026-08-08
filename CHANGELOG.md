@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- A generic candidate the field already determines is now **listed closed** — `Converter<String, String>` instead of `Converter<TFrom, TTo>`. Selecting it never opens the argument page, so advertising parameter names promised a choice the picker would not offer; search and Favorites now match the name of what actually gets created. A candidate that still needs a choice (or whose inferred argument the argument filter rejects) keeps its open definition and its page.
 - A `[SerializeReference]` field whose type declares **no** serialized fields no longer draws an expand arrow. The arrow promised content that never appeared; it now behaves like an empty reference.
 - `[TypeSelectorDisplay]` now applies to **interfaces** as well as classes and structs. `TypeAllow.Interface` exists to offer interfaces, so the settings — `Hidden` above all — have to be expressible on one; writing the attribute on an interface used to be compile error CS0592.
 
