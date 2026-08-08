@@ -47,7 +47,7 @@ namespace Aspid.FastTools.Types.Editors
         internal static IEnumerable<Type> GetAssignableGenericDefinitions(
             Type fieldType,
             Type[] narrowTypes,
-            Func<Type, bool> argumentFilter = null)
+            GenericArgumentFilter argumentFilter = null)
         {
             if (fieldType is null) yield break;
 
@@ -77,14 +77,16 @@ namespace Aspid.FastTools.Types.Editors
         /// <c>T</c> of a <c>SequenceConverters&lt;T&gt; : IConverter&lt;T, T&gt;</c> candidate — one parameter
         /// bound from two arguments, which positional copying cannot express.
         /// <para>
-        /// <paramref name="argumentFilter"/> is the same predicate the argument-selection page applies to the
-        /// types it offers. Inference emits its result without ever showing that page, so the predicate has to be
-        /// enforced here too, or a field shape that happens to determine its arguments would silently accept what
-        /// the manual path refuses.
+        /// Inference emits its result without ever showing the argument-selection page, so whatever rule that page
+        /// would have applied to the arguments has to be applied here instead — otherwise a field shape that happens
+        /// to determine its arguments silently accepts what the manual path refuses.
+        /// <paramref name="argumentFilter"/> is asked per parameter rather than per type, because the caller's rule
+        /// may well depend on the position: an argument that only ever becomes a managed reference is under
+        /// constraints an argument stored by value is not.
         /// </para>
         /// </remarks>
         internal static bool TryInferFromFieldType(Type fieldType, Type openDefinition, out Type closed,
-            Func<Type, bool> argumentFilter = null)
+            GenericArgumentFilter argumentFilter = null)
         {
             closed = null;
 
@@ -127,7 +129,7 @@ namespace Aspid.FastTools.Types.Editors
         /// so every matching view is tried: settling for the first would make inference depend on reflection
         /// order and behave differently between recompiles or machines.
         /// </remarks>
-        private static bool TryBindParameters(Type openDefinition, Type closedView, Func<Type, bool> argumentFilter,
+        private static bool TryBindParameters(Type openDefinition, Type closedView, GenericArgumentFilter argumentFilter,
             out Type[] arguments)
         {
             arguments = null;
@@ -144,7 +146,7 @@ namespace Aspid.FastTools.Types.Editors
                     continue;
 
                 if (!IsFullyBound(bindings)) continue;
-                if (!PassesArgumentFilter(bindings, argumentFilter)) continue;
+                if (!PassesArgumentFilter(openDefinition, parameters, bindings, argumentFilter)) continue;
 
                 arguments = bindings;
                 return true;
@@ -163,12 +165,15 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        private static bool PassesArgumentFilter(Type[] bindings, Func<Type, bool> argumentFilter)
+        // Each binding is judged against the parameter it was bound to, not on its own: the caller's rule can depend
+        // on where the parameter ends up inside the definition.
+        private static bool PassesArgumentFilter(Type openDefinition, Type[] parameters, Type[] bindings,
+            GenericArgumentFilter argumentFilter)
         {
             if (argumentFilter is null) return true;
 
-            foreach (var binding in bindings)
-                if (!argumentFilter(binding)) return false;
+            for (var index = 0; index < bindings.Length; index++)
+                if (!argumentFilter(openDefinition, parameters[index], bindings[index])) return false;
 
             return true;
         }

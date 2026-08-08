@@ -43,6 +43,18 @@ namespace Aspid.FastTools.Types.Editors
         public Func<Type, bool> ArgumentFilter { get; set; }
 
         /// <summary>
+        /// Optional predicate applied to an argument the selector <b>infers</b> from the field instead of asking for
+        /// it. Leave <c>null</c> to accept whatever the field determines.
+        /// </summary>
+        /// <remarks>
+        /// Separate from <see cref="ArgumentFilter"/> because the two decide different things. That one curates a
+        /// page a human reads and has to stay a finite, sensible list; this one judges a single argument the field
+        /// has already fixed, which no one is going to browse — so it can afford to ask the exact question, per
+        /// parameter, and admit an argument the page would not have bothered to offer.
+        /// </remarks>
+        public GenericArgumentFilter InferredArgumentFilter { get; set; }
+
+        /// <summary>
         /// Includes types marked <c>[TypeSelectorDisplay(Hidden = true)]</c>, which the picker leaves out by default.
         /// Set it only on a picker that <b>repairs</b> a reference rather than authors one: hiding a type means "do
         /// not offer this for new work", not "make existing data holding it unfixable".

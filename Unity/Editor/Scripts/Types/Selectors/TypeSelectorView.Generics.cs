@@ -13,9 +13,9 @@ namespace Aspid.FastTools.Types.Editors
             // A field that already fixes the arguments — skip the picker and construct directly. Inference only
             // checks the primary field type, so re-validate the result against every field type (as the manual
             // PickParam -> TryConstruct path does); if it is not assignable to all of them, fall through to the picker
-            // rather than emitting a value Unity would drop. The argument filter goes in for the same reason: it is
-            // the only place the manual path applies it, and skipping the page must not skip the rule.
-            if (GenericTypeResolver.TryInferFromFieldType(primaryFieldType, openDefinition, out var inferred, _argumentFilter) &&
+            // rather than emitting a value Unity would drop. The inferred-argument filter goes in for the same
+            // reason: skipping the page must not skip the rule the page would have enforced.
+            if (GenericTypeResolver.TryInferFromFieldType(primaryFieldType, openDefinition, out var inferred, _inferredArgumentFilter) &&
                 GenericTypeResolver.IsAssignableToFieldTypes(inferred, validationFieldTypes))
             {
                 onClosed(inferred);
@@ -62,7 +62,7 @@ namespace Aspid.FastTools.Types.Editors
             // Modifier<T> for T) — picking one resolves its own arguments before it is used here. Pass every
             // constraint base type (not just the collapsed single one) so a multi-constraint parameter narrows
             // the nested definitions by all of them up front, instead of offering defs that fail every later pick.
-            var nested = GenericTypeResolver.GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _argumentFilter);
+            var nested = GenericTypeResolver.GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _inferredArgumentFilter);
             var hierarchy = HierarchyBuilder.Build(baseTypes, TypeAllow.None, (Func<Type, bool>)Filter, nested,
                 includeNoneOption: false, includeHidden: _includeHidden);
 
