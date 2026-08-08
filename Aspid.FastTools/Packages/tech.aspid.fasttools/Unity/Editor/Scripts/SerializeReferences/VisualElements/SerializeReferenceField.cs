@@ -863,7 +863,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     Types = new[] { _fieldType },
                     Predicate = _filter,
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(_fieldType, _baseTypes),
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(_fieldType, _baseTypes, SerializeReferenceHelpers.IsValidGenericArgument),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                 },
                 currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
