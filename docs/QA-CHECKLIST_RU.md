@@ -58,6 +58,7 @@
 - [ ] Открытые генерики: инференс из закрытого поля; вторая страница выбора аргументов с констрейнтами; валидация против типа поля.
 - [ ] Определённый кандидат показан закрытым (`Converter<String, String>`) и выбирается одним кликом; неопределённый по-прежнему показан как `Converter<T>` и открывает страницу аргументов.
 - [ ] Кандидат, который не может закрыться под поле, отсутствует полностью: `GenericToString<TFrom> : IConverter<TFrom, string>` пропал у поля `IConverter<float, float>` и по-прежнему предлагается для `IConverter<float, string>` и `IConverter<float, object>` (вариантность).
+- [ ] Встроенные типы Unity работают как аргументы: поле `IConverter<Vector2, Vector2>` показывает `SequenceConverters<Vector2>` закрытым, страница аргументов предлагает `Vector2` / `Color` / `AnimationCurve` и по-прежнему не предлагает `Ray` и `Plane`.
 - [ ] Copy/Paste через контекст-меню: paste как независимый инстанс, disable при несовместимом типе.
 - [ ] Multi-object editing: mixed-state дропдаун, выбор применяет независимые инстансы одним Undo; notices подавлены.
 - [ ] Дублирование элемента списка (Duplicate/Ctrl+D/`+`) не алиасит ссылку; bulk restore (Paste Component Values, Revert) не де-алиасит намеренный шаринг.

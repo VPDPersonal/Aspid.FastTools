@@ -585,9 +585,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
+        /// The Unity types the engine serializes natively as a field value. They have to be named one by one
+        /// because <see cref="Type.IsSerializable"/> answers <see langword="false"/> for every one of them: the
+        /// engine writes their layout itself instead of going through .NET serialization, so none of them carries
+        /// <see cref="SerializableAttribute"/>. This is not a duplicate of the <c>IsSerializable</c> branch below —
+        /// it is the half of "Unity can serialize this" that <c>IsSerializable</c> cannot see.
+        /// </summary>
+        /// <remarks>
+        /// Membership was measured rather than assumed: every candidate was given a real field on a
+        /// <see cref="ScriptableObject"/> and looked up through <see cref="SerializedObject"/> on Unity 6000.4.
+        /// Value types of the same family the engine does <b>not</b> serialize — <see cref="Ray"/>,
+        /// <see cref="Ray2D"/>, <see cref="Plane"/>, <see cref="RangeInt"/>, <see cref="Keyframe"/>,
+        /// <see cref="GradientColorKey"/> — are absent for that reason, and must stay absent. Built-ins that do
+        /// carry the attribute (<see cref="Hash128"/>, <see cref="Pose"/>, <see cref="BoneWeight"/>,
+        /// <see cref="RectOffset"/>, <see cref="GUIStyle"/>, <c>Scene</c>) already pass the ordinary check and are
+        /// not repeated here.
+        /// </remarks>
+        private static readonly HashSet<Type> UnityNativeSerializableTypes = new()
+        {
+            typeof(Vector2), typeof(Vector3), typeof(Vector4),
+            typeof(Vector2Int), typeof(Vector3Int),
+            typeof(Quaternion), typeof(Matrix4x4),
+            typeof(Color), typeof(Color32), typeof(Gradient),
+            typeof(Rect), typeof(RectInt), typeof(Bounds), typeof(BoundsInt),
+            typeof(LayerMask), typeof(AnimationCurve),
+            typeof(PropertyName), typeof(UnityEngine.Rendering.SphericalHarmonicsL2),
+        };
+
+        /// <summary>
         /// Predicate identifying types usable as a generic argument of a serialized managed reference:
         /// concrete, non-generic types Unity can serialize as a field value (primitives, <see cref="string"/>,
-        /// enums, <see cref="Object"/>-derived references, or <c>[Serializable]</c> structs/classes). Passed to
+        /// enums, <see cref="Object"/>-derived references, the engine's own built-in types, or
+        /// <c>[Serializable]</c> structs/classes). Passed to
         /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorWindow.Show"/> as the argument filter.
         /// </summary>
         public static bool IsValidGenericArgument(Type type)
@@ -600,6 +629,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                    type.IsEnum ||
                    type == typeof(string) ||
                    typeof(Object).IsAssignableFrom(type) ||
+                   UnityNativeSerializableTypes.Contains(type) ||
                    (type.IsValueType && type.IsSerializable) ||
                    (type.IsClass && type.IsSerializable);
         }
