@@ -11,11 +11,16 @@
         <NoWarn>$(NoWarn);RS2008</NoWarn>
 
         <!-- The built DLL is committed into the Unity package, so identical sources must yield an
-             identical binary on any machine: map local checkout paths out of the PE (PathMap) and
-             keep the git SHA of the build tree out of InformationalVersion. -->
+             identical binary on any machine — which is what the release workflow's freshness gate
+             rebuilds and diffs. Three things otherwise leak the build environment into the PE:
+             the SDK's own SCM queries stamp the commit SHA into the assembly (so a merge commit
+             with an identical tree produced different bytes), the debug directory carries a PDB id
+             derived from absolute checkout paths, and the informational version repeats the SHA. -->
         <Deterministic>true</Deterministic>
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
         <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+        <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
+        <DebugType Condition="'$(Configuration)' == 'Release'">none</DebugType>
     </PropertyGroup>
 
     <ItemGroup>
