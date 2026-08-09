@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc.7] — 2026-08-09
+
+A follow-up to `1.0.0-rc.6` centred on the `[SerializeReference]` type picker: a generic candidate is now measured against what the field can actually close — listed only when some argument fits, listed closed when the field already determines it — nested managed references get a dropdown of their own, and `[TypeSelectorDisplay(Hidden = true)]` keeps a type out of the picker without touching what already stores it.
+
 ### Added
 
 - **`[TypeSelectorDisplay(Hidden = true)]`** keeps a type out of the picker entirely — for types that are technically assignable but not meant to be authored in the Inspector (a delegate-backed adapter, a test double, a base implementation kept for code). It applies to both paths the picker collects from — the domain scan and the injected open generic definitions — and is not inherited, so hiding a base type never hides the subclasses meant to replace it. Assigning such a type from code is unaffected and an already stored value keeps rendering. Hiding governs **authoring**, not recovery: a missing-reference **Fix** picker and the References window's bulk fix still offer hidden types, so data already holding one stays repairable, while **Smart Fix** — a type the package proposes rather than one you chose — never suggests one.
@@ -305,7 +309,8 @@ Five installable samples shipped under `Samples~/` (UPM convention, imported via
 [#147]: https://github.com/VPDPersonal/Aspid.FastTools/pull/147
 [#148]: https://github.com/VPDPersonal/Aspid.FastTools/pull/148
 [#150]: https://github.com/VPDPersonal/Aspid.FastTools/pull/150
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.6...HEAD
+[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.7...HEAD
+[1.0.0-rc.7]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.6...v1.0.0-rc.7
 [1.0.0-rc.6]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.5...v1.0.0-rc.6
 [1.0.0-rc.5]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.4...v1.0.0-rc.5
 [1.0.0-rc.4]: https://github.com/VPDPersonal/Aspid.FastTools/compare/v1.0.0-rc.3...v1.0.0-rc.4
