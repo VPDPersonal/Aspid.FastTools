@@ -28,8 +28,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Aspid.Generators.Helper" Version="0.0.1-alpha.4" />
-        <PackageReference Include="Aspid.Generators.Helper.Unity" Version="0.0.1-alpha.3" />
+        <!-- Exact versions, in brackets: a bare version is only a lower bound, and the DLL these are
+             merged into is committed. 0.0.1-alpha.4 was never published — it resolved from this
+             machine's NuGet cache locally while CI silently floated up to 0.1.0, so the shipped
+             binary was built from something no other checkout could reproduce. -->
+        <PackageReference Include="Aspid.Generators.Helper" Version="[0.1.0]" />
+        <PackageReference Include="Aspid.Generators.Helper.Unity" Version="[0.0.1-alpha.3]" />
         <PackageReference ExcludeAssets="runtime" Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

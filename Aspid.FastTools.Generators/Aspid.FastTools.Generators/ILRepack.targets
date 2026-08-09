@@ -10,8 +10,11 @@
         </PropertyGroup>
 
         <ItemGroup>
-            <_MergeDependency Include="@(ReferencePath)"
-                              Condition="'%(Filename)' == 'Aspid.Generators.Helper' Or '%(Filename)' == 'Aspid.Generators.Helper.Unity'" />
+            <!-- Named one at a time rather than filtered in a single pass: the merged assembly's
+                 layout follows the input order, and @(ReferencePath) is not ordered identically on
+                 every OS, which made the output differ between the local build and the CI runner. -->
+            <_MergeDependency Include="@(ReferencePath)" Condition="'%(Filename)' == 'Aspid.Generators.Helper'" />
+            <_MergeDependency Include="@(ReferencePath)" Condition="'%(Filename)' == 'Aspid.Generators.Helper.Unity'" />
             <_MergeLibraryDir Include="@(ReferencePath->'%(RootDir)%(Directory)'->Distinct())" />
         </ItemGroup>
 
@@ -20,7 +23,7 @@
 
         <MakeDir Directories="$(UnityAnalyzerMergeDir)" />
 
-        <ILRepack Parallel="true"
+        <ILRepack Parallel="false"
                   Internalize="true"
                   DebugInfo="false"
                   TargetKind="Dll"
