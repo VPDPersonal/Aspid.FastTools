@@ -57,6 +57,9 @@
 - [ ] Keep-data on type switch (fields matching by name and serialized shape carry over); nested `[SerializeReference]` children are not dropped.
 - [ ] Open generics: inference from a closed-generic field; a second in-picker page for choosing arguments honouring constraints; validation against the field type.
 - [ ] A determined candidate is listed closed (`Converter<String, String>`) and picks in one click; an undetermined one still lists as `Converter<T>` and opens the argument page.
+- [ ] A candidate that cannot close to the field is absent entirely: `GenericToString<TFrom> : IConverter<TFrom, string>` is gone from an `IConverter<float, float>` field, and still listed for `IConverter<float, string>` and `IConverter<float, object>` (variance).
+- [ ] Unity built-ins work as arguments: an `IConverter<Vector2, Vector2>` field lists `SequenceConverters<Vector2>` closed, and an argument page offers `Vector2` / `Color` / `AnimationCurve` while still leaving out `Ray` and `Plane`.
+- [ ] A candidate whose parameter never lands in a by-value field closes over an argument Unity cannot serialize: an `IConverter<Ray, Ray>` field lists `SequenceConverters<Ray>`, while a candidate that stores `T` still refuses it.
 - [ ] Copy/Paste via the context menu: paste creates an independent instance, disabled for an incompatible clipboard type.
 - [ ] Multi-object editing: mixed-state dropdown, a pick applies independent instances in one Undo group; per-asset notices suppressed.
 - [ ] Duplicating a list element (Duplicate/Ctrl+D/`+`) does not alias the reference; bulk restore (Paste Component Values, Revert) does not de-alias intentional sharing.

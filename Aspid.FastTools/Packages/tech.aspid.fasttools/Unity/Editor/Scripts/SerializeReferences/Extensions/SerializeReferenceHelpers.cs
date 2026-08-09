@@ -585,9 +585,38 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
+        /// The Unity types the engine serializes natively as a field value. They have to be named one by one
+        /// because <see cref="Type.IsSerializable"/> answers <see langword="false"/> for every one of them: the
+        /// engine writes their layout itself instead of going through .NET serialization, so none of them carries
+        /// <see cref="SerializableAttribute"/>. This is not a duplicate of the <c>IsSerializable</c> branch below —
+        /// it is the half of "Unity can serialize this" that <c>IsSerializable</c> cannot see.
+        /// </summary>
+        /// <remarks>
+        /// Membership was measured rather than assumed: every candidate was given a real field on a
+        /// <see cref="ScriptableObject"/> and looked up through <see cref="SerializedObject"/> on Unity 6000.4.
+        /// Value types of the same family the engine does <b>not</b> serialize — <see cref="Ray"/>,
+        /// <see cref="Ray2D"/>, <see cref="Plane"/>, <see cref="RangeInt"/>, <see cref="Keyframe"/>,
+        /// <see cref="GradientColorKey"/> — are absent for that reason, and must stay absent. Built-ins that do
+        /// carry the attribute (<see cref="Hash128"/>, <see cref="Pose"/>, <see cref="BoneWeight"/>,
+        /// <see cref="RectOffset"/>, <see cref="GUIStyle"/>, <c>Scene</c>) already pass the ordinary check and are
+        /// not repeated here.
+        /// </remarks>
+        private static readonly HashSet<Type> UnityNativeSerializableTypes = new()
+        {
+            typeof(Vector2), typeof(Vector3), typeof(Vector4),
+            typeof(Vector2Int), typeof(Vector3Int),
+            typeof(Quaternion), typeof(Matrix4x4),
+            typeof(Color), typeof(Color32), typeof(Gradient),
+            typeof(Rect), typeof(RectInt), typeof(Bounds), typeof(BoundsInt),
+            typeof(LayerMask), typeof(AnimationCurve),
+            typeof(PropertyName), typeof(UnityEngine.Rendering.SphericalHarmonicsL2),
+        };
+
+        /// <summary>
         /// Predicate identifying types usable as a generic argument of a serialized managed reference:
         /// concrete, non-generic types Unity can serialize as a field value (primitives, <see cref="string"/>,
-        /// enums, <see cref="Object"/>-derived references, or <c>[Serializable]</c> structs/classes). Passed to
+        /// enums, <see cref="Object"/>-derived references, the engine's own built-in types, or
+        /// <c>[Serializable]</c> structs/classes). Passed to
         /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorWindow.Show"/> as the argument filter.
         /// </summary>
         public static bool IsValidGenericArgument(Type type)
@@ -600,8 +629,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                    type.IsEnum ||
                    type == typeof(string) ||
                    typeof(Object).IsAssignableFrom(type) ||
+                   UnityNativeSerializableTypes.Contains(type) ||
                    (type.IsValueType && type.IsSerializable) ||
                    (type.IsClass && type.IsSerializable);
+        }
+
+        /// <summary>
+        /// Whether <paramref name="argument"/> may close <paramref name="parameter"/> of
+        /// <paramref name="openDefinition"/>. Supplied to the selector as its
+        /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorFilter.InferredArgumentFilter"/>.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="IsValidGenericArgument"/> answers a different question — which types the argument <i>page</i>
+        /// offers — and demands serializability of every one of them, because a page has to stay a list a human can
+        /// read. That is the wrong bar for an argument the field already determines: nobody is browsing, and whether
+        /// the argument must be serializable at all depends on where the parameter lands, which
+        /// <see cref="GenericArgumentRequirement"/> works out. A <c>SequenceConverters&lt;T&gt;</c> holding nothing
+        /// but a <c>[SerializeReference] IConverter&lt;T, T&gt;[]</c> stores no <c>T</c> whatsoever, so an
+        /// <c>IConverter&lt;Ray, Ray&gt;</c> field closes it as readily as a <c>Vector2</c> one.
+        /// <para>
+        /// The structural half is not a matter of taste: an open definition, a pointer, a by-ref and
+        /// <see langword="void"/> are refused by <see cref="Type.MakeGenericType"/> itself.
+        /// </para>
+        /// </remarks>
+        public static bool IsAcceptableGenericArgument(Type openDefinition, Type parameter, Type argument)
+        {
+            if (argument is null || argument.ContainsGenericParameters) return false;
+            if (argument.IsPointer || argument.IsByRef || argument == typeof(void)) return false;
+
+            return !GenericArgumentRequirement.RequiresSerializableArgument(openDefinition, parameter) ||
+                   IsValidGenericArgument(argument);
         }
 
         #region Missing-type repair
@@ -855,8 +912,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     Types = new[] { fieldType },
                     Predicate = BuildAssignableFilter(baseTypes),
-                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsValidGenericArgument),
+                    AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(fieldType, baseTypes, IsAcceptableGenericArgument),
                     ArgumentFilter = IsValidGenericArgument,
+                    InferredArgumentFilter = IsAcceptableGenericArgument,
                     IncludeHidden = true,
                 },
                 currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check

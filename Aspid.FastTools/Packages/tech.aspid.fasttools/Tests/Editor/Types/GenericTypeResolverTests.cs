@@ -36,9 +36,40 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
     internal sealed class ResolverSequence<T> : IResolverConverter<T, T> { }
 
+    // The same shape twice, differing only in where T lands: one keeps it as serialized data, the other only ever
+    // as a managed reference. What the field may close them over differs accordingly.
+#pragma warning disable CS0169
+    [System.Serializable]
+    internal sealed class ResolverValueSequence<T> : IResolverConverter<T, T>
+    {
+        [UnityEngine.SerializeField] private T _value;
+    }
+
+    internal sealed class ResolverReferenceSequence<T> : IResolverConverter<T, T>
+    {
+        [UnityEngine.SerializeReference] private IResolverConverter<T, T>[] _items;
+    }
+#pragma warning restore CS0169
+
+    // A candidate that fixes one of the definition's arguments itself: it is an IResolverConverter<,> like any
+    // other, yet no TFrom turns it into an IResolverConverter<float, float>.
+    internal sealed class ResolverToString<TFrom> : IResolverConverter<TFrom, string> { }
+
     internal interface IResolverKeyed<TKey> { }
 
     internal sealed class ResolverPair<TKey, TValue> : IResolverKeyed<TKey> { }
+
+    // Same shape as ResolverPair, except the key it implements is pinned and cannot follow the field.
+    internal sealed class ResolverIntKeyed<TValue> : IResolverKeyed<int> { }
+
+    // Variance is part of assignability, so a candidate naming a wider argument than the field is still a
+    // candidate — but only across a reference conversion.
+    internal interface IResolverVariant<in TIn, out TOut> { }
+
+    internal sealed class ResolverFromObject<T> : IResolverVariant<object, T> { }
+
+    // The variant twin of ResolverSequence: one parameter answering for both positions of a variant definition.
+    internal sealed class ResolverVariantSequence<T> : IResolverVariant<T, T> { }
 
     // One definition implemented twice with non-unifiable arguments — legal C#, and the shape that exposes any
     // dependence on the order Type.GetInterfaces() happens to return.
@@ -215,12 +246,186 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             // The filter is the argument page's own rule; closing a row must not slip an argument past it.
             var offered = GenericTypeResolver
-                .GetAssignableGenericDefinitions(typeof(IResolverConverter<string, string>), null, _ => false)
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<string, string>), null, (_, _, _) => false)
                 .ToArray();
 
             CollectionAssert.DoesNotContain(offered, typeof(ResolverSequence<string>));
             CollectionAssert.Contains(offered, typeof(ResolverSequence<>),
                 "A candidate whose inferred argument the filter rejects must keep offering the argument page.");
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_CandidateFixingAnArgument_IsNotOffered()
+        {
+            // ResolverToString<TFrom> : IResolverConverter<TFrom, string> matches the field's definition and nothing
+            // else — TOut is string whatever TFrom becomes. Offering it would put a dead row in the picker: the
+            // argument page opens and then refuses every choice made on it.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<float, float>), null)
+                .ToArray();
+
+            Assert.IsFalse(OffersAnyFormOf(offered, typeof(ResolverToString<>)),
+                "A candidate that cannot close to the field under any argument must not be offered at all.");
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_CandidateFixingAnArgumentTheFieldAgreesWith_IsStillOffered()
+        {
+            // The same candidate against a field whose second argument is the one it fixes: rejecting it here would
+            // trade the dead row for a missing one.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<float, string>), null)
+                .ToArray();
+
+            CollectionAssert.Contains(offered, typeof(ResolverToString<float>));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_DeterminedCandidate_SurvivesTheArgumentComparison()
+        {
+            // ResolverSequence<T> : IResolverConverter<T, T> does close to this field — comparing arguments must
+            // bind T from both positions rather than reject the second as a repeat.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<float, float>), null)
+                .ToArray();
+
+            CollectionAssert.Contains(offered, typeof(ResolverSequence<float>));
+            CollectionAssert.DoesNotContain(offered, typeof(ResolverSequence<>));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_PartiallyDeterminedCandidate_SurvivesTheArgumentComparison()
+        {
+            // ResolverPair<TKey, TValue> : IResolverKeyed<TKey> binds TKey and leaves TValue free — the argument
+            // comparison has to tolerate that partial binding, or it deletes the rows the argument page exists for.
+            // ResolverIntKeyed<TValue> has the same free parameter but pins the key to a type the field does not
+            // name, so no choice of TValue can save it.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverKeyed<string>), null)
+                .ToArray();
+
+            CollectionAssert.Contains(offered, typeof(ResolverPair<,>));
+            Assert.IsFalse(OffersAnyFormOf(offered, typeof(ResolverIntKeyed<>)),
+                "A free parameter cannot rescue a candidate whose fixed argument already mismatches.");
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_VariantPosition_KeepsAReferenceConvertibleCandidate()
+        {
+            // IResolverVariant<in TIn, out TOut>: ResolverFromObject<string> really is an
+            // IResolverVariant<string, string>, so comparing arguments by identity alone would drop a usable row.
+            Assert.IsTrue(typeof(IResolverVariant<string, string>).IsAssignableFrom(typeof(ResolverFromObject<string>)),
+                "Sanity: the CLR accepts this candidate, so the picker must offer it.");
+
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverVariant<string, string>), null)
+                .ToArray();
+
+            Assert.IsTrue(OffersAnyFormOf(offered, typeof(ResolverFromObject<>)));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_VariantPositionOnAValueType_DropsTheCandidate()
+        {
+            // Variance is only applied over a reference conversion, so int boxing to object buys the candidate
+            // nothing here — the same candidate the previous test keeps is a dead row against this field.
+            Assert.IsFalse(typeof(IResolverVariant<int, int>).IsAssignableFrom(typeof(ResolverFromObject<int>)),
+                "Sanity: the CLR refuses the value-type conversion, so the picker must not offer it.");
+
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverVariant<int, int>), null)
+                .ToArray();
+
+            Assert.IsFalse(OffersAnyFormOf(offered, typeof(ResolverFromObject<>)));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_UnityNativeArgument_IsOfferedClosed()
+        {
+            // End-to-end with the real argument filter, on the shape the picker reported. ResolverValueSequence
+            // stores T, so Vector2 has to clear the serializability bar — and before the engine's own types were
+            // recognised it did not, leaving the row open with an argument page that refused Vector2 as well.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<UnityEngine.Vector2, UnityEngine.Vector2>),
+                    null, SerializeReferences.Editors.SerializeReferenceHelpers.IsAcceptableGenericArgument)
+                .ToArray();
+
+            CollectionAssert.Contains(offered, typeof(ResolverValueSequence<UnityEngine.Vector2>));
+            CollectionAssert.DoesNotContain(offered, typeof(ResolverValueSequence<>),
+                "…and its open definition must not be offered beside it.");
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_ParameterOnlyBehindAReference_ClosesOverAnUnserializableArgument()
+        {
+            // Two candidates of identical shape against one field. Ray is a type Unity does not serialize, which
+            // matters only for the candidate that would store it: the one holding nothing but a
+            // [SerializeReference] array closes over Ray happily, and refusing it would hide a usable row.
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverConverter<UnityEngine.Ray, UnityEngine.Ray>),
+                    null, SerializeReferences.Editors.SerializeReferenceHelpers.IsAcceptableGenericArgument)
+                .ToArray();
+
+            CollectionAssert.Contains(offered, typeof(ResolverReferenceSequence<UnityEngine.Ray>));
+            CollectionAssert.DoesNotContain(offered, typeof(ResolverValueSequence<UnityEngine.Ray>),
+                "The candidate that stores T must not be closed over an argument Unity would drop.");
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_ValueTypePinningAVariantPosition_DropsTheCandidate()
+        {
+            // ResolverVariantSequence<T> : IResolverVariant<T, T>. The field's float pins T — variance buys a value
+            // type nothing — and a T of float can never be the string the covariant position then asks for. The
+            // verdict has to hold whichever of the two positions is looked at first.
+            Assert.IsFalse(typeof(IResolverVariant<float, string>).IsAssignableFrom(typeof(ResolverVariantSequence<float>)));
+            Assert.IsFalse(typeof(IResolverVariant<float, string>).IsAssignableFrom(typeof(ResolverVariantSequence<string>)));
+
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverVariant<float, string>), null)
+                .ToArray();
+
+            Assert.IsFalse(OffersAnyFormOf(offered, typeof(ResolverVariantSequence<>)));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_VariantPositionsLeftFree_KeepTheCandidate()
+        {
+            // The same candidate where nothing pins T: a T of object satisfies both positions, so the row stays and
+            // the argument page gets to collect it.
+            Assert.IsTrue(typeof(IResolverVariant<string, object>).IsAssignableFrom(typeof(ResolverVariantSequence<object>)),
+                "Sanity: object answers for both positions, so the candidate is usable.");
+
+            var offered = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverVariant<string, object>), null)
+                .ToArray();
+
+            Assert.IsTrue(OffersAnyFormOf(offered, typeof(ResolverVariantSequence<>)));
+        }
+
+        [Test]
+        public void GetAssignableGenericDefinitions_DefinitionImplementedTwice_JudgesEveryView()
+        {
+            // ResolverMulti<T> : IResolverThingOf<List<T>>, IResolverThingOf<int>. One view closes the first field,
+            // the other the second, and neither closes the third — a verdict read off whichever view
+            // Type.GetInterfaces() happens to return first would be wrong for two of these three.
+            var forList = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverThingOf<System.Collections.Generic.List<string>>), null)
+                .ToArray();
+
+            var forInt = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverThingOf<int>), null)
+                .ToArray();
+
+            var forString = GenericTypeResolver
+                .GetAssignableGenericDefinitions(typeof(IResolverThingOf<string>), null)
+                .ToArray();
+
+            CollectionAssert.Contains(forList, typeof(ResolverMulti<string>),
+                "The IResolverThingOf<List<T>> view determines T.");
+            CollectionAssert.Contains(forInt, typeof(ResolverMulti<>),
+                "The IResolverThingOf<int> view leaves T free, so the argument page still has to collect it.");
+            Assert.IsFalse(OffersAnyFormOf(forString, typeof(ResolverMulti<>)),
+                "Neither view can produce an IResolverThingOf<string>.");
         }
 
         [Test]
@@ -240,7 +445,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             // hold here as well — otherwise a field shape that determines its arguments bypasses the rule entirely.
             Assert.IsFalse(GenericTypeResolver.TryInferFromFieldType(
                 typeof(IResolverConverter<string, string>), typeof(ResolverSequence<>), out var closed,
-                argumentFilter: argument => argument != typeof(string)));
+                argumentFilter: (_, _, argument) => argument != typeof(string)));
 
             Assert.IsNull(closed);
         }
@@ -250,7 +455,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             Assert.IsTrue(GenericTypeResolver.TryInferFromFieldType(
                 typeof(IResolverConverter<string, string>), typeof(ResolverSequence<>), out var closed,
-                argumentFilter: argument => argument == typeof(string)));
+                argumentFilter: (_, _, argument) => argument == typeof(string)));
 
             Assert.AreEqual(typeof(ResolverSequence<string>), closed);
         }
@@ -281,5 +486,12 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.IsFalse(GenericTypeResolver.IsAssignableToFieldTypes(null, fieldTypes: null),
                 "No closed type can never pass the guard, whatever the field types.");
         }
+
+        // A resolver that closes a candidate returns it under a different Type than the definition asserted on, so
+        // a candidate that must be gone has to be checked in both forms.
+        private static bool OffersAnyFormOf(System.Collections.Generic.IEnumerable<System.Type> offered,
+            System.Type definition) =>
+            offered.Any(type => type == definition ||
+                                (type.IsGenericType && type.GetGenericTypeDefinition() == definition));
     }
 }
