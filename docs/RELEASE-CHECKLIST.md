@@ -12,7 +12,7 @@
 - [x] Unity EditMode-тесты (`Aspid.FastTools.Unity.Editor.Tests` + `…SerializeReferences.Tests`) — прогнаны 2026-08-09 в редакторе Unity 6000.4.0f1: **392/392 passed**.
 - [x] `dotnet test` для `Aspid.FastTools.Generators` — **38/38** зелёные (2026-08-09).
 - [x] `dotnet test` для `Aspid.FastTools.Analyzers` — **47/47** зелёные (2026-08-09).
-- [ ] Перед каждым тегом: `git status` чист, закоммиченные DLL (`Aspid.FastTools.Generators.dll`, `Aspid.FastTools.Analyzers.dll`) — Release-сборки из текущих исходников. С детерминированной сборкой (отдельный PR аудита) проверка — пересборка в Release + `git diff` по DLL (diff пуст ⇒ DLL актуальны).
+- [x] Перед каждым тегом: `git status` чист, закоммиченные DLL (`Aspid.FastTools.Generators.dll`, `Aspid.FastTools.Analyzers.dll`) — Release-сборки из текущих исходников. Проверка — пересборка в Release + `git diff` по DLL (diff пуст ⇒ DLL актуальны). Сборка стала действительно воспроизводимой только 2026-08-09: до этого SDK вшивал в сборку commit SHA, поэтому байты менялись на merge-коммите даже при идентичном дереве, и гейт `release.yml` не мог пройти в принципе.
 - [ ] CI EditMode-тесты: добавить секрет `UNITY_LICENSE` и влить PR #138 — либо осознанно отложить на после 1.0.0, тогда обязателен прогон в редакторе непосредственно перед тегом.
 
 ## 2. Документация
