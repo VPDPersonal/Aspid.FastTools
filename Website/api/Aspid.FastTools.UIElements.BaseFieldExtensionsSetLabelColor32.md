@@ -9,7 +9,7 @@ pagination_next: null
 # Class BaseFieldExtensionsSetLabelColor32 {#Aspid_FastTools_UIElements_BaseFieldExtensionsSetLabelColor32}
 
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 ```csharp
 public static class BaseFieldExtensionsSetLabelColor32

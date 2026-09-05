@@ -9,7 +9,7 @@ pagination_next: null
 # Class ICustomStyleExtensions {#Aspid_FastTools_UIElements_ICustomStyleExtensions}
 
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 Extension methods for [`ICustomStyle`](https://docs.unity3d.com/ScriptReference/UIElements-ICustomStyle.html) that bridge USS string-typed custom
 properties to strongly-typed C# values.

@@ -9,7 +9,7 @@ pagination_next: null
 # Class TypeSelectorDisplayAttribute {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute}
 
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 Supplies presentation metadata for a type shown in the type-selector window: a display name,
 a picker group, a tooltip and an icon — or, with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden), keeps the type out of the

@@ -9,7 +9,7 @@ pagination_next: null
 # Class TypeSelectorWindow {#Aspid_FastTools_Types_Editors_TypeSelectorWindow}
 
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 Editor window that displays a hierarchical type selector dropdown, allowing the user to browse and select a [`Type`](https://learn.microsoft.com/dotnet/api/system.type) from a filtered list.
 

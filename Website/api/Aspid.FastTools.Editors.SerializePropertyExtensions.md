@@ -9,7 +9,7 @@ pagination_next: null
 # Class SerializePropertyExtensions {#Aspid_FastTools_Editors_SerializePropertyExtensions}
 
 Namespace: [Aspid.FastTools.Editors](Aspid.FastTools.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 Fluent extension methods for [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) providing chainable wrappers
 around [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html) synchronization and typed value setters.

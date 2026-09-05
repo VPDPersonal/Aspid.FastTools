@@ -9,7 +9,7 @@ pagination_next: null
 # Struct HorizontalScope {#Aspid_FastTools_Editors_HorizontalScope}
 
 Namespace: [Aspid.FastTools.Editors](Aspid.FastTools.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 Disposable ref struct wrapper around [`BeginHorizontal`](https://docs.unity3d.com/ScriptReference/EditorGUILayout-BeginHorizontal.html) /
 [`EndHorizontal`](https://docs.unity3d.com/ScriptReference/EditorGUILayout-EndHorizontal.html) that exposes the resulting [`HorizontalScope.Rect`](Aspid.FastTools.Editors.HorizontalScope.md#Aspid_FastTools_Editors_HorizontalScope_Rect).

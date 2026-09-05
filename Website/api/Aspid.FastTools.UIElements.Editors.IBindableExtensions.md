@@ -9,7 +9,7 @@ pagination_next: null
 # Class IBindableExtensions {#Aspid_FastTools_UIElements_Editors_IBindableExtensions}
 
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 ```csharp
 public static class IBindableExtensions

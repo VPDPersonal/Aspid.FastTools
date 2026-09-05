@@ -9,7 +9,7 @@ pagination_next: null
 # Class InspectorIdField.UxmlSerializedData {#Aspid_FastTools_Ids_Editors_InspectorIdField_UxmlSerializedData}
 
 Namespace: [Aspid.FastTools.Ids.Editors](Aspid.FastTools.Ids.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 ```csharp
 [Serializable]

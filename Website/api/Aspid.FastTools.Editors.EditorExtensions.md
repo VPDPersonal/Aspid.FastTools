@@ -9,7 +9,7 @@ pagination_next: null
 # Class EditorExtensions {#Aspid_FastTools_Editors_EditorExtensions}
 
 Namespace: [Aspid.FastTools.Editors](Aspid.FastTools.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 Editor-side extension methods for [`Object`](https://docs.unity3d.com/ScriptReference/Object.html) and its subclass [`Component`](https://docs.unity3d.com/ScriptReference/Component.html)
 that resolve human-readable script names, respecting the [`AddComponentMenu`](https://docs.unity3d.com/ScriptReference/AddComponentMenu.html) attribute.

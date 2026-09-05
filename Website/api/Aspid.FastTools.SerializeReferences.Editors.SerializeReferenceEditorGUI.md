@@ -9,7 +9,7 @@ pagination_next: null
 # Class SerializeReferenceEditorGUI {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceEditorGUI}
 
 Namespace: [Aspid.FastTools.SerializeReferences.Editors](Aspid.FastTools.SerializeReferences.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 The custom-editor entry point to the SerializeReference dropdown field: draws a <code>[SerializeReference]</code>
 property with the package's type-dropdown UI from an editor's own code, no <code>[TypeSelector]</code> attribute

@@ -9,7 +9,7 @@ pagination_next: null
 # Class TypeField.UxmlSerializedData {#Aspid_FastTools_Types_Editors_TypeField_UxmlSerializedData}
 
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 ```csharp
 [Serializable]

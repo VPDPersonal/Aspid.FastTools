@@ -3,8 +3,8 @@
     "rootNamespace": "",
     "references": [
         "Aspid.FastTools.Samples.VisualElements",
-        "Aspid.FastTools.Unity",
-        "Aspid.FastTools.Unity.Editor"
+        "Aspid.FastTools",
+        "Aspid.FastTools.Editor"
     ],
     "includePlatforms": [
         "Editor"

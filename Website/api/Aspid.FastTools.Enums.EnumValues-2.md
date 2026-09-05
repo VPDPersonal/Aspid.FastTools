@@ -9,7 +9,7 @@ pagination_next: null
 # Class EnumValues\<TEnum, TValue\> {#Aspid_FastTools_Enums_EnumValues_2}
 
 Namespace: [Aspid.FastTools.Enums](Aspid.FastTools.Enums.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 A serializable dictionary that maps members of <code class="typeparamref">TEnum</code> to values of
 type <code class="typeparamref">TValue</code>. The typed counterpart of [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md)

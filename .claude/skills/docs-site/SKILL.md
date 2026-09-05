@@ -106,10 +106,10 @@ cd Website && npm run api               # regenerate after public API or XML doc
 
 `npm run api` runs three steps (`Website/scripts/docfx-*.mjs`, `Website/docfx/docfx.json`):
 
-1. `docfx-projects.mjs` writes SDK-style projects for `Aspid.FastTools`, `Aspid.FastTools.Unity` and
-   `Aspid.FastTools.Unity.Editor` under `Website/docfx/projects/` (gitignored, absolute paths). Sources come
-   from each asmdef folder (so a stale csproj `<Compile>` list does not matter); references, defines and the
-   source generators come from the Unity-generated `.csproj`, and other Unity assemblies are referenced from
+1. `docfx-projects.mjs` writes SDK-style projects for `Aspid.FastTools` and `Aspid.FastTools.Editor` under
+   `Website/docfx/projects/` (gitignored, absolute paths). Sources come from each asmdef folder (so a stale
+   csproj `<Compile>` list does not matter); references, defines and the source generators come from the
+   Unity-generated `.csproj`, and other Unity assemblies are referenced from
    `Library/ScriptAssemblies` — open the project in Unity once so both exist and are fresh.
 2. `docfx metadata` writes one Markdown page per type into `Website/api/`. A `warning: InvalidCref` here is a
    real bug in an XML comment — fix the `cref`, do not ignore it.
@@ -133,7 +133,7 @@ The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as
 redirects `/` to `/docs` — there is no landing page yet.
 
 `static/img/logo.png` and `favicon.png` are copies of the package icon
-`Unity/Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`; re-copy them if the icon changes.
+`Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`; re-copy them if the icon changes.
 
 The article scrolls inside its own panel, not the window. Docusaurus' TOC highlight listens to `document`
 scroll, so `src/clientModules/panelScroll.js` re-dispatches the panel's scroll events. If you change the layout

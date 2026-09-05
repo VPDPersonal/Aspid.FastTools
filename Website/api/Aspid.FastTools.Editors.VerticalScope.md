@@ -9,7 +9,7 @@ pagination_next: null
 # Struct VerticalScope {#Aspid_FastTools_Editors_VerticalScope}
 
 Namespace: [Aspid.FastTools.Editors](Aspid.FastTools.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 Disposable ref struct wrapper around [`BeginVertical`](https://docs.unity3d.com/ScriptReference/EditorGUILayout-BeginVertical.html) /
 [`EndVertical`](https://docs.unity3d.com/ScriptReference/EditorGUILayout-EndVertical.html) that exposes the resulting [`VerticalScope.Rect`](Aspid.FastTools.Editors.VerticalScope.md#Aspid_FastTools_Editors_VerticalScope_Rect).

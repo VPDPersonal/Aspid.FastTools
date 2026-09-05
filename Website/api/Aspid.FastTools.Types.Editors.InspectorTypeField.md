@@ -9,7 +9,7 @@ pagination_next: null
 # Class InspectorTypeField {#Aspid_FastTools_Types_Editors_InspectorTypeField}
 
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 [`TypeField`](Aspid.FastTools.Types.Editors.TypeField.md) variant pre-styled to match a Unity Inspector property row,
 so its label aligns with sibling property fields.

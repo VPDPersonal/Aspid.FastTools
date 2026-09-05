@@ -9,7 +9,7 @@ pagination_next: null
 # Class BaseFieldExtensionsSetLabelInt {#Aspid_FastTools_UIElements_BaseFieldExtensionsSetLabelInt}
 
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 ```csharp
 public static class BaseFieldExtensionsSetLabelInt

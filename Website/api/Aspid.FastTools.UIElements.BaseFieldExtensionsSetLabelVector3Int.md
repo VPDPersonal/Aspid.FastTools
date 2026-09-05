@@ -9,7 +9,7 @@ pagination_next: null
 # Class BaseFieldExtensionsSetLabelVector3Int {#Aspid_FastTools_UIElements_BaseFieldExtensionsSetLabelVector3Int}
 
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 ```csharp
 public static class BaseFieldExtensionsSetLabelVector3Int

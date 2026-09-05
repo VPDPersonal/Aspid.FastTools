@@ -9,7 +9,7 @@ pagination_next: null
 # Class IdRegistry {#Aspid_FastTools_Ids_IdRegistry}
 
 Namespace: [Aspid.FastTools.Ids](Aspid.FastTools.Ids.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 A ScriptableObject that maps string names to stable integer IDs for a given struct type.
 

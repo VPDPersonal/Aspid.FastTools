@@ -9,7 +9,7 @@ pagination_next: null
 # Class BaseFieldExtensionsSetLabelFloat {#Aspid_FastTools_UIElements_BaseFieldExtensionsSetLabelFloat}
 
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 ```csharp
 public static class BaseFieldExtensionsSetLabelFloat

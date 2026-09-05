@@ -9,7 +9,7 @@ pagination_next: null
 # Class ProfilerMarkerExtensionsForGenerator {#ProfilerMarkerExtensionsForGenerator}
 
 Namespace:   
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 ```csharp
 public static class ProfilerMarkerExtensionsForGenerator

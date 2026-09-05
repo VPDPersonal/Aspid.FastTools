@@ -3,7 +3,7 @@
     "rootNamespace": "",
     "references": [
         "Aspid.FastTools.Samples.SerializeReferences",
-        "Aspid.FastTools.Unity.Editor"
+        "Aspid.FastTools.Editor"
     ],
     "includePlatforms": [
         "Editor"
