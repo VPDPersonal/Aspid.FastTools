@@ -9,7 +9,7 @@ pagination_next: null
 # Class InspectorIdField {#Aspid_FastTools_Ids_Editors_InspectorIdField}
 
 Namespace: [Aspid.FastTools.Ids.Editors](Aspid.FastTools.Ids.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 [`IdField`](Aspid.FastTools.Ids.Editors.IdField.md) variant pre-styled to match a Unity Inspector property row:
 applies [`alignedFieldUssClassName`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField-alignedFieldUssClassName.html) and the

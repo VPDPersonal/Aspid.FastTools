@@ -9,7 +9,7 @@ pagination_next: null
 # Class UniqueIdAttribute {#Aspid_FastTools_Ids_UniqueIdAttribute}
 
 Namespace: [Aspid.FastTools.Ids](Aspid.FastTools.Ids.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 Marks an integer field as a project-wide unique id. The editor drawer enforces uniqueness across all
 fields decorated with this attribute and offers a registry-aware id picker.

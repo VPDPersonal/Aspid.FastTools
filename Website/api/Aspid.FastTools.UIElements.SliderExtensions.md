@@ -9,7 +9,7 @@ pagination_next: null
 # Class SliderExtensions {#Aspid_FastTools_UIElements_SliderExtensions}
 
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 ```csharp
 public static class SliderExtensions

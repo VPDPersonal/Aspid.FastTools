@@ -9,7 +9,7 @@ pagination_next: null
 # Class EnumValues\<TValue\> {#Aspid_FastTools_Enums_EnumValues_1}
 
 Namespace: [Aspid.FastTools.Enums](Aspid.FastTools.Enums.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 A serializable dictionary that maps each member of a chosen enum to a value of type
 <code class="typeparamref">TValue</code>. Supports both regular and <code>[Flags]</code> enums.

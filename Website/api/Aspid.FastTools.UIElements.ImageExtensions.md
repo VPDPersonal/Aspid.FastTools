@@ -9,7 +9,7 @@ pagination_next: null
 # Class ImageExtensions {#Aspid_FastTools_UIElements_ImageExtensions}
 
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 ```csharp
 public static class ImageExtensions

@@ -1,8 +1,8 @@
 {
     "name": "Aspid.FastTools.DevTests.CliCommands.Editor",
     "references": [
-        "Aspid.FastTools.Unity.Editor",
-        "Aspid.FastTools.Unity.Editor.SerializeReferences.Yaml",
+        "Aspid.FastTools.Editor",
+        "Aspid.FastTools.Editor.SerializeReferences.Yaml",
         "Unity.Pipeline"
     ],
     "includePlatforms": [

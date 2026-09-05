@@ -9,6 +9,10 @@
 
 ## [Unreleased]
 
+### Изменено
+
+- **Ломающее: раскладка пакета приведена к привычным `Runtime/` и `Editor/`, а сборки потеряли сегмент `.Unity`.** Папок `Source/` и `Unity/` больше нет: `Unity/Runtime/` вместе с двумя engine-free файлами расширений из `Source/` стали `Runtime/`, `Unity/Editor/Scripts/` стал `Editor/`, а `Unity/Editor/Resources/` — `Editor/Resources/`. Раз папка `Unity` исчезла, суффикс перестал что-либо обозначать, поэтому `Aspid.FastTools.Unity` теперь `Aspid.FastTools`, `Aspid.FastTools.Unity.Editor` — `Aspid.FastTools.Editor`, а сателлитные и тестовые сборки следуют за ними (`Aspid.FastTools.VisualElements.Math`, `Aspid.FastTools.Editor.SerializeReferences.Yaml`, `Aspid.FastTools.Editor.Tests`, `Aspid.FastTools.Editor.SerializeReferences.Tests`). Отдельная engine-free сборка `Aspid.FastTools` влита в рантаймовую — её `StringExtensions` и `TypeExtensions` переехали в `Runtime/Extensions/` и сохранили пространство имён `Aspid.FastTools`, так что для вызывающего кода ничего не меняется. Пространства имён `.Unity` никогда не содержали и не затронуты; `asmdef`, ссылавшийся на `Aspid.FastTools.Unity` или `Aspid.FastTools.Unity.Editor`, нужно обновить на новые имена.
+
 ## [1.0.0-rc.7] — 2026-08-09
 
 Продолжение `1.0.0-rc.6`, сосредоточенное на пикере типов для `[SerializeReference]`: generic-кандидат теперь сверяется с тем, чем поле реально может его закрыть — попадает в список, только если какой-то аргумент подходит, и показывается закрытым, когда поле уже его определило, — вложенные managed-ссылки получают собственный выпадающий список, а `[TypeSelectorDisplay(Hidden = true)]` убирает тип из пикера, не трогая то, что уже его хранит.

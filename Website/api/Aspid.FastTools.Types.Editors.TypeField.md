@@ -9,7 +9,7 @@ pagination_next: null
 # Class TypeField {#Aspid_FastTools_Types_Editors_TypeField}
 
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 UIToolkit field that displays a [`Type`](https://learn.microsoft.com/dotnet/api/system.type) as a dropdown backed by
 [`TypeSelectorWindow`](Aspid.FastTools.Types.Editors.TypeSelectorWindow.md), optionally bound to a string-typed

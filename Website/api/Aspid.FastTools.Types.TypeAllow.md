@@ -9,7 +9,7 @@ pagination_next: null
 # Enum TypeAllow {#Aspid_FastTools_Types_TypeAllow}
 
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 Flags describing which special type categories the type picker should include
 in addition to plain concrete classes.

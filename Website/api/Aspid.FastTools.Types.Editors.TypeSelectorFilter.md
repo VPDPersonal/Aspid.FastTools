@@ -9,7 +9,7 @@ pagination_next: null
 # Struct TypeSelectorFilter {#Aspid_FastTools_Types_Editors_TypeSelectorFilter}
 
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 Describes which types the selector offers: the base-type and kind constraints, an optional per-type
 predicate, any verbatim extra entries, and the argument predicate for open generics. Bundles the

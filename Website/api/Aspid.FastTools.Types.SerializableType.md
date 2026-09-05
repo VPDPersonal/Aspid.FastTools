@@ -9,7 +9,7 @@ pagination_next: null
 # Class SerializableType {#Aspid_FastTools_Types_SerializableType}
 
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 A wrapper around [`Type`](https://learn.microsoft.com/dotnet/api/system.type) that supports Unity Inspector serialization.
 The type is stored by its <code>AssemblyQualifiedName</code> and resolved lazily on first access.

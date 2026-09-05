@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Breaking: the package layout is now the conventional `Runtime/` and `Editor/`, and the assemblies lost their `.Unity` segment.** `Source/` and `Unity/` are gone: `Unity/Runtime/` and the two engine-free extension files from `Source/` became `Runtime/`, `Unity/Editor/Scripts/` became `Editor/` and `Unity/Editor/Resources/` became `Editor/Resources/`. With the `Unity` folder gone the suffix no longer described anything, so `Aspid.FastTools.Unity` is now `Aspid.FastTools`, `Aspid.FastTools.Unity.Editor` is `Aspid.FastTools.Editor`, and the satellite and test assemblies follow (`Aspid.FastTools.VisualElements.Math`, `Aspid.FastTools.Editor.SerializeReferences.Yaml`, `Aspid.FastTools.Editor.Tests`, `Aspid.FastTools.Editor.SerializeReferences.Tests`). The separate engine-free `Aspid.FastTools` assembly was folded into the runtime one — its `StringExtensions` and `TypeExtensions` now live in `Runtime/Extensions/` and keep their `Aspid.FastTools` namespace, so nothing changes for calling code. Namespaces never carried `.Unity` and are untouched; an `asmdef` that referenced `Aspid.FastTools.Unity` or `Aspid.FastTools.Unity.Editor` has to be updated to the new names.
+
 ## [1.0.0-rc.7] — 2026-08-09
 
 A follow-up to `1.0.0-rc.6` centred on the `[SerializeReference]` type picker: a generic candidate is now measured against what the field can actually close — listed only when some argument fits, listed closed when the field already determines it — nested managed references get a dropdown of their own, and `[TypeSelectorDisplay(Hidden = true)]` keeps a type out of the picker without touching what already stores it.

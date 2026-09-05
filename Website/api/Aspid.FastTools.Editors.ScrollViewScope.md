@@ -9,7 +9,7 @@ pagination_next: null
 # Struct ScrollViewScope {#Aspid_FastTools_Editors_ScrollViewScope}
 
 Namespace: [Aspid.FastTools.Editors](Aspid.FastTools.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 Disposable ref struct wrapper around [`BeginScrollView`](https://docs.unity3d.com/ScriptReference/EditorGUILayout-BeginScrollView.html) /
 [`EndScrollView`](https://docs.unity3d.com/ScriptReference/EditorGUILayout-EndScrollView.html) that updates the caller's scroll position in place

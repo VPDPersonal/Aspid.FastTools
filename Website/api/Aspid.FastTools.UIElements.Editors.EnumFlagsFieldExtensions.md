@@ -9,7 +9,7 @@ pagination_next: null
 # Class EnumFlagsFieldExtensions {#Aspid_FastTools_UIElements_Editors_EnumFlagsFieldExtensions}
 
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 ```csharp
 public static class EnumFlagsFieldExtensions

@@ -9,7 +9,7 @@ pagination_next: null
 # Delegate GenericArgumentFilter {#Aspid_FastTools_Types_Editors_GenericArgumentFilter}
 
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 Decides whether <code class="paramref">argument</code> may close <code class="paramref">parameter</code> of
 <code class="paramref">openDefinition</code>. Unlike a plain per-type predicate this is asked <i>about a position</i>,

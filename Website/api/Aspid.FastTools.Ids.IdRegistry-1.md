@@ -9,7 +9,7 @@ pagination_next: null
 # Class IdRegistry\<T\> {#Aspid_FastTools_Ids_IdRegistry_1}
 
 Namespace: [Aspid.FastTools.Ids](Aspid.FastTools.Ids.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 A strongly typed wrapper around [`IdRegistry`](Aspid.FastTools.Ids.IdRegistry.md) that exposes [`IId`](Aspid.FastTools.Ids.IId.md)-aware membership checks.
 

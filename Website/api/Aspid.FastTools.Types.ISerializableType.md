@@ -9,7 +9,7 @@ pagination_next: null
 # Interface ISerializableType {#Aspid_FastTools_Types_ISerializableType}
 
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 Common contract of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers
 ([`SerializableType`](Aspid.FastTools.Types.SerializableType.md) and [`SerializableType<T>`](Aspid.FastTools.Types.SerializableType-1.md)).

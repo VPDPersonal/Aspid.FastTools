@@ -9,7 +9,7 @@ pagination_next: null
 # Class TypeExtensions {#Aspid_FastTools_Types_Editors_TypeExtensions}
 
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 Editor-side extension methods for [`Type`](https://learn.microsoft.com/dotnet/api/system.type): locate the [`MonoScript`](https://docs.unity3d.com/ScriptReference/MonoScript.html)
 asset that defines a type and open it in the external script editor.

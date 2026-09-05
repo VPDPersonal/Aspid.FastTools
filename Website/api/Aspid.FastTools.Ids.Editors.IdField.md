@@ -9,7 +9,7 @@ pagination_next: null
 # Class IdField {#Aspid_FastTools_Ids_Editors_IdField}
 
 Namespace: [Aspid.FastTools.Ids.Editors](Aspid.FastTools.Ids.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 UIToolkit field that displays an [`IId`](Aspid.FastTools.Ids.IId.md)-style integer id as an EnumField-style
 dropdown backed by [`Editors.IdSelectorWindow`](Aspid.FastTools.Ids.Editors.md). Optionally bound to an

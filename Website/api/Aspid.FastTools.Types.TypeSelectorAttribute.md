@@ -9,7 +9,7 @@ pagination_next: null
 # Class TypeSelectorAttribute {#Aspid_FastTools_Types_TypeSelectorAttribute}
 
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 Instructs the Unity Editor to use the type-selector window.
 

@@ -9,7 +9,7 @@ pagination_next: null
 # Struct ComponentTypeSelector {#Aspid_FastTools_Types_ComponentTypeSelector}
 
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
-Assembly: Aspid.FastTools.Unity.dll  
+Assembly: Aspid.FastTools.dll  
 
 Adds an Inspector dropdown that lets you swap the object's script
 to any subtype of the field's declaring class.

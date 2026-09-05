@@ -9,7 +9,7 @@ pagination_next: null
 # Class SerializeReferenceIMGUIList {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceIMGUIList}
 
 Namespace: [Aspid.FastTools.SerializeReferences.Editors](Aspid.FastTools.SerializeReferences.Editors.md)  
-Assembly: Aspid.FastTools.Unity.Editor.dll  
+Assembly: Aspid.FastTools.Editor.dll  
 
 IMGUI parity for the UIToolkit ListView's picker-backed "+": draws a <code>[SerializeReference]</code> list/array whose
 add button opens the type picker and appends a fresh typed instance (or an empty <code>&lt;None&gt;</code> element),
