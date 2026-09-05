@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(awk *)",
+      "Bash(unity status *)",
+      "Bash(unity command editor_status *)",
+      "Bash(unity command get_console_logs *)",
+      "Bash(dotnet test *)"
+    ]
+  }
+}
