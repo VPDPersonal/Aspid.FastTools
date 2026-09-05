@@ -5,7 +5,7 @@ using Aspid.FastTools.Enums;
 namespace Aspid.FastTools.Samples.EnumValues
 {
     // Step-by-step tour of EnumValues<TValue> / EnumValues<TEnum, TValue>: each [Header("STEP N …")]
-    // is one lesson. Open Scenes/EnumValuesTutorial.unity and follow TUTORIAL.md / TUTORIAL_RU.md.
+    // is one lesson. Open Scenes/EnumValuesTutorial.unity and follow TUTORIAL.md / TUTORIAL.ru.md.
     public sealed class EnumValuesTutorial : MonoBehaviour
     {
         [Header("STEP 1 — Your first mapping")]

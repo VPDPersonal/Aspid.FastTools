@@ -32,7 +32,7 @@ namespace Aspid.FastTools.Editors
         private const string SamplesPath = PackageRootPath + "/Samples";
         private const string AssetStoreUrl = "https://assetstore.unity.com/packages/slug/365584";
         private const string GitHubUrl = "https://github.com/VPDPersonal/Aspid.FastTools";
-        private const string DocumentationUrl = GitHubUrl + "/blob/main/Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/EN/README.md";
+        private const string DocumentationUrl = "https://vpdpersonal.github.io/Aspid.FastTools/";
 
         private const string DocsLinkName = "welcome-link-docs";
         private const string GitHubLinkName = "welcome-link-github";

@@ -22,7 +22,7 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseBoolField.label"/> property and returns the element for chaining.
+        /// Sets the <see cref="BaseField{TValueType}.label"/> property and returns the element for chaining.
         /// </summary>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The label text to set.</param>

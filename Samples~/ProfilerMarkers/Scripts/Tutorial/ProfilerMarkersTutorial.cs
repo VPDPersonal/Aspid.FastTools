@@ -6,7 +6,7 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
     // Step-by-step tour of this.Marker(): each [Header("STEP N …")] is one lesson.
     // Enter Play Mode and open Window → Analysis → Profiler — every marker shows up under
     // "ProfilerMarkersTutorial.*". The fields below are load knobs that change what each marker costs.
-    // Open Scenes/ProfilerMarkersTutorial.unity and follow TUTORIAL.md / TUTORIAL_RU.md.
+    // Open Scenes/ProfilerMarkersTutorial.unity and follow TUTORIAL.md / TUTORIAL.ru.md.
     public sealed class ProfilerMarkersTutorial : MonoBehaviour
     {
         [Header("STEP 1 — Named block markers")]

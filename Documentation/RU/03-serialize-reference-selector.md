@@ -1,0 +1,93 @@
+# SerializeReference Selector
+
+Стандартный Inspector не умеет заполнять поля `[SerializeReference]`: managed-ссылку нельзя
+создать из UI, а при переименовании или удалении типа Unity молча очищает данные.
+SerializeReference Selector закрывает оба пробела: выпадающий выбор реализации прямо
+в Инспекторе плюс точечная починка сломанных ссылок у самого поля. Аудит по всему проекту,
+массовая починка и build/CI-гейт — в [SerializeReference Tooling](04-serialize-reference-tooling.md).
+
+**Разделы справочника:**
+
+* [`Inspector type dropdown`](#inspector-type-dropdown) — дропдаун `[TypeSelector]`
+  на полях `[SerializeReference]`: выбор реализации, вложенный inspector, generics,
+  copy/paste;
+* [`Repairing broken references`](#repairing-broken-references) — жёлтое предупреждение
+  вместо молчаливой очистки, **Fix** / **Smart Fix** / **Make unique**.
+
+## Inspector type dropdown
+
+Добавьте `[TypeSelector]` рядом с `[SerializeReference]` — Inspector заменит стандартный
+UI managed-ссылки иерархическим [окном выбора типа](02-serializable-types.md#typeselectorwindow) с поиском.
+Вы прямо в инспекторе выбираете, какая конкретная реализация типа поля будет создана;
+`<None>` очищает ссылку.
+
+```csharp
+using System;
+using UnityEngine;
+using System.Collections.Generic;
+using Aspid.FastTools.Types;
+
+public interface IWeapon
+{
+    void Fire();
+}
+
+[Serializable]
+public sealed class Pistol : IWeapon
+{
+    [SerializeField] [Min(0)] private int _damage = 10;
+
+    public void Fire() => Debug.Log($"Pistol: {_damage} dmg");
+}
+
+public sealed class Loadout : MonoBehaviour
+{
+    [TypeSelector]
+    [SerializeReference] private IWeapon _primary;
+
+    [TypeSelector]
+    [SerializeReference] private List<IWeapon> _sidearms;
+}
+```
+
+Атрибут существует только в редакторе (`[Conditional("UNITY_EDITOR")]`) и не несёт
+стоимости в рантайме. Работает с одиночными полями, массивами и `List<T>`, в инспекторах
+IMGUI и UIToolkit. Тот же атрибут работает и с полями `string` и `SerializableType` —
+см. [TypeSelectorAttribute](02-serializable-types.md#typeselectorattribute).
+
+![Выбор реализации в managed-ссылке: пикер и вложенный inspector выбранного экземпляра](../Images/aspid_fasttools_serialize_reference_selector.gif)
+
+| Возможность | Что делает |
+|---|---|
+| **Выбор реализации** | В списке — конкретные классы (не наследники `UnityEngine.Object`), совместимые с типом поля. `[TypeSelector(typeof(IMelee))]` сужает список до реализаций `IMelee`, а `[TypeSelectorDisplay(Hidden = true)]` убирает из пикера отдельный тип. |
+| **Open generics** | `Modifier<T>` и подобные: аргументы выводятся из поля — в том числе через реализуемые им интерфейсы, поэтому поле `IConverter<string, string>` сразу закрывает кандидата `Sequence<T> : IConverter<T, T>`, — либо выбираются на второй странице селектора, если поле оставляет параметр неопределённым. Определённый кандидат показывается в списке закрытым (`Sequence<String>`), так что строка называет то, что создастся. Кандидат, которого не закрыть под поле ни одним аргументом, не показывается вовсе — `ToString<TFrom> : IConverter<TFrom, string>` отсутствует у поля `IConverter<float, float>`, — при этом объявленная вариантность учитывается, поэтому для `IConverter<float, object>` он остаётся. Аргумент обязан быть сериализуемым только там, где кандидат его хранит: кандидат, держащий `T` за `[SerializeReference]`, закрывается любым `T`, — а страница аргументов по-прежнему предлагает только сериализуемые типы. |
+| **Вложенные ссылки** | Поле `[SerializeReference]` (или массив/список) *внутри* назначенного экземпляра получает тот же дропдаун, поэтому граф настраивается на всю глубину без аннотаций на каждом уровне — на 8 уровней, дальше отрисовку снова ведёт Unity. Дочернее поле, для которого у Unity уже есть drawer (собственный `[TypeSelector]` или зарегистрированный для его типа `[CustomPropertyDrawer]`), этот drawer сохраняет. |
+| **Сохранение данных** | При смене типа поля, совпадающие по имени и сериализуемой форме, переносятся, а не сбрасываются в значения по умолчанию. |
+| **Copy / Paste** | Правый клик по заголовку копирует значение и вставляет его независимым экземпляром в любое совместимое поле. |
+| **Мультивыделение** | Смешанное выделение показывает смешанное состояние dropdown; выбор или вставка применяется к каждому объекту в одной группе Undo. |
+| **Проверка компилятором** | Анализатор Roslyn: `AFT0004` (ошибка) — тип наследует `UnityEngine.Object`; `AFT0005` (предупреждение) — селектор оказался бы пустым. |
+
+Пустое поле с `[TypeSelector(Required = true)]` показывает предупреждение «required»
+в инспекторе и считается нарушением для
+[build/CI-гейта](04-serialize-reference-tooling.md#project-settings--the-buildci-gate) —
+см. свойство `Required` в [TypeSelectorAttribute](02-serializable-types.md#typeselectorattribute).
+
+## Repairing broken references
+
+Когда сохранённый в ассете тип перестаёт резолвиться или два поля незаметно делят
+один экземпляр, селектор не молчит — каждая проблема получает заметку в инспекторе
+и кнопку починки рядом:
+
+| Случай | Решение |
+|---|---|
+| **Потерянный тип** (переименован или удалён) | Жёлтое предупреждение вместо молчаливой очистки. Подчёркнутое **Fix** открывает селектор и переназначает тип с сохранением данных — на любой глубине, в сохранённых ассетах и прямо в Prefab Mode. |
+| **Smart Fix** | Рядом с **Fix** предлагает наиболее вероятную замену (`[MovedFrom]`, другой namespace/сборка, регистр, близкое имя) и применяет в один клик — никогда не автоматически. |
+| **Общая ссылка** (два поля делят экземпляр) | Помечается лейблом; **Make unique** расщепляет её в независимую копию. Дублирование элемента списка (Ctrl+D, `+`) больше не создаёт алиас. |
+
+![Заметка Missing type с кнопками Fix и Smart Fix на сломанной managed-ссылке](../Images/aspid_fasttools_serialize_reference_repair.png)
+
+![Заметка Shared reference с действием Make unique на двух полях, делящих один экземпляр](../Images/aspid_fasttools_serialize_reference_make_unique.png)
+
+Про аудит и массовую починку по всему проекту — см.
+[Bulk repair tabs](04-serialize-reference-tooling.md#bulk-repair-tabs).
+

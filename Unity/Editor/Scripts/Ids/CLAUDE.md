@@ -5,8 +5,6 @@ Runtime contracts live in `Unity/Runtime/Ids/`; struct-side boilerplate is gener
 
 ## Layout
 
-Mirrors the sibling `Types/` feature — `Drawers/` for IMGUI + UIToolkit drawers, `Selectors/` for the picker window, `VisualElements/` for the bound field, `Registries/` for the `IdRegistry` inspector, `Resolvers/` for the AQN → registry index. The `Drawers/`, `Selectors/`, and `VisualElements/` classes mirror their `Types/` counterparts (`TypeIMGUIPropertyDrawer`, `TypeField`, `InspectorTypeField`, …). Cross-component USS classes and field names live in `Constants.cs`; `UniqueIdIndex.cs` is the project-wide `[UniqueId]` collision index.
-
 `IdRegistryEditor` is a 5-line shell that hands its `SerializedObject` to `RegistryEditorCore`. **`IdRegistry` mutations live only in `RegistryEditorCore`** (via the `Record` → `Add`/`SetName`/`RemoveAt` → `Commit` cycle, see Storage below). UI is split into `IdRegistry*VisualElement` components that are dumb shells: they own DOM and emit events, never touch the asset's `SerializedProperty`s. Wiring (event subscriptions and `Bind` calls) happens once inside `RegistryEditorCore.Build()`. Adding new inspector behavior means: a new component if it's a UI surface, plus the wiring + handler in core. The one allowed exception is `IdRegistryNextIdRowVisualElement`, which holds a `PropertyField(_nextId)` because Unity's `PropertyField` already records its own Undo and writes through `SerializedObject` — core listens for the change to invalidate the runtime cache.
 
 ## Storage

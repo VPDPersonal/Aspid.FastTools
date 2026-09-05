@@ -20,14 +20,5 @@ Components/AspidGradientButton/
 - Styling goes in USS; code only calls `.AddClass()`. Class-name and `--aspid-*` variable grammar
   lives in `../../../Resources/UI/CLAUDE.md` — read it before touching either.
 
-## Shared pieces
-
-| Path | What |
-|---|---|
-| `Styles/AspidStyles.cs` | default stylesheet + shared USS constants |
-| `Styles/StatusStyle.cs`, `ThemeStyle.cs`, `InlineStyle<T>` | shared style helpers |
-| `NavRing.cs` | keyboard nav ring, shared across window tabs |
-| `DoubleClickTracker.cs` | double-click detection |
-
 `ICustomStyleExtensions` is **not** here — it ships in runtime, at
 `Unity/Runtime/VisualElements/Extensions/ICustomStyle/`.
