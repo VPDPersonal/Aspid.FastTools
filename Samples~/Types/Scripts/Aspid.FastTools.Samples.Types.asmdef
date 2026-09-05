@@ -2,7 +2,7 @@
     "name": "Aspid.FastTools.Samples.Types",
     "rootNamespace": "",
     "references": [
-        "Aspid.FastTools.Unity"
+        "Aspid.FastTools"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

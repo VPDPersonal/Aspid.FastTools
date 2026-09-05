@@ -2,7 +2,7 @@
     "name": "Aspid.FastTools.Samples.VisualElements",
     "rootNamespace": "",
     "references": [
-        "Aspid.FastTools.Unity"
+        "Aspid.FastTools"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

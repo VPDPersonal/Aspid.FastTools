@@ -1,9 +1,8 @@
 {
-    "name": "Aspid.FastTools.Samples.SerializeReferences.Editor",
-    "rootNamespace": "",
+    "name": "Aspid.FastTools.Editor",
     "references": [
-        "Aspid.FastTools.Samples.SerializeReferences",
-        "Aspid.FastTools.Editor"
+        "Aspid.FastTools",
+        "Aspid.FastTools.Editor.SerializeReferences.Yaml"
     ],
     "includePlatforms": [
         "Editor"

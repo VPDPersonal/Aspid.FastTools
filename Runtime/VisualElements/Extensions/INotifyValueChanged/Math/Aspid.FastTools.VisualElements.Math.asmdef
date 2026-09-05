@@ -1,8 +1,8 @@
 {
-    "name": "Aspid.FastTools.Samples.ProfilerMarkers",
+    "name": "Aspid.FastTools.VisualElements.Math",
     "rootNamespace": "",
     "references": [
-        "Aspid.FastTools"
+        "Unity.Mathematics"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -11,6 +11,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.mathematics",
+            "expression": "",
+            "define": "ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION"
+        }
+    ],
     "noEngineReferences": false
 }
