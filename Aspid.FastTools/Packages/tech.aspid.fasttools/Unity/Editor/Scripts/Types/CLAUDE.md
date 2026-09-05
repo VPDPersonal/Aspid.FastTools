@@ -18,30 +18,5 @@ The candidate list defaults to the field's declared type; a base type narrows it
 `[TypeSelector(typeof(IMelee))]`. Correct usage is enforced at compile time by the analyzer's
 `AFT*` rules, so a wrong constraint is a build error, not a silent empty picker.
 
-## Layout
-
-```
-Types/
-├── TypeSelectorConstraintResolver.cs   ← resolves the attribute's constraint to a candidate set
-├── TypeSelectorHelpers.cs / TypeUtility.cs / SerializableTypeUtility.cs
-├── Drawers/
-│   ├── TypeSelectorPropertyDrawer.cs           ← entry point, dispatches on propertyType
-│   ├── SerializableTypePropertyDrawer.cs
-│   ├── ComponentTypeSelectorPropertyDrawer.cs
-│   ├── TypeIMGUIPropertyDrawer.cs              ← static IMGUI body
-│   └── TypeUIToolkitPropertyDrawer.cs          ← static UIToolkit body
-├── Selectors/
-│   ├── TypeSelectorWindow.cs                   ← the picker window
-│   ├── TypeSelectorView*.cs                    ← partials: View / Rows / Input / Navigation / Generics
-│   ├── HierarchyBuilder.cs, NamespaceNode.cs, TreeNode.cs, NavigationController.cs
-│   ├── GenericTypeResolver.cs, TypeSelectorFilter.cs, TypeSelectorIconResolver.cs
-│   └── Settings/
-│       ├── TypeSelectorSettings.cs             ← project settings
-│       ├── TypeSelectorPreferences.cs          ← per-user EditorPrefs (favorites / recents)
-│       └── TypeSelectorSettingsView.cs
-├── VisualElements/  ← TypeField, InspectorTypeField
-└── Extensions/      ← TypeExtensions
-```
-
 The `Drawers/` + `Selectors/` + `VisualElements/` split mirrors the sibling `Ids/` feature — see
 `../Ids/CLAUDE.md`, which follows the same shape.

@@ -121,7 +121,7 @@ body:
     attributes:
       label: 9. Documentation
       options:
-        - label: "`sync-readmes` clean — 4 main READMEs in sync (EN/RU, root/Documentation), image paths correct"
+        - label: "Package docs (`Documentation/`, `Documentation/ru/`, sample READMEs) match the API; `cd Website && npm run build` passes with no broken links"
         - label: Images in `Documentation/Images/` exist and render on GitHub and in the unpacked package
         - label: Stable (`upm`) and Preview (`upm-preview`) badges render
         - label: Asset Store card screenshots proofread (no typos)

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Aspid.FastTools.Types;
 
 // Docs-media harness: mirrors the SerializeReference Selector example in
-// Documentation/EN|RU/SerializeReferences.md — IWeapon implementations picked into
+// Documentation/03-serialize-reference-selector.md — IWeapon implementations picked into
 // [SerializeReference] fields. Lives in DevTests, but uses a neutral game-like
 // namespace because the picker breadcrumbs are visible in the recorded media.
 

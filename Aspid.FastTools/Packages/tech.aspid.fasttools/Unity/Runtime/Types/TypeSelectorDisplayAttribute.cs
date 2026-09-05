@@ -77,7 +77,7 @@ namespace Aspid.FastTools.Types
         /// already stored in a field keeps rendering.
         /// </summary>
         /// <remarks>
-        /// Not inherited, matching this attribute's <see cref="AttributeUsage"/>: hiding a base type never hides
+        /// Not inherited, matching this attribute's <see cref="AttributeUsageAttribute"/>: hiding a base type never hides
         /// the subclasses meant to be picked instead of it.
         /// </remarks>
         public bool Hidden { get; set; }

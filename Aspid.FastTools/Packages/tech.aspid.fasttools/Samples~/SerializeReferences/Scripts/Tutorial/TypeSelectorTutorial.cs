@@ -13,7 +13,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     //  bundled Scenes/TypeSelectorTutorial.unity (a few steps are pre-filled) and follow along, or
     //  drop this component on an empty GameObject and start from a clean slate.
     //
-    //  The companion TUTORIAL.md / TUTORIAL_RU.md walk through the same steps in prose and add the
+    //  The companion TUTORIAL.md / TUTORIAL.ru.md walk through the same steps in prose and add the
     //  power-user gestures (copy/paste, templates, drag-drop, repair) and window-level tools that
     //  do not show up as plain fields.
     //

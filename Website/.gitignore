@@ -1,0 +1,7 @@
+node_modules/
+build/
+.docusaurus/
+.cache-loader/
+npm-install.log
+i18n/
+docfx/projects/

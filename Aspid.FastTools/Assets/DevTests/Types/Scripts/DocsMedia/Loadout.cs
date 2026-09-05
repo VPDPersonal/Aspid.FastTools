@@ -1,7 +1,7 @@
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-// Docs-media harness: mirrors the member-reference example in Documentation/EN|RU/Types.md —
+// Docs-media harness: mirrors the member-reference example in Documentation/02-serializable-types.md —
 // _category drives _weaponType's picker live in the Inspector.
 
 // ReSharper disable once CheckNamespace

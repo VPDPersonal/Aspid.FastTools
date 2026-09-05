@@ -7,7 +7,7 @@ namespace Aspid.FastTools.Samples.Types
 {
     // Step-by-step tour of SerializableType<T> / [TypeSelector] (incl. generic picking + Required) /
     // ComponentTypeSelector: each [Header("STEP N …")] is one lesson. Open Scenes/TypesTutorial.unity
-    // and follow TUTORIAL.md / TUTORIAL_RU.md.
+    // and follow TUTORIAL.md / TUTORIAL.ru.md.
     public sealed class TypesTutorial : MonoBehaviour
     {
         [Header("STEP 1 — Pick a type with SerializableType<T>")]

@@ -5,7 +5,7 @@ using Aspid.FastTools.Ids;
 namespace Aspid.FastTools.Samples.Ids
 {
     // Step-by-step tour of IId / IdRegistry / [UniqueId]: each [Header("STEP N …")] is one lesson.
-    // Open Scenes/IdsTutorial.unity and follow TUTORIAL.md / TUTORIAL_RU.md.
+    // Open Scenes/IdsTutorial.unity and follow TUTORIAL.md / TUTORIAL.ru.md.
     public sealed class IdsTutorial : MonoBehaviour
     {
         [Header("STEP 1 — Pick an id in the Inspector")]

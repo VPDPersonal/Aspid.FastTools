@@ -1,13 +1,11 @@
 # Aspid.FastTools — C# code style.
 #
 # Machine-enforceable formatting & naming for Rider / Visual Studio / `dotnet format`.
-# These are the Unity-side defaults (Runtime + Editor). The Generators project
-# overrides the namespace style in Aspid.FastTools.Generators/.editorconfig.
+# Unity-side defaults (Runtime + Editor) first; the Roslyn solutions
+# (Generators, Analyzers) override only the namespace style at the bottom.
 #
-# Prose conventions that can't be expressed here (named-argument house style,
-# usings sorted by length, sealed-by-default, XML-doc richness, the
-# `// ReSharper disable once CheckNamespace` banner, per-file `#nullable enable`)
-# live in CLAUDE.md → "C# Code Style". Keep both in sync.
+# Conventions that can't be expressed here (named-argument house style, usings
+# sorted by length, sealed-by-default, XML-doc richness) live in CLAUDE.md files.
 
 root = true
 
@@ -31,11 +29,11 @@ csharp_style_namespace_declarations = block_scoped:warning
 csharp_using_directive_placement = outside_namespace:warning
 dotnet_sort_system_directives_first = false
 dotnet_separate_import_directive_groups = false
-# Namespaces deliberately do NOT mirror folders (hence the `// ReSharper disable
-# once CheckNamespace` banner) — silence the folder-match suggestion (IDE0130).
-dotnet_style_namespace_match_folder = false
+# Namespaces deliberately do NOT mirror folders — every file carries the
+# `// ReSharper disable once CheckNamespace` banner instead (Rider ignores IDE0130 here).
 
-#### Braces — Allman; omit braces for single-statement bodies.
+#### Braces — Allman. Single-statement bodies go without braces on the next
+#### line (used ~250 times), so no brace preference is enforced.
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
 csharp_new_line_before_catch = true
@@ -43,7 +41,6 @@ csharp_new_line_before_finally = true
 csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
-csharp_prefer_braces = when_multiline:suggestion
 
 #### Indentation.
 csharp_indent_case_contents = true
@@ -94,7 +91,6 @@ csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
 csharp_style_prefer_pattern_matching = true:suggestion
 csharp_style_prefer_not_pattern = true:suggestion
 csharp_style_prefer_switch_expression = true:suggestion
-csharp_style_prefer_extended_property_pattern = true:suggestion
 
 #### Expression-level preferences.
 dotnet_style_object_initializer = true:suggestion
@@ -105,7 +101,6 @@ dotnet_style_null_propagation = true:suggestion
 dotnet_style_coalesce_expression = true:suggestion
 csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_throw_expression = true:suggestion
-csharp_style_prefer_null_check_over_type_check = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
 
 #### Naming — symbol groups.
@@ -157,3 +152,7 @@ dotnet_naming_rule.interfaces_are_i_prefixed.severity = warning
 dotnet_naming_rule.type_parameters_are_t_prefixed.symbols = type_parameter_symbol
 dotnet_naming_rule.type_parameters_are_t_prefixed.style = t_prefix_style
 dotnet_naming_rule.type_parameters_are_t_prefixed.severity = warning
+
+#### Roslyn solutions — file-scoped namespaces (Unity side stays block-scoped).
+[Aspid.FastTools.{Generators,Analyzers}/**.cs]
+csharp_style_namespace_declarations = file_scoped:warning
