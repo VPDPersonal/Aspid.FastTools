@@ -475,6 +475,15 @@ namespace Aspid.FastTools.Enums.Tests
         }
 
         [Test]
+        public void Untyped_Equals_TypeOtherThanConfigured_ReturnsFalse()
+        {
+            SetEnumType("_untyped", typeof(Season).AssemblyQualifiedName);
+
+            // Same rule as GetValue: identical values of a foreign type are not equal either.
+            Assert.IsFalse(_host.Untyped.Equals(Sides.Left, Sides.Left));
+        }
+
+        [Test]
         public void Untyped_Equals_RegularEnum_UsesExactEquality()
         {
             SetEnumType("_untyped", typeof(Season).AssemblyQualifiedName);

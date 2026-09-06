@@ -1,15 +1,11 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using Aspid.FastTools.Editors;
 using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Enums.Editors
 {
-    /// <summary>
-    /// IMGUI rendering for <see cref="EnumValuesPropertyDrawer"/>.
-    /// </summary>
     internal static class EnumValuesIMGUIPropertyDrawer
     {
         private const float BorderWidth = 1f;
@@ -52,14 +48,14 @@ namespace Aspid.FastTools.Enums.Editors
             var enumTypeProperty = property.FindPropertyRelative("_enumType");
             var defaultValueProperty = property.FindPropertyRelative("_defaultValue");
 
-            UpdateValues(valuesProperty, enumTypeProperty);
+            EnumValuesPropertyDrawerHelper.SyncEntryEnumTypes(valuesProperty, enumTypeProperty);
 
             var inset = BorderWidth + CardPadding;
 
             var headerBackgroundHeight = BorderWidth + CardPadding + EditorGUIUtility.singleLineHeight + SeamPadding;
             var headerBackgroundRect = new Rect(position.x, position.y, position.width, headerBackgroundHeight);
 
-            var containerBackgroundRect = new Rect( position.x, headerBackgroundRect.yMax, position.width, position.height - headerBackgroundHeight);
+            var containerBackgroundRect = new Rect(position.x, headerBackgroundRect.yMax, position.width, position.height - headerBackgroundHeight);
 
             var headerRect = new Rect(
                 position.x + inset,
@@ -74,9 +70,7 @@ namespace Aspid.FastTools.Enums.Editors
                 headerBackgroundRect, serializedObject,
                 valuesProperty.propertyPath, enumTypeProperty.propertyPath, defaultValueProperty.propertyPath);
 
-            // Foldout arrows (the Values array header, a multi-line Default Value) render to the
-            // LEFT of the supplied rect in the Inspector — inset the content column so they stay
-            // inside the card border.
+            // Foldout arrows render to the left of the supplied rect; keep them inside the border.
             var contentInset = inset + EnumValueIMGUIPropertyDrawer.FoldoutArrowWidth;
 
             var valuesHeight = EditorGUI.GetPropertyHeight(valuesProperty, includeChildren: true);
@@ -87,7 +81,7 @@ namespace Aspid.FastTools.Enums.Editors
             EditorGUI.BeginChangeCheck();
             EditorGUI.PropertyField(valuesRect, valuesProperty, includeChildren: true);
             if (EditorGUI.EndChangeCheck())
-                UpdateValues(valuesProperty, enumTypeProperty);
+                EnumValuesPropertyDrawerHelper.SyncEntryEnumTypes(valuesProperty, enumTypeProperty);
 
             var defaultValueHeight = EditorGUI.GetPropertyHeight(defaultValueProperty, includeChildren: true);
             var defaultValueRect = new Rect(valuesRect.x, valuesRect.yMax + EditorGUIUtility.standardVerticalSpacing, valuesRect.width, defaultValueHeight);
@@ -144,9 +138,6 @@ namespace Aspid.FastTools.Enums.Editors
             else EditorGUI.PropertyField(fieldRect, enumTypeProperty, GUIContent.none);
         }
 
-        // Read-only counterpart of InspectorTypeField(IsReadOnly = true) used by the UIToolkit
-        // variant — the typed EnumValues<TEnum,TValue> variant fixes the enum at compile time, so
-        // there is nothing to pick, only a caption and an open-script shortcut.
         private static void DrawReadOnlyEnumType(Rect rect, SerializedProperty enumTypeProperty)
         {
             var type = string.IsNullOrEmpty(enumTypeProperty.stringValue)
@@ -166,21 +157,6 @@ namespace Aspid.FastTools.Enums.Editors
             {
                 var openButtonRect = new Rect(captionRect.xMax + 1f, rect.y, rect.height, rect.height);
                 TypeIMGUIPropertyDrawer.DrawOpenScriptButton(openButtonRect, type);
-            }
-        }
-
-        private static void UpdateValues(SerializedProperty valuesProperty, SerializedProperty enumTypeProperty)
-        {
-            var enumTypeValue = enumTypeProperty.stringValue;
-
-            for (var i = 0; i < valuesProperty.arraySize; i++)
-            {
-                var enumTypeElement = valuesProperty
-                    .GetArrayElementAtIndex(i)
-                    .FindPropertyRelative("_enumType");
-
-                if (enumTypeElement.stringValue != enumTypeValue)
-                    enumTypeElement.SetStringAndApply(enumTypeValue);
             }
         }
     }
