@@ -35,28 +35,16 @@ namespace Aspid.FastTools.Types.Editors
         internal bool CanNavigateBack =>
             _breadcrumbs.Count > 0;
 
-        /// <summary>
-        /// Whether the picker is showing its root page (not searching, no breadcrumbs).
-        /// </summary>
-        /// <remarks>
-        /// The Favorites and Recents sections are only composed here, and only when the controller was
-        /// created with section composition enabled.
-        /// </remarks>
+        // The Favorites and Recents sections are composed only on this page, and only when the controller was
+        // created with section composition enabled.
         internal bool IsAtRoot =>
             !IsSearching && _breadcrumbs.Count is 0;
 
-        /// <summary>
-        /// The ancestor chain from the synthetic root down to (but excluding) <see cref="CurrentNode"/>;
-        /// the breadcrumb bar reads this to render the clickable trail.
-        /// </summary>
-        /// <remarks>
-        /// <c>Breadcrumbs[0]</c> is always the hidden <c>"/"</c> root; real ancestors start at index 1.
-        /// </remarks>
+        // The ancestor chain the breadcrumb bar renders. Index 0 is always the hidden root, so real ancestors start
+        // at index 1.
         internal IReadOnlyList<TreeNode> Breadcrumbs => _breadcrumbs;
 
-        /// <summary>
-        /// The node whose children are currently listed (the deepest opened level).
-        /// </summary>
+        // The node whose children are currently listed (the deepest opened level).
         internal TreeNode CurrentNode => _currentNode;
 
         internal List<TreeNode> CurrentItems
@@ -69,12 +57,8 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        /// <param name="root">The root of the candidate hierarchy.</param>
-        /// <param name="composeSections">
-        /// When <see langword="true"/>, the root page is augmented with <c>★ Favorites</c> and
-        /// <c>Recent</c> sections drawn from <see cref="TypeSelectorPreferences"/>; only the base
-        /// (root) page of the picker enables this — generic-argument pages do not.
-        /// </param>
+        // composeSections augments the root page with the Favorites and Recent sections. Only the picker's base page
+        // enables it; a generic-argument page does not.
         internal NavigationController(TreeNode root, bool composeSections = false)
         {
             _rootNode = root;
@@ -84,10 +68,9 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!_composeSections) return;
 
-            // Favorites and Recents open collapsed: they are a quick-access convenience, not the primary list, so the
-            // root lands on the full type hierarchy and the user expands a section when they want it. Seeding the keys
-            // here (rather than per-section) also collapses a section that only appears later — once its first favorite
-            // or recent is recorded — while a user-driven expand survives, since RebuildRootItems never re-adds them.
+            // Both open collapsed, so the root lands on the full type hierarchy. Seeding the keys here rather than
+            // per section also collapses a section that appears only later, once its first entry is recorded, while
+            // a user-driven expand survives, since the rebuild never re-adds them.
             _collapsedSections.Add(FavoritesSection);
             _collapsedSections.Add(RecentSection);
 
@@ -102,7 +85,7 @@ namespace Aspid.FastTools.Types.Editors
             if (IsSearching)
             {
                 _searchResults.Clear();
-                var filter = query?.Trim().ToLowerInvariant();
+                var filter = query.Trim();
 
                 foreach (var node in EnumerateLeaves(_rootNode))
                 {
@@ -126,14 +109,8 @@ namespace Aspid.FastTools.Types.Editors
             _currentNode = node;
         }
 
-        /// <summary>
-        /// Pops breadcrumbs until exactly <paramref name="keep"/> remain, making the ancestor that sat at
-        /// that depth the current node — a one-click jump up several levels for the breadcrumb bar.
-        /// </summary>
-        /// <remarks>
-        /// <c>keep == 0</c> returns to the root page; a <paramref name="keep"/> at or above the current
-        /// depth is a no-op.
-        /// </remarks>
+        // Pops breadcrumbs until keep remain, making that ancestor current — the breadcrumb bar's jump up several
+        // levels. Zero returns to the root page, and a value at or above the current depth is a no-op.
         internal void NavigateToDepth(int keep)
         {
             while (_breadcrumbs.Count > keep && CanNavigateBack)
@@ -166,26 +143,19 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        /// <summary>
-        /// Re-composes the root page after the favorites set changes (e.g. a star was toggled), so the
-        /// Favorites section reflects the new state on the next refresh. No-op when this controller does
-        /// not compose sections.
-        /// </summary>
+        // Re-composes the root page after the favorites set changes (e.g. a star was toggled), so the
+        // Favorites section reflects the new state on the next refresh. No-op when this controller does
+        // not compose sections.
         internal void RefreshFavoritesSection()
         {
             if (_composeSections) RebuildRootItems();
         }
 
-        /// <summary>
-        /// Whether the section identified by <paramref name="sectionKey"/> is currently collapsed.
-        /// </summary>
         internal bool IsSectionCollapsed(string sectionKey) =>
             sectionKey is not null && _collapsedSections.Contains(sectionKey);
 
-        /// <summary>
-        /// Toggles the collapsed state of the section identified by <paramref name="sectionKey"/> and re-filters the
-        /// visible root composition. No-op when this controller does not compose sections.
-        /// </summary>
+        // Toggles the collapsed state of the section identified by sectionKey and re-filters the
+        // visible root composition. No-op when this controller does not compose sections.
         internal void ToggleSection(string sectionKey)
         {
             if (!_composeSections || string.IsNullOrEmpty(sectionKey)) return;
@@ -201,8 +171,7 @@ namespace Aspid.FastTools.Types.Editors
             _rootItems.Clear();
 
             // Pin the <None> option (always the first root child) to the very top.
-            var noneOption = _rootNode.Children
-                .FirstOrDefault(child => child.DisplayName == TypeSelectorHelpers.NoneOption);
+            var noneOption = _rootNode.Children.FirstOrDefault(child => child.IsNoneOption);
 
             if (noneOption is not null)
                 _rootItems.Add(noneOption);

@@ -6,26 +6,17 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// The window's shared keyboard focus ring: one flat list of actionable elements walked with ↑/↓, activated with
-    /// Enter and dropped with Escape; sliders take ←/→ (Adjust) and removable rows take Delete/Backspace (Remove). The
-    /// window views (Welcome, Asset / Project References, Settings) all drive from this one ring so their keyboard
-    /// behaviour stays identical — each supplies only how to scroll a member into view, which class marks a focused
-    /// plain row, and (optionally) when the ring is suspended because its own picker owns the keyboard.
-    /// </summary>
-    /// <remarks>
-    /// The ring never moves real keyboard focus onto its members — the host element keeps focus and the ring only
-    /// paints a highlight — so a member hidden by a collapsed container is skipped while walking and never activated,
-    /// keeping an off-screen member out of keyboard reach.
-    /// </remarks>
+    // The window's shared keyboard focus ring: one flat list of actionable elements walked with the arrows,
+    // activated with Enter and dropped with Escape. Every window view drives this one ring, so their keyboard
+    // behavior stays identical; each supplies only how to scroll a member into view, which class marks a focused
+    // plain row and when the ring is suspended. The ring never moves real keyboard focus onto its members — the host
+    // keeps focus and the ring only paints a highlight — so a member hidden by a collapsed container is skipped
+    // while walking and never activated.
     internal sealed class NavRing
     {
-        /// <summary>
-        /// One ring member: the element plus what Enter (<see cref="Activate"/>), ←/→ (<see cref="Adjust"/>, sliders)
-        /// and Delete/Backspace (<see cref="Remove"/>, removable rows) do to it. <see cref="Adjust"/> / <see cref="Remove"/>
-        /// are <see langword="null"/> for members that don't take them. <see cref="HoverCard"/> / <see cref="HoverClass"/>
-        /// carry the card-level sweep modifier of a header member (see <see cref="RegisterHeader"/>).
-        /// </summary>
+        // One ring member: the element plus what Enter (Activate), ←/→ (Adjust, sliders) and Delete/Backspace (Remove,
+        // removable rows) do to it. Adjust / Remove are null for members that don't take them. HoverCard / HoverClass
+        // carry the card-level sweep modifier of a header member (see RegisterHeader).
         private readonly struct Target
         {
             public readonly VisualElement Element;
@@ -64,15 +55,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly Action<VisualElement> _scrollTo;
         private readonly Func<bool> _isSuspended;
 
-        /// <summary>
-        /// Wires the ring onto <paramref name="host"/>: the host grabs keyboard focus on attach (so keys reach the ring
-        /// before anything is highlighted) and every <see cref="KeyDownEvent"/> bubbling to it is handled here.
-        /// </summary>
-        /// <param name="host">The element that holds keyboard focus and receives the ring's key events.</param>
-        /// <param name="navTargetClass">USS class applied to every registered member (the view's <c>__nav-target</c>).</param>
-        /// <param name="focusedClass">USS class marking a focused plain row (the view's <c>__nav-target--focused</c>); may be <see langword="null"/> for a ring made only of gradient buttons, which paint their focus in code.</param>
-        /// <param name="scrollTo">Scrolls a member into view when focus lands on it; may be <see langword="null"/>.</param>
-        /// <param name="isSuspended">When it returns <see langword="true"/> the ring ignores all keys (e.g. an open picker owns them); may be <see langword="null"/>.</param>
         public NavRing(
             VisualElement host,
             string navTargetClass,
@@ -91,24 +73,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             host.RegisterCallback<AttachToPanelEvent>(_ => host.schedule.Execute(() => host.Focus()));
         }
 
-        /// <summary>
-        /// Appends a member in visual order. <paramref name="adjust"/> handles ←/→ (sliders); <paramref name="remove"/>
-        /// handles Delete/Backspace (removable rows).
-        /// </summary>
         public void Register(VisualElement element, Action activate, Action<int> adjust = null, Action remove = null) =>
             Add(new Target(element, activate, adjust, remove, hoverCard: null, hoverClass: null));
 
-        /// <summary>
-        /// Appends a card's flat header button, wiring both halves of the card's hover-sweep idiom in one place: the
-        /// accent sweep is the header's sibling (so USS <c>:hover</c> can't reach it) and instead rides
-        /// <paramref name="hoverClass"/> on <paramref name="card"/> — the ring lights that modifier while the header is
-        /// the highlighted member, and mirrors the mouse hover onto it otherwise, so keyboard focus and mouse hover
-        /// render identically. Shared by the Welcome sample cards and both References audit tabs.
-        /// </summary>
-        /// <remarks>
-        /// Registers hover callbacks on <paramref name="header"/>, so it takes a freshly built element — a member that
-        /// outlives a rebuild and re-registers (the pinned Scan action) belongs on <see cref="Register"/>.
-        /// </remarks>
         public void RegisterHeader(VisualElement header, VisualElement card, string hoverClass, Action activate)
         {
             Add(new Target(header, activate, adjust: null, remove: null, card, hoverClass));
@@ -121,12 +88,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             });
         }
 
-        /// <summary>
-        /// Rebuilds the ring in one pass: clears it, runs <paramref name="register"/>, then puts the highlight back on
-        /// the same slot — clamped to the rebuilt member count and unscrolled, since a scroll on a rebuild is jarring.
-        /// For rings whose members are all recreated, where the highlight can only be restored positionally; a ring
-        /// with members that outlive the rebuild uses <see cref="Clear"/> instead.
-        /// </summary>
         public void Rebuild(Action register)
         {
             var slot = _index;
@@ -138,12 +99,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 Focus(Mathf.Min(slot, _targets.Count - 1), scrollTo: false);
         }
 
-        /// <summary>
-        /// Clears the highlight and drops every member — a full ring rebuild follows with fresh <see cref="Register"/>
-        /// calls. With <paramref name="keepFocusedElement"/> the highlighted element is remembered and takes its
-        /// highlight back the moment it re-registers, so a member that outlives the rebuild (the pinned Scan action)
-        /// keeps its highlight while one sitting on a discarded member simply drops.
-        /// </summary>
         public void Clear(bool keepFocusedElement = false)
         {
             _restore = keepFocusedElement && _index >= 0 && _index < _targets.Count

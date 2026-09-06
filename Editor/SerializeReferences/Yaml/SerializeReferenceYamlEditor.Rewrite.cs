@@ -12,11 +12,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The inline type mapping Unity writes for the null sentinel RefIds entry — an empty type identity.
         private const string NullSentinelType = "type: {class: , ns: , asm: }";
 
-        /// <summary>
-        /// Replaces the <c>type:</c> mapping of the <c>RefIds</c> entry identified by <paramref name="rid"/> within
-        /// the object document anchored at <paramref name="fileId"/>. Returns <see langword="true"/> when the file
-        /// was rewritten; the caller is responsible for reimporting the asset.
-        /// </summary>
+        // Replaces the entry's type mapping. The caller reimports the asset.
         public static bool TryRewriteType(string assetPath, long fileId, long rid, ManagedTypeName newType)
         {
             // Single scan shared with the diff preview: compute the edit, then apply exactly that line so the preview
@@ -42,11 +38,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Computes — without writing — the single line change a <see cref="TryRewriteType"/> would make to re-point the
-        /// <paramref name="rid"/> entry to <paramref name="newType"/>. Drives the bulk-fix diff preview; the rewrite
-        /// applies the returned edit verbatim, so what the preview shows is exactly what is written.
-        /// </summary>
+        // Computes, without writing, the line change TryRewriteType would make. The rewrite applies the returned
+        // edit verbatim, so the bulk-fix preview shows exactly what will be written.
         public static bool TryComputeRewrite(string assetPath, long fileId, long rid, ManagedTypeName newType, out RewriteEdit edit)
         {
             edit = default;
@@ -94,12 +87,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Deletes a whole <c>- rid: N</c> entry (its type and data block) from the <c>RefIds</c> list of the document
-        /// anchored at <paramref name="fileId"/>. Used to drop an orphaned managed-reference payload that no field points
-        /// at. Confined to the <c>RefIds</c> block so a same-shaped field pointer is never touched. Returns whether an
-        /// entry was removed. The edit is not undoable — callers confirm first.
-        /// </summary>
+        // Deletes a whole RefIds entry, dropping an orphaned payload no field points at. Confined to the RefIds
+        // block, so a same-shaped field pointer is never touched. Not undoable, so callers confirm first.
         public static bool TryRemoveEntry(string assetPath, long fileId, long rid)
         {
             try
@@ -148,17 +137,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Nulls a managed reference in the document anchored at <paramref name="fileId"/>: every field / array-element
-        /// pointer that holds <paramref name="rid"/> is rewritten to the null id (<c>-2</c>), the now-orphaned
-        /// <c>RefIds</c> entry is removed, and — when a null pointer was introduced — the <c>RefIds</c> null sentinel
-        /// entry (<c>- rid: -2 / type: {class: , ns: , asm: }</c>) is added if absent. This reproduces exactly what Unity
-        /// writes when a <c>[SerializeReference]</c> field is set to <see langword="null"/>: an array element cannot be
-        /// dropped, so it must point at <c>-2</c>, and that pointer is only valid when the sentinel entry exists —
-        /// without it the load errors "serialized array … is missing entry for Refid -2". Removing the broken entry
-        /// clears the object's missing-types flag. Not undoable: the broken payload is discarded. Returns whether the
-        /// file was rewritten.
-        /// </summary>
+        // Nulls a managed reference: every pointer holding the rid is rewritten to the null id, the orphaned entry
+        // is removed, and the null sentinel entry is added if a null pointer was introduced and it is absent. That
+        // reproduces exactly what Unity writes for a cleared field — an array element cannot be dropped, so it must
+        // point at -2, and that pointer is only valid while the sentinel entry exists, or the load errors with
+        // "serialized array … is missing entry for Refid -2". Not undoable: the broken payload is discarded.
         public static bool TryNullReference(string assetPath, long fileId, long rid)
         {
             try
@@ -253,15 +236,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Counts how many field / array-element pointers in the document anchored at <paramref name="fileId"/> hold
-        /// <paramref name="rid"/> — the number of slots a <see cref="TryNullReference"/> would null. A missing reference
-        /// can be aliased across several slots (all sharing one rid); clearing it nulls every one of them, so the confirm
-        /// dialog calls this first to name the count before the irreversible rewrite. The rid's own <c>RefIds</c> entry
-        /// header is excluded (it is the entry, not a pointer to it). Returns <c>0</c> when the document / <c>RefIds</c>
-        /// list / entry indent cannot be located — the same guards <see cref="TryNullReference"/> uses — so a non-positive
-        /// result means "count unknown" and the caller can fall back to unnumbered wording.
-        /// </summary>
+        // How many slots TryNullReference would null. A missing reference can be aliased across several, so the
+        // confirm dialog names the count before the irreversible rewrite. The entry's own header is excluded, since
+        // it is the entry rather than a pointer to it. 0 means the count is unknown, not that there are none.
         public static int CountPointersTo(string assetPath, long fileId, long rid)
         {
             try

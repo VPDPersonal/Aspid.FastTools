@@ -5,6 +5,8 @@ Unity cannot serialize `System.Type` out of the box — the Serializable Type Sy
 **Reference sections:**
 
 * [`SerializableType`](#serializabletype) — a serializable field wrapper over `System.Type`;
+* [`SerializableMonoScript`](#serializablemonoscript) — the same wrapper referenced through the
+  script asset, so a class rename does not break the field;
 * [`TypeSelectorAttribute`](#typeselectorattribute) — a type-picker button on `string`,
   `SerializableType` and `[SerializeReference]` fields, including
   [dynamic base types via member references](#dynamic-base-types-via-member-references);
@@ -22,7 +24,11 @@ A serializable wrapper over `System.Type`: it stores the selected type as an ass
 - **`SerializableType`** — stores any type;
 - **`SerializableType<T>`** — stores a type constrained to `T` or its subclasses.
 
-Both support implicit conversion to `System.Type`.
+Both support implicit conversion to `System.Type`, can be created from code with a `Type`-taking constructor
+(`new SerializableType<Ability>(typeof(Dash))` — the constrained one throws for a type not assignable to `T`),
+and expose the stored name through `AssemblyQualifiedName`. `SerializableType<T>` derives from `SerializableType`;
+both build on the abstract `SerializableTypeBase`. Keep in mind that Unity serializes a field by its declared type:
+a `SerializableType<T>` assigned from code to a plain `SerializableType` field reloads as the unconstrained wrapper.
 
 ```csharp
 using UnityEngine;
@@ -47,12 +53,43 @@ public sealed class AbilitySelector : MonoBehaviour
 
 ![SerializableType field with type selection in the Inspector](Images/aspid_fasttools_serializable_type.gif)
 
+## SerializableMonoScript
+
+The same field, referenced through the script asset instead of the type name. `SerializableMonoScript` and
+`SerializableMonoScript<T>` keep an editor-only `MonoScript` reference next to the assembly-qualified name; in the
+editor the script is the source of truth, so **renaming or moving the class keeps the field intact** — the stored name
+is re-read from the script whenever the object is serialized. The reference exists only under `UNITY_EDITOR`: a player
+build serializes just the name, and at runtime the wrapper resolves from it exactly like `SerializableType`.
+
+The trade-off is Unity's own: only a type that maps to a script asset qualifies — a top-level, non-generic class
+declared in a file of the same name (what `MonoScript.GetClass()` reports). The picker lists only such types, and a
+`MonoScript` can be dragged from the Project window onto the field. Nested and generic types need `SerializableType`.
+
+```csharp
+public sealed class EnemySpawner : MonoBehaviour
+{
+    // Survives renaming Grunt to Soldier; the picker offers Enemy subtypes backed by a script file.
+    [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
+
+    private void Spawn() =>
+        gameObject.AddComponent(_enemyType.Type);
+}
+```
+
+A wrapper constructed from code (`new SerializableMonoScript(typeof(Dash))`) carries the type name only and becomes
+rename-safe once a type is picked in the Inspector.
+
+`[TypeSelector]` (including `Required = true`) applies to these fields the same way it does to `SerializableType`.
+`SerializableMonoScript<T>` derives from `SerializableMonoScript`, which shares the abstract `SerializableTypeBase` with
+`SerializableType` but is not one (its serialized layout differs). The referenced asset is exposed through the
+editor-only `Script` property.
+
 ## TypeSelectorAttribute
 
 Adds a type-picker button to a field in the Inspector: it opens a hierarchical, searchable window listing only the types assignable to the given base types (when several are given, to all of them at once; with no arguments, any type qualifies). What happens on selection depends on the field's shape:
 
 - `string` — the assembly-qualified name of the selected type is written into the field;
-- `SerializableType` / `SerializableType<T>` — narrows the built-in selector; the attribute's base types intersect with the generic argument `T`;
+- `SerializableType` / `SerializableType<T>` and `SerializableMonoScript` / `SerializableMonoScript<T>` — narrows the built-in selector; the attribute's base types intersect with the generic argument `T`;
 - `[SerializeReference]` managed reference — the selected type is instantiated into the field immediately (see [SerializeReference Selector](03-serialize-reference-selector.md)).
 
 The attribute is editor-only (`[Conditional("UNITY_EDITOR")]`) and carries no runtime cost.
@@ -124,7 +161,7 @@ public enum TypeAllow
 | Property | Description |
 |----------|-------------|
 | `Allow` | Which special type categories (abstract classes, interfaces) the picker includes in addition to plain concrete classes. Default: `TypeAllow.All` (a type-name field lists abstract classes and interfaces too; set `TypeAllow.None` to restrict it to concrete types). Ignored on a `[SerializeReference]` managed reference |
-| `Required` | Flags an unset field: a `[SerializeReference]` managed reference left `null`, or a `string` field left empty, shows an inline "required" warning in the Inspector and counts as a violation for the build/CI gate. Also covers a `SerializableType` field (its stored type name left empty). Default: `false` |
+| `Required` | Flags an unset field: a `[SerializeReference]` managed reference left `null`, or a `string` field left empty, shows an inline "required" warning in the Inspector and counts as a violation for the build/CI gate. Also covers a `SerializableType` / `SerializableMonoScript` field (its stored type name left empty). Default: `false` |
 
 #### The Required notice
 
@@ -232,7 +269,7 @@ namespace Aspid.FastTools.Types.Editors
 | Parameter | Description |
 |-----------|-------------|
 | `screenRect` | Screen-space rectangle the dropdown is anchored to. |
-| `filter` | Bundles which types the selector offers: base types (`Types`, only types assignable to **all** entries are listed; defaults to `typeof(object)`), the included kinds (`Allow`), an optional per-type `Predicate`, verbatim `AdditionalTypes`, the open-generic `ArgumentFilter` (which types an argument page offers) and `InferredArgumentFilter` (whether an argument the field itself determines is admissible for that particular parameter). |
+| `filter` | Bundles which types the selector offers: base types (`Types`, only types assignable to **all** entries are listed; defaults to `typeof(object)`), the included kinds (`Allow`), an optional per-type `Predicate`, verbatim `AdditionalTypes`, the open-generic `ArgumentFilter` (which types an argument page offers) and `InferredArgumentFilter` (whether an argument the field itself determines is admissible for that particular parameter), and `HideNoneOption` (leave the `<None>` row out when the target must always hold a type). |
 | `currentAqn` | Assembly-qualified name of the currently selected type, used to pre-navigate to its location. Pass `null` or empty to start at the root. |
 | `onSelected` | Callback invoked with the assembly-qualified name of the selected type, or `null` if the user chose `<None>`. |
 

@@ -9,17 +9,13 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Headless CI entry point. Invoke with
-    /// <c>Unity -batchmode -quit -projectPath . -executeMethod Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck</c>.
-    /// Scans the project, writes a report, logs each violation, and exits non-zero when violations exist so a pipeline
-    /// can fail the job. The effective behaviour is driven by the committed Project Settings gate severity
-    /// (<see cref="SerializeReferenceSharedSettings"/>) — <c>Off</c> skips the check, <c>Warn</c> logs but exits 0,
-    /// <c>Fail</c> exits 1 on violations — so a clean CI runner enforces the developer's checked-in choice rather than
-    /// the default. Flags: <c>-srGateReport &lt;path&gt;</c> (report file), <c>-srGateRequired</c> (also scan
-    /// unset-required fields), <c>-srGateWarnOnly</c> (force exit 0, overrides severity), <c>-srGateFail</c> (force exit
-    /// 1 on violations, overrides severity; <c>-srGateWarnOnly</c> wins if both are passed).
-    /// </summary>
+    // Headless CI entry point:
+    // Unity -batchmode -quit -projectPath . -executeMethod Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck
+    //
+    // Scans the project, writes a report, logs each violation and exits non-zero so a pipeline can fail the job.
+    // Severity comes from the committed Project Settings, so a clean runner enforces the checked-in choice: Off skips,
+    // Warn logs but exits 0, Fail exits 1. Flags: -srGateReport <path>, -srGateRequired (also scan required fields),
+    // -srGateWarnOnly and -srGateFail (override severity; -srGateWarnOnly wins).
     internal static class SerializeReferenceCiGate
     {
         private const string DefaultReportPath = "SerializeReferenceGateReport.txt";
@@ -70,21 +66,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             EditorApplication.Exit(exitCode);
         }
 
-        /// <summary>
-        /// Resolves the effective gate severity: the committed Project Settings value, overridable per run by CLI flags.
-        /// <c>-srGateWarnOnly</c> forces <see cref="GateSeverity.Warn"/> (log but never fail) and wins over
-        /// <c>-srGateFail</c>, which forces <see cref="GateSeverity.Fail"/>.
-        /// </summary>
         public static GateSeverity ResolveSeverity(GateSeverity committed, bool warnOnly, bool failOverride)
         {
             if (warnOnly) return GateSeverity.Warn;
             return failOverride ? GateSeverity.Fail : committed;
         }
 
-        /// <summary>
-        /// 0 when clean or when severity is anything but <see cref="GateSeverity.Fail"/>; 1 only when violations exist
-        /// and severity is <see cref="GateSeverity.Fail"/>.
-        /// </summary>
         public static int ComputeExitCode(int violationCount, GateSeverity severity) =>
             violationCount > 0 && severity == GateSeverity.Fail ? 1 : 0;
 

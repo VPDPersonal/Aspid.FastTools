@@ -7,43 +7,22 @@ using System.Runtime.CompilerServices;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    /// <summary>
-    /// Helpers for resolving an open generic type definition into a concrete closed type inside the
-    /// <see cref="TypeSelectorWindow"/> argument-selection flow: candidate definitions, argument
-    /// inference, constraint filters and closed-type construction/validation.
-    /// </summary>
-    /// <remarks>
-    /// Carries no dependency on any particular feature (e.g. <c>[SerializeReference]</c>); the
-    /// Unity-serializability of an argument is supplied by the caller as a separate filter.
-    /// </remarks>
+    // Resolves an open generic definition into a concrete closed type inside the picker's argument-selection flow:
+    // candidate definitions, argument inference, constraint filters and closed-type construction. It depends on no
+    // particular feature — an argument's Unity-serializability is supplied by the caller as a separate filter.
     internal static class GenericTypeResolver
     {
-        // Cached once per domain: the open-generic flow sweeps every domain type per parameter page (twice, with the
-        // candidate scan), which stalls large projects. Static state is cleared on every domain reload, so the cache is
-        // implicitly invalidated whenever assemblies could change. Built lazily so touching the constraint-only helpers
-        // never pays for (or fails on) the full domain sweep.
-        private static List<Type> _domainTypes;
-
-        private static List<Type> DomainTypes => _domainTypes ??= TypeUtility.EnumerateDomainTypes().ToList();
-
-        /// <summary>
-        /// Enumerates the generic candidates whose closed form could be assigned to <paramref name="fieldType"/>
-        /// and, when <paramref name="narrowTypes"/> are supplied, to every one of them. A candidate the field
-        /// already determines is returned closed (<c>Converter&lt;String, String&gt;</c>); one that still needs a
-        /// choice is returned as its open definition (<c>Converter&lt;TFrom, TTo&gt;</c>).
-        /// </summary>
-        /// <remarks>
-        /// The narrowing check matters because these entries are injected verbatim via the selector's
-        /// <c>additionalTypes</c> path, which otherwise bypasses the narrowing filter applied to the
-        /// ordinary candidate scan.
-        /// <para>
-        /// Closing here is what makes the row honest: selecting a determined candidate never opens the argument
-        /// page, so listing it under its parameter names promises a choice the picker will not offer. The
-        /// substitution repeats the checks that page would have applied — <paramref name="argumentFilter"/> and
-        /// assignability to every narrowing type — so a row is only closed when the same arguments would have
-        /// survived the manual path.
-        /// </para>
-        /// </remarks>
+        // The generic candidates whose closed form could be assigned to the field type and, when narrowing types
+        // are given, to every one of them. A candidate the field already determines comes back closed; one that
+        // still needs a choice comes back as its open definition.
+        //
+        // The narrowing check matters because these entries are injected verbatim through the selector's additional
+        // types, which otherwise bypass the filter applied to the ordinary candidate scan.
+        //
+        // Closing here is what makes the row honest: selecting a determined candidate never opens the argument page,
+        // so listing it under its parameter names would promise a choice the picker will not offer. The substitution
+        // repeats the checks that page would have applied, so a row is closed only when the same arguments would
+        // have survived the manual path.
         internal static IEnumerable<Type> GetAssignableGenericDefinitions(
             Type fieldType,
             Type[] narrowTypes,
@@ -51,7 +30,9 @@ namespace Aspid.FastTools.Types.Editors
         {
             if (fieldType is null) yield break;
 
-            foreach (var type in DomainTypes)
+            // TypeUtility caches the domain sweep; uncached it runs once per parameter page and stalls large
+            // projects.
+            foreach (var type in TypeUtility.DomainTypes)
             {
                 if (!IsAssignableGenericDefinition(type)) continue;
                 if (!CanCloseToFieldType(type, fieldType)) continue;
@@ -64,27 +45,19 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        /// <summary>
-        /// Attempts to close <paramref name="openDefinition"/> against <paramref name="fieldType"/>, so a field
-        /// that already determines the arguments skips the argument-selection page entirely (e.g. a
-        /// <c>Modifier&lt;float&gt;</c> field determines the argument of a <c>Modifier&lt;&gt;</c> candidate).
-        /// Returns <see langword="false"/> when the field leaves any parameter undetermined, or when the
-        /// inferred type violates a constraint or is not assignable to the field.
-        /// </summary>
-        /// <remarks>
-        /// The arguments are unified rather than copied positionally, so the field need not name the definition
-        /// itself: a non-generic <c>IConverterString : IConverter&lt;string, string&gt;</c> field still determines
-        /// <c>T</c> of a <c>SequenceConverters&lt;T&gt; : IConverter&lt;T, T&gt;</c> candidate — one parameter
-        /// bound from two arguments, which positional copying cannot express.
-        /// <para>
-        /// Inference emits its result without ever showing the argument-selection page, so whatever rule that page
-        /// would have applied to the arguments has to be applied here instead — otherwise a field shape that happens
-        /// to determine its arguments silently accepts what the manual path refuses.
-        /// <paramref name="argumentFilter"/> is asked per parameter rather than per type, because the caller's rule
-        /// may well depend on the position: an argument that only ever becomes a managed reference is under
-        /// constraints an argument stored by value is not.
-        /// </para>
-        /// </remarks>
+        // Closes the definition against the field type, so a field that already determines the arguments skips the
+        // argument-selection page. False when the field leaves a parameter undetermined, or when the inferred type
+        // violates a constraint or is not assignable to the field.
+        //
+        // The arguments are unified rather than copied positionally, so the field need not name the definition
+        // itself: a non-generic IConverterString : IConverter<string, string> field still determines T of a
+        // SequenceConverters<T> : IConverter<T, T> candidate — one parameter bound from two arguments, which
+        // positional copying cannot express.
+        //
+        // Inference never shows the argument page, so every rule that page would have applied has to be applied
+        // here, or a field shape that happens to determine its arguments silently accepts what the manual path
+        // refuses. The filter is asked per parameter rather than per type, since the caller's rule can depend on
+        // where the parameter lands.
         internal static bool TryInferFromFieldType(Type fieldType, Type openDefinition, out Type closed,
             GenericArgumentFilter argumentFilter = null)
         {
@@ -102,11 +75,8 @@ namespace Aspid.FastTools.Types.Editors
             return false;
         }
 
-        /// <summary>
-        /// Enumerates the closed generic types <paramref name="type"/> is known by — itself when generic, then its
-        /// base types, then its interfaces — most specific first. These are the shapes an open definition can be
-        /// unified against.
-        /// </summary>
+        // The closed generic types a type is known by — itself when generic, then bases, then interfaces — most
+        // specific first. These are the shapes an open definition can be unified against.
         private static IEnumerable<Type> ClosedGenericViews(Type type)
         {
             if (type.IsGenericType) yield return type;
@@ -118,17 +88,12 @@ namespace Aspid.FastTools.Types.Editors
                 if (contract.IsGenericType) yield return contract;
         }
 
-        /// <summary>
-        /// Binds every type parameter of <paramref name="openDefinition"/> by unifying the open form of
-        /// <paramref name="closedView"/>'s definition — as <paramref name="openDefinition"/> implements it —
-        /// with <paramref name="closedView"/>'s own arguments.
-        /// </summary>
-        /// <remarks>
-        /// One definition can be implemented more than once (<c>Multi&lt;T&gt; : IThing&lt;List&lt;T&gt;&gt;,
-        /// IThing&lt;int&gt;</c>), and <see cref="Type.GetInterfaces"/> returns interfaces in no particular order,
-        /// so every matching view is tried: settling for the first would make inference depend on reflection
-        /// order and behave differently between recompiles or machines.
-        /// </remarks>
+        // Binds every parameter of the definition by unifying the open form of the closed view's definition, as the
+        // definition implements it, with the view's own arguments.
+        //
+        // One definition can be implemented more than once and GetInterfaces returns them in no particular order,
+        // so every matching view is tried: settling for the first would make inference depend on reflection order
+        // and differ between recompiles or machines.
         private static bool TryBindParameters(Type openDefinition, Type closedView, GenericArgumentFilter argumentFilter,
             out Type[] arguments)
         {
@@ -155,8 +120,8 @@ namespace Aspid.FastTools.Types.Editors
             return false;
         }
 
-        // A view can leave parameters untouched (e.g. `Pair<TKey, TValue> : IKeyed<TKey>` seen as IKeyed<string>);
-        // an undetermined parameter is exactly what the argument-selection page exists to collect.
+        // A view can leave parameters untouched, and an undetermined parameter is exactly what the argument page
+        // exists to collect.
         private static bool IsFullyBound(Type[] bindings)
         {
             foreach (var binding in bindings)
@@ -165,8 +130,8 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        // Each binding is judged against the parameter it was bound to, not on its own: the caller's rule can depend
-        // on where the parameter ends up inside the definition.
+        // Each binding is judged against the parameter it was bound to, since the caller's rule can depend on where
+        // that parameter ends up inside the definition.
         private static bool PassesArgumentFilter(Type openDefinition, Type[] parameters, Type[] bindings,
             GenericArgumentFilter argumentFilter)
         {
@@ -178,10 +143,7 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        /// <summary>
-        /// Enumerates the generic types <paramref name="openDefinition"/> is known by, still carrying its own
-        /// parameters (<c>SequenceConverters&lt;T&gt;</c> is also known as <c>IConverter&lt;T, T&gt;</c>).
-        /// </summary>
+        // The generic types the definition is known by, still carrying its own parameters.
         private static IEnumerable<Type> OpenGenericViews(Type openDefinition)
         {
             if (openDefinition.IsGenericType) yield return openDefinition;
@@ -193,10 +155,8 @@ namespace Aspid.FastTools.Types.Editors
                 if (contract.IsGenericType) yield return contract;
         }
 
-        /// <summary>
-        /// Structurally matches an open argument list against a concrete one, recording what each parameter of the
-        /// definition must be. A parameter appearing twice must resolve to the same type both times.
-        /// </summary>
+        // Matches an open argument list against a concrete one, recording what each parameter must be; a parameter
+        // appearing twice must resolve to the same type both times.
         private static bool TryBind(Type[] openArguments, Type[] concreteArguments, Type[] parameters, Type[] bindings)
         {
             if (openArguments.Length != concreteArguments.Length) return false;
@@ -232,11 +192,8 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        /// <summary>
-        /// Returns the explicit base-type/interface constraints of <paramref name="parameter"/> (excluding
-        /// other type parameters), or <c>{ typeof(object) }</c> when it has none. Used as the base-type filter
-        /// for the argument's candidate list.
-        /// </summary>
+        // The parameter's explicit base-type constraints, excluding other type parameters, or object when it has
+        // none — the base-type filter for the argument's candidate list.
         internal static Type[] GetConstraintBaseTypes(Type parameter)
         {
             var constraints = parameter.GetGenericParameterConstraints()
@@ -246,10 +203,7 @@ namespace Aspid.FastTools.Types.Editors
             return constraints.Length > 0 ? constraints : new[] { typeof(object) };
         }
 
-        /// <summary>
-        /// Returns <see langword="true"/> when <paramref name="candidate"/> satisfies the special
-        /// (<c>struct</c>/<c>class</c>/<c>new()</c>) constraints declared on <paramref name="parameter"/>.
-        /// </summary>
+        // True when the candidate satisfies the special struct / class / new() constraints on the parameter.
         internal static bool SatisfiesSpecialConstraints(Type parameter, Type candidate)
         {
             if (candidate is null) return false;
@@ -265,12 +219,10 @@ namespace Aspid.FastTools.Types.Editors
             return !requireDefaultCtor || candidate.IsValueType || candidate.GetConstructor(Type.EmptyTypes) is not null;
         }
 
-        /// <summary>
-        /// Closes <paramref name="openDefinition"/> over <paramref name="arguments"/> and validates the result
-        /// against every entry of <paramref name="fieldTypes"/>. Returns <see langword="false"/> with a
-        /// human-readable <paramref name="error"/> when construction throws (a violated parameter constraint)
-        /// or the closed type is not assignable to the field.
-        /// </summary>
+        // Closes openDefinition over arguments and validates the result
+        // against every entry of fieldTypes. Returns false with a
+        // human-readable error when construction throws (a violated parameter constraint)
+        // or the closed type is not assignable to the field.
         internal static bool TryConstruct(Type openDefinition, Type[] arguments, Type[] fieldTypes, out Type closed, out string error)
         {
             closed = null;
@@ -286,8 +238,8 @@ namespace Aspid.FastTools.Types.Editors
                 return false;
             }
 
-            // The chosen arguments may satisfy the type parameters' own constraints yet still produce a type
-            // that is not assignable to the managed-reference field — guard against a value Unity would drop.
+            // Arguments can satisfy the parameters' own constraints and still produce a type the field cannot
+            // hold, which Unity would drop.
             if (fieldTypes is not null)
             {
                 foreach (var fieldType in fieldTypes)
@@ -304,12 +256,7 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        /// <summary>
-        /// Returns <see langword="true"/> when <paramref name="closed"/> is assignable to every meaningful entry of
-        /// <paramref name="fieldTypes"/> (nulls and the unconstrained <see cref="object"/> sentinel impose no
-        /// restriction). Mirrors the assignability guard <see cref="TryConstruct"/> applies, for callers that already
-        /// hold a constructed closed type and only need to validate it.
-        /// </summary>
+        // TryConstruct's assignability guard, for a caller that already holds a constructed closed type.
         internal static bool IsAssignableToFieldTypes(Type closed, Type[] fieldTypes)
         {
             if (closed is null) return false;
@@ -324,18 +271,9 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        /// <summary>
-        /// Predicate identifying open generic type definitions that can be offered for a field once closed
-        /// over concrete arguments: non-abstract generic classes that are neither
-        /// <see cref="UnityEngine.Object"/> nor delegates, and that are not compiler-generated.
-        /// </summary>
-        /// <remarks>
-        /// Compiler-emitted types (anonymous types, closure/iterator display classes such as
-        /// <c>&lt;&gt;c__11&lt;T&gt;</c> or <c>&lt;&gt;f__AnonymousType0&lt;…&gt;</c>) must be excluded
-        /// here because these definitions are added verbatim via the selector's <c>additionalTypes</c>
-        /// path, which bypasses the name/<see cref="CompilerGeneratedAttribute"/> checks applied to
-        /// ordinary candidates.
-        /// </remarks>
+        // The open definitions that can be offered once closed: non-abstract generic classes that are neither
+        // UnityEngine.Object nor delegates, and not compiler-generated. The last exclusion has to happen here
+        // because these definitions are injected verbatim, bypassing the checks applied to ordinary candidates.
         private static bool IsAssignableGenericDefinition(Type type) =>
             type is { IsClass: true, IsAbstract: false, IsGenericTypeDefinition: true } &&
             !typeof(UnityEngine.Object).IsAssignableFrom(type) &&
@@ -347,8 +285,7 @@ namespace Aspid.FastTools.Types.Editors
             || type.Name.Contains('<')
             || type.Name.Contains('>');
 
-        // Nulls and the unconstrained `object` sentinel impose no restriction, mirroring the
-        // concrete-type narrowing filter.
+        // Nulls and the unconstrained object sentinel impose no restriction, as in the concrete-type filter.
         private static bool CanCloseToAllNarrowing(Type openDefinition, Type[] narrowTypes)
         {
             if (narrowTypes is null) return true;
@@ -362,9 +299,7 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        /// <summary>
-        /// Short display form of an open definition with its parameter names (<c>Modifier&lt;T&gt;</c>).
-        /// </summary>
+        // Short display form of an open definition with its parameter names (Modifier<T>).
         private static string FormatDefinitionName(Type definition)
         {
             var baseName = TypeUtility.StripArity(definition.Name);
@@ -372,34 +307,23 @@ namespace Aspid.FastTools.Types.Editors
             return $"{baseName}<{arguments}>";
         }
 
-        /// <summary>
-        /// Returns <see langword="true"/> when <paramref name="openDefinition"/> could, under some choice of its
-        /// arguments, produce a type assignable to <paramref name="fieldType"/>. A pre-filter for the candidate
-        /// sweep: it rules a definition out from shape alone, it never promises the closed type exists.
-        /// </summary>
-        /// <remarks>
-        /// For a generic field, matching the two generic <em>definitions</em> is not enough. A candidate can
-        /// implement the field's definition while fixing an argument itself:
-        /// <c>ToString&lt;TFrom&gt; : IConverter&lt;TFrom, string&gt;</c> is an <c>IConverter&lt;,&gt;</c>, yet no
-        /// <c>TFrom</c> turns it into an <c>IConverter&lt;float, float&gt;</c>. Letting such a candidate through
-        /// leaves a dead row in the picker: inference fails (correctly), the caller falls back to the open
-        /// definition, and then every argument the user picks on the argument page is refused by
-        /// <see cref="TryConstruct"/>. So the arguments are compared here too, position by position.
-        /// <para>
-        /// The comparison honours declared variance, because assignability does: with
-        /// <c>IConverter&lt;in TFrom, out TTo&gt;</c> an <c>ObjectToString : IConverter&lt;object, string&gt;</c>
-        /// <em>is</em> an <c>IConverter&lt;string, string&gt;</c>. Demanding that a candidate spell its arguments
-        /// exactly as the field does would trade this defect for its mirror image — a usable candidate missing
-        /// from the list.
-        /// </para>
-        /// <para>
-        /// A position that still admits a family of arguments is never rejected: which one it takes is precisely
-        /// what inference, or the argument page, is there to decide, and proving that none of them converts would
-        /// mean sweeping the domain — work the page already does, validating each choice through
-        /// <see cref="TryConstruct"/>. Constraints are left to that same validation: the check here is about what
-        /// the field demands, not about what a parameter accepts.
-        /// </para>
-        /// </remarks>
+        // True when the definition could, under some choice of arguments, produce a type assignable to the field.
+        // A pre-filter that rules a definition out from shape alone; it never promises the closed type exists.
+        //
+        // For a generic field, matching the two definitions is not enough: a candidate can implement the field's
+        // definition while fixing an argument itself, so ToString<TFrom> : IConverter<TFrom, string> is an
+        // IConverter<,> yet no TFrom makes it an IConverter<float, float>. Letting it through leaves a dead row —
+        // inference correctly fails, the caller falls back to the open definition, and then every argument the user
+        // picks is refused. So the arguments are compared here too, position by position.
+        //
+        // The comparison honors declared variance, because assignability does. Demanding that a candidate spell its
+        // arguments exactly as the field does would trade this defect for its mirror image: a usable candidate
+        // missing from the list.
+        //
+        // A position that still admits a family of arguments is never rejected — which one it takes is what
+        // inference or the argument page decides, and proving none of them converts would mean sweeping the domain.
+        // Constraints are left to that same validation: this check is about what the field demands, not about what
+        // a parameter accepts.
         private static bool CanCloseToFieldType(Type openDefinition, Type fieldType)
         {
             if (fieldType.IsGenericType)
@@ -430,24 +354,16 @@ namespace Aspid.FastTools.Types.Editors
             return false;
         }
 
-        /// <summary>
-        /// Compares one view's arguments against the field's, position by position, under the variance the field's
-        /// definition declares for each. <paramref name="bindings"/> collects what the pinned positions force each
-        /// parameter of the candidate to be, so a parameter demanded to be two types at once is rejected.
-        /// </summary>
-        /// <remarks>
-        /// Pinned positions are taken first and the variant ones judged afterwards, because a parameter is only
-        /// judgeable once something has forced it: <c>Sequence&lt;T&gt; : IConverter&lt;T, T&gt;</c> against an
-        /// <c>IConverter&lt;float, string&gt;</c> field is impossible only when the value-typed first position —
-        /// which may be declared second — has already fixed <c>T</c> as <c>float</c>. Running in one pass would make
-        /// the verdict depend on the order the parameters happen to be declared in.
-        /// <para>
-        /// Partial bindings are deliberately accepted — <c>Pair&lt;TKey, TValue&gt; : IKeyed&lt;TKey&gt;</c> against
-        /// an <c>IKeyed&lt;string&gt;</c> field leaves <c>TValue</c> free, and that undetermined parameter is the
-        /// whole reason the argument page exists. Requiring a full binding here would delete exactly the rows the
-        /// page is meant to finish.
-        /// </para>
-        /// </remarks>
+        // Compares one view's arguments against the field's, position by position, under the variance the field's
+        // definition declares. The bindings collect what the pinned positions force each parameter to be, so a
+        // parameter demanded to be two types at once is rejected.
+        //
+        // Pinned positions are taken first and variant ones judged afterwards, because a parameter is only judgeable
+        // once something has forced it — and the position that forces it may be declared second. One pass would
+        // make the verdict depend on declaration order.
+        //
+        // Partial bindings are deliberately accepted: an undetermined parameter is the whole reason the argument
+        // page exists, so requiring a full binding here would delete exactly the rows that page is meant to finish.
         private static bool CanCloseArguments(Type[] openArguments, Type[] fieldArguments, Type[] fieldParameters,
             Type[] parameters, Type[] bindings)
         {
@@ -464,9 +380,8 @@ namespace Aspid.FastTools.Types.Editors
             {
                 if (PinsArgumentExactly(fieldParameters[index], fieldArguments[index])) continue;
 
-                // Only a position that has resolved to a concrete type can be judged. An unbound parameter, or one
-                // still spelled through another generic (`List<T>`), leaves a family of arguments open — see the
-                // remarks on CanCloseToFieldType for why that family is left to the argument page.
+                // Only a position resolved to a concrete type can be judged; anything else leaves a family of
+                // arguments open, which the argument page decides.
                 var open = openArguments[index];
                 var resolved = open.IsGenericParameter ? Binding(open, parameters, bindings) : open;
                 if (resolved is null || resolved.ContainsGenericParameters) continue;
@@ -478,15 +393,9 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        /// <summary>
-        /// Returns <see langword="true"/> when the field admits exactly one argument at this position, so the
-        /// candidate has to name it: an invariant parameter, or any parameter the field closed over a value type.
-        /// </summary>
-        /// <remarks>
-        /// The value-type half is what makes variance stop at the boundary of the reference world: an
-        /// <c>IConverter&lt;in TFrom, out TTo&gt;</c> field closed as <c>IConverter&lt;float, …&gt;</c> accepts a
-        /// candidate converting from <c>float</c> and nothing else, exactly as an invariant position would.
-        /// </remarks>
+        // True when the field admits exactly one argument at this position, so the candidate must name it: an
+        // invariant parameter, or any parameter the field closed over a value type. The latter is where variance
+        // stops at the boundary of the reference world.
         private static bool PinsArgumentExactly(Type fieldParameter, Type fieldArgument) =>
             Variance(fieldParameter) is GenericParameterAttributes.None || fieldArgument.IsValueType;
 
@@ -499,18 +408,14 @@ namespace Aspid.FastTools.Types.Editors
             return parameterIndex < 0 ? null : bindings[parameterIndex];
         }
 
-        /// <summary>
-        /// Matches one argument of a pinned position, where assignability leaves no slack: the closed candidate has
-        /// to name the field's argument exactly. Records what that forces each parameter of the candidate to be, and
-        /// rejects a second, conflicting demand on the same parameter.
-        /// </summary>
+        // A pinned position leaves no slack: the candidate must name the field's argument exactly. Records what
+        // that forces each parameter to be, and rejects a second, conflicting demand on the same one.
         private static bool CanBindPinnedArgument(Type openArgument, Type fieldArgument, Type[] parameters,
             Type[] bindings)
         {
             if (openArgument.IsGenericParameter)
             {
-                // A parameter the definition does not own (an enclosing type's, on a nested generic) cannot be
-                // recorded against these bindings — nothing is proven, so nothing is rejected.
+                // A parameter the definition does not own cannot be recorded here, so nothing is rejected.
                 var parameterIndex = Array.IndexOf(parameters, openArgument);
                 if (parameterIndex < 0) return true;
 
@@ -531,8 +436,7 @@ namespace Aspid.FastTools.Types.Editors
             if (!openArgument.IsGenericType || !fieldArgument.IsGenericType) return false;
             if (openArgument.GetGenericTypeDefinition() != fieldArgument.GetGenericTypeDefinition()) return false;
 
-            // Identity is required all the way down, so a nested definition's own variance never applies here:
-            // `IThingOf<List<T>>` is the field's `IThingOf<List<string>>` only for T = string exactly.
+            // Identity is required all the way down, so a nested definition's own variance never applies.
             var nestedOpen = openArgument.GetGenericArguments();
             var nestedField = fieldArgument.GetGenericArguments();
             if (nestedOpen.Length != nestedField.Length) return false;
@@ -543,19 +447,10 @@ namespace Aspid.FastTools.Types.Editors
             return true;
         }
 
-        /// <summary>
-        /// Returns <see langword="true"/> when a candidate spelling <paramref name="openArgument"/> where the field
-        /// spells <paramref name="fieldArgument"/> is still assignable to the field, given the position's
-        /// <paramref name="variance"/>.
-        /// </summary>
-        /// <remarks>
-        /// The CLR applies variance only across an implicit <em>reference</em> conversion, so a value type on either
-        /// side leaves identity as the only match — a <c>Sequence&lt;T&gt;</c> whose <c>T</c> another position already
-        /// pinned to <c>float</c> cannot answer a covariant <c>string</c>. <see cref="Type.IsAssignableFrom"/> on its
-        /// own would accept it, counting the boxing conversion from <c>float</c> to a reference type, hence the
-        /// explicit guard in front of it. A field argument that is itself a value type never reaches here:
-        /// <see cref="PinsArgumentExactly"/> has already routed that position to the exact match.
-        /// </remarks>
+        // Whether a candidate spelling one argument where the field spells another is still assignable, given the
+        // position's variance. The CLR applies variance only across an implicit reference conversion, so a value
+        // type on either side leaves identity as the only match; IsAssignableFrom alone would accept the boxing
+        // conversion, hence the explicit guard in front of it.
         private static bool IsVarianceCompatible(Type openArgument, Type fieldArgument,
             GenericParameterAttributes variance)
         {

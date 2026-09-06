@@ -2,16 +2,10 @@ using System;
 using UnityEngine;
 using UnityEditor.ShortcutManagement;
 
-namespace Aspid.FastTools.SerializeReferences.Editors
+namespace Aspid.FastTools.Editors
 {
-    /// <summary>
-    /// The single owner of the tab keyboard layout: shortcut ids, their default bindings, and the order Ctrl+Tab
-    /// cycles through.
-    /// </summary>
-    /// <remarks>
-    /// The window renders its badges from <see cref="HintFor"/> rather than rebuilding the defaults itself, so a key
-    /// changed here can never disagree with what the toolbar shows.
-    /// </remarks>
+    // The single owner of the tab keyboard layout: shortcut ids, their defaults and the Ctrl+Tab cycle order. The
+    // window renders its badges from HintFor rather than rebuilding the defaults, so the two cannot disagree.
     internal static class TabWindowShortcuts
     {
         private const string Category = "Aspid FastTools/Window/";
@@ -64,13 +58,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static void OnPreviousTabShortcut(ShortcutArguments args) =>
             CycleFrom(args, -1);
 
-        /// <summary>
-        /// The badge and tooltip text for a tab: the live binding read from the ShortcutManager, so it tracks user
-        /// rebinds and renders the real per-platform glyph.
-        /// </summary>
-        /// <remarks>
-        /// Falls back to the shortcut's declared default when the id isn't registered yet or its binding was cleared.
-        /// </remarks>
+        // The live binding read from the ShortcutManager, so a badge tracks user rebinds and renders the real
+        // per-platform glyph. Falls back to the declared default when the id is unregistered or its binding cleared.
         internal static string HintFor(TabType tab)
         {
             foreach (var tabData in _tabData)

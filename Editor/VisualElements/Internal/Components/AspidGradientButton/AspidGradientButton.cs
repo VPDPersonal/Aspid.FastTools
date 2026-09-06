@@ -5,16 +5,13 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// A button-like <see cref="VisualElement"/> with a horizontal gradient background and an
-    /// animated accent overlay that fades in on hover. The gradient and accent colors are sourced
-    /// from USS custom properties or set via UXML attributes / fluent extensions.
-    /// </summary>
+    // A button-like VisualElement with a horizontal gradient background and an animated accent overlay that fades in
+    // on hover. The gradient and accent colors are sourced from USS custom properties or set via UXML attributes /
+    // fluent extensions.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidGradientButton : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidGradientButton";
-
         private const string BlockClass = "aspid-fasttools-gradient-button";
         private const string LabelClass = "aspid-fasttools-gradient-button__label";
         private const string TrailingLabelClass = "aspid-fasttools-gradient-button__trailing-label";
@@ -28,11 +25,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private bool _highlighted;
         private bool _hovered;
 
-        /// <summary>
-        /// Shows the hover visual (accent overlay + accent-tinted labels) programmatically, for host-driven states
-        /// like a keyboard focus ring.
-        /// </summary>
-        /// <remarks>Mouse hover and this flag compose: the visual stays on while either is active.</remarks>
         internal bool Highlighted
         {
             get => _highlighted;
@@ -43,9 +35,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             }
         }
 
-        /// <summary>
-        /// Gets or sets the button label text.
-        /// </summary>
         [UxmlAttribute]
         public string Text
         {
@@ -53,9 +42,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _label.text = value;
         }
 
-        /// <summary>
-        /// Gets or sets the trailing label text shown at the right edge. Empty hides the label.
-        /// </summary>
         [UxmlAttribute]
         public string TrailingText
         {
@@ -69,9 +55,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             }
         }
 
-        /// <summary>
-        /// Gets or sets the gradient background color.
-        /// </summary>
         [UxmlAttribute]
         public Color Gradient
         {
@@ -79,9 +62,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colors.SetGradient(value);
         }
 
-        /// <summary>
-        /// Gets or sets the accent (hover) color.
-        /// </summary>
         [UxmlAttribute]
         public Color Accent
         {
@@ -89,36 +69,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colors.SetAccent(value);
         }
 
-        /// <summary>
-        /// Creates an <see cref="AspidGradientButton"/> using <see cref="AspidGradientButtonPreset.Default"/>.
-        /// </summary>
         public AspidGradientButton()
             : this(AspidGradientButtonPreset.Default) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidGradientButton"/> with the given label and click handler.
-        /// </summary>
-        /// <param name="text">The button label.</param>
-        /// <param name="onClick">Optional handler invoked when the button is clicked.</param>
         public AspidGradientButton(string text, Action<EventBase> onClick = null)
             : this(AspidGradientButtonPreset.Default.SetText(text).SetOnClick(onClick)) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidGradientButton"/> with the given label, trailing text and click handler.
-        /// </summary>
-        /// <param name="text">The button label.</param>
-        /// <param name="trailingText">The trailing label text shown at the right edge. Pass <see langword="null"/> or empty to hide it.</param>
-        /// <param name="onClick">Optional handler invoked when the button is clicked.</param>
         public AspidGradientButton(string text, string trailingText, Action<EventBase> onClick = null)
             : this(AspidGradientButtonPreset.Default
                 .SetText(text)
                 .SetTrailingText(trailingText)
                 .SetOnClick(onClick)) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidGradientButton"/> with the given preset.
-        /// </summary>
-        /// <param name="preset">The configuration preset to apply.</param>
         public AspidGradientButton(AspidGradientButtonPreset preset)
         {
             this.AddClass(BlockClass)
@@ -160,48 +122,20 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
         }
 
-        /// <summary>
-        /// Inserts <paramref name="content"/> ahead of the text label in the button's child order, so it leads the
-        /// label — to its left in the default row layout, or above it when the button is switched to a column
-        /// flex-direction. Lets the button carry a richer body (e.g. a header line) alongside its
-        /// <see cref="Text"/> action label.
-        /// </summary>
-        /// <typeparam name="T">The content element type.</typeparam>
-        /// <param name="content">The element to insert ahead of the label.</param>
-        /// <returns>The same <paramref name="content"/>, for fluent chaining.</returns>
         public T AddLeadingContent<T>(T content) where T : VisualElement
         {
             Insert(IndexOf(_label), content);
             return content;
         }
 
-        /// <summary>
-        /// Inserts <paramref name="content"/> just after the text label in the button's child order, so it trails the
-        /// label — to its right in the default row layout, or below it when the button is switched to a column
-        /// flex-direction. The mirror of <see cref="AddLeadingContent{T}"/>.
-        /// </summary>
-        /// <typeparam name="T">The content element type.</typeparam>
-        /// <param name="content">The element to insert after the label.</param>
-        /// <returns>The same <paramref name="content"/>, for fluent chaining.</returns>
         public T AddTrailingContent<T>(T content) where T : VisualElement
         {
             Insert(IndexOf(_label) + 1, content);
             return content;
         }
 
-        /// <summary>
-        /// Hands the row's free space to a flex-grow <see cref="AddLeadingContent"/> element instead of the text label:
-        /// the <see cref="Text"/> label stops growing and shrinks to its own text, so the leading content fills the row
-        /// and the label merely pins after it. Without this the label claims the free space and the leading content
-        /// sits at its natural width. Affects only this instance.
-        /// </summary>
         public void FillWithLeadingContent() => _label.style.flexGrow = 0f;
 
-        /// <summary>
-        /// Hands the row's free space to a flex-grow <see cref="AddTrailingContent"/> element instead of the text label:
-        /// the <see cref="Text"/> label stops growing and shrinks to its own text, so the trailing content fills the row
-        /// and the label merely pins before it. The mirror of <see cref="FillWithLeadingContent"/>.
-        /// </summary>
         public void FillWithTrailingContent() => _label.style.flexGrow = 0f;
 
         private void OnMouseEnter(MouseEnterEvent _)

@@ -5,15 +5,10 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    /// <summary>
-    /// Builds the "Welcome" settings controls bound to <see cref="WelcomeSettings"/> — the auto-show switch. Shared by
-    /// the window's Settings tab and the Preferences page, so both render the same control from one definition. A
-    /// per-user preference (<see cref="AspidSettingsUI.UserScopeClass"/>).
-    /// </summary>
+    // The Welcome auto-show switch, defined once so the window's Settings tab and the Preferences page render the
+    // same control.
     internal static class WelcomeSettingsUI
     {
-        /// <summary>Appends the auto-show switch to <paramref name="container"/>, wired straight to
-        /// <see cref="WelcomeSettings"/>.</summary>
         public static void BuildControls(VisualElement container)
         {
             var autoShow = new AspidSwitch("Auto-show Welcome")
@@ -29,7 +24,6 @@ namespace Aspid.FastTools.Editors
             container.Add(autoShow);
         }
 
-        // Shorthand over the shared live-sync helper, binding to this store's Changed signal.
         private static void SyncFromSettings<TControl, TValue>(TControl control, Func<TValue> read)
             where TControl : VisualElement, INotifyValueChanged<TValue>
         {

@@ -4,8 +4,7 @@ using System;
 namespace Aspid.FastTools.Types
 {
     /// <summary>
-    /// Flags describing which special type categories the type picker should include
-    /// in addition to plain concrete classes.
+    /// Specifies which special type categories the type picker offers in addition to concrete classes.
     /// </summary>
     /// <seealso cref="TypeSelectorAttribute"/>
     [Flags]
@@ -17,17 +16,17 @@ namespace Aspid.FastTools.Types
         None = 0,
 
         /// <summary>
-        /// Abstract classes are allowed in addition to concrete types.
+        /// Abstract classes are offered too. Static classes never are.
         /// </summary>
         Abstract = 1,
 
         /// <summary>
-        /// Interfaces are allowed in addition to concrete types.
+        /// Interfaces are offered too.
         /// </summary>
         Interface = 2,
 
         /// <summary>
-        /// Both abstract classes and interfaces are allowed.
+        /// Both abstract classes and interfaces are offered.
         /// </summary>
         All = Abstract | Interface
     }

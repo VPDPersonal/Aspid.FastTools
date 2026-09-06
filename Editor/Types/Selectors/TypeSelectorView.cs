@@ -3,33 +3,24 @@ using UnityEngine;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    /// <summary>
-    /// The hierarchical type selector as a host-agnostic <see cref="VisualElement"/>: search, keyboard
-    /// navigation, namespace drill-down and the generic-argument resolution flow all live here.
-    /// <see cref="TypeSelectorWindow"/> hosts it as a dropdown; embedding hosts (e.g. the Repair References
-    /// window) add it inline and collapse it through the dismiss callback.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Selecting an open generic definition (injected via <see cref="TypeSelectorFilter.AdditionalTypes"/>) is not a final selection;
-    /// instead it drills into an argument-selection flow — one hierarchical page per type parameter,
-    /// reusing the same search/keyboard/navigation — and emits the constructed closed type once every argument
-    /// is resolved. The argument flow stays dormant unless open generics are present, so the ordinary
-    /// type-selection contract is unchanged.
-    /// </para>
-    /// <para>
-    /// The implementation is split across partial files by concern: this file owns construction and the shared
-    /// state; <c>.Rows</c> binds list rows; <c>.Input</c> handles the search chrome and keyboard; <c>.Navigation</c>
-    /// drives drill-down and selection; <c>.Generics</c> hosts the argument-resolution page stack; <c>.View</c>
-    /// renders breadcrumbs, the footer hint and errors.
-    /// </para>
-    /// </remarks>
+    // The hierarchical type selector as a host-agnostic element: search, keyboard navigation, namespace drill-down
+    // and the generic-argument flow. TypeSelectorWindow hosts it as a dropdown; an embedding host adds it inline and
+    // collapses it through the dismiss callback.
+    //
+    // Selecting an open generic definition is not a final selection: it drills into one hierarchical page per type
+    // parameter, reusing the same search and navigation, and emits the constructed closed type once every argument
+    // is resolved. That flow stays dormant unless open generics are present.
+    //
+    // Split across partial files: this one owns construction and shared state, .Rows binds list rows, .Input handles
+    // the search chrome and keyboard, .Navigation drives drill-down and selection, .Generics hosts the argument
+    // pages and .View renders breadcrumbs, the footer hint and errors.
     internal sealed partial class TypeSelectorView : VisualElement
     {
         private const string StyleSheetPath = "UI/Types/Aspid-FastTools-TypeSelector";
@@ -83,13 +74,10 @@ namespace Aspid.FastTools.Types.Editors
 
         private NavigationController Nav => _pages[^1].Navigation;
 
-        /// <summary>
-        /// Creates a type selector view.
-        /// </summary>
-        /// <param name="filter">Defines which types the selector offers: base types, kind constraints, the per-type predicate, extra entries and the open-generic argument predicate. See <see cref="TypeSelectorFilter"/>.</param>
-        /// <param name="currentAqn">Assembly-qualified name of the currently selected type, used to pre-navigate to that type's location. Pass <c>null</c> or empty to start at the root.</param>
-        /// <param name="onSelected">Callback invoked with the assembly-qualified name of the selected type, or <c>null</c> if the user chose <c>&lt;None&gt;</c>. When an open generic is resolved, the assembly-qualified name of the constructed closed type is passed.</param>
-        /// <param name="onDismiss">Invoked when the selector is done — after a selection is emitted, or when the user cancels with Escape. The host closes its window or collapses the inline panel here.</param>
+        // currentAqn pre-navigates to that type's location; empty starts at the root. onSelected receives the
+        // selected type's assembly-qualified name — the constructed closed type for a resolved open generic — or
+        // null for <None>. onDismiss fires once the selector is done, whether it emitted a selection or was
+        // canceled, and is where the host closes its window or collapses its inline panel.
         internal TypeSelectorView(
             TypeSelectorFilter filter = default,
             string currentAqn = "",
@@ -112,7 +100,7 @@ namespace Aspid.FastTools.Types.Editors
             BuildUI();
 
             var hierarchy = HierarchyBuilder.Build(types, filter.Allow, filter.Predicate, filter.AdditionalTypes,
-                includeHidden: _includeHidden);
+                includeNoneOption: !filter.HideNoneOption, includeHidden: _includeHidden);
             var navigation = new NavigationController(hierarchy, composeSections: true);
 
             if (!string.IsNullOrWhiteSpace(_currentAqn))
@@ -131,12 +119,10 @@ namespace Aspid.FastTools.Types.Editors
             PreselectCurrent();
         }
 
-        // Highlights the row for the currently selected type on open — the view has pre-navigated to that type's
-        // namespace, so its row is in view and an immediate Enter re-confirms the same value. When the current value
-        // is <None> ("") or its type is absent (a missing type keeps the navigation at the root), the pinned <None>
-        // row is selected instead, so Enter re-confirms/clears rather than committing an arbitrary first row. Only a
-        // null current value (the host has no current-value concept) leaves the selection empty and Enter inert.
-        // FocusPicker scrolls the selection into view once the list is laid out.
+        // Highlights the current type's row on open, so an immediate Enter re-confirms the same value. A current
+        // value of <None>, or one whose type is absent, selects the pinned <None> row instead, so Enter re-confirms
+        // or clears rather than committing an arbitrary first row. Only a null current value — a host with no
+        // current-value concept — leaves the selection empty and Enter inert.
         private void PreselectCurrent()
         {
             if (_currentAqn is null) return;
@@ -157,7 +143,7 @@ namespace Aspid.FastTools.Types.Editors
 
             for (var i = 0; i < items.Count; i++)
             {
-                if (items[i].IsSelectable && items[i].DisplayName == TypeSelectorHelpers.NoneOption)
+                if (items[i].IsNoneOption)
                 {
                     _listView.selectedIndex = i;
                     return;
@@ -165,10 +151,8 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        /// <summary>
-        /// Gives the picker keyboard focus so the arrow keys navigate and any printable key starts a search (the search
-        /// field stays collapsed until then). Call after the view is attached to a panel.
-        /// </summary>
+        // Gives the picker keyboard focus so the arrow keys navigate and any printable key starts a search (the search
+        // field stays collapsed until then). Call after the view is attached to a panel.
         internal void FocusPicker()
         {
             if (Nav.CurrentItems.Count > 0)
@@ -218,7 +202,7 @@ namespace Aspid.FastTools.Types.Editors
             _settingsButton.clicked += () =>
             {
                 _onDismiss?.Invoke();
-                SerializeReferences.Editors.TabWindow.OpenSettings();
+                TabWindow.OpenSettings();
             };
             _breadcrumbBar.RegisterCallback<ClickEvent>(_ => OpenSearch());
 

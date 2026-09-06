@@ -8,44 +8,30 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Completes a "Create new script" flow across the domain reload that the new <c>.cs</c> triggers. The pending
-    /// (target, propertyPath, expected type) is parked in <see cref="SessionState"/> before the reload and resolved on
-    /// a later load once the script has compiled — assigning a fresh instance of the new type to the field.
-    /// </summary>
-    /// <remarks>
-    /// The assignment can outlive several reloads: a stub may fail to compile, or the new assembly may register only on
-    /// a later reload than the one whose <see cref="EditorApplication.delayCall"/> fires first. Unresolved entries are
-    /// therefore <b>re-persisted</b> and retried on every subsequent load instead of being dropped. Only the
-    /// <i>type-not-resolved</i> reason — the one a reload can actually fix — spends the cross-reload budget and is
-    /// abandoned (with a warning) after <see cref="MaxResolveAttempts"/> loads; an entry whose <i>target is merely not
-    /// loaded</i> (its scene/asset is closed) waits indefinitely without spending the budget, since no reload count can
-    /// fix that. Provably-dead entries (malformed id, path no longer a managed reference) are dropped silently. Across
-    /// the same load a small bounded number of in-session re-arms catches an assembly that lands a tick late without a
-    /// fresh reload.
-    /// </remarks>
+    // Completes a "Create new script" flow across the domain reload the new .cs triggers: the pending (target, path,
+    // expected type) is parked in SessionState before the reload and resolved on a later load, once the script has
+    // compiled.
+    //
+    // The assignment can outlive several reloads — a stub may fail to compile, or the new assembly may register only
+    // on a later reload — so an unresolved entry is re-persisted and retried rather than dropped. Only the
+    // type-not-resolved reason, the one a reload can fix, spends the cross-reload budget; an entry whose target is
+    // merely not loaded waits indefinitely, since no reload count can open its scene. Provably dead entries are
+    // dropped silently, and a few in-session re-arms catch an assembly that lands a tick late.
     internal static class SerializeReferencePendingAssignment
     {
         public const string Key = "Aspid.FastTools.SerializeReference.PendingAssignment";
         private const char EntrySeparator = '\n';
         private const char FieldSeparator = '|';
 
-        /// <summary>
-        /// Cross-reload backstop: a still-unresolved entry is dropped (with a warning) after this many loads.
-        /// </summary>
+        // Cross-reload backstop: a still-unresolved entry is dropped, with a warning, after this many loads.
         public const int MaxResolveAttempts = 32;
 
-        /// <summary>
-        /// Per-load belt-and-suspenders: how many extra <c>delayCall</c> passes to arm for a late same-load load.
-        /// </summary>
+        // How many extra passes to arm within one load, for an assembly that registers a tick late.
         public const int MaxInSessionRetries = 3;
 
-        // Re-arms left for the current load; reset by Hook on every domain reload (static state does not survive a reload).
+        // Re-arms left for the current load; static state does not survive a reload, so Hook resets it.
         private static int _inSessionRetriesLeft;
 
-        /// <summary>
-        /// Parks an assignment to complete after a later domain reload (when the new type compiles).
-        /// </summary>
         public static void Enqueue(UnityEngine.Object target, string propertyPath, string fullTypeName)
         {
             if (target == null || string.IsNullOrEmpty(propertyPath) || string.IsNullOrEmpty(fullTypeName)) return;
@@ -65,16 +51,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             EditorApplication.delayCall += ResolveAfterLoad;
         }
 
-        // First pass after a load: a still-pending entry counts one resolve attempt against its cross-reload budget.
+        // The first pass after a load counts one attempt against each pending entry's cross-reload budget.
         private static void ResolveAfterLoad() => Resolve(countAttempt: true);
 
-        // In-session re-arm: retries without spending the cross-reload budget (no new information has reloaded yet).
+        // An in-session retry: nothing has reloaded, so it does not spend the cross-reload budget.
         private static void ResolveRetry() => Resolve(countAttempt: false);
 
         private static void Resolve(bool countAttempt)
         {
-            // Re-arm another same-load pass (bounded) only while something is still pending, in case an assembly lands a
-            // tick after this one without a fresh reload. The cross-reload budget is spent by ResolvePass, not here.
+            // Re-armed only while something is still pending, in case an assembly lands a tick after this one.
             if (ResolvePass(countAttempt) && _inSessionRetriesLeft > 0)
             {
                 _inSessionRetriesLeft--;
@@ -82,10 +67,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Runs one resolve pass over the persisted queue: applies what it can, re-persists what is still pending, erases
-        /// the queue once nothing remains. Returns <c>true</c> while at least one entry is still pending.
-        /// </summary>
+        // Applies what it can, re-persists what is still pending and erases the queue once nothing remains.
         public static bool ResolvePass(bool countAttempt)
         {
             var raw = SessionState.GetString(Key, string.Empty);
@@ -103,8 +85,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
                 catch (Exception)
                 {
-                    // A resolved-but-incompatible type throws on assign; treat it as an unresolved attempt so the
-                    // give-up cap bounds it and it never strands the entries queued after it.
+                    // A resolved but incompatible type throws on assign; counting it as unresolved lets the give-up
+                    // cap bound it instead of stranding the entries queued behind it.
                     outcome = ApplyOutcome.PendingUnresolved;
                 }
 
@@ -115,12 +97,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         break; // resolved or provably dead — drop from the queue.
 
                     case ApplyOutcome.PendingUnloaded:
-                        // The owning scene/asset isn't open; a reload cannot fix that, so wait without spending the budget.
+                        // A reload cannot open the owning scene, so this waits without spending the budget.
                         survivors.Add(entry);
                         break;
 
                     case ApplyOutcome.PendingUnresolved:
-                        // The type has not compiled/loaded yet (or could not be applied). This is what the budget bounds.
+                        // The type has not compiled yet — the case the budget bounds.
                         var next = countAttempt ? entry.WithIncrementedAttempt() : entry;
                         if (next.Attempts >= MaxResolveAttempts) WarnDropped(next);
                         else survivors.Add(next);
@@ -184,11 +166,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return null;
         }
 
-        // --------------------------------------------------------------------------------------------------------------
-        // Wire model: SessionState stores newline-separated entries, each a pipe-separated
-        // (globalId | propertyPath | fullTypeName | attempts) record — none of those fields can contain a pipe or
-        // newline. Legacy three-field records (written before retry tracking) decode as attempts = 0.
-        // --------------------------------------------------------------------------------------------------------------
+        // Wire model: SessionState holds newline-separated entries, each a pipe-separated
+        // (globalId | propertyPath | fullTypeName | attempts) record — no field can contain a pipe or a newline.
+        // Legacy three-field records, written before retry tracking, decode as attempts = 0.
 
         public readonly struct Entry : IEquatable<Entry>
         {
@@ -207,9 +187,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             public Entry WithIncrementedAttempt() => new(GlobalId, PropertyPath, FullTypeName, Attempts + 1);
 
-            /// <summary>
-            /// True when both entries target the same field on the same object (ignores type and attempts).
-            /// </summary>
+            // True when both entries target the same field on the same object, whatever their type and attempts.
             public bool SameTarget(Entry other) => GlobalId == other.GlobalId && PropertyPath == other.PropertyPath;
 
             public string Encode() =>
@@ -264,11 +242,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
-        /// <summary>
-        /// Appends <paramref name="entry"/> to <paramref name="queue"/>, replacing any earlier entry that targets the
-        /// same field on the same object — re-picking a field's "new script" supersedes the previous pending pick rather
-        /// than queuing a second, stale assignment to the same path.
-        /// </summary>
+        // An earlier entry for the same field is replaced: re-picking a field's new script supersedes the previous
+        // pending pick rather than queuing a second, stale assignment.
         public static void Merge(List<Entry> queue, Entry entry)
         {
             queue.RemoveAll(existing => existing.SameTarget(entry));

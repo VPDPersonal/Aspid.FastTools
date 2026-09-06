@@ -6,16 +6,9 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Durable, project-scoped named templates for managed-reference instances: a stored type plus its JSON payload,
-    /// rehydrated into an independent instance on use. A persistent upgrade over the session-only
-    /// <see cref="SerializeReferenceClipboard"/>, modeled on <c>TypeSelectorPreferences</c> (EditorPrefs JSON, scoped by
-    /// <see cref="PlayerSettings.productGUID"/>). Entries whose type no longer resolves are pruned on load.
-    /// </summary>
-    /// <remarks>
-    /// Like the clipboard, the JSON round-trip is <see cref="JsonUtility"/>-based, so nested <c>[SerializeReference]</c>
-    /// children are not preserved — templates capture single-level instances.
-    /// </remarks>
+    // Durable, project-scoped named templates for managed-reference instances: a stored type plus its JSON payload,
+    // rehydrated into an independent instance on use — the persistent counterpart to the session-only clipboard.
+    // The JSON round-trip is JsonUtility-based, so nested [SerializeReference] children are not preserved.
     internal static class SerializeReferenceTemplates
     {
         private const string KeyPrefix = "Aspid.FastTools.SerializeReference.Templates.";
@@ -34,9 +27,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             public List<Entry> entries = new();
         }
 
-        /// <summary>
-        /// A resolved template: its display name and the concrete type it instantiates.
-        /// </summary>
         public readonly struct Template
         {
             public readonly string Name;
@@ -51,15 +41,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static string Key => KeyPrefix + PlayerSettings.productGUID;
 
-        /// <summary>
-        /// Whether a template with <paramref name="name"/> already exists.
-        /// </summary>
         public static bool Contains(string name) => Load().entries.Exists(entry => entry.name == name);
 
-        /// <summary>
-        /// Saves <paramref name="value"/> under <paramref name="name"/>, asking for confirmation first when a template
-        /// with that name already exists (the existing one would be overwritten).
-        /// </summary>
         public static void SaveConfirmed(string name, object value)
         {
             if (Contains(name) && !EditorUtility.DisplayDialog("Overwrite Template?",
@@ -68,9 +51,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Save(name, value);
         }
 
-        /// <summary>
-        /// Saves <paramref name="value"/> under <paramref name="name"/> (replacing an existing one).
-        /// </summary>
         public static void Save(string name, object value)
         {
             if (string.IsNullOrWhiteSpace(name) || value is null) return;
@@ -82,9 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Persist(store);
         }
 
-        /// <summary>
-        /// Every template whose type still resolves, pruning the rest. In stored order.
-        /// </summary>
+        // Returns the templates whose type still resolves, in stored order, and prunes the rest.
         public static List<Template> LoadResolved()
         {
             var store = Load();
@@ -107,9 +85,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        /// <summary>
-        /// Rehydrates an independent instance from the named template, or null if it is gone/unresolved.
-        /// </summary>
         public static object CreateInstance(string name)
         {
             var entry = Load().entries.Find(e => e.name == name);
@@ -123,9 +98,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return instance;
         }
 
-        /// <summary>
-        /// A unique default name for a new template of <paramref name="type"/> (deduplicated with a suffix).
-        /// </summary>
+        // A unique default name for a new template, deduplicated with a numeric suffix.
         public static string SuggestName(Type type)
         {
             var baseName = type?.Name ?? "Template";

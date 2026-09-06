@@ -2,31 +2,25 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using System.Reflection;
-using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
-using Aspid.FastTools.Types.Editors;
+
+using Aspid.FastTools.SerializeReferences.Editors;
 
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors
+namespace Aspid.FastTools.Types.Editors
 {
-    /// <summary>
-    /// Shared logic for the <c>[TypeSelector(Required = true)]</c> marker: detecting whether a property carries it (via
-    /// the field reflected from the property path) and whether it is currently violated (a genuinely empty value). Used
-    /// by the inspector notice and by the build/CI gate's per-property check. Applies to a <c>[SerializeReference]</c>
-    /// managed reference (empty == null), a <c>string</c> type field (empty == null-or-empty), and a
-    /// <see cref="SerializableType"/> field (empty == its nested <c>_assemblyQualifiedName</c> is null-or-empty; the
-    /// attribute is resolved from the wrapper field, and violation is checked on its backing string).
-    /// </summary>
-    internal static class SerializeReferenceRequiredGate
+    // Detects whether a property carries [TypeSelector(Required = true)] and whether it is currently violated,
+    // for the inspector notice and the build/CI gate alike. "Empty" means null for a managed reference and a
+    // null-or-empty string for a type-name field; a SerializableType resolves its attribute from the wrapper field
+    // and checks the violation on the backing string.
+    internal static class TypeSelectorRequiredGate
     {
         private const BindingFlags FieldFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
         private const BindingFlags DeclaredFieldFlags = FieldFlags | BindingFlags.DeclaredOnly;
 
-        /// <summary>
-        /// Resolves the <c>[TypeSelector]</c> attribute on this property's declared field when it opts in with
-        /// <see cref="TypeSelectorAttribute.Required"/>; returns <see langword="false"/> otherwise.
-        /// </summary>
+        // Resolves the [TypeSelector] attribute on this property's declared field when it opts in with
+        // TypeSelectorAttribute.Required; returns false otherwise.
         internal static bool TryGetRequired(SerializedProperty property, out TypeSelectorAttribute selector)
         {
             selector = null;
@@ -41,22 +35,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // The backing string field a SerializableType / SerializableType<T> serializes its type name into.
-        private const string TypeNameBackingField = "_assemblyQualifiedName";
-
-        /// <summary>
-        /// The field that carries user attributes for <paramref name="property"/> — normally its backing field
-        /// as resolved by <see cref="SerializePropertyExtensions.GetFieldInfo(SerializedProperty)"/>.
-        /// </summary>
-        /// <remarks>
-        /// The backing <c>_assemblyQualifiedName</c> string nested inside an <see cref="ISerializableType"/>
-        /// wrapper is redirected to the wrapper field itself — that is where the attributes
-        /// (e.g. <c>[TypeSelector]</c>) are declared.
-        /// </remarks>
+        // The field carrying the property's user attributes — normally its own backing field, but the string
+        // nested inside a SerializableType wrapper redirects to the wrapper field, where they are declared.
         private static FieldInfo GetAttributeField(SerializedProperty property)
         {
             var field = property.GetFieldInfo();
-            if (field?.Name != TypeNameBackingField) return field;
+            if (field?.Name != SerializableTypeUtility.BackingFieldName) return field;
 
             // The property targets the string inside the wrapper — its parent property is the wrapper field itself.
             var path = property.propertyPath;
@@ -71,11 +55,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : field;
         }
 
-        /// <summary>
-        /// True when the property is required and currently unset. For a managed reference that means an empty value
-        /// (a missing-type reference is NOT a required violation — it has its own notice/gate); for a string type field
-        /// it means a null-or-empty assembly-qualified name.
-        /// </summary>
+        // True when the property is required and currently unset. For a managed reference that means an empty value
+        // (a missing-type reference is NOT a required violation — it has its own notice/gate); for a string type field
+        // it means a null-or-empty assembly-qualified name.
         internal static bool IsViolation(SerializedProperty property)
         {
             if (!TryGetRequired(property, out _)) return false;
@@ -89,17 +71,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             };
         }
 
-        /// <summary>
-        /// Reflects the serialized fields of <paramref name="type"/> that opt into the required check
-        /// (<c>[TypeSelector(Required = true)]</c>), classifying each as a <c>string</c> field, a
-        /// <see cref="SerializableType"/> wrapper or a <c>[SerializeReference]</c> managed reference. Drives the
-        /// pure-YAML scene scan, which needs the field keys and kinds without a live <see cref="SerializedObject"/>.
-        /// Recurses into plain <c>[Serializable]</c> by-value containers (their fields nest as child keys in YAML),
-        /// recording the container chain in <see cref="RequiredFieldDescriptor.Parents"/>. Collections of containers
-        /// and fields behind a <c>[SerializeReference]</c> hop are out of scope — their values live outside the
-        /// document's top-level mapping (indexed elements / <c>RefIds</c> data). Cached per type (stable until a
-        /// domain reload).
-        /// </summary>
+        // The serialized fields opting into the required check, classified by kind — what the pure-YAML scene scan
+        // needs without a live SerializedObject. It recurses into plain by-value containers, whose fields nest as
+        // child keys, recording the chain in Parents. Collections of containers and fields behind a
+        // [SerializeReference] hop are out of scope, since their values live outside the document's top-level
+        // mapping. Cached per type, which is stable until a domain reload.
         internal static IReadOnlyList<RequiredFieldDescriptor> GetRequiredFields(Type type)
         {
             if (type is null) return Array.Empty<RequiredFieldDescriptor>();
@@ -185,7 +161,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Per-type memo for GetRequiredFields — the reflected field set is stable until a domain reload clears statics.
         private static readonly Dictionary<Type, IReadOnlyList<RequiredFieldDescriptor>> RequiredFieldCache = new();
 
-        // True for an ISerializableType wrapper field, or an array / List<T> of them.
         private static bool IsSerializableTypeField(Type fieldType) =>
             SerializableTypeUtility.IsSerializableTypeField(fieldType);
     }

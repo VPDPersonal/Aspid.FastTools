@@ -6,18 +6,11 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The package's Project Settings page (<c>Project Settings → Aspid.FastTools → SerializeReference</c>) — the
-    /// team-wide half of the settings, matching the page's <see cref="SettingsScope.Project"/>: auto de-alias, the
-    /// build/CI gate severity and the excluded scan folders, all persisted in the committed ProjectSettings asset.
-    /// The per-user controls live on the <c>Preferences → Aspid.FastTools</c> pages instead, and the window's Settings
-    /// tab shows both scopes as the one full overview. <see cref="AspidSettingsUI.BuildProviderPage"/> composes the
-    /// same branded page (dotted canvas, legend, sections, pinned reset footer) both Unity-native pages share.
-    /// Backed by <see cref="SerializeReferenceSettings"/>.
-    /// </summary>
+    // The package's Project Settings page: the team-wide half of the settings, matching the page's project scope.
+    // The per-user controls live under Preferences instead, and the window's Settings tab shows both scopes.
     internal static class SerializeReferenceSettingsProvider
     {
-        // Repaint open editor windows when a setting changes, so toggles like rid colours apply without reselection.
+        // Repaint open editor windows when a setting changes, so toggles like rid colors apply without reselection.
         [InitializeOnLoadMethod]
         private static void HookRepaint() => SerializeReferenceSettings.Changed += RepaintAll;
 

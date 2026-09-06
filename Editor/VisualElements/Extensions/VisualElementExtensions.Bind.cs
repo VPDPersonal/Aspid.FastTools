@@ -8,8 +8,9 @@ namespace Aspid.FastTools.UIElements.Editors
     public static partial class VisualElementExtensions
     {
         /// <summary>
-        /// Binds the element to the specified <see cref="SerializedObject"/>.
+        /// Binds the element to <paramref name="obj"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to bind.</param>
         /// <param name="obj">The serialized object to bind to.</param>
         /// <returns>The element, for chaining.</returns>

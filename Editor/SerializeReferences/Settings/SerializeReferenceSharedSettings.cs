@@ -5,20 +5,19 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Project-scoped, version-controlled home for the SerializeReference settings that must be the same for every
-    /// teammate and for CI — the build/CI gate severity, the auto-de-alias behaviour and the excluded scan folders.
-    /// Persisted as a YAML asset under <c>ProjectSettings/</c> (via <see cref="ScriptableSingleton{T}"/> +
-    /// <see cref="FilePathAttribute"/>) so the chosen values are committed to VCS and travel to a clean CI runner —
-    /// unlike the per-machine <see cref="EditorPrefs"/> that back the purely cosmetic rest of
-    /// <see cref="SerializeReferenceSettings"/> (breakage detection). Commit
-    /// <c>ProjectSettings/SerializeReferenceSharedSettings.asset</c> for these values to reach CI and the rest of the team.
-    /// </summary>
+    // The SerializeReference settings that must be the same for every teammate and for CI: the gate severity, the
+    // auto-de-alias behavior and the excluded scan folders. Persisted as a YAML asset under ProjectSettings/ so the
+    // values are committed and travel to a clean CI runner, unlike the per-machine EditorPrefs behind the rest.
     [FilePath("ProjectSettings/SerializeReferenceSharedSettings.asset", FilePathAttribute.Location.ProjectFolder)]
     internal sealed class SerializeReferenceSharedSettings : ScriptableSingleton<SerializeReferenceSharedSettings>
     {
+        [Tooltip("How a build and a CI run react to missing or unset-required managed references.")]
         [SerializeField] private GateSeverity _buildSeverity = GateSeverity.Warn;
+
+        [Tooltip("Give a duplicated list element its own instance instead of sharing the original's rid.")]
         [SerializeField] private bool _autoDeAlias = true;
+
+        [Tooltip("Project folders the reference scans skip.")]
         [SerializeField] private string[] _excludedFolders = Array.Empty<string>();
 
         public GateSeverity BuildSeverity
@@ -45,8 +44,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public string[] ExcludedFolders
         {
-            // Defensive copy: an in-place mutation of the live array would change the asset without Save()/Changed
-            // and make the facade's equality short-circuit swallow the follow-up assignment.
+            // A defensive copy: mutating the live array would change the asset without a Save, and the facade's
+            // equality check would then swallow the follow-up assignment.
             get => _excludedFolders is { Length: > 0 } ? (string[])_excludedFolders.Clone() : Array.Empty<string>();
             set
             {

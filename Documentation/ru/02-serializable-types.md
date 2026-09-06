@@ -7,6 +7,8 @@
 **Разделы справочника:**
 
 * [`SerializableType`](#serializabletype) — сериализуемое поле-обёртка над `System.Type`;
+* [`SerializableMonoScript`](#serializablemonoscript) — та же обёртка, но со ссылкой через ассет
+  скрипта, поэтому переименование класса не ломает поле;
 * [`TypeSelectorAttribute`](#typeselectorattribute) — кнопка выбора типа у `string`,
   `SerializableType` и `[SerializeReference]` полей, включая
   [динамический базовый тип из поля или свойства](#dynamic-base-types-via-member-references);
@@ -24,7 +26,11 @@
 - **`SerializableType`** — хранит любой тип;
 - **`SerializableType<T>`** — хранит тип, ограниченный `T` и его подклассами.
 
-Оба поддерживают неявное преобразование в `System.Type`.
+Оба поддерживают неявное преобразование в `System.Type`, создаются из кода конструктором с `Type`
+(`new SerializableType<Ability>(typeof(Dash))` — ограниченная версия бросает исключение для типа, не приводимого к `T`)
+и отдают сохранённое имя через `AssemblyQualifiedName`. `SerializableType<T>` наследует `SerializableType`; оба
+построены на абстрактной `SerializableTypeBase`. Помните, что Unity сериализует поле по объявленному типу:
+`SerializableType<T>`, присвоенный из кода в поле `SerializableType`, загрузится как обёртка без ограничения.
 
 ```csharp
 using UnityEngine;
@@ -48,6 +54,38 @@ public sealed class AbilitySelector : MonoBehaviour
 ```
 
 ![Поле SerializableType с выбором типа в Инспекторе](../Images/aspid_fasttools_serializable_type.gif)
+
+## SerializableMonoScript
+
+То же поле, но ссылка идёт через ассет скрипта, а не через имя типа. `SerializableMonoScript` и
+`SerializableMonoScript<T>` хранят рядом с assembly-qualified name редакторскую ссылку на `MonoScript`; в редакторе
+источником истины является скрипт, поэтому **переименование или перенос класса не ломает поле** — сохранённое имя
+перечитывается из скрипта при каждой сериализации объекта. Ссылка существует только под `UNITY_EDITOR`: сборка плеера
+сериализует одно имя, и в рантайме обёртка разрешается по нему точно так же, как `SerializableType`.
+
+Ограничение унаследовано от Unity: подходит только тип, которому соответствует ассет скрипта — не вложенный,
+не generic класс, объявленный в файле с тем же именем (то, что возвращает `MonoScript.GetClass()`). Пикер показывает
+только такие типы, а `MonoScript` можно перетащить на поле из окна Project. Для вложенных и generic-типов нужен
+`SerializableType`.
+
+```csharp
+public sealed class EnemySpawner : MonoBehaviour
+{
+    // Переживёт переименование Grunt в Soldier; пикер предлагает наследников Enemy, у которых есть файл скрипта.
+    [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
+
+    private void Spawn() =>
+        gameObject.AddComponent(_enemyType.Type);
+}
+```
+
+Обёртка, созданная из кода (`new SerializableMonoScript(typeof(Dash))`), хранит только имя типа и становится
+устойчивой к переименованию после выбора типа в Инспекторе.
+
+`[TypeSelector]` (включая `Required = true`) применяется к этим полям так же, как к `SerializableType`. Обе обёртки
+`SerializableMonoScript<T>` наследует `SerializableMonoScript`, который делит с `SerializableType` абстрактную
+`SerializableTypeBase`, но сам ею не является (сериализованный layout другой). Ассет доступен через редакторское
+свойство `Script`.
 
 ## TypeSelectorAttribute
 
@@ -233,7 +271,7 @@ namespace Aspid.FastTools.Types.Editors
 | Параметр | Описание |
 |----------|----------|
 | `screenRect` | Прямоугольник в экранных координатах, к которому привязывается dropdown. |
-| `filter` | Объединяет, какие типы предлагает селектор: базовые типы (`Types`, в списке остаются только типы, совместимые со **всеми** записями; по умолчанию — `typeof(object)`), включаемые категории (`Allow`), необязательный предикат `Predicate`, дополнительные записи `AdditionalTypes`, предикат аргументов открытых генериков `ArgumentFilter` (какие типы показывает страница аргументов) и `InferredArgumentFilter` (допустим ли для конкретного параметра аргумент, который поле определило само). |
+| `filter` | Объединяет, какие типы предлагает селектор: базовые типы (`Types`, в списке остаются только типы, совместимые со **всеми** записями; по умолчанию — `typeof(object)`), включаемые категории (`Allow`), необязательный предикат `Predicate`, дополнительные записи `AdditionalTypes`, предикат аргументов открытых генериков `ArgumentFilter` (какие типы показывает страница аргументов) и `InferredArgumentFilter` (допустим ли для конкретного параметра аргумент, который поле определило само) и `HideNoneOption` (убрать строку `<None>`, когда цель всегда должна хранить тип). |
 | `currentAqn` | Assembly-qualified имя текущего выбранного типа: окно сразу откроется на его уровне иерархии. Передайте `null` или пустую строку, чтобы стартовать с корня. |
 | `onSelected` | Callback с assembly-qualified именем выбранного типа или `null`, если пользователь выбрал `<None>`. |
 

@@ -6,12 +6,8 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Warns before deleting a MonoScript whose type is used as a <c>[SerializeReference]</c> managed reference anywhere
-    /// in the project — Unity does this for components but never for managed references, so deleting a referenced script
-    /// silently breaks assets. Queries <see cref="SerializeReferenceTypeUsageIndex"/> for the usage count and offers a
-    /// confirm dialog; cancelling aborts the delete.
-    /// </summary>
+    // Warns before deleting a MonoScript used as a managed reference anywhere in the project. Unity does this for
+    // components but never for managed references, so deleting a referenced script silently breaks assets.
     internal sealed class SerializeReferenceDeleteGuard : AssetModificationProcessor
     {
         private const int SamplePathCount = 8;
@@ -22,14 +18,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (Application.isBatchMode) return AssetDeleteResult.DidNotDelete;
             if (string.IsNullOrEmpty(assetPath)) return AssetDeleteResult.DidNotDelete;
 
-            // A folder delete fires ONCE with the folder path — the scripts inside never get their own callback, so
-            // without this branch a folder full of referenced scripts deletes unwarned.
+            // A folder delete fires once with the folder path; the scripts inside get no callback of their own.
             if (AssetDatabase.IsValidFolder(assetPath)) return GuardFolder(assetPath);
 
             if (!assetPath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                 return AssetDeleteResult.DidNotDelete;
 
-            // The script still exists here (OnWillDeleteAsset fires before deletion), so GetClass() resolves its type.
+            // The callback fires before deletion, so the script still resolves its type here.
             var type = ResolveScriptType(assetPath);
             if (type is null) return AssetDeleteResult.DidNotDelete;
 
@@ -43,7 +38,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var proceed = EditorUtility.DisplayDialog("Delete Script", message, "Delete Anyway", "Cancel");
 
-            // FailedDelete aborts the deletion; DidNotDelete lets Unity proceed normally.
             return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
         }
 
@@ -53,7 +47,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return script != null ? script.GetClass() : null;
         }
 
-        // Sweeps the folder's contained scripts and raises ONE combined dialog for every referenced type found.
+        // Sweeps the folder's scripts and raises one combined dialog for every referenced type found.
         private static AssetDeleteResult GuardFolder(string folderPath)
         {
             var types = new List<Type>();
@@ -87,9 +81,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
         }
 
-        // Counts usages for a whole batch of types at once. A warm index answers per type; a cold index falls back to
-        // ONE combined project sweep matching every type's open key — never one full sweep per contained script, which
-        // would freeze the editor when deleting a folder of scripts.
+        // A warm index answers per type; a cold one falls back to a single combined sweep matching every type's open
+        // key, since one sweep per contained script would freeze the editor on a folder delete.
         private static IEnumerable<(Type type, int count)> CountUsagesBatch(List<Type> types)
         {
             if (SerializeReferenceTypeUsageIndex.IsWarm)
@@ -108,7 +101,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
-                // Data-only scan — skipping display-name resolution keeps this a pure text pass, not an asset load.
+                // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
                 foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
                 {
                     foreach (var node in document.Nodes)
@@ -125,8 +118,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 yield return (type, countsByKey[SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(type))]);
         }
 
-        // Uses the warm index when available; a cold index is never warmed (a modal full-project build) just to answer
-        // one delete — a targeted, no-modal scan for this single type runs instead.
+        // A cold index is never warmed just to answer one delete, since that is a modal full-project build; a
+        // targeted scan for this single type runs instead.
         private static SortedSet<string> GatherUsageSample(Type type, out int count)
         {
             var paths = new SortedSet<string>(StringComparer.Ordinal);
@@ -146,15 +139,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return paths;
             }
 
-            // Match on the open-generic identity: a script resolves to the open definition while YAML stores each
-            // closed instantiation under its own key, so the closed key would never match a generic type's script.
+            // Matched on the open-generic identity, or a generic type's script would never match its closed keys.
             var key = SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(type));
             foreach (var path in AssetDatabase.GetAllAssetPaths())
             {
                 if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
                 var usedHere = false;
-                // Data-only scan — skipping display-name resolution keeps this a pure text pass, not an asset load.
+                // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
                 foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
                 {
                     foreach (var node in document.Nodes)

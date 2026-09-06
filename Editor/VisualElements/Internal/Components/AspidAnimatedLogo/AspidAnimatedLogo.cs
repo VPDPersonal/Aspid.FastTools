@@ -5,25 +5,19 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// A <see cref="VisualElement"/> that displays an animated logo with three layered images.
-    /// On hover, the layers cross-fade in a cycle and the logo gently pulses; pulse parameters
-    /// and per-layer textures can all be inherited from USS custom properties via the
-    /// <see cref="AspidAnimatedLogoPulseSpeedStyle"/>, <see cref="AspidAnimatedLogoPulseHoverAmplitudeStyle"/>
-    /// and <see cref="AspidAnimatedLogoLayerImageStyle"/> bindings.
-    /// </summary>
+    // A VisualElement that displays an animated logo with three layered images. On hover, the layers cross-fade in a
+    // cycle and the logo gently pulses; pulse parameters and per-layer textures can all be inherited from USS custom
+    // properties via the AspidAnimatedLogoPulseSpeedStyle, AspidAnimatedLogoPulseHoverAmplitudeStyle and
+    // AspidAnimatedLogoLayerImageStyle bindings.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidAnimatedLogo : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedLogo";
-
         private const int LayerCount = 3;
         private const long AnimationIntervalMs = 33;
         private const float PulseAmplitudeSmoothing = 0.07f;
-
         private const string LayerClass = "aspid-fasttools-animated-logo__layer";
         private const string LayerVisibleClass = "aspid-fasttools-animated-logo__layer--visible";
-
         private readonly VisualElement[] _layers = new VisualElement[LayerCount];
 
         private readonly AspidAnimatedLogoPulseSpeedStyle _pulseSpeed;
@@ -38,15 +32,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private IVisualElementScheduledItem _colorCycle;
         private IVisualElementScheduledItem _pulse;
 
-        /// <summary>
-        /// Gets or sets the interval (in milliseconds) between color-layer transitions while hovered.
-        /// </summary>
         [UxmlAttribute]
         public long ColorCycleIntervalMs { get; set; }
 
-        /// <summary>
-        /// Gets or sets the angular speed of the hover pulse animation.
-        /// </summary>
         [UxmlAttribute]
         public float PulseSpeed
         {
@@ -54,9 +42,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _pulseSpeed.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the maximum scale amplitude of the hover pulse, expressed as a fraction (e.g. 0.04 = ±4%).
-        /// </summary>
         [UxmlAttribute]
         public float PulseHoverAmplitude
         {
@@ -64,9 +49,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _pulseHoverAmplitude.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the texture for the first logo layer (always visible by default).
-        /// </summary>
         [UxmlAttribute]
         public Texture2D Image1
         {
@@ -74,9 +56,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _layer1Image.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the texture for the second logo layer.
-        /// </summary>
         [UxmlAttribute]
         public Texture2D Image2
         {
@@ -84,9 +63,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _layer2Image.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the texture for the third logo layer.
-        /// </summary>
         [UxmlAttribute]
         public Texture2D Image3
         {
@@ -94,16 +70,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _layer3Image.SetValue(value);
         }
 
-        /// <summary>
-        /// Creates an <see cref="AspidAnimatedLogo"/> using <see cref="AspidAnimatedLogoPreset.Default"/>.
-        /// </summary>
         public AspidAnimatedLogo()
             : this(AspidAnimatedLogoPreset.Default) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidAnimatedLogo"/> with the given preset and starts the pulse loop.
-        /// </summary>
-        /// <param name="preset">The configuration preset to apply.</param>
         public AspidAnimatedLogo(AspidAnimatedLogoPreset preset)
         {
             this.AddStyleSheetsFromResource(StyleSheetPath);

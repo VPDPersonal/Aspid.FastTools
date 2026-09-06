@@ -5,17 +5,12 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The inverse of Make Unique: deliberately shares one managed-reference instance across several fields of the same
-    /// object. Because there is no rid setter, sharing is achieved by assigning the SAME instance to both paths —
-    /// Unity then keeps them on a single <see cref="SerializedProperty.managedReferenceId"/> (exactly the aliasing the
-    /// shared-reference notice detects), so the rid stripe and notice light up automatically.
-    /// </summary>
+    // The inverse of Make Unique: shares one managed-reference instance across several fields of the same object.
+    // There is no rid setter, so sharing means assigning the SAME instance to both paths — Unity then keeps them on
+    // one managedReferenceId, which is exactly the aliasing the shared-reference notice detects.
     internal static class SerializeReferenceLinker
     {
-        /// <summary>
-        /// A sibling managed reference this field could be linked to.
-        /// </summary>
+        // A sibling managed reference this field could be linked to.
         public readonly struct LinkCandidate
         {
             public readonly long Rid;
@@ -30,10 +25,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Every other managed reference in the same object that is assignable to this field and is neither this property
-        /// nor one of its ancestors/descendants (which would form a self-cycle).
-        /// </summary>
+        // Every other managed reference in the object assignable to this field, minus this property and its
+        // ancestors and descendants, which would form a self-cycle.
         public static List<LinkCandidate> CollectLinkCandidates(SerializedProperty property)
         {
             var result = new List<LinkCandidate>();
@@ -43,16 +36,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var selfPath = property.propertyPath;
             var seen = new HashSet<long>();
 
-            // The ancestor exclusion must work by IDENTITY, not path: an aliased sibling IS an ancestor instance
-            // under another name, and linking a child field to it would tie the object's graph into a cycle the
-            // path-prefix checks below cannot see (the alias's path shares no prefix with this property's).
+            // The exclusion works by identity, not path: an aliased sibling is an ancestor instance under another
+            // name, and its path shares no prefix with this property's, so the checks below cannot see the cycle.
             var ancestorRids = CollectAncestorRids(property);
 
             using var iterator = property.serializedObject.GetIterator();
             if (!iterator.Next(enterChildren: true)) return result;
 
-            // Cycle-safe walk: never re-enter an instance already seen on this walk (a cyclic graph would loop the
-            // iterator forever — see SerializeReferenceHelpers.BuildConstraintMap for the same guard).
+            // A cyclic graph would loop the iterator forever, so never re-enter an instance already seen.
             var visitedChildren = new HashSet<long>();
             bool enterChildren;
 
@@ -84,7 +75,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // The rids held by every managed-reference ancestor of the property (walking its path prefixes).
+        // The rids held by every managed-reference ancestor, found by walking the property's path prefixes.
         private static HashSet<long> CollectAncestorRids(SerializedProperty property)
         {
             var rids = new HashSet<long>();
@@ -106,16 +97,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return rids;
         }
 
-        /// <summary>
-        /// Points this field at the instance held by <paramref name="sourcePath"/>, sharing its rid.
-        /// </summary>
+        // Points this field at the instance held by sourcePath, sharing its rid.
         public static bool LinkTo(SerializedProperty property, string sourcePath)
         {
             if (property is null || string.IsNullOrEmpty(sourcePath)) return false;
 
-            // Read AND write through the SAME SerializedObject: Unity only keeps two fields on a single
-            // managedReferenceId when the same instance is assigned within one SerializedObject — a value pulled through
-            // a separate one (e.g. property.Persistent()) deserialises a fresh copy that gets a NEW rid on apply.
+            // Read and write through the SAME SerializedObject: a value pulled through a separate one deserializes a
+            // fresh copy that gets a new rid on apply, so the two fields would not share one.
             var serializedObject = property.serializedObject;
             var value = serializedObject.FindProperty(sourcePath)?.managedReferenceValue;
             if (value is null) return false;

@@ -5,21 +5,14 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// An iOS-style on/off switch in the Aspid palette: a rounded outlined track with a handle that slides between off
-    /// and on. Off shows only a neutral border and the handle over a transparent fill; on tints the border to the
-    /// theme's success accent and floods the track with a translucent wash of that accent. Both the fill alpha and the
-    /// border colour interpolate with the handle position as it slides on an ease-out-cubic curve. A near drop-in
-    /// replacement for <see cref="Toggle"/> — it derives from <see cref="BaseField{T}"/> over <see cref="bool"/>, so it
-    /// carries a left caption (which fills the row, pinning the switch to the right edge like an iOS settings row),
-    /// raises change events and binds like any other field. The visual is built and animated in code (the
-    /// position-synced colour lerp can't be expressed in USS), mirroring Aspid.MVVM's <c>AspidToggle</c>.
-    /// </summary>
+    // An iOS-style on/off switch: a rounded outlined track whose handle slides between off and on, with the fill
+    // alpha and border color interpolating along the handle's ease-out-cubic path. A near drop-in replacement for
+    // Toggle — it derives from BaseField<bool>, so it carries a left caption, raises change events and binds like
+    // any other field. Built and animated in code, since a position-synced color lerp cannot be expressed in USS.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidSwitch : BaseField<bool>
     {
         private const string SwitchClass = "aspid-fasttools-switch";
-
         private const float TrackWidth = 44f;
         private const float TrackHeight = 24f;
         private const float HandleSize = 18f;
@@ -52,19 +45,13 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly VisualElement _track;
         private readonly VisualElement _handle;
 
-        // 0 = off (handle left), 1 = on (handle right). The track colour lerps along the same 0..1 axis.
+        // 0 = off (handle left), 1 = on (handle right). The track color lerps along the same 0..1 axis.
         private float _handlePosition;
         private IVisualElementScheduledItem _animation;
 
-        /// <summary>
-        /// Creates an unlabeled switch.
-        /// </summary>
         public AspidSwitch()
             : this(null) { }
 
-        /// <summary>
-        /// Creates a switch with the given left caption.
-        /// </summary>
         public AspidSwitch(string label)
             : this(label, new VisualElement()) { }
 
@@ -102,7 +89,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 .SetBackgroundColor(HandleColor)
                 .SetBorderColor(HandleShadowColor)
                 .SetPickingMode(PickingMode.Ignore);
-            _handle.style.top = HandleInset; // vertically centred in the inner box; left is driven by the animation
+            _handle.style.top = HandleInset; // vertically centered in the inner box; left is driven by the animation
 
             input.AddChild(_track.AddChild(_handle));
 
@@ -114,7 +101,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             SetValueWithoutNotify(false);
         }
 
-        /// <inheritdoc/>
         public sealed override void SetValueWithoutNotify(bool newValue)
         {
             base.SetValueWithoutNotify(newValue);
@@ -123,7 +109,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             MoveTo(newValue);
         }
 
-        // Space / Enter flips the switch while it holds keyboard focus, matching Toggle's keyboard behaviour.
+        // Space / Enter flips the switch while it holds keyboard focus, matching Toggle's keyboard behavior.
         private void OnKeyDown(KeyDownEvent evt)
         {
             if (evt.keyCode is not (KeyCode.Space or KeyCode.Return or KeyCode.KeypadEnter)) return;
@@ -164,7 +150,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             const float maxLeft = TrackInnerWidth - HandleSize - HandleInset;
             _handle.style.left = Mathf.Lerp(HandleInset, maxLeft, _handlePosition);
 
-            // The fill alpha and the border colour lerp with the handle position so the on-tint sweeps in as it slides.
+            // The fill alpha and the border color lerp with the handle position so the on-tint sweeps in as it slides.
             _track.style.backgroundColor =
                 new Color(AccentColor.r, AccentColor.g, AccentColor.b, Mathf.Lerp(0f, OnFillAlpha, _handlePosition));
             _track.SetBorderColor(Color.Lerp(TrackOffBorderColor, AccentColor, _handlePosition));

@@ -1,16 +1,19 @@
 #nullable enable
 using System;
-using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types
 {
     /// <summary>
-    /// A wrapper around <see cref="System.Type"/> that supports Unity Inspector serialization.
-    /// The type is stored by its <c>AssemblyQualifiedName</c> and resolved lazily on first access.
+    /// Unity-serializable wrapper around a <see cref="System.Type"/>, stored by its <c>AssemblyQualifiedName</c>
+    /// and resolved lazily on first access.
     /// </summary>
+    /// <remarks>
+    /// Unity serializes a field by its declared type, so a <see cref="SerializableType{T}"/> assigned from code to a
+    /// field declared as <see cref="SerializableType"/> is reloaded unconstrained: the type survives, the constraint
+    /// does not.
+    /// </remarks>
     /// <example>
-    /// Declare a serializable type field and use the resolved type at runtime:
     /// <code>
     /// public class MyComponent : MonoBehaviour
     /// {
@@ -26,65 +29,47 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     [Serializable]
-    public sealed class SerializableType : ISerializableType, ISerializationCallbackReceiver
+    public class SerializableType : SerializableTypeBase
     {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-        [SerializeField] private string _assemblyQualifiedName;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-
-        private Type? _type;
-
-        /// <inheritdoc />
-        public Type BaseType => typeof(object);
-
-        /// <inheritdoc />
-        public Type? Type
-        {
-            get
-            {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
-                using (this.Marker())
-#endif
-                {
-                    return _type ??= GetTypeFromAssemblyQualifiedName(_assemblyQualifiedName);
-                }
-            }
-        }
+        /// <summary>
+        /// Creates an empty wrapper.
+        /// </summary>
+        public SerializableType() { }
 
         /// <summary>
-        /// Resolves and returns the wrapped type; equivalent to <see cref="Type"/>.
-        /// A <see langword="null"/> wrapper converts to <see langword="null"/>.
+        /// Creates a wrapper holding <paramref name="type"/>.
         /// </summary>
+        /// <param name="type">The type to store, or <see langword="null"/> for an empty wrapper.</param>
+        public SerializableType(Type? type)
+            : base(type) { }
+
+        /// <inheritdoc />
+        public override Type BaseType => typeof(object);
+
+        /// <summary>
+        /// Converts the wrapper to the type it holds.
+        /// </summary>
+        /// <param name="type">The wrapper to convert.</param>
+        /// <returns>
+        /// The wrapped type, or <see langword="null"/> when the wrapper is <see langword="null"/> or holds no
+        /// resolvable type.
+        /// </returns>
         public static implicit operator Type?(SerializableType? type) => type?.Type;
-
-        void ISerializationCallbackReceiver.OnAfterDeserialize() =>
-            _type = null;
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
-
-        // Unity deserialization coerces the field to "", but a code-constructed instance still holds
-        // null — and Type.GetType(null) throws ArgumentNullException regardless of throwOnError,
-        // breaking the "or null" contract above for a plain `new SerializableType()`.
-        internal static Type? GetTypeFromAssemblyQualifiedName(string? assemblyQualifiedName) => string.IsNullOrWhiteSpace(assemblyQualifiedName)
-            ? null
-            : Type.GetType(assemblyQualifiedName, throwOnError: false);
     }
 
     /// <summary>
-    /// A wrapper around <see cref="System.Type"/> that supports Unity Inspector serialization,
-    /// constrained to types assignable to <typeparamref name="T"/>.
+    /// <see cref="SerializableType"/> constrained to types assignable to <typeparamref name="T"/>.
     /// </summary>
-    /// <typeparam name="T">The base constraint type. The editor picker offers only types assignable to it.</typeparam>
+    /// <typeparam name="T">Base constraint type; the picker offers only types assignable to it.</typeparam>
     /// <example>
-    /// Constrain the picker to <c>MonoBehaviour</c> subtypes only:
     /// <code>
     /// public class MyComponent : MonoBehaviour
     /// {
-    ///     [SerializeField] private SerializableType&lt;MonoBehaviour&gt; _behaviourType;
+    ///     [SerializeField] private SerializableType&lt;MonoBehaviour&gt; _behaviorType;
     ///
     ///     private void Start()
     ///     {
-    ///         Type type = _behaviourType;  // always a MonoBehaviour subtype or null
+    ///         Type type = _behaviorType;  // always a MonoBehaviour subtype or null
     ///         if (type != null)
     ///             gameObject.AddComponent(type);
     ///     }
@@ -92,40 +77,26 @@ namespace Aspid.FastTools.Types
     /// </code>
     /// </example>
     [Serializable]
-    public sealed class SerializableType<T> : ISerializableType, ISerializationCallbackReceiver
+    public sealed class SerializableType<T> : SerializableType
     {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-        [SerializeField] private string _assemblyQualifiedName;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider adding the 'required' modifier or declaring as nullable.
-
-        private Type? _type;
-
-        /// <inheritdoc />
-        public Type BaseType => typeof(T);
-
-        /// <inheritdoc />
-        public Type? Type
-        {
-            get
-            {
-#if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
-                using (this.Marker())
-#endif
-                {
-                    return _type ??= SerializableType.GetTypeFromAssemblyQualifiedName(_assemblyQualifiedName);
-                }
-            }
-        }
+        /// <summary>
+        /// Creates an empty wrapper.
+        /// </summary>
+        public SerializableType() { }
 
         /// <summary>
-        /// Resolves and returns the wrapped type; equivalent to <see cref="Type"/>.
-        /// A <see langword="null"/> wrapper converts to <see langword="null"/>.
+        /// Creates a wrapper holding <paramref name="type"/>.
         /// </summary>
-        public static implicit operator Type?(SerializableType<T>? type) => type?.Type;
+        /// <param name="type">The type to store, or <see langword="null"/> for an empty wrapper.</param>
+        /// <exception cref="ArgumentException">Thrown when <paramref name="type"/> is not assignable to <typeparamref name="T"/>.</exception>
+        public SerializableType(Type? type)
+            : base(type)
+        {
+            if (type is not null && !typeof(T).IsAssignableFrom(type))
+                throw new ArgumentException($"{type} is not assignable to {typeof(T)}.", nameof(type));
+        }
 
-        void ISerializationCallbackReceiver.OnAfterDeserialize() =>
-            _type = null;
-
-        void ISerializationCallbackReceiver.OnBeforeSerialize() { }
+        /// <inheritdoc />
+        public override Type BaseType => typeof(T);
     }
 }

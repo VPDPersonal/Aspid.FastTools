@@ -5,11 +5,9 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// A <see cref="VisualElement"/> that paints an animated dotted background composed of three
-    /// drifting metaball blobs whose colors blend through the dot grid. Colors and dot metrics can
-    /// be overridden via USS custom properties or via UXML attributes / fluent extensions.
-    /// </summary>
+    // A VisualElement that paints an animated dotted background composed of three drifting metaball blobs whose colors
+    // blend through the dot grid. Colors and dot metrics can be overridden via USS custom properties or via UXML
+    // attributes / fluent extensions.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidAnimatedDotsBackground : VisualElement
     {
@@ -25,15 +23,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private IVisualElementScheduledItem _animation;
 
-        /// <summary>
-        /// Gets or sets the status wash: one dim, desaturated hue across all three blobs, so the canvas reads as a
-        /// calm state backdrop. <see cref="StatusStyle.Type.None"/> restores the default three-tone signal gradient.
-        /// </summary>
-        /// <remarks>
-        /// Drives the blob colors through USS (the status class swaps the <c>--aspid-fasttools-colors-dot_blob-color_*</c>
-        /// properties), so it stays live across theme changes — unlike <see cref="Color1"/>–<see cref="Color3"/>, which
-        /// pin their blob inline and opt it out of USS resolution for good.
-        /// </remarks>
+        // Resolved from USS, so it stays live across theme changes — unlike Color1..Color3, which pin their value
+        // the moment they are set.
         [UxmlAttribute]
         public StatusStyle.Type Status
         {
@@ -41,9 +32,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _status.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the color of the first blob.
-        /// </summary>
         [UxmlAttribute]
         public Color Color1
         {
@@ -51,9 +39,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colors.SetColor1(value);
         }
 
-        /// <summary>
-        /// Gets or sets the color of the second blob.
-        /// </summary>
         [UxmlAttribute]
         public Color Color2
         {
@@ -61,9 +46,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colors.SetColor2(value);
         }
 
-        /// <summary>
-        /// Gets or sets the color of the third blob.
-        /// </summary>
         [UxmlAttribute]
         public Color Color3
         {
@@ -71,9 +53,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colors.SetColor3(value);
         }
 
-        /// <summary>
-        /// Gets or sets the base dot radius before window-size scaling.
-        /// </summary>
         [UxmlAttribute]
         public float DotRadius
         {
@@ -81,9 +60,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _size.SetDotRadius(value);
         }
 
-        /// <summary>
-        /// Gets or sets the base dot spacing before window-size scaling.
-        /// </summary>
         [UxmlAttribute]
         public float DotSpacing
         {
@@ -91,10 +67,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _size.SetDotSpacing(value);
         }
 
-        /// <summary>
-        /// Gets or sets the reference window size used by the size-scaling curve.
-        /// Smaller values amplify how aggressively dots grow with the window.
-        /// </summary>
         [UxmlAttribute]
         public float ScaleReferenceSize
         {
@@ -102,16 +74,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _size.SetScaleReference(value);
         }
 
-        /// <summary>
-        /// Creates an <see cref="AspidAnimatedDotsBackground"/> using <see cref="AspidAnimatedDotsBackgroundPreset.Default"/>.
-        /// </summary>
         public AspidAnimatedDotsBackground()
             : this(AspidAnimatedDotsBackgroundPreset.Default) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidAnimatedDotsBackground"/> with the given preset and starts the animation loop.
-        /// </summary>
-        /// <param name="preset">The configuration preset to apply.</param>
         public AspidAnimatedDotsBackground(AspidAnimatedDotsBackgroundPreset preset)
         {
             this.AddStyleSheetsFromResource(StyleSheetPath);

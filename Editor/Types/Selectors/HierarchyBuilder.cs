@@ -171,7 +171,7 @@ namespace Aspid.FastTools.Types.Editors
             return node;
         }
 
-        // One leaf per type, labelled by TypeInfo.Label. Label collisions are disambiguated with the assembly
+        // One leaf per type, labeled by TypeInfo.Label. Label collisions are disambiguated with the assembly
         // suffix; collisions within one assembly (same Name override) fall back to the real type name. The caption
         // prefixes the label with the node's path (namespaces join with '.', explicit groups with '/').
         private static void AddTypesWithDisambiguation(
@@ -223,8 +223,8 @@ namespace Aspid.FastTools.Types.Editors
         private static int CompareNodes(TreeNode left, TreeNode right)
         {
             // Keep <None> pinned to the top of the root list.
-            var leftNone = left.DisplayName == TypeSelectorHelpers.NoneOption;
-            var rightNone = right.DisplayName == TypeSelectorHelpers.NoneOption;
+            var leftNone = left.IsNoneOption;
+            var rightNone = right.IsNoneOption;
 
             if (leftNone != rightNone) return leftNone ? -1 : 1;
             return string.Compare(left.DisplayName, right.DisplayName, StringComparison.OrdinalIgnoreCase);

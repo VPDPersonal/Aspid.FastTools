@@ -5,9 +5,7 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    /// <summary>
-    /// Shared constants and formatting helpers for the type-selector UI.
-    /// </summary>
+    // Shared constants and formatting helpers for the type-selector UI.
     internal static class TypeSelectorHelpers
     {
         internal const string None = "○";
@@ -19,16 +17,9 @@ namespace Aspid.FastTools.Types.Editors
 
         private static readonly Dictionary<Type, string> _customDisplayNames = new();
 
-        /// <summary>
-        /// The normalized <see cref="TypeSelectorDisplayAttribute.Name"/> override for <paramref name="value"/>,
-        /// or <see langword="null"/> when the type declares none.
-        /// </summary>
-        /// <remarks>
-        /// A whitespace-only value counts as none, as does a value equal to the <see cref="NoneOption"/> sentinel —
-        /// a real type must not impersonate it. A generic keeps its formatted arguments after the custom base name
-        /// (<c>Mod&lt;Single&gt;</c> for a constructed form, <c>Mod&lt;T&gt;</c> for the open definition), so closed
-        /// forms stay distinguishable and an open definition still reads as generic.
-        /// </remarks>
+        // The type's display-name override, or null when it declares none. Whitespace counts as none, as does a
+        // value equal to the <None> sentinel, which a real type must not impersonate. A generic keeps its formatted
+        // arguments after the custom name, so closed forms stay distinguishable.
         internal static string GetCustomDisplayName(Type value)
         {
             if (value is null) return null;
@@ -52,31 +43,14 @@ namespace Aspid.FastTools.Types.Editors
             return name;
         }
 
-        /// <summary>
-        /// Returns <see langword="true"/> when <paramref name="value"/> opts out of the picker via
-        /// <see cref="TypeSelectorDisplayAttribute.Hidden"/>.
-        /// </summary>
-        /// <remarks>
-        /// Governs what may be <b>authored</b>, not what may be repaired: a picker re-pointing a broken reference
-        /// deliberately ignores this (see <c>TypeSelectorFilter.IncludeHidden</c>), while the Smart Fix suggestion —
-        /// a type the package proposes rather than one the user chose — honours it. Not inherited, so hiding a base
-        /// type leaves the subclasses meant to replace it offered.
-        /// </remarks>
+        // Governs what may be authored, not what may be repaired: a picker re-pointing a broken reference ignores
+        // this, while the Smart Fix suggestion honors it. Not inherited, so hiding a base type leaves the subclasses
+        // meant to replace it offered.
         internal static bool IsHiddenFromPicker(Type value) =>
             value?.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false)?.Hidden ?? false;
 
-        /// <summary>
-        /// Formats a caption for the type-selector dropdown.
-        /// Returns the type's <see cref="TypeSelectorDisplayAttribute.Name"/> override (or its short name)
-        /// when <paramref name="value"/> is resolved, a <c>&lt;Missing ...&gt;</c> marker when the
-        /// assembly-qualified name is non-empty but the type could not be resolved, or
-        /// <see cref="NoneOption"/> when neither is provided.
-        /// </summary>
-        /// <param name="value">The resolved <see cref="Type"/>, or <see langword="null"/> if unresolved.</param>
-        /// <param name="assemblyQualifiedName">
-        /// The assembly-qualified name that was attempted; used only when <paramref name="value"/> is
-        /// <see langword="null"/>, ignored otherwise.
-        /// </param>
+        // The dropdown caption: the type's display name when resolved, a <Missing …> marker when only an
+        // unresolvable name is given, and <None> when neither is.
         internal static string GetTypeSelectorTitle(Type value, string assemblyQualifiedName = null)
         {
             if (value is not null)
@@ -87,15 +61,7 @@ namespace Aspid.FastTools.Types.Editors
                 : $"<Missing {assemblyQualifiedName}>";
         }
 
-        /// <summary>
-        /// Formats the hover tooltip for a resolved type in the type-selector dropdown — the full
-        /// <c>Namespace.Class, Assembly</c> identity (generic arguments spelled out) — or
-        /// <see langword="null"/> for no type.
-        /// </summary>
-        /// <remarks>
-        /// The caption shows only the short name (or its <see cref="TypeSelectorDisplayAttribute.Name"/> override),
-        /// so the tooltip is where the full identity stays readable.
-        /// </remarks>
+        // The full Namespace.Class, Assembly identity, since the caption shows only the short name.
         internal static string GetTypeSelectorTooltip(Type value)
         {
             if (value is null) return null;

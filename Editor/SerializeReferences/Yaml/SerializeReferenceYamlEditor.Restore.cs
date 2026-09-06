@@ -9,16 +9,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static partial class SerializeReferenceYamlEditor
     {
-        /// <summary>
-        /// Captures the full <c>RefIds</c> entry block (its <c>- rid: N</c> header, <c>type:</c> mapping and <c>data:</c>
-        /// payload) of the managed reference pointed at by <paramref name="elementPath"/> — an element of a top-level
-        /// <c>[SerializeReference]</c> array (path shape <c>_field.Array.data[N]</c>). The captured lines are the exact
-        /// text needed to re-materialise the reference later via <see cref="TryRestoreArrayElementReference"/>, verbatim
-        /// indentation and all. Used by the missing-list guard to snapshot a missing element <i>before</i> a list resize
-        /// destroys it (Unity collapses a named missing <c>rid</c> into the anonymous <c>-2</c> sentinel, dropping its
-        /// type and orphaned payload). Returns <see langword="false"/> for a non-array path, a null/empty element, or an
-        /// entry the file does not carry.
-        /// </summary>
+        // Captures the full RefIds entry block behind a top-level array element, verbatim indentation and all — the
+        // exact text needed to re-materialize it later. The missing-list guard snapshots with this BEFORE a list
+        // resize destroys the element, since Unity collapses a named missing rid into the anonymous sentinel.
         public static bool TryReadArrayElementEntryBlock(string assetPath, long fileId, string elementPath,
             out long rid, out List<string> entryLines)
         {
@@ -66,15 +59,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Re-materialises a managed reference that a list resize collapsed to <c>&lt;None&gt;</c>: re-points the array
-        /// element at <paramref name="elementPath"/> (a top-level <c>_field.Array.data[N]</c> path) to a fresh
-        /// <c>rid</c> and re-inserts <paramref name="entryLines"/> — the entry captured earlier by
-        /// <see cref="TryReadArrayElementEntryBlock"/> — into the <c>RefIds</c> block under that fresh id. The fresh id
-        /// (one past the document's current maximum) avoids colliding with any surviving reference. Only acts when the
-        /// element currently holds a null/sentinel id, so a slot the user has since re-assigned is never clobbered.
-        /// Returns <see langword="true"/> when the file was rewritten; the caller reimports the asset.
-        /// </summary>
+        // Re-points the array element at a fresh rid — one past the document's maximum, so it collides with nothing
+        // surviving — and re-inserts the captured entry under it. It acts only while the element holds a null id, so
+        // a slot the user has since re-assigned is never clobbered. The caller reimports the asset.
         public static bool TryRestoreArrayElementReference(string assetPath, long fileId, string elementPath,
             IReadOnlyList<string> entryLines)
         {
@@ -127,15 +114,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Finds the top-level <c>[SerializeReference]</c> array element that points at <paramref name="rid"/> within the
-        /// document anchored at <paramref name="fileId"/>, returning its field name and element index (so the missing-list
-        /// guard can address it as <c>_field.Array.data[index]</c>). Confined to the object's own field block (before
-        /// <c>references:</c>) and to element pointers sitting at their field's indent, so a same-shaped <c>RefIds</c>
-        /// entry or a nested pointer is never mistaken for a top-level element. Returns <see langword="false"/> when no
-        /// top-level array element holds the rid (e.g. it is a single field or a nested pointer — neither of which a list
-        /// resize destroys).
-        /// </summary>
+        // The field name and element index of the top-level array element pointing at the rid. Confined to the
+        // object's own field block and to pointers at their field's indent, so a same-shaped RefIds entry or a
+        // nested pointer is never mistaken for one. False when no top-level element holds it — a single field or a
+        // nested pointer, neither of which a list resize destroys.
         public static bool TryFindTopLevelArrayElementForRid(string assetPath, long fileId, long rid,
             out string field, out int index)
         {

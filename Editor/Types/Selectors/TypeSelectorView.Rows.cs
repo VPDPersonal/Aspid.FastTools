@@ -1,5 +1,3 @@
-using System;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
@@ -29,8 +27,6 @@ namespace Aspid.FastTools.Types.Editors
         private const string FavoriteToggleOnModifier = FavoriteToggleClass + "--favorite-on";
         private const string ItemIconCollapsedModifier = ItemIconClass + "--collapsed";
 
-        private const string TypeFallbackIcon = "d_cs Script Icon";
-        private const string ScriptableObjectFallbackIcon = "d_ScriptableObject Icon";
         private const string ContainerFallbackIcon = "d_Folder Icon";
         private const string ContainerOpenFallbackIcon = "d_FolderOpened Icon";
         private const string FavoritesCollapsedIcon = "d_Favorite";
@@ -40,10 +36,8 @@ namespace Aspid.FastTools.Types.Editors
 
         private VisualElement CreateListItem()
         {
-            // The pinned-block divider rides inside the row shell (absolutely positioned in its extra top zone,
-            // shown only via --after-pinned) rather than as a border: a border-top would curve along the content's
-            // rounded corners. All visuals live on the content wrapper pinned to the shell's bottom — see the
-            // stylesheet's Item section for why the shell itself must stay bare.
+            // The divider rides inside the row shell rather than being a border, which would curve along the
+            // content's rounded corners. Every visual lives on the content wrapper, so the shell itself stays bare.
             var divider = new VisualElement()
                 .AddClass(ItemDividerClass)
                 .SetPickingMode(PickingMode.Ignore);
@@ -152,7 +146,7 @@ namespace Aspid.FastTools.Types.Editors
 
             return _currentAqn.Length > 0
                 ? node.IsType && node.AssemblyQualifiedName == _currentAqn
-                : node.IsSelectable && node.DisplayName == TypeSelectorHelpers.NoneOption;
+                : node.IsNoneOption;
         }
 
         // Containers surface how many pickable types they hold; section titles carry their composed row
@@ -174,11 +168,11 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         private static bool IsPinnedRow(TreeNode node) =>
-            node.IsSectionTitle || node.SectionKey is not null || node.DisplayName == TypeSelectorHelpers.NoneOption;
+            node.IsSectionTitle || node.SectionKey is not null || node.IsNoneOption;
 
         private void BindLeading(Image icon, Label glyph, TreeNode node, bool isSelected)
         {
-            if (node.DisplayName == TypeSelectorHelpers.NoneOption)
+            if (node.IsNoneOption)
             {
                 icon.SetDisplay(DisplayStyle.None);
                 glyph.SetText(TypeSelectorHelpers.None).SetDisplay(DisplayStyle.Flex);
@@ -203,7 +197,7 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     if (node.IsType)
                     {
-                        texture = ResolveTypeFallbackIcon(node.AssemblyQualifiedName);
+                        texture = TypeSelectorIconResolver.ResolveForType(node.AssemblyQualifiedName);
                     }
                     else
                     {
@@ -219,48 +213,6 @@ namespace Aspid.FastTools.Types.Editors
                 .EnableInClass(ItemIconCollapsedModifier, sectionCollapsed)
                 .SetImage(texture)
                 .SetDisplay(texture is not null ? DisplayStyle.Flex : DisplayStyle.None);
-        }
-
-        // Type rows get the icon Unity itself paints for the type: AssetPreview.GetMiniTypeThumbnail honors a custom
-        // icon assigned on the script's .meta (like the Aspid scripts) and yields the ScriptableObject icon for
-        // ScriptableObject-derived types; everything without one falls through to the C# script icon. Results are cached
-        // per assembly-qualified name to keep row binding cheap; a destroyed cached texture is dropped so a
-        // later-imported / re-assigned icon is picked up on the next bind.
-        private static readonly Dictionary<string, Texture> _typeFallbackCache = new();
-
-        private static Texture ResolveTypeFallbackIcon(string assemblyQualifiedName)
-        {
-            if (string.IsNullOrEmpty(assemblyQualifiedName))
-                return TypeSelectorIconResolver.Resolve(TypeFallbackIcon);
-
-            if (_typeFallbackCache.TryGetValue(assemblyQualifiedName, out var cached))
-            {
-                if (cached) return cached;
-                _typeFallbackCache.Remove(assemblyQualifiedName);
-            }
-
-            var texture = LoadTypeFallbackIcon(assemblyQualifiedName);
-
-            if (texture is not null)
-                _typeFallbackCache[assemblyQualifiedName] = texture;
-
-            return texture;
-        }
-
-        private static Texture LoadTypeFallbackIcon(string assemblyQualifiedName)
-        {
-            var type = Type.GetType(assemblyQualifiedName);
-            if (type is not null)
-            {
-                var thumbnail = AssetPreview.GetMiniTypeThumbnail(type);
-                if (thumbnail is not null) return thumbnail;
-
-                // Safety net when Unity has no cached thumbnail for the type yet.
-                if (typeof(ScriptableObject).IsAssignableFrom(type))
-                    return TypeSelectorIconResolver.Resolve(ScriptableObjectFallbackIcon);
-            }
-
-            return TypeSelectorIconResolver.Resolve(TypeFallbackIcon);
         }
 
         private static string SectionIcon(string sectionKey, bool collapsed)

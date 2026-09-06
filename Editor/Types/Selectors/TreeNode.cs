@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -18,42 +19,26 @@ namespace Aspid.FastTools.Types.Editors
 
         internal string AssemblyQualifiedName { get; set; }
 
-        /// <summary>
-        /// Raw editor icon identifier sourced from <see cref="TypeSelectorDisplayAttribute.Icon"/>;
-        /// <see langword="null"/> when the node has no icon.
-        /// </summary>
+        // Raw editor icon identifier sourced from TypeSelectorDisplayAttribute.Icon;
+        // null when the node has no icon.
         internal string Icon { get; set; }
 
-        /// <summary>
-        /// The real (short) type name, kept separately from <see cref="DisplayName"/> so search keeps
-        /// matching the original type name even when the displayed label is disambiguated with its
-        /// assembly. <see langword="null"/> for non-type nodes.
-        /// </summary>
+        // The real (short) type name, kept separately from DisplayName so search keeps
+        // matching the original type name even when the displayed label is disambiguated with its
+        // assembly. null for non-type nodes.
         internal string SearchName { get; set; }
 
-        /// <summary>
-        /// The node's presentation role. Section titles are non-interactive separators inserted by the
-        /// Favorites/Recents rendering; everything else is <see cref="TreeNodeKind.Default"/>.
-        /// </summary>
+        // The node's presentation role. Section titles are non-interactive separators inserted by the
+        // Favorites/Recents rendering; everything else is Default.
         internal TreeNodeKind Kind { get; set; }
 
-        /// <summary>
-        /// Title of the Favorites/Recents section this row belongs to (set on both the section header and its item
-        /// rows by <see cref="NavigationController"/>), or <see langword="null"/> for rows outside any composed section
-        /// (the &lt;None&gt; option, root categories, search results). Drives which section a row collapses under and
-        /// the indented, left-lined styling of section items.
-        /// </summary>
+        // The Favorites or Recents section this row belongs to, set on the header and its item rows alike, or null
+        // for a row outside any composed section. Drives which section a row collapses under and its styling.
         internal string SectionKey { get; set; }
 
-        /// <summary>
-        /// Number of pickable types the row stands for, rendered as the dim right-aligned counter on
-        /// container and section rows.
-        /// </summary>
-        /// <remarks>
-        /// For hierarchy containers it is the recursive count of descendant type leaves, computed lazily
-        /// and cached (the hierarchy is immutable once built); the section titles composed by
-        /// <see cref="NavigationController"/> assign their row count explicitly.
-        /// </remarks>
+        // How many pickable types the row stands for, shown as the dim counter on container and section rows. A
+        // container counts its descendant leaves lazily, which is safe because the hierarchy is immutable once
+        // built; a section title assigns its count explicitly.
         internal int TypeCount
         {
             get => _typeCount ??= CountTypes(this);
@@ -64,15 +49,15 @@ namespace Aspid.FastTools.Types.Editors
 
         internal bool IsSectionTitle => Kind == TreeNodeKind.SectionTitle;
 
-        /// <summary>
-        /// Whether this node represents a concrete pickable type (has an assembly-qualified name and is
-        /// not a section header). Used to gate the favorite star toggle.
-        /// </summary>
+        // Whether this node represents a concrete pickable type (has an assembly-qualified name and is
+        // not a section header). Used to gate the favorite star toggle.
         internal bool IsType => Kind == TreeNodeKind.Default && AssemblyQualifiedName is not null;
 
         internal bool IsSelectable =>
-            Kind == TreeNodeKind.Default &&
-            (AssemblyQualifiedName is not null || DisplayName == TypeSelectorHelpers.NoneOption);
+            Kind == TreeNodeKind.Default && (IsType || IsNoneOption);
+
+        internal bool IsNoneOption =>
+            AssemblyQualifiedName is null && DisplayName == TypeSelectorHelpers.NoneOption;
 
         internal TreeNode(string displayName, string assemblyQualifiedName = null, string caption = null)
         {
@@ -91,21 +76,15 @@ namespace Aspid.FastTools.Types.Editors
             if (string.IsNullOrWhiteSpace(filter))
                 return true;
 
-            if (DisplayName?.ToLowerInvariant().Contains(filter) == true)
-                return true;
-
-            if (Caption?.ToLowerInvariant().Contains(filter) == true)
-                return true;
-
-            // Keep matching the real type name even when the displayed label is disambiguated.
-            if (SearchName?.ToLowerInvariant().Contains(filter) == true)
-                return true;
-
-            if (AssemblyQualifiedName?.ToLowerInvariant().Contains(filter) == true)
-                return true;
-
-            return false;
+            return Contains(DisplayName, filter)
+                || Contains(Caption, filter)
+                // Keep matching the real type name even when the displayed label is disambiguated.
+                || Contains(SearchName, filter)
+                || Contains(AssemblyQualifiedName, filter);
         }
+
+        private static bool Contains(string text, string filter) =>
+            text is not null && text.IndexOf(filter, StringComparison.OrdinalIgnoreCase) >= 0;
 
         private static int CountTypes(TreeNode node) =>
             (node.IsType ? 1 : 0) + node.Children.Sum(CountTypes);

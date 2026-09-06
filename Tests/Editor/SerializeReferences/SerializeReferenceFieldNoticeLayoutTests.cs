@@ -3,6 +3,7 @@ using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -42,7 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
                 var field = new SerializeReferenceField("A", property);
 
-                var notice = FindFirst<SerializeReferenceNotice>(field);
+                var notice = FindFirst<InspectorNotice>(field);
                 Assert.IsNotNull(notice, "A shared reference must surface a notice in the UIToolkit field.");
 
                 var content = FindFirstWithClass(field, Foldout.contentUssClassName);

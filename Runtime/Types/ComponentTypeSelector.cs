@@ -4,23 +4,15 @@ using System;
 namespace Aspid.FastTools.Types
 {
     /// <summary>
-    /// Adds an Inspector dropdown that lets you swap the object's script
-    /// to any subtype of the field's declaring class.
+    /// Represents a marker field adding an Inspector dropdown that swaps the object's script to any subtype of the
+    /// field's declaring class.
     /// </summary>
     /// <remarks>
-    /// <para>
-    /// When the user picks a type, the editor locates the corresponding <c>MonoScript</c>
-    /// asset and writes it to <c>m_Script</c> on the <c>SerializedObject</c>, effectively
-    /// changing the component or ScriptableObject to the chosen subtype.
-    /// </para>
-    /// <para>
-    /// The picker is automatically constrained to subtypes of the class that declares
-    /// the field — no extra configuration is needed.
-    /// </para>
+    /// Picking a type writes the matching <c>MonoScript</c> asset to <c>m_Script</c>, turning the object into that
+    /// subtype. The picker is constrained to the declaring class automatically.
     /// </remarks>
     /// <example>
-    /// Place a field of this type inside the root component class.
-    /// The Inspector will render a dropdown listing all subtypes of <c>BaseEnemy</c>:
+    /// Place a field of this type in the root class; the Inspector lists all subtypes of <c>BaseEnemy</c>:
     /// <code>
     /// public abstract class BaseEnemy : MonoBehaviour
     /// {
@@ -30,7 +22,6 @@ namespace Aspid.FastTools.Types
     /// public class FastEnemy : BaseEnemy { }
     /// public class TankEnemy : BaseEnemy { }
     /// </code>
-    /// Selecting "TankEnemy" turns the object into a <c>TankEnemy</c> instance.
     /// </example>
     [Serializable]
     public struct ComponentTypeSelector { }

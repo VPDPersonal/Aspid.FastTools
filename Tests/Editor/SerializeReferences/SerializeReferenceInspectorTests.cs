@@ -1,13 +1,14 @@
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using Aspid.FastTools.Types.Editors;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     /// <summary>
     /// EditMode integration coverage that needs a live <see cref="SerializedObject"/>: the rid-sharing contract of
     /// <see cref="SerializeReferenceLinker"/> (a single managedReferenceId across two fields) and the
-    /// <see cref="SerializeReferenceRequiredGate"/> violation logic for both the managed-reference and string shapes.
+    /// <see cref="TypeSelectorRequiredGate"/> violation logic for both the managed-reference and string shapes.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceInspectorTests
@@ -41,7 +42,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             try
             {
                 var serialized = new SerializedObject(obj);
-                Assert.IsTrue(SerializeReferenceRequiredGate.IsViolation(serialized.FindProperty("requiredRef")),
+                Assert.IsTrue(TypeSelectorRequiredGate.IsViolation(serialized.FindProperty("requiredRef")),
                     "An empty required managed reference is a violation.");
 
                 var prop = serialized.FindProperty("requiredRef");
@@ -49,7 +50,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 serialized.ApplyModifiedProperties();
                 serialized.Update();
 
-                Assert.IsFalse(SerializeReferenceRequiredGate.IsViolation(serialized.FindProperty("requiredRef")),
+                Assert.IsFalse(TypeSelectorRequiredGate.IsViolation(serialized.FindProperty("requiredRef")),
                     "A set required managed reference is not a violation.");
             }
             finally { UnityEngine.Object.DestroyImmediate(obj); }
@@ -64,7 +65,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             try
             {
                 var serialized = new SerializedObject(obj);
-                Assert.IsTrue(SerializeReferenceRequiredGate.IsViolation(serialized.FindProperty("_loadout.primary")),
+                Assert.IsTrue(TypeSelectorRequiredGate.IsViolation(serialized.FindProperty("_loadout.primary")),
                     "An empty required managed reference inside a serializable container is a violation.");
 
                 var prop = serialized.FindProperty("_loadout.primary");
@@ -72,7 +73,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 serialized.ApplyModifiedProperties();
                 serialized.Update();
 
-                Assert.IsFalse(SerializeReferenceRequiredGate.IsViolation(serialized.FindProperty("_loadout.primary")),
+                Assert.IsFalse(TypeSelectorRequiredGate.IsViolation(serialized.FindProperty("_loadout.primary")),
                     "A set nested required managed reference is not a violation.");
             }
             finally { UnityEngine.Object.DestroyImmediate(obj); }
@@ -85,14 +86,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             try
             {
                 var serialized = new SerializedObject(obj);
-                Assert.IsTrue(SerializeReferenceRequiredGate.IsViolation(serialized.FindProperty("requiredString")),
+                Assert.IsTrue(TypeSelectorRequiredGate.IsViolation(serialized.FindProperty("requiredString")),
                     "An empty required string type field is a violation.");
 
                 serialized.FindProperty("requiredString").stringValue = "Some.Namespace.SomeType, Some.Assembly";
                 serialized.ApplyModifiedProperties();
                 serialized.Update();
 
-                Assert.IsFalse(SerializeReferenceRequiredGate.IsViolation(serialized.FindProperty("requiredString")),
+                Assert.IsFalse(TypeSelectorRequiredGate.IsViolation(serialized.FindProperty("requiredString")),
                     "A populated required string type field is not a violation.");
             }
             finally { UnityEngine.Object.DestroyImmediate(obj); }

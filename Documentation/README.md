@@ -22,9 +22,8 @@
 | [ID System (Beta)](07-ids.md) | Asset-assignable names mapped to stable integer IDs |
 | [VisualElement Extensions](08-visual-element-extensions.md) | Fluent UI Toolkit tree building in code |
 | [SerializedProperty Extensions](09-serialized-property-extensions.md) | Chainable typed setters and reflection helpers |
-| [IMGUI Layout Scopes](10-imgui-layout-scopes.md) | Disposable `Begin*`/`End*` wrappers with `Rect` access |
-| [Editor Helpers](11-editor-helpers.md) | Display names for scripts in custom editors |
-| [Claude Code Plugin](12-claude-code-plugin.md) | Skills that teach Claude Code this package |
+| [Editor Helpers](10-editor-helpers.md) | Display names for scripts in custom editors |
+| [Claude Code Plugin](11-claude-code-plugin.md) | Skills that teach Claude Code this package |
 
 ## Donate
 

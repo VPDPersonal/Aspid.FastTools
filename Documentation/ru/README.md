@@ -22,9 +22,8 @@
 | [ID System (Beta)](07-ids.md) | Назначаемые в ассетах имена со стабильными целочисленными ID |
 | [VisualElement Extensions](08-visual-element-extensions.md) | Fluent-построение UI Toolkit-деревьев в коде |
 | [SerializedProperty Extensions](09-serialized-property-extensions.md) | Типизированные сеттеры с fluent-цепочками и рефлексионные хелперы |
-| [IMGUI Layout Scopes](10-imgui-layout-scopes.md) | Disposable-обёртки `Begin*`/`End*` с доступом к `Rect` |
-| [Editor Helpers](11-editor-helpers.md) | Отображаемые имена скриптов для кастомных редакторов |
-| [Claude Code Plugin](12-claude-code-plugin.md) | Скиллы, обучающие Claude Code этому пакету |
+| [Editor Helpers](10-editor-helpers.md) | Отображаемые имена скриптов для кастомных редакторов |
+| [Claude Code Plugin](11-claude-code-plugin.md) | Скиллы, обучающие Claude Code этому пакету |
 
 ## Поддержать проект
 

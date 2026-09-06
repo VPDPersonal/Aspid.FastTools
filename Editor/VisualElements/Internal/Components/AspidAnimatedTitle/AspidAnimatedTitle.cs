@@ -7,16 +7,12 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// A <see cref="VisualElement"/> that displays a title with per-character color cycling and
-    /// a vertical wave animation. All animation parameters and palette colors can be driven by
-    /// USS custom properties or set explicitly in code.
-    /// </summary>
+    // A VisualElement that displays a title with per-character color cycling and a vertical wave animation. All
+    // animation parameters and palette colors can be driven by USS custom properties or set explicitly in code.
     [UxmlElement(nameof(AspidAnimatedTitle), libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidAnimatedTitle : VisualElement
     {
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedTitle";
-
         private const int PaletteCount = 3;
         private const string WordClass = "aspid-fasttools-animated-title__word";
 
@@ -28,9 +24,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private Label[] _chars = Array.Empty<Label>();
         private IVisualElementScheduledItem _animation;
 
-        /// <summary>
-        /// Gets or sets the title text. Words are split on spaces and laid out as wrapped rows.
-        /// </summary>
         [UxmlAttribute]
         public string Text
         {
@@ -45,9 +38,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             }
         }
 
-        /// <summary>
-        /// Gets or sets the per-character offset along the color palette.
-        /// </summary>
         [UxmlAttribute]
         public float ColorStride
         {
@@ -55,9 +45,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colorAnimation.SetStride(value);
         }
 
-        /// <summary>
-        /// Gets or sets the speed at which characters cycle through the color palette.
-        /// </summary>
         [UxmlAttribute]
         public float ColorSpeed
         {
@@ -65,9 +52,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colorAnimation.SetSpeed(value);
         }
 
-        /// <summary>
-        /// Gets or sets the per-character phase offset of the vertical wave animation.
-        /// </summary>
         [UxmlAttribute]
         public float WaveStride
         {
@@ -75,9 +59,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _waveAnimation.SetStride(value);
         }
 
-        /// <summary>
-        /// Gets or sets the speed of the vertical wave animation.
-        /// </summary>
         [UxmlAttribute]
         public float WaveSpeed
         {
@@ -85,9 +66,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _waveAnimation.SetSpeed(value);
         }
 
-        /// <summary>
-        /// Gets or sets the maximum vertical displacement (in pixels) of the wave animation.
-        /// </summary>
         [UxmlAttribute]
         public float WaveAmplitude
         {
@@ -95,9 +73,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _waveAnimation.SetAmplitude(value);
         }
 
-        /// <summary>
-        /// Gets or sets the first color in the cycling palette.
-        /// </summary>
         [UxmlAttribute]
         public Color Color1
         {
@@ -105,9 +80,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colors.SetColor1(value);
         }
 
-        /// <summary>
-        /// Gets or sets the second color in the cycling palette.
-        /// </summary>
         [UxmlAttribute]
         public Color Color2
         {
@@ -115,9 +87,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colors.SetColor2(value);
         }
 
-        /// <summary>
-        /// Gets or sets the third color in the cycling palette.
-        /// </summary>
         [UxmlAttribute]
         public Color Color3
         {
@@ -125,24 +94,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _colors.SetColor3(value);
         }
 
-        /// <summary>
-        /// Creates an empty <see cref="AspidAnimatedTitle"/> using <see cref="AspidAnimatedTitlePreset.Default"/>.
-        /// </summary>
         public AspidAnimatedTitle()
             : this(string.Empty, AspidAnimatedTitlePreset.Default) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidAnimatedTitle"/> with the given initial text and the default preset.
-        /// </summary>
-        /// <param name="text">The title text.</param>
         public AspidAnimatedTitle(string text)
             : this(text, AspidAnimatedTitlePreset.Default) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidAnimatedTitle"/> with the given initial text and preset.
-        /// </summary>
-        /// <param name="text">The title text.</param>
-        /// <param name="preset">The configuration preset to apply.</param>
         public AspidAnimatedTitle(string text, AspidAnimatedTitlePreset preset)
         {
             this.AddStyleSheetsFromResource(StyleSheetPath);

@@ -1,9 +1,7 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// A single computed line change for the bulk-fix diff preview: where it lands and the before/after text.
-    /// </summary>
+    // A single computed line change for the bulk-fix diff preview: where it lands and the before/after text.
     internal readonly struct RewriteEdit
     {
         public readonly bool IsValid;

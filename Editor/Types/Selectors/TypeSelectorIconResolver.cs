@@ -6,38 +6,44 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    /// <summary>
-    /// Resolves the <see cref="TypeSelectorDisplayAttribute.Icon"/> string to a <see cref="Texture"/>:
-    /// a project-relative asset path (<c>Assets/…</c>, <c>Packages/…</c>), a <c>Resources</c> texture
-    /// path, or a built-in editor icon name.
-    /// </summary>
-    /// <remarks>
-    /// Successful lookups are cached for the lifetime of the domain to keep row binding cheap; misses are
-    /// not cached, so an icon whose asset is imported or renamed later is picked up on the next bind.
-    /// </remarks>
+    // Resolves TypeSelectorDisplayAttribute.Icon strings (asset path, Resources path or built-in editor icon name) and
+    // the per-type fallback icon. Hits are cached for the domain lifetime; misses are not, so a later-imported asset is
+    // picked up on the next bind.
     internal static class TypeSelectorIconResolver
     {
-        private static readonly Dictionary<string, Texture> _cache = new();
+        private const string TypeFallbackIcon = "d_cs Script Icon";
+        private const string ScriptableObjectFallbackIcon = "d_ScriptableObject Icon";
 
-        internal static Texture Resolve(string icon)
+        private static readonly Dictionary<string, Texture> _iconCache = new();
+        private static readonly Dictionary<string, Texture> _typeFallbackCache = new();
+
+        internal static Texture Resolve(string icon) =>
+            string.IsNullOrWhiteSpace(icon) ? null : GetOrLoad(_iconCache, icon, LoadIcon);
+
+        internal static Texture ResolveForType(string assemblyQualifiedName)
         {
-            if (string.IsNullOrWhiteSpace(icon)) return null;
+            if (string.IsNullOrEmpty(assemblyQualifiedName))
+                return Resolve(TypeFallbackIcon);
 
-            if (_cache.TryGetValue(icon, out var cached))
+            return GetOrLoad(_typeFallbackCache, assemblyQualifiedName, LoadTypeFallbackIcon);
+        }
+
+        private static Texture GetOrLoad(Dictionary<string, Texture> cache, string key, Func<string, Texture> load)
+        {
+            if (cache.TryGetValue(key, out var cached))
             {
                 // Unity-lifetime check, not a C# null check: a cached texture can be DESTROYED later (asset deleted,
-                // Resources unloaded on play-mode load) — serving it binds an invisible icon forever. Drop the entry
-                // and fall through to a reload (or an uncached retry on the next bind).
+                // Resources unloaded on play-mode load) — serving it binds an invisible icon forever.
                 if (cached) return cached;
-                _cache.Remove(icon);
+                cache.Remove(key);
             }
 
-            var texture = LoadIcon(icon);
+            var texture = load(key);
 
             // Only cache hits: a miss may be a not-yet-imported / freshly-renamed asset, so leave it uncached and
             // retry on the next bind instead of pinning a null for the whole domain lifetime.
             if (texture is not null)
-                _cache[icon] = texture;
+                cache[key] = texture;
 
             return texture;
         }
@@ -67,6 +73,25 @@ namespace Aspid.FastTools.Types.Editors
             // return an empty content whose image is null.
             var content = EditorGUIUtility.IconContent(icon);
             return content?.image ?? Resources.Load<Texture>(icon);
+        }
+
+        private static Texture LoadTypeFallbackIcon(string assemblyQualifiedName)
+        {
+            var type = TypeUtility.GetTypeOrNull(assemblyQualifiedName);
+
+            if (type is not null)
+            {
+                // GetMiniTypeThumbnail honors a custom icon assigned on the script's .meta and yields the
+                // ScriptableObject icon for ScriptableObject-derived types.
+                var thumbnail = AssetPreview.GetMiniTypeThumbnail(type);
+                if (thumbnail is not null) return thumbnail;
+
+                // Safety net when Unity has no cached thumbnail for the type yet.
+                if (typeof(ScriptableObject).IsAssignableFrom(type))
+                    return Resolve(ScriptableObjectFallbackIcon);
+            }
+
+            return Resolve(TypeFallbackIcon);
         }
     }
 }

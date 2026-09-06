@@ -11,12 +11,9 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    /// <summary>
-    /// The Welcome panel as a reusable element: hero, samples list, the logo asset-store link and the cursor toast.
-    /// Hosted as the leftmost "home" tab of the Managed References window (see TabWindow).
-    /// The UI is cloned from the same UXML the standalone window used; only the toast positioning is
-    /// retargeted from the window root to this view (the view sits below the tab strip).
-    /// </summary>
+    // The Welcome panel as a reusable element: hero, samples list, the logo link and the cursor toast, hosted as the
+    // window's home tab. Cloned from the UXML the standalone window used; only the toast positioning is retargeted
+    // to this view, which sits below the tab strip.
     internal sealed class WelcomeView : VisualElement
     {
         private const string UssClassPrefix = "aspid-fasttools-welcome__";
@@ -37,7 +34,6 @@ namespace Aspid.FastTools.Editors
         private const string DocsLinkName = "welcome-link-docs";
         private const string GitHubLinkName = "welcome-link-github";
         private const string StoreLinkName = "welcome-link-store";
-
 
         private const string LogoName = "welcome-logo";
         private const string ToastName = "welcome-toast";
@@ -244,16 +240,10 @@ namespace Aspid.FastTools.Editors
             });
         }
 
-        /// <summary>
-        /// Builds a sample card in the References group-card idiom: a glass box whose whole header row is one flat
-        /// clickable button (the display name on the left, the <paramref name="actionText"/> verb pinned to the
-        /// right, an accent glow on hover), with the package.json description (when present) wrapping below.
-        /// A state dot ahead of the title carries <paramref name="imported"/>: brand-blue while the sample is
-        /// not imported yet (the unread-marker idiom), green once it is; an imported card's destructive verb
-        /// also hovers in the error tone. <see langword="null"/> drops the dot — the state doesn't apply
-        /// (local, non-UPM samples). <paramref name="onClick"/> receives the panel-space anchor for the result
-        /// toast: the cursor on a mouse click, the header's center on a keyboard Enter.
-        /// </summary>
+        // A sample card in the References group-card idiom: a glass box whose header row is one flat button, with
+        // the description wrapping below. The state dot reads brand-blue while the sample is not imported and green
+        // once it is, and a null state drops it entirely, as for local non-UPM samples. onClick receives the
+        // panel-space anchor for the result toast: the cursor on a click, the header's center on a keyboard Enter.
         private VisualElement CreateSampleCard(
             string displayName,
             string description,

@@ -5,33 +5,20 @@ using UnityEngine.SceneManagement;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The writability test every YAML rewrite applies first: an asset loaded as a scene or open in Prefab Mode keeps
-    /// an in-memory copy that wins on its next save, so a file edit under it would be silently clobbered.
-    /// </summary>
-    /// <remarks>
-    /// Single-asset callers use <see cref="BlockedByOpenCopy"/>, which reports the refusal through a dialog; bulk
-    /// callers use <see cref="IsWritable(string, string)"/> with a hoisted stage path so a batch resolves the open
-    /// Prefab Mode stage once instead of once per entry.
-    /// </remarks>
+    // The writability test every YAML rewrite applies first: an asset loaded as a scene or open in Prefab Mode keeps
+    // an in-memory copy that wins on its next save, so a file edit under it is silently clobbered. Single-asset
+    // callers use BlockedByOpenCopy, which explains the refusal through a dialog; a batch hoists the stage path.
     internal static class SerializeReferenceOpenCopyGuard
     {
-        /// <summary>The open Prefab Mode stage's asset path, or <see langword="null"/> when no stage is open.</summary>
         public static string CurrentPrefabStagePath() => PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;
 
-        /// <summary>Whether <paramref name="assetPath"/> can be rewritten on disk right now.</summary>
         public static bool IsWritable(string assetPath) => IsWritable(assetPath, CurrentPrefabStagePath());
 
-        /// <inheritdoc cref="IsWritable(string)"/>
-        /// <param name="assetPath">The asset to test.</param>
-        /// <param name="prefabStagePath">A pre-resolved <see cref="CurrentPrefabStagePath"/>, hoisted out of a batch loop.</param>
+        // prefabStagePath is a pre-resolved CurrentPrefabStagePath, hoisted out of a batch loop.
         public static bool IsWritable(string assetPath, string prefabStagePath) =>
             !IsOpenInScene(assetPath) && !IsOpenInPrefabMode(assetPath, prefabStagePath);
 
-        /// <summary>
-        /// Single-asset guard: returns <see langword="true"/> — and explains why through a dialog — when the edit must
-        /// be abandoned because an open copy would overwrite it.
-        /// </summary>
+        // True — and explained through a dialog — when the edit must be abandoned.
         public static bool BlockedByOpenCopy(string assetPath)
         {
             var openInPrefabMode = IsOpenInPrefabMode(assetPath, CurrentPrefabStagePath());

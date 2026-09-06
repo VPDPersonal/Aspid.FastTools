@@ -3,11 +3,9 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// A <see cref="VisualElement"/> container with an Aspid background plus theme and status-accent support.
-    /// The theme (<c>--aspid-fasttools-prop-theme</c>) and status (<c>--aspid-fasttools-prop-status</c>)
-    /// can be driven by USS custom properties or set explicitly in code.
-    /// </summary>
+    // A VisualElement container with an Aspid background plus theme and status-accent support. The theme (--aspid-
+    // fasttools-prop-theme) and status (--aspid-fasttools-prop-status) can be driven by USS custom properties or set
+    // explicitly in code.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidBox : VisualElement
     {
@@ -16,9 +14,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly ThemeStyle _theme;
         private readonly StatusStyle _status;
 
-        /// <summary>
-        /// Gets or sets the visual theme of this box.
-        /// </summary>
         [UxmlAttribute]
         public ThemeStyle.Type Theme
         {
@@ -26,9 +21,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _theme.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the status color accent of this box.
-        /// </summary>
         [UxmlAttribute]
         public StatusStyle.Type Status
         {
@@ -36,16 +28,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _status.SetValue(value);
         }
 
-        /// <summary>
-        /// Creates an <see cref="AspidBox"/> using <see cref="AspidBoxPreset.Default"/>.
-        /// </summary>
         public AspidBox()
             : this(AspidBoxPreset.Default) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidBox"/> with the given preset.
-        /// </summary>
-        /// <param name="preset">The configuration preset to apply.</param>
         public AspidBox(AspidBoxPreset preset)
         {
             this.AddStyleSheetsFromResource(StyleSheetPath)

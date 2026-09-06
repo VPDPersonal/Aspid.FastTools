@@ -4,46 +4,80 @@ using UnityEngine;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.SerializeReferences.Editors;
+
+using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
+    // Four field shapes: a string (the picked assembly-qualified name is stored), a SerializableType / SerializableType<T>
+    // wrapper and a SerializableMonoScript / SerializableMonoScript<T> wrapper (the attribute's constraints intersect the
+    // wrapper's) and a [SerializeReference] managed reference (the picked type is instantiated). Any other shape renders
+    // an error box instead of the field.
     [CustomPropertyDrawer(typeof(TypeSelectorAttribute))]
     internal sealed class TypeSelectorPropertyDrawer : PropertyDrawer
     {
+        private const string UnsupportedFieldMessage =
+            "[TypeSelector] can only be applied to a string field, a SerializableType / SerializableMonoScript field " +
+            "(plain or <T>), or a [SerializeReference] managed-reference field.";
+
         private IReadOnlyList<string> _constraintWarnings;
+
+        private TypeSelectorAttribute TypeSelector => (TypeSelectorAttribute)attribute;
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
+            if (!TryGetShape(property, out var shape, out var nameProperty, out var wrapperBaseType))
+            {
+                EditorGUI.HelpBox(position, UnsupportedFieldMessage, MessageType.Error);
+                return;
+            }
+
             var warnings = GetConstraintWarnings(property);
             var noticeHeight = GetConstraintNoticeHeight(warnings);
 
             var fieldRect = position;
             fieldRect.height = position.height - noticeHeight;
-            DrawField(fieldRect, property, label);
+            DrawField(fieldRect, property, label, shape, nameProperty, wrapperBaseType);
 
             if (noticeHeight <= 0f) return;
 
             var noticeRect = new Rect(position.x, fieldRect.yMax + EditorGUIUtility.standardVerticalSpacing,
                 position.width, EditorGUIUtility.singleLineHeight);
-            SerializeReferenceIMGUIPropertyDrawer.DrawRequiredNotice(noticeRect, GetNoticeMessage(warnings), GetNoticeDetail(warnings));
+            InspectorNoticeGUI.DrawRequiredNotice(noticeRect, GetNoticeMessage(warnings), GetNoticeDetail(warnings));
         }
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
-            GetFieldHeight(property) + GetConstraintNoticeHeight(GetConstraintWarnings(property));
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            if (!TryGetShape(property, out var shape, out var nameProperty, out _))
+                return EditorGUIUtility.singleLineHeight * 2f;
+
+            var fieldHeight = shape switch
+            {
+                FieldShape.Wrapper => TypeIMGUIPropertyDrawer.GetHeight(nameProperty),
+                FieldShape.MonoScriptWrapper => MonoScriptIMGUIPropertyDrawer.GetHeight(property),
+                FieldShape.ManagedReference => SerializeReferenceIMGUIPropertyDrawer.GetHeight(property),
+                _ => TypeIMGUIPropertyDrawer.GetHeight(property),
+            };
+
+            return fieldHeight + GetConstraintNoticeHeight(GetConstraintWarnings(property));
+        }
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property)
         {
-            var field = CreateField(property, out var applyResolvedTypes);
+            if (!TryGetShape(property, out var shape, out var nameProperty, out var wrapperBaseType))
+                return new HelpBox(UnsupportedFieldMessage, HelpBoxMessageType.Error);
+
+            var field = CreateField(property, shape, nameProperty, wrapperBaseType, out var applyResolvedTypes);
 
             // Without string arguments the constraint is static — nothing to re-resolve, no warnings possible.
-            var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
-            if (typeSelectorAttribute.AssemblyQualifiedNames.Length is 0) return field;
+            if (TypeSelector.AssemblyQualifiedNames.Length is 0) return field;
 
             var container = new VisualElement().AddChild(field);
-            var notice = new SerializeReferenceNotice();
+            var notice = new InspectorNotice();
 
             // A string argument may reference a member of the target object whose value changes while the
             // inspector is open; every change to the object re-resolves the constraint and pushes the fresh
@@ -80,89 +114,118 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        private void DrawField(Rect position, SerializedProperty property, GUIContent label)
+        private void DrawField(
+            Rect position,
+            SerializedProperty property,
+            GUIContent label,
+            FieldShape shape,
+            SerializedProperty nameProperty,
+            Type wrapperBaseType)
         {
-            if (TryGetSerializableTypeContainer(property, out var nameProperty, out var genericBaseType))
+            switch (shape)
             {
-                TypeIMGUIPropertyDrawer.Draw(
-                    position: position,
-                    property: nameProperty,
-                    label: label,
-                    allow: GetTypeAllow(),
-                    types: GetSerializableTypeBaseTypes(property, genericBaseType));
-                return;
+                case FieldShape.Wrapper:
+                    TypeIMGUIPropertyDrawer.Draw(
+                        position: position,
+                        property: nameProperty,
+                        label: label,
+                        allow: TypeSelector.Allow,
+                        types: GetWrapperBaseTypes(property, wrapperBaseType));
+                    break;
+
+                case FieldShape.MonoScriptWrapper:
+                    MonoScriptIMGUIPropertyDrawer.Draw(
+                        position: position,
+                        label: label,
+                        wrapperProperty: property,
+                        allow: TypeSelector.Allow,
+                        types: GetWrapperBaseTypes(property, wrapperBaseType));
+                    break;
+
+                case FieldShape.ManagedReference:
+                    SerializeReferenceIMGUIPropertyDrawer.Draw(
+                        position: position,
+                        label: label,
+                        property: property,
+                        baseTypes: GetTypesFromAttribute(property));
+                    break;
+
+                default:
+                    TypeIMGUIPropertyDrawer.Draw(
+                        position: position,
+                        property: property,
+                        label: label,
+                        allow: TypeSelector.Allow,
+                        types: GetTypesFromAttribute(property));
+                    break;
             }
-
-            ThrowExceptionIfInvalidProperty(property);
-
-            if (property.propertyType == SerializedPropertyType.ManagedReference)
-            {
-                SerializeReferenceIMGUIPropertyDrawer.Draw(
-                    position: position,
-                    label: label,
-                    property: property,
-                    baseTypes: GetTypesFromAttribute(property));
-                return;
-            }
-
-            TypeIMGUIPropertyDrawer.Draw(
-                position: position,
-                property: property,
-                label: label,
-                allow: GetTypeAllow(),
-                types: GetTypesFromAttribute(property));
         }
 
-        // applyResolvedTypes re-resolves the constraint and pushes the result into the created field,
-        // so member-referenced base types stay live while the inspector is open (see CreatePropertyGUI).
-        private VisualElement CreateField(SerializedProperty property, out Action applyResolvedTypes)
+        // applyResolvedTypes keeps member-referenced base types live while the inspector is open. It runs long after
+        // this call returns, so it works on a persistent copy: the property Unity hands a drawer is not guaranteed
+        // to stay valid past CreatePropertyGUI.
+        private VisualElement CreateField(
+            SerializedProperty property,
+            FieldShape shape,
+            SerializedProperty nameProperty,
+            Type wrapperBaseType,
+            out Action applyResolvedTypes)
         {
-            if (TryGetSerializableTypeContainer(property, out var nameProperty, out var genericBaseType))
+            var persistent = property.Persistent();
+
+            switch (shape)
             {
-                var element = TypeUIToolkitPropertyDrawer.Draw(
-                    label: preferredLabel,
-                    property: nameProperty,
-                    allow: GetTypeAllow(),
-                    types: GetSerializableTypeBaseTypes(property, genericBaseType),
-                    field: out var containerTypeField);
+                case FieldShape.Wrapper:
+                {
+                    var element = TypeUIToolkitPropertyDrawer.Draw(
+                        label: preferredLabel,
+                        property: nameProperty,
+                        allow: TypeSelector.Allow,
+                        types: GetWrapperBaseTypes(property, wrapperBaseType),
+                        field: out var wrapperTypeField);
 
-                applyResolvedTypes = () => containerTypeField.Types = GetSerializableTypeBaseTypes(property, genericBaseType);
-                return element;
+                    applyResolvedTypes = () => wrapperTypeField.Types = GetWrapperBaseTypes(persistent, wrapperBaseType);
+                    return element;
+                }
+
+                case FieldShape.MonoScriptWrapper:
+                {
+                    var element = MonoScriptUIToolkitPropertyDrawer.Draw(
+                        label: preferredLabel,
+                        wrapperProperty: property,
+                        allow: TypeSelector.Allow,
+                        types: GetWrapperBaseTypes(property, wrapperBaseType),
+                        field: out var monoScriptField);
+
+                    applyResolvedTypes = () => monoScriptField.Types = GetWrapperBaseTypes(persistent, wrapperBaseType);
+                    return element;
+                }
+
+                case FieldShape.ManagedReference:
+                {
+                    var element = SerializeReferenceUIToolkitPropertyDrawer.Draw(
+                        label: preferredLabel,
+                        property: property,
+                        baseTypes: GetTypesFromAttribute(property),
+                        field: out var referenceField);
+
+                    applyResolvedTypes = () => referenceField.SetBaseTypes(GetTypesFromAttribute(persistent));
+                    return element;
+                }
+
+                default:
+                {
+                    var element = TypeUIToolkitPropertyDrawer.Draw(
+                        label: preferredLabel,
+                        property: property,
+                        allow: TypeSelector.Allow,
+                        types: GetTypesFromAttribute(property),
+                        field: out var stringTypeField);
+
+                    applyResolvedTypes = () => stringTypeField.Types = GetTypesFromAttribute(persistent);
+                    return element;
+                }
             }
-
-            ThrowExceptionIfInvalidProperty(property);
-
-            if (property.propertyType == SerializedPropertyType.ManagedReference)
-            {
-                var element = SerializeReferenceUIToolkitPropertyDrawer.Draw(
-                    label: preferredLabel,
-                    property: property,
-                    baseTypes: GetTypesFromAttribute(property),
-                    field: out var referenceField);
-
-                applyResolvedTypes = () => referenceField.SetBaseTypes(GetTypesFromAttribute(property));
-                return element;
-            }
-
-            var stringElement = TypeUIToolkitPropertyDrawer.Draw(
-                label: preferredLabel,
-                property: property,
-                allow: GetTypeAllow(),
-                types: GetTypesFromAttribute(property),
-                field: out var stringTypeField);
-
-            applyResolvedTypes = () => stringTypeField.Types = GetTypesFromAttribute(property);
-            return stringElement;
-        }
-
-        private float GetFieldHeight(SerializedProperty property)
-        {
-            if (TryGetSerializableTypeContainer(property, out var nameProperty, out _))
-                return TypeIMGUIPropertyDrawer.GetHeight(nameProperty);
-
-            return property.propertyType == SerializedPropertyType.ManagedReference
-                ? SerializeReferenceIMGUIPropertyDrawer.GetHeight(property)
-                : TypeIMGUIPropertyDrawer.GetHeight(property);
         }
 
         private static float GetConstraintNoticeHeight(IReadOnlyList<string> warnings) =>
@@ -177,49 +240,64 @@ namespace Aspid.FastTools.Types.Editors
 
         private static string GetNoticeDetail(IReadOnlyList<string> warnings) => string.Join("\n", warnings);
 
-        private TypeAllow GetTypeAllow()
-        {
-            var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
-            return typeSelectorAttribute.Allow;
-        }
-
-        private bool TryGetSerializableTypeContainer(SerializedProperty property, out SerializedProperty nameProperty, out Type genericBaseType)
+        // Classifies the property. For a wrapper (SerializableType or SerializableMonoScript, plain or <T>), nameProperty
+        // is the backing type-name string and wrapperBaseType the wrapper's own constraint (null when unconstrained).
+        private bool TryGetShape(
+            SerializedProperty property,
+            out FieldShape shape,
+            out SerializedProperty nameProperty,
+            out Type wrapperBaseType)
         {
             nameProperty = null;
-            genericBaseType = null;
+            wrapperBaseType = null;
 
-            if (property.propertyType is not SerializedPropertyType.Generic) return false;
-            if (fieldInfo is null) return false;
+            switch (property.propertyType)
+            {
+                case SerializedPropertyType.String:
+                    shape = FieldShape.String;
+                    return true;
 
-            if (!SerializableTypeUtility.TryGetBaseType(fieldInfo.FieldType, out var baseType)) return false;
+                case SerializedPropertyType.ManagedReference:
+                    shape = FieldShape.ManagedReference;
+                    return true;
 
-            genericBaseType = baseType == typeof(object) ? null : baseType;
-            nameProperty = property.FindPropertyRelative("_assemblyQualifiedName");
-            return nameProperty is not null;
+                case SerializedPropertyType.Generic
+                    when fieldInfo is not null
+                         && SerializableTypeUtility.TryGetBaseType(fieldInfo.FieldType, out var baseType)
+                         && SerializableTypeUtility.GetBackingProperty(property) is { } backing:
+                    shape = SerializableMonoScriptUtility.IsMonoScriptWrapperField(fieldInfo.FieldType)
+                        ? FieldShape.MonoScriptWrapper
+                        : FieldShape.Wrapper;
+                    nameProperty = backing;
+                    wrapperBaseType = baseType == typeof(object) ? null : baseType;
+                    return true;
+
+                default:
+                    shape = default;
+                    return false;
+            }
         }
 
-        private Type[] GetSerializableTypeBaseTypes(SerializedProperty property, Type genericBaseType)
+        private Type[] GetWrapperBaseTypes(SerializedProperty property, Type wrapperBaseType)
         {
             var attributeTypes = GetTypesFromAttribute(property);
-            if (genericBaseType is null) return attributeTypes;
+            if (wrapperBaseType is null) return attributeTypes;
 
-            var types = new List<Type>(attributeTypes.Length + 1) { genericBaseType };
+            var types = new List<Type>(attributeTypes.Length + 1) { wrapperBaseType };
             types.AddRange(attributeTypes);
             return types.ToArray();
         }
 
         private Type[] GetTypesFromAttribute(SerializedProperty property)
         {
-            var typeSelectorAttribute = (TypeSelectorAttribute)attribute;
-
-            if (typeSelectorAttribute.AssemblyQualifiedNames.Length is 0)
+            if (TypeSelector.AssemblyQualifiedNames.Length is 0)
             {
                 _constraintWarnings = Array.Empty<string>();
                 return Array.Empty<Type>();
             }
 
             var resolution = TypeSelectorConstraintResolver.Resolve(
-                property.serializedObject.targetObject, typeSelectorAttribute.AssemblyQualifiedNames);
+                property.serializedObject.targetObject, TypeSelector.AssemblyQualifiedNames);
 
             // Overwrite (never ??=): a member-referenced constraint re-resolves while the inspector is
             // open, and the warnings must follow the latest resolution rather than freeze on the first.
@@ -233,15 +311,12 @@ namespace Aspid.FastTools.Types.Editors
             return _constraintWarnings;
         }
 
-        private static void ThrowExceptionIfInvalidProperty(SerializedProperty property)
+        private enum FieldShape
         {
-            if (property.propertyType is not (SerializedPropertyType.String or SerializedPropertyType.ManagedReference))
-            {
-                throw new ArgumentException(
-                    "[TypeSelector] can only be applied to a string field, a SerializableType / SerializableType<T> field, " +
-                    "or a [SerializeReference] managed-reference field.",
-                    nameof(property));
-            }
+            String,
+            Wrapper,
+            MonoScriptWrapper,
+            ManagedReference,
         }
     }
 }

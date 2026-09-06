@@ -9,12 +9,16 @@ namespace Aspid.FastTools.UIElements.Editors
     public static partial class VisualElementExtensions
     {
         /// <summary>
-        /// Registers a double-click handler on <paramref name="element"/> that opens the script associated with <paramref name="obj"/> in the IDE.
-        /// Supports <see cref="MonoBehaviour"/> and <see cref="ScriptableObject"/> instances. Has no effect if no script can be resolved.
+        /// Registers a double-click handler that opens <paramref name="obj"/>'s script in the IDE.
         /// </summary>
-        /// <param name="element">The element to register the double-click command on.</param>
-        /// <param name="obj">The Unity object whose script should be opened on double-click.</param>
-        /// <returns><paramref name="element"/> for method chaining.</returns>
+        /// <remarks>
+        /// Supports <see cref="MonoBehaviour"/> and <see cref="ScriptableObject"/>; a resolved script is required,
+        /// so it has no effect otherwise.
+        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to register the command on.</param>
+        /// <param name="obj">The object whose script is opened.</param>
+        /// <returns>The element, for chaining.</returns>
         public static T AddOpenScriptCommand<T>(this T element, Object obj)
             where T : VisualElement
         {
