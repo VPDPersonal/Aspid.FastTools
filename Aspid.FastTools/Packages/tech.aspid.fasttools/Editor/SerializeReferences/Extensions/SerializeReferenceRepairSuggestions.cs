@@ -9,20 +9,14 @@ using Aspid.FastTools.Types.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Ranking engine behind the missing-type <b>Smart Fix</b> suggestion: given the stored (now unloadable) type
-    /// identity of a <c>[SerializeReference]</c>, the field names recorded for it and the field's declared base
-    /// constraint, it computes ordered repair candidates and surfaces the best one as a one-click suggestion. The
-    /// candidate pool is the same set the type picker would offer (concrete managed-reference types assignable to the
-    /// constraint), so a surfaced suggestion can never be a type the picker itself would refuse. The suggestion is
-    /// never auto-applied — the user always clicks (an explicit product decision).
-    /// </summary>
+    // Ranking engine behind the missing-type Smart Fix suggestion: from the stored type identity, the field names
+    // recorded for it and the field's declared constraint, it orders repair candidates and surfaces the best one.
+    // The pool is the same set the type picker would offer, so a suggestion can never be a type the picker refuses,
+    // and it is never auto-applied — the user always clicks.
     internal static class SerializeReferenceRepairSuggestions
     {
-        /// <summary>
-        /// A scored repair candidate for a missing managed reference: the existing <see cref="Type"/> the reference
-        /// could be re-pointed to, the heuristic <see cref="Score"/> (highest wins) and a short human <see cref="Reason"/>.
-        /// </summary>
+        // A scored repair candidate: the type the reference could be re-pointed to, its heuristic score (highest
+        // wins) and a short human-readable reason.
         public readonly struct RepairCandidate
         {
             public readonly Type Type;
@@ -37,24 +31,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Only suggestions at or above this confidence are surfaced — below it the heuristics are too weak to offer.
+        // Below this confidence the heuristics are too weak to offer at all.
         public const float MinScore = 0.6f;
 
-        // The field-shape overlap can add up to this much, lifting a marginal name match over the threshold and
-        // breaking ties between equally-named candidates.
+        // How much the field-shape overlap can add, lifting a marginal name match over the threshold and breaking
+        // ties between equally-named candidates.
         private const float FieldShapeBonus = 0.2f;
 
-        /// <summary>
-        /// Returns up to <paramref name="max"/> repair candidates for a missing managed reference, ordered by descending
-        /// score (ties broken by field-shape overlap). Only candidates scoring at least <see cref="MinScore"/> are
-        /// returned. The pool is every concrete managed-reference type assignable to <paramref name="baseConstraint"/>
-        /// (the field's declared element type), filtered by the same eligibility rules the picker uses, so a returned
-        /// type always satisfies the field's constraint.
-        /// </summary>
-        /// <param name="stored">The stored, now-unresolvable type identity read from the asset YAML.</param>
-        /// <param name="storedFieldNames">Top-level serialized field names recorded for the missing reference, or empty.</param>
-        /// <param name="baseConstraint">The field's declared element type; <c>typeof(object)</c> for an unconstrained field.</param>
-        /// <param name="max">Maximum number of candidates to return.</param>
+        // IMGUI repaints every frame, so the TypeCache-scanning ranking is cached per (asset, document, rid) with a
+        // FIFO cap. The file id is part of the key because a rid is only unique within one host object.
+        private const int CacheCapacity = 64;
+
+        private static readonly Dictionary<(string assetPath, long fileId, long rid), IReadOnlyList<RepairCandidate>> Cache = new();
+        private static readonly Queue<(string assetPath, long fileId, long rid)> CacheOrder = new();
+
+        // Up to max candidates scoring at least MinScore, ordered by descending score. baseConstraint is the field's
+        // declared element type, or typeof(object) when unconstrained.
         public static IReadOnlyList<RepairCandidate> Rank(
             ManagedTypeName stored,
             IReadOnlyCollection<string> storedFieldNames,
@@ -88,8 +80,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (scored.Count == 0) return Array.Empty<RepairCandidate>();
 
-            // Ties broken ordinally by full name, then assembly — otherwise the surfaced fix would depend on
-            // TypeCache order and could flip across domain reloads.
+            // Ties break on name then assembly, or the surfaced fix would follow TypeCache order and flip across
+            // domain reloads.
             scored.Sort(static (a, b) =>
             {
                 var byScore = b.Score.CompareTo(a.Score);
@@ -103,11 +95,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return scored.Count <= max ? scored : scored.GetRange(0, max);
         }
 
-        // Same eligibility rules the type picker enforces, so a suggestion can never be a type the field would refuse.
-        // [TypeSelectorDisplay(Hidden = true)] is honoured here even though the repair PICKER offers such types: the
-        // picker answers a choice the user made, whereas a suggestion is the package proposing a type — and proposing
-        // one the author took out of circulation, on a control that applies it in a single click, is not a repair the
-        // package gets to volunteer.
+        // The picker's own eligibility rules, so a suggestion can never be a type the field would refuse. Hidden
+        // types are excluded even though the repair picker offers them: a suggestion is the package proposing a type,
+        // and it does not get to volunteer one the author took out of circulation.
         private static IEnumerable<Type> EnumerateCandidates(Type constraint)
         {
             var pool = constraint == typeof(object)
@@ -123,10 +113,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Base score for a candidate against the stored identity, before the field-shape bonus. Returns 0 for no match.
+        // Base score before the field-shape bonus; 0 means no match.
         private static float ScoreCandidate(ManagedTypeName stored, string storedClass, Type candidate, out string reason)
         {
-            // A declared [MovedFrom] whose recorded old identity matches the stored one is an authoritative rename — top score.
+            // A matching [MovedFrom] is an authoritative rename, so it tops the ranking.
             if (SerializeReferenceMovedFromResolver.MatchesOldIdentity(candidate, stored, storedClass))
             {
                 reason = "declared [MovedFrom]";
@@ -135,7 +125,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var candidateClass = SerializeReferenceMovedFromResolver.NormalizeClassName(candidate.Name);
 
-            // Same simple class name, different namespace and/or assembly — the class was moved/renamed-by-namespace.
+            // Same class name in another namespace or assembly: the class was moved.
             if (string.Equals(candidateClass, storedClass, StringComparison.Ordinal))
             {
                 reason = "same type name";
@@ -148,7 +138,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return 0.6f;
             }
 
-            // A near-miss name — only surfaced once the field-shape bonus lifts it over the threshold.
+            // A near miss, surfaced only once the field-shape bonus lifts it over the threshold.
             if (LevenshteinAtMost(candidateClass, storedClass, 2))
             {
                 reason = "similar name";
@@ -159,7 +149,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return 0f;
         }
 
-        // Fraction (0..1) of stored field names that exist on the candidate's serialized fields.
+        // Fraction of stored field names that exist on the candidate.
         private static float FieldShapeOverlap(HashSet<string> storedFields, Type candidate)
         {
             var candidateFields = GetSerializedFieldNames(candidate);
@@ -169,7 +159,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return (float)matched / storedFields.Count;
         }
 
-        // Mirrors Unity's serialization rule: public instance fields plus private [SerializeField] ones, base chain included.
+        // Unity's rule: public instance fields plus private [SerializeField] ones, base chain included.
         private static HashSet<string> GetSerializedFieldNames(Type type)
         {
             var names = new HashSet<string>(StringComparer.Ordinal);
@@ -222,19 +212,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         #region Cached ranking
-        // IMGUI repaints every frame, so the TypeCache-scanning ranking is cached per (asset, document, rid) with a
-        // FIFO cap. The document file id is part of the key because a rid is only unique within one host object
-        // (Prefab Mode components of the same prefab share an asset path). Cleared whenever a repair lands.
-        private const int CacheCapacity = 64;
-
-        private static readonly Dictionary<(string assetPath, long fileId, long rid), IReadOnlyList<RepairCandidate>> Cache = new();
-        private static readonly Queue<(string assetPath, long fileId, long rid)> CacheOrder = new();
-
-        /// <summary>
-        /// Cached <see cref="Rank"/> keyed by <paramref name="assetPath"/>, the host document's <paramref name="fileId"/>
-        /// and the reference's <paramref name="rid"/>, so a per-frame IMGUI repaint never re-scans the type cache. The
-        /// factory runs only on a cache miss.
-        /// </summary>
+        // The factory runs only on a cache miss.
         public static IReadOnlyList<RepairCandidate> GetCached(
             string assetPath,
             long fileId,
@@ -257,9 +235,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        /// <summary>
-        /// Drops every cached ranking — called after a repair, since the candidate set has changed.
-        /// </summary>
+        // Called after a repair, since the candidate set has changed.
         public static void ClearCache()
         {
             Cache.Clear();

@@ -7,34 +7,28 @@ using UnityEngine.Scripting.APIUpdating;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Resolves a stored (no longer loadable) managed-reference type identity to the type that declares it as its
-    /// old name via <c>[MovedFrom]</c> — the authoritative rename signal. Unity itself migrates such references in
-    /// memory when the asset loads, but the YAML on disk keeps the old name until the asset is re-saved, so a
-    /// YAML-level scan keeps seeing the stale identity. This resolver is what lets those entries read as a pending
-    /// <b>migration</b> instead of a breakage, and powers the bulk <b>Migrate all</b> that bakes the rename into the
-    /// files (after which the attribute can be deleted from code).
-    /// </summary>
+    // Resolves a stored, no longer loadable type identity to the type declaring it as its old name via [MovedFrom].
+    // Unity migrates such references in memory at load, but the YAML keeps the old name until the asset is re-saved,
+    // so a YAML-level scan keeps seeing the stale identity. This is what lets those entries read as a pending
+    // migration instead of a breakage, and backs the bulk "Migrate all" that bakes the rename into the files.
     internal static class SerializeReferenceMovedFromResolver
     {
-        // Stored-type key → the single authoritative target (null = no claimant, or an ambiguous pair). [MovedFrom]
-        // declarations only change with a recompile, and a recompile resets this dictionary with the domain — so no
-        // invalidation is needed. Negative results are cached too: the breakage paths probe every unresolved entry.
+        // Stored-type key -> the single authoritative target; null means no claimant or an ambiguous pair. Negative
+        // results are cached too, since the breakage paths probe every unresolved entry. [MovedFrom] declarations
+        // only change with a recompile, which resets this with the domain, so nothing invalidates it.
         private static readonly Dictionary<string, Type> Cache = new(StringComparer.Ordinal);
 
-        /// <summary>
-        /// True when exactly one loaded managed-reference-eligible type declares a <c>[MovedFrom]</c> whose recorded
-        /// old identity matches <paramref name="stored"/>. Two types claiming the same old identity make the rename
-        /// non-authoritative, so the resolver refuses to pick between them and returns <see langword="false"/>.
-        /// </summary>
+        private static readonly char[] NestedSeparators = { '/', '+' };
+
+        // True when exactly one eligible type declares a [MovedFrom] matching the stored identity. Two claimants
+        // make the rename non-authoritative, so the resolver refuses to pick between them.
         public static bool TryResolve(ManagedTypeName stored, out Type target)
         {
             target = null;
             if (string.IsNullOrEmpty(stored.Class)) return false;
 
-            // A stored closed-generic identity ("Modifier`1[[…]]") can never migrate authoritatively — the only
-            // possible claimant is an arity-stripped name collision, a guess rather than a rename. Those stay
-            // with the scored Smart Fix path.
+            // A stored closed generic can only be claimed by an arity-stripped name collision — a guess, not a
+            // rename — so it stays with the scored Smart Fix path.
             if (stored.Class.IndexOf('`') >= 0) return false;
 
             var key = SerializeReferenceHelpers.StoredTypeKey(stored);
@@ -45,8 +39,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return target is not null;
         }
 
-        // Scans only the types that actually carry Unity's [MovedFrom] (TypeCache is index-backed, so this is cheap)
-        // — only Unity's own attribute is authoritative, since it is the one Unity's serialization honours at load.
+        // Only Unity's own attribute is authoritative, since it is the one its serialization honors at load.
+        // TypeCache is index-backed, so scanning just its carriers is cheap.
         private static Type ResolveUncached(ManagedTypeName stored)
         {
             var storedClass = NormalizeClassName(stored.Class);
@@ -66,12 +60,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return found;
         }
 
-        /// <summary>
-        /// True when <paramref name="candidate"/> carries a <c>[MovedFrom]</c> whose recorded old identity matches the
-        /// stored type's class (and, when declared, namespace / assembly). The attribute's backing data is not public
-        /// API, so every member is read reflectively and any failure is treated as "no match" rather than throwing.
-        /// <paramref name="storedClass"/> is the pre-normalized stored class name (see <see cref="NormalizeClassName"/>).
-        /// </summary>
+        // Matches the candidate's recorded old identity against the stored class and, when declared, namespace and
+        // assembly. storedClass must already be normalized. The attribute's data is not public API, so it is read
+        // reflectively and any failure counts as "no match".
         public static bool MatchesOldIdentity(Type candidate, ManagedTypeName stored, string storedClass)
         {
             try
@@ -88,8 +79,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     var dataType = data.GetType();
 
-                    // When a "*HasChanged" flag is false the old value equals the current type's value, so fall back to
-                    // the candidate's own identity for that slot — exactly how Unity's updater resolves the old name.
+                    // A false "*HasChanged" flag means the old value equals the current one, matching how Unity's
+                    // own updater resolves the old name.
                     var oldClass = NormalizeClassName(ReadMovedSlot(dataType, data, "className", "classHasChanged", candidate.Name));
                     if (!string.Equals(oldClass, storedClass, StringComparison.Ordinal)) continue;
 
@@ -110,22 +101,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             catch (Exception)
             {
-                // The attribute data struct is not public API; any reflection failure simply means "no MovedFrom match".
+                // The data struct is not public API, so a reflection failure just means "no match".
             }
 
             return false;
         }
 
-        /// <summary>
-        /// Strips Unity's generic-arity/expansion decoration from a stored or live class name so both sides compare on
-        /// the bare simple name: <c>"Modifier`1[[System.Single, mscorlib]]"</c> and <c>"Modifier`1"</c> both reduce to
-        /// <c>"Modifier"</c>; a nested type (<c>"Outer/Inner"</c> or <c>"Outer+Inner"</c>) reduces to its innermost segment.
-        /// </summary>
+        // Strips generic-arity decoration and nesting so both sides compare on the bare simple name:
+        // "Modifier`1[[System.Single, mscorlib]]" and "Outer/Modifier" both reduce to "Modifier".
         public static string NormalizeClassName(string className)
         {
             if (string.IsNullOrEmpty(className)) return string.Empty;
 
-            // Drop a bracketed generic expansion ("Foo`1[[...]]") and then the backtick-arity suffix ("Foo`1").
             var bracket = className.IndexOf('[');
             if (bracket >= 0) className = className[..bracket];
 
@@ -138,10 +125,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return className.Trim();
         }
 
-        private static readonly char[] NestedSeparators = { '/', '+' };
-
-        // Reads a string slot of MovedFromAttributeData, returning the recorded old value when its companion
-        // "*HasChanged" flag is true and the current type's value otherwise (a slot that did not change).
+        // Returns the recorded old value when the slot's "*HasChanged" flag is set, and the current one otherwise.
         private static string ReadMovedSlot(Type dataType, object data, string valueField, string changedField, string current)
         {
             var changed = dataType.GetField(changedField, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);

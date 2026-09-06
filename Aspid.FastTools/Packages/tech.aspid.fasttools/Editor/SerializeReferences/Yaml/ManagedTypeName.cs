@@ -4,11 +4,8 @@ using System.Linq;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Identity of a managed-reference type as it is stored in Unity's serialized YAML
-    /// (<c>type: {class: …, ns: …, asm: …}</c>). Used to repair a reference whose type went missing by
-    /// rewriting that line directly, since Unity's serialization API cannot reassign a missing type.
-    /// </summary>
+    // A managed-reference type's identity as Unity stores it in YAML. A reference whose type went missing is
+    // repaired by rewriting that line directly, since the serialization API cannot reassign a missing type.
     internal readonly struct ManagedTypeName
     {
         private static readonly char[] _yamlReservedChars = { ',', '[', ']', '{', '}' };
@@ -17,29 +14,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public readonly string Assembly;
         public readonly string Namespace;
 
-        /// <summary>
-        /// True for the empty type. Computed (not a stored field) so <c>default(ManagedTypeName)</c> — which never
-        /// runs the constructor, e.g. <see cref="FromType"/> on a null type — still reports empty instead of a
-        /// stale <c>false</c>.
-        /// </summary>
+        // Computed rather than stored, so a default instance — which never runs the constructor — still reports
+        // empty instead of a stale false.
         public bool IsEmpty => string.IsNullOrWhiteSpace(Assembly)
             && string.IsNullOrWhiteSpace(Namespace)
             && string.IsNullOrWhiteSpace(Class);
 
-        /// <summary>
-        /// Full <c>Namespace.Class, Assembly</c> identity built on top of <see cref="DisplayName"/>, for tooltips that
-        /// need the assembly too. Empty for the empty type.
-        /// </summary>
+        // For tooltips that need the assembly too.
         public string FullName => IsEmpty
             ? string.Empty
             : string.IsNullOrWhiteSpace(Assembly) ? DisplayName : $"{DisplayName}, {Assembly}";
 
-        /// <summary>
-        /// Human-readable <c>Namespace.Class</c> identity (the class alone when there is no namespace), or an empty
-        /// string when this is the empty type. The single source of truth for the missing-type caption shown in the
-        /// repair dialog, the project audit list and the graph header, so nested (<c>Outer/Inner</c>) or generic
-        /// class-name display fixes land in one place.
-        /// </summary>
+        // The single source of the missing-type caption used by the repair dialog, the audit list and the graph
+        // header, so a nested or generic class-name display fix lands in one place.
         public string DisplayName => IsEmpty
             ? string.Empty
             : string.IsNullOrWhiteSpace(Namespace) ? Class : $"{Namespace}.{Class}";
@@ -51,10 +38,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Namespace = @namespace ?? string.Empty;
         }
 
-        /// <summary>
-        /// Builds the YAML type identity for a resolved <see cref="Type"/>, including the
-        /// <c>Name`N[[arg, asm],…]</c> shape Unity uses for closed generics.
-        /// </summary>
+        // Includes the "Name`N[[arg, asm],…]" shape Unity uses for closed generics.
         public static ManagedTypeName FromType(Type type)
         {
             if (type is null) return default;
@@ -109,9 +93,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{prefix}{BuildClassName(type)}";
         }
 
-        /// <summary>
-        /// Renders the inline YAML mapping Unity writes for a managed-reference type entry.
-        /// </summary>
         public string ToYamlType() =>
             $"{{class: {EscapeInline(Class)}, ns: {EscapeInline(Namespace)}, asm: {EscapeInline(Assembly)}}}";
 

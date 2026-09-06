@@ -7,19 +7,13 @@ using System.Text.RegularExpressions;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Rewrites the stored type of a managed reference directly in an asset's YAML text. This is the only way
-    /// to re-point a <c>[SerializeReference]</c> whose type can no longer be loaded (renamed / moved / deleted),
-    /// because Unity drops missing references to <see langword="null"/> through the serialization API and never
-    /// exposes them for reassignment. Parser-free: the document and the target <c>RefIds</c> entry are located by
-    /// line scanning, and only the inline <c>{ … }</c> on the entry's <c>type:</c> line is replaced.
-    /// </summary>
-    /// <remarks>
-    /// Split across partial files by responsibility:
-    /// <see cref="FindMissingReferences"/> / <see cref="FindUnsetRequiredFields"/> (scan, <c>.Scan.cs</c>),
-    /// the YAML-mutating repairs (<c>.Rewrite.cs</c>) and the read-only id/type/field probes (<c>.Read.cs</c>).
-    /// This file holds the document / <c>RefIds</c> / indentation primitives those parts share.
-    /// </remarks>
+    // Rewrites a managed reference's stored type directly in an asset's YAML text — the only way to re-point a
+    // reference whose type can no longer be loaded, since Unity drops missing references to null through the
+    // serialization API and never exposes them for reassignment. Parser-free: the document and the target RefIds
+    // entry are located by line scanning, and only the inline mapping on the entry's type line is replaced.
+    //
+    // Split across partial files: the scans (.Scan.cs), the YAML-mutating repairs (.Rewrite.cs) and the read-only
+    // probes (.Read.cs). This file holds the document, RefIds and indentation primitives they share.
     internal static partial class SerializeReferenceYamlEditor
     {
         // The null managed-reference id Unity stores for an unassigned [SerializeReference] field

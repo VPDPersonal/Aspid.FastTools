@@ -7,19 +7,14 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The Settings tab (the rightmost square tab): the package's settings surfaced inside the window so the toolset is
-    /// self-contained. The one surface showing BOTH storage scopes — the Unity-native pages each render only their
-    /// own scope (Preferences the per-user controls, Project Settings the shared ones) from the same definitions.
-    /// A thin host over the shared settings surface — <see cref="AspidSettingsUI.BuildSurfaceContent"/> composes the
-    /// scope legend and every package area's section from one definition per area, and
-    /// <see cref="AspidSettingsUI.BuildResetFooter"/> pins the per-scope reset under the scroll. The window's dotted
-    /// canvas already sits behind this tab, so unlike the Unity-native pages it brings no canvas of its own.
-    /// On top of the surface the tab runs the window's keyboard ring (the Project/Asset References idiom): ↑/↓ walk
-    /// one flat focus ring over every actionable element, Enter activates the highlighted one (toggles a switch,
-    /// cycles the gate, opens the add-folder picker, presses a button), ←/→ nudge the highlighted slider, Escape
-    /// drops the highlight.
-    /// </summary>
+    // The Settings tab: the package's settings inside the window, so the toolset is self-contained. It is the one
+    // surface showing BOTH storage scopes, where each Unity-native page renders only its own from the same
+    // definitions. A thin host over the shared settings surface, with no canvas of its own, since the window's
+    // dotted canvas already sits behind it.
+    //
+    // On top of that it runs the window's keyboard ring, as the References tabs do: up and down walk one flat ring
+    // over every actionable element, Enter activates the highlighted one, left and right nudge a slider, and Escape
+    // drops the highlight.
     internal sealed class SettingsView : VisualElement
     {
         private readonly ScrollView _scroll;

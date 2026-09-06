@@ -10,6 +10,7 @@ namespace Aspid.FastTools.Types.Editors
         internal static event Action Changed;
 
         internal const int MaxRecentsCapacity = 20;
+
         internal const int DefaultRecentsCapacity = 5;
 
         private const string KeyPrefix = "Aspid.FastTools.TypeSelector.Settings.";

@@ -77,7 +77,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // concern — here an unresolvable constraint just widens the picker.
         private static TypeSelectorFilter BuildRequiredStringFilter(SerializedObject serializedObject, SerializedProperty property)
         {
-            if (!SerializeReferenceRequiredGate.TryGetRequired(property, out var selector)) return default;
+            if (!TypeSelectorRequiredGate.TryGetRequired(property, out var selector)) return default;
 
             var types = new List<Type>();
 

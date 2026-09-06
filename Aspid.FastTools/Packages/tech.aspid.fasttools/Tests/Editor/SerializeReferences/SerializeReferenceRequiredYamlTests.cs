@@ -4,6 +4,7 @@ using UnityEngine;
 using NUnit.Framework;
 using Aspid.FastTools.Types;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -30,7 +31,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     }
 
     /// <summary>
-    /// Coverage for the scene-safe required-field gate: <see cref="SerializeReferenceRequiredGate.GetRequiredFields"/>
+    /// Coverage for the scene-safe required-field gate: <see cref="TypeSelectorRequiredGate.GetRequiredFields"/>
     /// (reflection over a type's required fields) and <see cref="SerializeReferenceYamlEditor.FindUnsetRequiredFields"/>
     /// (the pure-YAML scan that reads scene MonoBehaviours straight from the file). The YAML tests drive the public
     /// method against temp <c>.unity</c>-shaped fixtures with an injected script→fields resolver, so the parser and the
@@ -42,7 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // Maps the fixtures' first script guid to RequiredTestObject's required fields; every other guid is unknown.
         private static IReadOnlyList<RequiredFieldDescriptor> Resolve(string guid) =>
             guid == YamlFixtures.RequiredSceneScriptGuid
-                ? SerializeReferenceRequiredGate.GetRequiredFields(typeof(RequiredTestObject))
+                ? TypeSelectorRequiredGate.GetRequiredFields(typeof(RequiredTestObject))
                 : Array.Empty<RequiredFieldDescriptor>();
 
         private string _path;
@@ -53,7 +54,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void GetRequiredFields_ReturnsOnlyRequiredFields_ClassifiedByKind()
         {
-            var byName = SerializeReferenceRequiredGate.GetRequiredFields(typeof(MixedRequiredObject))
+            var byName = TypeSelectorRequiredGate.GetRequiredFields(typeof(MixedRequiredObject))
                 .ToDictionary(field => field.FieldName, field => field.Kind);
 
             Assert.AreEqual(3, byName.Count, "Only the three Required fields should be returned.");
@@ -66,13 +67,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void GetRequiredFields_NoRequiredFields_ReturnsEmpty()
         {
             // LinkerTestObject has [SerializeReference] fields but none mark Required.
-            Assert.AreEqual(0, SerializeReferenceRequiredGate.GetRequiredFields(typeof(LinkerTestObject)).Count);
+            Assert.AreEqual(0, TypeSelectorRequiredGate.GetRequiredFields(typeof(LinkerTestObject)).Count);
         }
 
         [Test]
         public void GetRequiredFields_NullType_ReturnsEmpty()
         {
-            Assert.AreEqual(0, SerializeReferenceRequiredGate.GetRequiredFields(null).Count);
+            Assert.AreEqual(0, TypeSelectorRequiredGate.GetRequiredFields(null).Count);
         }
 
         [Test]
@@ -163,7 +164,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void GetRequiredFields_NestedContainer_ReturnsPathedDescriptors()
         {
-            var byPath = SerializeReferenceRequiredGate.GetRequiredFields(typeof(NestedRequiredTestObject))
+            var byPath = TypeSelectorRequiredGate.GetRequiredFields(typeof(NestedRequiredTestObject))
                 .ToDictionary(field => field.Path, field => field.Kind);
 
             Assert.AreEqual(2, byPath.Count, "Both required fields inside the container should be returned.");
@@ -176,7 +177,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void GetRequiredFields_SelfReferentialContainer_TerminatesAndPrunesCycle()
         {
-            var paths = SerializeReferenceRequiredGate.GetRequiredFields(typeof(CycleRequiredTestObject))
+            var paths = TypeSelectorRequiredGate.GetRequiredFields(typeof(CycleRequiredTestObject))
                 .Select(field => field.Path).ToList();
 
             Assert.AreEqual(new[] { "root.typeName" }, paths,
@@ -186,7 +187,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // Maps the fixtures' script guid to NestedRequiredTestObject, whose required fields all sit inside _loadout.
         private static IReadOnlyList<RequiredFieldDescriptor> ResolveNested(string guid) =>
             guid == YamlFixtures.RequiredSceneScriptGuid
-                ? SerializeReferenceRequiredGate.GetRequiredFields(typeof(NestedRequiredTestObject))
+                ? TypeSelectorRequiredGate.GetRequiredFields(typeof(NestedRequiredTestObject))
                 : Array.Empty<RequiredFieldDescriptor>();
 
         [Test]

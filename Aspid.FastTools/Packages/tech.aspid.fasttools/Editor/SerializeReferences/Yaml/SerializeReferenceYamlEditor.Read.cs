@@ -8,15 +8,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static partial class SerializeReferenceYamlEditor
     {
-        /// <summary>
-        /// Reads the managed-reference id (<c>rid</c>) stored at <paramref name="propertyPath"/> within the object
-        /// document anchored at <paramref name="fileId"/>. Needed because Unity reports an invalid id for a property
-        /// whose type is missing — the real id only survives in the YAML. Resolves the path at any depth, walking each
-        /// segment either into a managed reference's <c>RefIds</c> data block (a <c>rid:</c> pointer) or down through a
-        /// plain serializable container (a nested struct/class mapping or a <c>List&lt;T&gt;</c> of them), so paths
-        /// such as <c>_weapon._chargeEffect</c>, <c>_config._weapon</c> and <c>_slots.Array.data[0]._weapon</c> all
-        /// resolve. An unresolvable segment returns <see langword="false"/> so the caller can fall back.
-        /// </summary>
+        // Reads the rid stored at a property path, which only the YAML still carries: Unity reports an invalid id
+        // for a property whose type is missing. Each path segment walks either into a managed reference's data block
+        // or down through a plain serializable container, so a path at any depth resolves.
         public static bool TryReadReferenceId(string assetPath, long fileId, string propertyPath, out long rid)
         {
             rid = 0;
@@ -90,12 +84,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Reads the managed-reference id stored at <paramref name="propertyPath"/> and the type recorded for it in
-        /// the <c>RefIds</c> block, in a single pass over the asset YAML. This is how a missing reference is found
-        /// even when Unity has dropped it from the live object (notably on prefabs / GameObjects): the orphaned
-        /// id, type identity and payload all survive in the file.
-        /// </summary>
+        // Reads the rid and its recorded type in one pass. This is how a missing reference is found even after
+        // Unity drops it from the live object: the orphaned id, type and payload all survive in the file.
         public static bool TryReadStoredType(string assetPath, long fileId, string propertyPath, out long rid, out ManagedTypeName type)
         {
             rid = 0;
@@ -138,12 +128,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Parses the top-level field names from the flat YAML payload Unity exposes for an in-memory missing reference
-        /// (<see cref="UnityEditor.SerializationUtility.GetManagedReferencesWithMissingTypes"/>
-        /// <c>serializedData</c>). Mirrors the in-memory data-recovery parser: only top-level <c>key: value</c> scalars
-        /// (and mapping/sequence headers) are reported; indented and sequence-item lines are skipped.
-        /// </summary>
+        // Parses the flat payload Unity exposes for an in-memory missing reference. Only top-level keys are
+        // reported; indented and sequence-item lines are skipped.
         public static List<string> ParseTopLevelFieldNames(string serializedData)
         {
             var result = new List<string>();
@@ -164,12 +150,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        /// <summary>
-        /// Reads the top-level serialized field names recorded for the managed reference <paramref name="rid"/> within
-        /// the object document anchored at <paramref name="fileId"/> — the direct keys of the entry's <c>data:</c>
-        /// block. Used by the Smart Fix suggestion's field-shape heuristic to compare the orphaned payload's shape
-        /// against a candidate type's serialized fields. Nested mappings and sequences are reported by their key only.
-        /// </summary>
+        // The direct keys of the entry's data block, for the Smart Fix field-shape heuristic. Nested mappings and
+        // sequences are reported by their key alone.
         public static List<string> GetReferenceFieldNames(string assetPath, long fileId, long rid)
         {
             var result = new List<string>();

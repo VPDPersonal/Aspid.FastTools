@@ -10,7 +10,7 @@ public static class DiagnosticRules
     public static readonly Descriptor TypeSelectorFieldTypeRule = new(
         id: "AFT0001",
         title: "[TypeSelector] applied to an unsupported field",
-        messageFormat: "[TypeSelector] on '{0}' has no effect: apply it to a string field or to a [SerializeReference] managed-reference field",
+        messageFormat: "[TypeSelector] on '{0}' has no effect: apply it to a string field, a SerializableType / SerializableMonoScript field or a [SerializeReference] managed-reference field",
         category: UsageCategory,
         defaultSeverity: Severity.Error,
         isEnabledByDefault: true);

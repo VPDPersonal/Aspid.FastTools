@@ -7,12 +7,8 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Surfaces a breakage report non-intrusively: a fade-out <see cref="EditorWindow.ShowNotification"/> toast that
-    /// steals no focus, plus a single console warning pointing at the Repair window's menu path. The same breakage
-    /// set is shown at most once per session (a content hash in <see cref="SessionState"/>), so a recompile that
-    /// re-detects the identical set does not nag.
-    /// </summary>
+    // Surfaces a breakage report as a fade-out toast plus one console line. The same set is shown at most once per
+    // session (a content hash in SessionState), so a recompile that re-detects it does not nag.
     internal static class SerializeReferenceBreakageNotificationController
     {
         private const string ShownPrefix = "Aspid.FastTools.SerializeReferences.Breakage.Shown.";

@@ -6,22 +6,14 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    /// <summary>
-    /// Resolves the string arguments of a <see cref="TypeSelectorAttribute"/> into base-constraint types.
-    /// Each name is resolved member-first — a field or property with that name on the target object's type
-    /// hierarchy supplies the constraint dynamically; only when no member matches is the string treated
-    /// as an assembly-qualified type name for <see cref="Type.GetType(string)"/>.
-    /// </summary>
+    // Resolves the string arguments of a TypeSelectorAttribute into base-constraint types.
+    // Each name is resolved member-first — a field or property with that name on the target object's type
+    // hierarchy supplies the constraint dynamically; only when no member matches is the string treated
+    // as an assembly-qualified type name for GetType(string).
     internal static class TypeSelectorConstraintResolver
     {
-        /// <summary>
-        /// Resolves <paramref name="assemblyQualifiedNames"/> against <paramref name="targetObject"/>.
-        /// </summary>
-        /// <remarks>
-        /// Blank names are skipped. Every name that cannot supply constraints — an unreadable member, or a name
-        /// that is neither a member nor a resolvable type — adds a message to <see cref="Result.Warnings"/>.
-        /// A suitable member whose current value is empty is not a warning — it means "no constraint yet".
-        /// </remarks>
+        // Blank names are skipped, and every name that can supply no constraint adds a warning. A suitable member
+        // whose current value is empty is not one: it means "no constraint yet".
         internal static Result Resolve(object targetObject, IReadOnlyList<string> assemblyQualifiedNames)
         {
             var types = new List<Type>();
@@ -43,13 +35,13 @@ namespace Aspid.FastTools.Types.Editors
                     {
                         (warnings ??= new List<string>()).Add(
                             $"Member '{name}' cannot supply base types — it must be an instance field or property " +
-                            "of type Type, Type[], string, string[], SerializableType or SerializableType<T>.");
+                            "of type Type, Type[], string, string[], SerializableType or SerializableMonoScript (plain or <T>).");
                     }
 
                     continue;
                 }
 
-                var type = Type.GetType(name, throwOnError: false);
+                var type = TypeUtility.GetTypeOrNull(name);
 
                 if (type is not null)
                 {
@@ -136,10 +128,7 @@ namespace Aspid.FastTools.Types.Editors
 
         private static void AddTypeFromName(string assemblyQualifiedName, List<Type> types)
         {
-            if (string.IsNullOrWhiteSpace(assemblyQualifiedName)) return;
-
-            var type = Type.GetType(assemblyQualifiedName, throwOnError: false);
-            if (type is not null)
+            if (TypeUtility.GetTypeOrNull(assemblyQualifiedName) is { } type)
                 types.Add(type);
         }
 
@@ -176,10 +165,8 @@ namespace Aspid.FastTools.Types.Editors
                 || typeof(ISerializableType).IsAssignableFrom(memberType);
         }
 
-        /// <summary>
-        /// The outcome of <see cref="Resolve"/>: the constraint types plus a warning for every name
-        /// that could not supply any.
-        /// </summary>
+        // The outcome of Resolve: the constraint types plus a warning for every name
+        // that could not supply any.
         internal readonly struct Result
         {
             internal Type[] Types { get; }

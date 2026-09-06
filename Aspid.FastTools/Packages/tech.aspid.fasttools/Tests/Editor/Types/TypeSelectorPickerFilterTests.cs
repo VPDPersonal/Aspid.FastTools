@@ -27,6 +27,14 @@ namespace Aspid.FastTools.Types.Editors.Tests
     [System.Serializable]
     internal sealed class OfferedSubtypeOfHidden : HiddenPickerBase { }
 
+    internal abstract class AbstractPickerType : IPickerFilterContract { }
+
+    internal static class StaticPickerHolder
+    {
+        // Nested so the static class sits next to the contract it would otherwise never implement.
+        internal static class StaticPickerType { }
+    }
+
     /// <summary>
     /// Coverage for <see cref="TypeSelectorDisplayAttribute.Hidden"/> — a type that opts out must not reach an
     /// authoring picker through either path <see cref="TypeInfo.GetAllTypeInfos"/> feeds it (the domain scan or the
@@ -106,5 +114,18 @@ namespace Aspid.FastTools.Types.Editors.Tests
     }
 
     [TypeSelectorDisplay(Hidden = true)]
-    internal interface IHiddenPickerContract { }
+    internal interface IHiddenPickerContract {
+
+        [Test]
+        public void GetAllTypeInfos_StaticClass_IsNeverOffered_EvenWithAbstractAllowed()
+        {
+            var names = TypeInfo.GetAllTypeInfos(System.Array.Empty<System.Type>(), TypeAllow.All)
+                .Select(info => info.Name)
+                .ToArray();
+
+            CollectionAssert.DoesNotContain(names, nameof(StaticPickerHolder));
+            CollectionAssert.DoesNotContain(names, nameof(StaticPickerHolder.StaticPickerType));
+            CollectionAssert.Contains(names, nameof(AbstractPickerType), "A real abstract class must survive with TypeAllow.Abstract.");
+        }
+    }
 }

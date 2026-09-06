@@ -5,29 +5,15 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The single source of truth for the SerializeReference toolset's configurable behaviors. The purely cosmetic,
-    /// per-developer breakage-detection toggle is persisted as JSON in project-scoped <see cref="EditorPrefs"/> (keyed
-    /// by <see cref="PlayerSettings.productGUID"/>, the established package pattern); the settings that must be
-    /// identical for every teammate and for CI (auto-de-alias, excluded scan folders, the build/CI gate) live in the
-    /// committed <see cref="SerializeReferenceSharedSettings"/> asset instead. Rid colours are not configurable —
-    /// they always identify a shared reference by colour, so there is nothing to opt out of. Edited through the
-    /// Project Settings page; read by the de-alias guard, the project scanners and the build/CI gate. Fires
-    /// <see cref="Changed"/> so open inspectors can repaint live.
-    /// </summary>
+    // The single source of truth for the SerializeReference toolset's configurable behaviors. The per-developer
+    // breakage-detection toggle is persisted as project-scoped EditorPrefs JSON; the settings that must be identical
+    // for every teammate and for CI live in the committed shared-settings asset instead.
     internal static class SerializeReferenceSettings
     {
-        /// <summary>
-        /// Raised whenever a setting changes.
-        /// </summary>
         public static event Action Changed;
 
-        /// <summary>
-        /// Raised only when the <see cref="ExcludedFolders"/> set actually changes — the precise signal the usage index
-        /// listens for to drop its warm copy, since <see cref="IsExcluded"/> is consulted only while the index is
-        /// (re)built. Kept separate from <see cref="Changed"/> so an unrelated setting (the gate) never triggers a
-        /// costly index rebuild.
-        /// </summary>
+        // The precise signal the usage index listens for to drop its warm copy, since exclusion is consulted only
+        // while the index is built. Kept apart from Changed so an unrelated setting never forces a costly rebuild.
         public static event Action ExcludedFoldersChanged;
 
         private const string KeyPrefix = "Aspid.FastTools.SerializeReference.Settings.";
@@ -43,10 +29,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static string Key => KeyPrefix + PlayerSettings.productGUID;
         private static Store Data => _cache ??= Load();
 
-        /// <summary>
-        /// Persisted in <see cref="SerializeReferenceSharedSettings"/> (committed asset), not <see cref="EditorPrefs"/>
-        /// — duplicating a list element must behave the same for every teammate, regardless of who set this.
-        /// </summary>
+        // Committed, not per-machine: duplicating a list element must behave the same for every teammate.
         public static bool AutoDeAliasEnabled
         {
             get => SerializeReferenceSharedSettings.instance.AutoDeAlias;
@@ -65,17 +48,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             get => Data.breakageDetection;
             set
             {
-                // Changed is wired to RepaintAll — an idle write would repaint every open editor window.
+                // Changed repaints every open editor window, so an idle write is not free.
                 if (Data.breakageDetection == value) return;
                 Data.breakageDetection = value;
                 Save();
             }
         }
 
-        /// <summary>
-        /// Persisted in <see cref="SerializeReferenceSharedSettings"/> (committed asset), not <see cref="EditorPrefs"/>
-        /// — the usage index and the build/CI gate must scan the same folders for every teammate and on CI.
-        /// </summary>
+        // Committed, not per-machine: the index and the gate must scan the same folders everywhere.
         public static string[] ExcludedFolders
         {
             get => SerializeReferenceSharedSettings.instance.ExcludedFolders;
@@ -83,7 +63,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var next = value ?? Array.Empty<string>();
                 var shared = SerializeReferenceSharedSettings.instance;
-                // Re-assigning the same paths must not fire the costly index reset, so detect a genuine change first.
+                // Re-assigning the same paths must not fire the costly index reset.
                 if (FoldersEqual(shared.ExcludedFolders, next)) return;
 
                 shared.ExcludedFolders = next;
@@ -92,11 +72,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Build/CI gate severity. Persisted in <see cref="SerializeReferenceSharedSettings"/> (committed asset) so it
-        /// travels to a clean CI runner instead of defaulting to <see cref="GateSeverity.Warn"/> there. Still fires
-        /// <see cref="Changed"/> so open inspectors repaint live.
-        /// </summary>
+        // Committed, so it travels to a clean CI runner instead of defaulting to Warn there.
         public static GateSeverity BuildSeverity
         {
             get => SerializeReferenceSharedSettings.instance.BuildSeverity;
@@ -110,13 +86,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Restores every team-wide setting this store persists in the committed
-        /// <see cref="SerializeReferenceSharedSettings"/> asset to its default: auto de-alias on, the build/CI gate at
-        /// <see cref="GateSeverity.Warn"/>, no excluded scan folders. Routed through the public setters so each fires
-        /// its usual change signals (live-syncing open surfaces, dropping the warm usage index when the folder set
-        /// really moved) and no-ops when already at the default.
-        /// </summary>
+        // Routed through the setters so each fires its usual change signals and no-ops when already at the default.
         public static void ResetSharedToDefaults()
         {
             AutoDeAliasEnabled = true;
@@ -124,18 +94,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ExcludedFolders = Array.Empty<string>();
         }
 
-        /// <summary>
-        /// Restores the per-user settings this store persists in <see cref="EditorPrefs"/> to their defaults: breakage
-        /// detection on (matching the <see cref="Store"/> field initializers a fresh machine starts from).
-        /// </summary>
         public static void ResetUserToDefaults()
         {
             BreakageDetectionEnabled = true;
         }
 
-        /// <summary>
-        /// True when <paramref name="path"/> lies under one of the excluded scan folders.
-        /// </summary>
         public static bool IsExcluded(string path)
         {
             var folders = SerializeReferenceSharedSettings.instance.ExcludedFolders;
@@ -151,8 +114,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // Ordinal, order-sensitive set comparison (null treated as empty). A reorder counts as a change too — harmless,
-        // since it only drops the warm index, which the next scan rebuilds.
+        // Order-sensitive, so a reorder counts as a change; that only drops the warm index, which the next scan
+        // rebuilds anyway.
         private static bool FoldersEqual(string[] a, string[] b)
         {
             if (ReferenceEquals(a, b)) return true;

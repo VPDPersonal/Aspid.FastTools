@@ -54,5 +54,26 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             Assert.IsTrue(found, "A type of this very test assembly must be part of the domain sweep.");
         }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase("   ")]
+        [TestCase("No.Such.Type, NoSuchAssembly")]
+        [TestCase("Malformed[[Name")]
+        public void GetTypeOrNull_UnresolvableOrMalformedName_IsNull(string assemblyQualifiedName) =>
+            Assert.IsNull(TypeUtility.GetTypeOrNull(assemblyQualifiedName));
+
+        [Test]
+        public void GetTypeOrNull_ResolvesALoadedType() =>
+            Assert.AreEqual(typeof(TypeUtilityTests), TypeUtility.GetTypeOrNull(typeof(TypeUtilityTests).AssemblyQualifiedName));
+
+        [Test]
+        public void DomainTypes_IsCachedAndContainsTheTestAssembly()
+        {
+            var first = TypeUtility.DomainTypes;
+
+            Assert.AreSame(first, TypeUtility.DomainTypes, "The sweep must be cached between calls.");
+            CollectionAssert.Contains(first, typeof(TypeUtilityTests));
+        }
     }
 }

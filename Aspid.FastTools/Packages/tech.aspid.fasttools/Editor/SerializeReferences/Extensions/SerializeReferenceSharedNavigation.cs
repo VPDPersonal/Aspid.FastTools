@@ -7,57 +7,42 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// IMGUI-side group navigation for shared references, mirroring the UIToolkit field's click-to-highlight: a click
-    /// on the "Shared reference #N" message picks the group's next member in document order (wrapping), expands the
-    /// collapsed parents hiding it, scrolls the inspector to it once it is painted, and pulses every member in the
-    /// group colour. The UIToolkit field does not use this — its live-field registry (see
-    /// <c>SerializeReferenceField</c>) navigates through the element tree instead; only the pulse timings and the
-    /// document-order cycling are kept in lock-step between the two.
-    /// </summary>
+    // IMGUI-side group navigation for shared references: clicking the "Shared reference #N" message picks the
+    // group's next member in document order, expands the parents hiding it, scrolls to it once painted, and pulses
+    // every member in the group color. The UIToolkit field navigates its element tree instead; only the pulse timings
+    // and the document-order cycling are kept in lock-step between the two.
     internal static class SerializeReferenceSharedNavigation
     {
-        // Mirrors the UIToolkit field's FlashAlpha / FlashDurationMs / FlashHoldFraction so the pulse reads the same
-        // in both UIs: full tint for the first FlashHoldFraction, then a linear fade.
+        // Full tint for the hold fraction, then a linear fade. Mirrors the UIToolkit field so both pulses match.
         private const float FlashAlpha = 0.25f;
         private const double FlashSeconds = 1.6;
         private const float FlashHoldFraction = 0.35f;
 
-        // Keep the revealed member out of the viewport's very edge: scroll it to about a quarter down, so a line or
-        // two of context stays visible above it.
+        // Scrolls the revealed member a quarter down, so a line or two of context stays above it.
         private const float RevealViewportFraction = 0.25f;
 
-        // A member revealed by expanding its parents only gets a rect once it is painted; if no repaint reports it
-        // within this window (e.g. the property vanished), the pending reveal is dropped.
+        // A revealed member only gets a rect once painted; the reveal is dropped if no repaint reports one in time.
         private const double RevealTimeoutSeconds = 1.0;
 
-        // The pending reveal: the group member the next repaint should scroll to (set by NavigateFrom after it
-        // expanded the member's parents, consumed by RevealIfPending when the member reports where it was painted).
+        // The group member the next repaint should scroll to.
         private static int _revealTarget;
         private static long _revealRid;
         private static string _revealPath;
         private static double _revealUntil;
 
-        // The per-group navigation cursor, keyed by (target object, rid). Advancing from the cursor — not the clicked
-        // field — lets repeated clicks on the SAME notice walk the whole group. Mirrors the UIToolkit field's cursor.
+        // Advancing from a per-group cursor rather than the clicked field lets repeated clicks on the same notice
+        // walk the whole group.
         private static readonly Dictionary<(int target, long rid), string> NavigationCursor = new();
 
-        // The active pulse: every drawn member of (target, rid) except the clicked one tints in the group colour
-        // until the deadline. Driven by an EditorApplication.update repaint loop while it lasts.
+        // The active pulse: every drawn member of the group except the clicked one tints until the deadline.
         private static int _flashTarget;
         private static long _flashRid;
         private static string _flashExceptPath;
         private static double _flashUntil;
 
-        /// <summary>
-        /// The "Shared reference #N" message was clicked: reveal the WHOLE group — expand the collapsed parents over
-        /// every member (a member inside collapsed parents is not drawn at all) — then scroll to the next member in
-        /// document order (cursor-based, so repeated clicks walk the group; see <see cref="RevealIfPending"/>) and
-        /// start the group pulse.
-        /// Call with the inspector's LIVE property (valid — the message click runs synchronously inside Draw), never
-        /// a persistent copy: isExpanded is cached per SerializedObject instance at construction, so the ancestor
-        /// expansion only reaches the inspector's foldouts when written through its own long-lived SerializedObject.
-        /// </summary>
+        // Handles a click on the shared-reference message. Call with the inspector's LIVE property, never a
+        // persistent copy: isExpanded is cached per SerializedObject, so the ancestor expansion only reaches the
+        // inspector's foldouts when written through its own.
         public static void NavigateFrom(SerializedProperty property)
         {
             var target = property.serializedObject.targetObject;
@@ -66,19 +51,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var rid = property.managedReferenceId;
             if (rid < 0) return;
 
-            // The group's canonical document order (shared with the UIToolkit field) backs the cycling.
             var group = SerializeReferenceHelpers.GetSharedReferenceGroupPaths(property);
             if (group.Count < 2) return;
 
             var selfPath = property.propertyPath;
 
-            // Reveal the WHOLE group, not just the scroll target: the pulse covers every drawn member, so every
-            // member must be drawn. IMGUI re-reads isExpanded on every repaint, so one pass reaches any depth.
+            // The pulse covers every drawn member, so the whole group is revealed, not just the scroll target.
             foreach (var path in group)
                 if (path != selfPath)
                     ExpandAncestors(property.serializedObject, path);
 
-            // The scroll target: the next member in document order after the cursor; the clicked field is skipped.
             var key = (target.GetInstanceID(), rid);
             var start = NavigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
             if (start < 0) start = IndexOf(group, selfPath);
@@ -101,11 +83,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _revealUntil = EditorApplication.timeSinceStartup + RevealTimeoutSeconds;
         }
 
-        /// <summary>
-        /// Reports where a shared field was painted this Repaint. When the field is the pending reveal's member —
-        /// possibly just un-hidden by <see cref="NavigateFrom"/>'s expansion — the inspector scrolls to it. Call from
-        /// the drawer with the field's FULL rect (header + children).
-        /// </summary>
+        // Reports where a shared field was painted; call with its FULL rect, header and children. The inspector
+        // scrolls to it when it is the pending reveal's member.
         public static void RevealIfPending(SerializedProperty property, Rect fieldRect)
         {
             if (Event.current.type != EventType.Repaint) return;
@@ -119,14 +98,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _revealPath = null;
             var screenRect = GUIUtility.GUIToScreenRect(fieldRect);
 
-            // Scrolling mutates the host ScrollView mid-Repaint; defer it to the next editor tick.
+            // Scrolling would mutate the host ScrollView mid-Repaint, so defer it a tick.
             EditorApplication.delayCall += () => ScrollTo(screenRect);
         }
 
-        /// <summary>
-        /// True while the group pulse covers this field — a member of the pulsing (target, rid) group other than the
-        /// clicked one — with the overlay's current fade alpha. The drawer paints the overlay over its full rect.
-        /// </summary>
+        // True while the pulse covers this field, with the overlay's current fade alpha.
         public static bool TryGetFlashAlpha(SerializedProperty property, out float alpha)
         {
             alpha = 0f;
@@ -139,7 +115,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (property.managedReferenceId != _flashRid) return false;
             if (property.propertyPath == _flashExceptPath) return false;
 
-            // Hold-then-fade matching the UIToolkit pulse's easing.
             var t = 1f - (float)(remaining / FlashSeconds);
             alpha = t < FlashHoldFraction
                 ? FlashAlpha
@@ -156,9 +131,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return -1;
         }
 
-        // Expands every '.'-prefix ancestor so the property is actually drawn; prefixes that are not real properties
-        // (the bare ".Array" marker) resolve to null and are skipped. The member itself is left alone — revealing it
-        // must not toggle its own foldout.
+        // Expands every ancestor so the property is drawn at all; the member itself is left alone, since revealing it
+        // must not toggle its own foldout. Prefixes that are not real properties resolve to null and are skipped.
         private static void ExpandAncestors(SerializedObject serializedObject, string path)
         {
             for (var dot = path.IndexOf('.'); dot >= 0; dot = path.IndexOf('.', dot + 1))
@@ -175,7 +149,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _flashExceptPath = exceptPath;
             _flashUntil = EditorApplication.timeSinceStartup + FlashSeconds;
 
-            // IMGUI only repaints on events, so the fade needs its own repaint driver for its lifetime.
+            // IMGUI only repaints on events, so the fade needs its own repaint driver.
             EditorApplication.update -= DriveFlashRepaints;
             EditorApplication.update += DriveFlashRepaints;
         }
@@ -189,10 +163,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             InternalEditorUtility.RepaintAllViews(); // one final repaint erases the last visible tint
         }
 
-        // Scrolls the clicked window's ScrollView so the destination rect (screen space) sits a quarter down the
-        // viewport. The inspector hosts IMGUI editors inside a UIToolkit ScrollView, so GUI.ScrollTo cannot reach
-        // it — the scroll goes through the window's element tree instead. Screen-space rects and the root's
-        // worldBound share the window's origin, so the conversion is a plain offset.
+        // The inspector hosts IMGUI editors inside a UIToolkit ScrollView, which GUI.ScrollTo cannot reach, so the
+        // scroll goes through the window's element tree. Screen rects and worldBound share the window's origin, so
+        // the conversion is a plain offset.
         private static void ScrollTo(Rect screenRect)
         {
             var window = EditorWindow.mouseOverWindow != null ? EditorWindow.mouseOverWindow : EditorWindow.focusedWindow;
@@ -204,7 +177,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var viewport = scrollView.contentViewport.worldBound;
             var targetY = screenRect.y - window.position.y;
 
-            // Already comfortably inside the viewport → the pulse alone is enough.
+            // Already inside the viewport, so the pulse alone is enough.
             if (targetY >= viewport.yMin + 4f && targetY + screenRect.height <= viewport.yMax - 4f) return;
 
             var offset = scrollView.scrollOffset;

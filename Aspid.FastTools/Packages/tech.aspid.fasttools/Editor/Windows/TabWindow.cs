@@ -1,20 +1,18 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using Object = UnityEngine.Object;
 
+using Aspid.FastTools.SerializeReferences.Editors;
+
 // ReSharper disable once CheckNamespace
-namespace Aspid.FastTools.SerializeReferences.Editors
+namespace Aspid.FastTools.Editors
 {
-    /// <summary>
-    /// The single managed-reference workbench. Two modes share one window: <b>Asset References</b> maps a saved asset's
-    /// whole reference graph and repairs entries inline, and <b>Project References</b> sweeps the project for missing
-    /// references and bulk-fixes them grouped by broken type. The per-asset repair list of the old Repair window is
-    /// subsumed by the richer Inspect graph; the project sweep keeps its grouped bulk-fix flow.
-    /// </summary>
+    // The managed-reference workbench. Asset References maps a saved asset's whole reference graph and repairs
+    // entries inline; Project References sweeps the project for missing references and bulk-fixes them grouped by
+    // broken type.
     internal sealed class TabWindow : EditorWindow
     {
         private const string RootClass = "aspid-fasttools-serialize-reference-window";
@@ -35,9 +33,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // The Aspid brand mark shown beside the window title; padded variant so it doesn't dominate the tab.
         private const string WindowIconPath = "Icons/aspid_icon_window_tab_green_1022x1011";
 
-        // Below this the toolbar tabs and cards degrade into slivers; applied in CreateGUI so every instance
-        // gets it — including panes restored from a saved layout, which never pass through Reveal.
+        // Below this the tabs and cards degrade into slivers. Applied in CreateGUI, so a pane restored from a saved
+        // layout — which never passes through Reveal — gets it too.
         private static readonly Vector2 _minWindowSize = new(480f, 360f);
+
+        [Tooltip("The asset the References tabs open when the window is rebuilt.")]
+        [SerializeField] private Object _pendingTarget;
 
         private AspidAnimatedDotsBackground _background;
         private VisualElement _container;
@@ -46,10 +47,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private Button _projectButton;
         private Button _settingsButton;
 
-        [SerializeField] private Object _pendingTarget;
-
-        // One-shot flag: the breakage-notification deep-link wants the project scanned immediately even from a cold
-        // index, whereas a plain Project References tab click is warmth-gated inside the view. Consumed in SwitchMode.
+        // The breakage-notification deep-link wants the project scanned even from a cold index, whereas a plain
+        // Project References tab click is warmth-gated inside the view.
         private bool _forceProjectScan;
 
         internal TabType CurrentTabType { get; private set; }
@@ -140,7 +139,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var button = new Button(() => SwitchMode(tabType)) { text = label, tooltip = hint };
             button.AddClass(ToolbarButtonClass);
 
-            // Shortcut badge, absolutely positioned so it floats over the button without disturbing the centred label.
+            // Absolutely positioned, so the badge floats over the button without disturbing the centered label.
             button.AddChild(new Label(hint)
                 .AddClass(TabHintClass)
                 .SetPickingMode(PickingMode.Ignore));

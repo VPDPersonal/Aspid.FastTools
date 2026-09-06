@@ -72,8 +72,8 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         var isSerializableType = IsSerializableType(elementType);
         var isManagedReference = FindAttribute(field, context.SemanticModel, UnityAttributes.SerializeReferenceFull) is not null;
 
-        // AFT0001 — none of the three valid shapes (a string type-name field, a SerializableType / SerializableType<T>
-        // field, or a [SerializeReference] managed reference): the drawer throws.
+        // AFT0001 — none of the valid shapes (a string type-name field, a SerializableType / SerializableMonoScript
+        // wrapper, or a [SerializeReference] managed reference): the drawer renders an error box instead of the field.
         if (!isString && !isSerializableType && !isManagedReference)
         {
             context.ReportDiagnostic(Diagnostic.Create(
@@ -553,16 +553,19 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         return type;
     }
 
-    // A SerializableType / SerializableType<T> field names a Type (like a string) rather than instantiating one, so
-    // [TypeSelector] is valid on it. Matched by the wrapper's original definition so both the non-generic and the
-    // open-generic form are recognized; List<>/array are already unwrapped into the element type by the caller.
+    // A SerializableType / SerializableType<T> or SerializableMonoScript / SerializableMonoScript<T> field names a Type
+    // (like a string) rather than instantiating one, so [TypeSelector] is valid on it. Matched by the wrapper's original
+    // definition so both the non-generic and the open-generic form are recognized; List<>/array are already unwrapped
+    // into the element type by the caller.
     private static bool IsSerializableType(ITypeSymbol type)
     {
         if (type is not INamedTypeSymbol named) return false;
 
         var definition = named.OriginalDefinition.ToDisplayString();
         return definition == AspidClasses.SerializableTypeFull ||
-            definition == AspidClasses.SerializableTypeGenericFull;
+            definition == AspidClasses.SerializableTypeGenericFull ||
+            definition == AspidClasses.SerializableMonoScriptFull ||
+            definition == AspidClasses.SerializableMonoScriptGenericFull;
     }
 
     // Two non-interface types with no inheritance relationship can share no concrete instance (single inheritance),

@@ -5,32 +5,21 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Reads a scanned reference graph without drawing it: what is broken, what is merely a pending
-    /// <c>[MovedFrom]</c> rename, which slots sit empty and what a broken node's best repair guess is.
-    /// </summary>
-    /// <remarks>
-    /// The migration checks need the declared field type behind a rid, so they take the caller's
-    /// <see cref="SerializeReferenceConstraintCache"/> rather than building a constraint map per call — one asset scan
-    /// is shared by every question asked about that asset in one render pass.
-    /// </remarks>
+    // Reads a scanned reference graph without drawing it: what is broken, what is merely a pending rename, which
+    // slots sit empty and what a broken node's best repair guess is. The migration checks need the declared field
+    // type behind a rid, so they take the caller's constraint cache and one asset scan serves the whole render pass.
     internal static class SerializeReferenceGraphAnalysis
     {
-        /// <summary>Joins a parent field path with a child edge label, tolerating either side being empty.</summary>
         public static string CombinePath(string parent, string child)
         {
             if (string.IsNullOrEmpty(child)) return parent;
             return string.IsNullOrEmpty(parent) ? child : $"{parent}.{child}";
         }
 
-        /// <summary>
-        /// Every empty managed-reference slot's normalized field path across every document, root and nested edge.
-        /// </summary>
-        /// <remarks>
-        /// Mirrors the card-building walk minus the cards. It is the lookup set an empty slot's required badge is
-        /// checked against, and the way the graph tells "already badged on a card" apart from "no card exists for this
-        /// field at all" — a required string / <c>SerializableType</c> field has no rid and so no node.
-        /// </remarks>
+        // Every empty slot's normalized field path, across every document, root and nested edge — the card-building
+        // walk minus the cards. An empty slot's required badge is checked against this set, which is how the graph
+        // tells "already badged on a card" apart from "no card exists for this field", as a required string field
+        // has no rid and so no node.
         public static HashSet<(long fileId, string path)> CollectEmptySlotPaths(List<ReferenceGraphDocument> documents)
         {
             var paths = new HashSet<(long, string)>();
@@ -49,7 +38,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return paths;
         }
 
-        /// <summary>How many slots in this document are unassigned. Used only for the overview hint; empty slots are not "issues".</summary>
+        // Used only for the overview hint; an empty slot is not an issue.
         public static int CountEmptySlots(ReferenceGraphDocument document)
         {
             var count = document.Roots.Count(root => root.IsEmpty);
@@ -62,14 +51,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return count;
         }
 
-        /// <summary>
-        /// Splits a document's unresolved nodes into genuinely broken ones and pending <c>[MovedFrom]</c> migrations.
-        /// </summary>
-        /// <remarks>
-        /// An orphaned rid always counts as broken — nothing loads an orphan, so in-memory migration does not apply.
-        /// It is also excluded from the migration tally because the orphan counters already own it; counting it here
-        /// too would double it in the overview headline and hints.
-        /// </remarks>
+        // Splits a document's unresolved nodes into genuinely broken ones and pending migrations. An orphaned rid
+        // always counts as broken, since nothing loads an orphan and in-memory migration cannot apply, and it stays
+        // out of the migration tally because the orphan counters already own it.
         public static (int broken, int migrations) CountUnresolved(string assetPath, ReferenceGraphDocument document,
             SerializeReferenceConstraintCache constraints)
         {
@@ -90,18 +74,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return (broken, migrations);
         }
 
-        /// <summary>The missing-predicate the amber tint uses; also drives the missing-first root ordering.</summary>
+        // Drives the amber tint and the missing-first root ordering.
         public static bool RootIsMissing(ReferenceGraphDocument document, long rid)
         {
             var node = document.FindNode(rid);
             return node is { Resolves: false, StoredType: { IsEmpty: false } };
         }
 
-        /// <summary>
-        /// Whether a missing node's stored type is claimed by exactly one <c>[MovedFrom]</c> target that fits the
-        /// field's declared type — Unity already migrates it in memory, so only the file is stale.
-        /// </summary>
-        /// <remarks>An unrecoverable constraint lets the migration through.</remarks>
+        // Whether exactly one [MovedFrom] target claims the stored type and fits the field's declared type, meaning
+        // Unity already migrates it in memory and only the file is stale. An unrecoverable constraint lets it
+        // through.
         public static bool IsPendingMigration(string assetPath, long fileId, long rid, ManagedTypeName storedType,
             SerializeReferenceConstraintCache constraints, out Type target)
         {
@@ -111,11 +93,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return constraint is null || constraint == typeof(object) || constraint.IsAssignableFrom(target);
         }
 
-        /// <summary>
-        /// The ranked Smart Fix for a missing node, via the shared per-<c>(path, fileId, rid)</c> cache so a rescan and
-        /// the inline drawer reuse one computation.
-        /// </summary>
-        /// <remarks>Best-effort: a parse miss just means no suggestion row.</remarks>
+        // Goes through the shared per-(path, fileId, rid) cache, so a rescan and the inline drawer reuse one
+        // computation. A parse miss just means no suggestion row.
         public static bool TryGetSuggestion(string assetPath, long fileId, long rid, ManagedTypeName storedType,
             SerializeReferenceConstraintCache constraints, out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
         {

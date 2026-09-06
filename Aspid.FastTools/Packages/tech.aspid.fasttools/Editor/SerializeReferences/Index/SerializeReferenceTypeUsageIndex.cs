@@ -6,23 +6,13 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Lazy, incrementally-updated project-wide index mapping each managed-reference stored-type identity to the assets,
-    /// documents and rids that use it. Modeled on the Id system's <c>UniqueIdIndex</c>: a cold null sentinel rebuilt on
-    /// first lookup, patched per-asset on import and fully reset on delete/move (see
-    /// <see cref="SerializeReferenceTypeUsageIndexInvalidator"/>). Per-asset extraction reuses
-    /// <see cref="SerializeReferenceGraphScanner.Build"/>, which already reports every rid's stored type and whether it
-    /// resolves, at any nesting depth.
-    /// </summary>
-    /// <remarks>
-    /// Powers Find Usages, MonoScript delete protection and the Repair window's fast project scan. Usages carry their
-    /// per-site <see cref="Usage.Resolves"/> flag and <see cref="Usage.StoredType"/> so consumers never re-read the file.
-    /// </remarks>
+    // Lazy, incrementally-updated project-wide index mapping each stored-type identity to the assets, documents and
+    // rids using it: a cold null sentinel rebuilt on first lookup, patched per asset on import and fully reset on
+    // delete or move. Powers Find Usages, MonoScript delete protection and the Repair window's fast project scan.
+    // Each usage carries its own Resolves flag and stored type, so consumers never re-read the file.
     internal static class SerializeReferenceTypeUsageIndex
     {
-        /// <summary>
-        /// A single managed-reference use site. Identity is (asset, document, rid); the rest is payload.
-        /// </summary>
+        // Identity is (asset, document, rid); the rest is payload.
         public readonly struct Usage : IEquatable<Usage>
         {
             public readonly string Guid;
@@ -48,19 +38,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             public override int GetHashCode() => unchecked((Guid.GetHashCode() * 397 ^ FileId.GetHashCode()) * 397 ^ Rid.GetHashCode());
         }
 
-        // null = cold sentinel; rebuilt lazily on first lookup, exactly like the Id indices.
+        // Null is the cold sentinel, rebuilt lazily on first lookup.
         private static Dictionary<string, HashSet<Usage>> _index;
 
-        /// <summary>
-        /// Whether the index is already built (warm). Consumers on the import / domain-reload path (the breakage
-        /// detector, the delete guard) must check this and NOT warm a cold index — warming runs a modal full-project
-        /// YAML sweep, which must never be triggered by a routine import (risk register items 3 and 10).
-        /// </summary>
+        // Consumers on the import or domain-reload path must check this and NOT warm a cold index: warming runs a
+        // modal full-project YAML sweep, which a routine import must never trigger.
         public static bool IsWarm => _index is not null;
 
-        /// <summary>
-        /// Every use site of the type identified by <paramref name="storedTypeKey"/> (warms the index if cold).
-        /// </summary>
+        // Warms the index if cold.
         public static IReadOnlyCollection<Usage> FindUsages(string storedTypeKey)
         {
             if (string.IsNullOrEmpty(storedTypeKey)) return Array.Empty<Usage>();
@@ -68,20 +53,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return _index.TryGetValue(storedTypeKey, out var set) ? set : Array.Empty<Usage>();
         }
 
-        /// <summary>
-        /// Every use site of <paramref name="type"/> by its open-generic stored-type identity. A generic type's script
-        /// resolves to the open definition (<c>Modifier`1[[T]]</c>), while YAML stores each closed instantiation
-        /// (<c>Modifier`1[[System.Single, …]]</c>) under its own key — so the lookup keys on the open identity to gather
-        /// every closed form. A non-generic type has a single key and behaves exactly as a direct lookup.
-        /// </summary>
+        // Keyed on the open-generic identity, since a generic type's script resolves to the open definition while
+        // YAML stores each closed instantiation under its own key. A non-generic type has just the one key.
         public static IReadOnlyCollection<Usage> FindUsages(Type type) =>
             type is null ? Array.Empty<Usage>() : FindUsagesByOpenKey(SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(type)));
 
-        /// <summary>
-        /// Every use site whose stored type shares the open-generic identity <paramref name="openTypeKey"/> (warms the
-        /// index if cold). Aggregates across the closed-form keys a generic type splits into; for a non-generic identity
-        /// the open key equals the stored key and at most one entry contributes.
-        /// </summary>
+        // Aggregates across the closed-form keys a generic type splits into; warms the index if cold.
         public static IReadOnlyCollection<Usage> FindUsagesByOpenKey(string openTypeKey)
         {
             if (string.IsNullOrEmpty(openTypeKey)) return Array.Empty<Usage>();
@@ -99,14 +76,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return (IReadOnlyCollection<Usage>)result ?? Array.Empty<Usage>();
         }
 
-        /// <summary>
-        /// Number of use sites of <paramref name="type"/>.
-        /// </summary>
         public static int CountUsages(Type type) => FindUsages(type).Count;
 
-        /// <summary>
-        /// Every use site whose stored type no longer resolves — the fast-scan source for the Repair window.
-        /// </summary>
+        // The fast-scan source for the Repair window.
         public static IEnumerable<Usage> EnumerateUnresolved()
         {
             EnsureBuilt();
@@ -116,9 +88,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         yield return usage;
         }
 
-        /// <summary>
-        /// Every indexed use site (warms the index) — the source the Find Usages search provider filters.
-        /// </summary>
+        // The source the Find Usages search provider filters; warms the index.
         public static IEnumerable<Usage> AllUsages()
         {
             EnsureBuilt();
@@ -127,17 +97,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     yield return usage;
         }
 
-        /// <summary>
-        /// Drops the whole index; the next lookup rebuilds it. Alias <see cref="ClearCache"/> for the rewrite sites.
-        /// </summary>
+        // Drops the whole index; the next lookup rebuilds it.
         public static void Reset() => _index = null;
 
-        /// <inheritdoc cref="Reset"/>
         public static void ClearCache() => Reset();
 
-        /// <summary>
-        /// Re-extracts one asset's usages in place (strip then re-add). No-op while the index is cold.
-        /// </summary>
+        // Re-extracts one asset's usages in place; a no-op while the index is cold.
         public static void RebuildAsset(string path)
         {
             if (_index is null) return;
@@ -159,7 +124,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .Where(SerializeReferenceHelpers.IsScanCandidate)
                 .ToArray();
 
-            // Non-cancelable bar: cancelling could leave a partial index marked warm (the null sentinel is already replaced).
+            // Non-cancelable: the sentinel is already replaced, so cancelling would mark a partial index warm.
             try
             {
                 for (var i = 0; i < paths.Length; i++)
@@ -177,7 +142,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             catch (Exception)
             {
-                // A failed warm-up must not masquerade as warm: reset to cold so the next lookup rebuilds from scratch.
+                // A failed warm-up must not masquerade as warm.
                 _index = null;
                 throw;
             }
@@ -189,12 +154,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void AddAsset(string path, string guid)
         {
-            // Data-only scan: resolving display TypeNames would load every asset (LoadAllAssetsAtPath).
+            // Data-only: resolving display names would load every asset.
             foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
             {
                 foreach (var node in document.Nodes)
                 {
-                    // No recorded type identity — cannot be looked up by type and is not a "missing type"; not indexed.
+                    // With no recorded type identity there is nothing to look up and nothing missing.
                     if (node.StoredType.IsEmpty) continue;
 
                     var key = SerializeReferenceHelpers.StoredTypeKey(node.StoredType);
@@ -211,7 +176,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _index[key] = set;
             }
 
-            // Remove a prior equal-identity entry first so a changed Resolves/StoredType payload replaces the stale one.
+            // Removed first so a changed payload replaces the stale entry rather than joining it.
             set.Remove(usage);
             set.Add(usage);
         }

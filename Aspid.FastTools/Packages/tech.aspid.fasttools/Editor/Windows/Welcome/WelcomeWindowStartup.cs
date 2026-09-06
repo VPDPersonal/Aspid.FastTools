@@ -7,12 +7,9 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    /// <summary>
-    /// Per-version auto-show for the Welcome panel. The Welcome content lives as the "home" tab of the
-    /// Managed References window (<see cref="TabWindow"/>), so on the first launch after an install
-    /// or a package update we open that window on its home tab instead of a standalone window. Owns the
-    /// per-project, per-package-version "seen" flag that gates the auto-show.
-    /// </summary>
+    // Per-version auto-show for the Welcome panel. The content lives as the window's home tab, so the first launch
+    // after an install or update opens that window there rather than a standalone one. Owns the per-project,
+    // per-version "seen" flag gating the auto-show.
     [InitializeOnLoad]
     internal static class WelcomeWindowStartup
     {
@@ -44,10 +41,7 @@ namespace Aspid.FastTools.Editors
             EditorApplication.delayCall += TryShowOnStartup;
         }
 
-        /// <summary>
-        /// Records that the Welcome panel has been opened, so the auto-show won't fire again until the next
-        /// package update.
-        /// </summary>
+        // Records that the panel was opened, so the auto-show waits for the next package update.
         public static void MarkSeen() => HasBeenSeen = true;
 
         private static void TryShowOnStartup()

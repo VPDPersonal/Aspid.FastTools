@@ -16,49 +16,29 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Shared helpers for the <c>[TypeSelector]</c> drawer on <c>[SerializeReference]</c> fields: resolving the
-    /// declared managed-reference field type, filtering candidate types, instantiating the selected type, and
-    /// parsing Unity's managed-reference type-name format. The open-generic argument flow itself lives in
-    /// the shared <see cref="Aspid.FastTools.Types.Editors.GenericTypeResolver"/> /
-    /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorWindow"/>; <see cref="IsValidGenericArgument"/>
-    /// is supplied to the selector as its argument filter.
-    /// </summary>
+    // Shared helpers for the [TypeSelector] drawer on [SerializeReference] fields: resolving the declared field
+    // type, filtering candidates, instantiating the selected type and parsing Unity's managed-reference type-name
+    // format. The open-generic argument flow itself lives in GenericTypeResolver and TypeSelectorWindow.
     internal static class SerializeReferenceHelpers
     {
-        /// <summary>
-        /// Resolves the declared element type of a managed-reference property — the base type that
-        /// constrains the candidate list. Uses <see cref="SerializedProperty.managedReferenceFieldTypename"/>,
-        /// which already reports the element type for array/list entries.
-        /// </summary>
+        // The declared element type constraining the candidate list. managedReferenceFieldTypename already reports
+        // the element type for array entries.
         public static Type GetFieldType(SerializedProperty property) =>
             GetTypeFromTypename(property.managedReferenceFieldTypename) ?? typeof(object);
 
-        /// <summary>
-        /// Resolves the concrete type currently stored in the managed reference, or <see langword="null"/>
-        /// when the reference is empty or its stored type can no longer be loaded.
-        /// </summary>
         public static Type GetCurrentType(SerializedProperty property) =>
             property.managedReferenceValue?.GetType();
 
-        // SerializedProperty.arrayElementType for a [SerializeReference] array/list — the only array shape whose
-        // elements are managed references.
+        // SerializedProperty.arrayElementType of a [SerializeReference] array — the only shape whose elements are
+        // managed references.
         private const string ManagedReferenceElementPrefix = "managedReference<";
 
-        /// <summary>
-        /// Returns <see langword="true"/> when <paramref name="property"/> is an array or list whose elements are
-        /// managed references.
-        /// </summary>
         public static bool IsManagedReferenceArray(SerializedProperty property) =>
             property is { isArray: true, propertyType: not SerializedPropertyType.String } &&
             property.arrayElementType.StartsWith(ManagedReferenceElementPrefix, StringComparison.Ordinal);
 
-        /// <summary>
-        /// The declared element type of a managed-reference list/array — what constrains the add-picker on a list
-        /// that may currently be empty (a non-empty list's elements resolve their own field type). Read from the
-        /// reflected field's array/List&lt;T&gt; shape; falls back to the first element's declared typename, then to
-        /// <see cref="object"/>.
-        /// </summary>
+        // Constrains the add-picker on a list that may be empty; a non-empty list's elements resolve their own
+        // field type. Read from the reflected field's shape, falling back to the first element, then to object.
         public static Type GetArrayElementType(SerializedProperty property)
         {
             if (property.GetFieldInfo() is { } field)
@@ -73,47 +53,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         #region Project scan helpers
-        /// <summary>
-        /// Returns <see langword="true"/> when <paramref name="path"/> is a project asset whose extension can host
-        /// managed references AND is not under a user-excluded folder. Layers SerializeReference's settings-based
-        /// exclusion on top of the engine-level candidate test
-        /// (<see cref="SerializeReferenceYaml.IsCandidateAssetPath"/>), which single-sources the .prefab/.asset/.unity
-        /// set so the Repair window, the usage index, the breakage detector and the build/CI gate scan the same set.
-        /// </summary>
+        // Layers the user's excluded folders on top of the engine-level extension test, which is single-sourced so
+        // every scanner covers the same set.
         public static bool IsScanCandidate(string path) =>
             SerializeReferenceYaml.IsCandidateAssetPath(path) && !SerializeReferenceSettings.IsExcluded(path);
 
-        /// <summary>
-        /// Returns <see langword="true"/> when <paramref name="path"/> is a Unity scene. Scenes cannot be read through
-        /// <see cref="AssetDatabase.LoadAllAssetsAtPath"/> — it warns "Do not use ReadObjectThreaded on scene objects!"
-        /// and returns nothing useful — so every object-loading scanner skips them and relies on the YAML pass instead.
-        /// </summary>
+        // Scenes cannot be read through LoadAllAssetsAtPath, so every object-loading scanner skips them and takes
+        // the YAML pass instead.
         public static bool IsScene(string path) =>
             !string.IsNullOrEmpty(path) && path.EndsWith(".unity", StringComparison.OrdinalIgnoreCase);
 
-        /// <summary>
-        /// Stable grouping key for a stored type identity (class + namespace + assembly). <see cref="ManagedTypeName"/>
-        /// carries no value equality, so the three fields are joined into a key string instead.
-        /// </summary>
+        // ManagedTypeName carries no value equality, so its three fields are joined into a key string instead.
         public static string StoredTypeKey(ManagedTypeName type) =>
             $"{type.Assembly}|{type.Namespace}|{type.Class}";
 
-        /// <summary>
-        /// Open-generic identity key for a stored type: class name with its backtick arity but <b>without</b> the
-        /// <c>[[…]]</c> closed-argument expansion, plus namespace and assembly. A script's open definition
-        /// (<c>Modifier`1[[T]]</c>, what <see cref="MonoScript.GetClass"/> yields) and the closed forms YAML stores
-        /// (<c>Modifier`1[[System.Single, …]]</c>) collapse to the same key, so the delete guard and usage index match
-        /// every closed instantiation of a generic type to its script. A non-generic type has no <c>[[…]]</c> suffix and
-        /// keys identically to <see cref="StoredTypeKey"/>.
-        /// </summary>
+        // Like StoredTypeKey but without the closed-argument expansion, so a script's open definition and every
+        // closed form YAML stores collapse to one key — that is how the delete guard and usage index match a
+        // generic type's instantiations back to its script.
         public static string OpenTypeKey(ManagedTypeName type) =>
             OpenTypeKey(StoredTypeKey(type));
 
-        /// <summary>
-        /// Reduces a <see cref="StoredTypeKey"/> string to its open-generic form by dropping the bracketed closed-argument
-        /// expansion (<c>Foo`1[[…]]</c> -> <c>Foo`1</c>). The bracket only appears inside the class segment and the
-        /// backtick arity is kept, so different arities never collapse and namespace/assembly stay intact.
-        /// </summary>
+        // The bracket only appears inside the class segment and the arity is kept, so different arities never
+        // collapse and namespace and assembly stay intact.
         public static string OpenTypeKey(string storedTypeKey)
         {
             if (string.IsNullOrEmpty(storedTypeKey)) return storedTypeKey ?? string.Empty;
@@ -124,39 +85,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         #endregion
 
         #region Multi-object editing
-        /// <summary>
-        /// Returns <see langword="true"/> when this property belongs to a <see cref="SerializedObject"/> editing more
-        /// than one target object at once (a multi-selection in the inspector).
-        /// </summary>
         public static bool IsEditingMultipleObjects(SerializedProperty property) =>
             property.serializedObject.isEditingMultipleObjects;
 
-        /// <summary>
-        /// Returns <see langword="true"/> when the selected targets do not all hold the same managed-reference type —
-        /// either Unity reports <see cref="SerializedProperty.hasMultipleDifferentValues"/>, or the per-target
-        /// <see cref="SerializedProperty.managedReferenceFullTypename"/> differs across
-        /// <see cref="SerializedObject.targetObjects"/>. Always <see langword="false"/> for a single target, so the
-        /// single-object paths are untouched. Used to drive the dropdown's mixed-value state and to suppress merging
-        /// child field UIs of incompatible types.
-        /// </summary>
+        // True when the selected targets do not all hold the same managed-reference type. Always false for a single
+        // target. Drives the dropdown's mixed-value state and suppresses merging child fields of unlike types.
         public static bool HasMixedTypes(SerializedProperty property)
         {
             if (!property.serializedObject.isEditingMultipleObjects) return false;
 
-            // hasMultipleDifferentValues does not always flag the all-missing case, where every target reads back a
-            // null value but the stored (unloadable) type names still differ — hence the explicit comparison below.
+            // hasMultipleDifferentValues misses the all-missing case, where every target reads back null but the
+            // stored, unloadable type names still differ.
             if (property.hasMultipleDifferentValues) return true;
 
-            // A non-null, agreed value means all targets share the concrete type — the per-target probe only matters
-            // for the all-missing case (null value).
+            // A non-null agreed value means the targets share the concrete type.
             if (property.managedReferenceValue is not null) return false;
 
             var first = property.managedReferenceFullTypename;
             var targets = property.serializedObject.targetObjects;
             if (targets.Length < 2) return false;
 
-            // Memoise the per-target probe per selection: it allocates a SerializedObject per selected object on every
-            // IMGUI repaint, while the all-missing state it measures is stable until the backing assets change.
+            // The probe allocates a SerializedObject per selected object on every repaint, while what it measures is
+            // stable until the backing assets change.
             if (TryGetMixedCache(property.propertyPath, first, targets, out var cached)) return cached;
 
             var result = false;
@@ -174,16 +124,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Per-selection memo backing HasMixedTypes' expensive all-missing multi-select probe. Entries are held per
-        // property path so several empty fields drawn under ONE multi-selection all stay memoized across a repaint —
-        // a single shared slot would be overwritten by each field and miss on the next. The map is scoped to one
-        // selection snapshot (_mixedTargets) and resets whenever the selection changes, so it stays bounded by the
-        // fields the current inspector actually draws.
+        // Keyed per property path, so several empty fields under one multi-selection stay memoized across a repaint
+        // instead of overwriting a single shared slot. Scoped to one selection snapshot and reset when it changes,
+        // so it stays bounded by the fields the inspector actually draws.
         private static Object[] _mixedTargets;
         private static readonly Dictionary<string, (string first, bool result)> _mixedResults = new(StringComparer.Ordinal);
 
-        // The memo is keyed by selection, not file state, so an EXTERNAL rewrite of the selected assets must drop it
-        // explicitly (see SerializeReferenceEditorCacheInvalidator).
+        // Keyed by selection, not file state, so an external rewrite of the selected assets must drop it explicitly.
         public static void InvalidateMixedTypesCache()
         {
             _mixedTargets = null;
@@ -221,16 +168,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _mixedResults[path] = (first, result);
         }
 
-        /// <summary>
-        /// Applies a managed-reference change to <b>every</b> selected target independently, so each object receives its
-        /// own instance rather than the shared reference that a single multi-object
-        /// <see cref="SerializedProperty.managedReferenceValue"/> assignment would alias across all of them. For each
-        /// target, <paramref name="factory"/> is invoked with that target's <i>previous</i> value (to support Keep-Data
-        /// through <see cref="CreateInstancePreservingData"/>) and must return a fresh, independent instance (or
-        /// <see langword="null"/> to clear). The whole batch is collapsed into a single Undo step so one Ctrl+Z reverts
-        /// all targets together. The originating <paramref name="property"/>'s <see cref="SerializedObject"/> is then
-        /// refreshed so the live inspector re-reads the new state.
-        /// </summary>
+        // Applies a change to every selected target independently, since one multi-object assignment would alias a
+        // single instance across all of them. The factory receives that target's previous value, to support keeping
+        // data, and must return a fresh instance or null. The batch collapses into one Undo step.
         public static void ApplyManagedReferencePerTarget(SerializedProperty property, Func<object, object> factory)
         {
             var serializedObject = property.serializedObject;
@@ -258,36 +198,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             Undo.CollapseUndoOperations(undoGroup);
 
-            // Update() pulls the per-target writes back into the live SerializedObject — applying it instead would
-            // write the live SO's stale (pre-change) managed reference back over the per-target writes.
+            // Update() pulls the per-target writes back in; applying instead would write the live object's stale
+            // reference back over them.
             serializedObject.Update();
         }
 
-        /// <summary>
-        /// Whether the per-asset missing/shared notices may be shown for this property. They are file-level operations
-        /// keyed to a single backing asset (YAML rewrite, single-object cross-reference scan), so under a multi-object
-        /// selection they would either misreport (the probes read only the first target) or apply to a single target
-        /// while presenting as if they covered the selection. The conservative rule is therefore to surface a notice
-        /// only for a single target; with several targets selected the notices are suppressed and the mixed/same-type
-        /// hint takes their place. Returns <see langword="true"/> for the single-target case (notices allowed).
-        /// </summary>
+        // Whether the per-asset notices may be shown. They are file-level operations keyed to one backing asset, so
+        // under a multi-object selection they would misreport or apply to a single target while presenting as if
+        // they covered the selection — there the mixed/same-type hint takes their place.
         public static bool NoticesApply(SerializedProperty property) =>
             !property.serializedObject.isEditingMultipleObjects;
         #endregion
 
-        /// <summary>
-        /// Returns <see langword="true"/> when this property holds a managed reference whose type can no longer be
-        /// loaded (renamed / moved / deleted). Unity does not expose a missing type through the per-property API
-        /// (the value reads back <see langword="null"/> and <see cref="SerializedProperty.managedReferenceFullTypename"/>
-        /// is empty) and even drops it from the live object on prefabs / GameObjects, so detection reads the stored
-        /// reference straight from the asset YAML: a null value whose recorded type cannot be resolved is missing.
-        /// </summary>
+        // True when the reference's type can no longer be loaded. Unity exposes no such state per property — the
+        // value reads back null and the typename is empty — so detection reads the stored reference from the asset
+        // YAML: a null value whose recorded type cannot be resolved is missing.
         public static bool IsMissingType(SerializedProperty property) =>
             TryGetMissingType(property, out _, out _);
 
-        // Per-frame memo: the probe runs several times per IMGUI repaint and every LEGITIMATELY EMPTY field pays the
-        // full repair-location resolution plus a YAML parse per call. Repairs and imports land on later frames; the
-        // mutation sites drop the memo explicitly for same-frame reads.
+        // The probe runs several times per repaint and every legitimately empty field pays a full repair-location
+        // resolution plus a YAML parse. Repairs land on later frames; same-frame mutations drop the memo explicitly.
         private static int _missingProbeFrame = -1;
         private static readonly Dictionary<(int instanceId, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
             _missingProbeMemo = new();
@@ -350,31 +280,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return Type.GetType(assemblyQualified, throwOnError: false) is not null;
         }
 
-        /// <summary>
-        /// Predicate identifying types that can legally be assigned to a <c>[SerializeReference]</c> field:
-        /// concrete reference types that are neither <see cref="Object"/>, open generics, strings, nor delegates.
-        /// </summary>
-        /// <remarks>
-        /// Deliberately does <b>not</b> require <see cref="SerializableAttribute"/>: unlike an ordinary nested
-        /// field, a managed reference is serialized through the asset's <c>references</c> registry, which records
-        /// the concrete type identity and its data with no attribute involved. Requiring the attribute here would
-        /// also narrow the callers that ask the structural question rather than the picker one —
-        /// <see cref="SerializeReferenceMovedFromResolver"/>'s rename migration and the drag-drop handler.
-        /// The attribute <i>is</i> required of a generic argument, which lands in an ordinary field; that rule
-        /// lives in <see cref="IsValidGenericArgument"/>.
-        /// </remarks>
+        // Types that can legally be assigned to a [SerializeReference] field: concrete reference types that are
+        // neither UnityEngine.Object, open generics, strings nor delegates. [Serializable] is deliberately NOT
+        // required — a managed reference is serialized through the asset's references registry, which records the
+        // concrete type and its data with no attribute involved. A generic argument lands in an ordinary field and
+        // does need it; that rule lives in IsValidGenericArgument.
         public static bool IsAssignableManagedReference(Type type) =>
             type is { IsClass: true, IsAbstract: false, ContainsGenericParameters: false } &&
             type != typeof(string) &&
             !typeof(Object).IsAssignableFrom(type) &&
             !typeof(Delegate).IsAssignableFrom(type);
 
-        /// <summary>
-        /// Builds the candidate predicate for the type picker: the structural <see cref="IsAssignableManagedReference"/>
-        /// check, optionally narrowed so only types assignable to one of <paramref name="baseTypes"/> qualify. A null or
-        /// empty set — or one that only names <see cref="object"/> (the unconstrained <c>[TypeSelector]</c> default) —
-        /// applies no extra narrowing, leaving every concrete type assignable to the field's declared type as a candidate.
-        /// </summary>
+        // The picker's candidate predicate: the structural check, narrowed to baseTypes when they say anything —
+        // an empty set, or one naming only object, adds no narrowing.
         public static Func<Type, bool> BuildAssignableFilter(Type[] baseTypes)
         {
             var narrowing = FilterNarrowingTypes(baseTypes);
@@ -384,8 +302,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                            Array.Exists(narrowing, baseType => baseType.IsAssignableFrom(type));
         }
 
-        // Drops nulls and the unconstrained `object` sentinel; returns null when nothing meaningful narrows the set,
-        // so the caller can fall back to the plain structural filter without allocating a predicate closure.
+        // Null when nothing meaningfully narrows the set, so the caller can skip allocating a predicate closure.
         private static Type[] FilterNarrowingTypes(Type[] baseTypes)
         {
             if (baseTypes is null || baseTypes.Length == 0) return null;
@@ -404,11 +321,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        /// <summary>
-        /// Creates an instance of <paramref name="type"/> for assignment to a managed reference.
-        /// Prefers a (public or non-public) parameterless constructor so field initializers run, and
-        /// falls back to an uninitialized instance for types that expose no parameterless constructor.
-        /// </summary>
+        // Prefers a parameterless constructor so field initializers run, falling back to an uninitialized instance.
         public static object CreateInstance(Type type)
         {
             if (type is null) return null;
@@ -423,13 +336,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Creates an instance of <paramref name="newType"/> and carries over the data of <paramref name="previous"/>
-        /// for every field the two types share by name and serialized shape. Mirrors Unity's own type-change
-        /// behaviour: the old value is serialized to JSON and overwritten onto the new instance, so matching fields
-        /// survive a type switch (e.g. a shared <c>_radius</c>) while the rest fall back to the new type's defaults.
-        /// A structural mismatch simply leaves the new instance untouched.
-        /// </summary>
+        // Carries over every field the two types share by name and shape, mirroring Unity's own type-change
+        // behavior: the old value is serialized to JSON and overwritten onto the new instance.
         public static object CreateInstancePreservingData(Type newType, object previous)
         {
             var instance = CreateInstance(newType);
@@ -446,9 +354,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // Best effort: incompatible layouts just mean nothing is carried over.
             }
 
-            // JsonUtility skips [SerializeReference] fields entirely, so nested managed references are carried over by
-            // reflection — the very instances, not copies, keeping aliases onto them intact across a type switch. The
-            // Make-unique flows deep-copy the result afterwards (see CloneManagedReferenceGraph).
+            // JsonUtility skips [SerializeReference] fields, so nested references are carried by reflection — the
+            // very instances, not copies, so aliases onto them survive the type switch.
             try
             {
                 CarryManagedReferences(previous, instance);
@@ -461,8 +368,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return instance;
         }
 
-        // Assigns every [SerializeReference] field the two shapes share by name (and whose value fits the target
-        // field's declared type) from previous onto instance — including whole arrays / lists of references.
+        // Assigns every shared [SerializeReference] field whose value fits the target's declared type, arrays
+        // included.
         private static void CarryManagedReferences(object previous, object instance)
         {
             Dictionary<string, FieldInfo> targets = null;
@@ -484,15 +391,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// Deep-copies a managed-reference instance: value fields ride the same JSON round-trip as
-        /// <see cref="CreateInstancePreservingData"/>, and every nested <c>[SerializeReference]</c> field — including
-        /// arrays and lists of them — is recursively replaced with its own independent copy. Internal topology is
-        /// preserved: two fields aliasing one nested instance alias one copy, and a cyclic graph clones without
-        /// recursing forever (each copy registers in the map before its children are cloned). This is the Make-unique
-        /// / de-alias copier — those flows promise an instance independent all the way down; the type-switch flows
-        /// keep <see cref="CreateInstancePreservingData"/>, where reusing the nested instances is correct.
-        /// </summary>
+        // Deep-copies a managed reference: value fields ride the same JSON round-trip, and every nested
+        // [SerializeReference] is replaced with its own copy. Topology is preserved — two fields aliasing one nested
+        // instance alias one copy, and a cyclic graph terminates because each copy registers before its children.
+        // This is the Make-unique copier; the type-switch flows keep CreateInstancePreservingData, where reusing the
+        // nested instances is correct.
         public static object CloneManagedReferenceGraph(object source) =>
             CloneManagedReferenceGraph(source, new Dictionary<object, object>(ReferenceComparer.Instance));
 
@@ -511,8 +414,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return clone;
         }
 
-        // Clones one [SerializeReference] field slot: a collection is rebuilt (never shared with the source) with
-        // each element cloned; a single reference clones directly.
+        // A collection slot is rebuilt rather than shared with the source, with each element cloned.
         private static object CloneManagedReferenceValue(object value, Dictionary<object, object> clones)
         {
             switch (value)
@@ -541,8 +443,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // The serialized fields Unity persists as managed references: instance fields, public or [SerializeField],
-        // declared with [SerializeReference], walking the base chain (each level reports its own declared fields).
+        // Instance fields, public or [SerializeField], declared with [SerializeReference], base chain included.
         private static IEnumerable<FieldInfo> EnumerateManagedReferenceFields(Type type)
         {
             const BindingFlags flags =
@@ -557,8 +458,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
         }
 
-        // Reference-identity comparer for the clone map: a user-defined Equals must not merge distinct instances
-        // (or split one), and managed references are always classes, so no boxing is involved.
+        // A user-defined Equals must not merge distinct instances in the clone map, or split one.
         private sealed class ReferenceComparer : IEqualityComparer<object>
         {
             public static readonly ReferenceComparer Instance = new();
@@ -568,10 +468,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             int IEqualityComparer<object>.GetHashCode(object obj) => RuntimeHelpers.GetHashCode(obj);
         }
 
-        /// <summary>
-        /// Parses Unity's managed-reference type-name format (<c>"AssemblyName Namespace.TypeName"</c>)
-        /// into a <see cref="Type"/>, or <see langword="null"/> when it is empty or cannot be loaded.
-        /// </summary>
+        // Parses Unity's "AssemblyName Namespace.TypeName" format; null when empty or unloadable.
         public static Type GetTypeFromTypename(string typename)
         {
             if (string.IsNullOrEmpty(typename)) return null;
@@ -584,23 +481,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return Type.GetType($"{fullName}, {assembly}", throwOnError: false);
         }
 
-        /// <summary>
-        /// The Unity types the engine serializes natively as a field value. They have to be named one by one
-        /// because <see cref="Type.IsSerializable"/> answers <see langword="false"/> for every one of them: the
-        /// engine writes their layout itself instead of going through .NET serialization, so none of them carries
-        /// <see cref="SerializableAttribute"/>. This is not a duplicate of the <c>IsSerializable</c> branch below —
-        /// it is the half of "Unity can serialize this" that <c>IsSerializable</c> cannot see.
-        /// </summary>
-        /// <remarks>
-        /// Membership was measured rather than assumed: every candidate was given a real field on a
-        /// <see cref="ScriptableObject"/> and looked up through <see cref="SerializedObject"/> on Unity 6000.4.
-        /// Value types of the same family the engine does <b>not</b> serialize — <see cref="Ray"/>,
-        /// <see cref="Ray2D"/>, <see cref="Plane"/>, <see cref="RangeInt"/>, <see cref="Keyframe"/>,
-        /// <see cref="GradientColorKey"/> — are absent for that reason, and must stay absent. Built-ins that do
-        /// carry the attribute (<see cref="Hash128"/>, <see cref="Pose"/>, <see cref="BoneWeight"/>,
-        /// <see cref="RectOffset"/>, <see cref="GUIStyle"/>, <c>Scene</c>) already pass the ordinary check and are
-        /// not repeated here.
-        /// </remarks>
+        // The types the engine serializes natively as a field value. They have to be named one by one because
+        // Type.IsSerializable answers false for all of them: the engine writes their layout itself, so none carries
+        // [Serializable]. This is the half of "Unity can serialize this" IsSerializable cannot see.
+        //
+        // Membership was measured on Unity 6000.4, not assumed. Value types of the same family the engine does NOT
+        // serialize — Ray, Ray2D, Plane, RangeInt, Keyframe, GradientColorKey — are absent for that reason and must
+        // stay absent. Built-ins that do carry the attribute already pass the ordinary check.
         private static readonly HashSet<Type> UnityNativeSerializableTypes = new()
         {
             typeof(Vector2), typeof(Vector3), typeof(Vector4),
@@ -612,13 +499,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             typeof(PropertyName), typeof(UnityEngine.Rendering.SphericalHarmonicsL2),
         };
 
-        /// <summary>
-        /// Predicate identifying types usable as a generic argument of a serialized managed reference:
-        /// concrete, non-generic types Unity can serialize as a field value (primitives, <see cref="string"/>,
-        /// enums, <see cref="Object"/>-derived references, the engine's own built-in types, or
-        /// <c>[Serializable]</c> structs/classes). Passed to
-        /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorWindow.Show"/> as the argument filter.
-        /// </summary>
+        // Types the argument PAGE offers: concrete, non-generic types Unity can serialize as a field value.
         public static bool IsValidGenericArgument(Type type)
         {
             if (type is null) return false;
@@ -634,24 +515,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                    (type.IsClass && type.IsSerializable);
         }
 
-        /// <summary>
-        /// Whether <paramref name="argument"/> may close <paramref name="parameter"/> of
-        /// <paramref name="openDefinition"/>. Supplied to the selector as its
-        /// <see cref="Aspid.FastTools.Types.Editors.TypeSelectorFilter.InferredArgumentFilter"/>.
-        /// </summary>
-        /// <remarks>
-        /// <see cref="IsValidGenericArgument"/> answers a different question — which types the argument <i>page</i>
-        /// offers — and demands serializability of every one of them, because a page has to stay a list a human can
-        /// read. That is the wrong bar for an argument the field already determines: nobody is browsing, and whether
-        /// the argument must be serializable at all depends on where the parameter lands, which
-        /// <see cref="GenericArgumentRequirement"/> works out. A <c>SequenceConverters&lt;T&gt;</c> holding nothing
-        /// but a <c>[SerializeReference] IConverter&lt;T, T&gt;[]</c> stores no <c>T</c> whatsoever, so an
-        /// <c>IConverter&lt;Ray, Ray&gt;</c> field closes it as readily as a <c>Vector2</c> one.
-        /// <para>
-        /// The structural half is not a matter of taste: an open definition, a pointer, a by-ref and
-        /// <see langword="void"/> are refused by <see cref="Type.MakeGenericType"/> itself.
-        /// </para>
-        /// </remarks>
+        // Whether an argument the FIELD already determines may close a parameter. IsValidGenericArgument demands
+        // serializability because its page has to stay a list a human can read; that is the wrong bar here, where
+        // nobody is browsing and whether the argument must be serializable at all depends on where the parameter
+        // lands — the question GenericArgumentRequirement answers. The structural half is not a matter of taste:
+        // MakeGenericType itself refuses an open definition, a pointer, a by-ref and void.
         public static bool IsAcceptableGenericArgument(Type openDefinition, Type parameter, Type argument)
         {
             if (argument is null || argument.ContainsGenericParameters) return false;
@@ -662,30 +530,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         #region Missing-type repair
-        /// <summary>
-        /// Resolves the stored (now unloadable) type identity of this property's missing managed reference, read from
-        /// the asset YAML, for display in the caption / warning. Returns <see langword="default"/> when the property
-        /// is not a recognised missing reference.
-        /// </summary>
         public static ManagedTypeName GetMissingTypeName(SerializedProperty property) =>
             TryGetMissingType(property, out _, out var storedType) ? storedType : default;
 
-        /// <summary>
-        /// Human-readable <c>Namespace.Class</c> of this property's missing type, for the dropdown caption and the
-        /// warning message, or an empty string when the property is not a recognised missing reference.
-        /// </summary>
         public static string GetMissingTypeDisplayName(SerializedProperty property) =>
             GetMissingTypeName(property).DisplayName;
 
-        /// <summary>
-        /// Computes the best <b>Smart Fix</b> repair suggestion for this property's missing managed reference: the
-        /// highest-scoring existing type the renamed/moved reference most likely became, ranked by
-        /// <see cref="SerializeReferenceRepairSuggestions"/>. The suggestion is never applied automatically — the caller
-        /// surfaces it as a one-click action. The candidate pool is constrained to types the picker itself would offer
-        /// (assignable to the field's declared type, narrowed by <paramref name="baseTypes"/>), so a suggestion can
-        /// never violate the field's constraint. Returns <see langword="false"/> when the property is not a recognised
-        /// missing reference, the repair location is unavailable, or no candidate clears the confidence threshold.
-        /// </summary>
+        // The best Smart Fix candidate for this property's missing reference, never applied automatically. The pool
+        // is constrained to what the picker would offer, so a suggestion can never violate the field's constraint.
         public static bool TryGetRepairSuggestion(SerializedProperty property, Type[] baseTypes,
             out SerializeReferenceRepairSuggestions.RepairCandidate suggestion)
         {
@@ -713,26 +565,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        /// <summary>
-        /// The Smart Fix <paramref name="suggestion"/> label — the "<c>→ Name</c>" affordance. Shared by the
-        /// UIToolkit and IMGUI notices and the Project References quick-apply button so the copy never drifts.
-        /// The "<c>·</c>" that separates it from the inline Fix segment is NOT part of this label: it is decoration
-        /// each notice renders itself, unclickable and never underlined.
-        /// </summary>
+        // Shared by both notices and the quick-apply button so the copy never drifts. The separator before it is
+        // decoration each notice renders itself, so it is not part of the label.
         public static string GetSuggestionLabel(SerializeReferenceRepairSuggestions.RepairCandidate suggestion) =>
             $"→ {TypeSelectorHelpers.GetTypeSelectorTitle(suggestion.Type)}";
 
-        /// <summary>
-        /// The hover-tooltip detail for a Smart Fix <paramref name="suggestion"/> — the full type identity and the
-        /// ranking reason. Shared by the UIToolkit and IMGUI notices so the two never drift.
-        /// </summary>
+        // Shared by both notices so the two never drift.
         public static string GetSuggestionDetail(SerializeReferenceRepairSuggestions.RepairCandidate suggestion) =>
             $"Suggested: {suggestion.Type.FullName}, {suggestion.Type.Assembly.GetName().Name}.\n" +
             $"Reason: {suggestion.Reason}.\nClick to re-point this reference to it, keeping its data.";
 
-        // Top-level serialized field names of the missing reference's orphaned payload, for the field-shape heuristic.
-        // Saved assets read them straight from the rid's YAML data block; a Prefab Mode object has no committed block
-        // for the live copy, so the flat payload Unity still exposes for the missing reference is parsed instead.
+        // Field names of the missing reference's orphaned payload, for the field-shape heuristic. A Prefab Mode
+        // object has no committed data block, so the flat payload Unity still exposes is parsed instead.
         private static List<string> GetMissingFieldNames(SerializedProperty property, string assetPath, long fileId, long referenceId, bool inMemory)
         {
             if (!inMemory)
@@ -746,11 +590,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return new List<string>();
         }
 
-        /// <summary>
-        /// Resolves the on-disk asset path and the target object's local file id (the YAML document anchor) backing
-        /// this property. Returns <see langword="false"/> for scene objects and prefab instances, which have no
-        /// editable asset file — the YAML repair flow only applies to saved assets (ScriptableObjects, prefabs).
-        /// </summary>
+        // The asset path and the target's local file id — the YAML document anchor. False for scene objects and
+        // prefab instances, which have no editable asset file of their own.
         public static bool TryGetAssetLocation(SerializedProperty property, out string assetPath, out long fileId)
         {
             fileId = 0;
@@ -761,14 +602,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(target, out _, out fileId);
         }
 
-        /// <summary>
-        /// Resolves the YAML document backing this property's stored managed reference and reports whether the repair
-        /// must be applied in memory. Saved assets (ScriptableObjects, prefab assets selected in the Project) resolve
-        /// directly and are repaired by rewriting the file. Objects open in <b>Prefab Mode</b> have no asset path of
-        /// their own — the path comes from the prefab stage and the document id is matched back to the asset on disk —
-        /// and must be repaired in memory (<paramref name="inMemory"/> = <see langword="true"/>), because the open
-        /// stage holds a separate copy that does not refresh on reimport and would overwrite a file rewrite on save.
-        /// </summary>
+        // The YAML document backing the stored reference, plus whether the repair must be applied in memory. A saved
+        // asset is repaired by rewriting its file. A Prefab Mode object has no path of its own — it comes from the
+        // stage, and the document id is matched back to the asset — and must be repaired in memory, since the open
+        // stage holds a separate copy that would overwrite a file rewrite on save.
         public static bool TryGetRepairLocation(SerializedProperty property, out string assetPath, out long fileId, out bool inMemory)
         {
             inMemory = false;
@@ -791,8 +628,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return true;
             }
 
-            // A plain object in a saved scene: its scene file is the YAML document store and its scene-local file id is
-            // the document anchor. Repaired in memory (a loaded scene must not be rewritten on disk under it).
+            // A saved scene is the document store and the scene-local file id the anchor, but a loaded scene must
+            // not be rewritten on disk under itself, so the repair stays in memory.
             if (TryGetSceneLocation(target, go, out assetPath, out fileId))
             {
                 inMemory = true;
@@ -802,9 +639,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // GlobalObjectId.targetObjectId is the scene-local file identifier matching the YAML "--- !u!114 &<fileID>"
-        // anchor. Bails for unsaved/dirty scenes (the on-disk YAML would not match the live object) and for
-        // prefab-instance overrides (their data lives in the source prefab).
+        // GlobalObjectId.targetObjectId is the scene-local file id matching the YAML document anchor. Bails for a
+        // dirty scene, whose YAML would not match the live object, and for prefab-instance overrides, whose data
+        // lives in the source prefab.
         private static bool TryGetSceneLocation(Object target, GameObject go, out string assetPath, out long fileId)
         {
             assetPath = null;
@@ -822,11 +659,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        /// <summary>
-        /// Resolves the source prefab asset path for a nested prefab instance's <paramref name="target"/>, whose managed
-        /// reference data lives in that source prefab rather than the host. Returns <see langword="false"/> for plain
-        /// scene objects and saved assets.
-        /// </summary>
+        // A nested prefab instance's reference data lives in the source prefab rather than the host.
         public static bool TryGetSourcePrefabPath(Object target, out string sourcePath)
         {
             sourcePath = null;
@@ -839,15 +672,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return !string.IsNullOrEmpty(sourcePath);
         }
 
-        // A Prefab Mode object is a copy in a preview scene and carries no file id of its own, so the matching
-        // persisted object is located in the asset by replaying its child path from the stage root, and the document
-        // id is read from the asset's component (or GameObject) there.
+        // A Prefab Mode object is a copy in a preview scene with no file id of its own, so the persisted object is
+        // found by replaying its child path from the stage root.
         private static bool TryMatchAssetFileId(PrefabStage stage, Object target, GameObject stageGo, out long fileId)
         {
             fileId = 0;
 
-            // A dirty stage has diverged from the on-disk asset — the index replay would land on the WRONG asset
-            // object and let the repair overwrite the wrong field. Mirrors TryGetSceneLocation's scene.isDirty guard.
+            // A dirty stage has diverged from the asset, so the index replay would land on the wrong object.
             if (stage.scene.isDirty) return false;
 
             var indices = new List<int>();
@@ -882,26 +713,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(assetComponents[componentIndex], out _, out fileId);
         }
 
-        /// <summary>
-        /// Finds the <c>RefIds</c> id of the missing managed reference this property points at, read from the asset
-        /// YAML. Detection is strict and per-property: only a field whose own recorded type fails to resolve counts
-        /// as missing, so legitimately-empty fields are never flagged.
-        /// </summary>
+        // Strict and per-property: only a field whose own recorded type fails to resolve counts as missing, so a
+        // legitimately empty field is never flagged.
         public static bool TryGetMissingReferenceId(SerializedProperty property, out long referenceId) =>
             TryGetMissingType(property, out referenceId, out _);
 
-        /// <summary>
-        /// Opens the same hierarchical type picker the dropdown uses, anchored at <paramref name="screenRect"/>, to
-        /// choose the existing type a missing reference should resolve to. <paramref name="baseTypes"/> narrows the
-        /// candidates the same way the live dropdown does, so a repair cannot pick a type the attribute excludes. The
-        /// chosen type is written into the asset YAML (re-pointing the reference and keeping its stored data);
-        /// <paramref name="onFixed"/> runs on success.
-        /// </summary>
-        /// <remarks>
-        /// Unlike the authoring dropdown, this picker also offers <c>[TypeSelectorDisplay(Hidden = true)]</c> types:
-        /// the field already holds data whose type no longer resolves, and a hidden type may be exactly what it
-        /// should become. Hiding governs what may be authored, not what a broken reference may be repaired to.
-        /// </remarks>
+        // Opens the dropdown's own picker to choose the type a missing reference should resolve to, narrowed the
+        // same way so a repair cannot pick a type the attribute excludes. Unlike the authoring dropdown it does
+        // offer hidden types: hiding governs what may be authored, not what a broken reference may become.
         public static void ShowFixTypeSelector(SerializedProperty property, Rect screenRect, Action onFixed, Type[] baseTypes = null)
         {
             var fieldType = GetFieldType(property);
@@ -929,12 +748,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 });
         }
 
-        /// <summary>
-        /// Re-points this property's missing managed reference to <paramref name="newType"/>, keeping its stored data.
-        /// Saved assets are repaired by rewriting the type in the YAML and reimporting; objects open in Prefab Mode are
-        /// repaired in memory (see <see cref="TryGetRepairLocation"/>). Returns <see langword="true"/> on success; the
-        /// caller refreshes the inspector.
-        /// </summary>
+        // Re-points a missing reference at newType, keeping its stored data: a saved asset by rewriting the YAML and
+        // reimporting, a Prefab Mode object in memory.
         public static bool TryFixMissingType(SerializedProperty property, Type newType)
         {
             if (newType is null) return false;
@@ -949,13 +764,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             else
             {
                 repaired = SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, referenceId, ManagedTypeName.FromType(newType));
-                // ForceUpdate reloads the asset and invalidates the live SerializedObject, so the property must not be
-                // touched afterwards — the inspector is rebuilt below from a fresh selection instead.
+                // ForceUpdate invalidates the live SerializedObject, so the property must not be touched afterwards.
                 if (repaired) AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
             }
 
-            // The repair leaves the cached ranking, cached YAML lines and the per-frame memos stale — an IMGUI
-            // repaint can land in the same Time.frameCount as this click.
+            // An IMGUI repaint can land in the same frame as this click, so the frame-keyed memos must go too.
             if (repaired)
             {
                 SerializeReferenceRepairSuggestions.ClearCache();
@@ -968,9 +781,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return repaired;
         }
 
-        // Unity's object-level "contains missing SerializeReference types" banner is drawn from a flag cached when
-        // the editor is built and only clears on a genuine reselection, so the current objects are deselected and
-        // reselected on the next ticks to rebuild the editors from scratch.
+        // Unity's object-level missing-types banner is drawn from a flag cached when the editor is built and only
+        // clears on a genuine reselection, so the objects are deselected and reselected across the next ticks.
         private static void ScheduleInspectorRebuild()
         {
             var selection = Selection.objects;
@@ -983,9 +795,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             };
         }
 
-        // Prefab Mode: the open stage holds its own copy that does not refresh on reimport and overwrites a file
-        // rewrite on save, so the reference is reassigned on the live object (recovering the orphaned field data)
-        // and the now-unused missing-type entry is cleared.
+        // The open stage holds a copy that does not refresh on reimport and would overwrite a file rewrite on save,
+        // so the reference is reassigned on the live object and the now-unused missing-type entry cleared.
         private static bool TryFixMissingTypeInMemory(SerializedProperty property, Type newType, long referenceId)
         {
             var target = property.serializedObject.targetObject;
@@ -1011,13 +822,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        /// <summary>
-        /// Clears a missing managed reference (id <paramref name="rid"/>, stored type <paramref name="storedType"/>) to
-        /// <see langword="null"/> on the live object of an asset open in Prefab Mode or a loaded scene — the in-memory
-        /// counterpart of the YAML clear. The Project References uses it when a direct file rewrite would be clobbered by the
-        /// open copy on save. Marks the owning scene dirty so the change is offered for save (the on-disk file, and so
-        /// the audit listing, only updates once saved). Returns whether a matching live entry was found and cleared.
-        /// </summary>
+        // The in-memory counterpart of the YAML clear, used when a file rewrite would be clobbered by the open copy
+        // on save. Marks the owning scene dirty, so the file — and the audit listing — only update once saved.
         public static bool TryClearMissingReferenceInMemory(string assetPath, long rid, ManagedTypeName storedType)
         {
             if (string.IsNullOrEmpty(assetPath)) return false;
@@ -1028,7 +834,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var entry in SerializationUtility.GetManagedReferencesWithMissingTypes(target))
                 {
                     if (entry.referenceId != rid) continue;
-                    // Guard against a colliding rid on another live object: also match the stored class when it is known.
+                    // Also match the stored class when known, in case another live object reuses the rid.
                     if (!string.IsNullOrEmpty(storedType.Class) && entry.className != storedType.Class) continue;
                     matched = true;
                     break;
@@ -1049,9 +855,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // The live MonoBehaviours of an open (unsafe-to-rewrite) asset: a prefab in Prefab Mode, or a loaded scene.
-        // Matched by missing-reference identity, not file id (the open stage remaps ids). Only MonoBehaviours are
-        // probed — GetManagedReferencesWithMissingTypes errors on unsupported types.
+        // The live MonoBehaviours of an asset that is unsafe to rewrite, matched by missing-reference identity
+        // rather than file id, since the open stage remaps ids. Only MonoBehaviours are probed, because
+        // GetManagedReferencesWithMissingTypes errors on other types.
         private static IEnumerable<Object> EnumerateOpenMissingTypeTargets(string assetPath)
         {
             var stage = PrefabStageUtility.GetCurrentPrefabStage();
@@ -1066,17 +872,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         if (mb != null) yield return mb;
         }
 
-        // Clears the fixed missing-type entry and any missing-type entries it transitively referenced — otherwise
-        // they linger as unreachable orphans and keep Unity's object-level missing-types banner raised. A member
-        // referenced from OUTSIDE the subtree is kept (clearing it would leave the other pointer unrepairable),
-        // along with everything only reachable through it.
+        // Clears the fixed entry and everything it transitively referenced, which would otherwise linger as orphans
+        // and keep Unity's missing-types banner raised. A member referenced from OUTSIDE the subtree is kept, along
+        // with everything only reachable through it, since clearing it would leave that pointer unrepairable.
         private static void ClearMissingSubtree(Object target, long rootReferenceId)
         {
             var dataByRid = new Dictionary<long, string>();
             foreach (var entry in SerializationUtility.GetManagedReferencesWithMissingTypes(target))
                 dataByRid[entry.referenceId] = entry.serializedData;
 
-            // The transitive closure of the fixed entry: what we would LIKE to clear.
+            // The transitive closure of the fixed entry — the candidates for clearing.
             var closure = new HashSet<long>();
             var pending = new Stack<long>();
             pending.Push(rootReferenceId);
@@ -1091,9 +896,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     pending.Push(child);
             }
 
-            // Seed protection with every closure member referenced from outside it: by another missing entry's
-            // payload, or by a live field still holding the rid (the repaired field itself now points at the fresh
-            // instance, so it no longer counts).
+            // Protect every closure member still referenced from outside it. The repaired field itself now points
+            // at the fresh instance, so it no longer counts.
             var keep = new HashSet<long>();
 
             foreach (var pair in dataByRid)
@@ -1112,8 +916,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return false;
                 });
 
-            // A kept entry's payload still points at its own children — clearing those would break it the same way,
-            // so protection propagates down through the closure.
+            // A kept entry still points at its own children, so protection propagates down the closure.
             foreach (var rid in keep) pending.Push(rid);
             while (pending.Count > 0)
             {
@@ -1132,8 +935,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // The rid pointers inside a missing entry's payload block. The look-behind keeps a field that merely ENDS in
-        // "rid" (e.g. "_hybrid: 15") from reading as a pointer — the same discipline as the scanner's RidPointer regex.
+        // The rid pointers inside a missing entry's payload. The look-behind keeps a field that merely ends in "rid"
+        // from reading as one.
         private static IEnumerable<long> EnumerateRidPointers(string data, long self)
         {
             foreach (Match match in Regex.Matches(data ?? string.Empty, @"(?<!\w)rid:\s*(-?\d+)"))
@@ -1143,9 +946,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Best-effort recovery of a missing reference's stored data: Unity surfaces the orphaned payload as YAML
-        // scalars; the flat top-level ones are mapped to JSON and overwritten onto the instance. Nested mappings
-        // and sequences are skipped and left at the new type's defaults.
+        // Unity surfaces the orphaned payload as YAML scalars; the flat top-level ones are mapped to JSON and
+        // overwritten onto the instance. Nested mappings and sequences stay at the new type's defaults.
         private static void RecoverManagedReferenceData(string serializedData, object instance)
         {
             if (string.IsNullOrEmpty(serializedData)) return;
@@ -1167,7 +969,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var key = line[..separator].Trim();
                     var value = line[(separator + 1)..].Trim();
 
-                    // Empty value = a mapping/array header (e.g. "_nested:"); complex flow values are not flat scalars.
+                    // An empty value is a mapping or array header, and a flow value is not a flat scalar.
                     if (key.Length == 0 || value.Length == 0 || value[0] is '{' or '[') continue;
 
                     if (!first) json.Append(',');
@@ -1188,7 +990,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static bool IsJsonNumber(string value) => Regex.IsMatch(value, @"^-?\d+(\.\d+)?$");
 
-        // Unity single-quotes YAML scalars that contain reserved characters, doubling embedded quotes.
+        // Unity single-quotes scalars containing reserved characters, doubling embedded quotes.
         private static string UnquoteYaml(string value) =>
             value.Length >= 2 && value[0] == '\'' && value[^1] == '\''
                 ? value[1..^1].Replace("''", "'")
@@ -1199,29 +1001,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         #endregion
 
         #region Constraint map
-        /// <summary>
-        /// Maps every managed reference in <paramref name="assetPath"/> to the declared field type that holds it, keyed
-        /// by the owning object document (its local file id) and the reference's <c>RefIds</c> id. A missing reference
-        /// reads back <see langword="null"/> through the serialization API, but its field still reports the declared
-        /// element type via <see cref="SerializedProperty.managedReferenceFieldTypename"/>, and the orphaned rid survives
-        /// in the YAML — so the two together recover the constraint the picker should honour. References nested inside a
-        /// missing parent are unreachable here (the parent is null) and simply fall back to an unconstrained picker, as do
-        /// orphaned rids no field points at.
-        /// </summary>
-        /// <remarks>
-        /// Shared by the asset-level Repair window (per-entry and project-wide group constraints) and the Managed
-        /// References graph window, so a single declared-type recovery backs every embedded picker.
-        /// </remarks>
+        // Maps every managed reference in the asset to the declared field type holding it, keyed by document file id
+        // and rid. A missing reference reads back null, but its field still reports the declared element type and
+        // the orphaned rid survives in the YAML, so the two together recover the constraint the picker should honor.
+        // References under a missing parent are unreachable here and fall back to an unconstrained picker, as do
+        // orphaned rids no field points at.
         public static Dictionary<(long fileId, long rid), Type> BuildConstraintMap(string assetPath)
         {
             var map = new Dictionary<(long, long), Type>();
             if (string.IsNullOrEmpty(assetPath)) return map;
 
-            // Scenes cannot be read through LoadAllAssetsAtPath (see IsScene); an unconstrained picker is the fallback.
+            // Scenes cannot be read through LoadAllAssetsAtPath, so an unconstrained picker is the fallback.
             if (IsScene(assetPath)) return map;
 
-            // A managed-reference graph may be cyclic, so descending into a rid already on this document's walk would
-            // loop forever. Cleared per document — rids are only unique within a document.
+            // A cyclic graph would loop the walk forever. Cleared per document, since rids are document-scoped.
             var visited = new HashSet<long>();
 
             foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
@@ -1247,8 +1040,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     else if (!SerializeReferenceYamlEditor.TryReadReferenceId(assetPath, fileId, iterator.propertyPath, out rid))
                         continue;
 
-                    // A rid already walked is a back-edge in a cyclic graph; record the constraint but do not descend
-                    // into its subtree again, or the iterator would never terminate.
+                    // A back-edge: record the constraint, but do not descend into the subtree again.
                     if (rid >= 0 && !visited.Add(rid)) enterChildren = false;
 
                     var fieldType = GetFieldType(iterator);
@@ -1263,29 +1055,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         #endregion
 
         #region Cross references
-        /// <summary>
-        /// Returns <see langword="true"/> when another managed-reference property in the same object aliases this
-        /// one (shares its <see cref="SerializedProperty.managedReferenceId"/>) — which happens after duplicating an
-        /// array element or pasting, leaving two fields backed by a single instance so edits to one bleed into the other.
-        /// </summary>
+        // True when another field in the same object shares this property's rid, so edits to one bleed into the
+        // other. Happens after duplicating an array element or pasting.
         public static bool HasSharedReference(SerializedProperty property)
         {
             if (property.managedReferenceValue is null) return false;
 
             var id = property.managedReferenceId;
 
-            // The id → use-count map is built once per object per frame — a naive per-property full-object walk would
-            // be 2·N walks per repaint (GetHeight and Draw each ask this for every managed-reference field).
+            // Built once per object per frame: GetHeight and Draw each ask this for every field, so a per-property
+            // full-object walk would be 2*N walks per repaint.
             return GetReferenceIdCounts(property.serializedObject).TryGetValue(id, out var count) && count > 1;
         }
 
-        /// <summary>
-        /// The 1-based ordinal of this property's shared-reference group within its object — a small, stable badge
-        /// number ("Shared reference #1", "#2", …) so two fields aliasing the same instance show the same number and
-        /// two distinct shared groups show different numbers. Numbering follows each rid's first appearance in document
-        /// order and is shared by the IMGUI and UIToolkit notices, so the same reference reads the same on both. Returns
-        /// <c>0</c> when the property is empty or not part of a shared group.
-        /// </summary>
+        // The 1-based badge number of this property's shared group, or 0 when it is not shared. Numbering follows
+        // each rid's first appearance in document order and is shared by both notices, so two fields aliasing one
+        // instance always read the same number in either inspector mode.
         public static int GetSharedReferenceIndex(SerializedProperty property)
         {
             if (property.managedReferenceValue is null) return 0;
@@ -1294,14 +1079,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return GetSharedReferenceIndices(property.serializedObject).TryGetValue(id, out var index) ? index : 0;
         }
 
-        // Per-object, per-frame memo of how many managed-reference fields carry each id, built by a single full-object
-        // walk and shared across every HasSharedReference call in the same repaint.
+        // How many fields carry each id, built by one full-object walk and shared across a repaint.
         private static int _aliasFrame = -1;
         private static SerializedObject _aliasSerializedObject;
         private static readonly Dictionary<long, int> AliasCounts = new();
 
-        // Each id's first-sighting order during the walk above, so the shared-reference badge numbers follow document
-        // order (first shared group in the inspector → (1)) rather than the dictionary's incidental iteration order.
+        // Each id's first-sighting order, so badge numbers follow document order rather than the dictionary's.
         private static readonly List<long> AliasOrder = new();
 
         private static Dictionary<long, int> GetReferenceIdCounts(SerializedObject serializedObject)
@@ -1314,8 +1097,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             AliasOrder.Clear();
             TraverseManagedReferences(serializedObject, other =>
             {
-                // Negative ids are sentinels, not instances: every EMPTY field reports RefIdNull (-2), so counting
-                // them would form a phantom "shared group".
+                // Every empty field reports the same sentinel, so counting those would form a phantom group.
                 var id = other.managedReferenceId;
                 if (id < 0) return false;
 
@@ -1324,7 +1106,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return false;
             });
 
-            // The counts (and their order) were rebuilt — the maps derived from them are now stale.
+            // The counts were rebuilt, so the maps derived from them are stale.
             _sharedIndicesFrame = -1;
             _sharedPathsFrame = -1;
             _aliasFrame = frame;
@@ -1332,15 +1114,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return AliasCounts;
         }
 
-        // Per-object, per-frame memo mapping each shared (count > 1) id to its 1-based badge number. Kept separate
-        // from the counts memo so it is built only when a notice actually asks for a badge.
+        // Each shared id's badge number. Separate from the counts memo, so it is built only when a notice asks.
         private static int _sharedIndicesFrame = -1;
         private static SerializedObject _sharedIndicesObject;
         private static readonly Dictionary<long, int> SharedIndices = new();
 
         private static Dictionary<long, int> GetSharedReferenceIndices(SerializedObject serializedObject)
         {
-            // Refresh the counts/order for this frame first (this also resets _sharedIndicesFrame when it rebuilds).
+            // Refreshing the counts first also resets this memo's frame when it rebuilds.
             var counts = GetReferenceIdCounts(serializedObject);
 
             var frame = Time.frameCount;
@@ -1360,11 +1141,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return SharedIndices;
         }
 
-        /// <summary>
-        /// The property paths of the OTHER managed-reference fields in the same object aliasing this property's
-        /// instance (sharing its rid), in document order — what the shared-reference notice lists in its tooltip and
-        /// navigates between on click. Empty when the property is empty or not part of a shared group.
-        /// </summary>
+        // The other fields aliasing this property's instance, in document order — what the notice lists and
+        // navigates between.
         public static List<string> GetSharedReferenceAliasPaths(SerializedProperty property)
         {
             var result = new List<string>();
@@ -1386,12 +1164,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        /// <summary>
-        /// Every property path in this property's shared-reference group — its own included — in document order;
-        /// empty when the property is not part of a shared group. This canonical order backs the notice's
-        /// click-to-navigate cycling in both drawers, so they walk the members the same way. The list is a per-frame
-        /// memo — read it immediately, do not cache it.
-        /// </summary>
+        // The whole group in document order, this property included. Both drawers cycle through this canonical
+        // order, so they walk the members the same way. It is a per-frame memo: read it immediately, never cache it.
         public static IReadOnlyList<string> GetSharedReferenceGroupPaths(SerializedProperty property)
         {
             if (property.managedReferenceValue is null) return Array.Empty<string>();
@@ -1402,14 +1176,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : (IReadOnlyList<string>)Array.Empty<string>();
         }
 
-        // The shared-reference tooltip lists at most this many alias paths before folding the rest into "…and N more".
+        // How many alias paths the tooltip lists before folding the rest into "…and N more".
         private const int MaxDetailAliasPaths = 6;
 
-        /// <summary>
-        /// Builds the shared-reference notice's hover detail for both drawers: which other fields alias this instance
-        /// (by display path), what sharing means, and what the notice's two affordances do. Kept here so the IMGUI and
-        /// UIToolkit notices always tell the same story.
-        /// </summary>
+        // Built here so both notices always tell the same story.
         public static string BuildSharedReferenceDetail(SerializedProperty property)
         {
             var builder = new StringBuilder(
@@ -1432,15 +1202,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
-        // propertyPath → display cache ("sidearms.Array.data[1]" → "Sidearms › Element 1"); the same paths recur on
-        // every IMGUI repaint, so the nicified form is built once.
+        // The same paths recur on every repaint, so the nicified form is built once.
         private static readonly Dictionary<string, string> DisplayPathCache = new();
 
-        /// <summary>
-        /// Human-readable form of a serialized property path, matching the labels the inspector itself shows:
-        /// "sidearms.Array.data[1].onHitEffect" → "Sidearms › Element 1 › On Hit Effect". Used by the
-        /// shared-reference notice to list the other fields aliasing an instance.
-        /// </summary>
+        // The inspector's own labels for a property path: "sidearms.Array.data[1].onHitEffect" reads as
+        // "Sidearms > Element 1 > On Hit Effect".
         public static string GetPropertyDisplayPath(string propertyPath)
         {
             if (string.IsNullOrEmpty(propertyPath)) return string.Empty;
@@ -1457,7 +1223,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var bracket = segment.IndexOf('[');
                 builder.Append(ObjectNames.NicifyVariableName(bracket < 0 ? segment : segment[..bracket]));
 
-                // Each "[i]" becomes the inspector's own "Element i" caption.
                 for (var open = bracket; open >= 0; open = segment.IndexOf('[', open + 1))
                 {
                     var close = segment.IndexOf(']', open);
@@ -1469,15 +1234,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return DisplayPathCache[propertyPath] = builder.ToString();
         }
 
-        // Per-object, per-frame memo of each shared (count > 1) id's member property paths, in document order. Built
-        // only when a notice actually needs the paths; invalidated with the counts memo above.
+        // Each shared id's member paths in document order, built only when a notice needs them.
         private static int _sharedPathsFrame = -1;
         private static SerializedObject _sharedPathsObject;
         private static readonly Dictionary<long, List<string>> SharedPathsById = new();
 
         private static Dictionary<long, List<string>> GetSharedReferencePathsById(SerializedObject serializedObject)
         {
-            // Refresh the counts for this frame first (this also resets _sharedPathsFrame when it rebuilds).
+            // Refreshing the counts first also resets this memo's frame when it rebuilds.
             var counts = GetReferenceIdCounts(serializedObject);
 
             var frame = Time.frameCount;
@@ -1500,12 +1264,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return SharedPathsById;
         }
 
-        /// <summary>
-        /// Drops the per-frame managed-reference-id alias memo (see <see cref="HasSharedReference"/>) so the next call
-        /// rebuilds it from the current object. Call after a same-frame reassignment (Make unique, type pick, paste, …):
-        /// the memo is keyed by frame, so a synchronous re-query right after the mutation would otherwise return this
-        /// frame's pre-mutation snapshot and still report the just-broken alias as shared.
-        /// </summary>
+        // Call after a same-frame reassignment: the memo is keyed by frame, so a synchronous re-query would
+        // otherwise return the pre-mutation snapshot and still report the just-broken alias as shared.
         public static void InvalidateSharedReferenceCache()
         {
             _aliasFrame = -1;
@@ -1513,35 +1273,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _sharedPathsFrame = -1;
         }
 
-        // The alias memo is keyed by frame, not content, so a same-frame repaint after an undo would read the pre-undo
-        // snapshot. Registered at domain load — before any per-field handler subscribes — so it always runs first.
+        // A same-frame repaint after an undo would read the pre-undo snapshot. Registered at domain load, before any
+        // per-field handler subscribes, so it always runs first.
         [InitializeOnLoadMethod]
         private static void InvalidateAliasMemoOnUndoRedo() =>
             Undo.undoRedoPerformed += InvalidateSharedReferenceCache;
 
-        /// <summary>
-        /// Breaks an aliased managed reference by replacing it with an independent clone that carries the same data
-        /// (a fresh instance gets a new <see cref="SerializedProperty.managedReferenceId"/> on assignment), so the
-        /// two formerly shared fields no longer affect each other.
-        /// </summary>
+        // Breaks an alias by replacing the reference with an independent clone carrying the same data; a fresh
+        // instance gets a new rid on assignment.
         public static void MakeReferenceUnique(SerializedProperty property)
         {
             var persistent = property.Persistent();
             var current = persistent.managedReferenceValue;
             if (current is null) return;
 
-            // Deep copy: "Make unique" promises an instance independent all the way down — a shallow clone would
-            // keep sharing the nested [SerializeReference] children with the alias it just split from.
+            // Make unique promises independence all the way down, which a shallow clone would not give.
             persistent.SetManagedReferenceAndApply(CloneManagedReferenceGraph(current));
 
-            // The per-frame alias memo is keyed by frame, not content: an IMGUI repaint in this same Time.frameCount
-            // would still read the pre-split snapshot and keep painting the shared notice on both ex-members.
+            // A repaint in this same frame would otherwise keep painting the notice on both ex-members.
             InvalidateSharedReferenceCache();
         }
 
-        // Visits every managed-reference property in the object, descending into nested values; stops early when the
-        // visitor returns true. A cyclic graph would loop forever, so — mirroring BuildConstraintMap — a revisited rid
-        // is still reported but its children are not re-entered.
+        // Visits every managed-reference property, nested values included, stopping when the visitor returns true.
+        // A revisited rid is still reported, but its children are not re-entered, or a cyclic graph would loop.
         private static void TraverseManagedReferences(SerializedObject serializedObject, Func<SerializedProperty, bool> visit)
         {
             using var iterator = serializedObject.GetIterator();

@@ -4,18 +4,14 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// A non-interactive overlay <see cref="VisualElement"/> that paints a smooth horizontal accent
-    /// gradient with a quadratic alpha falloff and smoothly fades it in or out toward a target
-    /// progress between 0 and 1.
-    /// </summary>
+    // A non-interactive overlay VisualElement that paints a smooth horizontal accent gradient with a quadratic alpha
+    // falloff and smoothly fades it in or out toward a target progress between 0 and 1.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidHoverGradientOverlay : VisualElement
     {
         private const long TickMs = 16;
         private const float DrawThreshold = 0.01f;
         private const float ProgressEpsilon = 0.001f;
-
         private const int DefaultSteps = 75;
         private const float DefaultLerpRate = 0.12f;
         private const float DefaultAlphaScale = 0.35f;
@@ -25,7 +21,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         // vertex index, (ushort)(i * 2 + 3) = 2 * steps + 1, and the 65535-vertex allocation ceiling —
         // are only reached above ~32k steps, well past this cap.
         private const int MaxSteps = ushort.MaxValue / 6;
-
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidHoverGradientOverlay";
 
         private readonly AspidHoverGradientOverlayColorStyle _color;
@@ -35,10 +30,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private float _targetProgress;
         private IVisualElementScheduledItem _animation;
 
-        /// <summary>
-        /// Gets or sets the base color of the overlay. The painted alpha is multiplied by the
-        /// current progress and the per-strip falloff.
-        /// </summary>
         [UxmlAttribute]
         public Color Color
         {
@@ -46,10 +37,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _color.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the number of gradient segments painted across the overlay width.
-        /// More segments approximate the quadratic alpha falloff more finely.
-        /// </summary>
         [UxmlAttribute]
         public int Steps
         {
@@ -57,9 +44,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _metrics.SetSteps(value);
         }
 
-        /// <summary>
-        /// Gets or sets the per-tick lerp rate driving the fade-in/fade-out animation.
-        /// </summary>
         [UxmlAttribute]
         public float LerpRate
         {
@@ -67,9 +51,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _metrics.SetLerpRate(value);
         }
 
-        /// <summary>
-        /// Gets or sets the peak alpha scale at progress = 1 (multiplied by the per-strip falloff).
-        /// </summary>
         [UxmlAttribute]
         public float AlphaScale
         {
@@ -77,10 +58,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _metrics.SetAlphaScale(value);
         }
 
-        /// <summary>
-        /// Creates an <see cref="AspidHoverGradientOverlay"/> in the hidden state and starts the
-        /// fade animation loop.
-        /// </summary>
         public AspidHoverGradientOverlay()
         {
             this.AddStyleSheetsFromResource(StyleSheetPath);
@@ -96,10 +73,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             RegisterCallback<DetachFromPanelEvent>(_ => _animation.Pause());
         }
 
-        /// <summary>
-        /// Sets the target progress that the overlay smoothly lerps toward. Values are clamped to <c>[0, 1]</c>.
-        /// </summary>
-        /// <param name="target">The target progress, where 0 is fully hidden and 1 is fully visible.</param>
         public void SetTarget(float target) => _targetProgress = Mathf.Clamp01(target);
 
         private void Tick()

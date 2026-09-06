@@ -1,5 +1,3 @@
-using System;
-
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
@@ -49,7 +47,7 @@ namespace Aspid.FastTools.Types.Editors
 
             var page = _pages[^1];
             var aqn = node.AssemblyQualifiedName;
-            var type = string.IsNullOrEmpty(aqn) ? null : Type.GetType(aqn, throwOnError: false);
+            var type = TypeUtility.GetTypeOrNull(aqn);
 
             // An open generic definition is not a final selection — drill into its argument flow instead.
             if (type is { IsGenericTypeDefinition: true })
@@ -71,13 +69,11 @@ namespace Aspid.FastTools.Types.Editors
 
         private void Emit(string assemblyQualifiedName)
         {
-            // Recents surface only AQNs the hierarchy actually contains, and the hierarchy holds the OPEN generic
-            // definition, never a closed form — recording "Modifier`1[[Single…]]" would burn an invisible Recent
-            // slot forever (the raw-entry trim then evicts a real, displayable recent per generic pick). Record the
-            // definition instead: "Modifier<T>" under Recent is also the row the user actually clicked.
+            // Recents surface only names the hierarchy contains, and it holds the OPEN definition, never a closed
+            // form, so recording a closed one would burn an invisible slot and evict a displayable recent. The
+            // definition is also the row the user actually clicked.
             var recorded = assemblyQualifiedName;
-            if (!string.IsNullOrEmpty(assemblyQualifiedName) &&
-                Type.GetType(assemblyQualifiedName, throwOnError: false) is { IsConstructedGenericType: true } constructed)
+            if (TypeUtility.GetTypeOrNull(assemblyQualifiedName) is { IsConstructedGenericType: true } constructed)
                 recorded = constructed.GetGenericTypeDefinition().AssemblyQualifiedName;
 
             TypeSelectorPreferences.RecordRecent(recorded);

@@ -8,12 +8,9 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Quick Search provider that lists every asset/field using a managed-reference type. Type <c>sr:Weapon</c> in the
-    /// search window (or invoke "Find Usages" from a field's context menu) to get one result per use site, each pinging
-    /// its asset. Backed by <see cref="SerializeReferenceTypeUsageIndex"/>, so it matches on the stored type identity —
-    /// including types that no longer resolve.
-    /// </summary>
+    // Quick Search provider listing every field using a managed-reference type: "sr:Weapon" in the search window, or
+    // Find Usages from a field's context menu, gives one result per use site. It matches on the stored type identity,
+    // so types that no longer resolve are found too.
     internal static class SerializeReferenceUsageSearchProvider
     {
         private const string ProviderId = "sr";
@@ -25,8 +22,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             new(ProviderId, DisplayName)
             {
                 filterId = FilterId,
-                // Explicit-only: otherwise the provider joins every general search and the first keystroke would warm
-                // a cold usage index (a modal full-project sweep). "sr:" queries and OpenSearch create explicit contexts.
+                // Explicit-only, or the provider would join every general search and the first keystroke would warm
+                // a cold index — a modal full-project sweep.
                 isExplicitProvider = true,
                 priority = 9000,
                 showDetailsOptions = ShowDetailsOptions.Description | ShowDetailsOptions.Preview,
@@ -36,9 +33,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 trackSelection = (item, context) => Ping(item),
             };
 
-        /// <summary>
-        /// Opens the search window pre-seeded with the type's name under the <c>sr:</c> filter.
-        /// </summary>
         public static void OpenSearch(Type type)
         {
             if (type is null) return;
@@ -47,7 +41,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SearchService.ShowWindow(context, "Find Usages", saveFilters: false);
         }
 
-        // Returns null — the synchronous fetch convention.
+        // Null is the synchronous fetch convention.
         private static object FetchItems(SearchContext context, List<SearchItem> items, SearchProvider provider)
         {
             var token = (context.searchQuery ?? string.Empty).Trim();

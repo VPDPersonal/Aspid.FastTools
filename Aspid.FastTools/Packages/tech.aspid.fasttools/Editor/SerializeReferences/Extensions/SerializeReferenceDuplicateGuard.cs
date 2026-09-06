@@ -6,75 +6,48 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Auto-de-aliases freshly duplicated <c>[SerializeReference]</c> list elements. When the user duplicates an array
-    /// element (context-menu <i>Duplicate</i>, Ctrl+D) or adds one with the list <c>+</c> button, Unity copies the
-    /// source element's managed-reference <c>rid</c>, so two elements end up backed by a single instance and editing one
-    /// silently edits the other. This guard watches the live <see cref="SerializedObject"/>: per (target, array path) it
-    /// keeps a snapshot of <c>index → rid</c> and, when a <i>new</i> same-array alias appears between observations, it
-    /// replaces the later (appended / higher-index) element with an independent clone via the same
-    /// <see cref="SerializeReferenceHelpers.CreateInstancePreservingData"/> machinery the Make-unique flow uses,
-    /// registered as a single Undo step.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// Detection is purely live-state (<see cref="SerializedProperty.managedReferenceId"/> / value), so it works for
-    /// scene objects, Prefab Mode, and saved assets alike — no YAML is read. The fix is silent by product decision: no
-    /// notice, no dialog. Undo reverts to the aliased state; after an Undo/Redo the snapshots are resynced rather than
-    /// re-evaluated, so a restored alias is never re-fixed.
-    /// </para>
-    /// <para>
-    /// Intentional cross-<i>field</i> sharing is out of scope — that is handled by the existing shared-reference notice.
-    /// This guard only acts on same-array aliasing that <i>appears</i> while the inspector is alive; pre-existing aliases
-    /// present on the first observation of an array (inspector just opened, domain reload) are recorded, never fixed.
-    /// A fix is considered only when the array <i>grew</i> since the last observation and the duplicated rid's
-    /// occurrence count rose with it — the signature of an actual duplicate-element operation. Same-size observations
-    /// (a reorder) and shrunk ones (a removal) only resync the snapshot, so shuffling or deleting around a pre-existing
-    /// alias never de-aliases it.
-    /// </para>
-    /// </remarks>
+    // Auto-de-aliases freshly duplicated [SerializeReference] list elements. Duplicating an element or adding one with
+    // the "+" copies the source's rid, so two elements end up backed by one instance and editing one edits the other.
+    // Per (target, array path) the guard snapshots the index -> rid layout and, when a NEW same-array alias appears
+    // between observations, replaces the later element with an independent clone in a single Undo step.
+    //
+    // Detection reads only live state, so it covers scene objects, Prefab Mode and saved assets alike. The fix is
+    // silent by product decision. After an Undo/Redo the snapshots are resynced rather than re-evaluated, so a
+    // restored alias is never re-fixed.
+    //
+    // Cross-FIELD sharing is out of scope — the shared-reference notice covers that — and so are aliases already
+    // present on the first observation of an array. A fix needs the array to have grown AND the duplicated rid's
+    // occurrence count to have risen with it, so a reorder or a removal only resyncs the snapshot.
     internal static class SerializeReferenceDuplicateGuard
     {
-        // A managed reference with no value reports RefIdNull (-2); a missing-type one reports RefIdUnknown (-1). Only
-        // ids >= 0 are real instances that can alias — the rest are excluded from the index → rid map.
+        // Unity reports -2 for an empty reference and -1 for a missing type; only ids >= 0 can alias.
         private const long FirstValidReferenceId = 0;
 
-        // Unity's array-element path marker (e.g. "_slots.Array.data[3]"). The text before it is the parent array path.
+        // The text before this marker in an element path is the parent array's path.
         private const string ArrayElementMarker = ".Array.data[";
 
-        // Caps the live cache. On overflow the whole cache is dropped: a re-snapshot never auto-fixes, so at worst a
-        // not-yet-observed fix is lost — the conservative direction.
+        // On overflow the whole cache is dropped. A re-snapshot never auto-fixes, so at worst a fix is lost.
         private const int MaxTrackedArrays = 512;
 
-        // Per (target instance id, parent array path) snapshot of the last observed index → rid layout. Static, so it is
-        // cleared automatically on domain reload; dead-target entries are pruned lazily on access and on Undo resync.
+        // The last observed index -> rid layout per (target, array path). Static, so a domain reload clears it.
         private static readonly Dictionary<ArrayKey, Snapshot> _snapshots = new();
 
-        // Arrays whose de-alias fix is queued for the next editor tick. Guards against re-detecting (the layout still
-        // shows the alias until the deferred fix runs) and re-scheduling on every intervening repaint.
+        // Arrays whose fix is queued: the layout still shows the alias until it runs, so without this every
+        // intervening repaint would re-detect and re-schedule.
         private static readonly HashSet<ArrayKey> _pending = new();
 
         private static bool _undoHooked;
 
-        /// <summary>
-        /// Observes <paramref name="elementProperty"/> (an element of a <c>[SerializeReference]</c> array) and, when it
-        /// detects that the element is part of a freshly created same-array duplicate, <i>schedules</i> a fix that
-        /// replaces the later element with an independent clone (single Undo step) and returns <see langword="true"/>.
-        /// The mutation runs on the next editor tick (<see cref="EditorApplication.delayCall"/>), never inside the
-        /// caller's draw/binding pass, so the inspector's live property iteration is not disturbed mid-frame; the field's
-        /// own property tracking re-renders once the fix lands. Returns <see langword="false"/> for the no-op fast paths
-        /// (not an array element, multi-object edit, first observation, pre-existing alias, or a fix already pending).
-        /// Cheap on the unchanged path: an array-size + rolling-hash compare gates the full map rebuild, so it is safe to
-        /// call from IMGUI's per-frame repaint.
-        /// </summary>
+        // Observes one array element and returns true when it scheduled a de-alias fix for the next editor tick.
+        // Cheap on the unchanged path — a size and rolling-hash compare gates the map rebuild — so it is safe to call
+        // from IMGUI's per-frame repaint.
         public static bool Observe(SerializedProperty elementProperty)
         {
             if (!SerializeReferenceSettings.AutoDeAliasEnabled) return false;
             if (elementProperty is null) return false;
             if (elementProperty.propertyType != SerializedPropertyType.ManagedReference) return false;
 
-            // Multi-object editing is owned by the per-target apply path; the live SerializedObject here walks only the
-            // first target, so the guard cannot reason about the others — skip it entirely (conservative).
+            // The live SerializedObject walks only the first target, so the guard cannot reason about the others.
             if (elementProperty.serializedObject.isEditingMultipleObjects) return false;
 
             if (!TryGetArrayPath(elementProperty.propertyPath, out var arrayPath)) return false;
@@ -92,8 +65,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var arrayProperty = serializedObject.FindProperty(arrayPath);
             if (arrayProperty is null || !arrayProperty.isArray) return false;
 
-            // Fast no-change gate: a size + order-sensitive rolling hash of the element rids skips the index → rid
-            // rebuild and alias diffing on the IMGUI per-repaint path, allocating no per-observation collection.
+            // No-change gate: size plus an order-sensitive hash of the rids, allocating nothing per observation.
             var size = arrayProperty.arraySize;
             var signature = ComputeSignature(arrayProperty, size);
 
@@ -103,22 +75,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var current = BuildMap(arrayProperty, size);
 
-            // First time we see this array (fresh inspector, domain reload): record the layout but never auto-fix —
-            // pre-existing same-array aliases keep the existing shared notice instead.
+            // First sight of this array: record the layout, but never auto-fix a pre-existing alias.
             if (snapshot is null)
             {
                 Store(key, size, signature, current);
                 return false;
             }
 
-            // Only a growth of EXACTLY ONE element (Ctrl+D / Duplicate / list +) can be a fresh duplicate. Same-size /
-            // shrunk layouts are reorders/removals; a multi-element growth is a bulk restore (Paste Component Values,
-            // Revert to Prefab, presets) that can legitimately bring back an INTENTIONAL alias — those only resync.
+            // Only a growth of exactly one element can be a fresh duplicate. A multi-element growth is a bulk restore
+            // — Paste Component Values, Revert to Prefab — that may legitimately bring back an intentional alias.
             if (size == snapshot.Size + 1 &&
                 TryFindFreshDuplicate(snapshot.Map, current, out var duplicateIndex))
             {
-                // Keep the baseline (do not advance it to the aliased layout): once the fix lands the element reads as
-                // unique against it, while a further duplicate made during the pending window is still caught as fresh.
+                // The baseline is deliberately not advanced to the aliased layout: once the fix lands the element
+                // reads as unique against it, and a further duplicate is still caught as fresh.
                 ScheduleFix(key, target, arrayPath, duplicateIndex);
                 return true;
             }
@@ -127,8 +97,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // The mutation must not run inside the drawer's draw/binding pass — writing the SerializedObject mid-iteration
-        // can invalidate the inspector's active property walk — so it is deferred to the next editor tick.
+        // Writing the SerializedObject mid-iteration can invalidate the inspector's active property walk, so the
+        // mutation is deferred out of the drawer's pass.
         private static void ScheduleFix(ArrayKey key, Object target, string arrayPath, int duplicateIndex)
         {
             _pending.Add(key);
@@ -156,16 +126,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var current = element.managedReferenceValue;
             if (current is null) return;
 
-            // Re-verify the alias still holds on this fresh read — the layout may have changed between the scheduling
-            // tick and now (another Undo, a manual edit) — so a stale schedule never clobbers an already-unique element.
+            // The layout may have changed since the schedule, so re-verify before clobbering the element.
             if (!SharesReferenceWithEarlierElement(arrayProperty, duplicateIndex, element.managedReferenceId)) return;
 
-            // Deep copy: the silent de-alias must hand the duplicate its own nested [SerializeReference] children
-            // too — a shallow clone would keep the copy's subtree aliased to the original element's.
+            // Deep copy: a shallow clone would leave the copy's nested references aliased to the original's.
             element.managedReferenceValue = SerializeReferenceHelpers.CloneManagedReferenceGraph(current);
             serializedObject.ApplyModifiedProperties();
 
-            // Same-frame IMGUI repaints must not read the pre-split alias memo (it is keyed by frame, not content).
+            // The alias memo is keyed by frame, not content, so same-frame repaints must not read the stale one.
             SerializeReferenceHelpers.InvalidateSharedReferenceCache();
         }
 
@@ -183,9 +151,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // A fresh duplicate is the LATER element of a pair whose (index, rid) binding is new since the snapshot AND
-        // whose rid occurs more times than before — the count gate keeps a reorder of a pre-existing alias (new
-        // binding, unchanged count) from reading as fresh. The lowest such index is the appended/duplicated copy.
+        // A fresh duplicate is the later element of a pair whose (index, rid) binding is new AND whose rid occurs
+        // more times than before; the count gate keeps a reorder of a pre-existing alias from reading as fresh.
         private static bool TryFindFreshDuplicate(
             IReadOnlyDictionary<int, long> previous,
             IReadOnlyDictionary<int, long> current,
@@ -207,15 +174,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var index = pair.Key;
                 var rid = pair.Value;
 
-                // Only the later element of an alias pair is a candidate (an earlier owner of the rid keeps its instance).
+                // The earlier owner of the rid keeps its instance, so only the later element is a candidate.
                 if (lowestIndexByRid[rid] >= index) continue;
 
-                // Skip aliases that already existed: a binding present unchanged in the previous snapshot is intentional
-                // (or pre-existing) sharing, not a fresh duplicate. A new index, or a changed rid at this index, is fresh.
+                // A binding unchanged since the previous snapshot is existing sharing, not a fresh duplicate.
                 if (previous.TryGetValue(index, out var previousRid) && previousRid == rid) continue;
 
-                // Require the rid to have multiplied since the snapshot. A reorder that merely moved a pre-existing
-                // alias into a new binding leaves the rid's count unchanged and so is not a fresh duplicate.
+                // A reorder moves an existing alias into a new binding without changing the rid's count.
                 previousCount.TryGetValue(rid, out var before);
                 if (currentCount[rid] <= before) continue;
 
@@ -251,8 +216,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return map;
         }
 
-        // Cheap order-sensitive rolling hash of the element rids. Siblings are walked with a single SerializedProperty
-        // (Next(enterChildren: false)), so the no-change gate allocates one property per call rather than one per element.
+        // Siblings are walked with a single SerializedProperty, so the gate allocates one per call, not per element.
         private static int ComputeSignature(SerializedProperty arrayProperty, int size)
         {
             unchecked
@@ -277,8 +241,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void Store(ArrayKey key, int size, int signature, Dictionary<int, long> map)
         {
-            // On overflow drop the whole cache, with Pending alongside so the two never desync: a re-snapshot never
-            // auto-fixes and a queued fix re-verifies before applying, so at worst a fix is cancelled, never mis-applied.
+            // Dropped together so the two never desync. A re-snapshot never auto-fixes and a queued fix re-verifies,
+            // so at worst a fix is canceled, never mis-applied.
             if (!_snapshots.ContainsKey(key) && _snapshots.Count >= MaxTrackedArrays)
             {
                 _snapshots.Clear();
@@ -288,8 +252,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _snapshots[key] = new Snapshot(size, signature, map);
         }
 
-        // The parent array path of an element path. Nested arrays resolve to the innermost array (last marker) — the
-        // array this element directly belongs to.
+        // The parent array path of an element path; nested arrays resolve to the innermost one.
         private static bool TryGetArrayPath(string elementPath, out string arrayPath)
         {
             arrayPath = null;
@@ -298,8 +261,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var marker = elementPath.LastIndexOf(ArrayElementMarker, StringComparison.Ordinal);
             if (marker < 0) return false;
 
-            // Only the array entry itself ("...Array.data[N]") carries the element's own managed reference — a
-            // sub-field path ("...Array.data[N]._weapon") must not match.
+            // Only the array entry itself carries the element's reference, so a sub-field path must not match.
             var close = elementPath.IndexOf(']', marker + ArrayElementMarker.Length);
             if (close < 0 || close != elementPath.Length - 1) return false;
 
@@ -316,8 +278,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void OnUndoRedoPerformed()
         {
-            // An Undo can revert to a state a fix was scheduled against, or restore an intentional alias; dropping both
-            // makes the next observation re-record (never auto-fix), so a reverted alias is recorded, not re-fixed.
+            // An Undo can revert the state a fix was scheduled against, or restore an intentional alias. Dropping
+            // both makes the next observation re-record instead of auto-fixing.
             _snapshots.Clear();
             _pending.Clear();
         }
@@ -349,16 +311,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private sealed class Snapshot
         {
+            public int Size { get; }
+            public int Signature { get; }
+            public Dictionary<int, long> Map { get; }
+
             public Snapshot(int size, int signature, Dictionary<int, long> map)
             {
                 Size = size;
                 Signature = signature;
                 Map = map;
             }
-
-            public int Size { get; }
-            public int Signature { get; }
-            public Dictionary<int, long> Map { get; }
         }
     }
 }

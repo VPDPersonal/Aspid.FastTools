@@ -10,20 +10,14 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Project-wide repair tool for missing <c>[SerializeReference]</c> types. <c>Scan Project</c> sweeps every text
-    /// asset under <c>Assets/</c>, groups the broken references by their stored (now unloadable) type, and offers a
-    /// single bulk <c>Fix all</c> per group: one type pick + one confirmation rewrites every entry across every
-    /// affected file. Unset <c>[TypeSelector(Required = true)]</c> fields are audited alongside them as a read-only
-    /// card that cross-links into the per-asset graph.
-    /// </summary>
-    /// <remarks>
-    /// The implementation is split across partial files by concern: this file owns the chrome, the scan pass and the
-    /// results states; <c>.Cards</c> builds the group cards and their rows; <c>.Actions</c> runs the bulk fix, clear
-    /// and undo behind the inline picker. The copy lives in the pure
-    /// <see cref="SerializeReferenceProjectSummary"/>, the scan model in <see cref="MissingReferenceGroup"/>, and the
-    /// file edits in <see cref="SerializeReferenceBatchEditor"/>.
-    /// </remarks>
+    // Project-wide repair tool for missing [SerializeReference] types: the scan sweeps every text asset under
+    // Assets/, groups the broken references by stored type, and offers one bulk fix per group, where a single type
+    // pick and confirmation rewrites every entry across every affected file. Unset required fields are audited
+    // alongside them as a read-only card that cross-links into the per-asset graph.
+    //
+    // Split across partial files: this one owns the chrome, the scan pass and the results states, .Cards builds the
+    // group cards and .Actions runs the bulk fix, clear and undo behind the inline picker. The copy lives in the
+    // pure summary type, the scan model in MissingReferenceGroup and the file edits in the batch editor.
     internal sealed partial class SerializeReferenceProjectView : VisualElement
     {
         private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";
@@ -91,15 +85,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static IReadOnlyList<GateViolation> RequiredViolationsForRender =>
             _requiredIsWarm ? _requiredViolationsCache : Array.Empty<GateViolation>();
 
-        /// <summary>
-        /// Jump from a project-audit result row to that asset's Inspect graph. Wired by the host window.
-        /// </summary>
+        // Jumps from a result row to that asset's graph. Wired by the host window.
         public Action<Object> OnInspectAsset;
 
-        /// <summary>
-        /// Reports this view's state to the host window, which owns the shared dotted canvas and washes it with the
-        /// matching status. Wired by the window.
-        /// </summary>
+        // Reports this view's state to the host window, which washes the shared canvas to match.
         public Action<StatusStyle.Type> OnCanvasStatus;
 
         public SerializeReferenceProjectView()
@@ -206,23 +195,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Scan pass
         // ---------------------------------------------------------------------------------------------------------
 
-        /// <summary>
-        /// Restores whatever the warm index can already show, or opens idle when nothing has been scanned yet.
-        /// </summary>
-        /// <remarks>
-        /// Cold index: wait for a deliberate Scan click — the cold sweep parses every asset's YAML behind a blocking
-        /// bar, so it must never run unasked. Warm index: re-deriving groups is a cheap in-memory filter, so results
-        /// survive a tab switch. The breakage-notification deep-link bypasses this and calls
-        /// <see cref="ScanProject"/> directly.
-        /// </remarks>
+        // Restores whatever a warm index can already show, or opens idle. A cold index waits for a deliberate Scan
+        // click, since its sweep parses every asset's YAML behind a blocking bar; a warm one re-derives its groups
+        // by a cheap in-memory filter, so results survive a tab switch.
         public void Initialize()
         {
             if (SerializeReferenceTypeUsageIndex.IsWarm || _requiredIsWarm) RenderWarmGroups();
             else ShowIdle();
         }
 
-        /// <summary>Sweeps the project for missing references and groups them by stored broken type.</summary>
-        /// <remarks>Slow when the index is cold — this is the one deliberate moment the audit pays for a full sweep.</remarks>
+        // Slow when the index is cold — the one deliberate moment the audit pays for a full sweep.
         public void ScanProject()
         {
             if (_list is null) return;

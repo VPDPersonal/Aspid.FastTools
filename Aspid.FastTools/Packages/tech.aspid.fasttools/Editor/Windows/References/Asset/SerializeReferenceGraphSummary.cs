@@ -4,22 +4,14 @@ using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAudit
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The Asset References overview copy: the headline naming what the graph found, the dim hint under it and each
-    /// document header's count line. Pure string composition over already-tallied counts.
-    /// </summary>
-    /// <remarks>
-    /// Every count enters here already partitioned by <see cref="SerializeReferenceGraphAnalysis"/>, because the
-    /// wording turns on the distinction: a pending <c>[MovedFrom]</c> migration is a stale file rather than a
-    /// breakage, and an empty slot is unassigned rather than broken — so neither may be phrased as "missing".
-    /// </remarks>
+    // The Asset References overview copy: the headline, the dim hint under it and each document header's count line.
+    // Pure string composition over already-partitioned counts, because the wording turns on those distinctions — a
+    // pending migration is a stale file rather than a breakage, and an empty slot is unassigned rather than broken,
+    // so neither may be phrased as "missing".
     internal static class SerializeReferenceGraphSummary
     {
-        /// <summary>
-        /// The overview headline. Only non-zero parts make it, joined like the Project References results header — so
-        /// an asset carrying several finding kinds names all of them instead of hiding the rest in the hint.
-        /// </summary>
-        /// <param name="broken">Missing references, EXCLUDING <paramref name="migrations"/>.</param>
+        // Only non-zero parts make the headline, so an asset carrying several finding kinds names all of them
+        // instead of hiding the rest in the hint. broken EXCLUDES migrations.
         public static string BuildOverviewTitle(int broken, int orphans, int migrations, int required)
         {
             var parts = new List<string>(4);
@@ -31,13 +23,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return parts.Count > 0 ? string.Join(", ", parts) : "No missing references";
         }
 
-        /// <summary>
-        /// The dim line under the headline: the mapped total, a breakdown of every finding kind, and the one action
-        /// that most needs doing.
-        /// </summary>
-        /// <param name="missing">Missing references INCLUDING <paramref name="migrations"/> — the raw tally.</param>
-        /// <param name="empties">Unassigned slots that are allowed to stay empty; required ones are reported through
-        /// <paramref name="required"/> instead, never twice.</param>
+        // The mapped total, a breakdown of every finding kind and the one action that most needs doing. Here
+        // missing is the raw tally, INCLUDING migrations, and empties counts only slots allowed to stay empty, since
+        // required ones are reported through required and never twice.
         public static string BuildOverviewHint(int total, int missing, int orphans, int empties, int migrations, int required)
         {
             var references = total == 1 ? "1 managed reference" : $"{total} managed references";
@@ -71,10 +59,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{references} mapped · {string.Join(" · ", parts)}. {action}";
         }
 
-        /// <summary>
-        /// One document header's count line. A pending <c>[MovedFrom]</c> migration is named as such so the header
-        /// never contradicts the overview's "0 missing".
-        /// </summary>
+        // A pending migration is named as such, so a header never contradicts the overview's "0 missing".
         public static string BuildDocumentCountText(ReferenceGraphDocument document, int broken, int migrations)
         {
             var total = document.Nodes.Count;

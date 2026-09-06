@@ -1,43 +1,48 @@
 #nullable enable
 using System;
+using UnityEditor;
 using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    /// <summary>
-    /// Reflection helpers for working with <see cref="ISerializableType"/> wrapper fields
-    /// (<see cref="SerializableType"/> / <see cref="SerializableType{T}"/>),
-    /// including elements of arrays and <see cref="List{T}"/>.
-    /// </summary>
+    // Reflection helpers for ISerializableType wrapper fields (SerializableType / SerializableType<T>), including
+    // the elements of arrays and lists of them.
     internal static class SerializableTypeUtility
     {
-        /// <summary>
-        /// True for an <see cref="ISerializableType"/> wrapper field, or an array / <see cref="List{T}"/> of them.
-        /// </summary>
+        internal const string BackingFieldName = "_assemblyQualifiedName";
+
+        // BaseType is an instance member, so reading it means instantiating the wrapper; the drawers ask on every
+        // repaint, so the answer is memoized per wrapper type (stable until a domain reload clears statics).
+        private static readonly Dictionary<Type, Type> _baseTypes = new();
+
+        // True for an ISerializableType wrapper field, or an array / List of them.
         internal static bool IsSerializableTypeField(Type fieldType) =>
             typeof(ISerializableType).IsAssignableFrom(fieldType.GetCollectionElementTypeOrSelf());
 
-        /// <summary>
-        /// Resolves the wrapper's <see cref="ISerializableType.BaseType"/> from a field's declared type,
-        /// unwrapping arrays and <see cref="List{T}"/>. Returns <c>false</c> when the field is not
-        /// an <see cref="ISerializableType"/> wrapper.
-        /// </summary>
         internal static bool TryGetBaseType(Type fieldType, out Type? baseType)
         {
             var type = fieldType.GetCollectionElementTypeOrSelf();
 
-            if (!typeof(ISerializableType).IsAssignableFrom(type))
+            if (!typeof(ISerializableType).IsAssignableFrom(type) || type.IsAbstract || type.IsInterface)
             {
                 baseType = null;
                 return false;
             }
 
-            // BaseType is an instance member, so instantiate the wrapper to read it — the interface
-            // contract requires implementations to keep a public parameterless constructor for this.
-            baseType = ((ISerializableType)Activator.CreateInstance(type)).BaseType;
+            if (!_baseTypes.TryGetValue(type, out var cached))
+            {
+                // The interface contract requires implementations to keep a public parameterless constructor for this.
+                cached = ((ISerializableType)Activator.CreateInstance(type)).BaseType;
+                _baseTypes[type] = cached;
+            }
+
+            baseType = cached;
             return true;
         }
+
+        internal static SerializedProperty? GetBackingProperty(SerializedProperty wrapperProperty) =>
+            wrapperProperty.FindPropertyRelative(BackingFieldName);
     }
 }

@@ -1,4 +1,4 @@
-namespace Aspid.FastTools.SerializeReferences.Editors
+namespace Aspid.FastTools.Editors
 {
     internal enum TabType
     {

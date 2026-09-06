@@ -6,12 +6,7 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Drives <see cref="SerializeReferenceBreakageDetector"/> when assets or scripts change: a renamed/deleted script
-    /// surfaces as a <c>.cs</c> in the deleted/moved lists, an in-place class rename as an edited <c>.cs</c> in the
-    /// imported list, and a re-saved prefab/asset/scene as a candidate import. The scan is debounced to one run per
-    /// change burst via <see cref="EditorApplication.delayCall"/>.
-    /// </summary>
+    // Drives the breakage detector on asset/script changes, debounced to one scan per change burst.
     internal sealed class SerializeReferenceBreakageHook : AssetPostprocessor
     {
         private static bool _scheduled;

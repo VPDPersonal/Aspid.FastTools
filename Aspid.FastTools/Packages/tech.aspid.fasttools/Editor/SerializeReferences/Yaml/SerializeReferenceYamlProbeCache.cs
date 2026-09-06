@@ -5,19 +5,12 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Caches the raw lines of an asset's YAML keyed by (path, last-write-time) so the per-property missing/stored-type
-    /// probe — which runs on every IMGUI repaint via <see cref="SerializeReferenceYamlEditor.TryReadStoredType"/> /
-    /// <see cref="SerializeReferenceYamlEditor.TryReadReferenceId"/> — does not hit the disk every frame. The
-    /// modification-time component auto-invalidates an out-of-band edit; writers and repair sites additionally call
-    /// <see cref="ClearCache"/> so a same-frame rewrite is never served stale. Mirrors the FIFO-capped cache pattern of
-    /// <see cref="SerializeReferenceRepairSuggestions"/>.
-    /// </summary>
-    /// <remarks>
-    /// The one-shot project sweep (<see cref="SerializeReferenceYamlEditor.FindMissingReferences"/>) deliberately bypasses
-    /// this cache: it reads every candidate once behind a progress bar and would otherwise bloat the cache with large,
-    /// never-reused scene files.
-    /// </remarks>
+    // Caches an asset's YAML lines by (path, last-write-time), so the per-property probe that runs on every IMGUI
+    // repaint does not hit the disk every frame. The timestamp auto-invalidates an out-of-band edit; writers also
+    // clear the cache explicitly so a same-frame rewrite is never served stale.
+    //
+    // The one-shot project sweep deliberately bypasses this: it reads every candidate once behind a progress bar and
+    // would otherwise bloat the cache with large, never-reused scene files.
     internal static class SerializeReferenceYamlProbeCache
     {
         private const int CacheCapacity = 64;
@@ -25,11 +18,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Queue<string> _cacheOrder = new();
         private static readonly Dictionary<string, (DateTime writeTimeUtc, string[] lines)> _cache = new(StringComparer.Ordinal);
 
-        /// <summary>
-        /// Returns the asset's lines from the cache when the file's last-write-time is unchanged, otherwise reads them
-        /// from disk and stores them. Returns an empty array for a missing/empty path. The returned array is shared —
-        /// callers must treat it as read-only.
-        /// </summary>
+        // The returned array is shared, so callers must treat it as read-only. Empty for a missing path.
         public static string[] ReadAllLines(string assetPath)
         {
             if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return Array.Empty<string>();
@@ -54,9 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return lines;
         }
 
-        /// <summary>
-        /// Drops every cached file — called after a rewrite and from the import post-processor.
-        /// </summary>
+        // Called after a rewrite and from the import post-processor.
         public static void ClearCache()
         {
             _cache.Clear();

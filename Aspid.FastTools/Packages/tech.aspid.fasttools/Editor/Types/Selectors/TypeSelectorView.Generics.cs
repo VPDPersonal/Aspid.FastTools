@@ -10,11 +10,10 @@ namespace Aspid.FastTools.Types.Editors
     {
         private void BeginResolveGeneric(Type openDefinition, Type primaryFieldType, Type[] validationFieldTypes, Action<Type> onClosed)
         {
-            // A field that already fixes the arguments — skip the picker and construct directly. Inference only
-            // checks the primary field type, so re-validate the result against every field type (as the manual
-            // PickParam -> TryConstruct path does); if it is not assignable to all of them, fall through to the picker
-            // rather than emitting a value Unity would drop. The inferred-argument filter goes in for the same
-            // reason: skipping the page must not skip the rule the page would have enforced.
+            // A field that already fixes the arguments skips the picker. Inference checks only the primary field
+            // type, so the result is re-validated against every one, as the manual path does; a result that fails
+            // falls through to the picker rather than emitting a value Unity would drop. The inferred-argument
+            // filter goes in for the same reason: skipping the page must not skip the rule it would have enforced.
             if (GenericTypeResolver.TryInferFromFieldType(primaryFieldType, openDefinition, out var inferred, _inferredArgumentFilter) &&
                 GenericTypeResolver.IsAssignableToFieldTypes(inferred, validationFieldTypes))
             {
@@ -58,10 +57,9 @@ namespace Aspid.FastTools.Types.Editors
             var baseTypes = GenericTypeResolver.GetConstraintBaseTypes(parameter);
             var constraintType = baseTypes.Length == 1 ? baseTypes[0] : typeof(object);
 
-            // Offer open generic definitions as arguments too, so the user can nest generics (e.g. choose
-            // Modifier<T> for T) — picking one resolves its own arguments before it is used here. Pass every
-            // constraint base type (not just the collapsed single one) so a multi-constraint parameter narrows
-            // the nested definitions by all of them up front, instead of offering defs that fail every later pick.
+            // Open definitions are offered as arguments too, so generics can nest; picking one resolves its own
+            // arguments first. Every constraint base type goes in, not just the collapsed one, so a multi-constraint
+            // parameter narrows the nested definitions up front instead of offering ones that fail every later pick.
             var nested = GenericTypeResolver.GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _inferredArgumentFilter);
             var hierarchy = HierarchyBuilder.Build(baseTypes, TypeAllow.None, (Func<Type, bool>)Filter, nested,
                 includeNoneOption: false, includeHidden: _includeHidden);

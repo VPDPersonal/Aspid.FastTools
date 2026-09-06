@@ -6,27 +6,27 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    [CustomPropertyDrawer(typeof(SerializableType))]
-    [CustomPropertyDrawer(typeof(SerializableType<>))]
+    // SerializableMonoScript is not a SerializableType, so useForChildren only reaches SerializableType<T>.
+    [CustomPropertyDrawer(typeof(SerializableType), useForChildren: true)]
     internal sealed class SerializableTypePropertyDrawer : PropertyDrawer
     {
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label) => TypeIMGUIPropertyDrawer.Draw(
             position: position,
             label: label,
-            property: GetProperty(property),
+            property: SerializableTypeUtility.GetBackingProperty(property),
             allow: TypeAllow.All,
-            types: GetTypeFromFieldType());
-        
-        public override VisualElement CreatePropertyGUI(SerializedProperty property) => TypeUIToolkitPropertyDrawer.Draw(
-            label: preferredLabel, 
-            property: GetProperty(property), 
-            allow: TypeAllow.All,
-            types: GetTypeFromFieldType());
+            types: GetBaseType());
 
-        private static SerializedProperty GetProperty(SerializedProperty property) =>
-            property.FindPropertyRelative("_assemblyQualifiedName");
-        
-        private Type GetTypeFromFieldType() =>
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) =>
+            TypeIMGUIPropertyDrawer.GetHeight(SerializableTypeUtility.GetBackingProperty(property));
+
+        public override VisualElement CreatePropertyGUI(SerializedProperty property) => TypeUIToolkitPropertyDrawer.Draw(
+            label: preferredLabel,
+            property: SerializableTypeUtility.GetBackingProperty(property),
+            allow: TypeAllow.All,
+            types: GetBaseType());
+
+        private Type GetBaseType() =>
             SerializableTypeUtility.TryGetBaseType(fieldInfo.FieldType, out var baseType) ? baseType : typeof(object);
     }
 }

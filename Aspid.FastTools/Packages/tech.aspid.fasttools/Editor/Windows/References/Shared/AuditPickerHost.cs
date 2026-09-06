@@ -6,29 +6,23 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The inline type picker both References tabs dock under a clicked card header: one panel open at a time, dropped
-    /// directly below its anchor inside the anchor's own card so the header, selector and the rows beneath it read as
-    /// one active card.
-    /// </summary>
-    /// <remarks>
-    /// The two tabs keep their own USS blocks, so the host wears the block's class names passed as a
-    /// <see cref="PickerClasses"/> — the same arrangement <see cref="SerializeReferenceAuditUI.BuildLegendItem"/> uses
-    /// for the legend. Anchors are expected to end in a chevron, which the host swaps in place (▼ ⇄ ▲) rather than
-    /// rewriting the label, so every band verb keeps its own wording.
-    /// </remarks>
+    // The inline type picker both References tabs dock under a clicked card header: one panel at a time, dropped
+    // directly below its anchor inside that anchor's own card, so header, selector and rows read as one active card.
+    //
+    // The two tabs keep their own USS blocks, so the host wears the class names it is handed. An anchor is expected
+    // to end in a chevron, which the host swaps in place rather than rewriting the label, so every band verb keeps
+    // its own wording.
     internal sealed class AuditPickerHost
     {
-        /// <summary>The block-specific USS class names the shared picker host wears.</summary>
+        // The block-specific USS class names the shared picker host wears.
         internal readonly struct PickerClasses
         {
-            /// <summary>The docked panel itself.</summary>
             public readonly string Picker;
 
-            /// <summary>Welds the panel to the header above it; applied only when the anchor sits inside a card.</summary>
+            // Welds the panel to the header above it; applied only when the anchor sits inside a card.
             public readonly string PickerAttached;
 
-            /// <summary>Marks the hosting card as picking, so its divider / hover sweep stand down.</summary>
+            // Marks the hosting card as picking, so its divider and hover sweep stand down.
             public readonly string CardPicking;
 
             public PickerClasses(string picker, string pickerAttached, string cardPicking)
@@ -50,9 +44,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private AspidGradientButton _anchor;
         private VisualElement _card;
 
-        /// <param name="host">The view itself — it reclaims keyboard focus when the picker closes.</param>
-        /// <param name="fallbackContainer">Where the panel lands if an anchor is ever hosted outside a card.</param>
-        /// <param name="classes">The hosting block's picker class names.</param>
+        // The host reclaims keyboard focus when the picker closes; fallbackContainer catches an anchor that is ever
+        // hosted outside a card.
         public AuditPickerHost(VisualElement host, VisualElement fallbackContainer, in PickerClasses classes)
         {
             _host = host;
@@ -60,13 +53,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _classes = classes;
         }
 
-        /// <summary>Whether a picker is currently docked — the views suspend their keyboard ring while it is.</summary>
+        // The views suspend their keyboard ring while a picker is docked.
         public bool IsOpen => _picker is not null;
 
-        /// <summary>
-        /// The close half of a toggle: closes whatever is open and reports whether that was
-        /// <paramref name="anchor"/>'s own picker, i.e. whether the click was a collapse and the caller should stop.
-        /// </summary>
+        // The close half of a toggle: closes whatever is open and reports whether that was this anchor's own picker,
+        // meaning the click was a collapse and the caller should stop.
         public bool ToggleClosed(AspidGradientButton anchor)
         {
             var wasOpen = _anchor == anchor;
@@ -74,7 +65,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return wasOpen;
         }
 
-        /// <summary>Docks <paramref name="content"/> directly below <paramref name="anchor"/> and focuses it.</summary>
         public void Open(AspidGradientButton anchor, TypeSelectorView content)
         {
             _picker = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -100,7 +90,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             content.FocusPicker();
         }
 
-        /// <summary>Undocks the panel, restores its anchor's chevron and hands keyboard focus back to the host.</summary>
+        // Undocks the panel, restores its anchor's chevron and hands keyboard focus back to the host.
         public void Close()
         {
             _picker?.RemoveFromHierarchy();

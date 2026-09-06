@@ -12,22 +12,16 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Asset-level visualiser for <c>[SerializeReference]</c> managed-reference graphs. For each serialized object
-    /// document in the asset it draws the reference tree — field-pointer roots, their nested children, shared
-    /// (aliased) references and orphaned payloads — straight from the YAML, so it surfaces references at any nesting
-    /// depth and the orphans the Inspector cannot navigate to. Every reference card is an inline type dropdown: the
-    /// same embedded picker the Repair window uses, anchored under the clicked card, where picking a type assigns /
-    /// re-points the reference and <c>&lt;None&gt;</c> clears it. Orphaned payloads no field reaches carry a
-    /// <c>Clear</c> action.
-    /// </summary>
-    /// <remarks>
-    /// The implementation is split across partial files by concern: this file owns the chrome, the scan pass and the
-    /// overview; <c>.Cards</c> lays out each document and walks its tree; <c>.Nodes</c> builds the individual cards;
-    /// <c>.Picker</c> opens the inline type pickers and applies what they pick. The counting and copy live in the pure
-    /// <see cref="SerializeReferenceGraphAnalysis"/> / <see cref="SerializeReferenceGraphSummary"/>, and every edit is
-    /// performed by <see cref="SerializeReferenceGraphEditor"/> — this view only decides when to re-render.
-    /// </remarks>
+    // Asset-level visualizer for managed-reference graphs. For each serialized object document it draws the whole
+    // reference tree — field-pointer roots, nested children, aliased references and orphaned payloads — straight
+    // from the YAML, so it surfaces references at any nesting depth and orphans the Inspector cannot navigate to.
+    // Every card is an inline type dropdown that assigns or re-points the reference; an orphaned payload gets a
+    // Clear action instead.
+    //
+    // Split across partial files: this one owns the chrome, the scan pass and the overview, .Cards lays out each
+    // document, .Nodes builds the individual cards and .Picker opens the inline pickers. Counting and copy live in
+    // the pure analysis and summary types, and every edit goes through the graph editor — this view only decides
+    // when to re-render.
     internal sealed partial class SerializeReferenceGraphView : VisualElement
     {
         private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-ReferenceGraph";
@@ -358,7 +352,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (ungraphedRequired.Count > 0)
             {
-                // One resolver for the whole batch: several violations commonly share a component, and it memoises
+                // One resolver for the whole batch: several violations commonly share a component, and it memoizes
                 // the object loads per asset path.
                 var labels = new ViolationFieldLabels();
                 foreach (var violation in ungraphedRequired)

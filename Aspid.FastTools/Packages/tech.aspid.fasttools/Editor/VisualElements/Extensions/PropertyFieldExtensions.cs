@@ -4,11 +4,15 @@ using UnityEditor.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="PropertyField"/>.
+    /// </summary>
     public static class PropertyFieldExtensions
     {
         /// <summary>
-        /// Subscribes to the value-changed event of the element.
+        /// Subscribes to the element's value-changed event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -20,8 +24,9 @@ namespace Aspid.FastTools.UIElements.Editors
         }
         
         /// <summary>
-        /// Unsubscribes from the value-changed event of the element.
+        /// Unsubscribes from the element's value-changed event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -33,7 +38,7 @@ namespace Aspid.FastTools.UIElements.Editors
         }
 
         /// <summary>
-        /// Sets the label of the property field.
+        /// Sets the field's label.
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>

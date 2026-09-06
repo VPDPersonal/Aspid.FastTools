@@ -6,23 +6,13 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The bulk half of the repair tooling: rewriting or nulling many managed-reference entries at once, batched per
-    /// file so each affected asset is reimported exactly once. Pure file work — the confirmations, receipts and the
-    /// result rendering belong to the caller.
-    /// </summary>
-    /// <remarks>
-    /// Every batch runs inside <see cref="AssetDatabase.StartAssetEditing"/>, which defers each
-    /// <see cref="AssetDatabase.ImportAsset(string, ImportAssetOptions)"/> to one pass at the end, behind a
-    /// cancel-free progress bar. Entries whose write fails are skipped, so the returned count is what actually
-    /// changed on disk, not what was asked for.
-    /// </remarks>
+    // The bulk half of the repair tooling: rewriting or nulling many entries at once, batched per file so each asset
+    // is reimported exactly once. Pure file work — confirmations, receipts and rendering belong to the caller.
+    // A failed write is skipped, so every returned count is what actually changed on disk, not what was asked for.
     internal static class SerializeReferenceBatchEditor
     {
-        /// <summary>
-        /// Splits entries into those safe to rewrite on disk and those open in Prefab Mode / a loaded scene, which
-        /// must be repaired in memory instead.
-        /// </summary>
+        // Splits entries into those safe to rewrite on disk and those open elsewhere, which must be repaired in
+        // memory instead.
         public static void SplitWritable(IReadOnlyList<MissingReferenceLocation> source,
             out List<MissingReferenceLocation> onDisk, out List<MissingReferenceLocation> inMemory)
         {
@@ -37,10 +27,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        /// <summary>
-        /// The entries safe to write, reporting through <paramref name="skipped"/> how many were held back because an
-        /// open in-memory copy would clobber the file edit on its next save.
-        /// </summary>
+        // skipped counts the entries held back because an open copy would clobber the file edit on its next save.
         public static List<MissingReferenceLocation> FilterWritable(IReadOnlyList<MissingReferenceLocation> source, out int skipped)
         {
             var prefabStagePath = SerializeReferenceOpenCopyGuard.CurrentPrefabStagePath();
@@ -56,15 +43,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return writable;
         }
 
-        /// <summary>
-        /// The entries that still store <paramref name="appliedType"/>, i.e. the ones a receipt for that fix may
-        /// safely revert; <paramref name="diverged"/> counts the rest.
-        /// </summary>
-        /// <remarks>
-        /// A group can have been re-broken and fixed to a DIFFERENT type since the receipt was written, and blindly
-        /// rewriting would destroy that newer fix. "Still holds it" is tested as a rewrite towards the applied type
-        /// whose old line already equals its new line.
-        /// </remarks>
+        // The entries a receipt for appliedType may safely revert; diverged counts the rest. A group can have been
+        // re-broken and fixed to a DIFFERENT type since the receipt was written, and rewriting blindly would destroy
+        // that newer fix. "Still holds it" is tested as a rewrite whose old line already equals its new one.
         public static List<MissingReferenceLocation> FilterStillHolding(IReadOnlyList<MissingReferenceLocation> source,
             ManagedTypeName appliedType, out int diverged)
         {
@@ -83,22 +64,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return holding;
         }
 
-        /// <summary>Rewrites every entry's stored type to <paramref name="targetType"/>; returns how many were written.</summary>
         public static int Rewrite(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName targetType, string progressTitle) =>
             RunBatch(entries, progressTitle, (path, entry) =>
                 SerializeReferenceYamlEditor.TryRewriteType(path, entry.Entry.FileId, entry.Entry.Rid, targetType));
 
-        /// <summary>
-        /// Nulls every entry to the null managed-reference id and drops its payload; returns how many were cleared.
-        /// </summary>
+        // Nulls every entry to the null managed-reference id and drops its payload.
         public static int Null(IReadOnlyList<MissingReferenceLocation> entries, string progressTitle) =>
             RunBatch(entries, progressTitle, (path, entry) =>
                 SerializeReferenceYamlEditor.TryNullReference(path, entry.Entry.FileId, entry.Entry.Rid));
 
-        /// <summary>
-        /// Nulls each open entry on its live object — the file rewrite is skipped for open assets, so these stay in
-        /// the audit until the asset is saved. Returns how many were cleared.
-        /// </summary>
+        // Nulls each open entry on its live object; the file rewrite is skipped, so these stay in the audit until
+        // the asset is saved.
         public static int ClearOpenInMemory(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName storedType)
         {
             var cleared = 0;
@@ -111,12 +87,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return cleared;
         }
 
-        /// <summary>How many distinct files <paramref name="entries"/> spans.</summary>
         public static int CountFiles(IEnumerable<MissingReferenceLocation> entries) =>
             entries.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
 
-        // The shared per-file loop behind Rewrite / Null: only the per-entry edit differs. A file is reimported only
-        // when at least one of its entries actually changed.
+        // The shared per-file loop behind Rewrite and Null; a file is reimported only when something changed in it.
         private static int RunBatch(IReadOnlyList<MissingReferenceLocation> entries, string progressTitle,
             Func<string, MissingReferenceLocation, bool> edit)
         {

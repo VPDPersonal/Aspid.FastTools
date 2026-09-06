@@ -7,21 +7,22 @@ using Aspid.FastTools.UIElements;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// Editor window that displays a hierarchical type selector dropdown, allowing the user to browse and select a <see cref="System.Type"/> from a filtered list.
+    /// Dropdown window for browsing and selecting a <see cref="System.Type"/> from a filtered list.
     /// </summary>
     /// <remarks>
-    /// A thin dropdown host around <see cref="TypeSelectorView"/>, which owns the search, navigation and
-    /// generic-argument flow. Embedding hosts (e.g. the Repair References window) use the view directly.
+    /// A thin host around the selector view, which owns the search, navigation and generic-argument flow.
     /// </remarks>
     public sealed class TypeSelectorWindow : EditorWindow
     {
         /// <summary>
-        /// Opens the type selector window as a dropdown anchored to <paramref name="screenRect"/>.
+        /// Opens the selector as a dropdown anchored to <paramref name="screenRect"/>.
         /// </summary>
-        /// <param name="screenRect">The screen-space rectangle the dropdown is anchored to.</param>
-        /// <param name="filter">Defines which types the selector offers: base types, kind constraints, the per-type predicate, extra entries and the open-generic argument predicate. See <see cref="TypeSelectorFilter"/>.</param>
-        /// <param name="currentAqn">Assembly-qualified name of the currently selected type, used to pre-navigate to that type's location. Pass <c>null</c> or empty to start at the root.</param>
-        /// <param name="onSelected">Callback invoked with the assembly-qualified name of the selected type, or <c>null</c> if the user chose <c>&lt;None&gt;</c>. When an open generic is resolved, the assembly-qualified name of the constructed closed type is passed.</param>
+        /// <param name="screenRect">Screen-space rectangle the dropdown is anchored to.</param>
+        /// <param name="filter">Which types the selector offers.</param>
+        /// <param name="currentAqn">Assembly-qualified name of the current type, pre-navigated to; empty starts at
+        /// the root.</param>
+        /// <param name="onSelected">Receives the assembly-qualified name of the selected type — the constructed
+        /// closed type for a resolved open generic — or <see langword="null"/> for <c>&lt;None&gt;</c>.</param>
         public static void Show(
             Rect screenRect,
             TypeSelectorFilter filter = default,
@@ -33,8 +34,8 @@ namespace Aspid.FastTools.Types.Editors
 
             window.rootVisualElement.AddChild(view);
 
-            // 400 keeps the footer's full keyboard hint visible alongside the settings gear in the common states;
-            // longer variants (e.g. the favorite toggle hint) still ellipsize rather than push the gear out.
+            // 400 keeps the footer's keyboard hint visible beside the settings gear; a longer variant ellipsizes
+            // rather than pushing the gear out.
             var size = new Vector2(Mathf.Max(400, screenRect.width), 320);
             window.ShowAsDropDown(screenRect, size);
 

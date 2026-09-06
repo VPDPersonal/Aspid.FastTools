@@ -57,29 +57,6 @@ export default { api: [
             "label": "SerializePropertyExtensions"
           }
         ]
-      },
-      {
-        "type": "category",
-        "key": "Aspid.FastTools.Editors.Structs",
-        "label": "Structs",
-        "collapsed": true,
-        "items": [
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Editors.HorizontalScope",
-            "label": "HorizontalScope"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Editors.ScrollViewScope",
-            "label": "ScrollViewScope"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Editors.VerticalScope",
-            "label": "VerticalScope"
-          }
-        ]
       }
     ]
   },

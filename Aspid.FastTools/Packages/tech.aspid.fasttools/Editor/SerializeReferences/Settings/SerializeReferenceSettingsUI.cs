@@ -7,23 +7,13 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Builds the SerializeReference settings controls bound to <see cref="SerializeReferenceSettings"/>. Rendered —
-    /// via <see cref="Aspid.FastTools.Editors.AspidSettingsUI.BuildSurfaceContent"/> — by the window's Settings tab
-    /// (both scopes), the Preferences page (per-user controls) and the Project Settings page (shared controls), so
-    /// every surface renders the same controls from one definition and mirrors the others live.
-    /// </summary>
+    // The SerializeReference settings controls, defined once and rendered by the window's Settings tab, the
+    // Preferences page and the Project Settings page, so every surface shows the same controls and mirrors the
+    // others live.
     internal static class SerializeReferenceSettingsUI
     {
-        /// <summary>
-        /// Appends the References controls that belong to <paramref name="scope"/> — breakage detection for the
-        /// per-user scope; auto de-alias, the build gate and the excluded folders for the shared scope — to
-        /// <paramref name="container"/>, each wired straight to <see cref="SerializeReferenceSettings"/>. Rid colours
-        /// are not configurable — they always identify a shared reference, so there is no control for them here. Each
-        /// row is tagged with its storage scope (<see cref="AspidSettingsUI.SharedScopeClass"/> /
-        /// <see cref="AspidSettingsUI.UserScopeClass"/>) matching where <see cref="SerializeReferenceSettings"/>
-        /// persists it; the classes paint a scope stripe on the branded surfaces.
-        /// </summary>
+        // Breakage detection belongs to the per-user scope; auto de-alias, the build gate and the excluded folders
+        // to the shared one. Each row is tagged with the scope it persists in, which paints its stripe.
         public static void BuildControls(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
         {
             if ((scope & AspidSettingsScope.User) != 0)
@@ -39,7 +29,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 value = SerializeReferenceSettings.AutoDeAliasEnabled,
                 tooltip = "Give a duplicated list element its own independent instance instead of sharing the original's rid.\n"
-                    + "Stored in a committed ProjectSettings asset, so every teammate (and CI) sees the same behaviour.",
+                    + "Stored in a committed ProjectSettings asset, so every teammate (and CI) sees the same behavior.",
             };
             autoDeAlias.WithScopeStripe(AspidSettingsUI.SharedScopeClass);
             autoDeAlias.RegisterValueChangedCallback(evt => SerializeReferenceSettings.AutoDeAliasEnabled = evt.newValue);
@@ -65,8 +55,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             container.Add(new SerializeReferenceExcludedFoldersField().WithScopeStripe(AspidSettingsUI.SharedScopeClass));
         }
 
-        // Built by one definition so the window tab and the Preferences page both render (and live-sync) the same
-        // switch.
+        // Defined once so the window tab and the Preferences page render and live-sync the same switch.
         private static AspidSwitch CreateBreakageDetectionSwitch()
         {
             var breakageDetection = new AspidSwitch("Breakage detection")
@@ -82,7 +71,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return breakageDetection;
         }
 
-        // Shorthand over the shared live-sync helper, binding to this store's Changed signal.
         private static void SyncFromSettings<TControl, TValue>(TControl control, Func<TValue> read)
             where TControl : VisualElement, INotifyValueChanged<TValue>
         {

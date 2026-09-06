@@ -6,6 +6,10 @@ using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.SerializeReferences.Editors;
 
+using Aspid.FastTools.UIElements.Editors.Internal;
+
+using Aspid.FastTools.Types.Editors;
+
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
@@ -35,11 +39,11 @@ namespace Aspid.FastTools.Types.Editors
                 Types = types,
             };
 
-            if (!SerializeReferenceRequiredGate.TryGetRequired(property, out _))
+            if (!TypeSelectorRequiredGate.TryGetRequired(property, out _))
                 return field;
 
             var container = new VisualElement().AddChild(field);
-            var notice = new SerializeReferenceNotice();
+            var notice = new InspectorNotice();
 
             container.TrackPropertyValue(property, Refresh);
             Refresh(property.Persistent());
@@ -48,7 +52,7 @@ namespace Aspid.FastTools.Types.Editors
 
             void Refresh(SerializedProperty current)
             {
-                if (!SerializeReferenceRequiredGate.IsViolation(current))
+                if (!TypeSelectorRequiredGate.IsViolation(current))
                 {
                     notice.RemoveFromHierarchy();
                     return;

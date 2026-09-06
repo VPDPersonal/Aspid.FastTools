@@ -1,9 +1,6 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// One gate violation located during a project scan.
-    /// </summary>
     internal readonly struct GateViolation
     {
         public readonly long Rid;

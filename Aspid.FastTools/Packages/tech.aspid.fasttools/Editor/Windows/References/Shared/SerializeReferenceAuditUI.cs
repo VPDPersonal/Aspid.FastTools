@@ -5,27 +5,18 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Shared building blocks for the two References audit tabs (Asset References / Project References), so their count
-    /// wording, selectable-label setup and the amber/blue accent legend read identically and can't drift apart. Each
-    /// tab keeps its own USS block, so the legend builder wears the block's class names passed as a
-    /// <see cref="LegendClasses"/>.
-    /// </summary>
+    // Shared building blocks for the two References audit tabs, so their count wording, selectable labels and accent
+    // legend cannot drift apart. Each tab keeps its own USS block, so the legend builder wears the names it is
+    // handed.
     internal static class SerializeReferenceAuditUI
     {
-        /// <summary>
-        /// "1 entry" / "3 entries" — singular as-is, plural via a naive y→ies / +s rule (enough for the audit's fixed
-        /// nouns: reference, migration, violation, entry, file).
-        /// </summary>
+        // A naive y-to-ies plural rule, which covers the audit's fixed nouns.
         public static string BuildCountText(int count, string noun) =>
             count == 1 ? $"1 {noun}" : $"{count} {(noun.EndsWith("y") ? noun[..^1] + "ies" : noun + "s")}";
 
-        /// <summary>
-        /// The audit's shared severity verdict, driving both a headline's own tint and the window canvas wash behind
-        /// it: anything broken, orphaned or required-unset is amber; a graph whose only findings are pending
-        /// <c>[MovedFrom]</c> migrations is info-blue (a stale file is not a breakage); otherwise green.
-        /// </summary>
-        /// <param name="broken">Missing references, EXCLUDING the pending migrations counted separately.</param>
+        // The shared severity verdict, tinting both a headline and the canvas wash behind it: anything broken,
+        // orphaned or required-unset is amber, a graph whose only findings are pending migrations is info-blue,
+        // since a stale file is not a breakage, and anything else is green. broken EXCLUDES those migrations.
         public static StatusStyle.Type ResolveStatus(int broken, int orphans, int required, int migrations) =>
             broken > 0 || orphans > 0 || required > 0
                 ? StatusStyle.Type.Warning
@@ -33,10 +24,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ? StatusStyle.Type.Info
                     : StatusStyle.Type.Success;
 
-        /// <summary>
-        /// Makes an audit row's text (asset paths, rids, field paths) selectable so it can be copied out; callers that
-        /// also carry a row click gate the click on an empty selection (a drag-select ends in a click too).
-        /// </summary>
+        // Makes a row's text selectable so it can be copied out. A caller that also carries a row click gates it on
+        // an empty selection, since a drag-select ends in a click too.
         public static Label MakeSelectable(Label label)
         {
             label.selection.isSelectable = true;
@@ -45,10 +34,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return label;
         }
 
-        /// <summary>
-        /// One dot + caption a pair of the accent legend: amber (default) for the broken/orphaned/required band, info
-        /// blue (<paramref name="info"/> true) for the pending-migration cards, wearing the block's own legend classes.
-        /// </summary>
+        // One dot-and-caption pair of the accent legend: amber for the broken band, info blue for the
+        // pending-migration cards.
         public static VisualElement BuildLegendItem(string text, bool info, in LegendClasses classes)
         {
             var dot = new VisualElement().AddClass(classes.Dot);
@@ -60,7 +47,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(new Label(text).AddClass(classes.Text));
         }
 
-        /// <summary>The block-specific USS class names the shared legend builder wears (the two audit tabs use different BEM blocks).</summary>
+        // The block-specific USS class names the shared legend builder wears; the two tabs use different blocks.
         internal readonly struct LegendClasses
         {
             public readonly string Item;

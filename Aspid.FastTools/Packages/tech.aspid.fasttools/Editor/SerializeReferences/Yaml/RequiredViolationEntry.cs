@@ -1,10 +1,8 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// One unset required field found by the pure-YAML scene scan: the owning object document (<see cref="FileId"/>),
-    /// the field's YAML key and — for a managed reference — the null id it read (<c>-2</c>); <c>0</c> for a string field.
-    /// </summary>
+    // One unset required field found by the pure-YAML scene scan. Rid is the null id read from a managed reference,
+    // and 0 for a string field.
     internal readonly struct RequiredViolationEntry
     {
         public readonly long Rid;

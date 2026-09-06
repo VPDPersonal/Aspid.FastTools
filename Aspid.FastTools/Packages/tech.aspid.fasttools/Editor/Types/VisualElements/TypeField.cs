@@ -12,15 +12,12 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// UIToolkit field that displays a <see cref="Type"/> as a dropdown backed by
-    /// <see cref="TypeSelectorWindow"/>, optionally bound to a string-typed
-    /// <see cref="SerializedProperty"/> that stores the type's assembly-qualified name.
+    /// UIToolkit field showing a <see cref="Type"/> as a dropdown backed by <see cref="TypeSelectorWindow"/>,
+    /// optionally bound to a string property holding the type's assembly-qualified name.
     /// </summary>
     /// <remarks>
-    /// An unresolved assembly-qualified name is preserved and rendered as a
-    /// <c>&lt;Missing&gt;</c> caption instead of being silently cleared.
-    /// Designed to be inheritable so subclasses (e.g. <see cref="InspectorTypeField"/>) can
-    /// layer Inspector-specific styling on top of the base behaviour.
+    /// An unresolved name is preserved and rendered as a <c>&lt;Missing&gt;</c> caption rather than silently
+    /// cleared. Inheritable, so a subclass can layer its own styling on top.
     /// </remarks>
     [UxmlElement]
     public partial class TypeField : BaseField<Type>
@@ -36,49 +33,65 @@ namespace Aspid.FastTools.Types.Editors
         private string _missingAssemblyQualifiedName;
 
         /// <summary>
-        /// Filters which kinds of types can be picked (abstract, interface, …).
+        /// Gets or sets which kinds of types can be picked.
         /// </summary>
         [UxmlAttribute]
         public TypeAllow Allow { get; set; } = TypeAllow.None;
 
         /// <summary>
-        /// Base types — the dropdown lists subtypes assignable to every one of them.
+        /// Gets or sets the base types; the dropdown lists only types assignable to every one of them.
         /// </summary>
         public Type[] Types { get; set; } = { typeof(object) };
 
         /// <summary>
-        /// When <see langword="true"/> the dropdown is disabled — the displayed type cannot be
-        /// changed — while the open-in-script-editor button stays active.
+        /// Gets or sets the predicate applied to each candidate after the <see cref="Types"/> and
+        /// <see cref="Allow"/> checks. <see langword="null"/> keeps every matching type.
+        /// </summary>
+        public Func<Type, bool> Predicate { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <c>&lt;None&gt;</c> row is left out, for a field whose value
+        /// must never be cleared.
         /// </summary>
         [UxmlAttribute]
-        public bool IsReadOnly
-        {
-            get => _isReadOnly;
-            set
-            {
-                _isReadOnly = value;
-                _visualInput.SetEnabled(!value);
-            }
-        }
+        public bool HideNoneOption { get; set; }
 
+        /// <summary>
+        /// Creates an unbound field without a label.
+        /// </summary>
         public TypeField()
             : this(label: null) { }
 
+        /// <summary>
+        /// Creates a field bound to <paramref name="property"/>, labeled with its display name.
+        /// </summary>
+        /// <param name="property">A string property holding the assembly-qualified type name.</param>
         public TypeField(SerializedProperty property)
             : this(property.displayName, property) { }
 
+        /// <summary>
+        /// Creates a bound field: the picked type's name is written to the property, and external edits are
+        /// reflected back into the field.
+        /// </summary>
+        /// <param name="label">The field label; <see langword="null"/> for none.</param>
+        /// <param name="property">A string property holding the assembly-qualified type name.</param>
         public TypeField(string label, SerializedProperty property)
             : this(label)
         {
             _property = property.Persistent();
             SetValueFromAssemblyQualifiedNameWithoutNotify(_property.stringValue);
 
-            // Undo/redo, revert-to-prefab and scripted edits rewrite the backing string outside this field;
-            // the tracked callback hands over a fresh property each tick (the Persistent() contract).
+            // Undo, revert-to-prefab and scripted edits rewrite the backing string outside this field; the tracked
+            // callback hands over a fresh property each tick.
             this.TrackPropertyValue(_property, current =>
                 SetValueFromAssemblyQualifiedNameWithoutNotify(current.stringValue));
         }
 
+        /// <summary>
+        /// Creates an unbound field; the picked type is reported only through the change event.
+        /// </summary>
+        /// <param name="label">The field label; <see langword="null"/> for none.</param>
+        /// <param name="defaultValue">The type shown initially, or <see langword="null"/> for <c>&lt;None&gt;</c>.</param>
         public TypeField(string label, Type defaultValue = null)
             : this(label, visualInput: new VisualElement(), defaultValue) { }
 
@@ -113,6 +126,22 @@ namespace Aspid.FastTools.Types.Editors
             SetValueWithoutNotify(defaultValue);
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the dropdown is disabled, so the displayed type cannot be
+        /// changed.
+        /// </summary>
+        /// <remarks>The open-in-script-editor button stays active.</remarks>
+        [UxmlAttribute]
+        public bool IsReadOnly
+        {
+            get => _isReadOnly;
+            set
+            {
+                _isReadOnly = value;
+                _visualInput.SetEnabled(!value);
+            }
+        }
+
         /// <inheritdoc/>
         public sealed override void SetValueWithoutNotify(Type newValue)
         {
@@ -122,17 +151,16 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         /// <summary>
-        /// Sets the field value from an assembly-qualified type name without raising a change event.
+        /// Sets the value from an assembly-qualified type name without raising a change event.
         /// </summary>
         /// <remarks>
-        /// If the name cannot be resolved to a <see cref="Type"/>, the original string is preserved
-        /// so the field can render a <c>&lt;Missing&gt;</c> caption instead of silently clearing.
+        /// A name that cannot be resolved is preserved, so the field renders a <c>&lt;Missing&gt;</c> caption
+        /// instead of silently clearing.
         /// </remarks>
+        /// <param name="assemblyQualifiedName">The assembly-qualified name of the type to show.</param>
         public void SetValueFromAssemblyQualifiedNameWithoutNotify(string assemblyQualifiedName)
         {
-            var resolved = string.IsNullOrEmpty(assemblyQualifiedName)
-                ? null
-                : Type.GetType(assemblyQualifiedName, throwOnError: false);
+            var resolved = TypeUtility.GetTypeOrNull(assemblyQualifiedName);
 
             _missingAssemblyQualifiedName = resolved is null && !string.IsNullOrWhiteSpace(assemblyQualifiedName)
                 ? assemblyQualifiedName
@@ -159,6 +187,8 @@ namespace Aspid.FastTools.Types.Editors
             {
                 Types = Types,
                 Allow = Allow,
+                Predicate = Predicate,
+                HideNoneOption = HideNoneOption,
             };
 
             TypeSelectorWindow.Show(
@@ -167,11 +197,9 @@ namespace Aspid.FastTools.Types.Editors
                 currentAqn: value?.AssemblyQualifiedName ?? _missingAssemblyQualifiedName ?? string.Empty,
                 onSelected: assemblyQualifiedName =>
                 {
-                    this.SetValue(string.IsNullOrEmpty(assemblyQualifiedName)
-                        ? null
-                        : Type.GetType(assemblyQualifiedName, throwOnError: false));
+                    this.SetValue(TypeUtility.GetTypeOrNull(assemblyQualifiedName));
 
-                    // <None> arrives as null (the TypeSelectorWindow contract); store string.Empty like the IMGUI path.
+                    // <None> arrives as null; the IMGUI path stores an empty string, so this one does too.
                     _property?.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
                 });
 

@@ -148,7 +148,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             AddGroupDivider(card, withSweep: false);
 
             // One resolver for the whole card: several violations commonly share one asset (e.g. a prefab with
-            // multiple unset required fields), and it memoises the object loads per asset path.
+            // multiple unset required fields), and it memoizes the object loads per asset path.
             var labels = new ViolationFieldLabels();
             foreach (var violation in violations)
                 card.AddChild(BuildRequiredViolationRow(violation, labels));

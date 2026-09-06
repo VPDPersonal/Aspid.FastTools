@@ -1,9 +1,7 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Build/CI gate severity for missing or unset-required managed references.
-    /// </summary>
+    // Build/CI gate severity for missing or unset-required managed references.
     internal enum GateSeverity
     {
         Off,

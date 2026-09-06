@@ -39,9 +39,8 @@ Prefer a manual install? Download the `.unitypackage` from [Releases](https://gi
 | [ID System (Beta)](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-ids.md) | Asset-assignable names mapped to stable integer IDs |
 | [VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-visual-element-extensions.md) | Fluent UI Toolkit tree building in code |
 | [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-serialized-property-extensions.md) | Chainable typed setters and reflection helpers |
-| [IMGUI Layout Scopes](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-imgui-layout-scopes.md) | Disposable `Begin*`/`End*` wrappers with `Rect` access |
-| [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/11-editor-helpers.md) | Display names for scripts in custom editors |
-| [Claude Code Plugin](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/12-claude-code-plugin.md) | Skills that teach Claude Code this package |
+| [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-editor-helpers.md) | Display names for scripts in custom editors |
+| [Claude Code Plugin](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/11-claude-code-plugin.md) | Skills that teach Claude Code this package |
 
 Each feature ships with a sample that doubles as a tutorial — see [Samples](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/01-getting-started.md#samples). Russian documentation: [Documentation/ru](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/ru/README.md).
 

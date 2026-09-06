@@ -4,11 +4,8 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// A <see cref="VisualElement"/> label with Aspid theming, status accents, font size control,
-    /// and an optional <see cref="AspidDividingLine"/> beneath the text.
-    /// Theme and status can be driven by USS custom properties or set explicitly in code.
-    /// </summary>
+    // A VisualElement label with Aspid theming, status accents, font size control, and an optional AspidDividingLine
+    // beneath the text. Theme and status can be driven by USS custom properties or set explicitly in code.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidLabel : VisualElement
     {
@@ -22,9 +19,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly AspidLabelSizeStyle _size;
         private readonly AspidLabelFontStyle _fontStyle;
 
-        /// <summary>
-        /// Gets or sets the displayed text.
-        /// </summary>
         [UxmlAttribute]
         public string Text
         {
@@ -32,9 +26,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _label.text = value;
         }
 
-        /// <summary>
-        /// Gets or sets whether the text is selectable by the user.
-        /// </summary>
         [UxmlAttribute]
         public bool Selectable
         {
@@ -42,9 +33,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _label.SetIsSelectable(value);
         }
 
-        /// <summary>
-        /// Gets or sets the visual theme of the label.
-        /// </summary>
         [UxmlAttribute]
         public ThemeStyle.Type LabelTheme
         {
@@ -52,9 +40,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _theme.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the status color accent of the label.
-        /// </summary>
         [UxmlAttribute]
         public StatusStyle.Type LabelStatus
         {
@@ -62,9 +47,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _status.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the font size of the label.
-        /// </summary>
         [UxmlAttribute]
         public AspidLabelSizeStyle.Type LabelSize
         {
@@ -72,9 +54,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _size.SetValue(value);
         }
 
-        /// <summary>
-        /// Gets or sets the font style of the label.
-        /// </summary>
         [UxmlAttribute]
         public FontStyle LabelFontStyle
         {
@@ -82,9 +61,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _fontStyle.SetValue(new StyleEnum<FontStyle>(value));
         }
 
-        /// <summary>
-        /// Gets or sets the visual theme of the dividing line.
-        /// </summary>
         [UxmlAttribute]
         public ThemeStyle.Type LineTheme
         {
@@ -92,9 +68,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _line.Theme = value;
         }
 
-        /// <summary>
-        /// Gets or sets the status color accent of the dividing line.
-        /// </summary>
         [UxmlAttribute]
         public StatusStyle.Type LineStatus
         {
@@ -102,9 +75,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _line.Status = value;
         }
 
-        /// <summary>
-        /// Gets or sets the thickness of the dividing line.
-        /// </summary>
         [UxmlAttribute]
         public AspidDividingLineSizeStyle.Type LineSize
         {
@@ -112,9 +82,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _line.Size = value;
         }
 
-        /// <summary>
-        /// Gets or sets the orientation of the dividing line.
-        /// </summary>
         [UxmlAttribute]
         public AspidDividingLineDirectionStyle.Type LineDirection
         {
@@ -122,31 +89,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             set => _line.Direction = value;
         }
 
-        /// <summary>
-        /// Creates an <see cref="AspidLabel"/> with empty text and the default preset.
-        /// </summary>
         public AspidLabel()
             : this(string.Empty) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidLabel"/> with empty text and the given preset.
-        /// </summary>
-        /// <param name="preset">The configuration preset to apply.</param>
         public AspidLabel(AspidLabelPreset preset)
             : this(string.Empty, preset) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidLabel"/> with the given text and the default preset.
-        /// </summary>
-        /// <param name="text">The initial label text.</param>
         public AspidLabel(string text)
             : this(text, AspidLabelPreset.Default) { }
 
-        /// <summary>
-        /// Creates an <see cref="AspidLabel"/> with the given text and preset.
-        /// </summary>
-        /// <param name="text">The initial label text.</param>
-        /// <param name="preset">The configuration preset to apply.</param>
         public AspidLabel(string text, AspidLabelPreset preset)
         {
             _label = new Label(text);

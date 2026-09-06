@@ -20,11 +20,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // "  references:" — the managed-reference block; the object's own serialized fields all precede it.
         private static readonly Regex _referencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
 
-        /// <summary>
-        /// Scans every object document in the asset and returns each <c>RefIds</c> entry whose stored type fails
-        /// the <paramref name="resolves"/> predicate. Because <c>RefIds</c> is a flat per-object list, this finds
-        /// missing references at any nesting depth and on any child object — without navigating the Inspector.
-        /// </summary>
+        // Every RefIds entry whose stored type fails the predicate. RefIds is a flat per-object list, so this finds
+        // missing references at any nesting depth and on any child object, without navigating the Inspector.
         public static List<MissingReferenceEntry> FindMissingReferences(string assetPath, Func<ManagedTypeName, bool> resolves)
         {
             var result = new List<MissingReferenceEntry>();
@@ -90,21 +87,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        /// <summary>
-        /// Pure-YAML scan for unset <c>[TypeSelector(Required = true)]</c> fields — the scene-safe counterpart of the
-        /// object-load required check, which cannot read scene objects (<see cref="SerializeReferenceHelpers.IsScene"/>).
-        /// Walks every MonoBehaviour document, resolves its required fields through <paramref name="requiredFieldsForScript"/>
-        /// (keyed by the <c>m_Script</c> guid, so this method stays reflection-free), and reports each top-level required
-        /// field that is <em>present but empty</em>: a managed reference at the null id (<c>-2</c>), or an empty string field.
-        /// A present managed reference (<c>rid &gt;= 0</c>) counts as set even when its type is missing — that mirrors
-        /// <see cref="SerializeReferenceRequiredGate.IsViolation"/>, where a missing type is the missing-type gate's
-        /// concern, not a required violation. A field whose key is <em>absent</em> from the document is NOT a violation:
-        /// Unity omits a serialized field from YAML when the object was last saved before the field was added (and for
-        /// stripped / nested-prefab docs), so flagging it would fail a project that is valid once reopened/reserialized.
-        /// A required field nested inside plain <c>[Serializable]</c> containers is read by first narrowing the window
-        /// to the innermost container block along <see cref="RequiredFieldDescriptor.Parents"/>; an absent ancestor key
-        /// counts as absent for the same reserialize reason.
-        /// </summary>
+        // The scene-safe counterpart of the object-load required check, which cannot read scene objects. Required
+        // fields are resolved through the callback, keyed by the m_Script guid, so this stays reflection-free.
+        //
+        // Only a field PRESENT but empty is a violation. A present managed reference counts as set even when its type
+        // is missing, matching the live gate, where that is the missing-type gate's concern. A field whose key is
+        // ABSENT is not a violation either: Unity omits a serialized field saved before the field existed, so
+        // flagging it would fail a project that is valid once reserialized. An absent ancestor key counts the same.
         public static List<RequiredViolationEntry> FindUnsetRequiredFields(
             string assetPath, Func<string, IReadOnlyList<RequiredFieldDescriptor>> requiredFieldsForScript)
         {
@@ -291,7 +280,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         return childRid == NullRid ? FieldState.PresentUnset : FieldState.PresentSet;
                     }
 
-                    break; // first child is not a rid scalar — not a recognised managed-reference pointer
+                    break; // first child is not a rid scalar — not a recognized managed-reference pointer
                 }
 
                 return FieldState.PresentUnset; // field present but no rid — treat as unset
@@ -339,7 +328,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (IndentOf(lines[j]) <= fieldIndent) break; // dedented out of the field without the child
 
                     var child = Regex.Match(lines[j].Trim(), @"^_assemblyQualifiedName:\s*(?<value>.*)$");
-                    if (!child.Success) break; // first child is not the backing scalar — unrecognised shape
+                    if (!child.Success) break; // first child is not the backing scalar — unrecognized shape
 
                     var value = child.Groups["value"].Value.Trim();
                     return value.Length == 0 || value == "''" || value == "\"\""

@@ -13,9 +13,8 @@ The complete guide to Aspid.FastTools for Unity. Rendered at https://vpdpersonal
 7. [ID System](07-ids.md): `IId`, `[UniqueId]`, `IdRegistry`
 8. [VisualElement Extensions](08-visual-element-extensions.md): the fluent UI Toolkit API
 9. [SerializedProperty Extensions](09-serialized-property-extensions.md): typed setters, arrays, references, reflection helpers
-10. [IMGUI Layout Scopes](10-imgui-layout-scopes.md): `VerticalScope`, `HorizontalScope`, `ScrollViewScope`
-11. [Editor Helpers](11-editor-helpers.md): `GetScriptName`, `GetScriptNameWithIndex`
-12. [Claude Code Plugin](12-claude-code-plugin.md): the `aspid-fasttools` plugin
+10. [Editor Helpers](10-editor-helpers.md): `GetScriptName`, `GetScriptNameWithIndex`
+11. [Claude Code Plugin](11-claude-code-plugin.md): the `aspid-fasttools` plugin
 
 ## Tutorials
 

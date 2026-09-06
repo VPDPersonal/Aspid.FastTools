@@ -5,60 +5,67 @@ using System.Collections.Generic;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// Describes which types the selector offers: the base-type and kind constraints, an optional per-type
-    /// predicate, any verbatim extra entries, and the argument predicate for open generics. Bundles the
-    /// candidate-defining inputs of <see cref="TypeSelectorWindow.Show"/> and the <see cref="TypeSelectorView"/>
-    /// constructor into a single value so they travel together.
+    /// Represents the constraints deciding which types the selector offers.
     /// </summary>
     public struct TypeSelectorFilter
     {
         /// <summary>
-        /// Base types used to filter which concrete types are shown. Only types assignable to all entries are listed.
-        /// Defaults to <see cref="object"/> when left <c>null</c>.
+        /// Gets or sets the base types the candidates must all be assignable to.
+        /// <see langword="null"/> stands for <see cref="object"/>.
         /// </summary>
         public Type[] Types { get; set; }
 
         /// <summary>
-        /// Which type kinds are included in the list.
+        /// Gets or sets which type kinds the list includes.
         /// </summary>
         public TypeAllow Allow { get; set; }
 
         /// <summary>
-        /// Optional predicate applied to each candidate type after the base-type and <see cref="Allow"/> checks.
-        /// Return <c>false</c> to hide a type. Leave <c>null</c> to keep every matching type.
+        /// Gets or sets the predicate applied to each candidate after the base-type and <see cref="Allow"/> checks,
+        /// returning <see langword="false"/> to hide a type. <see langword="null"/> keeps every matching type.
         /// </summary>
         public Func<Type, bool> Predicate { get; set; }
 
         /// <summary>
-        /// Optional extra types appended to the list verbatim, bypassing the base-type and <see cref="Allow"/> checks —
-        /// used to inject entries the assignability scan cannot match, such as open generic definitions.
+        /// Gets or sets extra types appended verbatim, bypassing the base-type and <see cref="Allow"/> checks — for
+        /// entries the assignability scan cannot match, such as open generic definitions.
         /// </summary>
         public IEnumerable<Type> AdditionalTypes { get; set; }
 
         /// <summary>
-        /// Optional predicate applied to candidate types offered for an open generic's type arguments (in addition to
-        /// the parameter's own constraints). Used to restrict arguments to, e.g., Unity-serializable types. Leave
-        /// <c>null</c> to accept any constraint-satisfying type.
+        /// Gets or sets the predicate applied to the types offered for an open generic's arguments, on top of the
+        /// parameter's own constraints. <see langword="null"/> accepts any constraint-satisfying type.
         /// </summary>
         public Func<Type, bool> ArgumentFilter { get; set; }
 
         /// <summary>
-        /// Optional predicate applied to an argument the selector <b>infers</b> from the field instead of asking for
-        /// it. Leave <c>null</c> to accept whatever the field determines.
+        /// Gets or sets the filter applied to an argument the selector infers from the field instead of asking for
+        /// it. <see langword="null"/> accepts whatever the field determines.
         /// </summary>
         /// <remarks>
-        /// Separate from <see cref="ArgumentFilter"/> because the two decide different things. That one curates a
-        /// page a human reads and has to stay a finite, sensible list; this one judges a single argument the field
-        /// has already fixed, which no one is going to browse — so it can afford to ask the exact question, per
-        /// parameter, and admit an argument the page would not have bothered to offer.
+        /// Separate from <see cref="ArgumentFilter"/>, which curates a page a human reads and must stay a finite
+        /// list. This one judges a single argument the field has already fixed, so it can ask the exact question per
+        /// parameter and admit an argument the page would not have offered.
         /// </remarks>
         public GenericArgumentFilter InferredArgumentFilter { get; set; }
 
         /// <summary>
-        /// Includes types marked <c>[TypeSelectorDisplay(Hidden = true)]</c>, which the picker leaves out by default.
-        /// Set it only on a picker that <b>repairs</b> a reference rather than authors one: hiding a type means "do
-        /// not offer this for new work", not "make existing data holding it unfixable".
+        /// Gets or sets a value indicating whether types marked <c>[TypeSelectorDisplay(Hidden = true)]</c> are
+        /// offered.
         /// </summary>
+        /// <remarks>
+        /// Set it only on a picker that repairs a reference: hiding a type means "do not offer this for new work",
+        /// not "make existing data holding it unfixable".
+        /// </remarks>
         public bool IncludeHidden { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <c>&lt;None&gt;</c> row is left out of the root page.
+        /// </summary>
+        /// <remarks>
+        /// Set it on a picker whose target must always hold a type, such as one swapping a component's script. By
+        /// default the row is offered and reports <see langword="null"/> when selected.
+        /// </remarks>
+        public bool HideNoneOption { get; set; }
     }
 }

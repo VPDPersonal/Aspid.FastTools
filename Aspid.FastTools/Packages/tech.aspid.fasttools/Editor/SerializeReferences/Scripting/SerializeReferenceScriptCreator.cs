@@ -10,18 +10,12 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Generates a <c>[Serializable]</c> subclass stub for a managed-reference field's base type and imports it, so an
-    /// author can create a new subtype without leaving the inspector. For an interface base the interface members are
-    /// emitted as auto-properties, field-like events and <see cref="NotImplementedException"/> method stubs so the
-    /// file compiles.
-    /// </summary>
+    // Generates and imports a [Serializable] subclass stub for a managed-reference field's base type, so an author
+    // can create a subtype without leaving the inspector. An interface base has its members emitted as
+    // auto-properties, field-like events and throwing method stubs, so the file compiles.
     internal static class SerializeReferenceScriptCreator
     {
-        /// <summary>
-        /// Prompts for a file (name + folder), writes a subclass stub deriving from <paramref name="baseType"/>, imports
-        /// it, and returns the created asset path and the new type's full name (for the deferred assignment).
-        /// </summary>
+        // Returns the created asset path and the new type's full name, for the deferred assignment.
         public static bool TryCreateSubclassStub(Type baseType, out string assetPath, out string fullTypeName)
         {
             assetPath = null;
@@ -84,10 +78,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
-        // The interface hierarchy is flattened, so same-signature members can arrive from several branches
-        // (e.g. IEnumerable<T> and IEnumerable both declare GetEnumerator). Each signature group emits one public
-        // implicit member; a duplicate that differs only in property/return type cannot share it and is emitted as
-        // an explicit implementation on its declaring interface instead.
+        // The interface hierarchy is flattened, so the same signature can arrive from several branches. Each group
+        // emits one public implicit member; a duplicate differing only in return type cannot share it and becomes an
+        // explicit implementation on its declaring interface instead.
         private static void AppendInterfaceMembers(StringBuilder builder, string indent, Type interfaceType)
         {
             const string body = "throw new NotImplementedException()";
@@ -129,7 +122,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     if (index is 0)
                     {
-                        // An auto-property requires a get accessor, so one is emitted even for a set-only interface property.
+                        // An auto-property requires a getter even when the interface declares only a setter.
                         var setter = typeGroup.FirstOrDefault(property => property.CanWrite);
                         var set = setter is null ? string.Empty : IsInitOnly(setter) ? " init;" : " set;";
                         builder.AppendLine($"{indent}public {typeGroup.Key} {group.Key} {{ get;{set} }}");
@@ -172,8 +165,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // C# has no set-only auto-properties and an `init` accessor can only be implemented by another `init`,
-        // detected via the IsExternalInit modreq on the setter's return parameter.
+        // C# has no set-only auto-properties, and an init accessor — detected by the IsExternalInit modreq on the
+        // setter's return parameter — can only be implemented by another init.
         private static bool IsInitOnly(PropertyInfo property) =>
             property.SetMethod is { ReturnParameter: { } returnParameter }
             && returnParameter.GetRequiredCustomModifiers().Any(modifier => modifier.FullName == "System.Runtime.CompilerServices.IsExternalInit");
@@ -186,7 +179,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     yield return member;
         }
 
-        // C# reserved keywords that cannot be used verbatim as a type name (a leading '@' would be needed).
+        // Reserved keywords a type name cannot use verbatim, since they would need a leading '@'.
         private static readonly HashSet<string> _csharpKeywords = new()
         {
             "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class",
@@ -199,8 +192,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             "unchecked", "unsafe", "ushort", "using", "virtual", "void", "volatile", "while",
         };
 
-        // Validates that the file name is usable as a C# class identifier. Implemented without
-        // System.CodeDom / CSharpCodeProvider, which Unity's .NET Standard API profile does not ship.
+        // Hand-rolled because Unity's .NET Standard profile ships no System.CodeDom.
         private static bool IsValidClassName(string className)
         {
             if (string.IsNullOrEmpty(className)) return false;
@@ -214,7 +206,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var c = className[i];
                 if (c == '_' || char.IsLetterOrDigit(c)) continue;
 
-                // Allow Unicode combining/formatting marks permitted in C# identifiers.
+                // Unicode combining and formatting marks are permitted in C# identifiers.
                 var category = CharUnicodeInfo.GetUnicodeCategory(c);
                 if (category is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark
                     or UnicodeCategory.ConnectorPunctuation or UnicodeCategory.Format) continue;
@@ -225,7 +217,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // Generic-aware recursive C# type name so emitted signatures compile instead of leaking `Name`1[[…]]` reflection strings.
+        // Generic-aware, so emitted signatures compile instead of leaking reflection's "Name`1[[…]]" strings.
         private static string TypeName(Type type)
         {
             if (type == typeof(void)) return "void";

@@ -5,19 +5,15 @@ using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAudit
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The Project References audit's copy: the results headline and hint, each group card's count line and band
-    /// label, and the capped before/after previews the bulk confirmations show. Pure string composition.
-    /// </summary>
+    // The Project References audit's copy: the results headline and hint, each group card's count line and band
+    // label, and the capped previews the bulk confirmations show. Pure string composition.
     internal static class SerializeReferenceProjectSummary
     {
         // Beyond this a confirmation dialog stops being readable, so the rest is reported as a remainder line.
         private const int MaxPreviewedEntries = 8;
 
-        /// <summary>
-        /// The results headline. Only non-zero parts make it, and <paramref name="brokenCount"/> excludes the pending
-        /// migrations — a <c>[MovedFrom]</c> rename with a one-click fix shouldn't inflate the alarm number.
-        /// </summary>
+        // Only non-zero parts make the headline, and brokenCount excludes pending migrations: a rename with a
+        // one-click fix should not inflate the alarm number.
         public static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount)
         {
             var parts = new List<string>(3);
@@ -28,7 +24,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return string.Join(", ", parts);
         }
 
-        /// <summary>The dim line under the headline, naming what a card's affordances do.</summary>
         public static string BuildResultsHintText(bool hasRequiredViolations)
         {
             const string hint = "Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.";
@@ -38,7 +33,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : hint;
         }
 
-        /// <summary>A group card's "N entries · M files" line.</summary>
         public static string BuildGroupCountText(MissingReferenceGroup group)
         {
             var entries = group.Entries.Count;
@@ -48,20 +42,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{entryText} · {fileText}";
         }
 
-        /// <summary>
-        /// A group card's band label: the verb plus a trailing chevron the picker host swaps in place.
-        /// </summary>
-        /// <remarks>
-        /// A broken group's picker fixes ("Fix all"); on a migration card nothing is broken and the picker is the
-        /// manual escape hatch beside the one-click <c>Migrate all</c> row, so its verb is "Reassign all".
-        /// </remarks>
+        // The card's verb plus the trailing chevron the picker host swaps in place. A broken group's picker fixes;
+        // on a migration card nothing is broken and the picker is the manual escape hatch beside "Migrate all", so
+        // its verb reassigns instead.
         public static string BuildFixAllLabel(MissingReferenceGroup group, bool isMigration) =>
             $"{(isMigration ? "Reassign all" : "Fix all")} ({group.Entries.Count})  ▼";
 
-        /// <summary>
-        /// The old → new preview of the YAML a bulk fix will rewrite, using the same <c>TryComputeRewrite</c> the
-        /// rewrite applies, so the preview is exactly what gets written.
-        /// </summary>
+        // Built from the same computation the rewrite applies, so the preview is exactly what gets written.
         public static string BuildDiffPreview(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName newType)
         {
             var builder = new StringBuilder();
@@ -95,7 +82,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
-        /// <summary>The capped file + rid list for a clear confirmation. No before/after lines — the whole entry is being dropped.</summary>
+        // The capped file and rid list for a clear confirmation; no before/after lines, since the entry is dropped.
         public static string BuildClearPreview(IReadOnlyList<MissingReferenceLocation> entries)
         {
             var builder = new StringBuilder();

@@ -9,17 +9,9 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Editable list of scan-excluded project folders, replacing the free-text "one path per line" field with a proper
-    /// add/remove list. A flat member of its settings section card — no panel frame of its own: a header row pairs the
-    /// "Excluded scan folders" caption with a dim status hint and a "+" pinned at the right edge (the whole header is
-    /// the add target and washes green on hover), then one indented flat row per excluded folder (path on the left, an
-    /// ✕ remove on the right). Clicking the header opens a folder picker and stores the project-relative path;
-    /// clicking a folder row re-opens the picker to re-point that entry in place. Reads and writes
-    /// <see cref="SerializeReferenceSettings.ExcludedFolders"/> and rebuilds on
-    /// <see cref="SerializeReferenceSettings.ExcludedFoldersChanged"/>, so the in-window Settings tab and the Project
-    /// Settings page stay mirrored. Self-contained styling (palette + own USS) so it renders on both surfaces.
-    /// </summary>
+    // Editable list of scan-excluded project folders: a header row that is itself the add target, then one flat row
+    // per folder with a remove button. Clicking a row re-opens the picker to re-point that entry in place. It
+    // rebuilds on ExcludedFoldersChanged, so the window's Settings tab and the Project Settings page stay mirrored.
     internal sealed class SerializeReferenceExcludedFoldersField : VisualElement
     {
         private const string StyleSheetPath =
@@ -38,21 +30,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string RemoveClass = "aspid-fasttools-excluded-folders__remove";
         private const string AddButtonClass = "aspid-fasttools-excluded-folders__add";
 
-        // The two mutually-exclusive full-row hover tints on folder rows; SetTint is their single writer.
+        // The two mutually exclusive row hover tints; SetTint is their single writer.
         private static readonly string[] HoverTints = { EntryHoverClass, EntryDangerClass };
 
         private readonly VisualElement _list;
         private readonly VisualElement _header;
         private readonly Label _hint;
 
-        // The current folder rows with their paths, refreshed by Rebuild — the source for GetNavTargets, so the
-        // keyboard ring can walk the rows exactly as the pointer can.
+        // The current rows with their paths, so the keyboard ring can walk them exactly as the pointer can.
         private readonly List<(VisualElement Row, string Path)> _rows = new();
 
-        /// <summary>
-        /// Raised after the folder rows are rebuilt (add / remove / external change). The hosting keyboard ring
-        /// listens to re-collect its targets, since every rebuild replaces the row elements.
-        /// </summary>
+        // The hosting keyboard ring listens to re-collect its targets, since a rebuild replaces every row element.
         internal event Action RowsRebuilt;
 
         public SerializeReferenceExcludedFoldersField()
@@ -61,9 +49,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddStyleSheetsFromResource(StyleSheetPath)
                 .AddAspidThemeStyleSheets();
 
-            // The whole header row is the add target (the flat action-row idiom); the "+" and the dim status hint are
-            // passive Labels so their clicks bubble up to the row instead of firing a second add. The green add-intent
-            // wash is code-toggled (--add) so the keyboard ring can mirror it via the same class family.
+            // The whole header row is the add target, so the "+" and the hint are passive labels whose clicks bubble
+            // up instead of firing a second add. The add-intent wash is code-toggled, so the ring can mirror it.
             _hint = new Label { tooltip = "Add folder" }.AddClass(HintClass);
             var caption = new Label("Excluded scan folders").AddClass(HeaderCaptionClass);
             var addGlyph = new Label("+") { tooltip = "Add folder" }.AddClass(AddButtonClass);
@@ -83,9 +70,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             Rebuild();
 
-            // ExcludedFoldersChanged (not the broad Changed) fires only when the set really moves. Armed from build
-            // time, then follows the panel lifecycle: docking re-parents the tree (a detach then an attach WITHOUT a
-            // rebuild), which would kill a build-time-only subscription (see AspidSettingsUI.SyncFromSettings).
+            // Armed at build time, then following the panel lifecycle: docking re-parents the tree — a detach and an
+            // attach with no rebuild — which would kill a build-time-only subscription.
             var subscribed = false;
 
             void Arm()
@@ -118,7 +104,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var path in folders)
             {
-                // The path label fills the row left of the ✕ (full height), so clicking it anywhere edits.
+                // The path label fills the row's full height, so clicking anywhere on it edits.
                 var label = new Label(path) { tooltip = path }.AddClass(PathClass);
                 label.RegisterCallback<ClickEvent>(_ => Edit(path));
 
@@ -138,26 +124,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RowsRebuilt?.Invoke();
         }
 
-        // Tints the whole entry while the pointer is over the zone (leaving falls back to fallback; null clears) —
-        // USS can't tint a row from a child's hover state.
+        // USS cannot tint a row from a child's hover state, so the tint is driven from code.
         private static void TintWhileOver(VisualElement entry, VisualElement zone, string tint, string fallback)
         {
             zone.RegisterCallback<PointerEnterEvent>(_ => SetTint(entry, tint));
             zone.RegisterCallback<PointerLeaveEvent>(_ => SetTint(entry, fallback));
         }
 
-        // Sets exactly one full-row hover tint (null clears all); single-writer keeps the tints mutually exclusive.
+        // The single writer, which is what keeps the row tints mutually exclusive; null clears them.
         private static void SetTint(VisualElement entry, string tint)
         {
             foreach (var cls in HoverTints) entry.EnableInClassList(cls, cls == tint);
         }
 
-        /// <summary>
-        /// The control's keyboard-ring members in visual order, mirroring the pointer affordances exactly: the header
-        /// row first (activate = the add-folder picker), then one member per folder row (activate = the edit picker —
-        /// what clicking the row does; remove = what its ✕ does, for the ring's Delete/Backspace). Re-collect on
-        /// <see cref="RowsRebuilt"/> — a rebuild replaces every row element.
-        /// </summary>
+        // The keyboard-ring members in visual order, mirroring the pointer affordances exactly: the header row
+        // activates the add picker, each folder row the edit picker, and removing a row does what its button does.
         internal IEnumerable<(VisualElement Element, Action Activate, Action Remove)> GetNavTargets()
         {
             yield return (_header, AddFolder, null);
@@ -177,7 +158,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SerializeReferenceSettings.ExcludedFolders = current.Append(relative).ToArray();
         }
 
-        // Re-points a folder row in place; a pick that lands on an existing entry collapses onto it (Distinct).
+        // Re-points a row in place; a pick landing on an existing entry collapses onto it.
         private void Edit(string folder)
         {
             var relative = PickProjectFolder("Edit excluded folder", folder);
@@ -189,8 +170,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .ToArray();
         }
 
-        // Returns the picked folder as a project-relative path, or null on cancel or an outside-project pick
-        // (the latter explains itself via a dialog).
+        // The picked folder as a project-relative path; null on cancel, or on an outside-project pick, which
+        // explains itself through a dialog.
         private static string PickProjectFolder(string title, string startFolder)
         {
             var absolute = EditorUtility.OpenFolderPanel(title, startFolder, string.Empty);

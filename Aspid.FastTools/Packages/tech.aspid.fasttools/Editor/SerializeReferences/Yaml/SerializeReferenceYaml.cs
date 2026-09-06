@@ -5,46 +5,27 @@ using System.Text.RegularExpressions;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// The shared, parser-free YAML-scan toolkit for Unity's managed-reference (<c>RefIds</c>) serialization, used by
-    /// both the repair flow (<see cref="SerializeReferenceYamlEditor"/>) and the graph window
-    /// (<see cref="SerializeReferenceGraphScanner"/>). Single-sourcing these primitives keeps the two readers in
-    /// agreement about Unity's RefIds shape — quoting, indentation and the document/inline-type grammar — so a fix to
-    /// one cannot silently diverge from the other.
-    /// </summary>
+    // The shared, parser-free YAML-scan toolkit for Unity's RefIds serialization, used by both the repair flow and
+    // the graph window. Single-sourcing these primitives keeps the two readers in agreement about quoting,
+    // indentation and the document grammar, so a fix to one cannot silently diverge from the other.
     internal static class SerializeReferenceYaml
     {
-        /// <summary>
-        /// Matches an object document header (e.g. <c>--- !u!114 &amp;11400000</c>): captures the local file id as the
-        /// YAML anchor and the class id (<c>!u!114</c>) used as a best-effort fallback label when the live type name is
-        /// unavailable.
-        /// </summary>
+        // An object document header: the local file id is the YAML anchor, and the class id is a fallback label
+        // when the live type name is unavailable.
         public static readonly Regex DocumentHeader = new(@"^--- !u!(?<class>\d+) &(?<id>\d+)", RegexOptions.Compiled);
 
-        /// <summary>
-        /// Matches the <c>RefIds:</c> key line that opens the managed-reference id list of an object document.
-        /// </summary>
         public static readonly Regex RefIdsKey = new(@"^\s*RefIds:\s*$", RegexOptions.Compiled);
 
-        /// <summary>
-        /// Matches the inline <c>class: X, ns: Y, asm: Z</c> body of a <c>RefIds</c> type mapping, honouring the
-        /// single-quoted class names Unity writes for closed generics (e.g. <c>'Modifier`1[[…]]'</c>).
-        /// </summary>
+        // The inline type mapping's body, allowing for the single-quoted class names Unity writes for closed
+        // generics.
         public static readonly Regex InlineType = new(
             @"class:\s*(?:'(?<class>(?:[^']|'')*)'|(?<class>[^,}]*?))\s*,\s*ns:\s*(?<ns>[^,}]*?)\s*,\s*asm:\s*(?<asm>[^,}]*?)\s*$",
             RegexOptions.Compiled);
 
-        /// <summary>
-        /// The project-asset extensions whose Unity-YAML text can host managed references (<c>RefIds</c>). Single source
-        /// of truth: SerializeReference's own scanners layer settings-based folder exclusion on top of this set.
-        /// </summary>
+        // The asset extensions whose YAML can host managed references. The scanners layer folder exclusion on top.
         public static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
 
-        /// <summary>
-        /// Parses the inline <c>class: X, ns: Y, asm: Z</c> body of a <c>RefIds</c> type mapping into a
-        /// <see cref="ManagedTypeName"/>, honouring the single-quoted class names Unity writes for closed generics
-        /// (e.g. <c>'Modifier`1[[…]]'</c>). Returns <see langword="false"/> for a malformed or empty type body.
-        /// </summary>
+        // False for a malformed or empty type body.
         public static bool TryParseInlineType(string body, out ManagedTypeName type)
         {
             type = default;
@@ -60,10 +41,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return !type.IsEmpty;
         }
 
-        /// <summary>
-        /// Index of the <c>RefIds:</c> key line within <c>[start, end)</c>, or <c>-1</c> when the document has no
-        /// managed references.
-        /// </summary>
+        // -1 when the document has no managed references.
         public static int FindRefIdsStart(string[] lines, int start, int end)
         {
             for (var i = start; i < end; i++)
@@ -75,10 +53,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return -1;
         }
 
-        /// <summary>
-        /// The exclusive end line of a <c>RefIds</c> entry that begins at <paramref name="headerIndex"/>: the entry runs
-        /// until the next list item at its own indent, or until the block dedents out of it (blank lines are spanned).
-        /// </summary>
+        // An entry runs until the next list item at its own indent, or until the block dedents out of it; blank
+        // lines are spanned.
         public static int FindEntryEnd(string[] lines, int headerIndex, int end, int entryIndent)
         {
             for (var j = headerIndex + 1; j < end; j++)
@@ -94,14 +70,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return end;
         }
 
-        /// <summary>
-        /// Leading-indentation width of a line, counting each space or tab as one unit. Unity always indents its YAML
-        /// with spaces, but the <c>"- rid:"</c> / <c>"type:"</c> indent regexes capture leading whitespace with
-        /// <c>\s*</c> (which counts tabs too). Counting tabs here keeps this measure aligned with those regexes: a
-        /// tab-indented line would otherwise read as indent 0 here while a regex sees it as N, and
-        /// <see cref="FindEntryEnd"/> would mis-bound the entry. Alignment, not visual tab width, is what matters —
-        /// both measures count one unit per character.
-        /// </summary>
+        // Counts each space or tab as one unit. Unity always indents with spaces, but the entry regexes capture
+        // leading whitespace with \s*, so counting tabs here keeps this aligned with them — otherwise a tab-indented
+        // line would read as indent 0 while a regex sees it as N and the entry would be mis-bounded.
         public static int IndentOf(string line)
         {
             var count = 0;
@@ -113,11 +84,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return count;
         }
 
-        /// <summary>
-        /// Returns <see langword="true"/> when <paramref name="path"/> is a project asset (under <c>Assets/</c>) whose
-        /// extension can host managed references. This is the engine-level, settings-agnostic candidate test; callers
-        /// that must honour the user's excluded-folder settings combine it with their own exclusion check.
-        /// </summary>
+        // The engine-level, settings-agnostic candidate test; a caller that must honor the user's excluded folders
+        // combines it with its own check.
         public static bool IsCandidateAssetPath(string path)
         {
             if (string.IsNullOrEmpty(path) || !path.StartsWith("Assets/", StringComparison.Ordinal))

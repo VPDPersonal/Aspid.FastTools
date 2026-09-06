@@ -5,18 +5,12 @@ using Aspid.FastTools.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    /// <summary>
-    /// Shared logic for assigning a managed reference by dropping a <see cref="MonoScript"/> onto a
-    /// <c>[SerializeReference]</c> field. Resolves the dropped script's class, checks it is an assignable
-    /// managed-reference type, and writes an instance (per-target under a multi-object selection so the drop never
-    /// aliases). Used by both the UIToolkit field and the IMGUI drawer.
-    /// </summary>
+    // Assigns a managed reference from a MonoScript dropped on a [SerializeReference] field. Shared by the UIToolkit
+    // field and the IMGUI drawer.
     internal static class SerializeReferenceDropHandler
     {
-        /// <summary>
-        /// Resolves the type of the first dragged <see cref="MonoScript"/> when it is assignable to the field, honoring
-        /// the optional <c>[TypeSelector]</c> base-type narrowing. Returns false (and a null type) otherwise.
-        /// </summary>
+        // Resolves the first dragged script's class when it is assignable to the field and passes the
+        // [TypeSelector] narrowing.
         public static bool TryResolveDroppedType(Type fieldType, Type[] baseTypes, out Type type)
         {
             type = null;
@@ -38,9 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        /// <summary>
-        /// Assigns a fresh instance of <paramref name="type"/> to the field (per-target on a multi-selection).
-        /// </summary>
+        // Assigns a fresh instance per target, so a multi-selection drop never aliases one reference across objects.
         public static void Assign(SerializedProperty property, Type type)
         {
             if (property is null || type is null) return;

@@ -22,6 +22,8 @@ namespace Aspid.FastTools.Types
 
     public sealed class SerializableType { }
     public sealed class SerializableType<T> { }
+    public sealed class SerializableMonoScript { }
+    public sealed class SerializableMonoScript<T> { }
 
     public sealed class TypeSelectorAttribute : System.Attribute
     {
@@ -68,6 +70,16 @@ class C { [TypeSelector] private SerializableType _type; }");
 using Aspid.FastTools.Types;
 class Base { }
 class C { [TypeSelector(typeof(Base))] private SerializableType<Base> _type; }");
+
+    [Fact]
+    public Task SerializableMonoScriptField_NoDiagnostic() => Verify(@"
+using Aspid.FastTools.Types;
+class Base { }
+class C
+{
+    [TypeSelector] private SerializableMonoScript _type;
+    [TypeSelector(typeof(Base))] private SerializableMonoScript<Base>[] _types;
+}");
 
     [Fact]
     public Task SerializableTypeList_NoDiagnostic() => Verify(@"

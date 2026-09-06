@@ -8,13 +8,10 @@ using Aspid.FastTools.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// Builds the "Appearance" settings controls bound to <see cref="AspidThemeSettings"/> — the override-StyleSheet
-    /// picker (layered on top of the built-in Default-Dark palette, applied live) and a template action that writes a
-    /// commented starter sheet and assigns it. Shared by the window's Settings tab and the Preferences page, so both
-    /// render the same controls from one definition. Every row is a per-user preference
-    /// (<see cref="AspidSettingsUI.UserScopeClass"/>).
-    /// </summary>
+    // Builds the "Appearance" settings controls bound to AspidThemeSettings — the override-StyleSheet picker (layered
+    // on top of the built-in Default-Dark palette, applied live) and a template action that writes a commented starter
+    // sheet and assigns it. Shared by the window's Settings tab and the Preferences page, so both render the same
+    // controls from one definition. Every row is a per-user preference (UserScopeClass).
     internal static class AspidThemeSettingsUI
     {
         private const string TemplateFileName = "Aspid-FastTools-Theme-Override";
@@ -22,7 +19,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const string TemplateContent =
             "/*\n" +
             " * Aspid FastTools — editor theme override.\n" +
-            " * Redefine any design token below to recolour the Aspid editor UI.\n" +
+            " * Redefine any design token below to recolor the Aspid editor UI.\n" +
             " * This sheet is layered on top of the built-in Default-Dark palette,\n" +
             " * so you only need to declare the tokens you want to change.\n" +
             " * Full token list: Packages/tech.aspid.fasttools/Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss\n" +
@@ -42,10 +39,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             "    /* --aspid-colors-status-success-dark: rgb(12, 65, 30); */\n" +
             "}\n";
 
-        /// <summary>
-        /// Appends the theme-override ObjectField and the create-template action row to <paramref name="container"/>,
-        /// wired straight to <see cref="AspidThemeSettings"/>.
-        /// </summary>
         public static void BuildControls(VisualElement container)
         {
             var overrideField = new ObjectField("Theme override")
@@ -106,7 +99,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             EditorGUIUtility.PingObject(sheet);
         }
 
-        // Shorthand over the shared live-sync helper, binding to this store's Changed signal.
         private static void SyncFromSettings<TControl, TValue>(TControl control, Func<TValue> read)
             where TControl : VisualElement, INotifyValueChanged<TValue>
         {

@@ -199,15 +199,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
-        // Trailing cards for required violations the graph has no node for — a string / SerializableType required
-        // field is never threaded into RefIds, so SerializeReferenceGraphScanner never emits a document for a
-        // component whose only serialized-reference-worthy fields are these.
-        // Mirrors a required BuildEmptySlotCard line for line — amber "<None>" header, amber "Assign ▼" band,
-        // "Component.field:" + "unassigned" on the footer — so a required string / SerializableType field reads
-        // exactly like a required managed-reference slot (and both echo the missing card's clothes). The pick writes
-        // the type's assembly-qualified name into the backing string; a scene asset cannot be object-loaded (see
-        // SerializeReferenceGraphEditor.TryResolveRequiredStringProperty), so its band stays a static line edited
-        // through the normal Inspector.
+        // Trailing cards for required violations the graph has no node for: a required string or SerializableType
+        // field is never threaded into RefIds, so the scanner emits no document for a component whose only such
+        // fields are these. The card mirrors a required empty slot exactly, so both read alike, and the pick writes
+        // the type's assembly-qualified name into the backing string. A scene asset cannot be object-loaded, so its
+        // band stays a static line edited through the normal Inspector.
         private VisualElement BuildRequiredOnlyCard(GateViolation violation, ViolationFieldLabels labels)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -285,7 +281,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // No MISSING badge — the band action and amber type pill already carry it; only SHARED remains, dotted with
-        // the rid's own colour so an aliased pair is recognisable across cards.
+        // the rid's own color so an aliased pair is recognizable across cards.
         private static VisualElement BuildBadges(ReferenceGraphDocument document, long rid)
         {
             var badges = new VisualElement()
@@ -383,12 +379,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return meta;
         }
 
-        // Matches an empty slot's graph field path (list indices as "[i]") against a GateViolation's FieldPath (Unity's
-        // native SerializedProperty form, "Array.data[i]") for the same document — the same normalization
-        // TryResolveLiveProperty already applies to reach the live property at this path. Best-effort: a slot whose
-        // path could not be recovered by the YAML walk (SerializeReferenceGraphScanner's "reference" fallback) never
-        // matches a real property path, so its badge is silently skipped rather than false-positiving — the same
-        // violation still shows correctly in the Project References tab.
+        // Matches an empty slot's graph field path against a violation's property path for the same document, under
+        // the same normalization the live-property lookup applies. A slot whose path the YAML walk could not recover
+        // never matches a real property path, so its badge is skipped rather than false-positiving; the violation
+        // still shows correctly in the Project References tab.
         private bool IsFieldRequiredUnset(long fileId, string pathLabel)
         {
             if (string.IsNullOrEmpty(pathLabel) || _requiredViolations.Count == 0) return false;

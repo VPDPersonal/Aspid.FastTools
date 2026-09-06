@@ -5,31 +5,22 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    /// <summary>
-    /// Per-user theme settings for Aspid editor UI. Stores the GUID of an optional user
-    /// override <see cref="StyleSheet"/> in <see cref="EditorPrefs"/>; the override is layered on
-    /// top of <see cref="AspidStyles.DefaultStyleSheet"/> and may redefine any
-    /// <c>--aspid-colors-*</c> / <c>--aspid-icons-*</c> token inside a <c>:root</c> block.
-    /// </summary>
+    // Per-user theme settings for Aspid editor UI. Stores the GUID of an optional user override StyleSheet in
+    // EditorPrefs; the override is layered on top of DefaultStyleSheet and may redefine any --aspid-colors-* /
+    // --aspid-icons-* token inside a :root block.
     internal static class AspidThemeSettings
     {
+        // The pre-scoping key. Read once as a fallback and migrated forward, so an override saved before the change
+        // keeps working in the project it was set for; elsewhere its GUID never resolved to an asset anyway.
+        private const string LegacyOverrideStyleSheetGuidKey = "Aspid.FastTools.Theme.OverrideStyleSheetGuid";
+
+        public static event Action Changed;
+
         // Project-scoped: the stored GUID only resolves inside the project it was picked in, and the per-user reset
-        // must not wipe another project's override — one machine-global slot did both (see the legacy key below).
+        // must not wipe another project's override — one machine-global slot did both.
         private static string OverrideStyleSheetGuidKey =>
             "Aspid.FastTools.Theme.OverrideStyleSheetGuid." + PlayerSettings.productGUID;
 
-        // The pre-scoping key. Read once as a fallback and migrated forward, so an override saved before the change
-        // keeps working in the project it was set for (elsewhere its GUID never resolved to an asset anyway).
-        private const string LegacyOverrideStyleSheetGuidKey = "Aspid.FastTools.Theme.OverrideStyleSheetGuid";
-
-        /// <summary>
-        /// Raised whenever the override style sheet changes so that live elements can re-apply it.
-        /// </summary>
-        public static event Action Changed;
-
-        /// <summary>
-        /// The resolved user override style sheet, or <c>null</c> when none is set or the asset is missing.
-        /// </summary>
         public static StyleSheet OverrideStyleSheet
         {
             get

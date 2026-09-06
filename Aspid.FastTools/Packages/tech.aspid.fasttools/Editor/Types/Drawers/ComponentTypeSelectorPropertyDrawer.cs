@@ -23,19 +23,12 @@ namespace Aspid.FastTools.Types.Editors
                     new GUIContent(TypeSelectorHelpers.GetTypeSelectorTitle(currentType)), FocusType.Passive))
             {
                 var persistent = property.Persistent();
-                var filter = new TypeSelectorFilter
-                {
-                    Types = new[] { fieldInfo.DeclaringType },
-                };
 
                 TypeSelectorWindow.Show(
                     GUIUtility.GUIToScreenRect(dropdownRect),
-                    filter,
+                    CreateFilter(),
                     currentType.AssemblyQualifiedName,
-                    onSelected: aqn => ReplaceComponentScript(
-                        persistent,
-                        currentType,
-                        string.IsNullOrEmpty(aqn) ? null : Type.GetType(aqn, throwOnError: false)));
+                    onSelected: aqn => ReplaceComponentScript(persistent, currentType, TypeUtility.GetTypeOrNull(aqn)));
             }
 
             TypeIMGUIPropertyDrawer.DrawOpenScriptButton(openButtonRect, currentType);
@@ -48,18 +41,36 @@ namespace Aspid.FastTools.Types.Editors
         {
             var currentType = property.serializedObject.targetObject.GetType();
             var persistent = property.Persistent();
+            var filter = CreateFilter();
 
             var field = new InspectorTypeField(label: null, defaultValue: currentType)
             {
-                Types = new[] { fieldInfo.DeclaringType },
+                Types = filter.Types,
+                Allow = filter.Allow,
+                HideNoneOption = filter.HideNoneOption,
             };
 
             field.RegisterValueChangedCallback(evt =>
-                ReplaceComponentScript(persistent, currentType, evt.newValue));
+            {
+                // The swap is applied on the next editor tick (see ReplaceComponentScript); until then — and for good
+                // when no script is found — the caption must keep showing the type the object actually is.
+                if (!ReplaceComponentScript(persistent, currentType, evt.newValue))
+                    field.SetValueWithoutNotify(currentType);
+            });
+
             field.RegisterCallback<AttachToPanelEvent>(_ => HideScriptField(field));
 
             return field;
         }
+
+        // Only concrete subtypes of the class declaring the marker can back a script asset, and "no script" is not a
+        // state a component can be in, so the <None> row is left out.
+        private TypeSelectorFilter CreateFilter() => new()
+        {
+            Types = new[] { fieldInfo.DeclaringType },
+            Allow = TypeAllow.None,
+            HideNoneOption = true,
+        };
 
         private static void HideScriptField(VisualElement field)
         {
@@ -71,24 +82,28 @@ namespace Aspid.FastTools.Types.Editors
                 .ForEach(propertyField => propertyField.style.display = DisplayStyle.None);
         }
 
-        private static void ReplaceComponentScript(SerializedProperty property, Type oldType, Type newType)
+        // Returns whether a swap was scheduled. A null or unchanged type is a no-op; a type without a script of its own
+        // is refused with a warning.
+        private static bool ReplaceComponentScript(SerializedProperty property, Type oldType, Type newType)
         {
-            if (newType is null || newType == oldType) return;
+            if (newType is null || newType == oldType) return false;
 
             var script = newType.FindMonoScript();
 
             // FindMonoScript answers with the file a type is DECLARED in, which for a nested type is the declaring
             // type's file. m_Script must name the script whose own class is the component, so a script reporting a
-            // different class is a miss, not a near-miss: writing it would swap the component for another class and
-            // reinterpret its serialized data without a word.
+            // different class is a miss: writing it would silently swap the component for another class.
             if (script is null || script.GetClass() != newType)
             {
                 Debug.LogWarning($"[ComponentTypeSelector] MonoScript not found for type: {newType.AssemblyQualifiedName}");
-                return;
+                return false;
             }
 
+            // Deferred: the swap rebuilds the inspector, which must not happen from inside the current GUI/event pass.
             EditorApplication.delayCall += () =>
                 property.serializedObject.FindProperty("m_Script").SetObjectReferenceAndApply(script);
+
+            return true;
         }
     }
 }
