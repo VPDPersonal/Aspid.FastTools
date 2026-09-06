@@ -7,8 +7,11 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     [Serializable]
     public sealed class FreezeEffect : StatusEffect
     {
-        [SerializeField] [Range(0f, 100f)] private float _slowPercent = 40f;
+        [SerializeField] [Range(0f, 1f)] private float _slow = 0.5f;
 
-        public override string Describe() => $"Freeze — {_slowPercent}% slow for {Duration}s";
+        public override string Name => "Freeze";
+
+        public override void Apply(TrainingDummy target) =>
+            target.Freeze(_slow, Duration);
     }
 }

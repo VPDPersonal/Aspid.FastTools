@@ -1,12 +1,13 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Base interface for the polymorphic [SerializeReference] sample.
-    //
-    // [TypeSelector] lists every concrete, non-UnityEngine.Object class
-    // assignable to the field's declared type — here, every IWeapon implementation.
+    // Root of the polymorphic hierarchy. A [SerializeReference] [TypeSelector] field of this type offers every
+    // concrete implementation below; IMelee / IRanged exist so a field can be narrowed to one branch.
     public interface IWeapon
     {
-        string Describe();
+        string Name { get; }
+
+        // Damage dealt by one shot.
+        int Fire();
     }
 }

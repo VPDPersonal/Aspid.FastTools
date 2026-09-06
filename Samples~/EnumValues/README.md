@@ -1,22 +1,34 @@
 # EnumValues Sample
 
-A tiny combat damage system that maps enum members to typed values through `EnumValues<TValue>` and its typed twin `EnumValues<TEnum, TValue>`. `DamageDealer` picks a `DamageType` and `StatusEffect` in the Inspector, then on its **Deal Damage** context-menu command applies damage — pulling the damage multiplier, log color, and speed modifier from three `EnumValues` fields. The color field is the typed variant (`EnumValues<DamageType, Color>` — the type-picker row in the Inspector is disabled); the other two pick their enum in the Inspector.
+A character pacing over a row of floor tiles. The tile color, the footprint color, the step cadence and the walking speed are all `EnumValues` lookups keyed by a surface enum or a `[Flags]` terrain enum, configured in the Inspector with a default fallback. The API reference lives in [EnumValues](../../Documentation/06-enum-values.md).
 
-> **New here? Start with [TUTORIAL.md](TUTORIAL.md)** — a guided, step-by-step tour (Lessons 1–5) built around `Scripts/Tutorial/EnumValuesTutorial.cs` and `Scenes/EnumValuesTutorial.unity`. This page is the demo-scene walkthrough; the tutorial teaches the workflow.
+```csharp
+[SerializeField] private EnumValues<SurfaceType, float> _stepInterval; // enum fixed in code
+[SerializeField] private EnumValues<float> _speedByTerrain;            // enum picked in the Inspector
+```
 
-The code lives in `Scripts/` — see the inline comments in `DamageDealer.cs` and `StatusEffect.cs`.
+## Open it
 
-## Lookup rules for `[Flags]` keys
+1. Import the sample and open `Scenes/EnumValues.unity`.
+2. Enter Play Mode: the **Walker** crosses seven tiles, leaving colored footprints that fade, faster on hot metal and slower on wet grass.
 
-1. **Exact match wins first**, regardless of entry order: looking up `Burning | Slowed` returns the `Burning | Slowed` entry even though it is listed *last*.
-2. **No exact match → first contained entry wins**: looking up `Burning | Frozen | Slowed` (no such entry) returns the first entry (in list order) whose flags are all contained in the value — here `Burning`.
-3. **Nothing matches → default value**: `Stunned` has no entry, so the lookup falls back to `_defaultValue`. `None` (zero) only ever matches a `None` entry, never a flag entry.
+## Try
 
-## How to run
+1. **Typed variant.** Select `Data/SurfacePalette.asset`. Both tables are `EnumValues<SurfaceType, Color>`: the enum row is read-only because the type is fixed by the field. Change the `Grass` color; the tiles recolor immediately, without Play Mode.
+2. **Default value.** `Footprint Colors` has rows only for `Grass`, `Sand` and `Water`. Stone and metal footprints use `Default Value`. Right-click the field and choose **Populate Missing Enum Members** to add the rest, seeded with that default.
+3. **Untyped variant.** Select **Walker**. `Speed By Terrain` is an `EnumValues<float>` whose enum, `TerrainFlags`, was picked in the header row. Each key is a flags dropdown, and `Wet, Slippery` is a row of its own.
+4. **`[Flags]` lookup rules**, visible as the walker crosses the tiles:
+   - an **exact** key wins first: the `Water (Wet, Slippery)` tile resolves to the `Wet, Slippery` row (`0.5`), even though `Wet` and `Slippery` rows exist;
+   - otherwise the **first row whose flags are all contained** in the value wins: a `Wet`-only tile gets `0.8`;
+   - nothing matches, `None` included: **Default Value** (`1`).
+5. **Iterate.** Right-click **Walker → Log Tables**. `foreach` yields the configured rows in list order; the default value is not part of the iteration.
+6. **Change the enum.** Add a member to `SurfaceType` in code: nothing breaks, the new surface simply falls back to the default until you add a row. Keys are stored by name, so reordering members is safe too.
 
-Open `Scenes/EnumValues.unity`. The scene hosts a pre-seeded `DamageDealer` wired up from `Prefabs/EnumValues.prefab`.
+## Where to look
 
-Right-click the `DamageDealer` component header → **Deal Damage** (works in Edit Mode — no Play Mode needed) and the Console prints `Fire hit: 15 dmg (speed mod: 0.40)` in orange — the composite `Burning | Slowed` entry wins by exact match even though it is listed last. Then try the other lookup rules in the Inspector:
-
-- set `_activeEffects` to `Burning | Frozen | Slowed` → `0.90` (no exact entry; first contained entry `Burning` wins);
-- set it to `Stunned` (or `None`) → `1.00` (no entry matches; default value).
+| File | Shows |
+|---|---|
+| `Scripts/SurfacePalette.cs` | `EnumValues<TEnum, TValue>` on a ScriptableObject |
+| `Scripts/Walker.cs` | Both variants in a component, `GetValue` on a plain and a `[Flags]` key, `foreach` |
+| `Scripts/SurfaceTile.cs` | Reads the palette in the editor (`[ExecuteAlways]`) so palette edits show without Play Mode |
+| `Scripts/TerrainFlags.cs` | The `[Flags]` enum with combinable members |

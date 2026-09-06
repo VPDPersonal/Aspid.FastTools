@@ -5,17 +5,18 @@ using Aspid.FastTools.Types;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // A plain [Serializable] container — NOT a managed reference itself — pairing a polymorphic
-    // weapon with some metadata. The [SerializeReference] weapon inside it is still a full
-    // hierarchical picker (TUTORIAL.md, Lesson 7). Shared by TypeSelectorTutorial and SlottedLoadout.
+    // A plain [Serializable] container, not a managed reference itself. The weapon inside still gets the
+    // full picker, at any nesting depth.
     [Serializable]
     public sealed class WeaponSlot
     {
-        public string label = "Slot";
+        [SerializeField] private string _label = "Holster";
 
-        [Min(0)] public int priority;
+        [TypeSelector(typeof(IRanged))]
+        [SerializeReference] private IWeapon _weapon;
 
-        [SerializeReference] [TypeSelector]
-        private IWeapon _weapon;
+        public string Label => _label;
+
+        public IWeapon Weapon => _weapon;
     }
 }

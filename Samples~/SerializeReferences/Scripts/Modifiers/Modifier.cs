@@ -4,16 +4,8 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Non-abstract generic base for the [TypeSelector] generic test.
-    //
-    // Because it is a concrete open generic, [TypeSelector] lists it as "Modifier<T>".
-    //   - On a non-generic IModifier field, picking it opens a second window to choose the argument T
-    //     (e.g. string in one case, float in another), then instantiates Modifier<string> / Modifier<float>.
-    //   - On a closed-generic field such as Modifier<float>, the argument is inferred from the field, so it
-    //     is created directly as Modifier<float> without the extra window.
-    //
-    // The typed _value field verifies that Unity's generic serialization handles a bare type-parameter
-    // field (for float/int/string) and renders it inline under the dropdown.
+    // A concrete open generic. On a Modifier<float> field T is fixed by the field, so the picker creates
+    // Modifier<float> directly and excludes AmmoModifier (int) and NameModifier (string).
     [Serializable]
     public class Modifier<T> : IModifier
     {
@@ -21,6 +13,8 @@ namespace Aspid.FastTools.Samples.SerializeReferences
 
         protected T Value => _value;
 
-        public virtual string Describe() => $"Modifier<{typeof(T).Name}> = {_value}";
+        public virtual string Describe() => $"{typeof(T).Name} = {_value}";
+
+        public virtual int ModifyDamage(int damage) => damage;
     }
 }

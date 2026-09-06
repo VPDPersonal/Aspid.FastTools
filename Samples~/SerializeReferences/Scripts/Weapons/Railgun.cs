@@ -5,21 +5,20 @@ using Aspid.FastTools.Types;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Demonstrates a nested [SerializeReference] inside a managed-reference payload:
-    // the charge effect is itself polymorphic and gets its own inline dropdown.
-    // Ranged branch of the IWeapon hierarchy (see IRanged).
+    // A managed reference nested inside another: the charge effect gets its own dropdown under the Railgun foldout.
     [Serializable]
+    [TypeSelectorDisplay(Group = "Weapons/Ranged", Icon = "d_Transform Icon", Tooltip = "Slow, pierces armor, applies a charge effect")]
     public sealed class Railgun : IRanged
     {
-        [SerializeField] [Min(0f)] private float _chargeTime = 1.5f;
+        [SerializeField] [Min(0)] private int _damage = 45;
 
-        [SerializeReference] [TypeSelector]
-        private StatusEffect _chargeEffect;
+        [TypeSelector]
+        [SerializeReference] private StatusEffect _chargeEffect;
 
-        public string Describe()
-        {
-            var effect = _chargeEffect is null ? "none" : _chargeEffect.Describe();
-            return $"Railgun — {_chargeTime}s charge, effect: {effect}";
-        }
+        public string Name => _chargeEffect is null ? "Railgun" : $"Railgun + {_chargeEffect.Name}";
+
+        public StatusEffect ChargeEffect => _chargeEffect;
+
+        public int Fire() => _damage;
     }
 }

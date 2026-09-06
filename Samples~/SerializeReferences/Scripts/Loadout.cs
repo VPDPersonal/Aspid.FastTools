@@ -1,54 +1,101 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Collections;
 using Aspid.FastTools.Types;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // The demo component behind the Prefabs/ scenarios: every flavour of [SerializeReference] +
-    // [TypeSelector] field (single, list, abstract base, generics) on one MonoBehaviour, rendered
-    // through the default UIToolkit Inspector. The guided walkthrough of each flavour lives in
-    // TUTORIAL.md and Scripts/Tutorial/TypeSelectorTutorial.cs.
+    // Fires at the dummy on a timer. Every polymorphic field below is a [SerializeReference] with a
+    // [TypeSelector] dropdown; the attribute arguments narrow what the picker offers.
     public sealed class Loadout : MonoBehaviour
     {
-        // Interface-typed field: lists every IWeapon implementation (Sword, Pistol, Shotgun, Railgun, Crossbow).
-        [SerializeReference] [TypeSelector]
-        private IWeapon _primaryWeapon;
+        [SerializeField] private TrainingDummy _target;
+        [SerializeField] [Min(0.1f)] private float _fireInterval = 1f;
 
-        // Each list element is its own independent picker.
-        [SerializeReference] [TypeSelector]
-        private List<IWeapon> _sidearms = new();
+        // Any IWeapon. Required = true: an empty field shows a notice and fails the build/CI gate when enabled.
+        [Header("Weapons")]
+        [TypeSelector(Required = true)]
+        [SerializeReference] private IWeapon _primary;
 
-        // Abstract-base field: the picker offers BurnEffect / FreezeEffect, never StatusEffect.
-        [SerializeReference] [TypeSelector]
-        private StatusEffect _onHitEffect;
+        // The list's + opens the picker instead of duplicating the last element.
+        [TypeSelector]
+        [SerializeReference] private List<IWeapon> _sidearms = new();
 
-        // Open-generic entry point: offers the closed subclasses AND Modifier<T> itself (see Modifiers/).
-        [SerializeReference] [TypeSelector]
-        private IModifier _modifier;
+        // Narrowed below the field type: only IMelee implementations.
+        [TypeSelector(typeof(IMelee))]
+        [SerializeReference] private IWeapon _meleeBackup;
 
-        // Closed-generic field type: candidates are constrained by assignability to Modifier<float>.
-        [SerializeReference] [TypeSelector]
-        private Modifier<float> _floatModifier;
+        // References inside plain [Serializable] containers.
+        [SerializeField] private WeaponSlot[] _holster;
 
-        // Polymorphic list mixing different closed-generic subclasses.
-        [SerializeReference] [TypeSelector]
-        private List<IModifier> _modifiers = new();
+        // Abstract base: only BurnEffect / FreezeEffect are offered.
+        [Header("Effects and modifiers")]
+        [TypeSelector]
+        [SerializeReference] private StatusEffect _onHit;
+
+        // Closed generic field: T is fixed, DamageModifier and Modifier<float> qualify.
+        [TypeSelector]
+        [SerializeReference] private Modifier<float> _damageModifier;
+
+        // Open generic entry point: the closed subclasses plus Modifier<T> with an argument page.
+        [TypeSelector]
+        [SerializeReference] private List<IModifier> _perks = new();
+
+        private int _sidearmIndex;
+
+        private IEnumerator Start()
+        {
+            while (true)
+            {
+                yield return new WaitForSeconds(_fireInterval * (1f + (_target?.Slow ?? 0f)));
+                FireOnce();
+            }
+        }
+
+        [ContextMenu("Fire Once")]
+        private void FireOnce()
+        {
+            if (_target is null) return;
+
+            var weapon = PickWeapon();
+            if (weapon is null)
+            {
+                Debug.LogWarning("No weapon assigned.", this);
+                return;
+            }
+
+            var damage = weapon.Fire();
+            if (_damageModifier is not null) damage = _damageModifier.ModifyDamage(damage);
+            foreach (var perk in _perks)
+                if (perk is not null) damage = perk.ModifyDamage(damage);
+
+            _target.TakeDamage(damage, weapon.Name);
+            _onHit?.Apply(_target);
+            (weapon as Railgun)?.ChargeEffect?.Apply(_target);
+        }
+
+        // Primary, then each sidearm in turn, so every configured weapon fires.
+        private IWeapon PickWeapon()
+        {
+            if (_sidearms.Count is 0) return _primary;
+
+            var total = _sidearms.Count + 1;
+            var index = _sidearmIndex++ % total;
+            return index is 0 ? _primary : _sidearms[index - 1];
+        }
 
         [ContextMenu("Log Loadout")]
         private void LogLoadout()
         {
-            Debug.Log($"Primary: {_primaryWeapon?.Describe() ?? "none"}");
+            Debug.Log($"Primary: {_primary?.Name ?? "none"} | melee: {_meleeBackup?.Name ?? "none"} | on hit: {_onHit?.Name ?? "none"}", this);
 
-            for (var i = 0; i < _sidearms.Count; i++)
-                Debug.Log($"Sidearm {i}: {_sidearms[i]?.Describe() ?? "none"}");
+            foreach (var slot in _holster ?? System.Array.Empty<WeaponSlot>())
+                Debug.Log($"Holster \"{slot.Label}\": {slot.Weapon?.Name ?? "empty"}", this);
 
-            Debug.Log($"On-hit effect: {_onHitEffect?.Describe() ?? "none"}");
-            Debug.Log($"Modifier: {_modifier?.Describe() ?? "none"}");
-            Debug.Log($"Float modifier: {_floatModifier?.Describe() ?? "none"}");
-
-            for (var i = 0; i < _modifiers.Count; i++)
-                Debug.Log($"Modifier {i}: {_modifiers[i]?.Describe() ?? "none"}");
+            Debug.Log($"Damage modifier: {_damageModifier?.Describe() ?? "none"}", this);
+            foreach (var perk in _perks)
+                Debug.Log($"Perk: {perk?.Describe() ?? "none"}", this);
         }
     }
 }

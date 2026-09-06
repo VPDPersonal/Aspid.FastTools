@@ -19,11 +19,10 @@
 | [SerializeReference Tooling](04-serialize-reference-tooling.md) | Аудит и массовая починка по всему проекту, настройки проекта, build/CI-гейт |
 | [ProfilerMarkers](05-profiler-markers.md) | Source-generated `ProfilerMarker`, уникальные для каждого места вызова, через `this.Marker()` |
 | [EnumValues](06-enum-values.md) | Сериализуемые отображения enum → значение с поддержкой `[Flags]`, без boxing |
-| [ID System (Beta)](07-ids.md) | Назначаемые в ассетах имена со стабильными целочисленными ID |
-| [VisualElement Extensions](08-visual-element-extensions.md) | Fluent-построение UI Toolkit-деревьев в коде |
-| [SerializedProperty Extensions](09-serialized-property-extensions.md) | Типизированные сеттеры с fluent-цепочками и рефлексионные хелперы |
-| [Editor Helpers](10-editor-helpers.md) | Отображаемые имена скриптов для кастомных редакторов |
-| [Claude Code Plugin](11-claude-code-plugin.md) | Скиллы, обучающие Claude Code этому пакету |
+| [VisualElement Extensions](07-visual-element-extensions.md) | Fluent-построение UI Toolkit-деревьев в коде |
+| [SerializedProperty Extensions](08-serialized-property-extensions.md) | Типизированные сеттеры с fluent-цепочками и рефлексионные хелперы |
+| [Editor Helpers](09-editor-helpers.md) | Отображаемые имена скриптов для кастомных редакторов |
+| [Claude Code Plugin](10-claude-code-plugin.md) | Скиллы, обучающие Claude Code этому пакету |
 
 ## Поддержать проект
 

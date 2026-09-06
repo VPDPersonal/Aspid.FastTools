@@ -1,0 +1,20 @@
+{
+    "name": "Aspid.FastTools.Samples.EditorTools.Editor",
+    "rootNamespace": "",
+    "references": [
+        "Aspid.FastTools.Samples.EditorTools",
+        "Aspid.FastTools",
+        "Aspid.FastTools.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
