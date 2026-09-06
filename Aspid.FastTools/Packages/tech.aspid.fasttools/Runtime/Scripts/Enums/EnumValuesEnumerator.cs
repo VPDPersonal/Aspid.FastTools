@@ -4,8 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-// ReSharper disable PossibleNullReferenceException
-// ReSharper disable NullCoalescingConditionIsAlwaysNotNullAccordingToAPIContract
 namespace Aspid.FastTools.Enums
 {
     /// <summary>
@@ -16,14 +14,16 @@ namespace Aspid.FastTools.Enums
     /// </summary>
     /// <typeparam name="TKey">The key type the entries are yielded as.</typeparam>
     /// <typeparam name="TValue">The type of the value associated with each enum member.</typeparam>
-    public struct EnumValuesEnumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue>>
+    public struct EnumValuesEnumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue?>>
     {
         private int _index;
         private readonly EnumValue<TValue>[] _values;
 
-        readonly object IEnumerator.Current => Current;
-
-        public KeyValuePair<TKey, TValue> Current { get; private set; }
+        /// <summary>
+        /// The entry at the current position; <see langword="default"/> before the first
+        /// <see cref="MoveNext"/> and after the last one.
+        /// </summary>
+        public KeyValuePair<TKey, TValue?> Current { get; private set; }
 
         internal EnumValuesEnumerator(EnumValue<TValue>[] values)
         {
@@ -32,16 +32,21 @@ namespace Aspid.FastTools.Enums
             Current = default;
         }
 
+        readonly object IEnumerator.Current => Current;
+
+        /// <summary>
+        /// Advances to the next resolved entry, skipping entries whose key could not be parsed.
+        /// </summary>
+        /// <returns><see langword="true"/> if an entry was found; <see langword="false"/> at the end.</returns>
         public bool MoveNext()
         {
             while (_index < _values.Length)
             {
                 var value = _values[_index++];
-                if (!value.IsResolved) continue;
+                if (value.Key is not { } key) continue;
 
-                // For a value-type TKey this unboxes the stored key, copying it out of the
-                // existing box; for TKey = Enum it is a plain reference cast — no allocation.
-                Current = new KeyValuePair<TKey, TValue>((TKey)(object)value.Key, value.Value);
+                // Unboxes for a value-type TKey, plain cast for TKey = Enum; never allocates.
+                Current = new KeyValuePair<TKey, TValue?>((TKey)(object)key, value.Value);
                 return true;
             }
 
@@ -50,8 +55,8 @@ namespace Aspid.FastTools.Enums
 
         void IEnumerator.Reset()
         {
-            Current = default;
             _index = 0;
+            Current = default;
         }
 
         readonly void IDisposable.Dispose() { }

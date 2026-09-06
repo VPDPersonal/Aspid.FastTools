@@ -4,29 +4,57 @@ using UnityEditor;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Enums.Editors
 {
-    /// <summary>
-    /// Helpers shared by the <see cref="EnumValues{TValue}"/> property drawer.
-    /// </summary>
     internal static class EnumValuesPropertyDrawerHelper
     {
         private const string PopulateMenuItem = "Populate Missing Enum Members";
 
-        /// <summary>
-        /// Builds a context-menu manipulator that adds a "Populate Missing Enum Members"
-        /// action. The action appends entries for every enum member of the configured type
-        /// that is not yet present in <paramref name="values"/>, using
-        /// <paramref name="defaultValue"/> as the seed for the new entries.
-        /// The action is disabled when nothing is missing.
-        /// </summary>
-        /// <remarks>
-        /// For <c>[Flags]</c> enums <see cref="Enum.GetNames"/> also returns named composite
-        /// values (e.g. <c>All = A | B</c>), so they will be added as separate rows.
-        /// </remarks>
+        // Resolves the row's key against the configured enum type; null means the type is not
+        // an enum (or has no members) and the raw string field should be shown instead. A key
+        // that no longer matches any member falls back to the first one and is persisted, so a
+        // renamed enum migrates instead of leaving the row unusable.
+        public static Enum? ResolveKey(SerializedProperty keyProperty, SerializedProperty enumTypeProperty)
+        {
+            var enumType = Type.GetType(enumTypeProperty.stringValue, throwOnError: false);
+            if (enumType is null || !enumType.IsEnum) return null;
+
+            if (!Enum.TryParse(enumType, keyProperty.stringValue, out var parsed))
+            {
+                var values = Enum.GetValues(enumType);
+                if (values.Length is 0) return null;
+
+                parsed = values.GetValue(0);
+            }
+
+            var enumValue = (Enum)parsed;
+
+            if (keyProperty.stringValue != enumValue.ToString())
+                keyProperty.SetStringAndApply(enumValue.ToString());
+
+            return enumValue;
+        }
+
+        // Every entry mirrors the parent's _enumType so its own drawer can pick the right field.
+        public static void SyncEntryEnumTypes(SerializedProperty values, SerializedProperty enumType)
+        {
+            var enumTypeValue = enumType.stringValue;
+
+            for (var i = 0; i < values.arraySize; i++)
+            {
+                var element = values
+                    .GetArrayElementAtIndex(i)
+                    .FindPropertyRelative("_enumType");
+
+                if (element.stringValue != enumTypeValue)
+                    element.SetStringAndApply(enumTypeValue);
+            }
+        }
+
         public static ContextualMenuManipulator CreatePopulateMenuManipulator(
             SerializedObject serializedObject,
             string values,
@@ -47,11 +75,6 @@ namespace Aspid.FastTools.Enums.Editors
                 status);
         });
 
-        /// <summary>
-        /// IMGUI counterpart of <see cref="CreatePopulateMenuManipulator"/> — shows the same
-        /// "Populate Missing Enum Members" <see cref="GenericMenu"/> on a right-click inside
-        /// <paramref name="rect"/>, consuming the event.
-        /// </summary>
         public static void ShowPopulateContextMenu(
             Rect rect,
             SerializedObject serializedObject,
@@ -95,6 +118,7 @@ namespace Aspid.FastTools.Enums.Editors
             var existing = CollectExistingKeys(values);
             var added = false;
 
+            // For [Flags] enums this includes named composites (All = A | B) as separate rows.
             foreach (var name in Enum.GetNames(type))
             {
                 if (!existing.Add(name)) continue;
