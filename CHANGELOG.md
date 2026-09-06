@@ -7,7 +7,7 @@ All notable changes to **Aspid.FastTools** will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0-rc.8] — 2026-09-06
 
 First release. Unity **6000.0**, assemblies `Aspid.FastTools` / `Aspid.FastTools.Editor`, prebuilt Roslyn DLLs `Aspid.FastTools.Generators` / `Aspid.FastTools.Analyzers`. Every inspector feature works in both IMGUI and UI Toolkit.
 
@@ -104,4 +104,4 @@ First release. Unity **6000.0**, assemblies `Aspid.FastTools` / `Aspid.FastTools
 - `upm` / `upm/<version>` for stable releases, `upm-preview` for prereleases.
 - EditMode tests for the YAML editor and the CI-gate scan.
 
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/commits/main
+[1.0.0-rc.8]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8

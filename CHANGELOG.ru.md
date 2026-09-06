@@ -7,7 +7,7 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 проект следует [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0-rc.8] — 2026-09-06
 
 Первый релиз. Unity **6000.0**, сборки `Aspid.FastTools` / `Aspid.FastTools.Editor`, предсобранные Roslyn-DLL `Aspid.FastTools.Generators` / `Aspid.FastTools.Analyzers`. Все инспекторные возможности работают и в IMGUI, и в UI Toolkit.
 
@@ -104,4 +104,4 @@
 - `upm` / `upm/<version>` для стабильных релизов, `upm-preview` для предрелизов.
 - EditMode-тесты для YAML-редактора и сканирования CI gate.
 
-[Unreleased]: https://github.com/VPDPersonal/Aspid.FastTools/commits/main
+[1.0.0-rc.8]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8
