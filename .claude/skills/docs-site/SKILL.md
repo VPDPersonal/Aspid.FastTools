@@ -41,7 +41,7 @@ Two docs plugin instances: the default one (`docs`) points at `Documentation/` (
 - **No front matter.** Unity and GitHub would show it as text. Title comes from the first `# H1`,
   slug and order come from the file name (`NN-` prefix orders, is stripped from the route).
 - **Admonitions**: GitHub style only — `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`. Never `:::note`.
-- **Links** are relative paths to the `.md` file: `[Ids](07-ids.md)`, from a sample
+- **Links** are relative paths to the `.md` file: `[EnumValues](06-enum-values.md)`, from a sample
   `[Selector](../../Documentation/03-serialize-reference-selector.md)`, from a doc
   `[Types sample](../Samples~/Types/README.md)`. GitHub follows them as files; links that cross between
   the two plugin instances are rewritten to site routes by `Website/src/remark/crossInstanceLinks.js`.

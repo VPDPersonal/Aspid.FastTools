@@ -39,13 +39,12 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.7
 
 ## Samples
 
-Each feature ships with a sample that doubles as a tutorial. Import them from the Package Manager (**Aspid.FastTools → Samples**) or open the **Welcome** tab (`Tools → Aspid 🐍 → FastTools → Welcome`).
+Each feature ships with a sample: a small scene or editor tool that does something visible with the feature, plus a `README.md` that walks through what to try and where to look in the code. Import them from the Package Manager (**Aspid.FastTools → Samples**) or open the **Welcome** tab (`Tools → Aspid 🐍 → FastTools → Welcome`).
 
 | Sample | What it shows |
 |---|---|
-| [Types](../Samples~/Types/README.md) | `SerializableType<T>`, `[TypeSelector]`, `ComponentTypeSelector` in a tiny ability system |
-| [SerializeReferences](../Samples~/SerializeReferences/README.md) | The `[SerializeReference]` picker: single fields, lists, narrowing, nesting, generics, `Required` |
-| [EnumValues](../Samples~/EnumValues/README.md) | Enum-keyed maps with `[Flags]` handling in UI Toolkit and IMGUI inspectors |
-| [Ids](../Samples~/Ids/README.md) | `IId` structs, `[UniqueId]` and `IdRegistry` assets |
-| [ProfilerMarkers](../Samples~/ProfilerMarkers/README.md) | `this.Marker()` and the generated markers in the Profiler |
-| [VisualElements](../Samples~/VisualElements/README.md) | A custom inspector built with the fluent `VisualElement` extensions |
+| [Types](../Samples~/Types/README.md) | An enemy spawner: `SerializableMonoScript<T>`, `SerializableType<T>`, `[TypeSelectorDisplay]`, a member-referenced `[TypeSelector]`, `ComponentTypeSelector` |
+| [SerializeReferences](../Samples~/SerializeReferences/README.md) | A turret with polymorphic weapons: the `[SerializeReference]` picker in every field shape, broken assets for the repair tools, an IMGUI inspector |
+| [EnumValues](../Samples~/EnumValues/README.md) | A walker over surface tiles: both `EnumValues` variants, default values, `[Flags]` lookup rules |
+| [ProfilerMarkers](../Samples~/ProfilerMarkers/README.md) | A flock simulation: the generated marker tree in the Profiler |
+| [EditorTools](../Samples~/EditorTools/README.md) | An editor window and inspector: fluent `VisualElement` extensions, `SerializedProperty` setters, editor helpers, `TypeSelectorWindow` |

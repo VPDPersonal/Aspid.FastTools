@@ -39,13 +39,12 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.7
 
 ## Примеры
 
-К каждой возможности прилагается пример, который одновременно служит туториалом. Импортируйте их из Package Manager (**Aspid.FastTools → Samples**) или откройте вкладку **Welcome** (`Tools → Aspid 🐍 → FastTools → Welcome`).
+К каждой возможности прилагается пример: небольшая сцена или editor-инструмент, который делает с этой возможностью что-то видимое, и `README.md` с тем, что попробовать и куда смотреть в коде. Импортируйте их из Package Manager (**Aspid.FastTools → Samples**) или откройте вкладку **Welcome** (`Tools → Aspid 🐍 → FastTools → Welcome`).
 
 | Пример | Что показывает |
 |---|---|
-| [Types](../../Samples~/Types/README.ru.md) | `SerializableType<T>`, `[TypeSelector]`, `ComponentTypeSelector` в маленькой системе способностей |
-| [SerializeReferences](../../Samples~/SerializeReferences/README.ru.md) | Пикер `[SerializeReference]`: одиночные поля, списки, сужение, вложенность, generics, `Required` |
-| [EnumValues](../../Samples~/EnumValues/README.ru.md) | Отображения по enum с обработкой `[Flags]` в инспекторах UI Toolkit и IMGUI |
-| [Ids](../../Samples~/Ids/README.ru.md) | Структуры `IId`, `[UniqueId]` и ассеты `IdRegistry` |
-| [ProfilerMarkers](../../Samples~/ProfilerMarkers/README.ru.md) | `this.Marker()` и сгенерированные маркеры в Profiler |
-| [VisualElements](../../Samples~/VisualElements/README.ru.md) | Кастомный инспектор на fluent-расширениях `VisualElement` |
+| [Types](../../Samples~/Types/README.ru.md) | Спавнер врагов: `SerializableMonoScript<T>`, `SerializableType<T>`, `[TypeSelectorDisplay]`, `[TypeSelector]` со ссылкой на член, `ComponentTypeSelector` |
+| [SerializeReferences](../../Samples~/SerializeReferences/README.ru.md) | Турель с полиморфным оружием: пикер `[SerializeReference]` во всех формах поля, сломанные ассеты для инструментов ремонта, IMGUI-инспектор |
+| [EnumValues](../../Samples~/EnumValues/README.ru.md) | Ходок по плиткам поверхностей: оба варианта `EnumValues`, значения по умолчанию, правила поиска для `[Flags]` |
+| [ProfilerMarkers](../../Samples~/ProfilerMarkers/README.ru.md) | Симуляция стаи: сгенерированное дерево маркеров в Profiler |
+| [EditorTools](../../Samples~/EditorTools/README.ru.md) | Окно редактора и инспектор: fluent-расширения `VisualElement`, сеттеры `SerializedProperty`, editor-хелперы, `TypeSelectorWindow` |

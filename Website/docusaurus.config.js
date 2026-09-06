@@ -160,7 +160,6 @@ const config = {
               { label: 'Tutorials', to: '/tutorials/types' },
               { label: 'API Reference', to: '/api/Aspid.FastTools' },
               { label: 'VisualElement Extensions', to: '/docs/visual-element-extensions' },
-              { label: 'ID System', to: '/docs/ids' },
             ],
           },
           {

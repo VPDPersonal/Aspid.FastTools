@@ -2,7 +2,6 @@ using Xunit;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Aspid.FastTools.Generators.IdStruct;
 using Aspid.FastTools.Generators.ProfilerMarkers;
 using Aspid.FastTools.Generators.Tests.Helpers;
 
@@ -14,22 +13,6 @@ namespace Aspid.FastTools.Generators.Tests;
 // "ISymbol stored in data structures" anti-pattern that defeats the cache.
 public class IncrementalCacheTests
 {
-    [Fact]
-    public void IdStruct_UnrelatedSourceChange_PreservesCache()
-    {
-        const string targetSource = """
-            namespace Sample
-            {
-                public partial struct Foo : global::Aspid.FastTools.Ids.IId { }
-            }
-            """;
-
-        AssertCachedAfterUnrelatedEdit(
-            targetSource,
-            new IdStructGenerator(),
-            useUnityStubs: true);
-    }
-
     [Fact]
     public void ProfilerMarkers_UnrelatedSourceChange_PreservesCache()
     {
@@ -43,17 +26,12 @@ public class IncrementalCacheTests
             }
             """;
 
-        AssertCachedAfterUnrelatedEdit(
-            targetSource,
-            new ProfilerMarkersGenerator(),
-            useUnityStubs: false);
+        AssertCachedAfterUnrelatedEdit(targetSource, new ProfilerMarkersGenerator());
     }
 
-    private static void AssertCachedAfterUnrelatedEdit(string targetSource, IIncrementalGenerator generator, bool useUnityStubs)
+    private static void AssertCachedAfterUnrelatedEdit(string targetSource, IIncrementalGenerator generator)
     {
-        var stubs = useUnityStubs
-            ? new[] { GeneratorTestHost.IIdDefinition, GeneratorTestHost.UnityEngineStubs }
-            : new[] { GeneratorTestHost.ProfilerMarkerStubs };
+        var stubs = new[] { GeneratorTestHost.ProfilerMarkerStubs };
 
         var driverOptions = new GeneratorDriverOptions(
             disabledOutputs: IncrementalGeneratorOutputKind.None,

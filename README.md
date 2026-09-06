@@ -36,11 +36,10 @@ Prefer a manual install? Download the `.unitypackage` from [Releases](https://gi
 | [SerializeReference Tooling](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-tooling.md) | Project-wide audit and bulk repair tabs, project settings, the build/CI gate |
 | [ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-profiler-markers.md) | Source-generated, per-call-site `ProfilerMarker`s via `this.Marker()` |
 | [EnumValues](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/06-enum-values.md) | Serializable enum → value maps, `[Flags]`-aware, boxing-free |
-| [ID System (Beta)](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-ids.md) | Asset-assignable names mapped to stable integer IDs |
-| [VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-visual-element-extensions.md) | Fluent UI Toolkit tree building in code |
-| [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-serialized-property-extensions.md) | Chainable typed setters and reflection helpers |
-| [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-editor-helpers.md) | Display names for scripts in custom editors |
-| [Claude Code Plugin](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/11-claude-code-plugin.md) | Skills that teach Claude Code this package |
+| [VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-visual-element-extensions.md) | Fluent UI Toolkit tree building in code |
+| [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-serialized-property-extensions.md) | Chainable typed setters and reflection helpers |
+| [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-editor-helpers.md) | Display names for scripts in custom editors |
+| [Claude Code Plugin](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-claude-code-plugin.md) | Skills that teach Claude Code this package |
 
 Each feature ships with a sample that doubles as a tutorial — see [Samples](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/01-getting-started.md#samples). Russian documentation: [Documentation/ru](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/ru/README.md).
 

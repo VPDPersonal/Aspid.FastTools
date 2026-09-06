@@ -71,7 +71,6 @@ body:
       options:
         - label: "`dotnet test -c Release` green (incl. `IncrementalCacheTests`)"
         - label: "ProfilerMarkersGenerator — unique marker per (type, method, line); `.WithName(literal)` & `$\"...\"` work; same-line dedup"
-        - label: "IdStructGenerator — generates `_id`/`Id`/`__stringId`; **AFID001** (no `partial`) and **AFID002** (members redeclared) reported; generics handled"
         - label: Incremental cache intact — editing an unrelated file does not trigger regeneration
 
   - type: checkboxes
@@ -90,7 +89,6 @@ body:
       options:
         - label: "SerializableType / SerializableType<T> — inspector serialization, lazy resolve, TypeSelector (search/hierarchy), `ComponentTypeSelector`, survives domain reload"
         - label: "EnumValues<TValue> — plain enum and `[Flags]`, add/remove, persistence"
-        - label: "Id Registry — create asset, one-struct-one-registry, `TryGetId`/`TryGetName`/`Contains`, Undo, Clean-up, Sort/Group, Next-ID backward warning, Open-Registry, `[UniqueId]` collisions"
         - label: "VisualElement fluent API — layout/size/style/borders/colors/transitions/callbacks/USS/child; `*If` variants; `BindTo`/`UnbindFrom`; `SetLabel` overloads"
         - label: Internal editor components (AspidLabel/Box/GradientButton/HelpBox/InspectorHeader/AnimatedLogo…) render, USS applies, animations run
         - label: "Welcome Window (`Tools/Aspid FastTools/Welcome`) opens, reads `package.json`, sample-import buttons work; first-import auto-show fires once"

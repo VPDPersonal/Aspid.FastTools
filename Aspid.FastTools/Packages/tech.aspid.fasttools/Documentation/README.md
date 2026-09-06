@@ -19,11 +19,10 @@
 | [SerializeReference Tooling](04-serialize-reference-tooling.md) | Project-wide audit and bulk repair tabs, project settings, the build/CI gate |
 | [ProfilerMarkers](05-profiler-markers.md) | Source-generated, per-call-site `ProfilerMarker`s via `this.Marker()` |
 | [EnumValues](06-enum-values.md) | Serializable enum → value maps, `[Flags]`-aware, boxing-free |
-| [ID System (Beta)](07-ids.md) | Asset-assignable names mapped to stable integer IDs |
-| [VisualElement Extensions](08-visual-element-extensions.md) | Fluent UI Toolkit tree building in code |
-| [SerializedProperty Extensions](09-serialized-property-extensions.md) | Chainable typed setters and reflection helpers |
-| [Editor Helpers](10-editor-helpers.md) | Display names for scripts in custom editors |
-| [Claude Code Plugin](11-claude-code-plugin.md) | Skills that teach Claude Code this package |
+| [VisualElement Extensions](07-visual-element-extensions.md) | Fluent UI Toolkit tree building in code |
+| [SerializedProperty Extensions](08-serialized-property-extensions.md) | Chainable typed setters and reflection helpers |
+| [Editor Helpers](09-editor-helpers.md) | Display names for scripts in custom editors |
+| [Claude Code Plugin](10-claude-code-plugin.md) | Skills that teach Claude Code this package |
 
 ## Donate
 

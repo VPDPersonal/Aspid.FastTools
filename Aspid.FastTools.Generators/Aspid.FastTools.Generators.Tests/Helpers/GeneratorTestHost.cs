@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
-using Aspid.FastTools.Generators.IdStruct;
 using Aspid.FastTools.Generators.ProfilerMarkers;
 
 // ReSharper disable once CheckNamespace
@@ -11,21 +10,6 @@ namespace Aspid.FastTools.Generators.Tests.Helpers;
 
 internal static class GeneratorTestHost
 {
-    public const string IIdDefinition = """
-        namespace Aspid.FastTools.Ids
-        {
-            public interface IId { int Id { get; } }
-        }
-        """;
-
-    public const string UnityEngineStubs = """
-        namespace UnityEngine
-        {
-            [System.AttributeUsage(System.AttributeTargets.Field)]
-            public sealed class SerializeField : System.Attribute { }
-        }
-        """;
-
     public const string ProfilerMarkerStubs = """
         namespace Unity.Profiling
         {
@@ -43,12 +27,6 @@ internal static class GeneratorTestHost
             public static Unity.Profiling.ProfilerMarker.AutoScope WithName(this in Unity.Profiling.ProfilerMarker.AutoScope marker, string _) => marker;
         }
         """;
-
-    public static GeneratorRun RunIdStruct(string userSource)
-    {
-        var compilation = BuildCompilation(new[] { userSource, IIdDefinition, UnityEngineStubs });
-        return Run(compilation, new IdStructGenerator());
-    }
 
     public static GeneratorRun RunProfilerMarkers(string userSource)
     {

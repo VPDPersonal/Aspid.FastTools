@@ -15,7 +15,7 @@ const DOCS_RE = /^(?:\.\.\/)+Documentation\/(?:([a-z]{2}(?:-[A-Za-z]{2,4})?)\/)?
 // the translated copies are all named README.md, so the `.ru` file link only exists in the package.
 const SAMPLES_RE = /^(?:\.\.\/)+(?:Samples~\/)?([^/]+)\/README(?:\.([a-z]{2}(?:-[A-Za-z]{2,4})?))?\.md(#.*)?$/i;
 
-// `README.ru.md` → `README.md`; `ru/07-ids.md` → `07-ids.md` (only when the path stays inside the same tree).
+// `README.ru.md` → `README.md`; `ru/06-enum-values.md` → `06-enum-values.md` (only when the path stays inside the same tree).
 const LOCALIZED_RE = /^((?:\.\.\/)*)(?:[a-z]{2}(?:-[A-Za-z]{2,4})?\/)?([^/]+?)(?:\.[a-z]{2}(?:-[A-Za-z]{2,4})?)?\.md((?:#.*)?)$/;
 
 function kebab(name) {
@@ -45,7 +45,7 @@ function rewrite(url) {
   // Images under Documentation/Images/ are assets, not pages — leave the file path for webpack.
   if (/\.(png|gif|jpe?g|svg|webp)$/i.test(decoded)) return null;
 
-  // A locale-specific sibling (`README.ru.md`, `TUTORIAL.ru.md`) or a translation folder (`ru/07-ids.md`):
+  // A locale-specific sibling (`README.ru.md`, `TUTORIAL.ru.md`) or a translation folder (`ru/06-enum-values.md`):
   // the i18n copies are all named like the English originals, so drop the locale marker and let Docusaurus
   // resolve the link inside the current locale.
   const localized = decoded.match(LOCALIZED_RE);

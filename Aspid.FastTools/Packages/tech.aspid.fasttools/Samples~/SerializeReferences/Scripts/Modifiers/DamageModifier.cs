@@ -1,13 +1,14 @@
 using System;
+using UnityEngine;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Concrete subclass closing Modifier<T> over float.
-    // Offered wherever the field type is IModifier or Modifier<float>.
     [Serializable]
     public sealed class DamageModifier : Modifier<float>
     {
-        public override string Describe() => $"Damage ×{Value}";
+        public override string Describe() => $"damage x{Value:0.##}";
+
+        public override int ModifyDamage(int damage) => Mathf.RoundToInt(damage * Value);
     }
 }

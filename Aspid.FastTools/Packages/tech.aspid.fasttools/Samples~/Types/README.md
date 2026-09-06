@@ -1,18 +1,27 @@
 # Types Sample
 
-A tiny ability system that demonstrates polymorphic type selection in the Unity Inspector using `SerializableType<T>`, `TypeSelectorAttribute`, and `ComponentTypeSelector`. The player picks an `Ability` subclass and a list of `AbilityModifier` subclasses; enemies use `ComponentTypeSelector` so the concrete enemy script can be hot-swapped from the Inspector.
+An enemy spawner that stores three `System.Type`s in one component and does something visible with each of them in Play Mode: which `Enemy` subclass to spawn, which elite variant to mix in, and which spawn pattern to lay the wave out with. The API reference lives in [Serializable Type System](../../Documentation/02-serializable-types.md); this page is the hands-on tour.
 
-> **New here? Start with [TUTORIAL.md](TUTORIAL.md)** — a guided, step-by-step tour (Lessons 1–6) built around `Scripts/Tutorial/TypesTutorial.cs` and `Scenes/TypesTutorial.unity`. This page is the demo-scene walkthrough; the tutorial teaches the workflow.
+## Open it
 
-Look at:
+1. Import the sample (**Package Manager → Aspid.FastTools → Samples**, or **Tools → Aspid 🐍 → FastTools → Welcome**).
+2. Open `Scenes/Types.unity` and select **Enemy Spawner**.
+3. Enter Play Mode: a wave of eight capsules spawns in a circle every six seconds, every fourth one an `ArmoredGrunt`, and walks to the center.
 
-- `Scripts/Abilities/AbilitySelector.cs:20` — `SerializableType<Ability>` field, constrained picker for a single subtype.
-- `Scripts/Abilities/AbilitySelector.cs:25` — `[TypeSelector(typeof(AbilityModifier))]` on a `string[]` field.
-- `Scripts/Enemies/EnemyBase.cs:18` — `ComponentTypeSelector` declaration that swaps the attached script in place.
+## Try
 
-## How to run
+1. **Rename-safe component type.** `Enemy Type` is a `SerializableMonoScript<Enemy>`: the field references the script asset, not the class name. Rename the class in `Scripts/Enemies/Grunt.cs` to `Footman` (and the file), let Unity recompile, and the field still reads `Footman`. A `SerializableType` would have gone `<Missing>`.
+2. **Dependent picker.** `Elite Type` is a plain `string` with `[TypeSelector(nameof(_enemyType))]`, so its picker offers only subtypes of whatever `Enemy Type` currently holds. Switch `Enemy Type` to `Archer` and open `Elite Type`: `Sniper` is offered, `ArmoredGrunt` is gone.
+3. **Picker presentation.** Open `Pattern`. The candidates sit under one **Spawn Patterns** group with friendly names, tooltips and icons, all from `[TypeSelectorDisplay]` on the pattern classes. `OriginPattern` is not listed because it is `Hidden`; `Allow = TypeAllow.None` on the field keeps the `ISpawnPattern` interface itself out too. Pick **Grid** and spawn a wave.
+4. **Required.** Set `Enemy Type` to `<None>`: an inline notice appears, and the field counts as a violation for the build/CI gate described in [SerializeReference Tooling](../../Documentation/04-serialize-reference-tooling.md).
+5. **Swap a component in place.** Select **Placed Enemy (swap its type)**. The dropdown at the top of its Inspector comes from the `ComponentTypeSelector` field on `Enemy`. Switch `Archer` to `Brute`: `Health` and `Speed`, declared on the shared base, keep their values, while `Keep Distance` (Archer-only) is gone.
 
-Open `Scenes/Types.unity` — it contains two prefab instances:
+## Where to look
 
-- **AbilitySelector** (`Prefabs/AbilitySelector.prefab`) — an `AbilitySelector` with `Dash` pre-picked and all three modifiers filled in. Enter Play Mode to see the Console log the activated ability and each applied modifier.
-- **Enemy** (`Prefabs/Enemy.prefab`) — a `FastEnemy` wired up through `ComponentTypeSelector`. Select it in the Hierarchy and use the type dropdown at the top of the Inspector to swap between `FastEnemy` and `TankEnemy` in place; the `Health` field persists across the swap.
+| File | Shows |
+|---|---|
+| `Scripts/EnemySpawner.cs` | `SerializableMonoScript<T>` with `Required`, a member-referenced `[TypeSelector]`, `SerializableType<T>` with `Allow = TypeAllow.None`, resolving each with `.Type` / `Type.GetType` |
+| `Scripts/Enemies/Enemy.cs` | The `ComponentTypeSelector` field on the base class; subclasses in the same folder |
+| `Scripts/Spawning/*.cs` | Plain C# strategies decorated with `[TypeSelectorDisplay]` (`Name`, `Group`, `Tooltip`, `Icon`, `Hidden`) |
+
+Related: [SerializeReferences sample](../SerializeReferences/README.md) for `[TypeSelector]` on `[SerializeReference]` fields, [EditorTools sample](../EditorTools/README.md) for opening the same picker from your own editor code.

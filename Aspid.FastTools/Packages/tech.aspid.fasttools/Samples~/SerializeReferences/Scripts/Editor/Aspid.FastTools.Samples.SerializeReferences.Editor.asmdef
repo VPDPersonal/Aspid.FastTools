@@ -3,6 +3,7 @@
     "rootNamespace": "",
     "references": [
         "Aspid.FastTools.Samples.SerializeReferences",
+        "Aspid.FastTools",
         "Aspid.FastTools.Editor"
     ],
     "includePlatforms": [

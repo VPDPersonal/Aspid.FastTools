@@ -7,8 +7,11 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     [Serializable]
     public sealed class BurnEffect : StatusEffect
     {
-        [SerializeField] [Min(0f)] private float _damagePerSecond = 5f;
+        [SerializeField] [Min(0)] private int _damagePerSecond = 5;
 
-        public override string Describe() => $"Burn — {_damagePerSecond} dps for {Duration}s";
+        public override string Name => "Burn";
+
+        public override void Apply(TrainingDummy target) =>
+            target.Burn(_damagePerSecond, Duration);
     }
 }

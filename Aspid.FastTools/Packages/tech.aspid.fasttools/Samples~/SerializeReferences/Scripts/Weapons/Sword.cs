@@ -1,17 +1,20 @@
 using System;
 using UnityEngine;
+using Aspid.FastTools.Types;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // The melee branch of the IWeapon hierarchy, added for the tutorial's narrowing step.
-    // It is the only IMelee, so [TypeSelector(typeof(IMelee))] resolves to exactly this type.
     [Serializable]
+    [TypeSelectorDisplay(Group = "Weapons/Melee", Icon = "d_Transform Icon")]
     public sealed class Sword : IMelee
     {
         [SerializeField] [Min(0)] private int _damage = 30;
-        [SerializeField] [Range(0f, 5f)] private float _reach = 1.8f;
+        [SerializeField] [Range(0f, 1f)] private float _critChance = 0.25f;
 
-        public string Describe() => $"Sword — {_damage} dmg, {_reach}m reach";
+        public string Name => "Sword";
+
+        public int Fire() =>
+            UnityEngine.Random.value < _critChance ? _damage * 2 : _damage;
     }
 }

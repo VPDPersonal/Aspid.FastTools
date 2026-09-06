@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a436cef589bb94aedb195ac491220608, type: 3}
+  m_Name: SurfacePalette
+  m_EditorClassIdentifier: Aspid.FastTools.Samples.EnumValues::Aspid.FastTools.Samples.EnumValues.SurfacePalette
+  _tileColors:
+    _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    _defaultValue: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    _values:
+    - _key: Grass
+      _value: {r: 0.36, g: 0.62, b: 0.3, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Stone
+      _value: {r: 0.55, g: 0.55, b: 0.58, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Metal
+      _value: {r: 0.35, g: 0.42, b: 0.5, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Water
+      _value: {r: 0.25, g: 0.5, b: 0.85, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Sand
+      _value: {r: 0.87, g: 0.78, b: 0.55, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+  _footprintColors:
+    _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+      Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    _defaultValue: {r: 0.2, g: 0.2, b: 0.2, a: 1}
+    _values:
+    - _key: Grass
+      _value: {r: 0.2, g: 0.35, b: 0.15, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Sand
+      _value: {r: 0.6, g: 0.5, b: 0.3, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Water
+      _value: {r: 0.8, g: 0.9, b: 1, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

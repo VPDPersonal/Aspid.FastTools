@@ -2,7 +2,7 @@
   "name": "tech.aspid.fasttools",
   "version": "1.0.0-rc.7",
   "displayName": "Aspid.FastTools",
-  "description": "Unity tools to cut boilerplate \u2014 source-generated ProfilerMarkers, serializable type/enum/ID systems, and a fluent UIToolkit API.",
+  "description": "Unity tools to cut boilerplate — source-generated ProfilerMarkers, serializable type/enum systems, SerializeReference tooling and a fluent UIToolkit API.",
   "unity": "6000.0",
   "license": "MIT",
   "dependencies": {
@@ -22,7 +22,6 @@
     "serialization",
     "type",
     "enum",
-    "id",
     "uitoolkit",
     "ui-toolkit",
     "visualelement",
@@ -38,33 +37,28 @@
   "samples": [
     {
       "displayName": "Types",
-      "description": "SerializableType, SerializableType<T>, TypeSelectorAttribute and ComponentTypeSelector usage with the editor type picker. Includes a step-by-step TUTORIAL and a guided TypesTutorial scene.",
+      "description": "An enemy spawner storing three System.Types: SerializableMonoScript<T> (rename-safe), SerializableType<T> with [TypeSelectorDisplay] candidates, a member-referenced [TypeSelector] and ComponentTypeSelector to swap a component in place.",
       "path": "Samples~/Types"
     },
     {
       "displayName": "SerializeReferences",
-      "description": "[TypeSelector] type-picker dropdown for [SerializeReference] fields (single, List<T>, abstract base, narrowing, nested, generics, required), in both UIToolkit and IMGUI inspectors. Includes a step-by-step TUTORIAL and a guided TypeSelectorTutorial scene.",
+      "description": "A turret firing polymorphic [SerializeReference] weapons at a dummy: the [TypeSelector] picker on single fields, lists, narrowed, nested and generic fields, plus deliberately broken assets for Fix, Smart Fix, Migrate all and the References tabs, and an IMGUI inspector.",
       "path": "Samples~/SerializeReferences"
     },
     {
       "displayName": "EnumValues",
-      "description": "Inspector-serializable enum-keyed dictionary, including [Flags] handling, in both UIToolkit and IMGUI inspectors.",
+      "description": "A character walking over surface tiles: EnumValues<TEnum, TValue> on a palette asset, EnumValues<TValue> with a [Flags] enum picked in the Inspector, default values and the flags lookup rules in action.",
       "path": "Samples~/EnumValues"
     },
     {
-      "displayName": "Ids",
-      "description": "IId / [UniqueId] structs paired with IdRegistry assets for stable int \u2194 string IDs. Includes a step-by-step TUTORIAL and a guided IdsTutorial scene.",
-      "path": "Samples~/Ids"
-    },
-    {
       "displayName": "ProfilerMarkers",
-      "description": "this.Marker() extension and the per-call-site ProfilerMarker source generator.",
+      "description": "A flock simulation with this.Marker() around each phase: the generated marker tree in the Profiler, per-iteration markers, markers in plain classes and local functions.",
       "path": "Samples~/ProfilerMarkers"
     },
     {
-      "displayName": "VisualElements",
-      "description": "Fluent UI Toolkit VisualElement extensions, font presets and per-element helpers. Includes a step-by-step TUTORIAL and a guided VisualElementsTutorial scene alongside the AbilityConfig custom-inspector demo.",
-      "path": "Samples~/VisualElements"
+      "displayName": "EditorTools",
+      "description": "An editor window and a custom inspector built in code: fluent VisualElement extensions, ListView and binding, SerializedProperty setters, GetScriptName, AddOpenScriptCommand and TypeSelectorWindow as a public API.",
+      "path": "Samples~/EditorTools"
     }
   ],
   "unityRelease": "0f1"
