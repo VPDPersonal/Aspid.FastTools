@@ -11,18 +11,23 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
 Assembly: Aspid.FastTools.dll  
 
-A wrapper around [`Type`](https://learn.microsoft.com/dotnet/api/system.type) that supports Unity Inspector serialization.
-The type is stored by its <code>AssemblyQualifiedName</code> and resolved lazily on first access.
+Unity-serializable wrapper around a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), stored by its <code>AssemblyQualifiedName</code>
+and resolved lazily on first access.
 
 ```csharp
 [Serializable]
-public sealed class SerializableType : ISerializableType, ISerializationCallbackReceiver
+public class SerializableType : SerializableTypeBase, ISerializableType, ISerializationCallbackReceiver
 ```
 
 #### Inheritance
 
 [object](https://learn.microsoft.com/dotnet/api/system.object) ← 
+[SerializableTypeBase](Aspid.FastTools.Types.SerializableTypeBase.md) ← 
 [SerializableType](Aspid.FastTools.Types.SerializableType.md)
+
+#### Derived
+
+[SerializableType\<T\>](Aspid.FastTools.Types.SerializableType-1.md)
 
 #### Implements
 
@@ -42,8 +47,6 @@ ISerializationCallbackReceiver
 
 ## Examples
 
-Declare a serializable type field and use the resolved type at runtime:
-
 
 ```csharp
 public class MyComponent : MonoBehaviour
@@ -60,40 +63,55 @@ public class MyComponent : MonoBehaviour
 ```
 
 
+## Remarks
+
+Unity serializes a field by its declared type, so a [`SerializableType<T>`](Aspid.FastTools.Types.SerializableType-1.md) assigned from code to a
+field declared as [`SerializableType`](Aspid.FastTools.Types.SerializableType.md) is reloaded unconstrained: the type survives, the constraint
+does not.
+
+## Constructors
+
+### SerializableType\(\) {#Aspid_FastTools_Types_SerializableType__ctor}
+
+Creates an empty wrapper.
+
+```csharp
+public SerializableType()
+```
+
+### SerializableType\(Type?\) {#Aspid_FastTools_Types_SerializableType__ctor_System_Type_}
+
+Creates a wrapper holding <code class="paramref">type</code>.
+
+```csharp
+public SerializableType(Type? type)
+```
+
+#### Parameters
+
+`type` [Type](https://learn.microsoft.com/dotnet/api/system.type)?
+
+The type to store, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for an empty wrapper.
+
 ## Properties
 
 ### BaseType {#Aspid_FastTools_Types_SerializableType_BaseType}
 
-The constraint that stored types must satisfy — candidate types offered
-by the editor picker are assignable to it; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
+Gets the constraint the stored type must satisfy; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
 
 ```csharp
-public Type BaseType { get; }
+public override Type BaseType { get; }
 ```
 
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)
 
-### Type {#Aspid_FastTools_Types_SerializableType_Type}
-
-The resolved [`Type`](https://learn.microsoft.com/dotnet/api/system.type), or <code>null</code> when no type is stored
-or the stored assembly-qualified name cannot be resolved.
-
-```csharp
-public Type? Type { get; }
-```
-
-#### Property Value
-
- [Type](https://learn.microsoft.com/dotnet/api/system.type)?
-
 ## Operators
 
 ### implicit operator Type?\(SerializableType?\) {#Aspid_FastTools_Types_SerializableType_op_Implicit_Aspid_FastTools_Types_SerializableType__System_Type}
 
-Resolves and returns the wrapped type; equivalent to [`SerializableType.Type`](Aspid.FastTools.Types.SerializableType.md#Aspid_FastTools_Types_SerializableType_Type).
-A <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> wrapper converts to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+Converts the wrapper to the type it holds.
 
 ```csharp
 public static implicit operator Type?(SerializableType? type)
@@ -103,7 +121,12 @@ public static implicit operator Type?(SerializableType? type)
 
 `type` [SerializableType](Aspid.FastTools.Types.SerializableType.md)?
 
+The wrapper to convert.
+
 #### Returns
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)?
+
+The wrapped type, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when the wrapper is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or holds no
+resolvable type.
 

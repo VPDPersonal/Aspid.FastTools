@@ -17,7 +17,7 @@ Allocation-free enumerator over the resolved entries of an [`EnumValues<T>`](Asp
 [`IEnumerable<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1) interface (e.g. LINQ).
 
 ```csharp
-public struct EnumValuesEnumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue>>, IEnumerator, IDisposable
+public struct EnumValuesEnumerator<TKey, TValue> : IEnumerator<KeyValuePair<TKey, TValue?>>, IEnumerator, IDisposable
 ```
 
 #### Type Parameters
@@ -32,7 +32,7 @@ The type of the value associated with each enum member.
 
 #### Implements
 
-[IEnumerator\<KeyValuePair\<TKey, TValue\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1), 
+[IEnumerator\<KeyValuePair\<TKey, TValue?\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerator-1), 
 [IEnumerator](https://learn.microsoft.com/dotnet/api/system.collections.ienumerator), 
 [IDisposable](https://learn.microsoft.com/dotnet/api/system.idisposable)
 
@@ -51,21 +51,22 @@ The type of the value associated with each enum member.
 
 ### Current {#Aspid_FastTools_Enums_EnumValuesEnumerator_2_Current}
 
-Gets the element in the collection at the current position of the enumerator.
+The entry at the current position; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/default">default</a> before the first
+[`EnumValuesEnumerator<T1, T2>.MoveNext`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md#Aspid_FastTools_Enums_EnumValuesEnumerator_2_MoveNext) and after the last one.
 
 ```csharp
-public readonly KeyValuePair<TKey, TValue> Current { get; }
+public readonly KeyValuePair<TKey, TValue?> Current { get; }
 ```
 
 #### Property Value
 
- [KeyValuePair](https://learn.microsoft.com/dotnet/api/system.collections.generic.keyvaluepair-2)\<TKey, TValue\>
+ [KeyValuePair](https://learn.microsoft.com/dotnet/api/system.collections.generic.keyvaluepair-2)\<TKey, TValue?\>
 
 ## Methods
 
 ### MoveNext\(\) {#Aspid_FastTools_Enums_EnumValuesEnumerator_2_MoveNext}
 
-Advances the enumerator to the next element of the collection.
+Advances to the next resolved entry, skipping entries whose key could not be parsed.
 
 ```csharp
 public bool MoveNext()
@@ -75,11 +76,5 @@ public bool MoveNext()
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the enumerator was successfully advanced to the next element; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> if the enumerator has passed the end of the collection.
-
-#### Exceptions
-
- [InvalidOperationException](https://learn.microsoft.com/dotnet/api/system.invalidoperationexception)
-
-The collection was modified after the enumerator was created.
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if an entry was found; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> at the end.
 

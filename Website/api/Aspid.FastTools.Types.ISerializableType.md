@@ -11,8 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
 Assembly: Aspid.FastTools.dll  
 
-Common contract of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers
-([`SerializableType`](Aspid.FastTools.Types.SerializableType.md) and [`SerializableType<T>`](Aspid.FastTools.Types.SerializableType-1.md)).
+Defines the common contract of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers.
 
 ```csharp
 public interface ISerializableType
@@ -32,8 +31,7 @@ public interface ISerializableType
 
 ### BaseType {#Aspid_FastTools_Types_ISerializableType_BaseType}
 
-The constraint that stored types must satisfy — candidate types offered
-by the editor picker are assignable to it; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
+Gets the constraint the stored type must satisfy; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
 
 ```csharp
 Type BaseType { get; }
@@ -45,8 +43,7 @@ Type BaseType { get; }
 
 ### Type {#Aspid_FastTools_Types_ISerializableType_Type}
 
-The resolved [`Type`](https://learn.microsoft.com/dotnet/api/system.type), or <code>null</code> when no type is stored
-or the stored assembly-qualified name cannot be resolved.
+Gets the resolved type, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when no type is stored or its stored name cannot be resolved.
 
 ```csharp
 Type? Type { get; }

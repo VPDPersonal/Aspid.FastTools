@@ -11,8 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
 Assembly: Aspid.FastTools.dll  
 
-Adds an Inspector dropdown that lets you swap the object's script
-to any subtype of the field's declaring class.
+Represents a marker field adding an Inspector dropdown that swaps the object's script to any subtype of the
+field's declaring class.
 
 ```csharp
 [Serializable]
@@ -32,8 +32,7 @@ public struct ComponentTypeSelector
 
 ## Examples
 
-Place a field of this type inside the root component class.
-The Inspector will render a dropdown listing all subtypes of <code>BaseEnemy</code>:
+Place a field of this type in the root class; the Inspector lists all subtypes of <code>BaseEnemy</code>:
 
 
 ```csharp
@@ -47,17 +46,8 @@ public class TankEnemy : BaseEnemy { }
 ```
 
 
-Selecting "TankEnemy" turns the object into a <code>TankEnemy</code> instance.
-
 ## Remarks
 
-<p>
-When the user picks a type, the editor locates the corresponding <code>MonoScript</code>
-asset and writes it to <code>m_Script</code> on the <code>SerializedObject</code>, effectively
-changing the component or ScriptableObject to the chosen subtype.
-</p>
-<p>
-The picker is automatically constrained to subtypes of the class that declares
-the field — no extra configuration is needed.
-</p>
+Picking a type writes the matching <code>MonoScript</code> asset to <code>m_Script</code>, turning the object into that
+subtype. The picker is constrained to the declaring class automatically.
 

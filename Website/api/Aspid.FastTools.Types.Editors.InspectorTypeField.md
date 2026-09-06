@@ -11,8 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-[`TypeField`](Aspid.FastTools.Types.Editors.TypeField.md) variant pre-styled to match a Unity Inspector property row,
-so its label aligns with sibling property fields.
+[`TypeField`](Aspid.FastTools.Types.Editors.TypeField.md) pre-styled as an Inspector property row, so its label aligns with sibling fields.
 
 ```csharp
 [UxmlElement]
@@ -295,18 +294,21 @@ IMixedValueSupport
 
 ## Remarks
 
-Use this in custom property drawers; use [`TypeField`](Aspid.FastTools.Types.Editors.TypeField.md) directly for
-stand-alone editor windows where Inspector alignment is not desired.
+Use it in custom property drawers; a stand-alone editor window uses [`TypeField`](Aspid.FastTools.Types.Editors.TypeField.md) directly.
 
 ## Constructors
 
 ### InspectorTypeField\(\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor}
+
+Creates an unbound field without a label.
 
 ```csharp
 public InspectorTypeField()
 ```
 
 ### InspectorTypeField\(SerializedProperty\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_UnityEditor_SerializedProperty_}
+
+Creates a field bound to <code class="paramref">property</code>, labeled with its display name.
 
 ```csharp
 public InspectorTypeField(SerializedProperty property)
@@ -316,7 +318,12 @@ public InspectorTypeField(SerializedProperty property)
 
 `property` SerializedProperty
 
+A string property holding the assembly-qualified type name.
+
 ### InspectorTypeField\(string, SerializedProperty\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_UnityEditor_SerializedProperty_}
+
+Creates a bound field: the picked type's name is written to the property, and external edits are
+reflected back into the field.
 
 ```csharp
 public InspectorTypeField(string label, SerializedProperty property)
@@ -326,9 +333,15 @@ public InspectorTypeField(string label, SerializedProperty property)
 
 `label` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
+The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.
+
 `property` SerializedProperty
 
+A string property holding the assembly-qualified type name.
+
 ### InspectorTypeField\(string, Type\) {#Aspid_FastTools_Types_Editors_InspectorTypeField__ctor_System_String_System_Type_}
+
+Creates an unbound field; the picked type is reported only through the change event.
 
 ```csharp
 public InspectorTypeField(string label, Type defaultValue = null)
@@ -338,5 +351,9 @@ public InspectorTypeField(string label, Type defaultValue = null)
 
 `label` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
+The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.
+
 `defaultValue` [Type](https://learn.microsoft.com/dotnet/api/system.type)
+
+The type shown initially, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <code>&lt;None&gt;</code>.
 

@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
+Provides extension methods for [`PropertyField`](https://docs.unity3d.com/ScriptReference/UIElements-PropertyField.html).
+
 ```csharp
 public static class PropertyFieldExtensions
 ```
@@ -29,7 +31,7 @@ public static class PropertyFieldExtensions
 
 ### AddValueChanged\<T\>\(T, EventCallback\<SerializedPropertyChangeEvent\>\) {#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEditor_UIElements_SerializedPropertyChangeEvent__}
 
-Subscribes to the value-changed event of the element.
+Subscribes to the element's value-changed event.
 
 ```csharp
 public static T AddValueChanged<T>(this T element, EventCallback<SerializedPropertyChangeEvent> value) where T : PropertyField
@@ -55,9 +57,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<SerializedPropertyChangeEvent\>\) {#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEditor_UIElements_SerializedPropertyChangeEvent__}
 
-Unsubscribes from the value-changed event of the element.
+Unsubscribes from the element's value-changed event.
 
 ```csharp
 public static T RemoveValueChanged<T>(this T element, EventCallback<SerializedPropertyChangeEvent> value) where T : PropertyField
@@ -83,9 +87,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_SetLabel__1___0_System_String_}
 
-Sets the label of the property field.
+Sets the field's label.
 
 ```csharp
 public static T SetLabel<T>(this T element, string value) where T : PropertyField

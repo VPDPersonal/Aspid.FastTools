@@ -11,8 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
 Assembly: Aspid.FastTools.dll  
 
-Flags describing which special type categories the type picker should include
-in addition to plain concrete classes.
+Specifies which special type categories the type picker offers in addition to concrete classes.
 
 ```csharp
 [Flags]
@@ -39,19 +38,19 @@ Only concrete types are offered.
 
 `Abstract = 1` 
 
-Abstract classes are allowed in addition to concrete types.
+Abstract classes are offered too. Static classes never are.
 
 
 
 `Interface = 2` 
 
-Interfaces are allowed in addition to concrete types.
+Interfaces are offered too.
 
 
 
 `All = 3` 
 
-Both abstract classes and interfaces are allowed.
+Both abstract classes and interfaces are offered.
 
 
 

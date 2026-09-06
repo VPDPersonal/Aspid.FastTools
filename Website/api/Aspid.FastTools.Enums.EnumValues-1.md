@@ -16,7 +16,7 @@ A serializable dictionary that maps each member of a chosen enum to a value of t
 
 ```csharp
 [Serializable]
-public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue>>, IEnumerable, ISerializationCallbackReceiver
+public sealed class EnumValues<TValue> : IEnumerable<KeyValuePair<Enum, TValue?>>, IEnumerable, ISerializationCallbackReceiver
 ```
 
 #### Type Parameters
@@ -32,7 +32,7 @@ The type of the value associated with each enum member.
 
 #### Implements
 
-[IEnumerable\<KeyValuePair\<Enum, TValue\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1), 
+[IEnumerable\<KeyValuePair\<Enum, TValue?\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1), 
 [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.ienumerable), 
 ISerializationCallbackReceiver
 
@@ -120,7 +120,8 @@ For regular enums: <a href="https://learn.microsoft.com/dotnet/csharp/language-r
 For <code>[Flags]</code> enums: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when <code class="paramref">enumValue1</code>
 has all bits of <code class="paramref">enumValue2</code> set, with the additional rule that
 the zero (<code>None</code>) value is only equal to another zero value.<br />
-Values of different enum types are never equal.
+Values of a different enum type than the configured one are never equal,
+and neither is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
 ### GetEnumerator\(\) {#Aspid_FastTools_Enums_EnumValues_1_GetEnumerator}
 
@@ -143,7 +144,7 @@ or the configured default value if no mapping exists.
 A value of a different enum type than the configured one never matches.
 
 ```csharp
-public TValue GetValue(Enum enumValue)
+public TValue? GetValue(Enum enumValue)
 ```
 
 #### Parameters
@@ -154,7 +155,8 @@ The enum member to look up.
 
 #### Returns
 
- TValue
+ TValue?
 
-The mapped value, or the default value when no entry matches.
+The mapped value, or the default value when no entry matches. A reference-type
+<code class="typeparamref">TValue</code> left unassigned in the Inspector is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 

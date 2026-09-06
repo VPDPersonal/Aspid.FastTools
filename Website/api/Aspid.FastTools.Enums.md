@@ -10,17 +10,17 @@ pagination_next: null
 
 ### Classes
 
- [EnumValues\<TValue\>](Aspid.FastTools.Enums.EnumValues-1.md)
-
-A serializable dictionary that maps each member of a chosen enum to a value of type
-<code class="typeparamref">TValue</code>. Supports both regular and <code>[Flags]</code> enums.
-
  [EnumValues\<TEnum, TValue\>](Aspid.FastTools.Enums.EnumValues-2.md)
 
 A serializable dictionary that maps members of <code class="typeparamref">TEnum</code> to values of
 type <code class="typeparamref">TValue</code>. The typed counterpart of [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md)
 for the common case where the enum type is known at compile time — the Inspector type-picker
 is read-only, and lookups are compile-time safe.
+
+ [EnumValues\<TValue\>](Aspid.FastTools.Enums.EnumValues-1.md)
+
+A serializable dictionary that maps each member of a chosen enum to a value of type
+<code class="typeparamref">TValue</code>. Supports both regular and <code>[Flags]</code> enums.
 
 ### Structs
 

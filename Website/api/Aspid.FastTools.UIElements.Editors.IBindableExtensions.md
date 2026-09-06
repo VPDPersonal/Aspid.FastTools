@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
+Provides binding extension methods for [`IBindable`](https://docs.unity3d.com/ScriptReference/UIElements-IBindable.html) elements.
+
 ```csharp
 public static class IBindableExtensions
 ```
@@ -29,7 +31,7 @@ public static class IBindableExtensions
 
 ### BindPropertyTo\<T\>\(T, SerializedProperty\) {#Aspid_FastTools_UIElements_Editors_IBindableExtensions_BindPropertyTo__1___0_UnityEditor_SerializedProperty_}
 
-Binds the element to the specified [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html).
+Binds the element to <code class="paramref">property</code>.
 
 ```csharp
 public static T BindPropertyTo<T>(this T element, SerializedProperty property) where T : VisualElement, IBindable
@@ -43,7 +45,7 @@ The element to bind.
 
 `property` SerializedProperty
 
-The serialized property to bind to.
+The property to bind to.
 
 #### Returns
 
@@ -55,9 +57,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### BindTo\<T\>\(T, SerializedObject, string\) {#Aspid_FastTools_UIElements_Editors_IBindableExtensions_BindTo__1___0_UnityEditor_SerializedObject_System_String_}
 
-Sets the binding path and binds the element to the specified [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html).
+Sets the binding path and binds the element to <code class="paramref">serializedObject</code>.
 
 ```csharp
 public static T BindTo<T>(this T element, SerializedObject serializedObject, string propertyPath) where T : VisualElement, IBindable
@@ -75,7 +79,7 @@ The serialized object to bind to.
 
 `propertyPath` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-The serialized property path to bind to.
+The property path to bind to.
 
 #### Returns
 
@@ -87,9 +91,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetBindingPath\<T\>\(T, string\) {#Aspid_FastTools_UIElements_Editors_IBindableExtensions_SetBindingPath__1___0_System_String_}
 
-Sets the binding path of the element.
+Sets the element's binding path.
 
 ```csharp
 public static T SetBindingPath<T>(this T element, string value) where T : VisualElement, IBindable

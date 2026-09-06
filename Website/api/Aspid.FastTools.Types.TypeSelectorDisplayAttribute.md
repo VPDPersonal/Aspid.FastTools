@@ -11,9 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
 Assembly: Aspid.FastTools.dll  
 
-Supplies presentation metadata for a type shown in the type-selector window: a display name,
-a picker group, a tooltip and an icon — or, with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden), keeps the type out of the
-picker altogether.
+Supplies presentation metadata for a type in the type-selector window — display name, group, tooltip and
+icon — or keeps the type out of the picker entirely with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden).
 
 ```csharp
 [Conditional("UNITY_EDITOR")]
@@ -40,8 +39,6 @@ public sealed class TypeSelectorDisplayAttribute : Attribute
 
 ## Examples
 
-Rename the type in the picker, place it under an explicit group and give it a tooltip and an icon:
-
 
 ```csharp
 [TypeSelectorDisplay(
@@ -53,9 +50,6 @@ public sealed class DamageModifier { }
 ```
 
 
-Keep an adapter that only makes sense from code out of the picker:
-
-
 ```csharp
 [TypeSelectorDisplay(Hidden = true)]
 public sealed class DelegateModifier : IModifier { }
@@ -64,20 +58,17 @@ public sealed class DelegateModifier : IModifier { }
 
 ## Remarks
 
-<code>[Conditional("UNITY_EDITOR")]</code> keeps this editor-only metadata out of player builds, matching the
-other attributes in the package. The compiler evaluates the symbol at the <i>use</i> site, which also
-means a type compiled outside Unity — a plugin <code>.dll</code> built by <code>dotnet build</code> — carries no
-usage at all, so none of these settings apply to it, [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden) included. Declare the attribute
-from inside the Unity project.
+<code>[Conditional("UNITY_EDITOR")]</code> keeps this metadata out of player builds. The compiler evaluates the
+symbol at the use site, so a type compiled outside Unity — a plugin <code>.dll</code> built by
+<code>dotnet build</code> — carries no usage at all and none of these settings apply to it,
+[`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden) included. Declare the attribute from inside the Unity project.
 
 ## Properties
 
 ### Group {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Group}
 
-Explicit picker path for the type, with <code>/</code> separating levels (e.g. <code>"Combat/Melee"</code>).
-The group <b>replaces</b> the type's namespace placement in the picker hierarchy — the type
-appears only under this path. Empty segments are ignored; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace
-means the type stays under its namespace.
+Gets or sets an explicit picker path, with <code>/</code> separating levels (<code>"Combat/Melee"</code>).
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace keeps the type under its namespace.
 
 ```csharp
 public string? Group { get; set; }
@@ -87,12 +78,15 @@ public string? Group { get; set; }
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)?
 
+#### Remarks
+
+The path replaces the type's namespace placement, so the type appears only under it. Empty segments are
+ignored.
+
 ### Hidden {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden}
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the picker never offers this type — for types that are technically
-assignable but not meant to be authored in the Inspector, such as a delegate-backed adapter or a
-base implementation kept only for code. Assigning the type from code is unaffected, and a value
-already stored in a field keeps rendering.
+Gets or sets a value indicating whether the picker never offers this type — for types that are assignable
+but not meant to be authored in the Inspector.
 
 ```csharp
 public bool Hidden { get; set; }
@@ -104,16 +98,15 @@ public bool Hidden { get; set; }
 
 #### Remarks
 
-Not inherited, matching this attribute's [`AttributeUsageAttribute`](https://learn.microsoft.com/dotnet/api/system.attributeusageattribute): hiding a base type never hides
-the subclasses meant to be picked instead of it.
+Assigning from code is unaffected, and a value already stored in a field keeps rendering. Not inherited,
+so hiding a base type never hides the subclasses meant to be picked instead.
 
 ### Icon {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Icon}
 
-Editor icon to show left of the label. One of: an <code>EditorGUIUtility.IconContent</code> name
-(e.g. <code>"d_ScriptableObject Icon"</code>); a project-relative asset path with extension
-(e.g. <code>"Assets/Art/Icons/Damage.png"</code>, loaded via <code>AssetDatabase</code>); or a <code>Resources</code>
-texture path without extension (e.g. <code>"Icons/Damage"</code>). The editor resolves the value lazily;
-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> means no icon.
+Gets or sets the icon shown left of the label: an <code>EditorGUIUtility.IconContent</code> name
+(<code>"d_ScriptableObject Icon"</code>), a project-relative asset path with extension
+(<code>"Assets/Art/Icons/Damage.png"</code>), or a <code>Resources</code> path without extension
+(<code>"Icons/Damage"</code>). Resolved lazily; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> means no icon.
 
 ```csharp
 public string? Icon { get; set; }
@@ -125,11 +118,8 @@ public string? Icon { get; set; }
 
 ### Name {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Name}
 
-Display name shown instead of the type's short name — in the picker rows and in the closed
-dropdown's caption. Search keeps matching the real type name as well, and the hover tooltip
-still reveals the full <code>Namespace.Class, Assembly</code> identity. On a generic type the formatted
-arguments (or parameters) are appended after the custom name (<code>Mod&lt;T&gt;</code>, <code>Mod&lt;Single&gt;</code>).
-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace means no override.
+Gets or sets the name shown instead of the type's short name. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or whitespace means
+no override.
 
 ```csharp
 public string? Name { get; set; }
@@ -139,9 +129,14 @@ public string? Name { get; set; }
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)?
 
+#### Remarks
+
+Search still matches the real name, the tooltip still shows the full identity, and a generic type keeps
+its formatted arguments appended (<code>Mod&lt;Single&gt;</code>).
+
 ### Tooltip {#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Tooltip}
 
-Tooltip shown when hovering the type's row. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> means no tooltip override.
+Gets or sets the tooltip shown on the type's row; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> means no override.
 
 ```csharp
 public string? Tooltip { get; set; }

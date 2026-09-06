@@ -11,10 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Describes which types the selector offers: the base-type and kind constraints, an optional per-type
-predicate, any verbatim extra entries, and the argument predicate for open generics. Bundles the
-candidate-defining inputs of [`TypeSelectorWindow.Show`](Aspid.FastTools.Types.Editors.TypeSelectorWindow.md) and the [`Editors.TypeSelectorView`](Aspid.FastTools.Types.Editors.md)
-constructor into a single value so they travel together.
+Represents the constraints deciding which types the selector offers.
 
 ```csharp
 public struct TypeSelectorFilter
@@ -35,8 +32,8 @@ public struct TypeSelectorFilter
 
 ### AdditionalTypes {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_AdditionalTypes}
 
-Optional extra types appended to the list verbatim, bypassing the base-type and [`TypeSelectorFilter.Allow`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Allow) checks —
-used to inject entries the assignability scan cannot match, such as open generic definitions.
+Gets or sets extra types appended verbatim, bypassing the base-type and [`TypeSelectorFilter.Allow`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Allow) checks — for
+entries the assignability scan cannot match, such as open generic definitions.
 
 ```csharp
 public IEnumerable<Type> AdditionalTypes { readonly get; set; }
@@ -48,7 +45,7 @@ public IEnumerable<Type> AdditionalTypes { readonly get; set; }
 
 ### Allow {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Allow}
 
-Which type kinds are included in the list.
+Gets or sets which type kinds the list includes.
 
 ```csharp
 public TypeAllow Allow { readonly get; set; }
@@ -60,9 +57,8 @@ public TypeAllow Allow { readonly get; set; }
 
 ### ArgumentFilter {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_ArgumentFilter}
 
-Optional predicate applied to candidate types offered for an open generic's type arguments (in addition to
-the parameter's own constraints). Used to restrict arguments to, e.g., Unity-serializable types. Leave
-<code>null</code> to accept any constraint-satisfying type.
+Gets or sets the predicate applied to the types offered for an open generic's arguments, on top of the
+parameter's own constraints. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> accepts any constraint-satisfying type.
 
 ```csharp
 public Func<Type, bool> ArgumentFilter { readonly get; set; }
@@ -72,11 +68,27 @@ public Func<Type, bool> ArgumentFilter { readonly get; set; }
 
  [Func](https://learn.microsoft.com/dotnet/api/system.func-2)\<[Type](https://learn.microsoft.com/dotnet/api/system.type), [bool](https://learn.microsoft.com/dotnet/api/system.boolean)\>
 
+### HideNoneOption {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_HideNoneOption}
+
+Gets or sets a value indicating whether the <code>&lt;None&gt;</code> row is left out of the root page.
+
+```csharp
+public bool HideNoneOption { readonly get; set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+#### Remarks
+
+Set it on a picker whose target must always hold a type, such as one swapping a component's script. By
+default the row is offered and reports <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when selected.
+
 ### IncludeHidden {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_IncludeHidden}
 
-Includes types marked <code>[TypeSelectorDisplay(Hidden = true)]</code>, which the picker leaves out by default.
-Set it only on a picker that <b>repairs</b> a reference rather than authors one: hiding a type means "do
-not offer this for new work", not "make existing data holding it unfixable".
+Gets or sets a value indicating whether types marked <code>[TypeSelectorDisplay(Hidden = true)]</code> are
+offered.
 
 ```csharp
 public bool IncludeHidden { readonly get; set; }
@@ -86,10 +98,15 @@ public bool IncludeHidden { readonly get; set; }
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+#### Remarks
+
+Set it only on a picker that repairs a reference: hiding a type means "do not offer this for new work",
+not "make existing data holding it unfixable".
+
 ### InferredArgumentFilter {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_InferredArgumentFilter}
 
-Optional predicate applied to an argument the selector <b>infers</b> from the field instead of asking for
-it. Leave <code>null</code> to accept whatever the field determines.
+Gets or sets the filter applied to an argument the selector infers from the field instead of asking for
+it. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> accepts whatever the field determines.
 
 ```csharp
 public GenericArgumentFilter InferredArgumentFilter { readonly get; set; }
@@ -101,15 +118,14 @@ public GenericArgumentFilter InferredArgumentFilter { readonly get; set; }
 
 #### Remarks
 
-Separate from [`TypeSelectorFilter.ArgumentFilter`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_ArgumentFilter) because the two decide different things. That one curates a
-page a human reads and has to stay a finite, sensible list; this one judges a single argument the field
-has already fixed, which no one is going to browse — so it can afford to ask the exact question, per
-parameter, and admit an argument the page would not have bothered to offer.
+Separate from [`TypeSelectorFilter.ArgumentFilter`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_ArgumentFilter), which curates a page a human reads and must stay a finite
+list. This one judges a single argument the field has already fixed, so it can ask the exact question per
+parameter and admit an argument the page would not have offered.
 
 ### Predicate {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Predicate}
 
-Optional predicate applied to each candidate type after the base-type and [`TypeSelectorFilter.Allow`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Allow) checks.
-Return <code>false</code> to hide a type. Leave <code>null</code> to keep every matching type.
+Gets or sets the predicate applied to each candidate after the base-type and [`TypeSelectorFilter.Allow`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Allow) checks,
+returning <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> to hide a type. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> keeps every matching type.
 
 ```csharp
 public Func<Type, bool> Predicate { readonly get; set; }
@@ -121,8 +137,8 @@ public Func<Type, bool> Predicate { readonly get; set; }
 
 ### Types {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Types}
 
-Base types used to filter which concrete types are shown. Only types assignable to all entries are listed.
-Defaults to [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when left <code>null</code>.
+Gets or sets the base types the candidates must all be assignable to.
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> stands for [`Object`](https://learn.microsoft.com/dotnet/api/system.object).
 
 ```csharp
 public Type[] Types { readonly get; set; }

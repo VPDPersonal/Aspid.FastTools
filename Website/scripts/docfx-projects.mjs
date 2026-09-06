@@ -25,8 +25,8 @@ const outDir = path.join(siteDir, 'docfx', 'projects');
 
 /** Assemblies that get an API reference page tree, with the folder their asmdef lives in. */
 const ASSEMBLIES = {
-  'Aspid.FastTools': 'Runtime',
-  'Aspid.FastTools.Editor': 'Editor',
+  'Aspid.FastTools': 'Runtime/Scripts',
+  'Aspid.FastTools.Editor': 'Editor/Scripts',
 };
 
 function attr(xml, tag, name) {

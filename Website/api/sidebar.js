@@ -105,94 +105,6 @@ export default { api: [
   },
   {
     "type": "category",
-    "key": "Aspid.FastTools.Ids",
-    "label": "Aspid.FastTools.Ids",
-    "collapsed": true,
-    "link": {
-      "type": "doc",
-      "id": "Aspid.FastTools.Ids"
-    },
-    "items": [
-      {
-        "type": "category",
-        "key": "Aspid.FastTools.Ids.Classes",
-        "label": "Classes",
-        "collapsed": true,
-        "items": [
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Ids.IdRegistry",
-            "label": "IdRegistry"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Ids.IdRegistry-1",
-            "label": "IdRegistry<T>"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Ids.UniqueIdAttribute",
-            "label": "UniqueIdAttribute"
-          }
-        ]
-      },
-      {
-        "type": "category",
-        "key": "Aspid.FastTools.Ids.Interfaces",
-        "label": "Interfaces",
-        "collapsed": true,
-        "items": [
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Ids.IId",
-            "label": "IId"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "type": "category",
-    "key": "Aspid.FastTools.Ids.Editors",
-    "label": "Aspid.FastTools.Ids.Editors",
-    "collapsed": true,
-    "link": {
-      "type": "doc",
-      "id": "Aspid.FastTools.Ids.Editors"
-    },
-    "items": [
-      {
-        "type": "category",
-        "key": "Aspid.FastTools.Ids.Editors.Classes",
-        "label": "Classes",
-        "collapsed": true,
-        "items": [
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Ids.Editors.IdField",
-            "label": "IdField"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Ids.Editors.IdField.UxmlSerializedData",
-            "label": "IdField.UxmlSerializedData"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Ids.Editors.InspectorIdField",
-            "label": "InspectorIdField"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.Ids.Editors.InspectorIdField.UxmlSerializedData",
-            "label": "InspectorIdField.UxmlSerializedData"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "type": "category",
     "key": "Aspid.FastTools.SerializeReferences.Editors",
     "label": "Aspid.FastTools.SerializeReferences.Editors",
     "collapsed": true,
@@ -239,6 +151,16 @@ export default { api: [
         "items": [
           {
             "type": "doc",
+            "id": "Aspid.FastTools.Types.SerializableMonoScript",
+            "label": "SerializableMonoScript"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.Types.SerializableMonoScript-1",
+            "label": "SerializableMonoScript<T>"
+          },
+          {
+            "type": "doc",
             "id": "Aspid.FastTools.Types.SerializableType",
             "label": "SerializableType"
           },
@@ -246,6 +168,11 @@ export default { api: [
             "type": "doc",
             "id": "Aspid.FastTools.Types.SerializableType-1",
             "label": "SerializableType<T>"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.Types.SerializableTypeBase",
+            "label": "SerializableTypeBase"
           },
           {
             "type": "doc",

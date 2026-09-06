@@ -19,3 +19,4 @@ that resolve human-readable script names, respecting the [`AddComponentMenu`](ht
 
 Fluent extension methods for [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) providing chainable wrappers
 around [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html) synchronization and typed value setters.
+

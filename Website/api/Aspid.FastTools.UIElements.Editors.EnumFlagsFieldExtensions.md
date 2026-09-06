@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
+Provides extension methods for [`EnumFlagsField`](https://docs.unity3d.com/ScriptReference/UIElements-EnumFlagsField.html).
+
 ```csharp
 public static class EnumFlagsFieldExtensions
 ```
@@ -29,7 +31,7 @@ public static class EnumFlagsFieldExtensions
 
 ### Initialize\<T\>\(T, Enum, bool\) {#Aspid_FastTools_UIElements_Editors_EnumFlagsFieldExtensions_Initialize__1___0_System_Enum_System_Boolean_}
 
-Initializes the field with a default enum flags value via [`Init`](https://docs.unity3d.com/ScriptReference/UIElements-EnumFlagsField-Init.html).
+Initializes the field with a default flags value.
 
 ```csharp
 public static T Initialize<T>(this T element, Enum defaultValue, bool includeObsoleteValues = false) where T : EnumFlagsField
@@ -43,11 +45,12 @@ The element to modify.
 
 `defaultValue` [Enum](https://learn.microsoft.com/dotnet/api/system.enum)
 
-The default enum flags value to display.
+The flags value shown initially.
 
 `includeObsoleteValues` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to include obsolete enum values in the choices.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, obsolete enum values appear in the
+    choices.
 
 #### Returns
 
@@ -58,4 +61,6 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 

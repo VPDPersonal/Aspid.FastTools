@@ -14,8 +14,6 @@ pagination_next: null
 
  [Aspid.FastTools.Enums](Aspid.FastTools.Enums.md)
 
- [Aspid.FastTools.Ids](Aspid.FastTools.Ids.md)
-
  [Aspid.FastTools.Types](Aspid.FastTools.Types.md)
 
  [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)

@@ -11,11 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Decides whether <code class="paramref">argument</code> may close <code class="paramref">parameter</code> of
-<code class="paramref">openDefinition</code>. Unlike a plain per-type predicate this is asked <i>about a position</i>,
-because what a closed type has to store depends on where its parameter lands: a parameter reaching a field
-the engine writes by value constrains the argument, one reaching only a <code>[SerializeReference]</code> field
-does not.
+Represents the method that decides whether <code class="paramref">argument</code> may close
+<code class="paramref">parameter</code>.
 
 ```csharp
 public delegate bool GenericArgumentFilter(Type openDefinition, Type parameter, Type argument)
@@ -29,7 +26,7 @@ The generic definition being closed.
 
 `parameter` [Type](https://learn.microsoft.com/dotnet/api/system.type)
 
-The type parameter of <code class="paramref">openDefinition</code> being closed.
+The type parameter being closed.
 
 `argument` [Type](https://learn.microsoft.com/dotnet/api/system.type)
 
@@ -38,6 +35,9 @@ The concrete type proposed for it.
 #### Returns
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if <code class="paramref">argument</code> may close <code class="paramref">parameter</code>; otherwise,
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 
 #### Extension Methods
 
@@ -48,4 +48,10 @@ The concrete type proposed for it.
 [BaseFieldExtensions.SetLabel\<GenericArgumentFilter, TValue\>\(GenericArgumentFilter, string\)](Aspid.FastTools.UIElements.BaseFieldExtensions.md#Aspid_FastTools_UIElements_BaseFieldExtensions_SetLabel__2___0_System_String_), 
 [SliderExtensions.SetLowValue\<GenericArgumentFilter, TValue\>\(GenericArgumentFilter, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_), 
 [INotifyValueChangedExtensions.SetValue\<GenericArgumentFilter, TValue\>\(GenericArgumentFilter, TValue, bool\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__2___0___1_System_Boolean_)
+
+## Remarks
+
+Unlike a per-type predicate this is asked about a position: what a closed type must store depends on where its
+parameter lands, since a parameter reaching a by-value field constrains the argument and one reaching only a
+<code>[SerializeReference]</code> field does not.
 

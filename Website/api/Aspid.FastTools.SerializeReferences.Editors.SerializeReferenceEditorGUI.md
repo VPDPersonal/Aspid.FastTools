@@ -11,12 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.SerializeReferences.Editors](Aspid.FastTools.SerializeReferences.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-The custom-editor entry point to the SerializeReference dropdown field: draws a <code>[SerializeReference]</code>
-property with the package's type-dropdown UI from an editor's own code, no <code>[TypeSelector]</code> attribute
-needed. This is how a custom editor offers the same fields Unity's own inspector would need
-<code>[TypeSelector]</code> for: [`SerializeReferenceEditorGUI.CreateField`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) / [`SerializeReferenceEditorGUI.CreateList`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) from
-<code>CreateInspectorGUI</code>, [`SerializeReferenceEditorGUI.DrawFieldLayout`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) from an IMGUI <code>OnInspectorGUI</code> (lists there:
-[`SerializeReferenceIMGUIList.Draw`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList.md)).
+Provides utility methods for drawing <code>[SerializeReference]</code> properties with the package's type-dropdown
+UI from a custom editor's own code, with no <code>[TypeSelector]</code> attribute.
 
 ```csharp
 public static class SerializeReferenceEditorGUI
@@ -46,13 +42,18 @@ public override VisualElement CreateInspectorGUI()
 ```
 
 
+## Remarks
+
+Call [`SerializeReferenceEditorGUI.CreateField`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) and [`SerializeReferenceEditorGUI.CreateList`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) from <code>CreateInspectorGUI</code>, and
+[`SerializeReferenceEditorGUI.DrawFieldLayout`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) from an IMGUI <code>OnInspectorGUI</code>; IMGUI lists go through
+[`SerializeReferenceIMGUIList.Draw`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList.md).
+
 ## Methods
 
 ### CreateField\(SerializedProperty, string, params Type\[\]\) {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceEditorGUI_CreateField_UnityEditor_SerializedProperty_System_String_System_Type___}
 
-Builds the dropdown field for a single <code>[SerializeReference]</code> property: a foldout whose header
-carries the type dropdown (backed by the hierarchical type picker) and whose content hosts the assigned
-instance's fields, with the package's usual notices (missing type, shared reference, mixed selection).
+Builds the dropdown field for one <code>[SerializeReference]</code> property: a foldout whose header carries the
+type dropdown and whose content hosts the instance's fields, with the package's usual notices.
 
 ```csharp
 public static VisualElement CreateField(SerializedProperty property, string label = null, params Type[] baseTypes)
@@ -70,24 +71,28 @@ Field label; the property's display name when omitted.
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Optional base types narrowing the picker below the field's declared type,
-    mirroring the <code>[TypeSelector(...)]</code> arguments.
+Base types narrowing the picker below the field's declared type.
 
 #### Returns
 
  VisualElement
 
+The field to add to the inspector's visual tree.
+
 #### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+Thrown when <code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
  [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
 
-The property is not a managed reference.
+Thrown when the property is not a managed reference.
 
 ### CreateList\(SerializedProperty, string, params Type\[\]\) {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceEditorGUI_CreateList_UnityEditor_SerializedProperty_System_String_System_Type___}
 
-Builds the list for a <code>[SerializeReference]</code> array/list property: every element renders as the
-dropdown field and the "+" opens the type picker, appending a fresh typed instance (never a rid-aliased
-duplicate of the last element).
+Builds the list for a <code>[SerializeReference]</code> array: every element renders as the dropdown field and
+the "+" opens the type picker, appending a fresh instance instead of a rid-aliased duplicate.
 
 ```csharp
 public static VisualElement CreateList(SerializedProperty property, string label = null, params Type[] baseTypes)
@@ -105,24 +110,27 @@ Header label; the property's display name when omitted.
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Optional base types narrowing the picker below the declared element type,
-    mirroring the <code>[TypeSelector(...)]</code> arguments.
+Base types narrowing the picker below the declared element type.
 
 #### Returns
 
  VisualElement
 
+The list to add to the inspector's visual tree.
+
 #### Exceptions
+
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+Thrown when <code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
  [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
 
-The property is not a managed-reference array/list.
+Thrown when the property is not a managed-reference array.
 
 ### DrawFieldLayout\(SerializedProperty, GUIContent, params Type\[\]\) {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceEditorGUI_DrawFieldLayout_UnityEditor_SerializedProperty_UnityEngine_GUIContent_System_Type___}
 
-IMGUI twin of [`SerializeReferenceEditorGUI.CreateField`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) for an <code>OnInspectorGUI</code>-based editor: reserves the layout rect
-and draws the same dropdown field into it. Lists have their own IMGUI entry,
-[`SerializeReferenceIMGUIList.Draw`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList.md).
+Reserves a layout rect and draws into it the same dropdown field as [`SerializeReferenceEditorGUI.CreateField`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md).
 
 ```csharp
 public static void DrawFieldLayout(SerializedProperty property, GUIContent label = null, params Type[] baseTypes)
@@ -140,12 +148,19 @@ Field label; the property's display name when omitted.
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Optional base types narrowing the picker below the field's declared type,
-    mirroring the <code>[TypeSelector(...)]</code> arguments.
+Base types narrowing the picker below the field's declared type.
+
+#### Remarks
+
+Lists use [`SerializeReferenceIMGUIList.Draw`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList.md).
 
 #### Exceptions
 
+ [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
+
+Thrown when <code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+
  [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
 
-The property is not a managed reference.
+Thrown when the property is not a managed reference.
 

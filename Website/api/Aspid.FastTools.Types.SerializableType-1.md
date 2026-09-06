@@ -11,23 +11,24 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types](Aspid.FastTools.Types.md)  
 Assembly: Aspid.FastTools.dll  
 
-A wrapper around [`Type`](https://learn.microsoft.com/dotnet/api/system.type) that supports Unity Inspector serialization,
-constrained to types assignable to <code class="typeparamref">T</code>.
+[`SerializableType`](Aspid.FastTools.Types.SerializableType.md) constrained to types assignable to <code class="typeparamref">T</code>.
 
 ```csharp
 [Serializable]
-public sealed class SerializableType<T> : ISerializableType, ISerializationCallbackReceiver
+public sealed class SerializableType<T> : SerializableType, ISerializableType, ISerializationCallbackReceiver
 ```
 
 #### Type Parameters
 
 `T` 
 
-The base constraint type. The editor picker offers only types assignable to it.
+Base constraint type; the picker offers only types assignable to it.
 
 #### Inheritance
 
 [object](https://learn.microsoft.com/dotnet/api/system.object) ← 
+[SerializableTypeBase](Aspid.FastTools.Types.SerializableTypeBase.md) ← 
+[SerializableType](Aspid.FastTools.Types.SerializableType.md) ← 
 [SerializableType\<T\>](Aspid.FastTools.Types.SerializableType-1.md)
 
 #### Implements
@@ -48,17 +49,15 @@ ISerializationCallbackReceiver
 
 ## Examples
 
-Constrain the picker to <code>MonoBehaviour</code> subtypes only:
-
 
 ```csharp
 public class MyComponent : MonoBehaviour
 {
-    [SerializeField] private SerializableType<MonoBehaviour> _behaviourType;
+    [SerializeField] private SerializableType<MonoBehaviour> _behaviorType;
 
     private void Start()
     {
-        Type type = _behaviourType;  // always a MonoBehaviour subtype or null
+        Type type = _behaviorType;  // always a MonoBehaviour subtype or null
         if (type != null)
             gameObject.AddComponent(type);
     }
@@ -66,50 +65,47 @@ public class MyComponent : MonoBehaviour
 ```
 
 
+## Constructors
+
+### SerializableType\(\) {#Aspid_FastTools_Types_SerializableType_1__ctor}
+
+Creates an empty wrapper.
+
+```csharp
+public SerializableType()
+```
+
+### SerializableType\(Type?\) {#Aspid_FastTools_Types_SerializableType_1__ctor_System_Type_}
+
+Creates a wrapper holding <code class="paramref">type</code>.
+
+```csharp
+public SerializableType(Type? type)
+```
+
+#### Parameters
+
+`type` [Type](https://learn.microsoft.com/dotnet/api/system.type)?
+
+The type to store, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for an empty wrapper.
+
+#### Exceptions
+
+ [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
+
+Thrown when <code class="paramref">type</code> is not assignable to <code class="typeparamref">T</code>.
+
 ## Properties
 
 ### BaseType {#Aspid_FastTools_Types_SerializableType_1_BaseType}
 
-The constraint that stored types must satisfy — candidate types offered
-by the editor picker are assignable to it; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
+Gets the constraint the stored type must satisfy; [`Object`](https://learn.microsoft.com/dotnet/api/system.object) when unconstrained.
 
 ```csharp
-public Type BaseType { get; }
+public override Type BaseType { get; }
 ```
 
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)
-
-### Type {#Aspid_FastTools_Types_SerializableType_1_Type}
-
-The resolved [`Type`](https://learn.microsoft.com/dotnet/api/system.type), or <code>null</code> when no type is stored
-or the stored assembly-qualified name cannot be resolved.
-
-```csharp
-public Type? Type { get; }
-```
-
-#### Property Value
-
- [Type](https://learn.microsoft.com/dotnet/api/system.type)?
-
-## Operators
-
-### implicit operator Type?\(SerializableType\<T\>?\) {#Aspid_FastTools_Types_SerializableType_1_op_Implicit_Aspid_FastTools_Types_SerializableType__0___System_Type}
-
-Resolves and returns the wrapped type; equivalent to [`SerializableType<T>.Type`](Aspid.FastTools.Types.SerializableType-1.md#Aspid_FastTools_Types_SerializableType_1_Type).
-A <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> wrapper converts to <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
-
-```csharp
-public static implicit operator Type?(SerializableType<T>? type)
-```
-
-#### Parameters
-
-`type` [SerializableType](Aspid.FastTools.Types.SerializableType-1.md)\<T\>?
-
-#### Returns
-
- [Type](https://learn.microsoft.com/dotnet/api/system.type)?
 

@@ -12,9 +12,17 @@ pagination_next: null
 
  [EnumFlagsFieldExtensions](Aspid.FastTools.UIElements.Editors.EnumFlagsFieldExtensions.md)
 
+Provides extension methods for [`EnumFlagsField`](https://docs.unity3d.com/ScriptReference/UIElements-EnumFlagsField.html).
+
  [IBindableExtensions](Aspid.FastTools.UIElements.Editors.IBindableExtensions.md)
+
+Provides binding extension methods for [`IBindable`](https://docs.unity3d.com/ScriptReference/UIElements-IBindable.html) elements.
 
  [PropertyFieldExtensions](Aspid.FastTools.UIElements.Editors.PropertyFieldExtensions.md)
 
+Provides extension methods for [`PropertyField`](https://docs.unity3d.com/ScriptReference/UIElements-PropertyField.html).
+
  [VisualElementExtensions](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md)
+
+Provides extension methods for [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html).
 

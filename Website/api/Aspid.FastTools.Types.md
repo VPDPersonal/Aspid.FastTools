@@ -14,44 +14,54 @@ pagination_next: null
 
 ### Classes
 
+ [SerializableMonoScript](Aspid.FastTools.Types.SerializableMonoScript.md)
+
+Unity-serializable wrapper around a [`Type`](https://learn.microsoft.com/dotnet/api/system.type) referencing it through its <code>MonoScript</code>
+asset, so renaming or moving the class does not break the field.
+
+ [SerializableMonoScript\<T\>](Aspid.FastTools.Types.SerializableMonoScript-1.md)
+
+[`SerializableMonoScript`](Aspid.FastTools.Types.SerializableMonoScript.md) constrained to types assignable to <code class="typeparamref">T</code>.
+
  [SerializableType](Aspid.FastTools.Types.SerializableType.md)
 
-A wrapper around [`Type`](https://learn.microsoft.com/dotnet/api/system.type) that supports Unity Inspector serialization.
-The type is stored by its <code>AssemblyQualifiedName</code> and resolved lazily on first access.
+Unity-serializable wrapper around a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), stored by its <code>AssemblyQualifiedName</code>
+and resolved lazily on first access.
 
  [SerializableType\<T\>](Aspid.FastTools.Types.SerializableType-1.md)
 
-A wrapper around [`Type`](https://learn.microsoft.com/dotnet/api/system.type) that supports Unity Inspector serialization,
-constrained to types assignable to <code class="typeparamref">T</code>.
+[`SerializableType`](Aspid.FastTools.Types.SerializableType.md) constrained to types assignable to <code class="typeparamref">T</code>.
+
+ [SerializableTypeBase](Aspid.FastTools.Types.SerializableTypeBase.md)
+
+Shared implementation of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers: stores the type by its
+assembly-qualified name and resolves it lazily on first access.
 
  [TypeSelectorAttribute](Aspid.FastTools.Types.TypeSelectorAttribute.md)
 
-Instructs the Unity Editor to use the type-selector window.
+Draws the field with the type-selector window.
 
  [TypeSelectorDisplayAttribute](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md)
 
-Supplies presentation metadata for a type shown in the type-selector window: a display name,
-a picker group, a tooltip and an icon — or, with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden), keeps the type out of the
-picker altogether.
+Supplies presentation metadata for a type in the type-selector window — display name, group, tooltip and
+icon — or keeps the type out of the picker entirely with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden).
 
 ### Structs
 
  [ComponentTypeSelector](Aspid.FastTools.Types.ComponentTypeSelector.md)
 
-Adds an Inspector dropdown that lets you swap the object's script
-to any subtype of the field's declaring class.
+Represents a marker field adding an Inspector dropdown that swaps the object's script to any subtype of the
+field's declaring class.
 
 ### Interfaces
 
  [ISerializableType](Aspid.FastTools.Types.ISerializableType.md)
 
-Common contract of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers
-([`SerializableType`](Aspid.FastTools.Types.SerializableType.md) and [`SerializableType<T>`](Aspid.FastTools.Types.SerializableType-1.md)).
+Defines the common contract of the serializable [`Type`](https://learn.microsoft.com/dotnet/api/system.type) wrappers.
 
 ### Enums
 
  [TypeAllow](Aspid.FastTools.Types.TypeAllow.md)
 
-Flags describing which special type categories the type picker should include
-in addition to plain concrete classes.
+Specifies which special type categories the type picker offers in addition to concrete classes.
 

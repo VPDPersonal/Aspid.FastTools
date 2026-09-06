@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
+Provides extension methods for [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html).
+
 ```csharp
 public static class VisualElementExtensions
 ```
@@ -29,8 +31,7 @@ public static class VisualElementExtensions
 
 ### AddOpenScriptCommand\<T\>\(T, Object\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddOpenScriptCommand__1___0_UnityEngine_Object_}
 
-Registers a double-click handler on <code class="paramref">element</code> that opens the script associated with <code class="paramref">obj</code> in the IDE.
-Supports [`MonoBehaviour`](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html) and [`ScriptableObject`](https://docs.unity3d.com/ScriptReference/ScriptableObject.html) instances. Has no effect if no script can be resolved.
+Registers a double-click handler that opens <code class="paramref">obj</code>'s script in the IDE.
 
 ```csharp
 public static T AddOpenScriptCommand<T>(this T element, Object obj) where T : VisualElement
@@ -40,25 +41,32 @@ public static T AddOpenScriptCommand<T>(this T element, Object obj) where T : Vi
 
 `element` T
 
-The element to register the double-click command on.
+The element to register the command on.
 
 `obj` Object
 
-The Unity object whose script should be opened on double-click.
+The object whose script is opened.
 
 #### Returns
 
  T
 
-<code class="paramref">element</code> for method chaining.
+The element, for chaining.
 
 #### Type Parameters
 
 `T` 
 
+The element type.
+
+#### Remarks
+
+Supports [`MonoBehaviour`](https://docs.unity3d.com/ScriptReference/MonoBehaviour.html) and [`ScriptableObject`](https://docs.unity3d.com/ScriptReference/ScriptableObject.html); a resolved script is required,
+so it has no effect otherwise.
+
 ### BindTo\<T\>\(T, SerializedObject\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_BindTo__1___0_UnityEditor_SerializedObject_}
 
-Binds the element to the specified [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html).
+Binds the element to <code class="paramref">obj</code>.
 
 ```csharp
 public static T BindTo<T>(this T element, SerializedObject obj) where T : VisualElement
@@ -84,11 +92,12 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### GetOwnerWindow\(VisualElement\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_GetOwnerWindow_UnityEngine_UIElements_VisualElement_}
 
-Returns the [`EditorWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow.html) whose panel hosts <code class="paramref">element</code>, falling back to
-[`focusedWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow-focusedWindow.html) / [`mouseOverWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow-mouseOverWindow.html) when no window's
-panel matches (e.g. the element is detached).
+Returns the [`EditorWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow.html) whose panel hosts <code class="paramref">element</code>, falling back to the
+focused or hovered window when no panel matches.
 
 ```csharp
 public static EditorWindow GetOwnerWindow(this VisualElement element)
@@ -98,16 +107,19 @@ public static EditorWindow GetOwnerWindow(this VisualElement element)
 
 `element` VisualElement
 
+The element whose hosting window is wanted.
+
 #### Returns
 
  EditorWindow
 
+The hosting window, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when none can be resolved.
+
 #### Remarks
 
-Use this instead of [`focusedWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow-focusedWindow.html) when anchoring a dropdown to an element:
-a click into an unfocused floating window dispatches its pointer event before focus moves, so
-<code>focusedWindow</code> still points at the previously focused window and a rect built from its
-[`position`](https://docs.unity3d.com/ScriptReference/EditorWindow-position.html) lands in the wrong window's coordinate space.
+Use it instead of [`focusedWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow-focusedWindow.html) when anchoring a dropdown to an element: a
+click into an unfocused floating window dispatches its pointer event before focus moves, so a rect built
+from the focused window's position lands in the wrong coordinate space.
 
 ### UnbindFrom\<T\>\(T\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_}
 

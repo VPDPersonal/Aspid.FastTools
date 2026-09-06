@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Editor window that displays a hierarchical type selector dropdown, allowing the user to browse and select a [`Type`](https://learn.microsoft.com/dotnet/api/system.type) from a filtered list.
+Dropdown window for browsing and selecting a [`Type`](https://learn.microsoft.com/dotnet/api/system.type) from a filtered list.
 
 ```csharp
 public sealed class TypeSelectorWindow : EditorWindow
@@ -39,14 +39,13 @@ EditorWindow ←
 
 ## Remarks
 
-A thin dropdown host around [`Editors.TypeSelectorView`](Aspid.FastTools.Types.Editors.md), which owns the search, navigation and
-generic-argument flow. Embedding hosts (e.g. the Repair References window) use the view directly.
+A thin host around the selector view, which owns the search, navigation and generic-argument flow.
 
 ## Methods
 
 ### Show\(Rect, TypeSelectorFilter, string, Action\<string\>\) {#Aspid_FastTools_Types_Editors_TypeSelectorWindow_Show_UnityEngine_Rect_Aspid_FastTools_Types_Editors_TypeSelectorFilter_System_String_System_Action_System_String__}
 
-Opens the type selector window as a dropdown anchored to <code class="paramref">screenRect</code>.
+Opens the selector as a dropdown anchored to <code class="paramref">screenRect</code>.
 
 ```csharp
 public static void Show(Rect screenRect, TypeSelectorFilter filter = default, string currentAqn = "", Action<string> onSelected = null)
@@ -56,17 +55,19 @@ public static void Show(Rect screenRect, TypeSelectorFilter filter = default, st
 
 `screenRect` Rect
 
-The screen-space rectangle the dropdown is anchored to.
+Screen-space rectangle the dropdown is anchored to.
 
 `filter` [TypeSelectorFilter](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md)
 
-Defines which types the selector offers: base types, kind constraints, the per-type predicate, extra entries and the open-generic argument predicate. See [`TypeSelectorFilter`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md).
+Which types the selector offers.
 
 `currentAqn` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-Assembly-qualified name of the currently selected type, used to pre-navigate to that type's location. Pass <code>null</code> or empty to start at the root.
+Assembly-qualified name of the current type, pre-navigated to; empty starts at
+    the root.
 
 `onSelected` [Action](https://learn.microsoft.com/dotnet/api/system.action-1)\<[string](https://learn.microsoft.com/dotnet/api/system.string)\>
 
-Callback invoked with the assembly-qualified name of the selected type, or <code>null</code> if the user chose <code>&lt;None&gt;</code>. When an open generic is resolved, the assembly-qualified name of the constructed closed type is passed.
+Receives the assembly-qualified name of the selected type — the constructed
+    closed type for a resolved open generic — or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <code>&lt;None&gt;</code>.
 

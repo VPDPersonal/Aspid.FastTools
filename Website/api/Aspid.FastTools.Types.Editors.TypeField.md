@@ -11,9 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Types.Editors](Aspid.FastTools.Types.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-UIToolkit field that displays a [`Type`](https://learn.microsoft.com/dotnet/api/system.type) as a dropdown backed by
-[`TypeSelectorWindow`](Aspid.FastTools.Types.Editors.TypeSelectorWindow.md), optionally bound to a string-typed
-[`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) that stores the type's assembly-qualified name.
+UIToolkit field showing a [`Type`](https://learn.microsoft.com/dotnet/api/system.type) as a dropdown backed by [`TypeSelectorWindow`](Aspid.FastTools.Types.Editors.TypeSelectorWindow.md),
+optionally bound to a string property holding the type's assembly-qualified name.
 
 ```csharp
 [UxmlElement]
@@ -299,20 +298,22 @@ IMixedValueSupport
 
 ## Remarks
 
-An unresolved assembly-qualified name is preserved and rendered as a
-<code>&lt;Missing&gt;</code> caption instead of being silently cleared.
-Designed to be inheritable so subclasses (e.g. [`InspectorTypeField`](Aspid.FastTools.Types.Editors.InspectorTypeField.md)) can
-layer Inspector-specific styling on top of the base behaviour.
+An unresolved name is preserved and rendered as a <code>&lt;Missing&gt;</code> caption rather than silently
+cleared. Inheritable, so a subclass can layer its own styling on top.
 
 ## Constructors
 
 ### TypeField\(\) {#Aspid_FastTools_Types_Editors_TypeField__ctor}
+
+Creates an unbound field without a label.
 
 ```csharp
 public TypeField()
 ```
 
 ### TypeField\(SerializedProperty\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_UnityEditor_SerializedProperty_}
+
+Creates a field bound to <code class="paramref">property</code>, labeled with its display name.
 
 ```csharp
 public TypeField(SerializedProperty property)
@@ -322,7 +323,12 @@ public TypeField(SerializedProperty property)
 
 `property` SerializedProperty
 
+A string property holding the assembly-qualified type name.
+
 ### TypeField\(string, SerializedProperty\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_UnityEditor_SerializedProperty_}
+
+Creates a bound field: the picked type's name is written to the property, and external edits are
+reflected back into the field.
 
 ```csharp
 public TypeField(string label, SerializedProperty property)
@@ -332,9 +338,15 @@ public TypeField(string label, SerializedProperty property)
 
 `label` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
+The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.
+
 `property` SerializedProperty
 
+A string property holding the assembly-qualified type name.
+
 ### TypeField\(string, Type\) {#Aspid_FastTools_Types_Editors_TypeField__ctor_System_String_System_Type_}
+
+Creates an unbound field; the picked type is reported only through the change event.
 
 ```csharp
 public TypeField(string label, Type defaultValue = null)
@@ -344,13 +356,17 @@ public TypeField(string label, Type defaultValue = null)
 
 `label` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
+The field label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for none.
+
 `defaultValue` [Type](https://learn.microsoft.com/dotnet/api/system.type)
+
+The type shown initially, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> for <code>&lt;None&gt;</code>.
 
 ## Properties
 
 ### Allow {#Aspid_FastTools_Types_Editors_TypeField_Allow}
 
-Filters which kinds of types can be picked (abstract, interface, …).
+Gets or sets which kinds of types can be picked.
 
 ```csharp
 [UxmlAttribute]
@@ -361,10 +377,24 @@ public TypeAllow Allow { get; set; }
 
  TypeAllow
 
+### HideNoneOption {#Aspid_FastTools_Types_Editors_TypeField_HideNoneOption}
+
+Gets or sets a value indicating whether the <code>&lt;None&gt;</code> row is left out, for a field whose value
+must never be cleared.
+
+```csharp
+[UxmlAttribute]
+public bool HideNoneOption { get; set; }
+```
+
+#### Property Value
+
+ [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
 ### IsReadOnly {#Aspid_FastTools_Types_Editors_TypeField_IsReadOnly}
 
-When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> the dropdown is disabled — the displayed type cannot be
-changed — while the open-in-script-editor button stays active.
+Gets or sets a value indicating whether the dropdown is disabled, so the displayed type cannot be
+changed.
 
 ```csharp
 [UxmlAttribute]
@@ -375,9 +405,26 @@ public bool IsReadOnly { get; set; }
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
+#### Remarks
+
+The open-in-script-editor button stays active.
+
+### Predicate {#Aspid_FastTools_Types_Editors_TypeField_Predicate}
+
+Gets or sets the predicate applied to each candidate after the [`TypeField.Types`](Aspid.FastTools.Types.Editors.TypeField.md#Aspid_FastTools_Types_Editors_TypeField_Types) and
+[`TypeField.Allow`](Aspid.FastTools.Types.Editors.TypeField.md#Aspid_FastTools_Types_Editors_TypeField_Allow) checks. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> keeps every matching type.
+
+```csharp
+public Func<Type, bool> Predicate { get; set; }
+```
+
+#### Property Value
+
+ [Func](https://learn.microsoft.com/dotnet/api/system.func-2)\<[Type](https://learn.microsoft.com/dotnet/api/system.type), [bool](https://learn.microsoft.com/dotnet/api/system.boolean)\>
+
 ### Types {#Aspid_FastTools_Types_Editors_TypeField_Types}
 
-Base types — the dropdown lists subtypes assignable to every one of them.
+Gets or sets the base types; the dropdown lists only types assignable to every one of them.
 
 ```csharp
 public Type[] Types { get; set; }
@@ -391,7 +438,7 @@ public Type[] Types { get; set; }
 
 ### SetValueFromAssemblyQualifiedNameWithoutNotify\(string\) {#Aspid_FastTools_Types_Editors_TypeField_SetValueFromAssemblyQualifiedNameWithoutNotify_System_String_}
 
-Sets the field value from an assembly-qualified type name without raising a change event.
+Sets the value from an assembly-qualified type name without raising a change event.
 
 ```csharp
 public void SetValueFromAssemblyQualifiedNameWithoutNotify(string assemblyQualifiedName)
@@ -401,10 +448,12 @@ public void SetValueFromAssemblyQualifiedNameWithoutNotify(string assemblyQualif
 
 `assemblyQualifiedName` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
+The assembly-qualified name of the type to show.
+
 #### Remarks
 
-If the name cannot be resolved to a [`Type`](https://learn.microsoft.com/dotnet/api/system.type), the original string is preserved
-so the field can render a <code>&lt;Missing&gt;</code> caption instead of silently clearing.
+A name that cannot be resolved is preserved, so the field renders a <code>&lt;Missing&gt;</code> caption
+instead of silently clearing.
 
 ### SetValueWithoutNotify\(Type\) {#Aspid_FastTools_Types_Editors_TypeField_SetValueWithoutNotify_System_Type_}
 

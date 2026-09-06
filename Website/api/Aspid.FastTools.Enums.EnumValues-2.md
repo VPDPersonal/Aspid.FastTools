@@ -18,7 +18,7 @@ is read-only, and lookups are compile-time safe.
 
 ```csharp
 [Serializable]
-public sealed class EnumValues<TEnum, TValue> : IEnumerable<KeyValuePair<TEnum, TValue>>, IEnumerable, ISerializationCallbackReceiver where TEnum : struct, Enum
+public sealed class EnumValues<TEnum, TValue> : IEnumerable<KeyValuePair<TEnum, TValue?>>, IEnumerable, ISerializationCallbackReceiver where TEnum : struct, Enum
 ```
 
 #### Type Parameters
@@ -38,7 +38,7 @@ The type of the value associated with each enum member.
 
 #### Implements
 
-[IEnumerable\<KeyValuePair\<TEnum, TValue\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1), 
+[IEnumerable\<KeyValuePair\<TEnum, TValue?\>\>](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1), 
 [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.ienumerable), 
 ISerializationCallbackReceiver
 
@@ -73,11 +73,9 @@ public class HitEffect : MonoBehaviour
 
 <p>
 Lookup semantics (including <code>[Flags]</code> handling) are identical to
-[`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md) — see its remarks for details. The entries are the same
-[`Enums.EnumValue<T>`](Aspid.FastTools.Enums.md) instances, resolved once against
-<code class="typeparamref">TEnum</code>; steady-state [`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_), [`EnumValues<T1, T2>.Equals`](Aspid.FastTools.Enums.EnumValues-2.md)
-and <code>foreach</code> (which binds to the struct [`EnumValuesEnumerator<T1, T2>`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md))
-never allocate.
+[`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md) — see its remarks for details. Steady-state
+[`EnumValues<T1, T2>.GetValue`](Aspid.FastTools.Enums.EnumValues-2.md#Aspid_FastTools_Enums_EnumValues_2_GetValue__0_), [`EnumValues<T1, T2>.Equals`](Aspid.FastTools.Enums.EnumValues-2.md) and <code>foreach</code> (which binds to the struct
+[`EnumValuesEnumerator<T1, T2>`](Aspid.FastTools.Enums.EnumValuesEnumerator-2.md)) never allocate.
 </p>
 <p>
 In the editor the serialized layout is compatible with [`EnumValues<T>`](Aspid.FastTools.Enums.EnumValues-1.md):
@@ -121,7 +119,8 @@ For regular enums: <a href="https://learn.microsoft.com/dotnet/csharp/language-r
 For <code>[Flags]</code> enums: <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> when <code class="paramref">enumValue1</code>
 has all bits of <code class="paramref">enumValue2</code> set, with the additional rule that
 the zero (<code>None</code>) value is only equal to another zero value.<br />
-Values of different enum types are never equal.
+Values of a different enum type than the configured one are never equal,
+and neither is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
 ### GetEnumerator\(\) {#Aspid_FastTools_Enums_EnumValues_2_GetEnumerator}
 
@@ -144,7 +143,7 @@ or the configured default value if no mapping exists.
 A value of a different enum type than the configured one never matches.
 
 ```csharp
-public TValue GetValue(TEnum enumValue)
+public TValue? GetValue(TEnum enumValue)
 ```
 
 #### Parameters
@@ -155,7 +154,8 @@ The enum member to look up.
 
 #### Returns
 
- TValue
+ TValue?
 
-The mapped value, or the default value when no entry matches.
+The mapped value, or the default value when no entry matches. A reference-type
+<code class="typeparamref">TValue</code> left unassigned in the Inspector is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
