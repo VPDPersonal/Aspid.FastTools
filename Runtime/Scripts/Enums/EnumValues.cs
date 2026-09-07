@@ -57,10 +57,14 @@ namespace Aspid.FastTools.Enums
         IEnumerable<KeyValuePair<Enum, TValue?>>,
         ISerializationCallbackReceiver
     {
+        [Tooltip("The enum whose members the entries are keyed by.")]
         [TypeSelector(typeof(Enum), Required = true)]
         [SerializeField] private string _enumType = string.Empty;
 
+        [Tooltip("The value returned when no entry matches the lookup key.")]
         [SerializeField] private TValue? _defaultValue;
+
+        [Tooltip("The configured entries, searched in this order.")]
         [SerializeField] private EnumValue<TValue>[] _values = Array.Empty<EnumValue<TValue>>();
 
         private Type? _type;
@@ -221,7 +225,7 @@ namespace Aspid.FastTools.Enums
     /// <para>
     /// Lookup semantics (including <c>[Flags]</c> handling) are identical to
     /// <see cref="EnumValues{TValue}"/> — see its remarks for details. Steady-state
-    /// <see cref="GetValue"/>, <see cref="Equals"/> and <c>foreach</c> (which binds to the struct
+    /// <see cref="GetValue"/>, <see cref="Equals(TEnum,TEnum)"/> and <c>foreach</c> (which binds to the struct
     /// <see cref="EnumValuesEnumerator{TKey,TValue}"/>) never allocate.
     /// </para>
     /// <para>
@@ -258,11 +262,15 @@ namespace Aspid.FastTools.Enums
 #if UNITY_EDITOR
         // Keeps the layout compatible with EnumValues<TValue> and feeds the editor drawers;
         // never read at runtime, so player builds strip it.
+        [Tooltip("The enum whose members the entries are keyed by, filled in from TEnum.")]
         // ReSharper disable once NotAccessedField.Local
         [SerializeField] private string? _enumType;
 #endif
 
+        [Tooltip("The value returned when no entry matches the lookup key.")]
         [SerializeField] private TValue? _defaultValue;
+
+        [Tooltip("The configured entries, searched in this order.")]
         [SerializeField] private EnumValue<TValue>[] _values = Array.Empty<EnumValue<TValue>>();
 
         private bool _isInitialized;
@@ -282,7 +290,15 @@ namespace Aspid.FastTools.Enums
             }
         }
 
-        /// <inheritdoc cref="EnumValues{TValue}.GetValue"/>
+        /// <summary>
+        /// Returns the value mapped to <paramref name="enumValue"/>,
+        /// or the configured default value if no mapping exists.
+        /// </summary>
+        /// <param name="enumValue">The enum member to look up.</param>
+        /// <returns>
+        /// The mapped value, or the default value when no entry matches. A reference-type
+        /// <typeparamref name="TValue"/> left unassigned in the Inspector is <see langword="null"/>.
+        /// </returns>
         public TValue? GetValue(TEnum enumValue)
         {
 #if !ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED
@@ -296,7 +312,18 @@ namespace Aspid.FastTools.Enums
             }
         }
 
-        /// <inheritdoc cref="EnumValues{TValue}.Equals(Enum,Enum)"/>
+        /// <summary>
+        /// Determines whether two enum values should be considered equal for lookup purposes.
+        /// The first argument is the value being looked up; the second is the entry's stored key.
+        /// </summary>
+        /// <param name="enumValue1">The lookup value (must contain the entry's bits to match).</param>
+        /// <param name="enumValue2">The stored entry key.</param>
+        /// <returns>
+        /// For regular enums: <see langword="true"/> when both values are identical.<br/>
+        /// For <c>[Flags]</c> enums: <see langword="true"/> when <paramref name="enumValue1"/>
+        /// has all bits of <paramref name="enumValue2"/> set, with the additional rule that
+        /// the zero (<c>None</c>) value is only equal to another zero value.
+        /// </returns>
         public bool Equals(TEnum enumValue1, TEnum enumValue2)
         {
             var value1 = EnumInfo<TEnum>.ToInt64(enumValue1);

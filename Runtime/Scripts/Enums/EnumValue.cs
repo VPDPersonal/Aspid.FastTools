@@ -8,18 +8,22 @@ namespace Aspid.FastTools.Enums
     [Serializable]
     internal sealed class EnumValue<TValue>
     {
+        [Tooltip("The name of the enum member this entry is keyed by.")]
         [SerializeField] private string _key = string.Empty;
+
+        [Tooltip("The value returned for this entry's key.")]
         [SerializeField] private TValue? _value;
 
 #if UNITY_EDITOR
+        [Tooltip("The enum the key belongs to; mirrored from the parent so the drawer can pick the right field.")]
         [SerializeField] private string? _enumType;
 #endif
-
-        public TValue? Value => _value;
 
         public Enum? Key { get; private set; }
 
         public long NumericKey { get; private set; }
+
+        public TValue? Value => _value;
 
         public bool IsResolved => Key is not null;
 
