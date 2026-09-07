@@ -1,6 +1,7 @@
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors;
