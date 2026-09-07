@@ -1,7 +1,6 @@
 using System.IO;
 using UnityEditor;
 using UnityEngine;
-using Aspid.FastTools.SerializeReferences.Editors;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 // ReSharper disable once CheckNamespace

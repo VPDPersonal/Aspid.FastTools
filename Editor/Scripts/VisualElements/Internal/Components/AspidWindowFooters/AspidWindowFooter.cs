@@ -1,7 +1,6 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Aspid.FastTools.UIElements;
 using System.Text.RegularExpressions;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 

@@ -2,8 +2,8 @@ using System;
 using UnityEngine;
 using UnityEditor;
 using Aspid.FastTools.Editors;
-using Aspid.FastTools.Types.Editors;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 using System.Text.RegularExpressions;
 using Object = UnityEngine.Object;
 

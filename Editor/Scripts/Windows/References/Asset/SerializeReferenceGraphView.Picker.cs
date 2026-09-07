@@ -1,7 +1,7 @@
 using System;
 using UnityEditor;
-using System.Collections.Generic;
 using Aspid.FastTools.Editors;
+using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors.Internal;
 

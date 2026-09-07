@@ -1,7 +1,6 @@
 using System;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
-using Aspid.FastTools.UIElements;
 using Aspid.FastTools.UIElements.Editors.Internal;
 
 // ReSharper disable once CheckNamespace

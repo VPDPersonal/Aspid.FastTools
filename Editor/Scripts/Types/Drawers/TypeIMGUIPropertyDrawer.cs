@@ -2,9 +2,6 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using Aspid.FastTools.Editors;
-using Aspid.FastTools.SerializeReferences.Editors;
-
-using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors

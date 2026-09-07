@@ -1,11 +1,10 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
-using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
 using System.Collections.Generic;
-using System.Linq;
 using Aspid.FastTools.UIElements.Editors.Internal;
 using Object = UnityEngine.Object;
 

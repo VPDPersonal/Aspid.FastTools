@@ -4,11 +4,7 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
-using Aspid.FastTools.SerializeReferences.Editors;
-
 using Aspid.FastTools.UIElements.Editors.Internal;
-
-using Aspid.FastTools.Types.Editors;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors

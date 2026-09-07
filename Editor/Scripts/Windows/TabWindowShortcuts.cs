@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEditor.ShortcutManagement;
 
+// ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
     // The single owner of the tab keyboard layout: shortcut ids, their defaults and the Ctrl+Tab cycle order. The
