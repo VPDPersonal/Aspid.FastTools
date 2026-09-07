@@ -102,7 +102,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public AspidAnimatedTitle(string text, AspidAnimatedTitlePreset preset)
         {
-            this.AddStyleSheetsFromResource(StyleSheetPath);
+            this.AddStyleSheetFromResources(StyleSheetPath);
 
             _colors = new AspidAnimatedTitleColorsStyle(
                 this, preset.Color1, preset.Color2, preset.Color3, onChanged: null);

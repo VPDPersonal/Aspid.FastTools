@@ -32,7 +32,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public AspidWindowFooter(bool showKeysHint)
         {
             this.AddAspidThemeStyleSheets()
-                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddStyleSheetFromResources(StyleSheetPath)
                 .AddClass(RootClass);
 
             var version = ReadPackageVersion();

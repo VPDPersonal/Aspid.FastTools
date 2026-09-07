@@ -4,15 +4,15 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="MultiColumnListView"/>.
+    /// </summary>
     public static class MultiColumnListViewExtensions
     {
         /// <summary>
-        /// Sets <see cref="MultiColumnListView.sortingMode"/> and returns the element for chaining.
+        /// Sets <see cref="MultiColumnListView.sortingMode"/>.
         /// </summary>
-        /// <remarks>
-        /// Indicates how to sort columns. To enable sorting, set it to ColumnSortingMode.Default or ColumnSortingMode.Custom.
-        /// The Default mode uses the sorting algorithm provided by MultiColumnController, acting on indices. You can also implement your own sorting with the Custom mode, by responding to the columnSortingChanged event.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The sorting mode to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -24,7 +24,7 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Subscribes to the <see cref="MultiColumnListView.columnSortingChanged"/> event and returns the element for chaining.
+        /// Subscribes to the <see cref="MultiColumnListView.columnSortingChanged"/> event.
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
@@ -38,7 +38,7 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Unsubscribes from the <see cref="MultiColumnListView.columnSortingChanged"/> event and returns the element for chaining.
+        /// Unsubscribes from the <see cref="MultiColumnListView.columnSortingChanged"/> event.
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>

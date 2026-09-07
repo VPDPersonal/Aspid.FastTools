@@ -11,6 +11,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -24,6 +25,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -37,6 +39,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -50,6 +53,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -63,6 +67,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -76,6 +81,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -89,6 +95,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -102,6 +109,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -115,6 +123,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -128,6 +137,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -141,6 +151,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -154,6 +165,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -167,6 +179,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -180,6 +193,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -193,6 +207,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -206,6 +221,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -219,6 +235,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -232,6 +249,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -245,6 +263,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -258,6 +277,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -271,6 +291,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -284,6 +305,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -297,6 +319,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -310,6 +333,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -325,6 +349,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -338,6 +363,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -351,6 +377,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -364,6 +391,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -377,6 +405,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -390,6 +419,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -403,6 +433,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -416,6 +447,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -429,6 +461,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -442,6 +475,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -455,6 +489,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -468,6 +503,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -481,6 +517,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -494,6 +531,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -507,6 +545,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -520,6 +559,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -533,6 +573,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -546,6 +587,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -559,6 +601,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -572,6 +615,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -585,6 +629,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -598,6 +643,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -611,6 +657,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -624,6 +671,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -639,6 +687,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -652,6 +701,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -665,6 +715,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -678,6 +729,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -691,6 +743,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -704,6 +757,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -717,6 +771,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -730,6 +785,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -743,6 +799,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -756,6 +813,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -769,6 +827,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -782,6 +841,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -795,6 +855,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -808,6 +869,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -821,6 +883,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -834,6 +897,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -847,6 +911,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -860,6 +925,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -873,6 +939,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -886,6 +953,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -899,6 +967,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -912,6 +981,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -925,6 +995,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -938,6 +1009,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -953,6 +1025,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -966,6 +1039,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -979,6 +1053,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -992,6 +1067,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1005,6 +1081,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1018,6 +1095,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1031,6 +1109,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1044,6 +1123,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1057,6 +1137,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1070,6 +1151,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1083,6 +1165,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1096,6 +1179,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1109,6 +1193,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1122,6 +1207,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1135,6 +1221,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1148,6 +1235,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1161,6 +1249,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1174,6 +1263,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1187,6 +1277,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1200,6 +1291,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1213,6 +1305,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1226,6 +1319,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1239,6 +1333,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1252,6 +1347,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1267,6 +1363,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1280,6 +1377,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1293,6 +1391,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1306,6 +1405,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1319,6 +1419,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1332,6 +1433,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1345,6 +1447,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1358,6 +1461,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1371,6 +1475,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1384,6 +1489,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1397,6 +1503,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1410,6 +1517,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1423,6 +1531,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1436,6 +1545,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1449,6 +1559,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1462,6 +1573,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1475,6 +1587,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1488,6 +1601,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1501,6 +1615,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1514,6 +1629,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1527,6 +1643,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1540,6 +1657,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1553,6 +1671,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1566,6 +1685,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1581,6 +1701,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1594,6 +1715,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1607,6 +1729,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1620,6 +1743,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1633,6 +1757,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1646,6 +1771,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1659,6 +1785,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1672,6 +1799,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1687,6 +1815,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -1700,6 +1829,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the value-changed event of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="callback">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>

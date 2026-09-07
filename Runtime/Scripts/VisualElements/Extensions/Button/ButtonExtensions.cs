@@ -4,12 +4,16 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="Button"/>.
+    /// </summary>
     public static class ButtonExtensions
     {
         #region Clicked
         /// <summary>
         /// Subscribes to the <see cref="Button.clicked"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="action">The action to invoke when the button is clicked.</param>
         /// <returns>The element, for chaining.</returns>
@@ -23,6 +27,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="Button.clicked"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="action">The action to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -35,11 +40,8 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         /// <summary>
-        /// Sets <see cref="Button.clickable"/> and returns the element for chaining.
+        /// Sets <see cref="Button.clickable"/>.
         /// </summary>
-        /// <remarks>
-        /// Clickable MouseManipulator for this Button.
-        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The clickable manipulator to set.</param>
@@ -52,7 +54,7 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the click handler of the button by replacing the clickable manipulator.
+        /// Replaces <see cref="Button.clickable"/> with a new <see cref="Clickable"/> that invokes <paramref name="action"/>.
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
@@ -66,11 +68,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="Button.iconImage"/> and returns the element for chaining.
+        /// Sets <see cref="Button.iconImage"/>.
         /// </summary>
-        /// <remarks>
-        /// The Texture, Sprite, or VectorImage that will represent an icon within a Button element.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The icon image to set.</param>
         /// <returns>The element, for chaining.</returns>

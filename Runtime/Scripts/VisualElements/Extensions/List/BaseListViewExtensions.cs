@@ -5,15 +5,16 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="BaseListView"/>.
+    /// </summary>
     public static class BaseListViewExtensions
     {
         #region OnAdd
         /// <summary>
-        /// Sets <see cref="BaseListView.onAdd"/>, replacing any existing callback, and returns the element for chaining.
+        /// Sets <see cref="BaseListView.onAdd"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to implement their own code to be executed when the Add Button is clicked.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -27,9 +28,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseListView.onAdd"/> callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to implement their own code to be executed when the Add Button is clicked.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -43,9 +42,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseListView.onAdd"/> callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to implement their own code to be executed when the Add Button is clicked.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -59,11 +56,9 @@ namespace Aspid.FastTools.UIElements
 
         #region OnRemove
         /// <summary>
-        /// Sets <see cref="BaseListView.onRemove"/>, replacing any existing callback, and returns the element for chaining.
+        /// Sets <see cref="BaseListView.onRemove"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to implement their own code to be executed when the Remove Button is clicked.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -77,9 +72,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseListView.onRemove"/> callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to implement their own code to be executed when the Remove Button is clicked.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -93,9 +86,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseListView.onRemove"/> callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to implement their own code to be executed when the Remove Button is clicked.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -111,6 +102,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseListView.itemsAdded"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -124,6 +116,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseListView.itemsAdded"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -139,6 +132,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseListView.itemsRemoved"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -152,6 +146,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseListView.itemsRemoved"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -165,11 +160,9 @@ namespace Aspid.FastTools.UIElements
 
         #region OverridingAddButtonBehavior
         /// <summary>
-        /// Sets <see cref="BaseListView.overridingAddButtonBehavior"/>, replacing any existing callback, and returns the element for chaining.
+        /// Sets <see cref="BaseListView.overridingAddButtonBehavior"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to implement a DropdownMenu when the Add Button is clicked.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -183,9 +176,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseListView.overridingAddButtonBehavior"/> callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to implement a DropdownMenu when the Add Button is clicked.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -199,9 +190,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseListView.overridingAddButtonBehavior"/> callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to implement a DropdownMenu when the Add Button is clicked.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -214,13 +203,11 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         /// <summary>
-        /// Sets <see cref="BaseListView.allowRemove"/> and returns the element for chaining.
+        /// Sets <see cref="BaseListView.allowRemove"/>.
         /// </summary>
-        /// <remarks>
-        /// This property allows the user to allow or block the removal of an item when clicking on the Remove Button. It must return true or false.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether item removal is allowed.</param>
+        /// <param name="value">When <see langword="true"/>, the Remove button removes an item.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetAllowRemove<T>(this T element, bool value)
             where T : BaseListView
@@ -230,13 +217,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseListView.allowAdd"/> and returns the element for chaining.
+        /// Sets <see cref="BaseListView.allowAdd"/>.
         /// </summary>
-        /// <remarks>
-        /// This property allows the user to allow or block the addition of an item when clicking on the Add Button. It must return true or false.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether item addition is allowed.</param>
+        /// <param name="value">When <see langword="true"/>, the Add button adds an item.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetAllowAdd<T>(this T element, bool value)
             where T : BaseListView
@@ -246,11 +231,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseListView.headerTitle"/> and returns the element for chaining.
+        /// Sets <see cref="BaseListView.headerTitle"/>.
         /// </summary>
-        /// <remarks>
-        /// This property controls the text of the foldout header when using showFoldoutHeader.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The header title to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -262,13 +245,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseListView.showFoldoutHeader"/> and returns the element for chaining.
+        /// Sets <see cref="BaseListView.showFoldoutHeader"/>.
         /// </summary>
-        /// <remarks>
-        /// This property controls whether the element view displays a header, in the form of a foldout that can be expanded or collapsed.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to show the foldout header.</param>
+        /// <param name="value">When <see langword="true"/>, the list is wrapped in a foldout header.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetShowFoldoutHeader<T>(this T element, bool value)
             where T : BaseListView
@@ -278,13 +259,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseListView.showAddRemoveFooter"/> and returns the element for chaining.
+        /// Sets <see cref="BaseListView.showAddRemoveFooter"/>.
         /// </summary>
-        /// <remarks>
-        /// This property controls whether a footer will be added to the list view.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to show the add/remove footer.</param>
+        /// <param name="value">When <see langword="true"/>, the footer with the Add and Remove buttons is shown.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetShowAddRemoveFooter<T>(this T element, bool value)
             where T : BaseListView
@@ -294,13 +273,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseListView.showBoundCollectionSize"/> and returns the element for chaining.
+        /// Sets <see cref="BaseListView.showBoundCollectionSize"/>.
         /// </summary>
-        /// <remarks>
-        /// This property controls whether the element view displays the collection size (number of items).
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to show the bound collection size.</param>
+        /// <param name="value">When <see langword="true"/>, the size of the bound collection is shown.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetShowBoundCollectionSize<T>(this T element, bool value)
             where T : BaseListView
@@ -310,11 +287,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseListView.reorderMode"/> and returns the element for chaining.
+        /// Sets <see cref="BaseListView.reorderMode"/>.
         /// </summary>
-        /// <remarks>
-        /// This property controls the drag and drop mode for the element view.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The reorder mode to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -326,11 +301,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseListView.bindingSourceSelectionMode"/> and returns the element for chaining.
+        /// Sets <see cref="BaseListView.bindingSourceSelectionMode"/>.
         /// </summary>
-        /// <remarks>
-        /// This property controls whether every element in the element will get its data source setup automatically to the correct item in the collection's source.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The binding source selection mode to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -341,14 +314,10 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
-#if UNITY_6000_0_OR_NEWER
-        #region MakeFooter
         /// <summary>
-        /// Sets <see cref="BaseListView.makeFooter"/>, replacing any existing callback, and returns the element for chaining.
+        /// Sets <see cref="BaseListView.makeFooter"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to make their own footer for this control.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -360,45 +329,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Subscribes to the <see cref="BaseListView.makeFooter"/> callback.
+        /// Sets <see cref="BaseListView.makeHeader"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to make their own footer for this control.
-        /// </remarks>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to add.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddMakeFooter<T>(this T element, Func<VisualElement> value)
-            where T : BaseListView
-        {
-            element.makeFooter += value;
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the <see cref="BaseListView.makeFooter"/> callback.
-        /// </summary>
-        /// <remarks>
-        /// This callback allows the user to make their own footer for this control.
-        /// </remarks>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveMakeFooter<T>(this T element, Func<VisualElement> value)
-            where T : BaseListView
-        {
-            element.makeFooter -= value;
-            return element;
-        }
-        #endregion
-
-        #region MakeHeader
-        /// <summary>
-        /// Sets <see cref="BaseListView.makeHeader"/>, replacing any existing callback, and returns the element for chaining.
-        /// </summary>
-        /// <remarks>
-        /// This callback allows the user to make their own header for this control.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -410,45 +343,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Subscribes to the <see cref="BaseListView.makeHeader"/> callback.
+        /// Sets <see cref="BaseListView.makeNoneElement"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// This callback allows the user to make their own header for this control.
-        /// </remarks>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to add.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddMakeHeader<T>(this T element, Func<VisualElement> value)
-            where T : BaseListView
-        {
-            element.makeHeader += value;
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the <see cref="BaseListView.makeHeader"/> callback.
-        /// </summary>
-        /// <remarks>
-        /// This callback allows the user to make their own header for this control.
-        /// </remarks>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveMakeHeader<T>(this T element, Func<VisualElement> value)
-            where T : BaseListView
-        {
-            element.makeHeader -= value;
-            return element;
-        }
-        #endregion
-
-        #region MakeNoneElement
-        /// <summary>
-        /// Sets <see cref="BaseListView.makeNoneElement"/>, replacing any existing callback, and returns the element for chaining.
-        /// </summary>
-        /// <remarks>
-        /// This callback allows the user to set a Visual Element to replace the "List is empty" Label shown when the ListView is empty.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -458,39 +355,5 @@ namespace Aspid.FastTools.UIElements
             element.makeNoneElement = value;
             return element;
         }
-
-        /// <summary>
-        /// Subscribes to the <see cref="BaseListView.makeNoneElement"/> callback.
-        /// </summary>
-        /// <remarks>
-        /// This callback allows the user to set a Visual Element to replace the "List is empty" Label shown when the ListView is empty.
-        /// </remarks>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to add.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddMakeNoneElement<T>(this T element, Func<VisualElement> value)
-            where T : BaseListView
-        {
-            element.makeNoneElement += value;
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the <see cref="BaseListView.makeNoneElement"/> callback.
-        /// </summary>
-        /// <remarks>
-        /// This callback allows the user to set a Visual Element to replace the "List is empty" Label shown when the ListView is empty.
-        /// </remarks>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveMakeNoneElement<T>(this T element, Func<VisualElement> value)
-            where T : BaseListView
-        {
-            element.makeNoneElement -= value;
-            return element;
-        }
-        #endregion
-#endif
     }
 }

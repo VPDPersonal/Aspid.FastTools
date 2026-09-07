@@ -67,7 +67,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         {
             // Base palette first (via the theme helper), then the feature sheet, then the block class.
             this.AddAspidThemeStyleSheets()
-                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddStyleSheetFromResources(StyleSheetPath)
                 .AddClass(NoticeClass);
 
             var icon = new VisualElement()

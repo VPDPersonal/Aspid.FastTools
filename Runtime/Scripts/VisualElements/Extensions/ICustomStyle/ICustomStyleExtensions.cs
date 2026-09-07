@@ -21,7 +21,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="value">When this method returns <see langword="true"/>, the parsed enum
         /// value; otherwise <see langword="default"/>.</param>
         /// <returns><see langword="true"/> if the property was resolved and successfully parsed
-        /// as <typeparamref name="T"/>; otherwise <see langword="false"/>.</returns>
+        /// as <typeparamref name="T"/>; otherwise, <see langword="false"/>.</returns>
         public static bool TryGetByEnum<T>(this ICustomStyle style, CustomStyleProperty<string> property, out T value)
             where T : struct, Enum
         {

@@ -48,7 +48,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public AspidDividingLine(AspidDividingLinePreset preset)
         {
-            this.AddStyleSheetsFromResource(StyleSheetPath);
+            this.AddStyleSheetFromResources(StyleSheetPath);
 
             _theme = new ThemeStyle(this, preset.Theme);
             _status = new StatusStyle(this, preset.Status);

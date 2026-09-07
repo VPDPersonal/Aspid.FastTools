@@ -66,7 +66,7 @@ namespace Aspid.FastTools.Types
         /// Creates an unconstrained attribute: any type is offered.
         /// </summary>
         public TypeSelectorAttribute()
-            : this(Array.Empty<Type>()) { }
+            : this(types: Array.Empty<Type>()) { }
 
         /// <summary>
         /// Creates an attribute constrained to a single base type.
@@ -79,7 +79,7 @@ namespace Aspid.FastTools.Types
         /// Creates an attribute constrained to one or more base types.
         /// </summary>
         /// <param name="types">The base constraint types.</param>
-        public TypeSelectorAttribute(params Type[] types)
+        public TypeSelectorAttribute(params Type[]? types)
         {
             // A generic type parameter has no assembly-qualified name; skip it rather than store a null entry.
             AssemblyQualifiedNames = types?
@@ -105,8 +105,7 @@ namespace Aspid.FastTools.Types
         /// <example>
         /// <code>
         /// [SerializeField] private SerializableType _category;
-        /// </code>
-        /// <code>
+        ///
         /// [TypeSelector(nameof(_category))]
         /// [SerializeField] private string _subType;
         /// </code>

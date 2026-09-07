@@ -90,7 +90,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public AspidHelpBox(string title, string message, AspidHelpBoxPreset preset)
         {
-            this.AddStyleSheetsFromResource(StyleSheetPath);
+            this.AddStyleSheetFromResources(StyleSheetPath);
 
             _titlePreset = preset.TitlePreset;
             _textContainer = new VisualElement().AddClass(TextContainerClass);

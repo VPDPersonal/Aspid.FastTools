@@ -3,14 +3,15 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="TextElement"/>.
+    /// </summary>
     public static class TextElementExtensions
     {
         /// <summary>
-        /// Sets <see cref="TextElement.text"/> and returns the element for chaining.
+        /// Sets <see cref="TextElement.text"/>.
         /// </summary>
-        /// <remarks>
-        /// The text to be displayed.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The text to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -22,13 +23,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="TextElement.enableRichText"/> and returns the element for chaining.
+        /// Sets <see cref="TextElement.enableRichText"/>.
         /// </summary>
-        /// <remarks>
-        /// When false, rich text tags will not be parsed.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether rich text parsing is enabled.</param>
+        /// <param name="value">When <see langword="true"/>, rich text tags are parsed.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetEnableRichText<T>(this T element, bool value)
             where T : TextElement
@@ -38,14 +37,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="TextElement.emojiFallbackSupport"/> and returns the element for chaining.
+        /// Sets <see cref="TextElement.emojiFallbackSupport"/>.
         /// </summary>
-        /// <remarks>
-        /// Specifies the order in which the system should look for Emoji characters when rendering text.
-        /// If this setting is enabled, the global Emoji Fallback list will be searched first for characters defined as Emoji in the Unicode 14.0 standard.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether emoji fallback support is enabled.</param>
+        /// <param name="value">When <see langword="true"/>, the global emoji fallback list is searched first.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetEmojiFallbackSupport<T>(this T element, bool value)
             where T : TextElement
@@ -55,14 +51,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="TextElement.parseEscapeSequences"/> and returns the element for chaining.
+        /// Sets <see cref="TextElement.parseEscapeSequences"/>.
         /// </summary>
-        /// <remarks>
-        /// Determines how escape sequences are displayed. When set to true, escape sequences (such as \n, \t) are parsed and transformed into their corresponding characters.
-        /// For example, '\n' will insert a new line. When set to false, escape sequences are displayed as raw text (for example, \n is shown as the characters '\' followed by 'n').
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether escape sequences are parsed.</param>
+        /// <param name="value">When <see langword="true"/>, escape sequences such as <c>\n</c> are parsed; otherwise, they are shown as raw text.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetParseEscapeSequences<T>(this T element, bool value)
             where T : TextElement
@@ -72,13 +65,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="TextElement.displayTooltipWhenElided"/> and returns the element for chaining.
+        /// Sets <see cref="TextElement.displayTooltipWhenElided"/>.
         /// </summary>
-        /// <remarks>
-        /// When true, a tooltip displays the full version of elided text, and also if a tooltip had been previously provided, it will be overwritten.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to display a tooltip when text is elided.</param>
+        /// <param name="value">When <see langword="true"/>, a tooltip shows the full text when it is elided.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetDisplayTooltipWhenElided<T>(this T element, bool value)
             where T : TextElement

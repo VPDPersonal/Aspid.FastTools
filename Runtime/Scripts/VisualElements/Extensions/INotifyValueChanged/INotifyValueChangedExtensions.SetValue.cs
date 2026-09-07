@@ -6,15 +6,19 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="INotifyValueChanged{T}"/>.
+    /// </summary>
     public static partial class INotifyValueChangedExtensions
     {
         #region Int
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, int value, bool notify = true)
             where T : INotifyValueChanged<int>
@@ -26,11 +30,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, uint value, bool notify = true)
             where T : INotifyValueChanged<uint>
@@ -42,11 +47,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, nint value, bool notify = true)
             where T : INotifyValueChanged<nint>
@@ -58,11 +64,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, nuint value, bool notify = true)
             where T : INotifyValueChanged<nuint>
@@ -76,11 +83,12 @@ namespace Aspid.FastTools.UIElements
 
         #region Long
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, long value, bool notify = true)
             where T : INotifyValueChanged<long>
@@ -92,11 +100,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, ulong value, bool notify = true)
             where T : INotifyValueChanged<ulong>
@@ -110,11 +119,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Byte
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, byte value, bool notify = true)
             where T : INotifyValueChanged<byte>
@@ -126,11 +136,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, sbyte value, bool notify = true)
             where T : INotifyValueChanged<sbyte>
@@ -144,11 +155,12 @@ namespace Aspid.FastTools.UIElements
 
         #region Bool
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, bool value, bool notify = true)
             where T : INotifyValueChanged<bool>
@@ -162,11 +174,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Char
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, char value, bool notify = true)
             where T : INotifyValueChanged<char>
@@ -180,11 +193,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Rect
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Rect value, bool notify = true)
             where T : INotifyValueChanged<Rect>
@@ -196,11 +210,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, RectInt value, bool notify = true)
             where T : INotifyValueChanged<RectInt>
@@ -214,11 +229,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Enum
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Enum value, bool notify = true)
             where T : INotifyValueChanged<Enum>
@@ -233,11 +249,12 @@ namespace Aspid.FastTools.UIElements
         #region Guid
 #if UNITY_6000_4_OR_NEWER
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, GUID value, bool notify = true)
             where T : INotifyValueChanged<GUID>
@@ -252,11 +269,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Color
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Color value, bool notify = true)
             where T : INotifyValueChanged<Color>
@@ -270,11 +288,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Short
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, short value, bool notify = true)
             where T : INotifyValueChanged<short>
@@ -286,11 +305,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, ushort value, bool notify = true)
             where T : INotifyValueChanged<ushort>
@@ -304,11 +324,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Float
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, float value, bool notify = true)
             where T : INotifyValueChanged<float>
@@ -322,11 +343,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Double
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, double value, bool notify = true)
             where T : INotifyValueChanged<double>
@@ -340,11 +362,12 @@ namespace Aspid.FastTools.UIElements
         
         #region String
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, string value, bool notify = true)
             where T : INotifyValueChanged<string>
@@ -358,11 +381,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Bounds
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Bounds value, bool notify = true)
             where T : INotifyValueChanged<Bounds>
@@ -374,11 +398,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, BoundsInt value, bool notify = true)
             where T : INotifyValueChanged<BoundsInt>
@@ -392,11 +417,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Hash128
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Hash128 value, bool notify = true)
             where T : INotifyValueChanged<Hash128>
@@ -410,11 +436,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Decimal
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, decimal value, bool notify = true)
             where T : INotifyValueChanged<decimal>
@@ -428,11 +455,12 @@ namespace Aspid.FastTools.UIElements
 
         #region Vector2
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Vector2 value, bool notify = true)
             where T : INotifyValueChanged<Vector2>
@@ -444,11 +472,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Vector2Int value, bool notify = true)
             where T : INotifyValueChanged<Vector2Int>
@@ -462,11 +491,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Vector3
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Vector3 value, bool notify = true)
             where T : INotifyValueChanged<Vector3>
@@ -478,11 +508,12 @@ namespace Aspid.FastTools.UIElements
         }
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Vector3Int value, bool notify = true)
             where T : INotifyValueChanged<Vector3Int>
@@ -496,11 +527,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Vector4
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Vector4 value, bool notify = true)
             where T : INotifyValueChanged<Vector4>
@@ -514,11 +546,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Delegate
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Delegate value, bool notify = true)
             where T : INotifyValueChanged<Delegate>
@@ -532,11 +565,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Gradient
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Gradient value, bool notify = true)
             where T : INotifyValueChanged<Gradient>
@@ -550,11 +584,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Matrix4x4
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Matrix4x4 value, bool notify = true)
             where T : INotifyValueChanged<Matrix4x4>
@@ -568,11 +603,12 @@ namespace Aspid.FastTools.UIElements
         
         #region Quaternion
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Quaternion value, bool notify = true)
             where T : INotifyValueChanged<Quaternion>
@@ -586,11 +622,12 @@ namespace Aspid.FastTools.UIElements
         
         #region System.Object
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, object value, bool notify = true)
             where T : INotifyValueChanged<object>
@@ -604,11 +641,12 @@ namespace Aspid.FastTools.UIElements
         
         #region AnimationCurve
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, AnimationCurve value, bool notify = true)
             where T : INotifyValueChanged<AnimationCurve>
@@ -622,11 +660,12 @@ namespace Aspid.FastTools.UIElements
         
         #region UnityEngine.Object
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T>(this T element, Object value, bool notify = true)
             where T : INotifyValueChanged<Object>
@@ -639,11 +678,13 @@ namespace Aspid.FastTools.UIElements
         #endregion
         
         /// <summary>
-        /// Sets the element's value. If <paramref name="notify"/> is <see langword="true"/>, a change notification is raised.
+        /// Sets the value of the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The value to set.</param>
-        /// <param name="notify">If <see langword="true"/>, raises a change notification.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetValue<T, TValue>(this T element, TValue value, bool notify = true)
             where T : INotifyValueChanged<TValue>

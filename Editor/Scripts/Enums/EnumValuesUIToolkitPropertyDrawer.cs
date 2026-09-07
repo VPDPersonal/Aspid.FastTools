@@ -40,7 +40,7 @@ namespace Aspid.FastTools.Enums.Editors
             var root = new VisualElement()
                 .SetName($"enum-values-{property.name.ToKebabCase()}")
                 .AddAspidThemeStyleSheets()
-                .AddStyleSheetsFromResource(StylesheetPath)
+                .AddStyleSheetFromResources(StylesheetPath)
                 .AddManipulatorSelf(EnumValuesPropertyDrawerHelper.CreatePopulateMenuManipulator(
                     serializedObject: serializedObject,
                     values: valuesPath,

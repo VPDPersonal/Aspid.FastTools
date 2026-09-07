@@ -1,9 +1,13 @@
+using UnityEngine;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
-    public static class BaseFieldExtensionsSetLabelSbyte
+    /// <summary>
+    /// Provides <see cref="SetLabel{T}"/> for <see cref="BaseField{TValueType}"/> of <see cref="Hash128"/>.
+    /// </summary>
+    public static class BaseFieldHash128Extensions
     {
         /// <summary>
         /// Sets the label of the field via <see cref="BaseField{TValueType}.label"/>.
@@ -13,7 +17,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="value">The label text to set.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetLabel<T>(this T element, string value)
-            where T : BaseField<sbyte>
+            where T : BaseField<Hash128>
         {
             element.label = value;
             return element;

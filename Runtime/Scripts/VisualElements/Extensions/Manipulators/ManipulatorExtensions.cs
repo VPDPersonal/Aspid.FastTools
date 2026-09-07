@@ -4,11 +4,15 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods that attach manipulators to a <see cref="VisualElement"/>.
+    /// </summary>
     public static class ManipulatorExtensions
     {
         /// <summary>
-        /// Adds an <see cref="IManipulator"/> to the element and returns the element for chaining.
+        /// Adds an <see cref="IManipulator"/> to the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="manipulator">The manipulator to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -20,8 +24,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Removes an <see cref="IManipulator"/> from the element and returns the element for chaining.
+        /// Removes an <see cref="IManipulator"/> from the element.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="manipulator">The manipulator to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -35,6 +40,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new <see cref="Clickable"/> manipulator that invokes the specified handler.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="handler">The action to invoke when the element is clicked.</param>
         /// <returns>The element, for chaining.</returns>
@@ -47,6 +53,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new <see cref="Clickable"/> manipulator that invokes the specified handler and outputs the created manipulator.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="handler">The action to invoke when the element is clicked.</param>
         /// <param name="manipulator">The created <see cref="Clickable"/> manipulator.</param>
@@ -61,6 +68,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new <see cref="Clickable"/> manipulator that invokes the specified handler with the triggering <see cref="EventBase"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="handler">The action to invoke when the element is clicked, receiving the triggering event.</param>
         /// <returns>The element, for chaining.</returns>
@@ -73,6 +81,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new <see cref="Clickable"/> manipulator that invokes the specified handler with the triggering <see cref="EventBase"/> and outputs the created manipulator.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="handler">The action to invoke when the element is clicked, receiving the triggering event.</param>
         /// <param name="manipulator">The created <see cref="Clickable"/> manipulator.</param>
@@ -87,6 +96,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new repeating <see cref="Clickable"/> manipulator that invokes the specified handler after an initial delay and then at a fixed interval while pressed.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="handler">The action to invoke on each click tick.</param>
         /// <param name="delay">The delay, in milliseconds, before the first repeated invocation.</param>
@@ -101,6 +111,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new repeating <see cref="Clickable"/> manipulator that invokes the specified handler after an initial delay and then at a fixed interval while pressed, and outputs the created manipulator.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="handler">The action to invoke on each click tick.</param>
         /// <param name="delay">The delay, in milliseconds, before the first repeated invocation.</param>
@@ -117,6 +128,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new <see cref="KeyboardNavigationManipulator"/> that invokes the specified action for keyboard navigation operations.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="action">The action to invoke with the <see cref="KeyboardNavigationOperation"/> and triggering <see cref="EventBase"/>.</param>
         /// <returns>The element, for chaining.</returns>
@@ -129,6 +141,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new <see cref="KeyboardNavigationManipulator"/> that invokes the specified action for keyboard navigation operations, and outputs the created manipulator.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="action">The action to invoke with the <see cref="KeyboardNavigationOperation"/> and triggering <see cref="EventBase"/>.</param>
         /// <param name="manipulator">The created <see cref="KeyboardNavigationManipulator"/>.</param>
@@ -143,6 +156,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new <see cref="ContextualMenuManipulator"/> that uses the specified menu builder to populate the contextual menu.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="menuBuilder">The action invoked to populate the menu when it is shown.</param>
         /// <returns>The element, for chaining.</returns>
@@ -155,6 +169,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds a new <see cref="ContextualMenuManipulator"/> that uses the specified menu builder to populate the contextual menu, and outputs the created manipulator.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="menuBuilder">The action invoked to populate the menu when it is shown.</param>
         /// <param name="manipulator">The created <see cref="ContextualMenuManipulator"/>.</param>

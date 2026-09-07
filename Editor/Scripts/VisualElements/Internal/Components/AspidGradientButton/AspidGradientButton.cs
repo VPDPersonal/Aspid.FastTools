@@ -84,7 +84,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public AspidGradientButton(AspidGradientButtonPreset preset)
         {
             this.AddClass(BlockClass)
-                .AddStyleSheetsFromResource(StyleSheetPath);
+                .AddStyleSheetFromResources(StyleSheetPath);
             focusable = true;
 
             // Drawn on top of the static gradient pill but BEFORE the label, so the text

@@ -8,11 +8,6 @@ namespace Aspid.FastTools.Types
     /// Unity-serializable wrapper around a <see cref="System.Type"/>, stored by its <c>AssemblyQualifiedName</c>
     /// and resolved lazily on first access.
     /// </summary>
-    /// <remarks>
-    /// Unity serializes a field by its declared type, so a <see cref="SerializableType{T}"/> assigned from code to a
-    /// field declared as <see cref="SerializableType"/> is reloaded unconstrained: the type survives, the constraint
-    /// does not.
-    /// </remarks>
     /// <example>
     /// <code>
     /// public class MyComponent : MonoBehaviour
@@ -31,10 +26,7 @@ namespace Aspid.FastTools.Types
     [Serializable]
     public class SerializableType : SerializableTypeBase
     {
-        /// <summary>
-        /// Creates an empty wrapper.
-        /// </summary>
-        public SerializableType() { }
+        private protected SerializableType() { }
 
         /// <summary>
         /// Creates a wrapper holding <paramref name="type"/>.
@@ -60,12 +52,17 @@ namespace Aspid.FastTools.Types
     /// <summary>
     /// <see cref="SerializableType"/> constrained to types assignable to <typeparamref name="T"/>.
     /// </summary>
+    /// <remarks>
+    /// Unity serializes a field by its declared type, so a <see cref="SerializableType{T}"/> assigned from code to a
+    /// field declared as <see cref="SerializableType"/> is reloaded unconstrained: the type survives, the constraint
+    /// does not.
+    /// </remarks>
     /// <typeparam name="T">Base constraint type; the picker offers only types assignable to it.</typeparam>
     /// <example>
-    /// <code>
+    /// <code><![CDATA[
     /// public class MyComponent : MonoBehaviour
     /// {
-    ///     [SerializeField] private SerializableType&lt;MonoBehaviour&gt; _behaviorType;
+    ///     [SerializeField] private SerializableType<MonoBehaviour>; _behaviorType;
     ///
     ///     private void Start()
     ///     {
@@ -74,7 +71,7 @@ namespace Aspid.FastTools.Types
     ///             gameObject.AddComponent(type);
     ///     }
     /// }
-    /// </code>
+    /// ]]></code>
     /// </example>
     [Serializable]
     public sealed class SerializableType<T> : SerializableType
@@ -82,7 +79,7 @@ namespace Aspid.FastTools.Types
         /// <summary>
         /// Creates an empty wrapper.
         /// </summary>
-        public SerializableType() { }
+        private SerializableType() { }
 
         /// <summary>
         /// Creates a wrapper holding <paramref name="type"/>.

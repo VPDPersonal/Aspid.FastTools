@@ -4,15 +4,16 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="TreeView"/>.
+    /// </summary>
     public static class TreeViewExtensions
     {
         #region BindItem
         /// <summary>
-        /// Sets <see cref="TreeView.bindItem"/>, replacing any existing callback, and returns the element for chaining.
+        /// Sets <see cref="TreeView.bindItem"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// Callback for binding a data item to the visual element.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -26,9 +27,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="TreeView.bindItem"/> callback.
         /// </summary>
-        /// <remarks>
-        /// Callback for binding a data item to the visual element.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -42,9 +41,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="TreeView.bindItem"/> callback.
         /// </summary>
-        /// <remarks>
-        /// Callback for binding a data item to the visual element.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -58,11 +55,9 @@ namespace Aspid.FastTools.UIElements
 
         #region UnbindItem
         /// <summary>
-        /// Sets <see cref="TreeView.unbindItem"/>, replacing any existing callback, and returns the element for chaining.
+        /// Sets <see cref="TreeView.unbindItem"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// Callback for unbinding a data item from the VisualElement.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -76,9 +71,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="TreeView.unbindItem"/> callback.
         /// </summary>
-        /// <remarks>
-        /// Callback for unbinding a data item from the VisualElement.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback invoked to release bindings from a tree item element.</param>
         /// <returns>The element, for chaining.</returns>
@@ -92,9 +85,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="TreeView.unbindItem"/> callback.
         /// </summary>
-        /// <remarks>
-        /// Callback for unbinding a data item from the VisualElement.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -106,13 +97,10 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
 
-        #region MakeItem
         /// <summary>
-        /// Sets <see cref="TreeView.makeItem"/>, replacing any existing callback, and returns the element for chaining.
+        /// Sets <see cref="TreeView.makeItem"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// Callback for constructing the VisualElement that is the template for each recycled and re-bound element in the list.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -123,46 +111,11 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
 
-        /// <summary>
-        /// Subscribes to the <see cref="TreeView.makeItem"/> callback.
-        /// </summary>
-        /// <remarks>
-        /// Callback for constructing the VisualElement that is the template for each recycled and re-bound element in the list.
-        /// </remarks>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to add.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T AddMakeItem<T>(this T element, Func<VisualElement> value)
-            where T : TreeView
-        {
-            element.makeItem += value;
-            return element;
-        }
-
-        /// <summary>
-        /// Unsubscribes from the <see cref="TreeView.makeItem"/> callback.
-        /// </summary>
-        /// <remarks>
-        /// Callback for constructing the VisualElement that is the template for each recycled and re-bound element in the list.
-        /// </remarks>
-        /// <param name="element">The element to modify.</param>
-        /// <param name="value">The callback to remove.</param>
-        /// <returns>The element, for chaining.</returns>
-        public static T RemoveMakeItem<T>(this T element, Func<VisualElement> value)
-            where T : TreeView
-        {
-            element.makeItem -= value;
-            return element;
-        }
-        #endregion
-
         #region DestroyItem
         /// <summary>
-        /// Sets <see cref="TreeView.destroyItem"/>, replacing any existing callback, and returns the element for chaining.
+        /// Sets <see cref="TreeView.destroyItem"/>, replacing any existing callback.
         /// </summary>
-        /// <remarks>
-        /// Callback invoked when a VisualElement created via makeItem is no longer needed and will be destroyed.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -176,9 +129,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="TreeView.destroyItem"/> callback.
         /// </summary>
-        /// <remarks>
-        /// Callback invoked when a VisualElement created via makeItem is no longer needed and will be destroyed.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to add.</param>
         /// <returns>The element, for chaining.</returns>
@@ -192,9 +143,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="TreeView.destroyItem"/> callback.
         /// </summary>
-        /// <remarks>
-        /// Callback invoked when a VisualElement created via makeItem is no longer needed and will be destroyed.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -207,11 +156,9 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         /// <summary>
-        /// Sets <see cref="TreeView.itemTemplate"/> and returns the element for chaining.
+        /// Sets <see cref="TreeView.itemTemplate"/>.
         /// </summary>
-        /// <remarks>
-        /// A UXML template that constructs each recycled and rebound element within the tree. This template is designed to replace the makeItem definition.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The UXML template to set.</param>
         /// <returns>The element, for chaining.</returns>

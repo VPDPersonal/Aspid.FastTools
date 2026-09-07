@@ -3,7 +3,10 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
-    public static class BaseFieldExtensionsSetLabelDouble
+    /// <summary>
+    /// Provides <see cref="SetLabel{T}"/> for <see cref="BaseField{TValueType}"/> of <see cref="double"/>.
+    /// </summary>
+    public static class BaseFieldDoubleExtensions
     {
         /// <summary>
         /// Sets the label of the field via <see cref="BaseField{TValueType}.label"/>.

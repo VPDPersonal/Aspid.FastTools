@@ -33,8 +33,9 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!_baseTypes.TryGetValue(type, out var cached))
             {
-                // The interface contract requires implementations to keep a public parameterless constructor for this.
-                cached = ((ISerializableType)Activator.CreateInstance(type)).BaseType;
+                // The wrappers hide their parameterless constructor so only Unity's serializer creates them, so the
+                // probe instance this reads BaseType from has to be built through the non-public one.
+                cached = ((ISerializableType)Activator.CreateInstance(type, nonPublic: true)).BaseType;
                 _baseTypes[type] = cached;
             }
 

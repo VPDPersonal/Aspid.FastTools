@@ -15,7 +15,9 @@ namespace Aspid.FastTools.Types
     /// so every wrapper shares one serialized layout.
     /// </remarks>
     [Serializable]
-    public abstract class SerializableTypeBase : ISerializableType, ISerializationCallbackReceiver
+    public abstract class SerializableTypeBase :
+        ISerializableType,
+        ISerializationCallbackReceiver
     {
         [Tooltip("The selected type, stored by its assembly-qualified name.")]
         [SerializeField] private string? _assemblyQualifiedName;
@@ -66,8 +68,8 @@ namespace Aspid.FastTools.Types
 
         private protected void SetAssemblyQualifiedName(string? assemblyQualifiedName)
         {
-            _assemblyQualifiedName = assemblyQualifiedName;
             _type = null;
+            _assemblyQualifiedName = assemblyQualifiedName;
         }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize() =>
@@ -78,8 +80,13 @@ namespace Aspid.FastTools.Types
 
         private protected virtual void OnBeforeSerialize() { }
 
-        private static Type? GetTypeFromAssemblyQualifiedName(string? assemblyQualifiedName) => string.IsNullOrWhiteSpace(assemblyQualifiedName)
-            ? null
-            : Type.GetType(assemblyQualifiedName, throwOnError: false);
+        private static Type? GetTypeFromAssemblyQualifiedName(string? assemblyQualifiedName)
+        {
+            if (string.IsNullOrWhiteSpace(assemblyQualifiedName)) return null;
+
+            return Type.GetType(
+                typeName: assemblyQualifiedName,
+                throwOnError: false);
+        }
     }
 }

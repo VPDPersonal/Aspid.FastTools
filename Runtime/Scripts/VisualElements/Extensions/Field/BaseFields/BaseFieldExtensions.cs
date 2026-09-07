@@ -3,10 +3,13 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="BaseField{TValueType}"/>.
+    /// </summary>
     public static class BaseFieldExtensions
     {
         /// <summary>
-        /// Sets the <see cref="BaseField{TValueType}.label"/> property displayed next to the field and returns the element for chaining.
+        /// Sets <see cref="BaseField{TValueType}.label"/> displayed next to the field.
         /// </summary>
         /// <typeparam name="TField">The field type.</typeparam>
         /// <typeparam name="TValue">The value type held by the field.</typeparam>

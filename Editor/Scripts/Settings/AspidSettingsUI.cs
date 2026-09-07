@@ -74,7 +74,7 @@ namespace Aspid.FastTools.Editors
         /// <see cref="RootClass"/>, under which every rule in the sheet is scoped.
         /// </summary>
         internal static T AsSurface<T>(this T element) where T : VisualElement =>
-            element.AddStyleSheetsFromResource(StyleSheetPath).AddClass(RootClass);
+            element.AddStyleSheetFromResources(StyleSheetPath).AddClass(RootClass);
 
         /// <summary>
         /// Marks a settings row with its storage scope: applies <paramref name="scopeClass"/> and mounts two absolute
@@ -151,7 +151,7 @@ namespace Aspid.FastTools.Editors
 
             // The host loads the surface sheet so canvas and card rules reach the subtree.
             var host = new VisualElement()
-                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddStyleSheetFromResources(StyleSheetPath)
                 .AddClass(CanvasClass);
 
             // A settings page carries no status of its own; the calm idle wash keeps the canvas neutral here.

@@ -79,7 +79,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public AspidAnimatedDotsBackground(AspidAnimatedDotsBackgroundPreset preset)
         {
-            this.AddStyleSheetsFromResource(StyleSheetPath);
+            this.AddStyleSheetFromResources(StyleSheetPath);
             generateVisualContent += OnGenerateVisualContent;
 
             _status = new StatusStyle(this, preset.Status);

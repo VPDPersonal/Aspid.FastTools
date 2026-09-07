@@ -3,14 +3,18 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="Focusable"/>.
+    /// </summary>
     public static class FocusableExtensions
     {
         /// <summary>
-        /// Tells the element to release the focus and returns the element for chaining.
+        /// Removes focus from the element via <see cref="Focusable.Blur"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetBlur<T>(this T element)
+        public static T BlurSelf<T>(this T element)
             where T : Focusable
         {
             element.Blur();
@@ -18,11 +22,12 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Attempts to give the focus to this element and returns the element for chaining.
+        /// Gives focus to the element via <see cref="Focusable.Focus"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetFocus<T>(this T element)
+        public static T FocusSelf<T>(this T element)
             where T : Focusable
         {
             element.Focus();
@@ -30,59 +35,53 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if this element currently has keyboard focus.
+        /// Returns whether the element currently has keyboard focus.
         /// </summary>
         /// <param name="element">The element to check.</param>
-        /// <returns><see langword="true"/> if the element holds keyboard focus; otherwise <see langword="false"/>.</returns>
-        public static bool IsFocus(this Focusable element) =>
+        /// <returns><see langword="true"/> if the element holds keyboard focus; otherwise, <see langword="false"/>.</returns>
+        public static bool IsFocused(this Focusable element) =>
             element.focusController?.focusedElement == element;
 
         /// <summary>
-        /// Sets <see cref="Focusable.tabIndex"/> and returns the element for chaining.
+        /// Sets <see cref="Focusable.tabIndex"/>.
         /// </summary>
-        /// <remarks>
-        /// An integer used to sort focusable elements in the focus ring. Must be greater than or equal to zero.
-        /// </remarks>
-        /// <param name="focusable">The element to modify.</param>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
         /// <param name="value">The tab index to set.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetTabIndex<T>(this T focusable, int value)
+        public static T SetTabIndex<T>(this T element, int value)
             where T : Focusable
         {
-            focusable.tabIndex = value;
-            return focusable;
+            element.tabIndex = value;
+            return element;
         }
 
         /// <summary>
-        /// Sets <see cref="Focusable.focusable"/> and returns the element for chaining.
+        /// Sets <see cref="Focusable.focusable"/>.
         /// </summary>
-        /// <remarks>
-        /// Whether an element can potentially receive focus.
-        /// </remarks>
-        /// <param name="focusable">The element to modify.</param>
-        /// <param name="value">Whether this element can receive focus.</param>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">When <see langword="true"/>, the element can receive focus.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetFocusable<T>(this T focusable, bool value)
+        public static T SetFocusable<T>(this T element, bool value)
             where T : Focusable
         {
-            focusable.focusable = value;
-            return focusable;
+            element.focusable = value;
+            return element;
         }
 
         /// <summary>
-        /// Sets <see cref="Focusable.delegatesFocus"/> and returns the element for chaining.
+        /// Sets <see cref="Focusable.delegatesFocus"/>.
         /// </summary>
-        /// <remarks>
-        /// Whether the element delegates the focus to its children.
-        /// </remarks>
-        /// <param name="focusable">The element to modify.</param>
-        /// <param name="value">Whether focus is delegated to children.</param>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">When <see langword="true"/>, focus is delegated to the children.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetDelegatesFocus<T>(this T focusable, bool value)
+        public static T SetDelegatesFocus<T>(this T element, bool value)
             where T : Focusable
         {
-            focusable.delegatesFocus = value;
-            return focusable;
+            element.delegatesFocus = value;
+            return element;
         }
     }
 }

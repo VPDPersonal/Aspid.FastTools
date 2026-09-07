@@ -5,14 +5,15 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="VisualElement"/>.
+    /// </summary>
     public static partial class VisualElementExtensions
     {
         /// <summary>
-        /// Sets <see cref="VisualElement.name"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.name"/>.
         /// </summary>
-        /// <remarks>
-        /// The name of this VisualElement.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The name to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -24,13 +25,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.visible"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.visible"/>.
         /// </summary>
-        /// <remarks>
-        /// Indicates whether or not this element should be rendered.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether the element is visible.</param>
+        /// <param name="value">When <see langword="true"/>, the element is rendered.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetVisible<T>(this T element, bool value)
             where T : VisualElement
@@ -40,11 +39,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.tooltip"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.tooltip"/>.
         /// </summary>
-        /// <remarks>
-        /// Text to display inside an information box after the user hovers the element for a small amount of time. This is only supported in the Editor UI.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The tooltip text to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -56,11 +53,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.userData"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.userData"/>.
         /// </summary>
-        /// <remarks>
-        /// This property can be used to associate application-specific user data with this VisualElement.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The user data to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -72,13 +67,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Changes the VisualElement enabled state and returns the element for chaining.
+        /// Enables or disables the element via <see cref="VisualElement.SetEnabled"/>.
         /// </summary>
-        /// <remarks>
-        /// A disabled visual element does not receive most events.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether the element is enabled.</param>
+        /// <param name="value">When <see langword="true"/>, the element is enabled; a disabled element receives most events no longer.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetEnabledSelf<T>(this T element, bool value)
             where T : VisualElement
@@ -88,11 +81,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.dataSource"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.dataSource"/>.
         /// </summary>
-        /// <remarks>
-        /// Assigns a data source to this VisualElement which overrides any inherited data source. This data source is inherited by all children.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The data source to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -104,11 +95,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.viewDataKey"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.viewDataKey"/>.
         /// </summary>
-        /// <remarks>
-        /// Used for view data persistence, such as tree expanded states, scroll position, or zoom level.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The view data key to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -120,12 +109,12 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.dataSourceType"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.dataSourceType"/>.
         /// </summary>
         /// <remarks>
-        /// The possible type of data source assignable to this VisualElement.
-        /// This information is only used by the UI Builder as a hint to provide some completion to the data source path field when the effective data source cannot be specified at design time.
+        /// The type is only a design-time hint for the UI Builder; it does not affect runtime binding.
         /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The data source type to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -137,15 +126,12 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.usageHints"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.usageHints"/>.
         /// </summary>
         /// <remarks>
-        /// A combination of hint values that specify high-level intended usage patterns for the VisualElement.
-        /// This property can only be set when the VisualElement is not yet part of a Panel. Once part of a Panel, this property becomes effectively read-only, and attempts to change it will throw an exception.
-        /// The specification of proper UsageHints drives the system to make better decisions on how to process or accelerate certain operations based on the anticipated usage pattern.
-        /// Note that those hints do not affect behavioral or visual results, but only affect the overall performance of the panel and the elements within.
-        /// It's advised to always consider specifying the proper UsageHints, but keep in mind that some UsageHints might be internally ignored under certain conditions (e.g. due to hardware limitations on the target platform).
+        /// Must be called before the element is added to a panel; afterwards the property is effectively read-only and throws on assignment.
         /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The usage hints to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -157,11 +143,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.pickingMode"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.pickingMode"/>.
         /// </summary>
-        /// <remarks>
-        /// Determines if this element can be the target of pointer events or picked by IPanel.Pick queries.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The picking mode to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -173,13 +157,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.disablePlayModeTint"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.disablePlayModeTint"/>.
         /// </summary>
-        /// <remarks>
-        /// Play-mode tint is applied by default unless this is set to true. It's applied hierarchically to this VisualElement and to all its children that exist on an editor panel.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to disable the play-mode tint.</param>
+        /// <param name="value">When <see langword="true"/>, the play-mode tint is not applied to the element and its children.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetDisablePlayModeTint<T>(this T element, bool value)
             where T : VisualElement
@@ -189,11 +171,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.dataSourcePath"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.dataSourcePath"/>.
         /// </summary>
-        /// <remarks>
-        /// Path from the data source to the value.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The data source path to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -205,11 +185,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="VisualElement.languageDirection"/> and returns the element for chaining.
+        /// Sets <see cref="VisualElement.languageDirection"/>.
         /// </summary>
-        /// <remarks>
-        /// Indicates the directionality of the element's text. The value will propagate to the element's children.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The language direction to set.</param>
         /// <returns>The element, for chaining.</returns>

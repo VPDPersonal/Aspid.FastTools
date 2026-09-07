@@ -4,6 +4,9 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="ITextSelection"/>.
+    /// </summary>
     public static class ITextSelectionExtensions
     {
         #region OnCursorIndexChange
@@ -11,6 +14,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="ITextSelection.OnCursorIndexChange"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -24,6 +28,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="ITextSelection.OnCursorIndexChange"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -41,6 +46,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="ITextSelection.OnSelectIndexChange"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -54,6 +60,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="ITextSelection.OnSelectIndexChange"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -67,11 +74,9 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         /// <summary>
-        /// Sets <see cref="ITextSelection.cursorIndex"/> and returns the element for chaining.
+        /// Sets <see cref="ITextSelection.cursorIndex"/>.
         /// </summary>
-        /// <remarks>
-        /// This is the cursor index in the text presented.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The cursor index to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -83,11 +88,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextSelection.selectIndex"/> and returns the element for chaining.
+        /// Sets <see cref="ITextSelection.selectIndex"/>.
         /// </summary>
-        /// <remarks>
-        /// This is the selection index in the text presented.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The selection index to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -99,15 +102,13 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextSelection.isSelectable"/> and returns the element for chaining.
+        /// Sets <see cref="ITextSelection.isSelectable"/>.
         /// </summary>
-        /// <remarks>
-        /// When set to true, the field becomes selectable.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether the field is selectable.</param>
+        /// <param name="value">When <see langword="true"/>, the text can be selected.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetIsSelectable<T>(this T element, bool value)
+        public static T SetSelectable<T>(this T element, bool value)
             where T : ITextSelection
         {
             element.isSelectable = value;
@@ -115,13 +116,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextSelection.selectAllOnFocus"/> and returns the element for chaining.
+        /// Sets <see cref="ITextSelection.selectAllOnFocus"/>.
         /// </summary>
-        /// <remarks>
-        /// Controls whether the element's content is selected upon receiving focus.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to select all content on focus.</param>
+        /// <param name="value">When <see langword="true"/>, the whole text is selected when the element receives focus.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetSelectAllOnFocus<T>(this T element, bool value)
             where T : ITextSelection
@@ -131,13 +130,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextSelection.selectAllOnMouseUp"/> and returns the element for chaining.
+        /// Sets <see cref="ITextSelection.selectAllOnMouseUp"/>.
         /// </summary>
-        /// <remarks>
-        /// Controls whether the element's content is selected when you mouse up for the first time.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to select all content on the first mouse up.</param>
+        /// <param name="value">When <see langword="true"/>, the whole text is selected on the first mouse up.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetSelectAllOnMouseUp<T>(this T element, bool value)
             where T : ITextSelection
@@ -147,13 +144,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextSelection.doubleClickSelectsWord"/> and returns the element for chaining.
+        /// Sets <see cref="ITextSelection.doubleClickSelectsWord"/>.
         /// </summary>
-        /// <remarks>
-        /// Controls whether double-clicking selects the word under the mouse pointer.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether double-clicking selects a word.</param>
+        /// <param name="value">When <see langword="true"/>, a double click selects the word under the pointer.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetDoubleClickSelectsWord<T>(this T element, bool value)
             where T : ITextSelection
@@ -163,13 +158,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextSelection.tripleClickSelectsLine"/> and returns the element for chaining.
+        /// Sets <see cref="ITextSelection.tripleClickSelectsLine"/>.
         /// </summary>
-        /// <remarks>
-        /// Controls whether triple-clicking selects the entire line under the mouse pointer.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether triple-clicking selects a line.</param>
+        /// <param name="value">When <see langword="true"/>, a triple click selects the line under the pointer.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetTripleClickSelectsLine<T>(this T element, bool value)
             where T : ITextSelection

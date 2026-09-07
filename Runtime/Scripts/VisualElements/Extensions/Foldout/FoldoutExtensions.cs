@@ -3,14 +3,15 @@ using UnityEngine.UIElements;
 // ReSharper disable CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="Foldout"/>.
+    /// </summary>
     public static class FoldoutExtensions
     {
         /// <summary>
-        /// Sets <see cref="Foldout.text"/> and returns the element for chaining.
+        /// Sets <see cref="Foldout.text"/>.
         /// </summary>
-        /// <remarks>
-        /// The label text for the toggle.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The text to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -22,13 +23,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="Foldout.toggleOnLabelClick"/> and returns the element for chaining.
+        /// Sets <see cref="Foldout.toggleOnLabelClick"/>.
         /// </summary>
-        /// <remarks>
-        /// Whether to toggle the element state when the user clicks the label.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether clicking the label toggles the foldout.</param>
+        /// <param name="value">When <see langword="true"/>, clicking the label toggles the foldout.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetToggleOnLabelClick<T>(this T element, bool value)
             where T : Foldout

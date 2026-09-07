@@ -103,13 +103,13 @@ namespace Aspid.FastTools.Types.Editors
 
             var isCurrent = IsCurrentValue(node);
 
-            element.EnableInClass(SectionTitleClass, isSectionTitle);
-            element.EnableInClass(ItemInSectionClass, !isSectionTitle && node.SectionKey is not null);
-            element.EnableInClass(ItemCurrentModifier, isCurrent);
+            element.EnableClass(SectionTitleClass, isSectionTitle);
+            element.EnableClass(ItemInSectionClass, !isSectionTitle && node.SectionKey is not null);
+            element.EnableClass(ItemCurrentModifier, isCurrent);
 
             // A non-reorderable ListView adds the item class straight onto the makeItem element (no per-row
             // wrapper), so the divider modifier goes on the row root itself.
-            element.EnableInClass(RowAfterPinnedModifier, IsFirstRowAfterPinnedBlock(items, index));
+            element.EnableClass(RowAfterPinnedModifier, IsFirstRowAfterPinnedBlock(items, index));
 
             element.SetPickingMode(PickingMode.Position);
 
@@ -210,7 +210,7 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             icon
-                .EnableInClass(ItemIconCollapsedModifier, sectionCollapsed)
+                .EnableClass(ItemIconCollapsedModifier, sectionCollapsed)
                 .SetImage(texture)
                 .SetDisplay(texture is not null ? DisplayStyle.Flex : DisplayStyle.None);
         }
@@ -239,7 +239,7 @@ namespace Aspid.FastTools.Types.Editors
             favorite
                 .SetDisplay(DisplayStyle.Flex)
                 .SetText(isFavorite ? TypeSelectorHelpers.StarFilled : TypeSelectorHelpers.StarEmpty)
-                .EnableInClass(FavoriteToggleOnModifier, isFavorite);
+                .EnableClass(FavoriteToggleOnModifier, isFavorite);
         }
 
         private void OnRowClicked(ClickEvent evt)

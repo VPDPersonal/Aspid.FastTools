@@ -26,7 +26,7 @@ namespace Aspid.FastTools.Types.Editors
         private const string StyleSheetPath = "UI/Types/Aspid-FastTools-TypeSelector";
 
         // The static skeleton lives in a UXML cloned in BuildUI. It keeps a distinct base name from the stylesheet so
-        // AddStyleSheetsFromResource's Resources.Load<StyleSheet> on StyleSheetPath stays unambiguous (a same-named
+        // AddStyleSheetFromResources's Resources.Load<StyleSheet> on StyleSheetPath stays unambiguous (a same-named
         // VisualTreeAsset would shadow the StyleSheet). The code keeps only the classes it toggles/queries at runtime;
         // the skeleton's own classes live in the UXML.
         private const string UxmlResourcePath = "UI/Types/Aspid-FastTools-TypeSelector-View";
@@ -180,7 +180,7 @@ namespace Aspid.FastTools.Types.Editors
             focusable = true;
 
             this.AddAspidThemeStyleSheets()
-                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddStyleSheetFromResources(StyleSheetPath)
                 .AddClass(BlockClass);
 
             Resources.Load<VisualTreeAsset>(UxmlResourcePath).CloneTree(this);
@@ -230,7 +230,7 @@ namespace Aspid.FastTools.Types.Editors
             _searchField.RegisterCallback<FocusInEvent>(_ =>
             {
                 _searchFieldFocused = true;
-                _header.EnableInClass(HeaderSearchFocusedModifier, true);
+                _header.EnableClass(HeaderSearchFocusedModifier, true);
 
                 _listView.ClearSelection();
 
@@ -244,7 +244,7 @@ namespace Aspid.FastTools.Types.Editors
                 if (evt.relatedTarget is VisualElement next && IsDescendantOf(next, _searchField)) return;
 
                 _searchFieldFocused = false;
-                _header.EnableInClass(HeaderSearchFocusedModifier, false);
+                _header.EnableClass(HeaderSearchFocusedModifier, false);
                 UpdateSearchChrome();
                 UpdateFooterHint();
             });

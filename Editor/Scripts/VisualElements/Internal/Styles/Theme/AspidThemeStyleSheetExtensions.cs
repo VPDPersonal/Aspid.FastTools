@@ -10,10 +10,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public static T AddAspidThemeStyleSheets<T>(this T element)
             where T : VisualElement
         {
-            element.AddStyleSheetsFromResource(AspidStyles.DefaultStyleSheet);
+            element.AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet);
 
             var applied = AspidThemeSettings.OverrideStyleSheet;
-            if (applied != null) element.AddStyleSheets(applied);
+            if (applied != null) element.AddStyleSheet(applied);
 
             // Subscribed on attach and dropped on detach, so live updates survive a re-parent and an element that
             // never attaches leaks nothing.
@@ -28,10 +28,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
             void OnThemeChanged()
             {
-                if (applied != null) element.RemoveStyleSheets(applied);
+                if (applied != null) element.RemoveStyleSheet(applied);
 
                 applied = AspidThemeSettings.OverrideStyleSheet;
-                if (applied != null) element.AddStyleSheets(applied);
+                if (applied != null) element.AddStyleSheet(applied);
             }
         }
     }

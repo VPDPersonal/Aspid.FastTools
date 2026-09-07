@@ -4,12 +4,16 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="BaseSlider{TValueType}"/>.
+    /// </summary>
     public static class SliderExtensions
     {
         #region Int
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -21,8 +25,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -34,8 +39,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -47,8 +53,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -62,8 +69,9 @@ namespace Aspid.FastTools.UIElements
 
         #region Long
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -75,8 +83,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -88,8 +97,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -101,8 +111,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -116,8 +127,9 @@ namespace Aspid.FastTools.UIElements
 
         #region Byte
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -129,8 +141,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -142,8 +155,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -155,8 +169,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -170,8 +185,9 @@ namespace Aspid.FastTools.UIElements
 
         #region Short
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -183,8 +199,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -196,8 +213,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -209,8 +227,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -224,8 +243,9 @@ namespace Aspid.FastTools.UIElements
 
         #region Float
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -237,8 +257,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -252,8 +273,9 @@ namespace Aspid.FastTools.UIElements
 
         #region Double
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -265,8 +287,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -279,10 +302,11 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.fill"/> property controlling whether the track is filled up to the current value and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.fill"/> controlling whether the track is filled up to the current value.
         /// </summary>
+        /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether the track is filled up to the current value.</param>
+        /// <param name="value">When <see langword="true"/>, the track is filled up to the current value.</param>
         /// <returns>The element, for chaining.</returns>
         public static BaseSlider<TValue> SetFill<TValue>(this BaseSlider<TValue> element, bool value)
             where TValue : IComparable<TValue>
@@ -292,10 +316,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.inverted"/> property reversing the direction of the element and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.inverted"/> reversing the direction of the element.
         /// </summary>
+        /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether the slider direction is inverted.</param>
+        /// <param name="value">When <see langword="true"/>, the slider direction is reversed.</param>
         /// <returns>The element, for chaining.</returns>
         public static BaseSlider<TValue> SetInverted<TValue>(this BaseSlider<TValue> element, bool value)
             where TValue : IComparable<TValue>
@@ -305,8 +330,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.pageSize"/> property controlling how much the value changes per page step and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.pageSize"/> controlling how much the value changes per page step.
         /// </summary>
+        /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The page size to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -318,8 +344,10 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.lowValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.lowValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The low value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -332,8 +360,10 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.highValue"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.highValue"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The high value to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -346,10 +376,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.showInputField"/> property controlling whether a numeric input field is shown alongside the element and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.showInputField"/> controlling whether a numeric input field is shown alongside the element.
         /// </summary>
+        /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to show a numeric input field.</param>
+        /// <param name="value">When <see langword="true"/>, a numeric input field is shown next to the slider.</param>
         /// <returns>The element, for chaining.</returns>
         public static BaseSlider<TValue> SetShowInputField<TValue>(this BaseSlider<TValue> element, bool value)
             where TValue : IComparable<TValue>
@@ -359,8 +390,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseSlider{TValueType}.direction"/> property controlling the orientation of the element and returns the element for chaining.
+        /// Sets <see cref="BaseSlider{TValueType}.direction"/> controlling the orientation of the element.
         /// </summary>
+        /// <typeparam name="TValue">The value type of the element.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The slider direction to set.</param>
         /// <returns>The element, for chaining.</returns>

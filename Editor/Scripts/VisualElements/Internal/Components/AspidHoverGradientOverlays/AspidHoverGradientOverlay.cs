@@ -60,7 +60,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public AspidHoverGradientOverlay()
         {
-            this.AddStyleSheetsFromResource(StyleSheetPath);
+            this.AddStyleSheetFromResources(StyleSheetPath);
             pickingMode = PickingMode.Ignore;
 
             _color = new AspidHoverGradientOverlayColorStyle(this, default, MarkDirtyRepaint);

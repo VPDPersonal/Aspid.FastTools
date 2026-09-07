@@ -3,18 +3,19 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="IMixedValueSupport"/>.
+    /// </summary>
     public static class IMixedValueSupportExtensions
     {
         /// <summary>
-        /// Sets <see cref="IMixedValueSupport.showMixedValue"/> and returns the element for chaining.
+        /// Sets <see cref="IMixedValueSupport.showMixedValue"/>.
         /// </summary>
-        /// <remarks>
-        /// Indicates whether to enable the mixed value state on the value field.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to show the mixed value state.</param>
+        /// <param name="value">When <see langword="true"/>, the mixed value state is shown.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetShowMixedValue<T>(this T element, bool value = true)
+        public static T SetShowMixedValue<T>(this T element, bool value)
             where T : IMixedValueSupport
         {
             element.showMixedValue = value;

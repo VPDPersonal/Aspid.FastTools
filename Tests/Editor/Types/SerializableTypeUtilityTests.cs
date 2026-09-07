@@ -16,22 +16,22 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void BaseType_IsObject_OnTheUnconstrainedWrapper()
         {
-            ISerializableType wrapper = new SerializableType();
+            ISerializableType wrapper = new SerializableType(null);
             Assert.AreEqual(typeof(object), wrapper.BaseType);
         }
 
         [Test]
         public void BaseType_IsTheGenericArgument_OnTheConstrainedWrapper()
         {
-            ISerializableType wrapper = new SerializableType<Exception>();
+            ISerializableType wrapper = new SerializableType<Exception>(null);
             Assert.AreEqual(typeof(Exception), wrapper.BaseType);
         }
 
         [Test]
         public void Type_IsNull_OnACodeConstructedWrapper_ViaTheInterface()
         {
-            Assert.IsNull(((ISerializableType)new SerializableType()).Type);
-            Assert.IsNull(((ISerializableType)new SerializableType<Exception>()).Type);
+            Assert.IsNull(((ISerializableType)new SerializableType(null)).Type);
+            Assert.IsNull(((ISerializableType)new SerializableType<Exception>(null)).Type);
         }
 
         [TestCase(typeof(SerializableType))]

@@ -30,7 +30,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public bool Selectable
         {
             get => _label.selection.isSelectable;
-            set => _label.SetIsSelectable(value);
+            set => _label.SetSelectable(value);
         }
 
         [UxmlAttribute]
@@ -103,7 +103,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _label = new Label(text);
             _line = new AspidDividingLine(preset.Line);
             
-            this.AddStyleSheetsFromResource(StyleSheetPath)
+            this.AddStyleSheetFromResources(StyleSheetPath)
                 .AddChild(_label)
                 .AddChild(_line);
 

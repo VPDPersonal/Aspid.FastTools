@@ -98,9 +98,9 @@ element
 
 | Method | Description |
 |--------|-------------|
-| `SetFocus()` | Attempts to give focus to the element |
-| `SetBlur()` | Tells the element to release focus |
-| `IsFocus()` | Returns whether the element currently has keyboard focus |
+| `FocusSelf()` | Attempts to give focus to the element |
+| `BlurSelf()` | Tells the element to release focus |
+| `IsFocused()` | Returns whether the element currently has keyboard focus |
 | `SetTabIndex(int)` | Sets `element.tabIndex` |
 | `SetFocusable(bool)` | Sets `element.focusable` |
 | `SetDelegatesFocus(bool)` | Sets `element.delegatesFocus` |
@@ -112,12 +112,12 @@ element
 | `AddClass(string)` | Adds a USS class |
 | `RemoveClass(string)` | Removes a USS class |
 | `ClearClasses()` | Removes all USS classes |
-| `ToggleInClass(string)` | Toggles a USS class on/off |
-| `EnableInClass(string, bool)` | Adds or removes a USS class based on a condition |
-| `AddStyleSheets(StyleSheet)` | Adds a `StyleSheet` |
-| `RemoveStyleSheets(StyleSheet)` | Removes a `StyleSheet` |
-| `AddStyleSheetsFromResource(string)` | Adds a stylesheet loaded via `Resources.Load` |
-| `RemoveStyleSheetsFromResource(string)` | Removes a stylesheet loaded via `Resources.Load` |
+| `ToggleClass(string)` | Toggles a USS class on/off |
+| `EnableClass(string, bool)` | Adds or removes a USS class based on a condition |
+| `AddStyleSheet(StyleSheet)` | Adds a `StyleSheet` |
+| `RemoveStyleSheet(StyleSheet)` | Removes a `StyleSheet` |
+| `AddStyleSheetFromResources(string)` | Adds a stylesheet loaded via `Resources.Load` |
+| `RemoveStyleSheetFromResources(string)` | Removes a stylesheet loaded via `Resources.Load` |
 
 ## Style extensions — by category
 
@@ -240,7 +240,7 @@ Convenience methods for toggling bold / italic without overwriting the other fla
 | `SetBackgroundColor(StyleColor)` | `backgroundColor` |
 | `SetBackgroundColor(string)` | `backgroundColor` parsed from an HTML string (`"#RRGGBB"` or a named color) |
 | `SetBackgroundImage(StyleBackground)` | `backgroundImage` |
-| `SetBackgroundImageFromResource(string)` | Loads a `Texture2D` via `Resources.Load` and assigns it to `backgroundImage` |
+| `SetBackgroundImageFromResources(string)` | Loads a `Texture2D` via `Resources.Load` and assigns it to `backgroundImage` |
 | `SetBackgroundSize(StyleBackgroundSize)` | `backgroundSize` |
 | `SetBackgroundRepeat(StyleBackgroundRepeat)` | `backgroundRepeat` |
 | `SetBackgroundPosition(StyleBackgroundPosition)` | Both X and Y |
@@ -328,16 +328,16 @@ label
 textField
     .SetPlaceholder("Search…")
     .SetMaxLength(64)
-    .SetIsDelayed(true);
+    .SetDelayed(true);
 ```
 
 | Method | Description |
 |--------|-------------|
 | `SetMaxLength(int)` | Maximum number of characters |
 | `SetMaskChar(char)` | Character used to mask password input |
-| `SetIsDelayed(bool)` | Defers value change until focus loss / Enter |
-| `SetIsReadOnly(bool)` | Disables editing |
-| `SetIsPassword(bool)` | Toggles password mode (uses mask char) |
+| `SetDelayed(bool)` | Defers value change until focus loss / Enter |
+| `SetReadOnly(bool)` | Disables editing |
+| `SetPassword(bool)` | Toggles password mode (uses mask char) |
 | `SetPlaceholder(string)` | Placeholder text shown when empty |
 | `SetAutoCorrection(bool)` | Enables auto-correction (mobile) |
 | `SetHideMobileInput(bool)` | Hides the mobile soft input |
@@ -349,7 +349,7 @@ textField
 
 ```csharp
 textField
-    .SetIsSelectable(true)
+    .SetSelectable(true)
     .SetSelectAllOnFocus(true)
     .AddOnCursorIndexChange(() => Debug.Log(textField.cursorIndex));
 ```
@@ -360,7 +360,7 @@ textField
 | `AddOnSelectIndexChange(Action)` / `RemoveOnSelectIndexChange(Action)` | Selection-index change subscription |
 | `SetCursorIndex(int)` | Sets the current cursor index |
 | `SetSelectIndex(int)` | Sets the current selection anchor |
-| `SetIsSelectable(bool)` | Whether text can be selected |
+| `SetSelectable(bool)` | Whether text can be selected |
 | `SetSelectAllOnFocus(bool)` | Selects all text on focus |
 | `SetSelectAllOnMouseUp(bool)` | Selects all text on mouse release |
 | `SetDoubleClickSelectsWord(bool)` | Double-click selects the word under cursor |
@@ -492,11 +492,11 @@ image
 | Method | Description |
 |--------|-------------|
 | `SetImage(Texture)` | Sets `Image.image` |
-| `SetImageFromResource(string)` | Loads a texture via `Resources.Load<Texture2D>` |
+| `SetImageFromResources(string)` | Loads a texture via `Resources.Load<Texture2D>` |
 | `SetSprite(Sprite)` | Sets `Image.sprite` |
-| `SetSpriteFromResource(string)` | Loads a sprite via `Resources.Load<Sprite>` |
+| `SetSpriteFromResources(string)` | Loads a sprite via `Resources.Load<Sprite>` |
 | `SetVectorImage(VectorImage)` | Sets `Image.vectorImage` |
-| `SetVectorImageFromResource(string)` | Loads a vector image via `Resources.Load<VectorImage>` |
+| `SetVectorImageFromResources(string)` | Loads a vector image via `Resources.Load<VectorImage>` |
 | `SetUv(Rect)` | Sets the UV rect |
 | `SetSourceRect(Rect)` | Sets the source rect |
 | `SetTintColor(Color)` | Sets the image tint |

@@ -99,7 +99,7 @@ namespace Aspid.FastTools.Editors
 
             var root = rootVisualElement;
             root.AddAspidThemeStyleSheets()
-                .AddStyleSheetsFromResource(WindowStyleSheetPath)
+                .AddStyleSheetFromResources(WindowStyleSheetPath)
                 .AddClass(RootClass);
 
             // One dotted canvas, owned by the window, fills it behind everything; its tint follows the active view's

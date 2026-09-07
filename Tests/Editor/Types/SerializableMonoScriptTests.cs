@@ -6,9 +6,9 @@ using NUnit.Framework;
 namespace Aspid.FastTools.Types.Editors.Tests
 {
     /// <summary>
-    /// Guards the script-backed wrappers: the code-side contract (constructors, constraint, implicit conversion),
-    /// the editor utility that maps types to their script assets and writes a wrapper property, and the
-    /// editor-side sync that re-reads the stored type name from the referenced script.
+    /// Guards the script-backed wrappers: the code-side contract (base type, implicit conversion), the editor
+    /// utility that maps types to their script assets and writes a wrapper property, and the editor-side sync
+    /// that re-reads the stored type name from the referenced script.
     /// </summary>
     [TestFixture]
     internal sealed class SerializableMonoScriptTests
@@ -17,13 +17,30 @@ namespace Aspid.FastTools.Types.Editors.Tests
         // MonoScript.GetClass() reports, so it is guaranteed to have a script asset.
         private static readonly Type ScriptedType = typeof(SerializableMonoScript);
 
+        // A scripted type the constrained wrapper accepts.
+        private static readonly Type ConstrainedType = typeof(SerializableType);
+
         private sealed class Holder : ScriptableObject
         {
-            [SerializeField] public SerializableMonoScript wrapper = new();
+            // The wrappers have no public constructor: only Unity's serializer creates them.
+            [SerializeField] public SerializableMonoScript wrapper;
 
             [TypeSelector(Required = true)]
-            [SerializeField] public SerializableMonoScript<SerializableType> required = new();
+            [SerializeField] public SerializableMonoScript<SerializableType> required;
         }
+
+        // Unity's serializer, not a constructor, creates the wrappers, and it only runs once the object is
+        // serialized — a freshly created instance still carries null fields.
+        private static Holder CreateHolder()
+        {
+            var holder = ScriptableObject.CreateInstance<Holder>();
+            new SerializedObject(holder).Update();
+            return holder;
+        }
+
+        // The script reference is a private editor-only field, so a test reads it the way the drawers do.
+        private static MonoScript ScriptOf(SerializedProperty wrapperProperty) =>
+            wrapperProperty.FindPropertyRelative(SerializableMonoScriptUtility.ScriptFieldName).objectReferenceValue as MonoScript;
 
         [Test]
         public void ImplicitConversion_NullWrapper_YieldsNull()
@@ -36,33 +53,33 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
-        public void Constructor_StoresTheTypeByNameOnly()
-        {
-            var wrapper = new SerializableMonoScript(typeof(Exception));
-
-            Assert.AreEqual(typeof(Exception), wrapper.Type);
-            Assert.AreEqual(typeof(Exception).AssemblyQualifiedName, wrapper.AssemblyQualifiedName);
-            Assert.IsNull(wrapper.Script, "A code-constructed wrapper carries the name only.");
-        }
-
-        [Test]
-        public void GenericConstructor_RejectsAnUnrelatedType() =>
-            Assert.Throws<ArgumentException>(() => new SerializableMonoScript<Exception>(typeof(string)));
-
-        [Test]
         public void ConstrainedWrapper_IsAMonoScriptWrapper()
         {
-            SerializableMonoScript wrapper = new SerializableMonoScript<Exception>(typeof(ArgumentException));
+            var holder = CreateHolder();
+            try
+            {
+                var serialized = new SerializedObject(holder);
+                SerializableMonoScriptUtility.Assign(serialized.FindProperty(nameof(Holder.required)), ConstrainedType);
 
-            Assert.AreEqual(typeof(Exception), wrapper.BaseType, "BaseType must stay virtual through the base reference.");
-            Assert.AreEqual(typeof(ArgumentException), (Type)wrapper);
+                SerializableMonoScript wrapper = holder.required;
+
+                Assert.AreEqual(typeof(SerializableType), wrapper.BaseType, "BaseType must stay virtual through the base reference.");
+                Assert.AreEqual(ConstrainedType, (Type)wrapper);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
         }
 
         [Test]
         public void Wrappers_ExposeTheirBaseType()
         {
-            Assert.AreEqual(typeof(object), new SerializableMonoScript().BaseType);
-            Assert.AreEqual(typeof(Exception), new SerializableMonoScript<Exception>().BaseType);
+            var holder = CreateHolder();
+            try
+            {
+                Assert.AreEqual(typeof(object), holder.wrapper.BaseType);
+                Assert.AreEqual(typeof(SerializableType), holder.required.BaseType);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+
             Assert.IsTrue(SerializableTypeUtility.TryGetBaseType(typeof(SerializableMonoScript<Exception>[]), out var baseType));
             Assert.AreEqual(typeof(Exception), baseType);
         }
@@ -87,7 +104,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void Assign_WritesScriptAndName_AndNullClearsBoth()
         {
-            var holder = ScriptableObject.CreateInstance<Holder>();
+            var holder = CreateHolder();
             try
             {
                 var serialized = new SerializedObject(holder);
@@ -95,8 +112,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
                 SerializableMonoScriptUtility.Assign(wrapper, ScriptedType);
                 Assert.AreEqual(ScriptedType, holder.wrapper.Type);
-                Assert.IsInstanceOf<MonoScript>(holder.wrapper.Script);
-                Assert.AreEqual(ScriptedType, ((MonoScript)holder.wrapper.Script).GetClass());
+                Assert.AreEqual(ScriptedType, ScriptOf(wrapper)?.GetClass());
 
                 serialized.Update();
                 Assert.AreEqual(ScriptedType, SerializableMonoScriptUtility.GetCurrentType(wrapper, out var name));
@@ -104,7 +120,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
                 SerializableMonoScriptUtility.Assign(wrapper, null);
                 Assert.IsNull(holder.wrapper.Type);
-                Assert.IsNull(holder.wrapper.Script);
+                Assert.IsNull(ScriptOf(wrapper));
                 Assert.AreEqual(string.Empty, holder.wrapper.AssemblyQualifiedName);
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
@@ -113,7 +129,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void Serialization_ResyncsTheNameFromTheScript()
         {
-            var holder = ScriptableObject.CreateInstance<Holder>();
+            var holder = CreateHolder();
             try
             {
                 var serialized = new SerializedObject(holder);
@@ -137,7 +153,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void SyncScriptFromName_PointsTheScriptAtTheWrittenType()
         {
-            var holder = ScriptableObject.CreateInstance<Holder>();
+            var holder = CreateHolder();
             try
             {
                 var serialized = new SerializedObject(holder);
@@ -147,7 +163,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
                 SerializableMonoScriptUtility.SyncScriptFromName(name);
 
-                Assert.IsInstanceOf<MonoScript>(holder.wrapper.Script);
+                Assert.AreEqual(ScriptedType, ScriptOf(serialized.FindProperty(nameof(Holder.wrapper)))?.GetClass());
                 Assert.AreEqual(ScriptedType, holder.wrapper.Type);
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
@@ -156,7 +172,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void RequiredGate_CoversTheWrapper()
         {
-            var holder = ScriptableObject.CreateInstance<Holder>();
+            var holder = CreateHolder();
             try
             {
                 var serialized = new SerializedObject(holder);

@@ -108,7 +108,7 @@ namespace Aspid.FastTools.Types.Editors
         {
             var crumb = new Label(text)
                 .AddClass(CrumbClass)
-                .EnableInClass(CrumbCurrentModifier, isCurrent)
+                .EnableClass(CrumbCurrentModifier, isCurrent)
                 .SetTooltip(text);
 
             // Clickability tracks the action, not the current flag: the generic-context crumb is both "here" and an

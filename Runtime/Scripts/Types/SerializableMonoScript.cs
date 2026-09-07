@@ -22,11 +22,6 @@ namespace Aspid.FastTools.Types
     /// Only types Unity maps to a script asset can be referenced this way — a top-level, non-generic class declared
     /// in a file of the same name. Use <see cref="SerializableType"/> for nested and generic types.
     /// </para>
-    /// <para>
-    /// Unity serializes a field by its declared type, so a <see cref="SerializableMonoScript{T}"/> assigned from code
-    /// to a field declared as <see cref="SerializableMonoScript"/> is reloaded unconstrained: the type survives, the
-    /// constraint does not.
-    /// </para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -51,26 +46,7 @@ namespace Aspid.FastTools.Types
         [SerializeField] private MonoScript? _script;
 #endif
 
-        /// <summary>
-        /// Creates an empty wrapper.
-        /// </summary>
-        public SerializableMonoScript() { }
-
-        /// <summary>
-        /// Creates a wrapper holding <paramref name="type"/> by name only: no script asset is attached, so the
-        /// wrapper is not rename-safe until a type is picked in the Inspector.
-        /// </summary>
-        /// <param name="type">The type to store, or <see langword="null"/> for an empty wrapper.</param>
-        public SerializableMonoScript(Type? type)
-            : base(type) { }
-
-#if UNITY_EDITOR
-        /// <summary>
-        /// Gets the editor-only script asset declaring the type, or <see langword="null"/> when no type is stored or
-        /// the wrapper was constructed from code.
-        /// </summary>
-        public MonoScript? Script => _script;
-#endif
+        internal SerializableMonoScript() { }
 
         /// <inheritdoc />
         public override Type BaseType => typeof(object);
@@ -102,38 +78,27 @@ namespace Aspid.FastTools.Types
     /// <summary>
     /// <see cref="SerializableMonoScript"/> constrained to types assignable to <typeparamref name="T"/>.
     /// </summary>
+    /// <remarks>
+    /// Unity serializes a field by its declared type, so a <see cref="SerializableMonoScript{T}"/> assigned from code
+    /// to a field declared as <see cref="SerializableMonoScript"/> is reloaded unconstrained: the type survives, the
+    /// constraint does not.
+    /// </remarks>
     /// <typeparam name="T">Base constraint type; the picker offers only types assignable to it.</typeparam>
     /// <example>
-    /// <code>
+    /// <code><![CDATA[
     /// public class EnemySpawner : MonoBehaviour
     /// {
-    ///     [SerializeField] private SerializableMonoScript&lt;Enemy&gt; _enemyType;
+    ///     [SerializeField] private SerializableMonoScript<Enemy>; _enemyType;
     ///
     ///     private void Spawn() =>
     ///         gameObject.AddComponent(_enemyType.Type);
     /// }
-    /// </code>
+    /// ]]></code>
     /// </example>
     [Serializable]
     public sealed class SerializableMonoScript<T> : SerializableMonoScript
     {
-        /// <summary>
-        /// Creates an empty wrapper.
-        /// </summary>
-        public SerializableMonoScript() { }
-
-        /// <summary>
-        /// Creates a wrapper holding <paramref name="type"/> by name only: no script asset is attached, so the
-        /// wrapper is not rename-safe until a type is picked in the Inspector.
-        /// </summary>
-        /// <param name="type">The type to store, or <see langword="null"/> for an empty wrapper.</param>
-        /// <exception cref="ArgumentException">Thrown when <paramref name="type"/> is not assignable to <typeparamref name="T"/>.</exception>
-        public SerializableMonoScript(Type? type)
-            : base(type)
-        {
-            if (type is not null && !typeof(T).IsAssignableFrom(type))
-                throw new ArgumentException($"{type} is not assignable to {typeof(T)}.", nameof(type));
-        }
+        internal SerializableMonoScript() { }
 
         /// <inheritdoc />
         public override Type BaseType => typeof(T);

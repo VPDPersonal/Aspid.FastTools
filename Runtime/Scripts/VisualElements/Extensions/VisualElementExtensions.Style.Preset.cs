@@ -12,6 +12,7 @@ namespace Aspid.FastTools.UIElements
         /// <remarks>
         /// Sets the value unconditionally, regardless of any current bold or italic style.
         /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetNormalUnityFontStyleAndWeight<T>(this T element)
@@ -29,6 +30,7 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="FontStyle.Italic"/> → <see cref="FontStyle.BoldAndItalic"/>.
         /// Other values are left unchanged.
         /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <returns>The element, for chaining.</returns>
         public static T AddBoldUnityFontStyleAndWeight<T>(this T element)
@@ -46,6 +48,7 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="FontStyle.BoldAndItalic"/> → <see cref="FontStyle.Italic"/>.
         /// Other values are left unchanged.
         /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <returns>The element, for chaining.</returns>
         public static T RemoveBoldUnityFontStyleAndWeight<T>(this T element)
@@ -63,6 +66,7 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="FontStyle.Bold"/> → <see cref="FontStyle.BoldAndItalic"/>.
         /// Other values are left unchanged.
         /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <returns>The element, for chaining.</returns>
         public static T AddItalicUnityFontStyleAndWeight<T>(this T element)
@@ -80,6 +84,7 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="FontStyle.BoldAndItalic"/> → <see cref="FontStyle.Bold"/>.
         /// Other values are left unchanged.
         /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <returns>The element, for chaining.</returns>
         public static T RemoveItalicUnityFontStyleAndWeight<T>(this T element)

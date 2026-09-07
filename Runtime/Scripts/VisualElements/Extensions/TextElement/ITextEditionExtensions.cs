@@ -4,14 +4,15 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="ITextEdition"/>.
+    /// </summary>
     public static class ITextEditionExtensions
     {
         /// <summary>
-        /// Sets <see cref="ITextEdition.maxLength"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.maxLength"/>.
         /// </summary>
-        /// <remarks>
-        /// Maximum number of characters for that element.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The maximum character count to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -23,11 +24,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextEdition.maskChar"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.maskChar"/>.
         /// </summary>
-        /// <remarks>
-        /// The character used for masking when in password mode.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The mask character to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -39,15 +38,13 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextEdition.isDelayed"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.isDelayed"/>.
         /// </summary>
-        /// <remarks>
-        /// If set to true, the value property isn't updated until either the user presses Enter or the element loses focus.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether the element update is delayed.</param>
+        /// <param name="value">When <see langword="true"/>, the value is committed only on Enter or when the element loses focus.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetIsDelayed<T>(this T element, bool value)
+        public static T SetDelayed<T>(this T element, bool value)
             where T : ITextEdition
         {
             element.isDelayed = value;
@@ -55,15 +52,13 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextEdition.isReadOnly"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.isReadOnly"/>.
         /// </summary>
-        /// <remarks>
-        /// When set to true, the element becomes read-only.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether the element is read-only.</param>
+        /// <param name="value">When <see langword="true"/>, the element is read-only.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetIsReadOnly<T>(this T element, bool value)
+        public static T SetReadOnly<T>(this T element, bool value)
             where T : ITextEdition
         {
             element.isReadOnly = value;
@@ -71,15 +66,13 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextEdition.isPassword"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.isPassword"/>.
         /// </summary>
-        /// <remarks>
-        /// When set to true, the field is used to edit a password and masks input characters.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether the field is in password mode.</param>
+        /// <param name="value">When <see langword="true"/>, input characters are masked.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T SetIsPassword<T>(this T element, bool value)
+        public static T SetPassword<T>(this T element, bool value)
             where T : ITextEdition
         {
             element.isPassword = value;
@@ -87,11 +80,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextEdition.placeholder"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.placeholder"/>.
         /// </summary>
-        /// <remarks>
-        /// A short hint to help users understand what to enter in the field.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The placeholder text to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -103,13 +94,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextEdition.autoCorrection"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.autoCorrection"/>.
         /// </summary>
-        /// <remarks>
-        /// Determines if the soft keyboard auto correction is turned on or off.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether auto correction is enabled.</param>
+        /// <param name="value">When <see langword="true"/>, the soft keyboard auto-corrects input.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetAutoCorrection<T>(this T element, bool value)
             where T : ITextEdition
@@ -119,13 +108,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextEdition.hideMobileInput"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.hideMobileInput"/>.
         /// </summary>
-        /// <remarks>
-        /// Hides or shows the mobile input field.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to hide the mobile input field.</param>
+        /// <param name="value">When <see langword="true"/>, the mobile input field is hidden.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetHideMobileInput<T>(this T element, bool value)
             where T : ITextEdition
@@ -136,13 +123,11 @@ namespace Aspid.FastTools.UIElements
 
 #if UNITY_6000_4_OR_NEWER
         /// <summary>
-        /// Sets <see cref="ITextEdition.hideSoftKeyboard"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.hideSoftKeyboard"/>.
         /// </summary>
-        /// <remarks>
-        /// Should hide soft / virtual keyboard.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to hide the soft keyboard.</param>
+        /// <param name="value">When <see langword="true"/>, the soft keyboard is not shown.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetHideSoftKeyboard<T>(this T element, bool value)
             where T : ITextEdition
@@ -153,13 +138,11 @@ namespace Aspid.FastTools.UIElements
 #endif
 
         /// <summary>
-        /// Sets <see cref="ITextEdition.hidePlaceholderOnFocus"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.hidePlaceholderOnFocus"/>.
         /// </summary>
-        /// <remarks>
-        /// Hides the placeholder on focus.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether to hide the placeholder when the field is focused.</param>
+        /// <param name="value">When <see langword="true"/>, the placeholder is hidden while the field has focus.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetHidePlaceholderOnFocus<T>(this T element, bool value)
             where T : ITextEdition
@@ -169,11 +152,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="ITextEdition.keyboardType"/> and returns the element for chaining.
+        /// Sets <see cref="ITextEdition.keyboardType"/>.
         /// </summary>
-        /// <remarks>
-        /// The type of mobile keyboard that will be used.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The keyboard type to set.</param>
         /// <returns>The element, for chaining.</returns>

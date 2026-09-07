@@ -3,14 +3,15 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="BaseBoolField"/>.
+    /// </summary>
     public static class BaseBoolFieldExtensions
     {
         /// <summary>
-        /// Sets <see cref="BaseBoolField.text"/> and returns the element for chaining.
+        /// Sets <see cref="BaseBoolField.text"/>.
         /// </summary>
-        /// <remarks>
-        /// Optional text that appears after the BaseBoolField.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The text to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -22,8 +23,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets the <see cref="BaseField{TValueType}.label"/> property and returns the element for chaining.
+        /// Sets <see cref="BaseField{TValueType}.label"/>.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The label text to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -35,13 +37,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseBoolField.toggleOnLabelClick"/> and returns the element for chaining.
+        /// Sets <see cref="BaseBoolField.toggleOnLabelClick"/>.
         /// </summary>
-        /// <remarks>
-        /// Whether to activate the toggle when the user clicks the label.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether clicking the label activates the toggle.</param>
+        /// <param name="value">When <see langword="true"/>, clicking the label toggles the value.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetToggleOnLabelClick<T>(this T element, bool value)
             where T : BaseBoolField

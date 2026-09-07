@@ -75,7 +75,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public AspidAnimatedLogo(AspidAnimatedLogoPreset preset)
         {
-            this.AddStyleSheetsFromResource(StyleSheetPath);
+            this.AddStyleSheetFromResources(StyleSheetPath);
 
             ColorCycleIntervalMs = preset.ColorCycleIntervalMs;
 

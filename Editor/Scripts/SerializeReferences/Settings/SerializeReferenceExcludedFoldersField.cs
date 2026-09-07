@@ -46,7 +46,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public SerializeReferenceExcludedFoldersField()
         {
             this.AddClass(RootClass)
-                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddStyleSheetFromResources(StyleSheetPath)
                 .AddAspidThemeStyleSheets();
 
             // The whole header row is the add target, so the "+" and the hint are passive labels whose clicks bubble

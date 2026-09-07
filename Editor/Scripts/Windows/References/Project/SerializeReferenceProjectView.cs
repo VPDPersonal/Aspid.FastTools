@@ -96,7 +96,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var root = this;
             style.flexGrow = 1;
             root.AddAspidThemeStyleSheets()
-                .AddStyleSheetsFromResource(StyleSheetPath)
+                .AddStyleSheetFromResources(StyleSheetPath)
                 .AddClass(RootClass);
 
             var panelTitle = new AspidLabel("Find missing references", AspidLabelPreset.Default

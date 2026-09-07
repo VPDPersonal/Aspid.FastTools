@@ -43,7 +43,7 @@ namespace Aspid.FastTools.Editors
             return property.SetInt(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Uint
         /// <inheritdoc cref="SetUint{T}"/>
         public static T SetValue<T>(this T property, uint value)
@@ -83,7 +83,7 @@ namespace Aspid.FastTools.Editors
             return property.SetUint(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Long
         /// <inheritdoc cref="SetLong{T}"/>
         public static T SetValue<T>(this T property, long value)
@@ -123,7 +123,7 @@ namespace Aspid.FastTools.Editors
             return property.SetLong(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Ulong
         /// <inheritdoc cref="SetUlong{T}"/>
         public static T SetValue<T>(this T property, ulong value)
@@ -163,7 +163,7 @@ namespace Aspid.FastTools.Editors
             return property.SetUlong(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Float
         /// <inheritdoc cref="SetFloat{T}"/>
         public static T SetValue<T>(this T property, float value)
@@ -203,7 +203,7 @@ namespace Aspid.FastTools.Editors
             return property.SetFloat(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Double
         /// <inheritdoc cref="SetDouble{T}"/>
         public static T SetValue<T>(this T property, double value)
@@ -243,7 +243,7 @@ namespace Aspid.FastTools.Editors
             return property.SetDouble(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region EnumIndex
         /// <summary>
         /// Sets <see cref="SerializedProperty.enumValueFlag"/> and returns the property for chaining.
@@ -301,7 +301,7 @@ namespace Aspid.FastTools.Editors
             return property.SetEnumIndex(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Bool
         /// <inheritdoc cref="SetBool{T}"/>
         public static T SetValue<T>(this T property, bool value)
@@ -341,7 +341,7 @@ namespace Aspid.FastTools.Editors
             return property.SetBool(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Rect
         /// <inheritdoc cref="SetRect{T}"/>
         public static T SetValue<T>(this T property, Rect value)
@@ -381,7 +381,7 @@ namespace Aspid.FastTools.Editors
             return property.SetRect(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region RectInt
         /// <inheritdoc cref="SetRectInt{T}"/>
         public static T SetValue<T>(this T property, RectInt value)
@@ -421,7 +421,7 @@ namespace Aspid.FastTools.Editors
             return property.SetRectInt(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Bounds
         /// <inheritdoc cref="SetBounds{T}"/>
         public static T SetValue<T>(this T property, Bounds value)
@@ -461,7 +461,7 @@ namespace Aspid.FastTools.Editors
             return property.SetBounds(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region BoundsInt
         /// <inheritdoc cref="SetBoundsInt{T}"/>
         public static T SetValue<T>(this T property, BoundsInt value)
@@ -501,7 +501,7 @@ namespace Aspid.FastTools.Editors
             return property.SetBoundsInt(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Color
         /// <inheritdoc cref="SetColor{T}"/>
         public static T SetValue<T>(this T property, Color value)
@@ -541,7 +541,7 @@ namespace Aspid.FastTools.Editors
             return property.SetColor(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Gradient
         /// <inheritdoc cref="SetGradient{T}"/>
         public static T SetValue<T>(this T property, Gradient value)
@@ -581,7 +581,7 @@ namespace Aspid.FastTools.Editors
             return property.SetGradient(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Hash128
         /// <inheritdoc cref="SetHash128{T}"/>
         public static T SetValue<T>(this T property, Hash128 value)
@@ -621,7 +621,7 @@ namespace Aspid.FastTools.Editors
             return property.SetHash128(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Vector4
         /// <inheritdoc cref="SetVector4{T}"/>
         public static T SetValue<T>(this T property, Vector4 value)
@@ -661,7 +661,7 @@ namespace Aspid.FastTools.Editors
             return property.SetVector4(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Vector3
         /// <inheritdoc cref="SetVector3{T}"/>
         public static T SetValue<T>(this T property, Vector3 value)
@@ -701,7 +701,7 @@ namespace Aspid.FastTools.Editors
             return property.SetVector3(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Vector3Int
         /// <inheritdoc cref="SetVector3Int{T}"/>
         public static T SetValue<T>(this T property, Vector3Int value)
@@ -741,7 +741,7 @@ namespace Aspid.FastTools.Editors
             return property.SetVector3Int(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Vector2
         /// <inheritdoc cref="SetVector2{T}"/>
         public static T SetValue<T>(this T property, Vector2 value)
@@ -781,7 +781,7 @@ namespace Aspid.FastTools.Editors
             return property.SetVector2(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Vector2Int
         /// <inheritdoc cref="SetVector2Int{T}"/>
         public static T SetValue<T>(this T property, Vector2Int value)
@@ -821,7 +821,7 @@ namespace Aspid.FastTools.Editors
             return property.SetVector2Int(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region Quaternion
         /// <inheritdoc cref="SetQuaternion{T}"/>
         public static T SetValue<T>(this T property, Quaternion value)
@@ -861,7 +861,7 @@ namespace Aspid.FastTools.Editors
             return property.SetQuaternion(value).ApplyModifiedProperties();
         }
         #endregion
-        
+
         #region String
         /// <inheritdoc cref="SetString{T}"/>
         public static T SetValue<T>(this T property, string value)
@@ -1091,8 +1091,7 @@ namespace Aspid.FastTools.Editors
             return property.SetExposedReference(value).ApplyModifiedProperties();
         }
         #endregion
-        
-#if UNITY_6000_0_OR_NEWER
+
         #region Boxed
         /// <summary>
         /// Sets <see cref="SerializedProperty.boxedValue"/> and returns the property for chaining.
@@ -1118,7 +1117,6 @@ namespace Aspid.FastTools.Editors
             return property.SetBoxed(value).ApplyModifiedProperties();
         }
         #endregion
-#endif
 
 #if UNITY_6000_2_OR_NEWER
         #region EntityId

@@ -4,7 +4,10 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
-    public static class BaseFieldExtensionsSetLabelVector2Int
+    /// <summary>
+    /// Provides <see cref="SetLabel{T}"/> for <see cref="BaseField{TValueType}"/> of <see cref="Vector3"/>.
+    /// </summary>
+    public static class BaseFieldVector3Extensions
     {
         /// <summary>
         /// Sets the label of the field via <see cref="BaseField{TValueType}.label"/>.
@@ -14,7 +17,7 @@ namespace Aspid.FastTools.UIElements
         /// <param name="value">The label text to set.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetLabel<T>(this T element, string value)
-            where T : BaseField<Vector2Int>
+            where T : BaseField<Vector3>
         {
             element.label = value;
             return element;

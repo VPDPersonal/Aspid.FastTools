@@ -3,14 +3,15 @@ using UnityEngine.UIElements;
 // ReSharper disable CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="HelpBox"/>.
+    /// </summary>
     public static class HelpBoxExtensions
     {
         /// <summary>
-        /// Sets <see cref="HelpBox.text"/> and returns the element for chaining.
+        /// Sets <see cref="HelpBox.text"/>.
         /// </summary>
-        /// <remarks>
-        /// The message text.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The text to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -22,11 +23,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="HelpBox.messageType"/> and returns the element for chaining.
+        /// Sets <see cref="HelpBox.messageType"/>.
         /// </summary>
-        /// <remarks>
-        /// The type of message.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The message type to set.</param>
         /// <returns>The element, for chaining.</returns>

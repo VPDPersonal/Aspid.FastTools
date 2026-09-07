@@ -81,7 +81,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public AspidInspectorHeader(AspidInspectorHeaderPreset preset, Object obj)
         {
-            this.AddStyleSheetsFromResource(StyleSheetPath);
+            this.AddStyleSheetFromResources(StyleSheetPath);
 
             _textElement = new AspidLabel(preset.Text).AddClass(TextClass);
             _subtextElement = new AspidLabel(preset.Subtext).AddClass(SubtextClass);

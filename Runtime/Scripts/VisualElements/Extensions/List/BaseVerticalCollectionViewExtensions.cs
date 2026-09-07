@@ -6,12 +6,16 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
 {
+    /// <summary>
+    /// Provides extension methods for <see cref="BaseVerticalCollectionView"/>.
+    /// </summary>
     public static class BaseVerticalCollectionViewExtensions
     {
         #region ItemsChosen
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.itemsChosen"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -25,6 +29,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseVerticalCollectionView.itemsChosen"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -40,6 +45,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -53,6 +59,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseVerticalCollectionView.canStartDrag"/> callback.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -68,6 +75,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.selectionChanged"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -81,6 +89,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseVerticalCollectionView.selectionChanged"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -96,6 +105,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.itemIndexChanged"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -109,6 +119,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseVerticalCollectionView.itemIndexChanged"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -124,6 +135,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.setupDragAndDrop"/> callback.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -137,6 +149,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseVerticalCollectionView.setupDragAndDrop"/> callback.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -152,6 +165,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.dragAndDropUpdate"/> callback.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -165,6 +179,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseVerticalCollectionView.dragAndDropUpdate"/> callback.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -180,6 +195,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.handleDrop"/> callback.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -193,6 +209,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseVerticalCollectionView.handleDrop"/> callback.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -208,6 +225,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.itemsSourceChanged"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -221,6 +239,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseVerticalCollectionView.itemsSourceChanged"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -236,6 +255,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Subscribes to the <see cref="BaseVerticalCollectionView.selectedIndicesChanged"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to subscribe.</param>
         /// <returns>The element, for chaining.</returns>
@@ -249,6 +269,7 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Unsubscribes from the <see cref="BaseVerticalCollectionView.selectedIndicesChanged"/> event.
         /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The callback to remove.</param>
         /// <returns>The element, for chaining.</returns>
@@ -261,11 +282,9 @@ namespace Aspid.FastTools.UIElements
         #endregion
 
         /// <summary>
-        /// Sets <see cref="BaseVerticalCollectionView.itemsSource"/> and returns the element for chaining.
+        /// Sets <see cref="BaseVerticalCollectionView.itemsSource"/>.
         /// </summary>
-        /// <remarks>
-        /// The data source for collection items.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The items source to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -277,13 +296,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseVerticalCollectionView.reorderable"/> and returns the element for chaining.
+        /// Sets <see cref="BaseVerticalCollectionView.reorderable"/>.
         /// </summary>
-        /// <remarks>
-        /// Gets or sets a value that indicates whether the user can drag list items to reorder them.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether items can be reordered by dragging.</param>
+        /// <param name="value">When <see langword="true"/>, items can be reordered by dragging.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetReorderable<T>(this T element, bool value)
             where T : BaseVerticalCollectionView
@@ -293,11 +310,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseVerticalCollectionView.selectedIndex"/> and returns the element for chaining.
+        /// Sets <see cref="BaseVerticalCollectionView.selectedIndex"/>.
         /// </summary>
-        /// <remarks>
-        /// Returns or sets the selected item's index in the data source. If multiple items are selected, returns the first selected item's index. If multiple items are provided, sets them all as selected. If no item is selected, returns -1.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The selected index to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -309,11 +324,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseVerticalCollectionView.fixedItemHeight"/> and returns the element for chaining.
+        /// Sets <see cref="BaseVerticalCollectionView.fixedItemHeight"/>.
         /// </summary>
-        /// <remarks>
-        /// The height of a single item in the list, in pixels.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The fixed item height in pixels.</param>
         /// <returns>The element, for chaining.</returns>
@@ -325,11 +338,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseVerticalCollectionView.selectionType"/> and returns the element for chaining.
+        /// Sets <see cref="BaseVerticalCollectionView.selectionType"/>.
         /// </summary>
-        /// <remarks>
-        /// Controls the selection type.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The selection type to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -341,13 +352,11 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseVerticalCollectionView.horizontalScrollingEnabled"/> and returns the element for chaining.
+        /// Sets <see cref="BaseVerticalCollectionView.horizontalScrollingEnabled"/>.
         /// </summary>
-        /// <remarks>
-        /// This property controls whether the collection view shows a horizontal scroll bar when its content does not fit in the visible area.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
-        /// <param name="value">Whether horizontal scrolling is enabled.</param>
+        /// <param name="value">When <see langword="true"/>, a horizontal scroll bar is shown when the content does not fit.</param>
         /// <returns>The element, for chaining.</returns>
         public static T SetHorizontalScrollingEnabled<T>(this T element, bool value)
             where T : BaseVerticalCollectionView
@@ -357,11 +366,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseVerticalCollectionView.virtualizationMethod"/> and returns the element for chaining.
+        /// Sets <see cref="BaseVerticalCollectionView.virtualizationMethod"/>.
         /// </summary>
-        /// <remarks>
-        /// The virtualization method to use for this collection when a scroll bar is visible. Takes a value from the CollectionVirtualizationMethod enum.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The virtualization method to set.</param>
         /// <returns>The element, for chaining.</returns>
@@ -373,11 +380,9 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Sets <see cref="BaseVerticalCollectionView.showAlternatingRowBackgrounds"/> and returns the element for chaining.
+        /// Sets <see cref="BaseVerticalCollectionView.showAlternatingRowBackgrounds"/>.
         /// </summary>
-        /// <remarks>
-        /// This property controls whether the background colors of collection view rows alternate. Takes a value from the AlternatingRowBackground enum.
-        /// </remarks>
+        /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The alternating row background mode to set.</param>
         /// <returns>The element, for chaining.</returns>

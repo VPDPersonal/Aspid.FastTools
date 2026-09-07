@@ -12,6 +12,7 @@ namespace Aspid.FastTools.UIElements
         /// <remarks>
         /// Sets the value unconditionally, regardless of any current bold or italic style.
         /// </remarks>
+        /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T SetNormalUnityFontStyleAndWeight<T>(this T style)
@@ -31,6 +32,7 @@ namespace Aspid.FastTools.UIElements
         /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
         /// and is therefore not preserved.
         /// </remarks>
+        /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T AddBoldUnityFontStyleAndWeight<T>(this T style)
@@ -55,6 +57,7 @@ namespace Aspid.FastTools.UIElements
         /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
         /// and is therefore not preserved.
         /// </remarks>
+        /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T RemoveBoldUnityFontStyleAndWeight<T>(this T style)
@@ -79,6 +82,7 @@ namespace Aspid.FastTools.UIElements
         /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
         /// and is therefore not preserved.
         /// </remarks>
+        /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T AddItalicUnityFontStyleAndWeight<T>(this T style)
@@ -103,6 +107,7 @@ namespace Aspid.FastTools.UIElements
         /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
         /// and is therefore not preserved.
         /// </remarks>
+        /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
         /// <returns>The style, for chaining.</returns>
         public static T RemoveItalicUnityFontStyleAndWeight<T>(this T style)

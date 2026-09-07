@@ -32,7 +32,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
         [Test]
         public void EmptyWrapper_HasNoTypeAndAnEmptyName()
         {
-            var wrapper = new SerializableType();
+            var wrapper = new SerializableType(null);
 
             Assert.IsNull(wrapper.Type);
             Assert.AreEqual(string.Empty, wrapper.AssemblyQualifiedName);

@@ -98,9 +98,9 @@ element
 
 | Метод | Описание |
 |-------|----------|
-| `SetFocus()` | Устанавливает фокус на элемент |
-| `SetBlur()` | Снимает фокус с элемента |
-| `IsFocus()` | Возвращает, находится ли элемент в фокусе |
+| `FocusSelf()` | Устанавливает фокус на элемент |
+| `BlurSelf()` | Снимает фокус с элемента |
+| `IsFocused()` | Возвращает, находится ли элемент в фокусе |
 | `SetTabIndex(int)` | Устанавливает `element.tabIndex` |
 | `SetFocusable(bool)` | Устанавливает `element.focusable` |
 | `SetDelegatesFocus(bool)` | Устанавливает `element.delegatesFocus` |
@@ -112,12 +112,12 @@ element
 | `AddClass(string)` | Добавляет USS-класс |
 | `RemoveClass(string)` | Удаляет USS-класс |
 | `ClearClasses()` | Удаляет все USS-классы |
-| `ToggleInClass(string)` | Переключает USS-класс вкл/выкл |
-| `EnableInClass(string, bool)` | Добавляет или удаляет USS-класс по условию |
-| `AddStyleSheets(StyleSheet)` | Добавляет `StyleSheet` |
-| `RemoveStyleSheets(StyleSheet)` | Удаляет `StyleSheet` |
-| `AddStyleSheetsFromResource(string)` | Добавляет таблицу стилей через `Resources.Load` |
-| `RemoveStyleSheetsFromResource(string)` | Удаляет таблицу стилей, загруженную через `Resources.Load` |
+| `ToggleClass(string)` | Переключает USS-класс вкл/выкл |
+| `EnableClass(string, bool)` | Добавляет или удаляет USS-класс по условию |
+| `AddStyleSheet(StyleSheet)` | Добавляет `StyleSheet` |
+| `RemoveStyleSheet(StyleSheet)` | Удаляет `StyleSheet` |
+| `AddStyleSheetFromResources(string)` | Добавляет таблицу стилей через `Resources.Load` |
+| `RemoveStyleSheetFromResources(string)` | Удаляет таблицу стилей, загруженную через `Resources.Load` |
 
 ## Style extensions — by category
 
@@ -240,7 +240,7 @@ element
 | `SetBackgroundColor(StyleColor)` | `backgroundColor` |
 | `SetBackgroundColor(string)` | `backgroundColor`, разобранный из HTML-строки (`"#RRGGBB"` или именованный цвет) |
 | `SetBackgroundImage(StyleBackground)` | `backgroundImage` |
-| `SetBackgroundImageFromResource(string)` | Загружает `Texture2D` через `Resources.Load` и присваивает его в `backgroundImage` |
+| `SetBackgroundImageFromResources(string)` | Загружает `Texture2D` через `Resources.Load` и присваивает его в `backgroundImage` |
 | `SetBackgroundSize(StyleBackgroundSize)` | `backgroundSize` |
 | `SetBackgroundRepeat(StyleBackgroundRepeat)` | `backgroundRepeat` |
 | `SetBackgroundPosition(StyleBackgroundPosition)` | X и Y одновременно |
@@ -328,16 +328,16 @@ label
 textField
     .SetPlaceholder("Поиск…")
     .SetMaxLength(64)
-    .SetIsDelayed(true);
+    .SetDelayed(true);
 ```
 
 | Метод | Описание |
 |-------|----------|
 | `SetMaxLength(int)` | Максимальное число символов |
 | `SetMaskChar(char)` | Символ для маскировки пароля |
-| `SetIsDelayed(bool)` | Откладывает изменение значения до потери фокуса / Enter |
-| `SetIsReadOnly(bool)` | Запрещает редактирование |
-| `SetIsPassword(bool)` | Включает password-режим (использует mask char) |
+| `SetDelayed(bool)` | Откладывает изменение значения до потери фокуса / Enter |
+| `SetReadOnly(bool)` | Запрещает редактирование |
+| `SetPassword(bool)` | Включает password-режим (использует mask char) |
 | `SetPlaceholder(string)` | Текст-плейсхолдер для пустого поля |
 | `SetAutoCorrection(bool)` | Включает автокоррекцию (mobile) |
 | `SetHideMobileInput(bool)` | Скрывает мобильный soft input |
@@ -349,7 +349,7 @@ textField
 
 ```csharp
 textField
-    .SetIsSelectable(true)
+    .SetSelectable(true)
     .SetSelectAllOnFocus(true)
     .AddOnCursorIndexChange(() => Debug.Log(textField.cursorIndex));
 ```
@@ -360,7 +360,7 @@ textField
 | `AddOnSelectIndexChange(Action)` / `RemoveOnSelectIndexChange(Action)` | Подписка на изменение якоря выделения |
 | `SetCursorIndex(int)` | Текущая позиция курсора |
 | `SetSelectIndex(int)` | Текущий якорь выделения |
-| `SetIsSelectable(bool)` | Можно ли выделять текст |
+| `SetSelectable(bool)` | Можно ли выделять текст |
 | `SetSelectAllOnFocus(bool)` | Выделять весь текст при фокусе |
 | `SetSelectAllOnMouseUp(bool)` | Выделять весь текст при отпускании мыши |
 | `SetDoubleClickSelectsWord(bool)` | Двойной клик выделяет слово |
@@ -492,11 +492,11 @@ image
 | Метод | Описание |
 |-------|----------|
 | `SetImage(Texture)` | Устанавливает `Image.image` |
-| `SetImageFromResource(string)` | Загружает текстуру через `Resources.Load<Texture2D>` |
+| `SetImageFromResources(string)` | Загружает текстуру через `Resources.Load<Texture2D>` |
 | `SetSprite(Sprite)` | Устанавливает `Image.sprite` |
-| `SetSpriteFromResource(string)` | Загружает sprite через `Resources.Load<Sprite>` |
+| `SetSpriteFromResources(string)` | Загружает sprite через `Resources.Load<Sprite>` |
 | `SetVectorImage(VectorImage)` | Устанавливает `Image.vectorImage` |
-| `SetVectorImageFromResource(string)` | Загружает vector image через `Resources.Load<VectorImage>` |
+| `SetVectorImageFromResources(string)` | Загружает vector image через `Resources.Load<VectorImage>` |
 | `SetUv(Rect)` | Устанавливает UV-rect |
 | `SetSourceRect(Rect)` | Устанавливает source rect |
 | `SetTintColor(Color)` | Цветовой tint изображения |
