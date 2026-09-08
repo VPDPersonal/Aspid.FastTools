@@ -6,9 +6,6 @@ using Aspid.FastTools.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A VisualElement that renders an Inspector section header consisting of a script icon (with an optional open-
-    // script command), a primary label, an optional subtext label, and an animated color gradient that appears on icon
-    // hover when a status is set.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidInspectorHeader : VisualElement
     {
@@ -133,8 +130,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private void OnIconMouseLeave(MouseLeaveEvent _)
         {
-            if (Status is StatusStyle.Type.None) return;
-
             _overlay.SetTarget(0f);
             _container.Theme = ThemeStyle.Type.Dark;
             _container.Status = StatusStyle.Type.None;

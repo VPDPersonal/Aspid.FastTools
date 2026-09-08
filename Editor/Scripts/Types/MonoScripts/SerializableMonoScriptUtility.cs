@@ -7,16 +7,12 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Editor-side support for SerializableMonoScript / SerializableMonoScript<T>: the set of types a script asset
-    // declares (the only types the wrapper can hold) and reading / writing a wrapper property.
     internal static class SerializableMonoScriptUtility
     {
         internal const string ScriptFieldName = "_script";
 
-        // Built once per domain: adding or renaming a script always recompiles, which reloads the domain.
         private static Dictionary<Type, MonoScript>? _scriptsByType;
 
-        // Every type Unity maps to a runtime script asset (MonoScript.GetClass() on a runtime-assembly script).
         internal static IReadOnlyDictionary<Type, MonoScript> ScriptsByType
         {
             get
@@ -46,8 +42,6 @@ namespace Aspid.FastTools.Types.Editors
         internal static bool TryGetScript(Type type, out MonoScript? script) =>
             ScriptsByType.TryGetValue(type, out script);
 
-        // The wrapper's current type: the script's class when a live script is referenced, else whatever the stored
-        // name resolves to. The stored name is also handed back so a caption can show a missing type by name.
         internal static Type? GetCurrentType(SerializedProperty wrapperProperty, out string assemblyQualifiedName)
         {
             assemblyQualifiedName = wrapperProperty.FindPropertyRelative(SerializableTypeUtility.BackingFieldName)?.stringValue ?? string.Empty;
@@ -58,8 +52,6 @@ namespace Aspid.FastTools.Types.Editors
             return TypeUtility.GetTypeOrNull(assemblyQualifiedName);
         }
 
-        // Writes both halves of the wrapper: the script asset (the rename-safe reference) and the type name (what a
-        // player build resolves). Null clears the field.
         internal static void Assign(SerializedProperty wrapperProperty, Type? type)
         {
             var script = type is not null && TryGetScript(type, out var found) ? found : null;
@@ -71,9 +63,6 @@ namespace Aspid.FastTools.Types.Editors
             wrapperProperty.serializedObject.ApplyModifiedProperties();
         }
 
-        // For a caller that already wrote the wrapper's backing type-name string: points the sibling script reference
-        // at the script declaring that type, so the editor-side sync does not revert the name to the previous script.
-        // A no-op when the string does not belong to a SerializableMonoScript wrapper.
         internal static void SyncScriptFromName(SerializedProperty nameProperty)
         {
             var path = nameProperty.propertyPath;
@@ -91,8 +80,6 @@ namespace Aspid.FastTools.Types.Editors
             wrapper.serializedObject.ApplyModifiedProperties();
         }
 
-        // Resolves a dragged MonoScript to a type the wrapper may hold: declared by the script, assignable to every
-        // constraint, and admitted by the kind filter.
         internal static bool TryResolveDroppedType(Type[]? types, TypeAllow allow, out Type? type)
         {
             type = null;

@@ -5,9 +5,6 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The single source of truth for the SerializeReference toolset's configurable behaviors. The per-developer
-    // breakage-detection toggle is persisted as project-scoped EditorPrefs JSON; the settings that must be identical
-    // for every teammate and for CI live in the committed shared-settings asset instead.
     internal static class SerializeReferenceSettings
     {
         public static event Action Changed;
@@ -48,7 +45,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             get => Data.breakageDetection;
             set
             {
-                // Changed repaints every open editor window, so an idle write is not free.
                 if (Data.breakageDetection == value) return;
                 Data.breakageDetection = value;
                 Save();
@@ -63,7 +59,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var next = value ?? Array.Empty<string>();
                 var shared = SerializeReferenceSharedSettings.instance;
-                // Re-assigning the same paths must not fire the costly index reset.
                 if (FoldersEqual(shared.ExcludedFolders, next)) return;
 
                 shared.ExcludedFolders = next;
@@ -86,7 +81,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Routed through the setters so each fires its usual change signals and no-ops when already at the default.
         public static void ResetSharedToDefaults()
         {
             AutoDeAliasEnabled = true;
@@ -114,8 +108,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // Order-sensitive, so a reorder counts as a change; that only drops the warm index, which the next scan
-        // rebuilds anyway.
         private static bool FoldersEqual(string[] a, string[] b)
         {
             if (ReferenceEquals(a, b)) return true;

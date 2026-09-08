@@ -17,11 +17,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Regex _scriptGuidPattern =
             new(@"^(?<indent>\s*)m_Script:\s*\{.*\bguid:\s*(?<guid>[0-9a-fA-F]+).*\}", RegexOptions.Compiled);
 
-        // "  references:" — the managed-reference block; the object's own serialized fields all precede it.
         private static readonly Regex _referencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
 
-        // Every RefIds entry whose stored type fails the predicate. RefIds is a flat per-object list, so this finds
-        // missing references at any nesting depth and on any child object, without navigating the Inspector.
         public static List<MissingReferenceEntry> FindMissingReferences(string assetPath, Func<ManagedTypeName, bool> resolves)
         {
             var result = new List<MissingReferenceEntry>();
@@ -154,7 +151,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // The line index of the next "--- " document separator at or after `from`, or the line count when none follows.
         private static int NextDocumentStart(string[] lines, int from)
         {
             for (var i = from; i < lines.Length; i++)
@@ -218,7 +214,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         blockEnd = j + 1;
                     }
 
-                    if (childIndent < 0) return false; // container key present but the block carries no children
+                    if (childIndent < 0) return false;
 
                     start = i + 1;
                     end = blockEnd;
@@ -233,8 +229,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // The exclusive end of a MonoBehaviour's own serialized fields: the "references:" line, or the document end when
-        // the object holds no managed references. Confines field lookups so a key inside a RefIds data block is never read.
         private static int FindFieldsEnd(string[] lines, int start, int end)
         {
             for (var i = start; i < end; i++)
@@ -259,7 +253,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var field = pattern.Match(lines[i]);
                 if (!field.Success || field.Groups["indent"].Length != fieldIndent) continue;
 
-                // Inline pointer (e.g. "_weapon: {rid: 5}") — Unity writes the block form, but tolerate either.
                 var inline = Regex.Match(field.Groups["inline"].Value, @"rid:\s*(-?\d+)");
                 if (inline.Success && long.TryParse(inline.Groups[1].Value, out var inlineRid))
                 {
@@ -267,11 +260,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return inlineRid == NullRid ? FieldState.PresentUnset : FieldState.PresentSet;
                 }
 
-                // Block form: the rid scalar is the field's first indented child.
                 for (var j = i + 1; j < end; j++)
                 {
                     if (lines[j].Trim().Length == 0) continue;
-                    if (IndentOf(lines[j]) <= fieldIndent) break; // dedented out of the field without a rid
+                    if (IndentOf(lines[j]) <= fieldIndent) break;
 
                     var child = Regex.Match(lines[j].Trim(), @"^rid:\s*(-?\d+)$");
                     if (child.Success && long.TryParse(child.Groups[1].Value, out var childRid))
@@ -280,13 +272,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         return childRid == NullRid ? FieldState.PresentUnset : FieldState.PresentSet;
                     }
 
-                    break; // first child is not a rid scalar — not a recognized managed-reference pointer
+                    break;
                 }
 
-                return FieldState.PresentUnset; // field present but no rid — treat as unset
+                return FieldState.PresentUnset;
             }
 
-            return FieldState.Absent; // field absent — not a violation (needs reserialize)
+            return FieldState.Absent;
         }
 
         // Classifies the top-level string field `name`: PresentUnset when empty or an empty quoted scalar ('' / ""),
@@ -306,7 +298,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     : FieldState.PresentSet;
             }
 
-            return FieldState.Absent; // field absent — not a violation (needs reserialize)
+            return FieldState.Absent;
         }
 
         // Classifies a SerializableType field `name`: PresentUnset when its nested _assemblyQualifiedName scalar is empty
@@ -321,14 +313,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var field = pattern.Match(lines[i]);
                 if (!field.Success || field.Groups["indent"].Length != fieldIndent) continue;
 
-                // The wrapper's _assemblyQualifiedName scalar is the field's first indented child.
                 for (var j = i + 1; j < end; j++)
                 {
                     if (lines[j].Trim().Length == 0) continue;
-                    if (IndentOf(lines[j]) <= fieldIndent) break; // dedented out of the field without the child
+                    if (IndentOf(lines[j]) <= fieldIndent) break;
 
                     var child = Regex.Match(lines[j].Trim(), @"^_assemblyQualifiedName:\s*(?<value>.*)$");
-                    if (!child.Success) break; // first child is not the backing scalar — unrecognized shape
+                    if (!child.Success) break;
 
                     var value = child.Groups["value"].Value.Trim();
                     return value.Length == 0 || value == "''" || value == "\"\""
@@ -336,10 +327,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         : FieldState.PresentSet;
                 }
 
-                return FieldState.PresentUnset; // field present but no _assemblyQualifiedName child — treat as unset
+                return FieldState.PresentUnset;
             }
 
-            return FieldState.Absent; // field absent — not a violation (needs reserialize)
+            return FieldState.Absent;
         }
 
         // Whether a required field key was found and, if so, whether it carries a value. An absent key is distinguished

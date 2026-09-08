@@ -3,9 +3,6 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Deterministic colors for shared-reference visuals, both entry points sharing one green->magenta palette.
-    // ForRid hashes the rid, for the window's SHARED chip where there is no per-object badge; ForIndex walks the
-    // badge number around the band instead, so consecutive badges are maximally separated.
     internal static class SerializeReferenceRidColor
     {
         // Adding this fraction per step drops each next hue into the largest remaining gap.
@@ -22,7 +19,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // to hit a common perceived luminance instead.
         private const float TargetLuminance = 0.6f;
 
-        // A hue the eye sees as dark is lifted toward mid-brightness, never blown out chasing the target.
         private const float MaxValue = 0.92f;
 
         // A Knuth multiplicative hash spreads the rid across the hue circle before the golden-ratio rotation.
@@ -33,14 +29,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return FromFraction(fraction);
         }
 
-        // The 1-based badge number, so its color and its number stay in lock-step.
         public static Color ForIndex(int index)
         {
             var fraction = (index * GoldenRatioConjugate) % 1f;
             return FromFraction(fraction);
         }
 
-        // Hue into the safe green→magenta band, value normalized to the common perceived luminance.
         private static Color FromFraction(float fraction)
         {
             var hue = SafeHueMin + fraction * (SafeHueMax - SafeHueMin);

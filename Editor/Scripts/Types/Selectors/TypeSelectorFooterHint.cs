@@ -3,8 +3,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Builds the keyboard-hint line shown in the type selector footer from the current selection and the
-    // search/navigation state. Pure string composition with no view access, so it stays trivially testable.
     internal static class TypeSelectorFooterHint
     {
         internal static string Build(
@@ -48,8 +46,6 @@ namespace Aspid.FastTools.Types.Editors
                 parts.Add("Esc Close");
             }
 
-            // The " · " separator matches the dot-joined summaries elsewhere in the package and keeps the line
-            // narrow enough to share the footer with the settings gear.
             return string.Join(" · ", parts);
         }
     }

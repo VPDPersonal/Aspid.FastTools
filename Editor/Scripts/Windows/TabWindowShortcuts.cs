@@ -5,8 +5,6 @@ using UnityEditor.ShortcutManagement;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    // The single owner of the tab keyboard layout: shortcut ids, their defaults and the Ctrl+Tab cycle order. The
-    // window renders its badges from HintFor rather than rebuilding the defaults, so the two cannot disagree.
     internal static class TabWindowShortcuts
     {
         private const string Category = "Aspid FastTools/Window/";
@@ -25,8 +23,6 @@ namespace Aspid.FastTools.Editors
         private const KeyCode ProjectReferencesKey = KeyCode.Alpha3;
         private const ShortcutModifiers TabModifiers = ShortcutModifiers.Alt;
 
-        // Tab order for cycling and the lookup behind HintFor, ordered as the toolbar renders them. Cycling walks this
-        // array instead of the TabType values, so reordering the enum can't silently reshuffle Ctrl+Tab.
         private static readonly TabData[] _tabData =
         {
             new(HomeId, TabType.Welcome, HomeKey),
@@ -59,8 +55,6 @@ namespace Aspid.FastTools.Editors
         private static void OnPreviousTabShortcut(ShortcutArguments args) =>
             CycleFrom(args, -1);
 
-        // The live binding read from the ShortcutManager, so a badge tracks user rebinds and renders the real
-        // per-platform glyph. Falls back to the declared default when the id is unregistered or its binding cleared.
         internal static string HintFor(TabType tab)
         {
             foreach (var tabData in _tabData)
@@ -107,13 +101,10 @@ namespace Aspid.FastTools.Editors
             }
             catch (Exception)
             {
-                // ShortcutManager not ready / unknown id — the caller falls back to the declared default.
                 return null;
             }
         }
 
-        // LiveBinding's fallback, spelled from the [Shortcut] defaults above: glyphs on macOS, spelled-out names
-        // elsewhere, mirroring how Unity itself renders a binding.
         private static string DefaultHint(KeyCode key)
         {
             var label = key is >= KeyCode.Alpha0 and <= KeyCode.Alpha9

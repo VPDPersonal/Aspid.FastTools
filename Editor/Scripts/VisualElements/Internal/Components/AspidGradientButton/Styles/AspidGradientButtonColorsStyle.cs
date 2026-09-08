@@ -5,8 +5,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the gradient and accent colors of an AspidGradientButton. Each color can be inherited from its USS
-    // custom property or set explicitly in code; once set explicitly it is no longer overridden by USS resolution.
     internal readonly struct AspidGradientButtonColorsStyle
     {
         public static readonly CustomStyleProperty<Color> GradientProperty = new("--aspid-fasttools-colors-gradient_button-bg");

@@ -4,8 +4,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the font style and weight of an AspidLabel. The value can be inherited from the StyleProperty USS custom
-    // property or set explicitly in code; once set explicitly it is no longer overridden by USS resolution.
     internal readonly struct AspidLabelFontStyle
     {
         public static readonly CustomStyleProperty<string> StyleProperty = new("--aspid-fasttools-metrics-label_font_style");

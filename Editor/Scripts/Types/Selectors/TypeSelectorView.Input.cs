@@ -7,8 +7,6 @@ using Aspid.FastTools.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Search-chrome toggling and the full keyboard model: type-to-search, arrow navigation, the Escape ladder,
-    // Space-to-favorite (with its submit suppression) and the directional/submit event guards.
     internal sealed partial class TypeSelectorView
     {
         private void UpdateSearchChrome()
@@ -35,7 +33,6 @@ namespace Aspid.FastTools.Types.Editors
 
             _searchField.schedule.Execute(() =>
             {
-                // The deferred tick can land after the embedding host collapsed the panel; bail if we are detached.
                 if (_searchField.panel is null) return;
 
                 _searchField.Focus();
@@ -74,8 +71,6 @@ namespace Aspid.FastTools.Types.Editors
 
         private void HandleKeyDown(KeyDownEvent evt)
         {
-            // Any real key press other than the favorite Space (and other than the paired character event, keyCode None)
-            // cancels a pending favorite-submit suppression, so a later Enter still chooses normally.
             if (evt.keyCode != KeyCode.Space && evt.keyCode != KeyCode.None)
                 _suppressNextSubmit = false;
 
@@ -122,9 +117,6 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        // A KeyDownEvent that represents a printable character typed without a command/control/alt chord. Unity raises a
-        // separate character event (keyCode == None, character set) alongside the keyCode event, so keying off the
-        // character keeps arrows/Esc/Enter — which carry no printable character — on the navigation path below.
         private static bool IsTypingCharacter(KeyDownEvent evt)
         {
             var c = evt.character;
@@ -210,9 +202,6 @@ namespace Aspid.FastTools.Types.Editors
 
         private void HandleEscapeKey()
         {
-            // A three-step ladder: the first Esc clears a running query and keeps the field open and focused for a retype
-            // (re-asserted here so the rung behaves the same whether focus sits in the field or has moved to the results);
-            // a second (empty field) collapses the header back to the trail; a third (trail showing) dismisses the picker.
             if (!string.IsNullOrEmpty(_searchField.value))
             {
                 _searchField.value = string.Empty;

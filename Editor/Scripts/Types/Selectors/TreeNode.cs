@@ -19,21 +19,12 @@ namespace Aspid.FastTools.Types.Editors
 
         internal string AssemblyQualifiedName { get; set; }
 
-        // Raw editor icon identifier sourced from TypeSelectorDisplayAttribute.Icon;
-        // null when the node has no icon.
         internal string Icon { get; set; }
 
-        // The real (short) type name, kept separately from DisplayName so search keeps
-        // matching the original type name even when the displayed label is disambiguated with its
-        // assembly. null for non-type nodes.
         internal string SearchName { get; set; }
 
-        // The node's presentation role. Section titles are non-interactive separators inserted by the
-        // Favorites/Recents rendering; everything else is Default.
         internal TreeNodeKind Kind { get; set; }
 
-        // The Favorites or Recents section this row belongs to, set on the header and its item rows alike, or null
-        // for a row outside any composed section. Drives which section a row collapses under and its styling.
         internal string SectionKey { get; set; }
 
         // How many pickable types the row stands for, shown as the dim counter on container and section rows. A
@@ -49,8 +40,6 @@ namespace Aspid.FastTools.Types.Editors
 
         internal bool IsSectionTitle => Kind == TreeNodeKind.SectionTitle;
 
-        // Whether this node represents a concrete pickable type (has an assembly-qualified name and is
-        // not a section header). Used to gate the favorite star toggle.
         internal bool IsType => Kind == TreeNodeKind.Default && AssemblyQualifiedName is not null;
 
         internal bool IsSelectable =>
@@ -78,7 +67,6 @@ namespace Aspid.FastTools.Types.Editors
 
             return Contains(DisplayName, filter)
                 || Contains(Caption, filter)
-                // Keep matching the real type name even when the displayed label is disambiguated.
                 || Contains(SearchName, filter)
                 || Contains(AssemblyQualifiedName, filter);
         }

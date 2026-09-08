@@ -12,13 +12,8 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// UIToolkit field showing a <see cref="Type"/> as a dropdown backed by <see cref="TypeSelectorWindow"/>,
-    /// optionally bound to a string property holding the type's assembly-qualified name.
+    /// <see cref="BaseField{Type}"/> for selecting a type and optionally storing its assembly-qualified name.
     /// </summary>
-    /// <remarks>
-    /// An unresolved name is preserved and rendered as a <c>&lt;Missing&gt;</c> caption rather than silently
-    /// cleared. Inheritable, so a subclass can layer its own styling on top.
-    /// </remarks>
     [UxmlElement]
     public partial class TypeField : BaseField<Type>
     {
@@ -81,8 +76,6 @@ namespace Aspid.FastTools.Types.Editors
             _property = property.Persistent();
             SetValueFromAssemblyQualifiedNameWithoutNotify(_property.stringValue);
 
-            // Undo, revert-to-prefab and scripted edits rewrite the backing string outside this field; the tracked
-            // callback hands over a fresh property each tick.
             this.TrackPropertyValue(_property, current =>
                 SetValueFromAssemblyQualifiedNameWithoutNotify(current.stringValue));
         }
@@ -142,7 +135,10 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Sets the displayed type and clears any unresolved name without raising a change event.
+        /// </summary>
+        /// <param name="newValue">The type to show, or <see langword="null"/> for an empty selection.</param>
         public sealed override void SetValueWithoutNotify(Type newValue)
         {
             _missingAssemblyQualifiedName = null;
@@ -157,7 +153,7 @@ namespace Aspid.FastTools.Types.Editors
         /// A name that cannot be resolved is preserved, so the field renders a <c>&lt;Missing&gt;</c> caption
         /// instead of silently clearing.
         /// </remarks>
-        /// <param name="assemblyQualifiedName">The assembly-qualified name of the type to show.</param>
+        /// <param name="assemblyQualifiedName">The type name, or <see langword="null"/> or whitespace for an empty selection.</param>
         public void SetValueFromAssemblyQualifiedNameWithoutNotify(string assemblyQualifiedName)
         {
             var resolved = TypeUtility.GetTypeOrNull(assemblyQualifiedName);
@@ -199,7 +195,6 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     this.SetValue(TypeUtility.GetTypeOrNull(assemblyQualifiedName));
 
-                    // <None> arrives as null; the IMGUI path stores an empty string, so this one does too.
                     _property?.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
                 });
 

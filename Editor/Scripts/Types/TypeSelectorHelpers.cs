@@ -5,7 +5,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Shared constants and formatting helpers for the type-selector UI.
     internal static class TypeSelectorHelpers
     {
         internal const string None = "○";
@@ -43,14 +42,9 @@ namespace Aspid.FastTools.Types.Editors
             return name;
         }
 
-        // Governs what may be authored, not what may be repaired: a picker re-pointing a broken reference ignores
-        // this, while the Smart Fix suggestion honors it. Not inherited, so hiding a base type leaves the subclasses
-        // meant to replace it offered.
         internal static bool IsHiddenFromPicker(Type value) =>
             value?.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false)?.Hidden ?? false;
 
-        // The dropdown caption: the type's display name when resolved, a <Missing …> marker when only an
-        // unresolvable name is given, and <None> when neither is.
         internal static string GetTypeSelectorTitle(Type value, string assemblyQualifiedName = null)
         {
             if (value is not null)
@@ -61,7 +55,6 @@ namespace Aspid.FastTools.Types.Editors
                 : $"<Missing {assemblyQualifiedName}>";
         }
 
-        // The full Namespace.Class, Assembly identity, since the caption shows only the short name.
         internal static string GetTypeSelectorTooltip(Type value)
         {
             if (value is null) return null;

@@ -70,7 +70,7 @@ namespace Aspid.FastTools.Enums.Editors
                 headerBackgroundRect, serializedObject,
                 valuesProperty.propertyPath, enumTypeProperty.propertyPath, defaultValueProperty.propertyPath);
 
-            // Foldout arrows render to the left of the supplied rect; keep them inside the border.
+            // Foldout arrows render left of the supplied rectangle; reserve space inside the border.
             var contentInset = inset + EnumValueIMGUIPropertyDrawer.FoldoutArrowWidth;
 
             var valuesHeight = EditorGUI.GetPropertyHeight(valuesProperty, includeChildren: true);

@@ -6,12 +6,6 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Names the owning object of a required-field violation as "Component.field", or the field path alone when the
-    // owner cannot be identified. Shared by both References tabs so their required rows read alike.
-    //
-    // A violation carries only the asset path and file id, so the owner is resolved on demand by object-loading the
-    // asset and matching the id. Scenes cannot be object-loaded, so a scene row shows the field path rather than
-    // guessing. Loads are memoized per asset path, since several violations commonly share one asset.
     internal sealed class ViolationFieldLabels
     {
         private readonly Dictionary<string, Object[]> _assets = new(StringComparer.Ordinal);

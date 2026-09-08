@@ -4,8 +4,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A non-interactive overlay VisualElement that paints a smooth horizontal accent gradient with a quadratic alpha
-    // falloff and smoothly fades it in or out toward a target progress between 0 and 1.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidHoverGradientOverlay : VisualElement
     {
@@ -16,10 +14,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const float DefaultLerpRate = 0.12f;
         private const float DefaultAlphaScale = 0.35f;
 
-        // Conservative cap on the step count: each step emits 6 indices, so 65535 / 6 = 10922 steps
-        // keeps even the total index count within ushort range. The hard limits — the largest emitted
-        // vertex index, (ushort)(i * 2 + 3) = 2 * steps + 1, and the 65535-vertex allocation ceiling —
-        // are only reached above ~32k steps, well past this cap.
+        // Each strip emits six indices; cap the mesh conservatively within the 16-bit range.
         private const int MaxSteps = ushort.MaxValue / 6;
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidHoverGradientOverlay";
 
@@ -95,10 +90,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var alphaScale = _metrics.AlphaScale;
             var baseColor = _color.Value;
 
-            // One vertical column of vertices per gradient stop (top + bottom). Adjacent quads
-            // reuse their shared boundary column, so the mesh carries no internal anti-aliased
-            // edges — only its outer silhouette is smoothed. That removes the dark seams that
-            // appeared when each strip was filled separately and faded its own edges to transparent.
+            // Shared boundary vertices prevent seams between separately anti-aliased strips.
             var columns = steps + 1;
             var mesh = ctx.Allocate(columns * 2, steps * 6);
 

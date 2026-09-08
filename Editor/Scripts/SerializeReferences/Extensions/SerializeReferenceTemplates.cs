@@ -6,9 +6,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Durable, project-scoped named templates for managed-reference instances: a stored type plus its JSON payload,
-    // rehydrated into an independent instance on use — the persistent counterpart to the session-only clipboard.
-    // The JSON round-trip is JsonUtility-based, so nested [SerializeReference] children are not preserved.
     internal static class SerializeReferenceTemplates
     {
         private const string KeyPrefix = "Aspid.FastTools.SerializeReference.Templates.";
@@ -62,7 +59,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Persist(store);
         }
 
-        // Returns the templates whose type still resolves, in stored order, and prunes the rest.
         public static List<Template> LoadResolved()
         {
             var store = Load();
@@ -98,7 +94,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return instance;
         }
 
-        // A unique default name for a new template, deduplicated with a numeric suffix.
         public static string SuggestName(Type type)
         {
             var baseName = type?.Name ?? "Template";

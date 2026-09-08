@@ -8,10 +8,6 @@ using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAudit
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The individual cards a document's body is made of, and the parts they share. Four shapes, one look: a resolved
-    // or missing reference, an unassigned slot, a required field the graph has no node for, and a back-edge leaf that
-    // terminates a cycle. Which band a card gets — a YAML dropdown, a live-property dropdown, or a static line — is
-    // decided here; what the band's pick does belongs to the .Picker partial.
     internal sealed partial class SerializeReferenceGraphView
     {
         private const string NodeClass = RootClass + "__node";
@@ -42,30 +38,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string ChipClass = RootClass + "__chip";
         private const string ClearOrphanClass = RootClass + "__clear-orphan";
 
-        // Band verb + collapse chevron; the picker host swaps the chevron glyph alone, never the label.
         private const string FixCollapsedText = "Fix Missing  ▼";
         private const string ChangeCollapsedText = "Change  ▼";
         private const string AssignCollapsedText = "Assign  ▼";
 
-        // A required slot's band verb names what the amber is about: the field must be assigned, not merely can be.
         private const string AssignRequiredCollapsedText = "Assign Required  ▼";
 
-        // A pending-migration card is not missing (Unity migrates it in memory; only the file is stale), so no "Missing".
         private const string MigrateFixCollapsedText = "Fix  ▼";
 
-        // Single-sourced from the picker's "<None>" option so an empty slot reads like a cleared field in the Inspector.
         private const string EmptySlotText = TypeSelectorHelpers.NoneOption;
 
-        // A node card whose band is an inline dropdown: a missing card edits through the YAML, a healthy one through
-        // the live serialization API, an orphan keeps a static band plus a footer Clear. Cards are not indented —
-        // the field path alone carries the nesting.
         private VisualElement BuildNodeCard(string assetPath, ReferenceGraphDocument document, ReferenceGraphNode? node, long rid, string pathLabel, bool isOrphan)
         {
             var missing = node is { Resolves: false, StoredType: { IsEmpty: false } };
 
-            // An authoritative [MovedFrom] rename is a pending migration, not a breakage: Unity loads the reference
-            // fine — only this file still stores the old name. Never for an orphan — nothing loads an orphan, so the
-            // in-memory migration argument does not hold.
+            // Unity migrates reachable references in memory; orphaned payloads are never loaded.
             Type migrationTarget = null;
             var isMigration = missing && !isOrphan &&
                 SerializeReferenceGraphAnalysis.IsPendingMigration(assetPath, document.FileId, rid,
@@ -73,8 +60,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
                 .AddClass(NodeClass);
-            // Card-level modifier so card-wide states (the --picking accent frame, the picker's accent-follow rules)
-            // read the calm info tone on a migration card instead of the broken-card amber.
             if (isMigration) card.AddClass(NodeMigrateCardClass);
 
             var typePreset = AspidLabelPreset.Default
@@ -94,13 +79,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var bandRow = BuildBandRow(typeLabel, BuildBadges(document, rid));
 
-            // The captured file id targets every edit at exactly this document's rid (rids collide across documents).
+            // Reference IDs are only unique within a serialized document.
             var fileId = document.FileId;
 
             if (missing)
             {
-                // A missing reference cannot be reassigned through the serialization API, so its edit goes through the
-                // YAML (keeping the orphaned payload).
+                // The serialization API cannot reassign missing types; preserve their payload through YAML edits.
                 AspidGradientButton band = null;
                 band = new AspidGradientButton(isMigration ? MigrateFixCollapsedText : FixCollapsedText,
                         _ => OpenMissingPicker(assetPath, fileId, rid, band))
@@ -116,8 +100,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else if (!isOrphan)
             {
-                // A healthy reference edits through the live serialization API (keyed by the field path), so Unity
-                // rewrites — or, on <None>, removes — the RefIds entry exactly as the Inspector would.
                 var graphPath = pathLabel;
                 AspidGradientButton band = null;
                 band = new AspidGradientButton(ChangeCollapsedText, _ => OpenLivePicker(assetPath, fileId, graphPath, band))
@@ -129,19 +111,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else
             {
-                // An orphan has no field pointing at it, so there is no live property to edit — its band stays static
-                // and the footer Clear (below) drops the dangling entry. The divider still splits band from footer,
-                // but with no hover source there is no sweep.
+                // Orphans have no live property to edit, so only the file-level Clear action is available.
                 card.AddChild(bandRow);
                 AddBandDivider(card, band: null, sweepModifier: null);
             }
 
-            // Healthy and empty slots are cleared through their band's picker (<None>), so no separate button here.
             var meta = BuildFooter(pathLabel, $"rid {rid}");
 
             if (isOrphan)
             {
-                // Drop a dangling RefIds entry no field points at. File edit, so it is confirmed and not undoable.
                 var clear = new AspidGradientButton("Clear", _ => ClearOrphan(assetPath, fileId, rid))
                     .AddClass(ClearOrphanClass);
                 RegisterNavTarget(clear, () => ClearOrphan(assetPath, fileId, rid));
@@ -153,10 +131,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
-        // An unassigned [SerializeReference] slot — a field whose pointer is the null sentinel (rid -2). Its band is
-        // still a dropdown assigning a type through the live serialization API; a slot whose field path could not be
-        // recovered stays static (nothing to target). A required slot wears the missing card's clothes — amber
-        // "<None>" header and amber band accent, no badge — so every "fix this" card in the graph reads the same.
         private VisualElement BuildEmptySlotCard(string assetPath, long fileId, string pathLabel)
         {
             var isRequired = IsFieldRequiredUnset(fileId, pathLabel);
@@ -165,8 +139,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(NodeClass);
             if (!isRequired) card.AddClass(NodeEmptyClass);
 
-            // A plain Label on an ordinary empty slot so the --empty USS rule tints it; a required slot paints its
-            // own amber status via AspidLabel, exactly like a missing card's type header.
             var typeLabel = isRequired
                 ? (VisualElement)BuildRequiredNoneLabel("Required reference is not set")
                 : new Label(EmptySlotText).AddClass(NodeTypeClass).SetPickingMode(PickingMode.Ignore);
@@ -175,13 +147,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (string.IsNullOrEmpty(pathLabel))
             {
-                // No recoverable field path to target — leave the slot a static "<None>" leaf.
                 card.AddChild(bandRow);
                 AddBandDivider(card, band: null, sweepModifier: null);
             }
             else
             {
-                // <None> is a no-op here — the slot is already unset.
                 var graphPath = pathLabel;
                 AspidGradientButton band = null;
                 band = new AspidGradientButton(isRequired ? AssignRequiredCollapsedText : AssignCollapsedText,
@@ -199,11 +169,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
-        // Trailing cards for required violations the graph has no node for: a required string or SerializableType
-        // field is never threaded into RefIds, so the scanner emits no document for a component whose only such
-        // fields are these. The card mirrors a required empty slot exactly, so both read alike, and the pick writes
-        // the type's assembly-qualified name into the backing string. A scene asset cannot be object-loaded, so its
-        // band stays a static line edited through the normal Inspector.
+        // Required string fields have no RefIds node; scene assets cannot be object-loaded for inline editing.
         private VisualElement BuildRequiredOnlyCard(GateViolation violation, ViolationFieldLabels labels)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -213,7 +179,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (SerializeReferenceHelpers.IsScene(violation.AssetPath))
             {
-                // Not reachable through the live serialization API — leave the band a static "<None>" line.
                 card.AddChild(bandRow);
                 AddBandDivider(card, band: null, sweepModifier: null);
             }
@@ -234,8 +199,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
-        // A back-edge to a rid already on the current render path — a single dim, italic line (no footer) so cycles
-        // terminate visibly.
+        // Terminate a cycle at its back-edge instead of rendering it recursively.
         private static VisualElement BuildBackEdgeCard(long rid)
         {
             var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
@@ -251,12 +215,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
-        // ---------------------------------------------------------------------------------------------------------
-        // Shared card parts
-        // ---------------------------------------------------------------------------------------------------------
-
-        // The band's content, docked into the band button (or standing alone on a static card). Ignored for picking
-        // so clicks fall through to the band's own handler.
         private static VisualElement BuildBandRow(VisualElement typeLabel, VisualElement badges)
         {
             var row = new VisualElement()
@@ -267,7 +225,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return row;
         }
 
-        // The amber "<None>" header a required card wears — the same clothes as a missing card's type header.
         private static AspidLabel BuildRequiredNoneLabel(string tooltip)
         {
             var label = new AspidLabel(EmptySlotText, AspidLabelPreset.Default
@@ -280,8 +237,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return label;
         }
 
-        // No MISSING badge — the band action and amber type pill already carry it; only SHARED remains, dotted with
-        // the rid's own color so an aliased pair is recognizable across cards.
         private static VisualElement BuildBadges(ReferenceGraphDocument document, long rid)
         {
             var badges = new VisualElement()
@@ -298,14 +253,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return badges.AddChild(shared);
         }
 
-        // The one-click row under a broken card's band: a pending [MovedFrom] migration if the stored type resolves to
-        // one, otherwise the ranked Smart Fix guess — or nothing when neither applies.
         private VisualElement BuildQuickFixRow(string assetPath, long fileId, long rid, ManagedTypeName storedType,
             bool isMigration, Type migrationTarget)
         {
             if (isMigration)
             {
-                // The same YAML rewrite a picker pick performs — no confirm, matching the picker's own apply.
                 return BuildNodeActionRow(
                     $"Migrate → {migrationTarget.Name}",
                     $"This entry resolves to {migrationTarget.FullName} via its declared [MovedFrom] — Unity " +
@@ -318,8 +270,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!SerializeReferenceGraphAnalysis.TryGetSuggestion(assetPath, fileId, rid, storedType, _constraints, out var suggestion))
                 return null;
 
-            // Safe to hand straight to ApplyFix: Rank's pool is constraint-filtered, so the suggestion is always a
-            // type the picker itself would offer.
             return BuildNodeActionRow(
                 $"Smart Fix {SerializeReferenceHelpers.GetSuggestionLabel(suggestion)}",
                 SerializeReferenceHelpers.GetSuggestionDetail(suggestion),
@@ -327,9 +277,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 () => ApplyFix(assetPath, fileId, rid, suggestion.Type.AssemblyQualifiedName));
         }
 
-        // A one-click action (Smart Fix / Migrate) as a flat accent verb over the same hover fill the Project
-        // References action rows use, instead of a filled gradient pill floating over the glass card. Each card
-        // keeps one accent: warning amber for a Smart Fix guess on a broken card, info for a pending migration.
         private VisualElement BuildNodeActionRow(string text, string tooltipText, bool info, Action onClick)
         {
             var row = new Label(text).AddClass(NodeActionClass);
@@ -340,11 +287,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return row;
         }
 
-        // The dim hairline between a card's band and its body, plus — when the band is interactive — the accent
-        // underline sweep that scales in while the band is hovered (the Project References group cards' idiom).
-        // The sweep is the band's sibling, so USS :hover can't reach it; it rides the card's --header-hover modifier
-        // instead, which the ring lights (see RegisterNavBand). Both hide while the picker is docked (see the
-        // --picking USS rules).
+        // The sweep is a sibling of the button, so hover is propagated through the card class.
         private static void AddBandDivider(VisualElement card, AspidGradientButton band, string sweepModifier)
         {
             card.AddChild(new AspidDividingLine(AspidDividingLinePreset.Default
@@ -361,8 +304,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             card.AddChild(sweep);
         }
 
-        // Every card's footer: the field path it sits at (when one was recovered) plus its rid / status word, both
-        // selectable so they can be copied out.
         private static VisualElement BuildFooter(string pathLabel, string trailingText)
         {
             var meta = new VisualElement().AddClass(NodeFooterClass);
@@ -379,10 +320,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return meta;
         }
 
-        // Matches an empty slot's graph field path against a violation's property path for the same document, under
-        // the same normalization the live-property lookup applies. A slot whose path the YAML walk could not recover
-        // never matches a real property path, so its badge is skipped rather than false-positiving; the violation
-        // still shows correctly in the Project References tab.
         private bool IsFieldRequiredUnset(long fileId, string pathLabel)
         {
             if (string.IsNullOrEmpty(pathLabel) || _requiredViolations.Count == 0) return false;

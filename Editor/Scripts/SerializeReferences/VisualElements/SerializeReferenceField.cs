@@ -14,11 +14,6 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // UIToolkit field for a [SerializeReference] property: a foldout whose header carries an EnumField-style type
-    // dropdown and an open-script button, whose content hosts the instance's nested properties, and which surfaces
-    // the package's notices. Always bound to a managed-reference property and created from code, never UXML. It keeps
-    // the live inspector property so child fields round-trip through Unity's binding, and rebuilds the nested
-    // properties only when the assigned type actually changes.
     internal sealed class SerializeReferenceField : VisualElement
     {
         private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";
@@ -328,9 +323,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _contentBuilt = true;
             _childrenBuilt = false;
 
-            // A type with no serialized fields has nothing to expand, and an empty reference has nothing yet — in
-            // both cases the arrow only promises content that never appears. Answered by walking the property,
-            // which costs nothing next to building the fields.
             var hasChildren = hasValue && SerializeReferenceNesting.HasVisibleChildren(_property);
             EnableInClassList(ChildlessClass, !hasChildren);
 
@@ -416,7 +408,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _mixedNotice ??= new InspectorNotice();
             if (_mixedNotice.parent is null) _notices.AddChild(_mixedNotice);
 
-            // Stands in for the per-instance child fields, which cannot be merged across different types.
             _mixedNotice.SetInfo(
                 message: "Different types selected",
                 detail: "The selected objects hold different managed-reference types, so their fields cannot be shown " +
@@ -439,7 +430,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var message = "Required reference is not set";
 
-            // Non-actionable — the empty action word keeps the dropdown above as the implied fix.
             _requiredNotice.Set(
                 message: message,
                 actionText: string.Empty,
@@ -465,8 +455,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var typeName = SerializeReferenceHelpers.GetMissingTypeDisplayName(_property);
 
-            // Offered for saved assets (YAML rewrite) and Prefab Mode objects (in-memory) — anything with a
-            // resolvable backing document. Scene objects without one fall through to the read-only hint.
             var canFix = SerializeReferenceHelpers.TryGetRepairLocation(_property, out _, out _, out _);
 
             _missingNotice.Set(
@@ -480,8 +468,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             UpdateSuggestion(canFix);
         }
 
-        // The Smart Fix suggestion rides the missing notice as a second clickable segment ("· → Pistol"): the
-        // highest ranked existing type the reference most likely became, applied through the same repair path as Fix.
         private void UpdateSuggestion(bool canFix)
         {
             if (!canFix ||
@@ -523,16 +509,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // and the number and color always agree.
             var index = SerializeReferenceHelpers.GetSharedReferenceIndex(_property);
 
-            // The per-index color fills the notice's swatch, tints its message, and (cached for UpdateStripe)
-            // paints the left stripe.
             var sharedColor = SerializeReferenceRidColor.ForIndex(index);
             _sharedColor = sharedColor;
 
             _sharedNotice ??= new InspectorNotice();
             if (_sharedNotice.parent is null) _notices.AddChild(_sharedNotice);
 
-            // Passing the color flips the notice to its shared treatment (see InspectorNotice);
-            // clicking the message reveals the group's other fields.
             _sharedNotice.Set(
                 message: index > 0 ? $"Shared reference #{index}" : "Shared reference",
                 actionText: "Make unique",
@@ -542,8 +524,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 onNavigate: NavigateToAliases);
         }
 
-        // The shared notice's message click: expand whatever hides any group member, scroll to the next member
-        // (cursor-based, so repeated clicks walk the group) and pulse every member in the group color.
         private void NavigateToAliases() => NavigateToAliases(MaxRevealRetries);
 
         private void NavigateToAliases(int retriesLeft)
@@ -553,7 +533,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var target = _property.serializedObject.targetObject;
             var rid = _property.managedReferenceId;
 
-            // The group's canonical document order (shared with the IMGUI drawer) backs the cycling.
             var group = SerializeReferenceHelpers.GetSharedReferenceGroupPaths(_property);
             if (group.Count < 2) return;
 
@@ -597,8 +576,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            // The scroll target: the next member in document order after the group's cursor, skipping the clicked
-            // field; members whose element never appeared fall through to the next one.
             var key = (target.GetInstanceID(), rid);
             var start = _navigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
             if (start < 0) start = IndexOf(group, selfPath);
@@ -619,8 +596,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             else Reveal(next, live);
         }
 
-        // Expands every collapsed Foldout between a member's element and the panel root, so a member hidden
-        // inside collapsed parents gets real geometry.
         private static bool ExpandAncestorFoldouts(VisualElement element)
         {
             var expanded = false;
@@ -672,7 +647,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var prefix = path[..dot];
 
-                // A managed-reference ancestor → its live field's own foldout.
                 foreach (var field in _liveFields)
                 {
                     if (field.panel != panel || !field.IsPropertyAlive()) continue;
@@ -683,7 +657,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     expanded = true;
                 }
 
-                // A list ancestor → the foldout header of the ListView bound to the prefix.
                 root.Query<ListView>().Where(list => list.bindingPath == prefix).ForEach(list =>
                 {
                     var header = list.Q<Foldout>();
@@ -705,7 +678,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _flashOverlay = new VisualElement()
                     .AddClass(FlashClass)
                     .SetPickingMode(PickingMode.Ignore);
-                // First child, so the stripe and the content render over the tint.
                 Insert(0, _flashOverlay);
             }
 
@@ -749,16 +721,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return panel?.visualTree;
         }
 
-        // The pulse holds its full tint for the first FlashHoldFraction of its life and then fades out linearly —
-        // matching the IMGUI overlay's curve.
         private static float HoldThenFadeEasing(float t) =>
             t < FlashHoldFraction ? 0f : (t - FlashHoldFraction) / (1f - FlashHoldFraction);
 
-        // A missing type paints the stripe the warning amber (USS); a shared reference the cached per-rid color
-        // (inline); a field that is both takes the warning.
         private void UpdateStripe()
         {
-            // Reserve the stripe gutter (the foldout's left padding) only while a stripe is actually shown.
             EnableInClassList(StripedClass, _isMissing || _isShared);
 
             if (_isMissing) ApplyWarningStripe();
@@ -789,7 +756,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _stripe = new VisualElement()
                 .AddClass(StripeClass)
                 .SetPickingMode(PickingMode.Ignore);
-            // Insert as the first child so it renders behind everything else.
             Insert(0, _stripe);
         }
 
@@ -823,7 +789,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (evt.target != _foldout) return;
             _property.isExpanded = evt.newValue;
 
-            // The children were deferred until now (see BuildChildren); an expansion is what pays for them.
             if (evt.newValue) BuildChildren();
         }
 
@@ -834,7 +799,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var window = _dropdown.GetOwnerWindow();
             if (!window) return;
 
-            // Under mixed types there is no single "current" type to pre-highlight in the picker — open it unselected.
             var currentType = SerializeReferenceHelpers.HasMixedTypes(_property)
                 ? null
                 : SerializeReferenceHelpers.GetCurrentType(_property);
@@ -868,7 +832,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         _property,
                         previous => SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
 
-                    // Set isExpanded on the live property — the per-target writes went through disposed SerializedObjects.
                     _property.isExpanded = type is not null;
                 }
                 else
@@ -901,18 +864,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _ => PasteFromClipboard(),
                 canPaste ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
 
-            // Make-unique is single-target only; under a multi-object selection the shared notice is already suppressed.
             if (SerializeReferenceHelpers.NoticesApply(_property) &&
                 SerializeReferenceHelpers.HasSharedReference(_property))
                 evt.menu.AppendAction("Make Unique Reference", _ => MakeUnique());
 
-            // Find every asset/field using the current type, via the sr: Quick Search provider.
             var usagesType = SerializeReferenceHelpers.GetCurrentType(_property);
             if (usagesType != null)
                 evt.menu.AppendAction($"Find Usages of {usagesType.Name}",
                     _ => SerializeReferenceUsageSearchProvider.OpenSearch(usagesType));
 
-            // Link this field to an existing instance of the same object (the inverse of Make Unique), single-target only.
             if (SerializeReferenceHelpers.NoticesApply(_property))
                 foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(_property))
                 {
@@ -920,11 +880,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     evt.menu.AppendAction($"Link to Existing/{candidate.Type.Name}  ({path})", _ => LinkToExisting(path));
                 }
 
-            // Generate a new subclass of the field's type and assign it once it compiles.
             if (_fieldType != null)
                 evt.menu.AppendAction("Create New Script…", _ => CreateNewScript());
 
-            // Save the current instance as a durable named template, and paste any assignable saved template.
             if (usagesType != null)
                 evt.menu.AppendAction("Save as Template…", _ => SaveAsTemplate(usagesType));
 
@@ -1016,7 +974,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ApplyReferenceChange();
         }
 
-        // Refreshes this field after reassigning its managed reference, then notifies siblings (see ManagedReferencesChanged).
         private void ApplyReferenceChange()
         {
             // Mutations apply through a throwaway SerializedObject, leaving this field's LIVE object stale — pull
@@ -1056,8 +1013,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     _property,
                     _ => SerializeReferenceClipboard.CreateInstance());
 
-                // Set isExpanded on the live property (the per-target writes went through disposed SerializedObjects);
-                // an empty-reference paste collapses the foldout, matching the single-object branch.
                 _property.isExpanded = SerializeReferenceClipboard.Type is not null;
             }
             else

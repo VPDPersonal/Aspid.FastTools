@@ -9,13 +9,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Headless CI entry point:
-    // Unity -batchmode -quit -projectPath . -executeMethod Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck
-    //
-    // Scans the project, writes a report, logs each violation and exits non-zero so a pipeline can fail the job.
-    // Severity comes from the committed Project Settings, so a clean runner enforces the checked-in choice: Off skips,
-    // Warn logs but exits 0, Fail exits 1. Flags: -srGateReport <path>, -srGateRequired (also scan required fields),
-    // -srGateWarnOnly and -srGateFail (override severity; -srGateWarnOnly wins).
     internal static class SerializeReferenceCiGate
     {
         private const string DefaultReportPath = "SerializeReferenceGateReport.txt";

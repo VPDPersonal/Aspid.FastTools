@@ -11,9 +11,6 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    // The Welcome panel as a reusable element: hero, samples list, the logo link and the cursor toast, hosted as the
-    // window's home tab. Cloned from the UXML the standalone window used; only the toast positioning is retargeted
-    // to this view, which sits below the tab strip.
     internal sealed class WelcomeView : VisualElement
     {
         private const string UssClassPrefix = "aspid-fasttools-welcome__";
@@ -63,8 +60,6 @@ namespace Aspid.FastTools.Editors
         private IVisualElementScheduledItem _toastShow;
         private IVisualElementScheduledItem _toastHide;
 
-        // Keyboard navigation: one flat focus ring over the sample cards' header buttons in list order (hero
-        // links stay mouse-only), shared with the other window tabs.
         private readonly NavRing _ring;
 
         public WelcomeView()
@@ -83,8 +78,7 @@ namespace Aspid.FastTools.Editors
             _toast = this.Q<Label>(ToastName);
             if (_toast != null)
             {
-                // Reparent to the view root so the absolute coordinates we set in ShowToast are view-relative
-                // (welcome-content has padding that would offset positioning).
+                // The toast uses view-local coordinates; the original padded container would offset it.
                 _toast.RemoveFromHierarchy();
                 Add(_toast);
                 _toast.SetPickingMode(PickingMode.Ignore);
@@ -92,8 +86,6 @@ namespace Aspid.FastTools.Editors
 
             _scroll = this.Q<ScrollView>(ScrollName);
 
-            // The shared keyboard ring: the view holds focus (grabbed on attach) so keys reach it before anything is
-            // highlighted. Built before PopulateSamples, which registers the sample cards onto it.
             _ring = new NavRing(
                 host: this,
                 navTargetClass: NavTargetClass,
@@ -129,17 +121,12 @@ namespace Aspid.FastTools.Editors
 
             _toast.text = message;
 
-            // The view sits below the tab strip, so the event's panel-space cursor position must be converted to
-            // view-local coordinates before it drives the toast's absolute top/left.
             var local = this.WorldToLocal(mousePosition);
 
-            // Tentative position; clamping happens after the toast resolves its size on the
-            // next layout pass (see _toastShow callback below).
             _toast.style.top = local.y + ToastCursorOffset;
             _toast.style.left = local.x;
 
-            // Defer the visible class so the opacity:0 baseline is committed first; otherwise
-            // Unity batches the position update with the class change and the fade-in snaps.
+            // Commit opacity zero before showing; otherwise Unity batches both states and skips the fade.
             _toastShow?.Pause();
             _toastShow = _toast.schedule.Execute(() =>
             {
@@ -194,9 +181,6 @@ namespace Aspid.FastTools.Editors
 
             _samplesList.Clear();
 
-            // The cards are rebuilt from scratch, so an Import/Remove triggered from the keyboard rebuilds the very
-            // ring it came from — Rebuild puts the highlight back on the same slot, so the keyboard flow continues
-            // from where it acted.
             _ring.Rebuild(() =>
             {
                 var package = PackageInfo.FindForPackageName(PackageName);
@@ -219,8 +203,6 @@ namespace Aspid.FastTools.Editors
 
             if (sample.isImported)
             {
-                // An imported sample's one action is taking the copy back out — deletion is confirmed and the
-                // sample stays reimportable right after, so the direct verb replaces a Reimport/Remove menu.
                 return CreateSampleCard(displayName, description, "Remove",
                     pointer => RemoveSample(captured, displayName, pointer),
                     imported: true);
@@ -240,10 +222,6 @@ namespace Aspid.FastTools.Editors
             });
         }
 
-        // A sample card in the References group-card idiom: a glass box whose header row is one flat button, with
-        // the description wrapping below. The state dot reads brand-blue while the sample is not imported and green
-        // once it is, and a null state drops it entirely, as for local non-UPM samples. onClick receives the
-        // panel-space anchor for the result toast: the cursor on a click, the header's center on a keyboard Enter.
         private VisualElement CreateSampleCard(
             string displayName,
             string description,
@@ -259,8 +237,6 @@ namespace Aspid.FastTools.Editors
             if (imported == true)
                 action.AddClass(SampleHeaderRemoveClass);
 
-            // Registered as the card's header, so the ring drives both halves of the sweep: the divider sweep below
-            // sits outside the button and rides a card modifier, lit by mouse hover and by keyboard focus alike.
             _ring.RegisterHeader(action, card, SampleHeaderHoverClass, () => onClick(action.worldBound.center));
 
             var info = new VisualElement()
@@ -269,8 +245,7 @@ namespace Aspid.FastTools.Editors
 
             if (imported.HasValue)
             {
-                // Kept pickable (no click handler — presses bubble through to the header button) so its
-                // tooltip can explain the state.
+                // Keep the tooltip target pickable; clicks still bubble to the header button.
                 var dot = new VisualElement().AddClass(SampleStateDotClass);
 
                 if (imported.Value)
@@ -299,9 +274,6 @@ namespace Aspid.FastTools.Editors
                         .SetSize(AspidDividingLineSizeStyle.Type.Thin))
                     .AddClass(SampleDividerClass));
 
-                // The accent sweep riding the divider: a hairline that scales in from the left while the header
-                // button is hovered (via the --header-hover card modifier). Red on an imported (Remove) card,
-                // brand green otherwise.
                 var sweep = new VisualElement().AddClass(SampleSweepClass);
                 if (imported == true)
                     sweep.AddClass(SampleSweepRemoveClass);

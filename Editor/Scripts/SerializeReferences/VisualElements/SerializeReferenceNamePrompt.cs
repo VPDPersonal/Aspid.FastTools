@@ -5,7 +5,6 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // A modal single-field prompt for naming a managed-reference template.
     internal sealed class SerializeReferenceNamePrompt : EditorWindow
     {
         private const string NameFieldControl = "nameField";

@@ -4,9 +4,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Per-asset memo over BuildConstraintMap, so a repair surface's many lookups cost one scan per asset — building
-    // one map is a LoadAllAssetsAtPath plus a full SerializedObject walk. Clear it after any edit that rewrote the
-    // YAML, or the next lookup answers from the pre-edit file.
     internal sealed class SerializeReferenceConstraintCache
     {
         private readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _maps = new(StringComparer.Ordinal);

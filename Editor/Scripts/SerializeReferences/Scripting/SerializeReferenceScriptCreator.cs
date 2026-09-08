@@ -10,12 +10,8 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Generates and imports a [Serializable] subclass stub for a managed-reference field's base type, so an author
-    // can create a subtype without leaving the inspector. An interface base has its members emitted as
-    // auto-properties, field-like events and throwing method stubs, so the file compiles.
     internal static class SerializeReferenceScriptCreator
     {
-        // Returns the created asset path and the new type's full name, for the deferred assignment.
         public static bool TryCreateSubclassStub(Type baseType, out string assetPath, out string fullTypeName)
         {
             assetPath = null;
@@ -139,7 +135,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             var methods = members.OfType<MethodInfo>()
-                .Where(method => !method.IsSpecialName && !handledAccessors.Contains(method)) // property/event accessors
+                .Where(method => !method.IsSpecialName && !handledAccessors.Contains(method))
                 .ToArray();
 
             foreach (var group in methods.GroupBy(method =>
@@ -179,7 +175,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     yield return member;
         }
 
-        // Reserved keywords a type name cannot use verbatim, since they would need a leading '@'.
         private static readonly HashSet<string> _csharpKeywords = new()
         {
             "abstract", "as", "base", "bool", "break", "byte", "case", "catch", "char", "checked", "class",
@@ -206,7 +201,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var c = className[i];
                 if (c == '_' || char.IsLetterOrDigit(c)) continue;
 
-                // Unicode combining and formatting marks are permitted in C# identifiers.
                 var category = CharUnicodeInfo.GetUnicodeCategory(c);
                 if (category is UnicodeCategory.NonSpacingMark or UnicodeCategory.SpacingCombiningMark
                     or UnicodeCategory.ConnectorPunctuation or UnicodeCategory.Format) continue;
@@ -217,7 +211,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // Generic-aware, so emitted signatures compile instead of leaking reflection's "Name`1[[…]]" strings.
         private static string TypeName(Type type)
         {
             if (type == typeof(void)) return "void";

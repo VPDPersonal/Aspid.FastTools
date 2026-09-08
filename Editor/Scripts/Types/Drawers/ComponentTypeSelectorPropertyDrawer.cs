@@ -63,8 +63,6 @@ namespace Aspid.FastTools.Types.Editors
             return field;
         }
 
-        // Only concrete subtypes of the class declaring the marker can back a script asset, and "no script" is not a
-        // state a component can be in, so the <None> row is left out.
         private TypeSelectorFilter CreateFilter() => new()
         {
             Types = new[] { fieldInfo.DeclaringType },
@@ -82,8 +80,6 @@ namespace Aspid.FastTools.Types.Editors
                 .ForEach(propertyField => propertyField.style.display = DisplayStyle.None);
         }
 
-        // Returns whether a swap was scheduled. A null or unchanged type is a no-op; a type without a script of its own
-        // is refused with a warning.
         private static bool ReplaceComponentScript(SerializedProperty property, Type oldType, Type newType)
         {
             if (newType is null || newType == oldType) return false;

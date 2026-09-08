@@ -7,37 +7,23 @@ using UnityEngine.UIElements;
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// Provides utility methods for drawing <c>[SerializeReference]</c> properties with the package's type-dropdown
-    /// UI from a custom editor's own code, with no <c>[TypeSelector]</c> attribute.
+    /// Provides utility methods for drawing managed-reference type pickers in custom inspectors.
     /// </summary>
     /// <remarks>
-    /// Call <see cref="CreateField"/> and <see cref="CreateList"/> from <c>CreateInspectorGUI</c>, and
-    /// <see cref="DrawFieldLayout"/> from an IMGUI <c>OnInspectorGUI</c>; IMGUI lists go through
-    /// <see cref="SerializeReferenceIMGUIList.Draw"/>.
+    /// Use <see cref="CreateField"/> and <see cref="CreateList"/> in <see cref="Editor.CreateInspectorGUI"/>,
+    /// and <see cref="DrawFieldLayout"/> in <see cref="Editor.OnInspectorGUI"/>.
     /// </remarks>
-    /// <example>
-    /// <code>
-    /// public override VisualElement CreateInspectorGUI()
-    /// {
-    ///     var root = new VisualElement();
-    ///     root.Add(SerializeReferenceEditorGUI.CreateField(serializedObject.FindProperty("_weapon")));
-    ///     root.Add(SerializeReferenceEditorGUI.CreateList(serializedObject.FindProperty("_modifiers")));
-    ///     return root;
-    /// }
-    /// </code>
-    /// </example>
     public static class SerializeReferenceEditorGUI
     {
         /// <summary>
-        /// Builds the dropdown field for one <c>[SerializeReference]</c> property: a foldout whose header carries the
-        /// type dropdown and whose content hosts the instance's fields, with the package's usual notices.
+        /// Creates a UI Toolkit type picker with nested fields and managed-reference notices.
         /// </summary>
         /// <param name="property">A managed-reference property of the editor's <see cref="SerializedObject"/>.</param>
-        /// <param name="label">Field label; the property's display name when omitted.</param>
-        /// <param name="baseTypes">Base types narrowing the picker below the field's declared type.</param>
+        /// <param name="label"><paramref name="property"/> label; <see langword="null"/> uses its display name.</param>
+        /// <param name="baseTypes">Additional picker constraints; <see langword="null"/> or an empty array adds no constraints.</param>
         /// <returns>The field to add to the inspector's visual tree.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException">Thrown when the property is not a managed reference.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="property"/> is not a managed reference.</exception>
         public static VisualElement CreateField(SerializedProperty property, string label = null, params Type[] baseTypes)
         {
             if (property is null)
@@ -49,15 +35,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
-        /// Builds the list for a <c>[SerializeReference]</c> array: every element renders as the dropdown field and
-        /// the "+" opens the type picker, appending a fresh instance instead of a rid-aliased duplicate.
+        /// Creates a UI Toolkit managed-reference list whose add button selects a type and appends an independent instance.
         /// </summary>
         /// <param name="property">An array/list property whose elements are managed references.</param>
-        /// <param name="label">Header label; the property's display name when omitted.</param>
-        /// <param name="baseTypes">Base types narrowing the picker below the declared element type.</param>
+        /// <param name="label"><paramref name="property"/> header label; <see langword="null"/> uses its display name.</param>
+        /// <param name="baseTypes">Additional element-type constraints; <see langword="null"/> or an empty array adds no constraints.</param>
         /// <returns>The list to add to the inspector's visual tree.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException">Thrown when the property is not a managed-reference array.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="property"/> is not a managed-reference array.</exception>
         public static VisualElement CreateList(SerializedProperty property, string label = null, params Type[] baseTypes)
         {
             if (property is null) throw new ArgumentNullException(nameof(property));
@@ -72,14 +57,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         /// <summary>
-        /// Reserves a layout rect and draws into it the same dropdown field as <see cref="CreateField"/>.
+        /// Draws a managed-reference type picker and its nested fields in an IMGUI layout.
         /// </summary>
         /// <remarks>Lists use <see cref="SerializeReferenceIMGUIList.Draw"/>.</remarks>
         /// <param name="property">A managed-reference property of the editor's <see cref="SerializedObject"/>.</param>
-        /// <param name="label">Field label; the property's display name when omitted.</param>
-        /// <param name="baseTypes">Base types narrowing the picker below the field's declared type.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentException">Thrown when the property is not a managed reference.</exception>
+        /// <param name="label"><paramref name="property"/> label; <see langword="null"/> uses its display name.</param>
+        /// <param name="baseTypes">Additional picker constraints; <see langword="null"/> or an empty array adds no constraints.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="property"/> is not a managed reference.</exception>
         public static void DrawFieldLayout(SerializedProperty property, GUIContent label = null, params Type[] baseTypes)
         {
             if (property is null) throw new ArgumentNullException(nameof(property));

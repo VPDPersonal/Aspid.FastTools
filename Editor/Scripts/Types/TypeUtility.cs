@@ -6,13 +6,8 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Editor-side utilities for working with Type names and the loaded type domain,
-    // shared by the type-selector infrastructure.
     internal static class TypeUtility
     {
-        // Cached once per domain: the picker sweeps every domain type on each open (and the open-generic flow does
-        // it again per parameter page), which stalls large projects. Static state is cleared on every domain reload,
-        // and an assembly loaded later without a reload invalidates the cache through the AssemblyLoad hook.
         private static IReadOnlyList<Type> _domainTypes;
 
         static TypeUtility()
@@ -36,8 +31,6 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        // Removes the CLR generic-arity suffix (Modifier`1 → Modifier) from a raw type name.
-        // Names without a backtick are returned unchanged.
         internal static string StripArity(string name)
         {
             var tick = name.IndexOf('`');
@@ -57,8 +50,6 @@ namespace Aspid.FastTools.Types.Editors
             return $"{baseName}<{arguments}>";
         }
 
-        // Enumerates every type across all currently loaded assemblies, dropping the entries that fail to load
-        // in a partially-loadable assembly (ReflectionTypeLoadException).
         internal static IEnumerable<Type> EnumerateDomainTypes()
         {
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())

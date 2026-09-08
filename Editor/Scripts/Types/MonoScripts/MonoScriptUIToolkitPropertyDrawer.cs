@@ -9,9 +9,6 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // UI Toolkit rendering of a SerializableMonoScript / SerializableMonoScript<T> wrapper: an unbound
-    // InspectorTypeField kept in step with the wrapper property, whose picks write both the script reference and the
-    // type name; a MonoScript can be dropped onto the field.
     internal static class MonoScriptUIToolkitPropertyDrawer
     {
         internal static VisualElement Draw(
@@ -21,8 +18,6 @@ namespace Aspid.FastTools.Types.Editors
             params Type[] types)
             => Draw(label, wrapperProperty, allow, types, out _);
 
-        // The out overload hands the created field to callers that keep updating its Types after creation (live
-        // member-referenced constraints — see TypeSelectorPropertyDrawer).
         internal static VisualElement Draw(
             string label,
             SerializedProperty wrapperProperty,
@@ -43,7 +38,6 @@ namespace Aspid.FastTools.Types.Editors
             field = typeField;
             Refresh(persistent);
 
-            // Undo/redo, prefab revert and scripted edits rewrite the wrapper outside this field.
             typeField.TrackPropertyValue(persistent, Refresh);
             typeField.RegisterValueChangedCallback(evt => SerializableMonoScriptUtility.Assign(persistent, evt.newValue));
             RegisterDragAndDrop(typeField, persistent);

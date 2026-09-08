@@ -48,7 +48,6 @@ namespace Aspid.FastTools.Types.Editors
             var isArrayElement = property.propertyPath.EndsWith("]");
             var openButtonSize = isArrayElement ? rowRect.height - 2 : rowRect.height;
 
-            // PrefixLabel honors the indent level and hands back the value column, exactly like a built-in field.
             var fieldRect = string.IsNullOrWhiteSpace(label.text)
                 ? rowRect
                 : EditorGUI.PrefixLabel(rowRect, label);

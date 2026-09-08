@@ -6,8 +6,6 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal sealed class NavigationController
     {
-        // Section keys double as the section titles and as the lookup the view keys its section icon off, so they live
-        // here as the single source of truth.
         internal const string FavoritesSection = "Favorites";
         internal const string RecentSection = "Recent";
 
@@ -18,16 +16,13 @@ namespace Aspid.FastTools.Types.Editors
         private readonly List<TreeNode> _breadcrumbs = new();
         private readonly List<TreeNode> _searchResults = new();
 
-        // Cached composition of the root page (None + Favorites/Recents sections + root children).
         private readonly List<TreeNode> _rootItems = new();
 
         // Sections (by title) the user has collapsed; their item rows are hidden from _visibleRootItems until expanded.
         private readonly HashSet<string> _collapsedSections = new();
 
-        // _rootItems with collapsed sections' item rows filtered out — the list actually shown on the root page.
         private readonly List<TreeNode> _visibleRootItems = new();
 
-        // All pickable type leaves in the current candidate set, keyed by assembly-qualified name.
         private readonly Dictionary<string, TreeNode> _typesByAqn = new();
 
         internal bool IsSearching { get; private set; }
@@ -40,11 +35,8 @@ namespace Aspid.FastTools.Types.Editors
         internal bool IsAtRoot =>
             !IsSearching && _breadcrumbs.Count is 0;
 
-        // The ancestor chain the breadcrumb bar renders. Index 0 is always the hidden root, so real ancestors start
-        // at index 1.
         internal IReadOnlyList<TreeNode> Breadcrumbs => _breadcrumbs;
 
-        // The node whose children are currently listed (the deepest opened level).
         internal TreeNode CurrentNode => _currentNode;
 
         internal List<TreeNode> CurrentItems
@@ -57,8 +49,6 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        // composeSections augments the root page with the Favorites and Recent sections. Only the picker's base page
-        // enables it; a generic-argument page does not.
         internal NavigationController(TreeNode root, bool composeSections = false)
         {
             _rootNode = root;
@@ -132,10 +122,8 @@ namespace Aspid.FastTools.Types.Editors
             var path = new List<TreeNode>();
             if (!FindPathToAssemblyQualifiedName(_rootNode, aqn, path) || path.Count < 2) return;
 
-            // FindPathToAssemblyQualifiedName builds path leaf-to-root; reverse for root-to-leaf traversal
             path.Reverse();
 
-            // Navigate into each node from root's child down to the target's parent
             for (var i = 1; i < path.Count - 1; i++)
             {
                 _breadcrumbs.Add(_currentNode);
@@ -143,9 +131,6 @@ namespace Aspid.FastTools.Types.Editors
             }
         }
 
-        // Re-composes the root page after the favorites set changes (e.g. a star was toggled), so the
-        // Favorites section reflects the new state on the next refresh. No-op when this controller does
-        // not compose sections.
         internal void RefreshFavoritesSection()
         {
             if (_composeSections) RebuildRootItems();
@@ -154,8 +139,6 @@ namespace Aspid.FastTools.Types.Editors
         internal bool IsSectionCollapsed(string sectionKey) =>
             sectionKey is not null && _collapsedSections.Contains(sectionKey);
 
-        // Toggles the collapsed state of the section identified by sectionKey and re-filters the
-        // visible root composition. No-op when this controller does not compose sections.
         internal void ToggleSection(string sectionKey)
         {
             if (!_composeSections || string.IsNullOrEmpty(sectionKey)) return;
@@ -170,15 +153,11 @@ namespace Aspid.FastTools.Types.Editors
         {
             _rootItems.Clear();
 
-            // Pin the <None> option (always the first root child) to the very top.
             var noneOption = _rootNode.Children.FirstOrDefault(child => child.IsNoneOption);
 
             if (noneOption is not null)
                 _rootItems.Add(noneOption);
 
-            // Each section is an individual opt-out that leaves its stored preference data intact, so re-enabling
-            // restores the same list. Favorites has an explicit per-user toggle; Recent needs none — a recents
-            // capacity of 0 makes LoadRecents return nothing and an empty section is never composed.
             if (TypeSelectorSettings.ShowFavorites)
                 AppendSection(FavoritesSection, TypeSelectorPreferences.LoadFavorites());
 
@@ -193,7 +172,6 @@ namespace Aspid.FastTools.Types.Editors
             RebuildVisibleRootItems();
         }
 
-        // Section titles always stay visible so the user can expand a collapsed section again.
         private void RebuildVisibleRootItems()
         {
             _visibleRootItems.Clear();
@@ -213,7 +191,6 @@ namespace Aspid.FastTools.Types.Editors
 
             foreach (var aqn in assemblyQualifiedNames)
             {
-                // Only surface types that are part of the current candidate set.
                 if (!_typesByAqn.TryGetValue(aqn, out var source)) continue;
 
                 rows.Add(new TreeNode(source.DisplayName, source.AssemblyQualifiedName, source.Caption)
@@ -227,7 +204,6 @@ namespace Aspid.FastTools.Types.Editors
 
             if (rows.Count is 0) return;
 
-            // The title carries its row count so the header can show how much a collapsed section holds.
             _rootItems.Add(new TreeNode(title) { Kind = TreeNodeKind.SectionTitle, SectionKey = title, TypeCount = rows.Count });
             _rootItems.AddRange(rows);
         }

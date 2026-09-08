@@ -83,6 +83,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void ExcludedFolders_MutatingAssignedArray_DoesNotChangeSettingsUntilReassigned()
+        {
+            SerializeReferenceSettings.ExcludedFolders = Array.Empty<string>();
+            var folders = new[] { "Assets/Plugins/" };
+            SerializeReferenceSettings.ExcludedFolders = folders;
+
+            folders[0] = "Assets/Generated/";
+
+            Assert.IsTrue(SerializeReferenceSettings.IsExcluded("Assets/Plugins/Example.asset"));
+            Assert.IsFalse(SerializeReferenceSettings.IsExcluded("Assets/Generated/Example.asset"));
+
+            var fired = ExcludedFoldersChangedCount(() =>
+                SerializeReferenceSettings.ExcludedFolders = folders);
+
+            Assert.AreEqual(1, fired);
+            Assert.IsFalse(SerializeReferenceSettings.IsExcluded("Assets/Plugins/Example.asset"));
+            Assert.IsTrue(SerializeReferenceSettings.IsExcluded("Assets/Generated/Example.asset"));
+        }
+
+        [Test]
         public void UnrelatedSetting_DoesNotRaiseExcludedFoldersChanged()
         {
             var fired = ExcludedFoldersChangedCount(() =>

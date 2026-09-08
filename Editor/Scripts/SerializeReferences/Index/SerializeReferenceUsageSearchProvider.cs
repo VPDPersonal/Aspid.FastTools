@@ -8,9 +8,6 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Quick Search provider listing every field using a managed-reference type: "sr:Weapon" in the search window, or
-    // Find Usages from a field's context menu, gives one result per use site. It matches on the stored type identity,
-    // so types that no longer resolve are found too.
     internal static class SerializeReferenceUsageSearchProvider
     {
         private const string ProviderId = "sr";

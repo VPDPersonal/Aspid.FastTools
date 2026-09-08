@@ -4,9 +4,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the vertical wave parameters of an AspidAnimatedTitle. Stride, speed and amplitude can be inherited from
-    // their USS custom properties or set explicitly in code; once set explicitly they are no longer overridden by USS
-    // resolution.
     internal readonly struct AspidAnimatedTitleWaveAnimationStyle
     {
         public static readonly CustomStyleProperty<float> StrideProperty =

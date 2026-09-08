@@ -4,9 +4,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the dot-grid metrics of an AspidAnimatedDotsBackground: base dot radius, base dot spacing and the
-    // reference window size used by the size-scaling curve. Each value can be inherited from its USS custom property
-    // or set explicitly in code; once set explicitly it is no longer overridden by USS resolution.
     internal readonly struct AspidAnimatedDotsBackgroundSizeStyle
     {
         public static readonly CustomStyleProperty<float> DotRadiusProperty = new("--aspid-fasttools-metrics-dot_radius");

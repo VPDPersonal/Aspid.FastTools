@@ -4,8 +4,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Bridges the --aspid-fasttools-colors-gradient USS custom property declared on an AspidInspectorHeader to the
-    // Color of its overlay.
     internal readonly struct AspidInspectorHeaderGradientStyle
     {
         public static readonly CustomStyleProperty<Color> StyleProperty = new("--aspid-fasttools-colors-gradient");

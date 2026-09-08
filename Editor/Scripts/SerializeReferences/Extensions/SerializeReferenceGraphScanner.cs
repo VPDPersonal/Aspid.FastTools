@@ -8,12 +8,8 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Builds a document-per-component managed-reference graph from the raw YAML, independent of the live
-    // serialization API, so it sees the nested, orphaned and missing references the Inspector cannot navigate to.
     internal static class SerializeReferenceGraphScanner
     {
-        // The document headers, RefIds lookup and inline-type grammar live in SerializeReferenceYaml, so this
-        // scanner and the repair flow cannot disagree about Unity's RefIds shape.
         private static readonly Regex _referencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
         private static readonly Regex _entryRid = new(@"^(?<indent>\s*)-\s+rid:\s*(?<id>-?\d+)\s*$", RegexOptions.Compiled);
         private static readonly Regex _typeLine = new(@"^\s*type:\s*\{(?<body>.*)\}\s*$", RegexOptions.Compiled);
@@ -23,12 +19,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // matching; a match is further validated against the known RefIds set before becoming an edge.
         private static readonly Regex _ridPointer = new(@"(?<!\w)rid:\s*(?<id>-?\d+)", RegexOptions.Compiled);
 
-        // A mapping key on a body line, used to label a root.
         private static readonly Regex _mappingKey = new(@"^\s*(?:-\s+)?(?<key>[A-Za-z_][\w\-]*)\s*:", RegexOptions.Compiled);
 
-        // The graph of every document that has a RefIds block; a read or parse failure yields an empty list.
-        // resolveTypeNames loads the asset and its dependencies to name each document, so a data-only caller passes
-        // false to keep a project-wide sweep a pure text scan.
+        // Resolving document labels loads assets; project sweeps pass false to keep the scan text-only.
         public static List<ReferenceGraphDocument> Build(string assetPath, bool resolveTypeNames = true)
         {
             var result = new List<ReferenceGraphDocument>();
@@ -64,7 +57,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Null when the document has no RefIds block, or when that block backs neither a node nor a field pointer.
+        // Documents without reference entries or field pointers contribute no graph.
         private static ReferenceGraphDocument BuildDocument(string[] lines, long fileId, int start, int end)
         {
             var referencesStart = FindKey(lines, _referencesKey, start, end);
@@ -105,7 +98,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var typeMatch = _typeLine.Match(lines[j]);
                     if (!typeMatch.Success) continue;
 
-                    // On a parse failure type stays default/empty (and the node renders as just "rid N").
                     if (!SerializeReferenceYaml.TryParseInlineType(typeMatch.Groups["body"].Value, out type))
                         type = default;
                     break;
@@ -133,15 +125,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         continue;
                     }
 
-                    if (!knownRids.Contains(rid)) continue; // a dangling pointer, not a graphed reference
+                    if (!knownRids.Contains(rid)) continue;
 
                     document.Roots.Add(new ReferenceGraphRoot(rid, BuildRootPath(lines, i, start)));
                 }
             }
         }
 
-        // Every "rid:" pointer inside an entry's data block is a parent -> child edge. The entry's own header line
-        // is skipped so an entry is never recorded as its own child.
         private static void CollectEdges(string[] lines, int refIdsStart, int end, HashSet<long> knownRids, ReferenceGraphDocument document)
         {
             for (var i = refIdsStart + 1; i < end; i++)
@@ -172,8 +162,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Shared = referenced by 2+ parents in total (root pointers + nested edges each count once).
-        // Orphans = nodes reachable from no root.
         private static void ComputeSharedAndOrphans(ReferenceGraphDocument document, HashSet<long> knownRids)
         {
             var parentCount = new Dictionary<long, int>();
@@ -222,27 +210,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             children.Add(edge);
         }
 
-        // A root pointer's full field path. The indent-0 document wrapper key is excluded, so a top-level field
-        // reads as "_weapon" rather than carrying the wrapper name.
+        // Omit the document wrapper so root labels remain serialized field paths.
         private static string BuildRootPath(string[] lines, int i, int start)
         {
             var path = BuildPath(lines, i, floor: start, stopIndent: 0);
             return string.IsNullOrEmpty(path) ? "reference" : path;
         }
 
-        // A nested edge's field path, stopped at the data block's own indent so it stays parent-relative.
+        // Stop at the data-block boundary to keep nested edge labels relative to their parent.
         private static string BuildEdgePath(string[] lines, int pointerLine, int dataStart) =>
             BuildPath(lines, pointerLine, floor: dataStart, stopIndent: SerializeReferenceYaml.IndentOf(lines[dataStart]));
 
-        // Walks up from the rid pointer collecting mapping keys until it climbs past stopIndent or floor. Unity
-        // writes block-sequence dashes at the SAME column as the list key, so the owner key sits at equal indent
-        // above the dash and the index counts the same-indent dash siblings.
+        // Unity sequence dashes align with their owning key; count sibling dashes at that indentation.
         private static string BuildPath(string[] lines, int pointerLine, int floor, int stopIndent)
         {
             var segments = new List<string>();
             var line = pointerLine;
 
-            // The counter only guards a malformed file from looping the walk forever.
             for (var safety = 0; line > floor && safety < 256; safety++)
             {
                 var indent = SerializeReferenceYaml.IndentOf(lines[line]);
@@ -250,7 +234,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (lines[line].TrimStart().StartsWith("- "))
                 {
-                    // A field key on the dash line itself is the deepest segment.
                     var elementKey = _mappingKey.Match(lines[line]);
                     if (elementKey.Success && !IsStructuralKey(elementKey.Groups["key"].Value))
                         segments.Add(elementKey.Groups["key"].Value);
@@ -262,8 +245,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         if (lines[j].Trim().Length == 0) continue;
 
                         var jIndent = SerializeReferenceYaml.IndentOf(lines[j]);
-                        if (jIndent > indent) continue;                          // nested detail of an earlier sibling
-                        if (jIndent < indent) break;                             // dedented out of the list
+                        if (jIndent > indent) continue;
+                        if (jIndent < indent) break;
                         if (lines[j].TrimStart().StartsWith("- ")) { index++; continue; }
 
                         ownerLine = j;
@@ -287,7 +270,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     next = ParentLine(lines, line, floor, indent);
                 }
 
-                if (next < 0 || SerializeReferenceYaml.IndentOf(lines[next]) <= stopIndent) break; // climbed out of the enclosing scope
+                if (next < 0 || SerializeReferenceYaml.IndentOf(lines[next]) <= stopIndent) break;
                 line = next;
             }
 
@@ -297,7 +280,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return string.Join(".", segments);
         }
 
-        // The nearest non-empty line above with strictly shallower indent, or -1.
         private static int ParentLine(string[] lines, int from, int start, int indent)
         {
             for (var j = from - 1; j >= start; j--)
@@ -309,7 +291,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return -1;
         }
 
-        // YAML scaffolding keys that never make a meaningful root label.
         private static bool IsStructuralKey(string key) =>
             key is "rid" or "data" or "type" or "version" or "references" or "RefIds";
 
@@ -330,7 +311,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return headers;
         }
 
-        // One LoadAllAssetsAtPath pass; objects Unity cannot load fall back to the YAML class id.
         private static Dictionary<long, string> ResolveTypeNames(string assetPath)
         {
             var map = new Dictionary<long, string>();

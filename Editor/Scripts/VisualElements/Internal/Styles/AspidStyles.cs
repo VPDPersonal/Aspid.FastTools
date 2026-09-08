@@ -1,7 +1,6 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Single source of truth for the shared Aspid editor USS class names and the default stylesheet path.
     internal static class AspidStyles
     {
         public const string DefaultStyleSheet = "UI/Aspid-FastTools-Default-Dark";

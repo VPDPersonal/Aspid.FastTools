@@ -7,10 +7,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // IMGUI-side group navigation for shared references: clicking the "Shared reference #N" message picks the
-    // group's next member in document order, expands the parents hiding it, scrolls to it once painted, and pulses
-    // every member in the group color. The UIToolkit field navigates its element tree instead; only the pulse timings
-    // and the document-order cycling are kept in lock-step between the two.
     internal static class SerializeReferenceSharedNavigation
     {
         // Full tint for the hold fraction, then a linear fade. Mirrors the UIToolkit field so both pulses match.
@@ -18,13 +14,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const double FlashSeconds = 1.6;
         private const float FlashHoldFraction = 0.35f;
 
-        // Scrolls the revealed member a quarter down, so a line or two of context stays above it.
         private const float RevealViewportFraction = 0.25f;
 
         // A revealed member only gets a rect once painted; the reveal is dropped if no repaint reports one in time.
         private const double RevealTimeoutSeconds = 1.0;
 
-        // The group member the next repaint should scroll to.
         private static int _revealTarget;
         private static long _revealRid;
         private static string _revealPath;
@@ -34,7 +28,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // walk the whole group.
         private static readonly Dictionary<(int target, long rid), string> NavigationCursor = new();
 
-        // The active pulse: every drawn member of the group except the clicked one tints until the deadline.
         private static int _flashTarget;
         private static long _flashRid;
         private static string _flashExceptPath;
@@ -56,7 +49,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var selfPath = property.propertyPath;
 
-            // The pulse covers every drawn member, so the whole group is revealed, not just the scroll target.
             foreach (var path in group)
                 if (path != selfPath)
                     ExpandAncestors(property.serializedObject, path);
@@ -83,8 +75,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _revealUntil = EditorApplication.timeSinceStartup + RevealTimeoutSeconds;
         }
 
-        // Reports where a shared field was painted; call with its FULL rect, header and children. The inspector
-        // scrolls to it when it is the pending reveal's member.
         public static void RevealIfPending(SerializedProperty property, Rect fieldRect)
         {
             if (Event.current.type != EventType.Repaint) return;
@@ -102,7 +92,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             EditorApplication.delayCall += () => ScrollTo(screenRect);
         }
 
-        // True while the pulse covers this field, with the overlay's current fade alpha.
         public static bool TryGetFlashAlpha(SerializedProperty property, out float alpha)
         {
             alpha = 0f;
@@ -177,7 +166,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var viewport = scrollView.contentViewport.worldBound;
             var targetY = screenRect.y - window.position.y;
 
-            // Already inside the viewport, so the pulse alone is enough.
             if (targetY >= viewport.yMin + 4f && targetY + screenRect.height <= viewport.yMax - 4f) return;
 
             var offset = scrollView.scrollOffset;

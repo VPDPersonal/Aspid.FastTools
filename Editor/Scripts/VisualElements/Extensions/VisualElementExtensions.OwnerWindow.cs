@@ -11,16 +11,13 @@ namespace Aspid.FastTools.UIElements.Editors
     public static partial class VisualElementExtensions
     {
         /// <summary>
-        /// Returns the <see cref="EditorWindow"/> whose panel hosts <paramref name="element"/>, falling back to the
-        /// focused or hovered window when no panel matches.
+        /// Returns the window hosting <paramref name="element"/> or the current focus or hover fallback.
         /// </summary>
         /// <remarks>
-        /// Use it instead of <see cref="EditorWindow.focusedWindow"/> when anchoring a dropdown to an element: a
-        /// click into an unfocused floating window dispatches its pointer event before focus moves, so a rect built
-        /// from the focused window's position lands in the wrong coordinate space.
+        /// A pointer event can arrive in a floating window before focus moves, so the panel is checked first.
         /// </remarks>
-        /// <param name="element">The element whose hosting window is wanted.</param>
-        /// <returns>The hosting window, or <see langword="null"/> when none can be resolved.</returns>
+        /// <param name="element">The element to locate, or <see langword="null"/> to use the fallback windows.</param>
+        /// <returns>The hosting window, then the focused or hovered window; otherwise, <see langword="null"/>.</returns>
         public static EditorWindow GetOwnerWindow(this VisualElement element)
         {
             var panel = element?.panel;

@@ -57,8 +57,7 @@ namespace Aspid.FastTools.Enums.Editors
                     .AddChild(new PropertyField(serializedObject.FindProperty(defaultValuePath)))
                 );
 
-            // The TypeSelector drawer writes straight into the SerializedProperty, which a
-            // PropertyField change callback never sees; track the property itself instead.
+            // Track the serialized property because direct writes do not notify PropertyField change callbacks.
             if (!isTyped)
                 root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValues());
 

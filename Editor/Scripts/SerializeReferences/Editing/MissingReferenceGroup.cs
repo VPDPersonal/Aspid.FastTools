@@ -6,7 +6,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // One broken managed-reference entry plus the asset it lives in.
     internal readonly struct MissingReferenceLocation
     {
         public readonly string AssetPath;
@@ -19,8 +18,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
     }
 
-    // Every broken reference sharing one stored type across the project — the unit the audit lists and bulk-fixes.
-    // The picker constraint intersects the entries' declared field types, falling back to object when they disagree.
     internal sealed class MissingReferenceGroup
     {
         public readonly ManagedTypeName StoredType;
@@ -38,8 +35,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public string DisplayName => StoredType.DisplayName;
 
-        // Groups every unresolved reference by stored type, biggest group first. Cheap once the shared usage index
-        // is warm, since it is an in-memory filter rather than a sweep.
         public static List<MissingReferenceGroup> CollectFromIndex()
         {
             var byType = new Dictionary<string, MissingReferenceGroup>(StringComparer.Ordinal);
@@ -87,7 +82,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // The type every entry's field can hold, or object when that cannot be narrowed.
         public Type ResolveConstraint() => ResolveConstraint(out _);
 
         // mixedFieldTypes separates a fallback caused by disagreeing field types from an unrecoverable one; the
@@ -119,10 +113,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
     }
 
-    // A group's picker constraint and whether it reads as a one-click [MovedFrom] migration, resolved once so the
-    // audit's partition, card body and picker label can never disagree. A migration needs its rename target to fit
-    // the constraint too: "Migrate all" bypasses the picker's assignability guarantee, and Unity would null an
-    // incompatible target at load.
     internal readonly struct MissingReferenceMigration
     {
         public readonly Type Constraint;

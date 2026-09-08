@@ -6,10 +6,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Detects managed references that JUST became missing by diffing the current resolve state against a per-session
-    // baseline kept in SessionState — the usage index is wiped on every domain reload and cannot remember one. The
-    // baseline is established silently on the first run, so pre-existing breakages never alarm. Reports only; it
-    // never repairs anything itself.
     internal static class SerializeReferenceBreakageDetector
     {
         private const string EstablishedKey = "Aspid.FastTools.SerializeReferences.Breakage.Established";
@@ -24,7 +20,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (Application.isBatchMode) return;
             if (SessionState.GetBool(EstablishedKey, false)) return;
 
-            // First run of the session: record what resolves now; pre-existing breakages are not "new".
             RunDetection(report: false);
         };
 
@@ -34,7 +29,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (Application.isBatchMode) return;
 
-            // Opt-out: never baseline or scan while disabled; re-enabling silently re-baselines on the next change.
             if (!SerializeReferenceSettings.BreakageDetectionEnabled) return;
 
             // Type resolution flaps while scripts compile, so defer (never drop) until the editor settles.
@@ -70,7 +64,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 result = BuildReport(unresolved, baseline);
             }
 
-            // Advance the baseline so a key that just broke drops out and is never re-alarmed on the next scan.
             SaveBaseline(resolvable);
             SessionState.SetBool(EstablishedKey, true);
 
@@ -101,21 +94,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     continue;
                 }
 
-                // The [MovedFrom] resolver needs no index, so even the cold path tells a rename from a real breakage.
                 SerializeReferenceMovedFromResolver.TryResolve(storedType, out var migrationTarget);
                 entries.Add(new BreakageEntry(null, 0, 0, storedType, isRepairable: false, topSuggestion: null,
                     migrationTarget));
                 brokenTypes.Add(key);
             }
 
-            // Advance the baseline so a just-broken type is never re-alarmed, mirroring the warm path.
             SaveBaseline(stillResolvable);
 
             if (entries.Count == 0) return;
             BreakageDetected?.Invoke(new BreakageReport(entries, brokenTypes.Count));
         }
 
-        // Parses an "Assembly|Namespace|Class" key (see SerializeReferenceHelpers.StoredTypeKey) back into a ManagedTypeName.
         private static bool TryParseStoredTypeKey(string key, out ManagedTypeName storedType)
         {
             storedType = default;
@@ -128,7 +118,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        // Reports only the unresolved usages whose stored type was still resolvable in the baseline.
         private static BreakageReport BuildReport(
             List<SerializeReferenceTypeUsageIndex.Usage> unresolved,
             HashSet<string> baseline)
@@ -143,7 +132,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var usage in unresolved)
             {
                 var key = SerializeReferenceHelpers.StoredTypeKey(usage.StoredType);
-                if (!baseline.Contains(key)) continue; // was already broken (or never resolved) — not new
+                if (!baseline.Contains(key)) continue;
 
                 var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
                 if (!byPath.TryGetValue(path, out var usages))
@@ -181,7 +170,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return entries.Count == 0 ? default : new BreakageReport(entries, types.Count);
         }
 
-        // Pre-ranks the best fix, priming the shared suggestion cache so the Repair window shows Smart Fix without delay.
         private static BreakageEntry BuildEntry(
             SerializeReferenceTypeUsageIndex.Usage usage,
             string path,

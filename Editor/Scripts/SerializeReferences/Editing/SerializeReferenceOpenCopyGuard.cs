@@ -5,9 +5,6 @@ using UnityEngine.SceneManagement;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The writability test every YAML rewrite applies first: an asset loaded as a scene or open in Prefab Mode keeps
-    // an in-memory copy that wins on its next save, so a file edit under it is silently clobbered. Single-asset
-    // callers use BlockedByOpenCopy, which explains the refusal through a dialog; a batch hoists the stage path.
     internal static class SerializeReferenceOpenCopyGuard
     {
         public static string CurrentPrefabStagePath() => PrefabStageUtility.GetCurrentPrefabStage()?.assetPath;

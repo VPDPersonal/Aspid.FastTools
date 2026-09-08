@@ -18,8 +18,6 @@ namespace Aspid.FastTools.Types.Editors
             params Type[] types)
             => Draw(label, property, allow, types, out _);
 
-        // The out overload hands the created field to callers that keep updating its Types after
-        // creation (live member-referenced constraints — see TypeSelectorPropertyDrawer).
         internal static VisualElement Draw(
             string label,
             SerializedProperty property,

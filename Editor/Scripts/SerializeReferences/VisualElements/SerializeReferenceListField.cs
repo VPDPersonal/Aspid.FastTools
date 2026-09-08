@@ -7,10 +7,6 @@ using Aspid.FastTools.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // UIToolkit list for a [SerializeReference] array whose field carries no [TypeSelector]: every element renders
-    // as a SerializeReferenceField and the "+" opens the type picker. With the attribute, Unity routes each element
-    // through the drawer and the add behavior retrofits the picker onto Unity's own ListView; without it there is no
-    // element drawer to route through, so this field rebuilds that list shape itself.
     internal sealed class SerializeReferenceListField : VisualElement
     {
         private const string BlockClass = "aspid-fasttools-serialize-reference-list";

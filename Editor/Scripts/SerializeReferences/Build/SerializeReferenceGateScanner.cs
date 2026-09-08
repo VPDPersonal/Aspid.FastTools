@@ -7,9 +7,6 @@ using Aspid.FastTools.Types.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Window-free, headless-safe project scanner for managed-reference gate violations, shared by the build gate and
-    // the CI entry point. Missing types come from the pure-YAML scan. Required fields are checked per object for saved
-    // assets; scenes, which LoadAllAssetsAtPath cannot read, go through the pure-YAML scan instead.
     internal static class SerializeReferenceGateScanner
     {
         // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only
@@ -22,13 +19,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Dictionary<string, IReadOnlyList<RequiredFieldDescriptor>> _scriptRequiredFieldsCache =
             new(StringComparer.Ordinal);
 
-        // Scans every candidate asset under Assets/ for the enabled checks. onProgress (fraction, label) may be null.
         public static IReadOnlyList<GateViolation> Scan(GateOptions options, Action<float, string> onProgress = null)
         {
             var violations = new List<GateViolation>();
             var paths = AssetDatabase.GetAllAssetPaths().Where(SerializeReferenceHelpers.IsScanCandidate).ToArray();
 
-            // Cleared up front so a recompile between runs is never served stale.
             _scriptRequiredFieldsCache.Clear();
             _constraintMapCache.Clear();
 
@@ -56,7 +51,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return violations;
         }
 
-        // Required-field scan for a single asset, without a full project sweep — the Inspect Asset graph's Rescan.
         public static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath)
         {
             var violations = new List<GateViolation>();
@@ -151,8 +145,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         if (id >= 0 && !visited.Add(id)) enterChildren = false;
                     }
 
-                    // Required applies to a managed reference (empty == null) and a [TypeSelector] string field
-                    // (empty == null-or-empty); IsViolation dispatches on the property kind.
                     if (iterator.propertyType is not (SerializedPropertyType.ManagedReference or SerializedPropertyType.String)) continue;
                     if (!TypeSelectorRequiredGate.IsViolation(iterator)) continue;
 

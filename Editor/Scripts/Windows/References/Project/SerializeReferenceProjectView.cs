@@ -10,14 +10,6 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Project-wide repair tool for missing [SerializeReference] types: the scan sweeps every text asset under
-    // Assets/, groups the broken references by stored type, and offers one bulk fix per group, where a single type
-    // pick and confirmation rewrites every entry across every affected file. Unset required fields are audited
-    // alongside them as a read-only card that cross-links into the per-asset graph.
-    //
-    // Split across partial files: this one owns the chrome, the scan pass and the results states, .Cards builds the
-    // group cards and .Actions runs the bulk fix, clear and undo behind the inline picker. The copy lives in the
-    // pure summary type, the scan model in MissingReferenceGroup and the file edits in the batch editor.
     internal sealed partial class SerializeReferenceProjectView : VisualElement
     {
         private const string StyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";
@@ -52,7 +44,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string NavTargetClass = RootClass + "__nav-target";
         private const string NavTargetFocusedClass = NavTargetClass + "--focused";
 
-        // Scan button label: cold call-to-action before the first scan, quiet refresh once the index is warm.
         private const string ScanLabel = "Scan Project";
         private const string RescanLabel = "Rescan";
 
@@ -66,29 +57,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private readonly AspidGradientButton _scanButton;
         private readonly ScrollView _scroll;
 
-        // Keyboard navigation: one flat focus ring over every actionable element in visual order — Rescan first,
-        // then each card's Fix all / action row / entry rows — shared with the other window tabs.
         private readonly NavRing _ring;
 
-        // The one inline picker, docked under whichever Fix all button opened it (see the .Actions partial).
         private readonly AuditPickerHost _picker;
 
-        // The legend's block-specific USS class names for the shared item builder.
         private static readonly LegendClasses _legendClassSet = new(LegendItemClass, LegendDotClass, LegendDotInfoClass, LegendTextClass);
 
-        // Required-violations audit has no incrementally-maintained index like SerializeReferenceTypeUsageIndex, so it
-        // is only (re)scanned on an explicit Scan/Rescan click, not on every Initialize() (tab switch would otherwise
-        // pay for a full project sweep). Static so the result survives the view being rebuilt on a tab switch.
+        // Required-field scanning has no incremental index; cache results across tab switches until an explicit rescan.
         private static bool _requiredIsWarm;
         private static IReadOnlyList<GateViolation> _requiredViolationsCache = Array.Empty<GateViolation>();
 
         private static IReadOnlyList<GateViolation> RequiredViolationsForRender =>
             _requiredIsWarm ? _requiredViolationsCache : Array.Empty<GateViolation>();
 
-        // Jumps from a result row to that asset's graph. Wired by the host window.
         public Action<Object> OnInspectAsset;
 
-        // Reports this view's state to the host window, which washes the shared canvas to match.
         public Action<StatusStyle.Type> OnCanvasStatus;
 
         public SerializeReferenceProjectView()
@@ -109,7 +92,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "Sweep every asset under Assets/ for broken [SerializeReference] types and bulk-fix them by type.")
                 .AddClass(PanelDescriptionClass);
 
-            // Label flips between ScanLabel and RescanLabel as the index warms.
             _scanButton = new AspidGradientButton(ScanLabel, _ => ScanProject())
                 .AddClass(ScanProjectClass);
 
@@ -130,14 +112,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _resultsHint = new Label(string.Empty).AddClass(ResultsHintClass);
 
-            // Color key for the two card accents; only shown when both are actually on screen (see RenderGroups).
             _legend = new VisualElement()
                 .AddClass(LegendClass)
                 .AddClass(LegendHiddenClass)
                 .AddChild(BuildLegendItem("Broken — pick a replacement", info: false, _legendClassSet))
                 .AddChild(BuildLegendItem("Renamed — one-click migrate", info: true, _legendClassSet));
 
-            // Receipt stack: one help-box per bulk Fix all, kept across chained fixes and cleared only on a fresh scan.
             _summaries = new VisualElement().AddClass(SummaryListClass);
 
             _list = new VisualElement();
@@ -150,7 +130,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(_summaries)
                 .AddChild(_list);
 
-            // One scroll spans the whole view, so the panel scrolls away with the group list instead of staying pinned.
             var content = new VisualElement()
                 .AddClass(ContentClass)
                 .AddChild(panel)
@@ -164,8 +143,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             _picker = new AuditPickerHost(this, _list, _pickerClassSet);
 
-            // The shared keyboard ring: the root holds focus (grabbed on attach, re-grabbed when the picker closes)
-            // so keys reach it before anything is highlighted. Suspended while a type picker owns the keyboard.
             _ring = new NavRing(
                 host: this,
                 navTargetClass: NavTargetClass,
@@ -176,13 +153,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ResetNavTargets();
         }
 
-        // ---------------------------------------------------------------------------------------------------------
-        // Keyboard navigation
-        // ---------------------------------------------------------------------------------------------------------
-
-        // Every render pass rebuilds the ring from scratch (the old elements are gone with _list.Clear()). The Scan
-        // button outlives the render and re-registers here, so a highlight sitting on it comes back with it and
-        // Enter-on-Scan keeps its highlight.
         private void ResetNavTargets()
         {
             _ring.Clear(keepFocusedElement: true);
@@ -191,20 +161,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void RegisterNavTarget(VisualElement element, Action activate) => _ring.Register(element, activate);
 
-        // ---------------------------------------------------------------------------------------------------------
-        // Scan pass
-        // ---------------------------------------------------------------------------------------------------------
-
-        // Restores whatever a warm index can already show, or opens idle. A cold index waits for a deliberate Scan
-        // click, since its sweep parses every asset's YAML behind a blocking bar; a warm one re-derives its groups
-        // by a cheap in-memory filter, so results survive a tab switch.
         public void Initialize()
         {
             if (SerializeReferenceTypeUsageIndex.IsWarm || _requiredIsWarm) RenderWarmGroups();
             else ShowIdle();
         }
 
-        // Slow when the index is cold — the one deliberate moment the audit pays for a full sweep.
         public void ScanProject()
         {
             if (_list is null) return;
@@ -212,15 +174,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _picker.Close();
             ClearSummaries();
 
-            // Unlike the missing-type index, the required-field scan has nothing incremental behind it (see
-            // RequiredViolationsForRender).
             _requiredViolationsCache = CollectRequiredViolations();
             _requiredIsWarm = true;
 
             RenderWarmGroups();
         }
 
-        // Collects the unresolved set from the warm index and paints it; shared by Scan/Rescan and Initialize's warm restore.
         private void RenderWarmGroups()
         {
             if (_list is null) return;
@@ -229,17 +188,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RenderGroups(MissingReferenceGroup.CollectFromIndex(), RequiredViolationsForRender);
         }
 
-        // Full project sweep for unset [TypeSelector(Required = true)] fields, reusing the same headless scanner the
-        // build/CI gate uses. Skipped entirely when the gate is switched Off — a required audit nobody wants to fail
-        // or warn on shouldn't cost a full-project YAML sweep on every Scan click either.
         private static IReadOnlyList<GateViolation> CollectRequiredViolations() =>
             SerializeReferenceSettings.BuildSeverity == GateSeverity.Off
                 ? Array.Empty<GateViolation>()
                 : SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly);
 
-        // Paints a collected group set: count header + hint + one card per broken-type group plus one Required
-        // violations card, or the terminal hero when both are empty. The bulk actions special-case the came-back-clean
-        // case so their summary HelpBox survives (see ShowMissingReferencesClean).
         private void RenderGroups(List<MissingReferenceGroup> groups, IReadOnlyList<GateViolation> requiredViolations)
         {
             _list.Clear();
@@ -257,28 +210,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            // Pending migrations sink to the very bottom, below the Required violations card too: the whole amber
-            // band (broken groups, then required fields) stacks first and the calm blue one-click cards close the
-            // list. Each band keeps the scanner's order.
             var migrations = new List<(MissingReferenceGroup Group, MissingReferenceMigration Migration)>();
             foreach (var group in groups)
             {
-                // Resolve constraint + migration ONCE per group and reuse it for the card and picker label below, so
-                // the partition and the card can never disagree on whether a group is a migration.
                 var migration = new MissingReferenceMigration(group);
                 if (migration.IsMigration) migrations.Add((group, migration));
                 else _list.AddChild(BuildGroupCard(group, migration));
             }
 
-            // The header splits the migration entries out of the missing count — a [MovedFrom] rename with a
-            // one-click fix shouldn't inflate the alarm number.
             var migrationCount = migrations.Sum(entry => entry.Group.Entries.Count);
             ShowResults(
                 SerializeReferenceProjectSummary.BuildResultsHeaderText(missingCount - migrationCount, migrationCount, requiredCount),
                 StatusStyle.Type.Warning);
             _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(requiredCount > 0);
 
-            // The amber/blue key only earns its row when both accents are on screen at once.
             var hasAmber = groups.Count > migrations.Count || requiredCount > 0;
             _legend.EnableInClassList(LegendHiddenClass, migrations.Count == 0 || !hasAmber);
 
@@ -289,9 +234,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _list.AddChild(BuildGroupCard(group, migration));
         }
 
-        // Re-derives the groups after a bulk edit and repaints. A group set that came back empty stays in the results
-        // region rather than the "Project clean" hero, which would hide the fix's summary receipt — the hero is
-        // reserved for an explicit Rescan.
         private void RerenderAfterBulkEdit()
         {
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
@@ -301,14 +243,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             else RenderGroups(groups, RequiredViolationsForRender);
         }
 
-        // ---------------------------------------------------------------------------------------------------------
-        // View states
-        // ---------------------------------------------------------------------------------------------------------
-
-        // Shared "no missing references left" branch for the bulk actions: stays in the results region (not the
-        // clean-state hero) so the fix's summary receipt survives, while still surfacing whatever Required violations
-        // card RequiredViolationsForRender currently reports (empty right after a clear-to-null, which invalidates the
-        // cache instead of risking a stale under-report — see ClearGroupToNull).
         private void ShowMissingReferencesClean()
         {
             _list.Clear();
@@ -351,15 +285,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddChild(new Label(message).AddClass(EmptyMessageClass));
         }
 
-        // Cold-index idle state until the first scan. No results list yet — the project is unscanned, so "clean"
-        // cannot be claimed.
         private void ShowIdle() => ShowEmptyState(
             success: false,
             title: "Project not scanned",
             message: "Run Scan Project to map every broken [SerializeReference] type across your assets — then repair each missing type in bulk.");
 
-        // The status is explicit per call site: the missing-references sweep washes Warning, while the came-back-clean
-        // receipt washes Success rather than leaving a clean state on an amber backdrop.
         private void ShowResults(string headerText, StatusStyle.Type status)
         {
             _empty.AddClass(EmptyHiddenClass);
@@ -368,8 +298,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             OnCanvasStatus?.Invoke(status);
         }
 
-        // Appends one receipt to the running stack (newest at the bottom) rather than overwriting the previous; only
-        // ClearSummaries resets it on the next fresh scan. The Undo button reverts exactly this fix.
         private void ShowSummary(string title, string message, Action<VisualElement> onUndo)
         {
             var summary = new AspidHelpBox(AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))

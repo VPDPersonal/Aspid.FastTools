@@ -10,10 +10,10 @@ namespace Aspid.FastTools.UIElements.Editors
         /// <summary>
         /// Binds the element to <paramref name="obj"/>.
         /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
+        /// <typeparam name="T">A <see cref="VisualElement"/> element to configure.</typeparam>
         /// <param name="element">The element to bind.</param>
         /// <param name="obj">The serialized object to bind to.</param>
-        /// <returns>The element, for chaining.</returns>
+        /// <returns><paramref name="element"/> for chaining.</returns>
         public static T BindTo<T>(this T element, SerializedObject obj)
             where T : VisualElement
         {
@@ -24,9 +24,9 @@ namespace Aspid.FastTools.UIElements.Editors
         /// <summary>
         /// Unbinds the element from its serialized object.
         /// </summary>
-        /// <typeparam name="T">The element type.</typeparam>
+        /// <typeparam name="T">A <see cref="VisualElement"/> element to configure.</typeparam>
         /// <param name="element">The element to unbind.</param>
-        /// <returns>The element, for chaining.</returns>
+        /// <returns><paramref name="element"/> for chaining.</returns>
         public static T UnbindFrom<T>(this T element)
             where T : VisualElement
         {

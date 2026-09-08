@@ -5,9 +5,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the three blob colors of an AspidAnimatedDotsBackground. Each color can be inherited from its --aspid-
-    // fasttools-colors-dot_blob-color_{1..3} USS custom property or set explicitly in code; once set explicitly it is
-    // no longer overridden by USS resolution.
     internal readonly struct AspidAnimatedDotsBackgroundColorsStyle
     {
         public static readonly CustomStyleProperty<Color> Color1Property = new("--aspid-fasttools-colors-dot_blob-color_1");

@@ -7,21 +7,10 @@ using System.Text.RegularExpressions;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Rewrites a managed reference's stored type directly in an asset's YAML text — the only way to re-point a
-    // reference whose type can no longer be loaded, since Unity drops missing references to null through the
-    // serialization API and never exposes them for reassignment. Parser-free: the document and the target RefIds
-    // entry are located by line scanning, and only the inline mapping on the entry's type line is replaced.
-    //
-    // Split across partial files: the scans (.Scan.cs), the YAML-mutating repairs (.Rewrite.cs) and the read-only
-    // probes (.Read.cs). This file holds the document, RefIds and indentation primitives they share.
     internal static partial class SerializeReferenceYamlEditor
     {
-        // The null managed-reference id Unity stores for an unassigned [SerializeReference] field
-        // (UnityEngine.Serialization.ManagedReferenceUtility.RefIdNull).
         private const long NullRid = -2;
 
-        // The object document header ("--- !u!114 &11400000") and the RefIds-block lookup are single-sourced in
-        // SerializeReferenceYaml so this repair flow and the graph scanner read Unity's RefIds shape identically.
         private static Regex DocumentHeader => SerializeReferenceYaml.DocumentHeader;
 
         // Returns the [start, end) line range of the document whose anchor equals fileId. Falls back to the single
@@ -82,7 +71,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (i < lines.Count - 1) builder.Append(newline);
             }
 
-            // Re-add the trailing terminator only if the source had one (Unity assets always do).
             if (original.Length > 0 && original[^1] == '\n') builder.Append(newline);
 
             File.WriteAllText(assetPath, builder.ToString());
@@ -106,8 +94,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return crlf > loneLf ? "\r\n" : "\n";
         }
 
-        // Whether every line in [start, end) is indented with spaces only — the precondition the block-removing writes
-        // verify before touching the file, so an asset with unexpected (tab / mixed) indentation is left untouched.
         private static bool BlockIndentIsTrusted(string[] lines, int start, int end)
         {
             for (var i = Math.Max(start, 0); i < end && i < lines.Length; i++)
@@ -127,8 +113,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // an entry, so a stray tab in such a line must not abort an otherwise valid (space-indented) block removal.
             if (string.IsNullOrWhiteSpace(line)) return true;
 
-            // Only the leading run counts as indentation; a non-space whitespace character there makes the block
-            // untrusted. Whitespace after the first content character is not indentation.
             foreach (var character in line)
             {
                 if (character == ' ') continue;
@@ -147,7 +131,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var line = (i == 0 ? StripByteOrderMark(lines[i]) : lines[i]).TrimStart();
                 if (line.Length == 0) continue;
                 if (line.StartsWith("%TAG !u!", StringComparison.Ordinal)) return true;
-                if (line.StartsWith("---", StringComparison.Ordinal)) return false; // first document reached without the %TAG marker
+                if (line.StartsWith("---", StringComparison.Ordinal)) return false;
             }
 
             return false;

@@ -10,9 +10,6 @@ using Aspid.FastTools.SerializeReferences.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    // The managed-reference workbench. Asset References maps a saved asset's whole reference graph and repairs
-    // entries inline; Project References sweeps the project for missing references and bulk-fixes them grouped by
-    // broken type.
     internal sealed class TabWindow : EditorWindow
     {
         private const string RootClass = "aspid-fasttools-serialize-reference-window";
@@ -30,11 +27,8 @@ namespace Aspid.FastTools.Editors
 
         private const string WindowStyleSheetPath = "UI/SerializeReferences/Aspid-FastTools-SerializeReference-Window";
 
-        // The Aspid brand mark shown beside the window title; padded variant so it doesn't dominate the tab.
         private const string WindowIconPath = "Icons/aspid_icon_window_tab_green_1022x1011";
 
-        // Below this the tabs and cards degrade into slivers. Applied in CreateGUI, so a pane restored from a saved
-        // layout — which never passes through Reveal — gets it too.
         private static readonly Vector2 _minWindowSize = new(480f, 360f);
 
         [Tooltip("The asset the References tabs open when the window is rebuilt.")]
@@ -47,8 +41,6 @@ namespace Aspid.FastTools.Editors
         private Button _projectButton;
         private Button _settingsButton;
 
-        // The breakage-notification deep-link wants the project scanned even from a cold index, whereas a plain
-        // Project References tab click is warmth-gated inside the view.
         private bool _forceProjectScan;
 
         internal TabType CurrentTabType { get; private set; }
@@ -102,8 +94,6 @@ namespace Aspid.FastTools.Editors
                 .AddStyleSheetFromResources(WindowStyleSheetPath)
                 .AddClass(RootClass);
 
-            // One dotted canvas, owned by the window, fills it behind everything; its tint follows the active view's
-            // state via the SetCanvasStatus callback handed to each view.
             _background = new AspidAnimatedDotsBackground()
                 .AddClass(BackgroundClass)
                 .SetPickingMode(PickingMode.Ignore);
@@ -122,8 +112,6 @@ namespace Aspid.FastTools.Editors
             _container = new VisualElement().AddClass(ContainerClass);
             _container.style.flexGrow = 1;
 
-            // The footer is owned by the window, not any single tab, so it stays pinned to the bottom across every
-            // mode; _container (flex-grow:1) pushes it down.
             root.AddChild(_background)
                 .AddChild(toolbar)
                 .AddChild(_container)
@@ -139,13 +127,11 @@ namespace Aspid.FastTools.Editors
             var button = new Button(() => SwitchMode(tabType)) { text = label, tooltip = hint };
             button.AddClass(ToolbarButtonClass);
 
-            // Absolutely positioned, so the badge floats over the button without disturbing the centered label.
             button.AddChild(new Label(hint)
                 .AddClass(TabHintClass)
                 .SetPickingMode(PickingMode.Ignore));
 
-            // The active underline is a child bar, not a border-bottom — flipping a child's background-color via the
-            // parent's --active class repaints reliably (a border-color flip only showed up after a window resize).
+            // A child background-color repaints reliably; changing the tab border color can wait until resize.
             button.AddChild(new VisualElement()
                 .AddClass(TabUnderlineClass)
                 .SetPickingMode(PickingMode.Ignore));
@@ -153,8 +139,6 @@ namespace Aspid.FastTools.Editors
             return button;
         }
 
-        // The edge tabs (home / settings) are square and icon-only: the USS --square modifier overrides the flex
-        // sizing, the inner __tab-icon modifier supplies the glyph. Same underline bar as the mode tabs.
         private Button SquareTabButton(TabType tabType, string iconModifierClass)
         {
             var button = new Button(() => SwitchMode(tabType)) { tooltip = TabWindowShortcuts.HintFor(tabType) };
@@ -175,26 +159,21 @@ namespace Aspid.FastTools.Editors
         internal void SwitchMode(TabType tabType)
         {
             CurrentTabType = tabType;
-            if (_container is null) return; // Open() ran before CreateGUI; CreateGUI re-invokes SwitchMode(_mode).
+            if (_container is null) return; // CreateGUI applies the selected tab once the container exists.
 
             _container.Clear();
 
             if (tabType == TabType.Welcome)
             {
-                // Welcome carries no single status; dropping the status class restores the default signal gradient a
-                // prior view's wash flattened.
                 SetCanvasStatus(StatusStyle.Type.None);
                 _container.AddChild(new WelcomeView());
             }
             else if (tabType == TabType.AssetReference)
             {
-                // Track the in-view pick back onto _pendingTarget so a tab switch rebuilds the view on the asset the user
-                // actually has open, not the one Inspect first opened on.
                 _container.AddChild(new SerializeReferenceGraphView(_pendingTarget, SetCanvasStatus, target => _pendingTarget = target));
             }
             else if (tabType == TabType.Settings)
             {
-                // Settings carries no status either; the calm idle wash keeps the canvas neutral here.
                 SetCanvasStatus(StatusStyle.Type.Info);
                 _container.AddChild(new SettingsView());
             }
@@ -207,8 +186,7 @@ namespace Aspid.FastTools.Editors
                 };
                 _container.AddChild(project);
 
-                // A plain tab switch never auto-scans (no scan freeze on large projects); only the
-                // breakage-notification deep-link forces the scan.
+                // Only a breakage deep-link may force a blocking project scan on a cold index.
                 if (_forceProjectScan)
                 {
                     _forceProjectScan = false;
@@ -223,12 +201,9 @@ namespace Aspid.FastTools.Editors
             UpdateToolbar();
         }
 
-        // The active view reports its state here; the window owns the shared dotted canvas and applies it as a status
-        // class, so the wash itself stays in the canvas stylesheet rather than in any view.
         private void SetCanvasStatus(StatusStyle.Type status) =>
             _background?.SetStatus(status);
 
-        // Cross-link: jumping from a project-audit result to that asset's full graph.
         private void InspectAsset(Object target)
         {
             _pendingTarget = target;

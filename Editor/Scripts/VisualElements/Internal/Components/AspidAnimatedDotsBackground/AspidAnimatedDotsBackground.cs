@@ -5,9 +5,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A VisualElement that paints an animated dotted background composed of three drifting metaball blobs whose colors
-    // blend through the dot grid. Colors and dot metrics can be overridden via USS custom properties or via UXML
-    // attributes / fluent extensions.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidAnimatedDotsBackground : VisualElement
     {
@@ -23,8 +20,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private IVisualElementScheduledItem _animation;
 
-        // Resolved from USS, so it stays live across theme changes — unlike Color1..Color3, which pin their value
-        // the moment they are set.
         [UxmlAttribute]
         public StatusStyle.Type Status
         {
@@ -100,19 +95,16 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         {
             var rect = contentRect;
             if (rect.width <= 0f || rect.height <= 0f) return;
+            if (!(_size.ScaleReference > 0f)) return;
 
             var painter = context.painter2D;
             var time = (float)EditorApplication.timeSinceStartup;
 
-            // Scale dot size and spacing with the window — calibrated against the reference size where
-            // the base values feel right. Sqrt curve keeps growth gentle: doubling the window only
-            // enlarges dots by ~1.4×, not 2×.
             var scale = Mathf.Sqrt(Mathf.Min(rect.width, rect.height) / _size.ScaleReference);
             var spacing = _size.DotSpacing * scale;
             var radius = _size.DotRadius * scale;
+            if (!(spacing > 0f) || !(radius > 0f)) return;
 
-            // Blob centers and radii depend only on (i, size, time) — pre-compute once per
-            // frame so the inner per-pixel loop doesn't redo BlobCount switch lookups per dot.
             for (var i = 0; i < BlobCount; i++)
             {
                 _blobCenters[i] = GetBlobCenter(i, rect.size, time);

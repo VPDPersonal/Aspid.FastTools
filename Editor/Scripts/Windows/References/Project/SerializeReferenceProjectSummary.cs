@@ -5,15 +5,10 @@ using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAudit
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The Project References audit's copy: the results headline and hint, each group card's count line and band
-    // label, and the capped previews the bulk confirmations show. Pure string composition.
     internal static class SerializeReferenceProjectSummary
     {
-        // Beyond this a confirmation dialog stops being readable, so the rest is reported as a remainder line.
         private const int MaxPreviewedEntries = 8;
 
-        // Only non-zero parts make the headline, and brokenCount excludes pending migrations: a rename with a
-        // one-click fix should not inflate the alarm number.
         public static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount)
         {
             var parts = new List<string>(3);
@@ -42,20 +37,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{entryText} · {fileText}";
         }
 
-        // The card's verb plus the trailing chevron the picker host swaps in place. A broken group's picker fixes;
-        // on a migration card nothing is broken and the picker is the manual escape hatch beside "Migrate all", so
-        // its verb reassigns instead.
         public static string BuildFixAllLabel(MissingReferenceGroup group, bool isMigration) =>
             $"{(isMigration ? "Reassign all" : "Fix all")} ({group.Entries.Count})  ▼";
 
-        // Built from the same computation the rewrite applies, so the preview is exactly what gets written.
         public static string BuildDiffPreview(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName newType)
         {
             var builder = new StringBuilder();
             builder.AppendLine("Changes:");
 
-            // Compute first, render second: an uncomputable entry must neither vanish silently nor inflate the
-            // "…and N more" remainder.
+            // Failed preview computations must not inflate the hidden-entry remainder.
             var edits = new List<(MissingReferenceLocation entry, RewriteEdit edit)>(entries.Count);
             foreach (var entry in entries)
             {
@@ -82,7 +72,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return builder.ToString();
         }
 
-        // The capped file and rid list for a clear confirmation; no before/after lines, since the entry is dropped.
         public static string BuildClearPreview(IReadOnlyList<MissingReferenceLocation> entries)
         {
             var builder = new StringBuilder();

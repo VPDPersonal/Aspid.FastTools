@@ -3,9 +3,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A VisualElement that displays a styled help message with an optional title, a message-type icon, and status-
-    // driven color accents. The icon and accents are USS-driven via the aspid-fasttools-help-box--{info|warning|error}
-    // and aspid-fasttools-status--* classes; None hides the icon entirely.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidHelpBox : VisualElement
     {

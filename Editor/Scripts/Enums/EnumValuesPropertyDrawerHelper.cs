@@ -14,10 +14,6 @@ namespace Aspid.FastTools.Enums.Editors
     {
         private const string PopulateMenuItem = "Populate Missing Enum Members";
 
-        // Resolves the row's key against the configured enum type; null means the type is not
-        // an enum (or has no members) and the raw string field should be shown instead. A key
-        // that no longer matches any member falls back to the first one and is persisted, so a
-        // renamed enum migrates instead of leaving the row unusable.
         public static Enum? ResolveKey(SerializedProperty keyProperty, SerializedProperty enumTypeProperty)
         {
             var enumType = Type.GetType(enumTypeProperty.stringValue, throwOnError: false);
@@ -39,7 +35,6 @@ namespace Aspid.FastTools.Enums.Editors
             return enumValue;
         }
 
-        // Every entry mirrors the parent's _enumType so its own drawer can pick the right field.
         public static void SyncEntryEnumTypes(SerializedProperty values, SerializedProperty enumType)
         {
             var enumTypeValue = enumType.stringValue;
@@ -118,7 +113,6 @@ namespace Aspid.FastTools.Enums.Editors
             var existing = CollectExistingKeys(values);
             var added = false;
 
-            // For [Flags] enums this includes named composites (All = A | B) as separate rows.
             foreach (var name in Enum.GetNames(type))
             {
                 if (!existing.Add(name)) continue;

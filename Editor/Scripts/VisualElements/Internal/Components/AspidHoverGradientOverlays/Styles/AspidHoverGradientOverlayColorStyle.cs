@@ -5,8 +5,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the base color of an AspidHoverGradientOverlay. The color can be inherited from the StyleProperty USS
-    // custom property or set explicitly in code; once set explicitly it is no longer overridden by USS resolution.
     internal readonly struct AspidHoverGradientOverlayColorStyle
     {
         public static readonly CustomStyleProperty<Color> StyleProperty = new("--aspid-fasttools-colors-hover_overlay");

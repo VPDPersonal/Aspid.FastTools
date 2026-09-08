@@ -7,8 +7,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A VisualElement that displays a title with per-character color cycling and a vertical wave animation. All
-    // animation parameters and palette colors can be driven by USS custom properties or set explicitly in code.
     [UxmlElement(nameof(AspidAnimatedTitle), libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidAnimatedTitle : VisualElement
     {

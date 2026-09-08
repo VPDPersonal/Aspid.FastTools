@@ -6,15 +6,12 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Warns before deleting a MonoScript used as a managed reference anywhere in the project. Unity does this for
-    // components but never for managed references, so deleting a referenced script silently breaks assets.
     internal sealed class SerializeReferenceDeleteGuard : AssetModificationProcessor
     {
         private const int SamplePathCount = 8;
 
         private static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions options)
         {
-            // Never block a headless/CI delete with a dialog.
             if (Application.isBatchMode) return AssetDeleteResult.DidNotDelete;
             if (string.IsNullOrEmpty(assetPath)) return AssetDeleteResult.DidNotDelete;
 
@@ -24,7 +21,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!assetPath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                 return AssetDeleteResult.DidNotDelete;
 
-            // The callback fires before deletion, so the script still resolves its type here.
             var type = ResolveScriptType(assetPath);
             if (type is null) return AssetDeleteResult.DidNotDelete;
 
@@ -47,7 +43,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return script != null ? script.GetClass() : null;
         }
 
-        // Sweeps the folder's scripts and raises one combined dialog for every referenced type found.
         private static AssetDeleteResult GuardFolder(string folderPath)
         {
             var types = new List<Type>();

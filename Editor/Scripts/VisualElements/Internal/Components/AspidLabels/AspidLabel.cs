@@ -4,8 +4,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A VisualElement label with Aspid theming, status accents, font size control, and an optional AspidDividingLine
-    // beneath the text. Theme and status can be driven by USS custom properties or set explicitly in code.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidLabel : VisualElement
     {

@@ -13,10 +13,6 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Four field shapes: a string (the picked assembly-qualified name is stored), a SerializableType / SerializableType<T>
-    // wrapper and a SerializableMonoScript / SerializableMonoScript<T> wrapper (the attribute's constraints intersect the
-    // wrapper's) and a [SerializeReference] managed reference (the picked type is instantiated). Any other shape renders
-    // an error box instead of the field.
     [CustomPropertyDrawer(typeof(TypeSelectorAttribute))]
     internal sealed class TypeSelectorPropertyDrawer : PropertyDrawer
     {
@@ -73,7 +69,6 @@ namespace Aspid.FastTools.Types.Editors
 
             var field = CreateField(property, shape, nameProperty, wrapperBaseType, out var applyResolvedTypes);
 
-            // Without string arguments the constraint is static — nothing to re-resolve, no warnings possible.
             if (TypeSelector.AssemblyQualifiedNames.Length is 0) return field;
 
             var container = new VisualElement().AddChild(field);
@@ -240,8 +235,6 @@ namespace Aspid.FastTools.Types.Editors
 
         private static string GetNoticeDetail(IReadOnlyList<string> warnings) => string.Join("\n", warnings);
 
-        // Classifies the property. For a wrapper (SerializableType or SerializableMonoScript, plain or <T>), nameProperty
-        // is the backing type-name string and wrapperBaseType the wrapper's own constraint (null when unconstrained).
         private bool TryGetShape(
             SerializedProperty property,
             out FieldShape shape,

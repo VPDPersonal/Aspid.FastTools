@@ -21,7 +21,7 @@ namespace Aspid.FastTools.Enums.Editors
 
         private bool IsTypedVariant()
         {
-            // fieldInfo is the array/list field when the drawer renders an element.
+            // For collection elements, fieldInfo describes the array or list itself.
             var type = fieldInfo.FieldType;
 
             if (type.IsArray)

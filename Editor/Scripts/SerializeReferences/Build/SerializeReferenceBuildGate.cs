@@ -7,8 +7,6 @@ using UnityEditor.Build.Reporting;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Fails or warns a player build on missing managed-reference types, per the Project Settings gate severity.
-    // Only the fast pure-YAML missing-type scan runs here; required-field scanning is opt-in from the CI gate.
     internal sealed class SerializeReferenceBuildGate : IPreprocessBuildWithReport
     {
         public int callbackOrder => 0;

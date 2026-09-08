@@ -6,8 +6,6 @@ using Aspid.FastTools.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Row factory and per-row binding — leading icon/glyph, title, favorite toggle and the drill-in arrow —
-    // plus the section-header collapse/expand interaction wired onto each row.
     internal sealed partial class TypeSelectorView
     {
         private const string ItemClass = BlockClass + "__item";
@@ -98,7 +96,6 @@ namespace Aspid.FastTools.Types.Editors
             var node = items[index];
             var isSectionTitle = node.IsSectionTitle;
 
-            // OnRowClicked reads this to know which node it operates on after row recycling.
             element.userData = node;
 
             var isCurrent = IsCurrentValue(node);
@@ -107,8 +104,6 @@ namespace Aspid.FastTools.Types.Editors
             element.EnableClass(ItemInSectionClass, !isSectionTitle && node.SectionKey is not null);
             element.EnableClass(ItemCurrentModifier, isCurrent);
 
-            // A non-reorderable ListView adds the item class straight onto the makeItem element (no per-row
-            // wrapper), so the divider modifier goes on the row root itself.
             element.EnableClass(RowAfterPinnedModifier, IsFirstRowAfterPinnedBlock(items, index));
 
             element.SetPickingMode(PickingMode.Position);
@@ -134,14 +129,10 @@ namespace Aspid.FastTools.Types.Editors
                     : DisplayStyle.None);
         }
 
-        // "Current" = the value the field already holds (the type by its AQN, or <None> for an empty field).
-        // Base page only: a coincidental match on a generic-argument page is not the field's value.
         private bool IsCurrentValue(TreeNode node)
         {
             if (!_pages[^1].IsBase) return false;
 
-            // Null = the host has no current-value concept (a list "+" append, a missing-type Fix, the bulk
-            // project picker) — nothing wears the check there; only an EMPTY STRING rightly marks <None>.
             if (_currentAqn is null) return false;
 
             return _currentAqn.Length > 0
@@ -149,16 +140,12 @@ namespace Aspid.FastTools.Types.Editors
                 : node.IsNoneOption;
         }
 
-        // Containers surface how many pickable types they hold; section titles carry their composed row
-        // count. Type leaves show no counter, and search results are a flat type list with none either.
         private int TypeCountFor(TreeNode node)
         {
             if (Nav.IsSearching) return 0;
             return node.IsSectionTitle || node.HasChildren ? node.TypeCount : 0;
         }
 
-        // True for the first ordinary root category after the pinned block (<None> plus the Favorites/Recent
-        // sections) — the row carrying the divider. Only the base root page composes a pinned block.
         private bool IsFirstRowAfterPinnedBlock(List<TreeNode> items, int index)
         {
             if (!Nav.IsAtRoot || index <= 0 || index >= items.Count) return false;
@@ -225,7 +212,6 @@ namespace Aspid.FastTools.Types.Editors
 
         private void BindFavorite(Button favorite, TreeNode node)
         {
-            // Replace any handler bound to a previously recycled row.
             favorite.clickable = new Clickable(() => ToggleFavorite(node));
 
             if (!node.IsType)
@@ -251,8 +237,6 @@ namespace Aspid.FastTools.Types.Editors
             evt.StopPropagation();
         }
 
-        // Collapses/expands a section and re-selects its header at the new index, so a keyboard or mouse toggle leaves
-        // the highlight on the section the user is acting on (the list rebuilds, so the index can shift).
         private void ToggleSectionKeepSelection(TreeNode sectionTitle)
         {
             Nav.ToggleSection(sectionTitle.SectionKey);

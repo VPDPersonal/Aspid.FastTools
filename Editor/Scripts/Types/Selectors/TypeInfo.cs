@@ -14,20 +14,12 @@ namespace Aspid.FastTools.Types.Editors
         internal readonly string Namespace;
         internal readonly string AssemblyQualifiedName;
 
-        // Tooltip override from TypeSelectorDisplayAttribute.Tooltip; falls back to
-        // FullName when no override is supplied.
         internal readonly string Tooltip;
 
-        // Raw icon identifier from TypeSelectorDisplayAttribute.Icon; null
-        // when no icon was requested.
         internal readonly string Icon;
 
-        // Normalized display-name override from TypeSelectorDisplayAttribute.Name;
-        // null when the type keeps its real name.
         internal readonly string CustomName;
 
-        // Normalized TypeSelectorDisplayAttribute.Group path segments (split on /,
-        // trimmed, empty segments dropped); null when the type stays under its namespace.
         internal readonly string[] GroupPath;
 
         internal string Label => CustomName ?? Name;
@@ -72,12 +64,8 @@ namespace Aspid.FastTools.Types.Editors
             return segments.Length > 0 ? segments : null;
         }
 
-        // The types shown in the selector. Additional types are appended verbatim, bypassing the base-type, name
-        // and allow checks, so a caller can inject entries the assignability scan cannot match.
-        //
-        // A hidden type is dropped from both paths, since opting out of the picker must hold however a type reaches
-        // it. A repair picker passes includeHidden: its job is to re-point data that already holds such a type, and
-        // filtering it out would leave the reference unfixable from the editor at all.
+        // Additional candidates bypass ordinary constraints, but hidden types remain excluded unless the repair
+        // picker explicitly includes them.
         internal static List<TypeInfo> GetAllTypeInfos(
             Type[] baseTypes,
             TypeAllow allow,
@@ -92,7 +80,6 @@ namespace Aspid.FastTools.Types.Editors
                     !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
                     !t.Name.Contains("<") &&
                     !t.Name.Contains(">") &&
-                    // A static class is abstract+sealed to the CLR yet never a type a field can meaningfully name.
                     !(t.IsAbstract && t.IsSealed) &&
                     (allow.HasFlag(TypeAllow.Abstract) || t.IsInterface || !t.IsAbstract) &&
                     (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&

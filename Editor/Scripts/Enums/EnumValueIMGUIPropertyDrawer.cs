@@ -64,8 +64,6 @@ namespace Aspid.FastTools.Enums.Editors
             }
 
             DrawKey(keyRect, keyProperty, enumTypeProperty);
-
-            // GetHeight reserves room for the expanded children, so they must be drawn too.
             EditorGUI.PropertyField(valueRect, valueProperty, label, includeChildren: hasFoldout);
         }
 

@@ -10,25 +10,12 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // The hierarchical type selector as a host-agnostic element: search, keyboard navigation, namespace drill-down
-    // and the generic-argument flow. TypeSelectorWindow hosts it as a dropdown; an embedding host adds it inline and
-    // collapses it through the dismiss callback.
-    //
-    // Selecting an open generic definition is not a final selection: it drills into one hierarchical page per type
-    // parameter, reusing the same search and navigation, and emits the constructed closed type once every argument
-    // is resolved. That flow stays dormant unless open generics are present.
-    //
-    // Split across partial files: this one owns construction and shared state, .Rows binds list rows, .Input handles
-    // the search chrome and keyboard, .Navigation drives drill-down and selection, .Generics hosts the argument
-    // pages and .View renders breadcrumbs, the footer hint and errors.
     internal sealed partial class TypeSelectorView : VisualElement
     {
         private const string StyleSheetPath = "UI/Types/Aspid-FastTools-TypeSelector";
 
-        // The static skeleton lives in a UXML cloned in BuildUI. It keeps a distinct base name from the stylesheet so
-        // AddStyleSheetFromResources's Resources.Load<StyleSheet> on StyleSheetPath stays unambiguous (a same-named
-        // VisualTreeAsset would shadow the StyleSheet). The code keeps only the classes it toggles/queries at runtime;
-        // the skeleton's own classes live in the UXML.
+        // Keep UXML and USS resource names distinct: a same-named VisualTreeAsset can shadow the stylesheet
+        // during Resources.Load.
         private const string UxmlResourcePath = "UI/Types/Aspid-FastTools-TypeSelector-View";
 
         private const string BlockClass = "aspid-fasttools-type-selector";
@@ -74,10 +61,6 @@ namespace Aspid.FastTools.Types.Editors
 
         private NavigationController Nav => _pages[^1].Navigation;
 
-        // currentAqn pre-navigates to that type's location; empty starts at the root. onSelected receives the
-        // selected type's assembly-qualified name — the constructed closed type for a resolved open generic — or
-        // null for <None>. onDismiss fires once the selector is done, whether it emitted a selection or was
-        // canceled, and is where the host closes its window or collapses its inline panel.
         internal TypeSelectorView(
             TypeSelectorFilter filter = default,
             string currentAqn = "",
@@ -90,9 +73,6 @@ namespace Aspid.FastTools.Types.Editors
             _onSelected = onSelected;
             _argumentFilter = filter.ArgumentFilter;
             _inferredArgumentFilter = filter.InferredArgumentFilter;
-            // Null and "" mean DIFFERENT things and both flow through unchanged: null = the host has no current-value
-            // concept at all (a list "+" append, a missing-type Fix, the bulk project picker), "" = the field exists
-            // and currently holds <None>. Only the latter may put the current-value check on the <None> row.
             _currentAqn = currentAqn;
             _fieldTypes = types;
             _includeHidden = filter.IncludeHidden;
@@ -119,10 +99,8 @@ namespace Aspid.FastTools.Types.Editors
             PreselectCurrent();
         }
 
-        // Highlights the current type's row on open, so an immediate Enter re-confirms the same value. A current
-        // value of <None>, or one whose type is absent, selects the pinned <None> row instead, so Enter re-confirms
-        // or clears rather than committing an arbitrary first row. Only a null current value — a host with no
-        // current-value concept — leaves the selection empty and Enter inert.
+        // Prefer the current value or None so an immediate Enter cannot commit an arbitrary first row; null
+        // means there is no current value.
         private void PreselectCurrent()
         {
             if (_currentAqn is null) return;
@@ -157,10 +135,8 @@ namespace Aspid.FastTools.Types.Editors
         {
             if (Nav.CurrentItems.Count > 0)
             {
-                // A just-shown ListView silently refuses Focus() until its display resolves on the next layout pass
-                // (the same constraint OpenSearch documents for the search field), so defer the focus to that pass.
-                // The current value's row is pre-selected in PreselectCurrent (no arbitrary first-row selection that an
-                // immediate Enter could commit); scroll it into view once the list is laid out.
+                // ListView refuses focus until layout resolves; defer focus and scrolling to the next layout
+                // pass.
                 _listView.schedule.Execute(() =>
                 {
                     if (_listView.panel is null) return;
@@ -240,7 +216,6 @@ namespace Aspid.FastTools.Types.Editors
 
             _searchField.RegisterCallback<FocusOutEvent>(evt =>
             {
-                // Focus moving within the field (text input ↔ its clear button) is not a real blur — keep it open.
                 if (evt.relatedTarget is VisualElement next && IsDescendantOf(next, _searchField)) return;
 
                 _searchFieldFocused = false;

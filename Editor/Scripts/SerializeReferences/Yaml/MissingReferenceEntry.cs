@@ -1,8 +1,6 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // One orphaned managed-reference entry found in an asset's YAML: its document, its RefIds id and the stored,
-    // unresolvable type.
     internal readonly struct MissingReferenceEntry
     {
         public readonly long Rid;

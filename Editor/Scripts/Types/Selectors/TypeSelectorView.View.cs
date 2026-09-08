@@ -6,8 +6,6 @@ using Aspid.FastTools.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Rendering the chrome around the list: the item list refresh, the empty/footer hints, the breadcrumb trail
-    // and the inline error band. The footer-hint text itself is composed by the pure TypeSelectorFooterHint.
     internal sealed partial class TypeSelectorView
     {
         private const string CrumbClass = BlockClass + "__breadcrumb";
@@ -86,7 +84,6 @@ namespace Aspid.FastTools.Types.Editors
                 crumbs.Add((page.TitlePrefix, atContextRoot ? PopPage : () => JumpToDepth(0), atContextRoot));
             }
 
-            // Real ancestors live at Breadcrumbs[1..] (index 0 is the hidden "/" root).
             var trail = Nav.Breadcrumbs;
             for (var i = 1; i < trail.Count; i++)
             {
@@ -111,8 +108,6 @@ namespace Aspid.FastTools.Types.Editors
                 .EnableClass(CrumbCurrentModifier, isCurrent)
                 .SetTooltip(text);
 
-            // Clickability tracks the action, not the current flag: the generic-context crumb is both "here" and an
-            // escape hatch, so it can be the current crumb yet still navigate.
             if (action is not null)
             {
                 crumb.AddClass(CrumbLinkModifier);
@@ -120,7 +115,6 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     action();
 
-                    // Keep the click off the breadcrumb bar's open-search handler — a navigable crumb navigates only.
                     evt.StopPropagation();
                 });
             }

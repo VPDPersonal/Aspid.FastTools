@@ -3,17 +3,12 @@ using System;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // The open-generic argument-resolution flow: one pushed page per type parameter, each reusing the ordinary
-    // search/keyboard/navigation, accumulating arguments until the closed type is constructed and emitted. The
-    // page stack (_pages) is owned here through Push/Pop, with PickerPage describing a single page's context.
     internal sealed partial class TypeSelectorView
     {
         private void BeginResolveGeneric(Type openDefinition, Type primaryFieldType, Type[] validationFieldTypes, Action<Type> onClosed)
         {
-            // A field that already fixes the arguments skips the picker. Inference checks only the primary field
-            // type, so the result is re-validated against every one, as the manual path does; a result that fails
-            // falls through to the picker rather than emitting a value Unity would drop. The inferred-argument
-            // filter goes in for the same reason: skipping the page must not skip the rule it would have enforced.
+            // Inference bypasses the argument pages, so the closed type must also satisfy every narrowing
+            // constraint.
             if (GenericTypeResolver.TryInferFromFieldType(primaryFieldType, openDefinition, out var inferred, _inferredArgumentFilter) &&
                 GenericTypeResolver.IsAssignableToFieldTypes(inferred, validationFieldTypes))
             {
@@ -123,8 +118,6 @@ namespace Aspid.FastTools.Types.Editors
         {
             var parameters = openDefinition.GetGenericArguments();
 
-            // A [TypeSelectorDisplay(Name)] override carries its "<T, …>" suffix (see GetCustomDisplayName); the
-            // building header re-spells the argument list itself, so only the base part before '<' is wanted here.
             var custom = TypeSelectorHelpers.GetCustomDisplayName(openDefinition);
             var angle = custom?.IndexOf('<') ?? -1;
             var baseName = custom is null

@@ -3,7 +3,6 @@ using System;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // One managed reference that just became missing, plus its pre-ranked best fix candidate.
     internal readonly struct BreakageEntry
     {
         public readonly long Rid;

@@ -9,14 +9,8 @@ using Aspid.FastTools.Types.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Ranking engine behind the missing-type Smart Fix suggestion: from the stored type identity, the field names
-    // recorded for it and the field's declared constraint, it orders repair candidates and surfaces the best one.
-    // The pool is the same set the type picker would offer, so a suggestion can never be a type the picker refuses,
-    // and it is never auto-applied — the user always clicks.
     internal static class SerializeReferenceRepairSuggestions
     {
-        // A scored repair candidate: the type the reference could be re-pointed to, its heuristic score (highest
-        // wins) and a short human-readable reason.
         public readonly struct RepairCandidate
         {
             public readonly Type Type;
@@ -31,11 +25,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Below this confidence the heuristics are too weak to offer at all.
         public const float MinScore = 0.6f;
 
-        // How much the field-shape overlap can add, lifting a marginal name match over the threshold and breaking
-        // ties between equally-named candidates.
         private const float FieldShapeBonus = 0.2f;
 
         // IMGUI repaints every frame, so the TypeCache-scanning ranking is cached per (asset, document, rid) with a
@@ -113,7 +104,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Base score before the field-shape bonus; 0 means no match.
         private static float ScoreCandidate(ManagedTypeName stored, string storedClass, Type candidate, out string reason)
         {
             // A matching [MovedFrom] is an authoritative rename, so it tops the ranking.
@@ -125,7 +115,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var candidateClass = SerializeReferenceMovedFromResolver.NormalizeClassName(candidate.Name);
 
-            // Same class name in another namespace or assembly: the class was moved.
             if (string.Equals(candidateClass, storedClass, StringComparison.Ordinal))
             {
                 reason = "same type name";
@@ -138,7 +127,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return 0.6f;
             }
 
-            // A near miss, surfaced only once the field-shape bonus lifts it over the threshold.
             if (LevenshteinAtMost(candidateClass, storedClass, 2))
             {
                 reason = "similar name";
@@ -149,7 +137,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return 0f;
         }
 
-        // Fraction of stored field names that exist on the candidate.
         private static float FieldShapeOverlap(HashSet<string> storedFields, Type candidate)
         {
             var candidateFields = GetSerializedFieldNames(candidate);
@@ -159,7 +146,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return (float)matched / storedFields.Count;
         }
 
-        // Unity's rule: public instance fields plus private [SerializeField] ones, base chain included.
         private static HashSet<string> GetSerializedFieldNames(Type type)
         {
             var names = new HashSet<string>(StringComparer.Ordinal);
@@ -180,7 +166,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return names;
         }
 
-        // Bounded Levenshtein with early bail-out once a row's best distance exceeds the bound.
         private static bool LevenshteinAtMost(string a, string b, int maxDistance)
         {
             if (a is null || b is null) return false;
@@ -212,7 +197,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         #region Cached ranking
-        // The factory runs only on a cache miss.
         public static IReadOnlyList<RepairCandidate> GetCached(
             string assetPath,
             long fileId,
@@ -235,7 +219,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Called after a repair, since the candidate set has changed.
         public static void ClearCache()
         {
             Cache.Clear();

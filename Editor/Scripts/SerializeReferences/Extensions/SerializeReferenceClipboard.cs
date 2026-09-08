@@ -4,8 +4,6 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Editor-session clipboard behind the drawer's Copy/Paste entries. The value is kept as JSON plus its concrete
-    // type, so a paste builds an independent instance instead of aliasing the source.
     internal static class SerializeReferenceClipboard
     {
         private static bool _hasContent;
@@ -32,7 +30,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return filter is null || filter(Type);
         }
 
-        // Builds an instance independent of the copied object; null when an empty reference was copied.
         public static object CreateInstance()
         {
             if (!_hasContent || Type is null) return null;

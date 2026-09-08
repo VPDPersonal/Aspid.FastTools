@@ -7,8 +7,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Reflection helpers for ISerializableType wrapper fields (SerializableType / SerializableType<T>), including
-    // the elements of arrays and lists of them.
     internal static class SerializableTypeUtility
     {
         internal const string BackingFieldName = "_assemblyQualifiedName";
@@ -17,7 +15,6 @@ namespace Aspid.FastTools.Types.Editors
         // repaint, so the answer is memoized per wrapper type (stable until a domain reload clears statics).
         private static readonly Dictionary<Type, Type> _baseTypes = new();
 
-        // True for an ISerializableType wrapper field, or an array / List of them.
         internal static bool IsSerializableTypeField(Type fieldType) =>
             typeof(ISerializableType).IsAssignableFrom(fieldType.GetCollectionElementTypeOrSelf());
 
@@ -33,8 +30,6 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!_baseTypes.TryGetValue(type, out var cached))
             {
-                // The wrappers hide their parameterless constructor so only Unity's serializer creates them, so the
-                // probe instance this reads BaseType from has to be built through the non-public one.
                 cached = ((ISerializableType)Activator.CreateInstance(type, nonPublic: true)).BaseType;
                 _baseTypes[type] = cached;
             }

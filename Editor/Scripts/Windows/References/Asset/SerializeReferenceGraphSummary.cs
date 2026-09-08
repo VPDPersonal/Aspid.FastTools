@@ -4,14 +4,8 @@ using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAudit
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The Asset References overview copy: the headline, the dim hint under it and each document header's count line.
-    // Pure string composition over already-partitioned counts, because the wording turns on those distinctions — a
-    // pending migration is a stale file rather than a breakage, and an empty slot is unassigned rather than broken,
-    // so neither may be phrased as "missing".
     internal static class SerializeReferenceGraphSummary
     {
-        // Only non-zero parts make the headline, so an asset carrying several finding kinds names all of them
-        // instead of hiding the rest in the hint. broken EXCLUDES migrations.
         public static string BuildOverviewTitle(int broken, int orphans, int migrations, int required)
         {
             var parts = new List<string>(4);
@@ -23,9 +17,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return parts.Count > 0 ? string.Join(", ", parts) : "No missing references";
         }
 
-        // The mapped total, a breakdown of every finding kind and the one action that most needs doing. Here
-        // missing is the raw tally, INCLUDING migrations, and empties counts only slots allowed to stay empty, since
-        // required ones are reported through required and never twice.
         public static string BuildOverviewHint(int total, int missing, int orphans, int empties, int migrations, int required)
         {
             var references = total == 1 ? "1 managed reference" : $"{total} managed references";
@@ -59,7 +50,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return $"{references} mapped · {string.Join(" · ", parts)}. {action}";
         }
 
-        // A pending migration is named as such, so a header never contradicts the overview's "0 missing".
         public static string BuildDocumentCountText(ReferenceGraphDocument document, int broken, int migrations)
         {
             var total = document.Nodes.Count;

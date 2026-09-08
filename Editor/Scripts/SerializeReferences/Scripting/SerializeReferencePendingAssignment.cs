@@ -8,15 +8,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Completes a "Create new script" flow across the domain reload the new .cs triggers: the pending (target, path,
-    // expected type) is parked in SessionState before the reload and resolved on a later load, once the script has
-    // compiled.
-    //
-    // The assignment can outlive several reloads — a stub may fail to compile, or the new assembly may register only
-    // on a later reload — so an unresolved entry is re-persisted and retried rather than dropped. Only the
-    // type-not-resolved reason, the one a reload can fix, spends the cross-reload budget; an entry whose target is
-    // merely not loaded waits indefinitely, since no reload count can open its scene. Provably dead entries are
-    // dropped silently, and a few in-session re-arms catch an assembly that lands a tick late.
     internal static class SerializeReferencePendingAssignment
     {
         public const string Key = "Aspid.FastTools.SerializeReference.PendingAssignment";
@@ -26,10 +17,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Cross-reload backstop: a still-unresolved entry is dropped, with a warning, after this many loads.
         public const int MaxResolveAttempts = 32;
 
-        // How many extra passes to arm within one load, for an assembly that registers a tick late.
         public const int MaxInSessionRetries = 3;
 
-        // Re-arms left for the current load; static state does not survive a reload, so Hook resets it.
         private static int _inSessionRetriesLeft;
 
         public static void Enqueue(UnityEngine.Object target, string propertyPath, string fullTypeName)
@@ -59,7 +48,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void Resolve(bool countAttempt)
         {
-            // Re-armed only while something is still pending, in case an assembly lands a tick after this one.
             if (ResolvePass(countAttempt) && _inSessionRetriesLeft > 0)
             {
                 _inSessionRetriesLeft--;
@@ -67,7 +55,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Applies what it can, re-persists what is still pending and erases the queue once nothing remains.
         public static bool ResolvePass(bool countAttempt)
         {
             var raw = SessionState.GetString(Key, string.Empty);
@@ -94,7 +81,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     case ApplyOutcome.Applied:
                     case ApplyOutcome.Dead:
-                        break; // resolved or provably dead — drop from the queue.
+                        break;
 
                     case ApplyOutcome.PendingUnloaded:
                         // A reload cannot open the owning scene, so this waits without spending the budget.
@@ -102,7 +89,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         break;
 
                     case ApplyOutcome.PendingUnresolved:
-                        // The type has not compiled yet — the case the budget bounds.
                         var next = countAttempt ? entry.WithIncrementedAttempt() : entry;
                         if (next.Attempts >= MaxResolveAttempts) WarnDropped(next);
                         else survivors.Add(next);
@@ -133,10 +119,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!GlobalObjectId.TryParse(entry.GlobalId, out var globalId)) return ApplyOutcome.Dead;
 
             var target = GlobalObjectId.GlobalObjectIdentifierToObjectSlow(globalId);
-            if (target == null) return ApplyOutcome.PendingUnloaded; // the scene/asset holding the field isn't open yet.
+            if (target == null) return ApplyOutcome.PendingUnloaded;
 
             var type = ResolveType(entry.FullTypeName);
-            if (type is null) return ApplyOutcome.PendingUnresolved; // the new assembly has not compiled/loaded yet.
+            if (type is null) return ApplyOutcome.PendingUnresolved;
 
             var serializedObject = new SerializedObject(target);
             var property = serializedObject.FindProperty(entry.PropertyPath);
@@ -187,7 +173,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             public Entry WithIncrementedAttempt() => new(GlobalId, PropertyPath, FullTypeName, Attempts + 1);
 
-            // True when both entries target the same field on the same object, whatever their type and attempts.
             public bool SameTarget(Entry other) => GlobalId == other.GlobalId && PropertyPath == other.PropertyPath;
 
             public string Encode() =>

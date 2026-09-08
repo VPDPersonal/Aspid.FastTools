@@ -6,14 +6,8 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Resolves the string arguments of a TypeSelectorAttribute into base-constraint types.
-    // Each name is resolved member-first — a field or property with that name on the target object's type
-    // hierarchy supplies the constraint dynamically; only when no member matches is the string treated
-    // as an assembly-qualified type name for GetType(string).
     internal static class TypeSelectorConstraintResolver
     {
-        // Blank names are skipped, and every name that can supply no constraint adds a warning. A suitable member
-        // whose current value is empty is not one: it means "no constraint yet".
         internal static Result Resolve(object targetObject, IReadOnlyList<string> assemblyQualifiedNames)
         {
             var types = new List<Type>();
@@ -28,14 +22,16 @@ namespace Aspid.FastTools.Types.Editors
                 if (member is not null)
                 {
                     var count = types.Count;
-                    AddTypesFromMember(targetObject, member, types);
+                    if (IsSuitableMember(member))
+                        AddTypesFromMember(targetObject, member, types);
                     var isAdded = types.Count > count;
 
                     if (!isAdded && !IsSuitableMember(member))
                     {
                         (warnings ??= new List<string>()).Add(
                             $"Member '{name}' cannot supply base types — it must be an instance field or property " +
-                            "of type Type, Type[], string, string[], SerializableType or SerializableMonoScript (plain or <T>).");
+                            "of type Type, Type[], string, string[], SerializableType or SerializableMonoScript (plain or <T>); " +
+                            "properties must be readable and cannot be indexers.");
                     }
 
                     continue;
@@ -148,6 +144,11 @@ namespace Aspid.FastTools.Types.Editors
 
         private static bool IsSuitableMember(MemberInfo member)
         {
+            if (member is PropertyInfo property &&
+                (property.GetGetMethod(nonPublic: true) is null ||
+                    property.GetIndexParameters().Length != 0))
+                return false;
+
             var memberType = member switch
             {
                 FieldInfo fieldInfo => fieldInfo.FieldType,
@@ -165,8 +166,6 @@ namespace Aspid.FastTools.Types.Editors
                 || typeof(ISerializableType).IsAssignableFrom(memberType);
         }
 
-        // The outcome of Resolve: the constraint types plus a warning for every name
-        // that could not supply any.
         internal readonly struct Result
         {
             internal Type[] Types { get; }

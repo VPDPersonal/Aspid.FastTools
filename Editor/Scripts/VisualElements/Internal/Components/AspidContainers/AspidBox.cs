@@ -3,9 +3,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A VisualElement container with an Aspid background plus theme and status-accent support. The theme (--aspid-
-    // fasttools-prop-theme) and status (--aspid-fasttools-prop-status) can be driven by USS custom properties or set
-    // explicitly in code.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidBox : VisualElement
     {

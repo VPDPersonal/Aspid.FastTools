@@ -1,8 +1,6 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Activating a row: toggling a section, drilling into a namespace, navigating back, emitting a final selection,
-    // and toggling favorites. The generic-argument drill-down branches out from SelectNode into the .Generics file.
     internal sealed partial class TypeSelectorView
     {
         private void ActivateNode(TreeNode node)

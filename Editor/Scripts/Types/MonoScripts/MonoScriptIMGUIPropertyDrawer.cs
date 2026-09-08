@@ -6,9 +6,6 @@ using Aspid.FastTools.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // IMGUI rendering of a SerializableMonoScript / SerializableMonoScript<T> wrapper: the same dropdown and
-    // open-script button as TypeIMGUIPropertyDrawer, but the candidate set is limited to types backed by a script asset,
-    // a pick writes both the script reference and the type name, and a MonoScript can be dropped onto the row.
     internal static class MonoScriptIMGUIPropertyDrawer
     {
         internal static float GetHeight(SerializedProperty wrapperProperty) =>

@@ -5,10 +5,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A VisualElement that displays an animated logo with three layered images. On hover, the layers cross-fade in a
-    // cycle and the logo gently pulses; pulse parameters and per-layer textures can all be inherited from USS custom
-    // properties via the AspidAnimatedLogoPulseSpeedStyle, AspidAnimatedLogoPulseHoverAmplitudeStyle and
-    // AspidAnimatedLogoLayerImageStyle bindings.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidAnimatedLogo : VisualElement
     {
@@ -122,9 +118,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             {
                 _pulse.Resume();
 
-                // Mirror the detach handler: if the pointer is still over the logo, resume the
-                // paused color cycle. Without this the StartColorCycle guard (non-null _colorCycle)
-                // would keep the cross-fade frozen until a full pointer leave/re-enter.
+                // Resume the existing item because StartColorCycle skips an already-created schedule.
                 if (_hovered) _colorCycle?.Resume();
             });
             RegisterCallback<DetachFromPanelEvent>(_ =>
@@ -157,8 +151,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _colorCycle?.Pause();
             _colorCycle = null;
 
-            // Snap back to layer 0 so the idle state is consistent across hovers; the CSS
-            // opacity transition smooths the cross-fade from whatever layer was active.
             if (_currentLayer == 0) return;
             _layers[_currentLayer].RemoveClass(LayerVisibleClass);
             _layers[0].AddClass(LayerVisibleClass);
@@ -174,8 +166,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private void UpdatePulse()
         {
-            // Amplitude lerps to 0 when idle, so the pulse fades in/out smoothly on hover —
-            // toggling it on/off discretely would snap the scale mid-cycle.
             var targetAmplitude = _hovered ? PulseHoverAmplitude : 0f;
             _pulseAmplitude = Mathf.Lerp(_pulseAmplitude, targetAmplitude, PulseAmplitudeSmoothing);
 

@@ -40,8 +40,6 @@ namespace Aspid.FastTools.Types.Editors
         internal static List<string> LoadFavorites() =>
             LoadResolved(FavoritesKey);
 
-        // Entries are kept raw so a type that comes back (re-imported assembly, restored file) reappears; only the
-        // resolved subset is surfaced.
         private static List<string> LoadResolved(string key) =>
             LoadRaw(key).Where(aqn => TypeUtility.GetTypeOrNull(aqn) is not null).ToList();
 

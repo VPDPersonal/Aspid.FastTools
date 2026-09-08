@@ -44,6 +44,9 @@ namespace Aspid.FastTools.Types.Editors.Tests
             private static Type _staticType = typeof(int);
 
             private Type WeaponProperty => typeof(int);
+            private Type WriteOnlyProperty { set { } }
+            private int UnsupportedProperty => throw new InvalidOperationException("Getter must not run.");
+            public Type this[int index] => throw new InvalidOperationException("Indexer must not run.");
         }
 #pragma warning restore CS0169, CS0414, CS0649
 
@@ -126,6 +129,17 @@ namespace Aspid.FastTools.Types.Editors.Tests
         public void UnsuitableMember_AddsAWarningAndNoType()
         {
             var result = Resolve("_count", new Host());
+
+            CollectionAssert.IsEmpty(result.Types);
+            Assert.AreEqual(1, result.Warnings.Count);
+        }
+
+        [TestCase("WriteOnlyProperty")]
+        [TestCase("UnsupportedProperty")]
+        [TestCase("Item")]
+        public void UnreadableOrUnsupportedProperty_AddsAWarningWithoutInvokingIt(string memberName)
+        {
+            var result = Resolve(memberName, new Host());
 
             CollectionAssert.IsEmpty(result.Types);
             Assert.AreEqual(1, result.Warnings.Count);

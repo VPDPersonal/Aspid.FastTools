@@ -6,10 +6,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Lazy, incrementally-updated project-wide index mapping each stored-type identity to the assets, documents and
-    // rids using it: a cold null sentinel rebuilt on first lookup, patched per asset on import and fully reset on
-    // delete or move. Powers Find Usages, MonoScript delete protection and the Repair window's fast project scan.
-    // Each usage carries its own Resolves flag and stored type, so consumers never re-read the file.
     internal static class SerializeReferenceTypeUsageIndex
     {
         // Identity is (asset, document, rid); the rest is payload.
@@ -38,14 +34,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             public override int GetHashCode() => unchecked((Guid.GetHashCode() * 397 ^ FileId.GetHashCode()) * 397 ^ Rid.GetHashCode());
         }
 
-        // Null is the cold sentinel, rebuilt lazily on first lookup.
         private static Dictionary<string, HashSet<Usage>> _index;
 
         // Consumers on the import or domain-reload path must check this and NOT warm a cold index: warming runs a
         // modal full-project YAML sweep, which a routine import must never trigger.
         public static bool IsWarm => _index is not null;
 
-        // Warms the index if cold.
         public static IReadOnlyCollection<Usage> FindUsages(string storedTypeKey)
         {
             if (string.IsNullOrEmpty(storedTypeKey)) return Array.Empty<Usage>();
@@ -58,7 +52,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static IReadOnlyCollection<Usage> FindUsages(Type type) =>
             type is null ? Array.Empty<Usage>() : FindUsagesByOpenKey(SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(type)));
 
-        // Aggregates across the closed-form keys a generic type splits into; warms the index if cold.
         public static IReadOnlyCollection<Usage> FindUsagesByOpenKey(string openTypeKey)
         {
             if (string.IsNullOrEmpty(openTypeKey)) return Array.Empty<Usage>();
@@ -78,7 +71,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static int CountUsages(Type type) => FindUsages(type).Count;
 
-        // The fast-scan source for the Repair window.
         public static IEnumerable<Usage> EnumerateUnresolved()
         {
             EnsureBuilt();
@@ -88,7 +80,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         yield return usage;
         }
 
-        // The source the Find Usages search provider filters; warms the index.
         public static IEnumerable<Usage> AllUsages()
         {
             EnsureBuilt();
@@ -97,12 +88,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     yield return usage;
         }
 
-        // Drops the whole index; the next lookup rebuilds it.
         public static void Reset() => _index = null;
 
         public static void ClearCache() => Reset();
 
-        // Re-extracts one asset's usages in place; a no-op while the index is cold.
         public static void RebuildAsset(string path)
         {
             if (_index is null) return;
@@ -159,7 +148,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 foreach (var node in document.Nodes)
                 {
-                    // With no recorded type identity there is nothing to look up and nothing missing.
                     if (node.StoredType.IsEmpty) continue;
 
                     var key = SerializeReferenceHelpers.StoredTypeKey(node.StoredType);
@@ -176,7 +164,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 _index[key] = set;
             }
 
-            // Removed first so a changed payload replaces the stale entry rather than joining it.
             set.Remove(usage);
             set.Add(usage);
         }

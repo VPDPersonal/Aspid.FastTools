@@ -4,11 +4,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the background texture of a single AspidAnimatedLogo layer. The texture can be inherited from one of the
-    // Layer1StyleProperty, Layer2StyleProperty or Layer3StyleProperty USS custom properties or set explicitly in code;
-    // once set explicitly it is no longer overridden by USS resolution. The USS property is resolved on the parent
-    // AspidAnimatedLogo (the event source), but applied as background-image to the layer (the target), so a single
-    // declaration on the logo configures all three layers.
     internal readonly struct AspidAnimatedLogoLayerImageStyle
     {
         public static readonly CustomStyleProperty<Texture2D> Layer1StyleProperty =

@@ -1,8 +1,6 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The serialized shape of a required field, so the pure-YAML scene scan can read its "unset" state without
-    // reflection.
     internal enum RequiredFieldKind
     {
         // Unset means a null-or-empty scalar.
@@ -15,9 +13,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         SerializableType,
     }
 
-    // A field that opts into the required check, captured for the pure-YAML scene scan: its YAML key, its kind and,
-    // for a field nested inside plain [Serializable] containers, the chain of container keys leading to it. Produced
-    // by reflection in the required gate and consumed by the YAML scan, which stays reflection-free.
     internal readonly struct RequiredFieldDescriptor
     {
         public readonly RequiredFieldKind Kind;

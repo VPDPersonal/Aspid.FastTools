@@ -54,8 +54,7 @@ namespace Aspid.FastTools.Enums.Editors
             if (!hasFoldout)
                 root.AddClass(InlineClass);
 
-            // The parent drawer writes _enumType straight into the SerializedProperty, which a
-            // hidden bound PropertyField does not report; track the property itself instead.
+            // Track the serialized property because direct writes do not notify a hidden PropertyField.
             root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValue());
 
             return root;
@@ -81,7 +80,7 @@ namespace Aspid.FastTools.Enums.Editors
 
                 if (EnumInfo.IsFlags(enumValue.GetType()))
                 {
-                    // EnumFlagsField's dropdown keeps choices from the previous enum type otherwise.
+                    // Reset before initialization to discard the previous enum type's dropdown choices.
                     keyEnumFlagField
                         .SetValue(null, notify: false)
                         .Initialize(enumValue)

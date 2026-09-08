@@ -5,7 +5,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The managed-reference graph of one serialized object document.
     internal sealed class ReferenceGraphDocument
     {
         public long FileId;
@@ -20,10 +19,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Parent rid -> its child edges. Empty (null-sentinel) slots are kept so a cleared nested field still shows.
         public readonly Dictionary<long, List<ReferenceGraphEdge>> Edges = new();
 
-        // rids referenced by two or more parents — aliased managed references.
         public readonly HashSet<long> Shared = new();
 
-        // rids reachable from no root — leftover payloads no field points at.
         public readonly HashSet<long> Orphans = new();
 
         public ReferenceGraphNode? FindNode(long rid)

@@ -10,19 +10,10 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Every single-entry repair the Asset References graph offers, without any of its UI. Two edit routes, picked by
-    // what the entry is rather than by the caller: a healthy or empty slot goes through managedReferenceValue, so
-    // Unity writes the RefIds entry exactly as the Inspector would, while a MISSING reference cannot be reassigned
-    // through that API at all and is edited by rewriting the YAML in place. That is why the YAML routes confirm
-    // first, cannot be undone through Unity's undo stack, and refuse to run against an asset with an open copy.
-    //
-    // Each entry point reports whether anything changed; re-rendering the graph is the caller's concern.
     internal static class SerializeReferenceGraphEditor
     {
-        // Re-points a missing reference by rewriting the stored type name in the YAML, keeping the payload.
         public static bool ApplyFix(string assetPath, long fileId, long rid, string assemblyQualifiedName)
         {
-            // <None> emits an empty name, which clears the reference rather than falling through as a no-op.
             if (string.IsNullOrEmpty(assemblyQualifiedName)) return ClearReference(assetPath, fileId, rid);
 
             if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
@@ -30,7 +21,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var type = Type.GetType(assemblyQualifiedName, throwOnError: false);
             if (type is null) return false;
 
-            // Only the captured document is rewritten: a rid is unique within one, but collides across them.
             if (!SerializeReferenceYamlEditor.TryRewriteType(assetPath, fileId, rid, ManagedTypeName.FromType(type)))
                 return false;
 
@@ -45,8 +35,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
 
-            // Name how many fields the clear nulls, so an aliased reference does not silently take down siblings.
-            // A non-positive count means the pointers could not be located, so the wording drops the number.
             var fieldCount = SerializeReferenceYamlEditor.CountPointersTo(assetPath, fileId, rid);
             var pointerLine = fieldCount switch
             {
@@ -94,7 +82,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (!SerializeReferenceYamlEditor.TryRemoveEntry(assetPath, fileId, rid)) return false;
 
-                // Patched through the import invalidator rather than a full ClearCache, as in ClearReference.
                 AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
                 SerializeReferenceRepairSuggestions.ClearCache();
                 return true;
@@ -129,7 +116,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             using (serializedObject)
             {
                 var previous = property.managedReferenceValue;
-                // A null type clears to <None>; a concrete one carries over the previous value's matching fields.
                 property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
                 property.isExpanded = type is not null;
 
@@ -138,7 +124,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 PersistEdit(assetPath, target);
             }
 
-            // The save triggers the import that patches the index for this asset alone.
             SerializeReferenceRepairSuggestions.ClearCache();
             SerializeReferenceYamlProbeCache.ClearCache();
             return true;
@@ -190,7 +175,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             property = null;
 
             if (string.IsNullOrEmpty(graphPath)) return false;
-            // Scenes are not loadable through LoadAllAssetsAtPath.
             if (SerializeReferenceHelpers.IsScene(assetPath)) return false;
 
             return TryResolveProperty(assetPath, fileId, ToSerializedPropertyPath(graphPath),
@@ -211,11 +195,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 SerializedPropertyType.String, out serializedObject, out property);
         }
 
-        // The inverse of the ".Array.data" stripping the YAML editor does when it normalizes a property path.
         public static string ToSerializedPropertyPath(string graphPath) =>
             Regex.Replace(graphPath, @"\[(\d+)\]", ".Array.data[$1]");
 
-        // Finds the sub-asset carrying fileId, then the property at propertyPath, of the expected kind.
         private static bool TryResolveProperty(string assetPath, long fileId, string propertyPath,
             SerializedPropertyType expected, out SerializedObject serializedObject, out SerializedProperty property)
         {
@@ -236,7 +218,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return true;
                 }
 
-                // No other document shares this file id, so a wrong kind here means bail rather than scan on.
                 serialized.Dispose();
                 return false;
             }

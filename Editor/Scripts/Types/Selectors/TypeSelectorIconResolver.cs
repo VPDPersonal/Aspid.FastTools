@@ -6,9 +6,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
 {
-    // Resolves TypeSelectorDisplayAttribute.Icon strings (asset path, Resources path or built-in editor icon name) and
-    // the per-type fallback icon. Hits are cached for the domain lifetime; misses are not, so a later-imported asset is
-    // picked up on the next bind.
     internal static class TypeSelectorIconResolver
     {
         private const string TypeFallbackIcon = "d_cs Script Icon";
@@ -57,9 +54,6 @@ namespace Aspid.FastTools.Types.Editors
                 icon.StartsWith("Packages/", StringComparison.Ordinal))
                 return AssetDatabase.LoadAssetAtPath<Texture>(icon);
 
-            // A slash signals a Resources path (e.g. "Icons/MyIcon") rather than a built-in editor icon name. Probing
-            // such a string through IconContent first logs a "Unable to load icon" warning to the console on every
-            // miss, so for path-shaped strings the Resources load is tried first and IconContent is only the fallback.
             if (icon.Contains('/'))
             {
                 var resource = Resources.Load<Texture>(icon);
@@ -69,8 +63,6 @@ namespace Aspid.FastTools.Types.Editors
                 return pathContent?.image;
             }
 
-            // Built-in editor icon (e.g. "d_ScriptableObject Icon"). IconContent never throws but may
-            // return an empty content whose image is null.
             var content = EditorGUIUtility.IconContent(icon);
             return content?.image ?? Resources.Load<Texture>(icon);
         }
@@ -81,12 +73,9 @@ namespace Aspid.FastTools.Types.Editors
 
             if (type is not null)
             {
-                // GetMiniTypeThumbnail honors a custom icon assigned on the script's .meta and yields the
-                // ScriptableObject icon for ScriptableObject-derived types.
                 var thumbnail = AssetPreview.GetMiniTypeThumbnail(type);
                 if (thumbnail is not null) return thumbnail;
 
-                // Safety net when Unity has no cached thumbnail for the type yet.
                 if (typeof(ScriptableObject).IsAssignableFrom(type))
                     return Resolve(ScriptableObjectFallbackIcon);
             }

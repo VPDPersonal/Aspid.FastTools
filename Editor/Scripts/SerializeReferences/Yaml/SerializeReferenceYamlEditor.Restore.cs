@@ -22,7 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (!TryParseTopLevelArrayElement(elementPath, out _, out _)) return false;
                 if (!TryReadReferenceId(assetPath, fileId, elementPath, out rid)) return false;
-                if (rid < 0) return false; // a null (-1) / missing-sentinel (-2) element carries no entry to snapshot
+                if (rid < 0) return false;
 
                 var lines = SerializeReferenceYamlProbeCache.ReadAllLines(assetPath);
                 var (start, end) = FindDocumentRange(lines, fileId);
@@ -43,7 +43,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var captured = new List<string>(entryEnd - i);
                     for (var k = i; k < entryEnd; k++) captured.Add(lines[k]);
 
-                    // A lone header with no type mapping is not a real entry — nothing worth restoring later.
                     if (captured.Count < 2) return false;
 
                     entryLines = captured;
@@ -72,7 +71,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
-                if (!LooksLikeUnityYaml(lines)) return false; // never rewrite a non-Unity YAML file
+                if (!LooksLikeUnityYaml(lines)) return false;
 
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
@@ -80,7 +79,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var refIdsStart = FindRefIdsStart(lines, start, end);
                 if (refIdsStart < 0) return false;
 
-                // Only restore over a genuinely empty slot: a null (-1) or missing sentinel (-2) pointer. A positive id
+                // Only restore over a genuinely empty slot: a null (-2) or missing sentinel (-1) pointer. A positive id
                 // means the user assigned a real reference after the loss — leave it be rather than overwrite their work.
                 if (!TryFindArrayElementPointer(lines, start, refIdsStart, fieldName, elementIndex, out var pointerLine, out var currentRid))
                     return false;
@@ -88,9 +87,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var freshRid = NextFreeRid(lines, start, end);
 
-                // Re-point the element, then splice the captured entry (its header's rid rewritten to the fresh id) in as
-                // the RefIds list's first entry — mirroring where Unity writes new entries and where TryNullReference
-                // inserts the null sentinel.
                 var pointerIndent = IndentOf(lines[pointerLine]);
                 lines[pointerLine] = new string(' ', pointerIndent) + $"- rid: {freshRid}";
 
@@ -114,10 +110,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // The field name and element index of the top-level array element pointing at the rid. Confined to the
-        // object's own field block and to pointers at their field's indent, so a same-shaped RefIds entry or a
-        // nested pointer is never mistaken for one. False when no top-level element holds it — a single field or a
-        // nested pointer, neither of which a list resize destroys.
         public static bool TryFindTopLevelArrayElementForRid(string assetPath, long fileId, long rid,
             out string field, out int index)
         {
@@ -238,7 +230,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     count++;
                 }
 
-                return false; // field found but the index-th element is not present
+                return false;
             }
 
             return false;

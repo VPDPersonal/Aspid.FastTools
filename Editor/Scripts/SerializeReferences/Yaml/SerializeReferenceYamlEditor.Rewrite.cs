@@ -49,7 +49,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
-                if (!LooksLikeUnityYaml(lines)) return false; // never offer (or apply) a rewrite on a non-Unity YAML file
+                if (!LooksLikeUnityYaml(lines)) return false;
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -96,7 +96,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
-                if (!LooksLikeUnityYaml(lines)) return false; // never rewrite a non-Unity YAML file
+                if (!LooksLikeUnityYaml(lines)) return false;
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -149,7 +149,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
 
                 var lines = File.ReadAllLines(assetPath);
-                if (!LooksLikeUnityYaml(lines)) return false; // never rewrite a non-Unity YAML file
+                if (!LooksLikeUnityYaml(lines)) return false;
                 var (start, end) = FindDocumentRange(lines, fileId);
                 if (start < 0) return false;
 
@@ -192,8 +192,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     }
                 }
 
-                // Nothing referenced or stored this rid — leave the file untouched. (When an entry exists but is already
-                // unreferenced this still drops it; when only a dangling pointer remains this still nulls it.)
                 if (headerIndex < 0 && !pointerNulled) return false;
 
                 var blockStart = headerIndex;
@@ -213,11 +211,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var result = new List<string>(lines.Length + 2);
                 for (var i = 0; i < lines.Length; i++)
                 {
-                    if (headerIndex >= 0 && i >= blockStart && i < blockEnd) continue; // drop the broken entry block
+                    if (headerIndex >= 0 && i >= blockStart && i < blockEnd) continue;
 
                     result.Add(lines[i]);
 
-                    // Insert the sentinel as the RefIds list's first entry, mirroring where Unity writes it.
                     if (needsNullEntry && i == refIdsStart)
                     {
                         result.Add($"{dash}- rid: {NullRid}");
@@ -293,8 +290,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static Regex BuildPointerPattern(long rid) => new(
             $@"(?<prefix>^\s*(?:-\s+)?)rid:\s*{rid}(?<suffix>\s*$)|(?<prefix>\{{\s*)rid:\s*{rid}(?<suffix>\s*\}})");
 
-        // Whether the RefIds list already carries Unity's null sentinel entry ("- rid: -2"). The sentinel is a shared
-        // singleton — at most one per object — so a second null pointer reuses it rather than adding another.
         private static bool HasNullSentinelEntry(string[] lines, int refIdsStart, int end, int entryIndent)
         {
             var sentinel = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{NullRid}\s*$");
@@ -307,8 +302,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // The indent of the RefIds list's entry headers: the first "- rid:" line under RefIds. Entries sit at this
-        // shallowest dash indent; nested reference pointers inside their data blocks are deeper. -1 when the block is empty.
         private static int FindRefIdsEntryIndent(string[] lines, int refIdsStart, int end)
         {
             var entry = new Regex(@"^(?<indent>\s*)-\s+rid:\s*-?\d+\s*$");

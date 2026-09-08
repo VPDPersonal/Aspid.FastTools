@@ -9,9 +9,6 @@
     --aspid-fasttools-colors-dot_blob-color_2:                  var(--aspid-colors-status-warning-text-dark);
     --aspid-fasttools-colors-dot_blob-color_3:                  var(--aspid-colors-status-error-text-dark);
 
-    /* Status washes: dim, desaturated hues a status class paints across all three blobs at once, so the canvas
-       reads as one calm state wash instead of the default good→bad gradient. Component-scoped — the palette's
-       status families are tuned for text and borders and read far too saturated behind a whole window. */
     --aspid-fasttools-colors-dot_blob-info:                     rgb(38, 54, 77);
     --aspid-fasttools-colors-dot_blob-success:                  rgb(41, 71, 54);
     --aspid-fasttools-colors-dot_blob-warning:                  rgb(77, 64, 31);
@@ -22,9 +19,7 @@
     --aspid-fasttools-metrics-dot_scale_reference:              420;
 }
 
-/* Declared after :root deliberately — a status class and :root carry the same specificity, so source order is what
-   lets a status win over the default gradient. Dropping the class falls back to :root, which is how StatusStyle.Type.None
-   restores the three-tone signal look. */
+/* Status rules must follow :root to win at equal specificity and restore the default palette when removed. */
 .aspid-fasttools-status--info {
     --aspid-fasttools-colors-dot_blob-color_1:                  var(--aspid-fasttools-colors-dot_blob-info);
     --aspid-fasttools-colors-dot_blob-color_2:                  var(--aspid-fasttools-colors-dot_blob-info);

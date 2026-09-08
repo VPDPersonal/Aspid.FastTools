@@ -5,9 +5,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A button-like VisualElement with a horizontal gradient background and an animated accent overlay that fades in
-    // on hover. The gradient and accent colors are sourced from USS custom properties or set via UXML attributes /
-    // fluent extensions.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidGradientButton : VisualElement
     {
@@ -87,8 +84,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 .AddStyleSheetFromResources(StyleSheetPath);
             focusable = true;
 
-            // Drawn on top of the static gradient pill but BEFORE the label, so the text
-            // always reads cleanly above the hover effect.
             _overlay = new AspidHoverGradientOverlay();
             Add(_overlay);
 
@@ -168,8 +163,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         private void RebuildGradient(Color color)
         {
-            // Textures live only while the element is attached: OnAttachToPanel builds the first
-            // one and OnDetachFromPanel disposes it, so a detached button never holds a texture.
+            // Detached elements may never attach, so allocate textures only while a panel owns them.
             if (panel == null) return;
 
             DisposeTexture();

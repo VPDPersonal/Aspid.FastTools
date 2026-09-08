@@ -4,9 +4,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the per-character color cycling parameters of an AspidAnimatedTitle. Both stride and speed can be
-    // inherited from their USS custom properties or set explicitly in code; once set explicitly they are no longer
-    // overridden by USS resolution.
     internal readonly struct AspidAnimatedTitleColorAnimationStyle
     {
         public static readonly CustomStyleProperty<float> StrideProperty =

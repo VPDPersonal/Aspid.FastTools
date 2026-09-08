@@ -6,13 +6,8 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The bulk half of the repair tooling: rewriting or nulling many entries at once, batched per file so each asset
-    // is reimported exactly once. Pure file work — confirmations, receipts and rendering belong to the caller.
-    // A failed write is skipped, so every returned count is what actually changed on disk, not what was asked for.
     internal static class SerializeReferenceBatchEditor
     {
-        // Splits entries into those safe to rewrite on disk and those open elsewhere, which must be repaired in
-        // memory instead.
         public static void SplitWritable(IReadOnlyList<MissingReferenceLocation> source,
             out List<MissingReferenceLocation> onDisk, out List<MissingReferenceLocation> inMemory)
         {
@@ -68,13 +63,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RunBatch(entries, progressTitle, (path, entry) =>
                 SerializeReferenceYamlEditor.TryRewriteType(path, entry.Entry.FileId, entry.Entry.Rid, targetType));
 
-        // Nulls every entry to the null managed-reference id and drops its payload.
         public static int Null(IReadOnlyList<MissingReferenceLocation> entries, string progressTitle) =>
             RunBatch(entries, progressTitle, (path, entry) =>
                 SerializeReferenceYamlEditor.TryNullReference(path, entry.Entry.FileId, entry.Entry.Rid));
 
-        // Nulls each open entry on its live object; the file rewrite is skipped, so these stay in the audit until
-        // the asset is saved.
         public static int ClearOpenInMemory(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName storedType)
         {
             var cleared = 0;
@@ -90,7 +82,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static int CountFiles(IEnumerable<MissingReferenceLocation> entries) =>
             entries.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
 
-        // The shared per-file loop behind Rewrite and Null; a file is reimported only when something changed in it.
         private static int RunBatch(IReadOnlyList<MissingReferenceLocation> entries, string progressTitle,
             Func<string, MissingReferenceLocation, bool> edit)
         {

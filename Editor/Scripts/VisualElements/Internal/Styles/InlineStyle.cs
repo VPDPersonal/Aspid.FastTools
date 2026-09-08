@@ -4,8 +4,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Tracks the effective value of a USS-controlled property and remembers whether it was set inline from code.
-    // Inline values take precedence over USS values, mirroring the inline-vs-stylesheet rule in UIToolkit.
     internal class InlineStyle<T>
     {
         private readonly Action<T, T> _onSet;

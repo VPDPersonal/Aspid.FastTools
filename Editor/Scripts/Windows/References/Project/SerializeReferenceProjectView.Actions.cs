@@ -8,10 +8,6 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The three bulk mutations a group card offers — rewrite every entry to one picked type, clear them all to null,
-    // and undo a rewrite from its receipt — plus the inline picker they hang off. Each one confirms with a preview
-    // computed by the very scan the write applies, leaves a receipt in the summary stack, and hands the file work to
-    // SerializeReferenceBatchEditor; only the confirmation copy and the re-render live here.
     internal sealed partial class SerializeReferenceProjectView
     {
         private const string PickerClass = RootClass + "__picker";
@@ -21,19 +17,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly AuditPickerHost.PickerClasses _pickerClassSet =
             new(PickerClass, PickerAttachedClass, GroupPickingClass);
 
-        // The group's bulk picker, inline below the Fix all button, constrained to the group's intersected field type.
         private void ToggleGroupPicker(MissingReferenceGroup group, Type constraint, AspidGradientButton button)
         {
             if (_picker.ToggleClosed(button)) return;
 
-            // Every entry in the group is a missing reference, so this is a repair picker: a hidden type stays
-            // offered here, or a group stored as one could never be re-pointed.
             _picker.Open(button, new TypeSelectorView(
                 filter: ManagedReferenceFilter.For(constraint, includeHidden: true),
                 currentAqn: null, // the bulk group picker has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>
                 {
-                    // <None> emits an empty name: clear the group to null instead of treating it as a no-op.
                     if (string.IsNullOrEmpty(assemblyQualifiedName))
                     {
                         ClearGroupToNull(group);
@@ -46,7 +38,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 onDismiss: _picker.Close));
         }
 
-        // Rewrites every entry in the group to newType after a mandatory confirmation.
         private void ApplyGroupFix(MissingReferenceGroup group, Type newType)
         {
             if (newType is null) return;
@@ -69,8 +60,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ? $"\n\n{skipped} reference(s) in open scene(s) or Prefab Mode will be skipped."
                 : string.Empty;
 
-            // When the group's picker fell back to an unconstrained list because its entries' declared field types
-            // disagree, the single chosen type cannot fit every entry — warn that the mismatched ones null on reimport.
             group.ResolveConstraint(out var mixedFieldTypes);
             var mixedNote = mixedFieldTypes
                 ? "\n\nField types in this group differ — the chosen type may not fit every entry; incompatible ones " +
@@ -79,7 +68,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var managedType = ManagedTypeName.FromType(newType);
 
-            // The preview is computed by the same scan the rewrite applies, so it shows exactly what gets written.
             var diff = SerializeReferenceProjectSummary.BuildDiffPreview(entries, managedType);
 
             if (!EditorUtility.DisplayDialog(
@@ -100,8 +88,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (skipped > 0)
                 summaryBody += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
 
-            // Undo re-points the entries back to the original (now-missing) stored type. Only the type line moved —
-            // the data blocks were never touched on disk — so flipping it back is a faithful revert.
             var originalType = group.StoredType;
             var missingName = group.DisplayName;
             var appliedName = newType.FullName;
@@ -111,9 +97,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ShowSummary(summaryTitle, summaryBody, Undo);
         }
 
-        // Clears every entry in the group to null. Closed assets are nulled in the YAML directly; assets open in
-        // Prefab Mode / a loaded scene cannot be rewritten on disk (the open copy would clobber it on save), so those
-        // are nulled on the live object and stay in the audit until saved. NOT undoable: the broken payload is discarded.
         private void ClearGroupToNull(MissingReferenceGroup group)
         {
             _picker.Close();
@@ -148,7 +131,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
-            // Nothing actually changed (every edit failed) — skip the receipt rather than claim a cleared count of 0.
             if (cleared == 0)
             {
                 if (_scanButton is not null) _scanButton.Text = RescanLabel;
@@ -165,27 +147,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     : $" {clearedInMemory} were nulled in memory — save the assets to persist them (still listed until saved).";
             }
 
-            // Unlike Fix all (which only swaps a stored type name, never nulls anything), Clear to null CAN turn a
-            // required field that held a broken-but-non-null reference into a genuine unset-required violation — drop
-            // the stale cache so the Required violations card doesn't under-report until the user rescans.
+            // Clearing can create required-field violations; invalidate the cached audit after nulling references.
             _requiredIsWarm = false;
 
             RerenderAfterBulkEdit();
 
-            // No Undo: clearing discards the broken payload (see above). The receipt is a plain record.
             ShowSummary(summaryTitle, summaryBody, onUndo: null);
         }
 
-        // Reverts one bulk fix by re-pointing its entries back to the original (now-missing) stored type. Only this
-        // fix's own receipt is dropped — receipts for other still-applied fixes survive, unlike a full Rescan.
         private void UndoGroupFix(IReadOnlyList<MissingReferenceLocation> entries, ManagedTypeName originalType,
             ManagedTypeName appliedType, string missingName, string appliedName, VisualElement receipt)
         {
-            // The asset may have opened in a scene / Prefab Mode since the fix; apply the same guard as the forward fix.
             var writable = SerializeReferenceBatchEditor.FilterWritable(entries, out var skipped);
 
-            // Only entries that STILL hold the type this receipt applied may be re-pointed — the group can have been
-            // re-broken and fixed to a DIFFERENT type since, and blindly rewriting would destroy that newer fix.
+            // Do not undo references that have been reassigned since this receipt was created.
             var revertible = SerializeReferenceBatchEditor.FilterStillHolding(writable, appliedType, out var diverged);
 
             if (revertible.Count == 0)
@@ -221,12 +196,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             SerializeReferenceRepairSuggestions.ClearCache();
 
-            // Drop only this receipt — the others describe fixes still applied. RenderGroups rebuilds only _list,
-            // never _summaries, so the surviving receipts stay put.
             receipt?.RemoveFromHierarchy();
             RenderGroups(MissingReferenceGroup.CollectFromIndex(), RequiredViolationsForRender);
 
-            // The rewrite can come up short if a file changed between the check and the write — report the real count.
             var undoTitle = reverted == 1 ? "Reverted 1 reference" : $"Reverted {reverted} references";
             var undoBody = $"Re-pointed back to the missing '{missingName}'.";
             if (diverged > 0) undoBody += $" Left {diverged} alone (no longer '{appliedName}').";

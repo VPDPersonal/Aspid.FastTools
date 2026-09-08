@@ -3,9 +3,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the theme (background brightness variant) of a VisualElement. The theme can be inherited from the
-    // StyleProperty USS custom property or set explicitly in code; once set explicitly it is no longer overridden by
-    // the CustomStyleResolvedEvent.
     internal readonly struct ThemeStyle
     {
         public static readonly CustomStyleProperty<string> StyleProperty = new("--aspid-fasttools-prop-theme");

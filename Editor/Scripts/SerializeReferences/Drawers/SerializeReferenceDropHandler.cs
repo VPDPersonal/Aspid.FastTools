@@ -5,8 +5,6 @@ using Aspid.FastTools.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Assigns a managed reference from a MonoScript dropped on a [SerializeReference] field. Shared by the UIToolkit
-    // field and the IMGUI drawer.
     internal static class SerializeReferenceDropHandler
     {
         // Resolves the first dragged script's class when it is assignable to the field and passes the

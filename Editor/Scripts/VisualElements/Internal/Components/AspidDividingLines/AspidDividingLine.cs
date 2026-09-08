@@ -3,8 +3,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // A VisualElement that renders a styled dividing line. Supports theme, status, size, and direction customization,
-    // all of which can be driven by USS custom properties or set explicitly in code.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidDividingLine : VisualElement
     {

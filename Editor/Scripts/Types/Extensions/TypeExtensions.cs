@@ -8,26 +8,20 @@ using System.Text.RegularExpressions;
 namespace Aspid.FastTools.Types.Editors
 {
     /// <summary>
-    /// Provides editor-side extension methods for locating and opening the <see cref="MonoScript"/> defining a
+    /// Provides extension methods for locating and opening the <see cref="MonoScript"/> defining a
     /// <see cref="Type"/>.
     /// </summary>
     public static class TypeExtensions
     {
         /// <summary>
-        /// Searches the Asset Database for the <see cref="MonoScript"/> defining a type.
+        /// Searches script assets for a declaration of <paramref name="type"/>.
         /// </summary>
+        /// <param name="type">The type to locate, or <see langword="null"/> for no match.</param>
+        /// <returns>The matching script asset; otherwise, <see langword="null"/> if no declaration is found.</returns>
         /// <remarks>
-        /// Falls back to scanning script text when <see cref="MonoScript.GetClass"/> finds no match, so a type whose
-        /// file name differs from its own is still found. A nested type owns no script asset, so the lookup walks out
-        /// to the declaring type and accepts that script only when its text really declares the nested type.
-        /// <para>
-        /// The result is the file the type is declared in, which for a nested type is not the file whose own class it
-        /// is, so a caller writing it into <c>m_Script</c> must check <see cref="MonoScript.GetClass"/> against the
-        /// type it asked for.
-        /// </para>
+        /// Text matching is limited to assets matching the type name and, for nested types, the declaring type's script.
+        /// Check <see cref="MonoScript.GetClass"/> before assigning the result to a component's <c>m_Script</c> property.
         /// </remarks>
-        /// <param name="type">The type to locate a script asset for.</param>
-        /// <returns>The matching asset, or <see langword="null"/> when none is found.</returns>
         public static MonoScript FindMonoScript(this Type type)
         {
             if (type is null) return null;
@@ -57,10 +51,8 @@ namespace Aspid.FastTools.Types.Editors
                 return script;
             }
 
-            // A nested type never has a script of its own, and its declaration is not always in the file the
-            // declaring type resolves to: a partial outer is split across several, and a generated nested type has
-            // no source line at all. The declaring script is therefore accepted only once its text carries the
-            // nested declaration, so a miss answers "not found" instead of pointing at an unrelated file.
+            // A nested type may live in another partial file or generated code; accept the outer script only if
+            // it contains the declaration.
             if (lookupType.DeclaringType is not { } declaringType) return null;
 
             var declaringScript = declaringType.FindMonoScript();
@@ -113,8 +105,6 @@ namespace Aspid.FastTools.Types.Editors
         private static Type GetLookupType(Type type) =>
             type.IsGenericType ? type.GetGenericTypeDefinition() : type;
 
-        // Enums are matched separately so a class/struct/record/interface lookup never lands on a same-named enum
-        // declaration. `record struct Name` is covered by the `struct` alternative.
         private static string GetDeclarationPattern(bool isEnum, string typeName) => isEnum
             ? $@"\benum\s+{Regex.Escape(typeName)}\b"
             : $@"\b(class|struct|record|interface)\s+{Regex.Escape(typeName)}\b";

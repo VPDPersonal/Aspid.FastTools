@@ -5,14 +5,12 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    // IMGUI twin of InspectorNotice, so both inspector modes render the same notice rows.
     internal static class InspectorNoticeGUI
     {
-        // Mirrors the UIToolkit palette: --aspid-colors-status-warning-text-light / -lightness.
+        // Keep these colors aligned with --aspid-colors-status-warning-text-light / -lightness.
         internal static readonly Color NoticeColor = new(245f / 255f, 185f / 255f, 85f / 255f);
         internal static readonly Color NoticeColorHover = new(255f / 255f, 235f / 255f, 175f / 255f);
 
-        // The rid color is dynamic, so hover lightens it instead of applying a static USS brighten.
         private const float ActionHoverLighten = 0.35f;
 
         private const float DotSize = 8f;
@@ -23,7 +21,6 @@ namespace Aspid.FastTools.Editors
         private static GUIStyle _actionStyle;
         private static GUIStyle _infoMessageStyle;
 
-        // Non-actionable info row: icon plus a dim message whose full detail rides the tooltip.
         internal static void DrawInfoNotice(Rect rect, string message, string detail)
         {
             _infoMessageStyle ??= new GUIStyle(EditorStyles.label) { wordWrap = false };
@@ -38,10 +35,6 @@ namespace Aspid.FastTools.Editors
             GUI.Label(messageRect, messageContent, _infoMessageStyle);
         }
 
-        // Single-row notice: a message, a right-pinned action word and an optional Smart Fix suggestion after it.
-        // Without ridColor the row is an amber warning with a triangle icon; with it the row is the shared-reference
-        // variant — a rid-colored swatch instead of the icon, message and action tinted that color so aliased fields
-        // match at a glance. onMessageClick makes the message itself clickable.
         internal static void DrawNotice(Rect rect, string message, string actionText, string detail, Action onClick,
             string suggestionText = null, string suggestionDetail = null, Action onSuggestion = null,
             Color? ridColor = null, Action onMessageClick = null)
@@ -83,7 +76,7 @@ namespace Aspid.FastTools.Editors
             }
             else
             {
-                // The style is shared across notices — reset the tint a clickable message may have left behind.
+                // Reset the shared style tint left by a previously drawn clickable message.
                 _messageStyle.hover.textColor = baseColor;
                 GUI.Label(messageRect, messageContent, _messageStyle);
             }
@@ -101,7 +94,6 @@ namespace Aspid.FastTools.Editors
             var separatorContent = hasSuggestion ? new GUIContent("·") : null;
             var separatorWidth = hasSuggestion ? _actionStyle.CalcSize(separatorContent).x : 0f;
 
-            // Pin the action cluster to the right edge, but never let it overlap the message.
             var clusterWidth = actionWidth +
                 (hasSuggestion ? suggestionGap + separatorWidth + suggestionGap + suggestionWidth : 0f);
             var actionX = Mathf.Max(messageRect.xMax + 6f, rect.xMax - clusterWidth);
@@ -110,7 +102,6 @@ namespace Aspid.FastTools.Editors
 
             if (hasSuggestion)
             {
-                // The separator is decoration, not an action — a plain label with no link affordance.
                 _actionStyle.normal.textColor = baseColor;
                 _actionStyle.hover.textColor = baseColor;
                 GUI.Label(new Rect(actionX + actionWidth + suggestionGap, rect.y, separatorWidth, rect.height),
@@ -133,13 +124,13 @@ namespace Aspid.FastTools.Editors
 
             EditorGUIUtility.AddCursorRect(linkRect, MouseCursor.Link);
 
-            // IMGUI rich text has no <u>, so the underline is a hand-drawn 1px line.
+            // IMGUI rich text has no underline tag; draw the underline explicitly.
             EditorGUI.DrawRect(new Rect(linkRect.x + 1f, linkRect.yMax - 3f, linkRect.width - 2f, 1f), drawColor);
 
             if (GUI.Button(linkRect, content, _actionStyle)) onClick();
         }
 
-        // IMGUI has no circle primitive, so the swatch is a tinted, fully rounded 1x1 white texture.
+        // IMGUI has no circle primitive; round a tinted white texture instead.
         private static void DrawDot(float x, Rect rect, Color color)
         {
             var dotRect = new Rect(x, rect.y + (rect.height - DotSize) * 0.5f, DotSize, DotSize);

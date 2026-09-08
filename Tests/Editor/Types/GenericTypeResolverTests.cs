@@ -12,6 +12,11 @@ namespace Aspid.FastTools.Types.Editors.Tests
     [System.Serializable]
     internal sealed class ResolverClass : IResolverThing { }
 
+    internal abstract class ResolverAbstractWithDefaultCtor
+    {
+        public ResolverAbstractWithDefaultCtor() { }
+    }
+
     internal sealed class ResolverNoDefaultCtor : IResolverThing
     {
         public ResolverNoDefaultCtor(int _) { }
@@ -93,6 +98,22 @@ namespace Aspid.FastTools.Types.Editors.Tests
                 "A value type must satisfy a 'struct' constraint.");
             Assert.IsFalse(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(ResolverClass)),
                 "A reference type must not satisfy a 'struct' constraint.");
+        }
+
+        [Test]
+        public void SatisfiesSpecialConstraints_StructConstraint_RejectsNullableValueType()
+        {
+            var parameter = typeof(StructBox<>).GetGenericArguments()[0];
+
+            Assert.IsFalse(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(int?)));
+        }
+
+        [Test]
+        public void SatisfiesSpecialConstraints_NewConstraint_RejectsAbstractClassWithPublicConstructor()
+        {
+            var parameter = typeof(CtorBox<>).GetGenericArguments()[0];
+
+            Assert.IsFalse(GenericTypeResolver.SatisfiesSpecialConstraints(parameter, typeof(ResolverAbstractWithDefaultCtor)));
         }
 
         [Test]

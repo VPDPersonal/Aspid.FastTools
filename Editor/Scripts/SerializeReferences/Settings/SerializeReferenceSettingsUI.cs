@@ -6,13 +6,8 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The SerializeReference settings controls, defined once and rendered by the window's Settings tab, the
-    // Preferences page and the Project Settings page, so every surface shows the same controls and mirrors the
-    // others live.
     internal static class SerializeReferenceSettingsUI
     {
-        // Breakage detection belongs to the per-user scope; auto de-alias, the build gate and the excluded folders
-        // to the shared one. Each row is tagged with the scope it persists in, which paints its stripe.
         public static void BuildControls(VisualElement container, AspidSettingsScope scope = AspidSettingsScope.All)
         {
             if ((scope & AspidSettingsScope.User) != 0)
@@ -50,11 +45,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             container.Add(AspidSettingsUI.CreateRowNote(
                 "Off — never check · Warn — log missing / unset-required references · Fail — abort the build / CI job."));
 
-            // The excluded-folders control carries its own "Excluded scan folders" header row.
             container.Add(new SerializeReferenceExcludedFoldersField().WithScopeStripe(AspidSettingsUI.SharedScopeClass));
         }
 
-        // Defined once so the window tab and the Preferences page render and live-sync the same switch.
         private static AspidSwitch CreateBreakageDetectionSwitch()
         {
             var breakageDetection = new AspidSwitch("Breakage detection")

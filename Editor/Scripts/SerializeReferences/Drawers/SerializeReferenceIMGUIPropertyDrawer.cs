@@ -7,8 +7,6 @@ using Aspid.FastTools.Types.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // IMGUI rendering for the [TypeSelector] drawer on a [SerializeReference] field: a foldout-and-dropdown header
-    // row, the notices, and the nested properties of the assigned instance.
     internal static class SerializeReferenceIMGUIPropertyDrawer
     {
         private static readonly GUIContent _measureContent = new();
@@ -38,11 +36,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var spacing = EditorGUIUtility.standardVerticalSpacing;
             var height = EditorGUIUtility.singleLineHeight;
 
-            // Per-instance child fields cannot be merged, so mixed types get the dropdown and a one-line hint only.
             if (SerializeReferenceHelpers.HasMixedTypes(property))
                 return height + spacing + EditorGUIUtility.singleLineHeight;
 
-            // Per-asset notices are suppressed under a multi-object selection.
             if (SerializeReferenceHelpers.NoticesApply(property))
             {
                 if (SerializeReferenceHelpers.IsMissingType(property))
@@ -66,8 +62,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         internal static void Draw(Rect position, GUIContent label, SerializedProperty property, int depth, Type[] baseTypes)
         {
-            // On a rid collision the guard queues a de-alias for the next tick, never mutating mid-draw. Cheap on the
-            // unchanged path, so safe to call from every repaint.
             SerializeReferenceDuplicateGuard.Observe(property);
 
             var spacing = EditorGUIUtility.standardVerticalSpacing;
@@ -76,7 +70,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var hasValue = currentType is not null && !mixedTypes;
             var fieldType = SerializeReferenceHelpers.GetFieldType(property);
 
-            // Computed up front: showing any notice decides whether the field reserves the stripe gutter.
             var noticesApply = !mixedTypes && SerializeReferenceHelpers.NoticesApply(property);
             var showMissing = noticesApply && SerializeReferenceHelpers.IsMissingType(property);
             var showShared = noticesApply && SerializeReferenceHelpers.HasSharedReference(property);
@@ -101,7 +94,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 contextEvent.Use();
             }
 
-            // Dropping a MonoScript on the header row assigns an instance of its class (when assignable).
             if ((contextEvent.type == EventType.DragUpdated || contextEvent.type == EventType.DragPerform) &&
                 line.Contains(contextEvent.mousePosition))
             {
@@ -122,7 +114,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
             }
 
-            // A type with no serialized fields is drawn flat: an arrow would promise content that never appears.
             var expandable = hasValue && SerializeReferenceNesting.HasVisibleChildren(property);
 
             var labelRect = new Rect(line.x, line.y, EditorGUIUtility.labelWidth, line.height);
@@ -132,7 +123,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             else
             {
-                // No foldout arrow, so pull the label left onto its spot.
                 var labelPull = flat ? FoldoutArrowIndent : 0f;
                 EditorGUI.LabelField(new Rect(labelRect.x - labelPull, labelRect.y,
                     labelRect.width + labelPull, labelRect.height), label);
@@ -167,7 +157,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 caption = FitCaptionFromLeft(captionStyle, caption, dropdownRect.width);
             }
 
-            // The caption shows the short name, so the tooltip carries the full identity.
             var captionTooltip = mixedTypes
                 ? "Mixed — the selected objects hold different types."
                 : missingTooltip ?? TypeSelectorHelpers.GetTypeSelectorTooltip(currentType);
@@ -175,7 +164,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (EditorGUI.DropdownButton(dropdownRect, new GUIContent(caption, captionTooltip),
                     FocusType.Passive, captionStyle))
             {
-                // No single current type under mixed types, so the picker opens unselected.
                 ShowSelector(property, fieldType, baseTypes, mixedTypes ? null : currentType, dropdownRect);
             }
 
@@ -186,7 +174,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var y = line.yMax + spacing;
 
-            // One dim info line stands in for the child fields, which cannot be merged.
             if (mixedTypes)
             {
                 var hintRect = new Rect(body.x, y, body.width, EditorGUIUtility.singleLineHeight);
@@ -203,7 +190,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // foldout arrow the same at every nesting depth.
             var content = EditorGUI.IndentedRect(body);
 
-            // Full-height status stripe: the badge's per-index color when shared, else the warning amber.
             {
                 Color? stripeColor = null;
                 if (showShared && sharedIndex > 0)
@@ -257,7 +243,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 y += EditorGUIUtility.singleLineHeight + spacing;
             }
 
-            // A required-but-empty reference shows a non-actionable notice; the header dropdown above is the fix.
             if (showRequired)
             {
                 // Flat field (no arrow): pull the notice left onto the arrow's spot so it lines up with the label above.
@@ -277,14 +262,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 EditorGUI.indentLevel--;
             }
 
-            // The only notice that coexists with children, so it alone sits under the nested properties.
             if (showShared)
             {
                 // One color across notice and stripe, so aliased fields read as a group. No warning icon: this is
                 // attention, not an error.
                 Color? indexColor = sharedIndex > 0 ? SerializeReferenceRidColor.ForIndex(sharedIndex) : null;
 
-                // When this member is the one a sibling's message click just revealed, scroll the inspector to it.
                 SerializeReferenceSharedNavigation.RevealIfPending(property, position);
 
                 // Pulled left by the arrow's width so the swatch lines up under it, and widened to match so
@@ -468,7 +451,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     () => SerializeReferenceUsageSearchProvider.OpenSearch(usagesType));
             }
 
-            // The inverse of Make Unique: point this field at an existing instance in the same object.
             if (SerializeReferenceHelpers.NoticesApply(property))
             {
                 foreach (var candidate in SerializeReferenceLinker.CollectLinkCandidates(property))
@@ -532,7 +514,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Applies a saved template to the property (an independent instance per target on a multi-object selection).
         private static void ApplyTemplate(SerializedProperty property, string name)
         {
             var persistent = property.Persistent();
@@ -551,7 +532,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             persistent.isExpanded = true;
         }
 
-        // A non-null missingTooltip both feeds the hover tooltip and flags the caption for the amber treatment.
         private static string GetCaption(SerializedProperty property, Type currentType, out string missingTooltip)
         {
             missingTooltip = null;

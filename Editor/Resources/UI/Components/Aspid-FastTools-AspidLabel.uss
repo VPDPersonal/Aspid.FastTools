@@ -12,7 +12,6 @@ AspidDividingLine {
     margin: 5px 0 0 0;
 }
 
-/* --- LABEL SIZES --- */
 .aspid-fasttools-label-size--h1 {
     font-size: 36px;
 }
@@ -41,7 +40,6 @@ AspidDividingLine {
     font-size: 12px;
 }
 
-/* General Text */
 .aspid-fasttools-theme--darkness Label {
     color: var(--aspid-colors-text-darkness);
 }
@@ -58,7 +56,6 @@ AspidDividingLine {
     color: var(--aspid-colors-text-lightness);
 }
 
-/* Status Text */
 AspidLabel.aspid-fasttools-status--success.aspid-fasttools-theme--darkness > Label {
     color: var(--aspid-colors-status-success-text-darkness);
 }

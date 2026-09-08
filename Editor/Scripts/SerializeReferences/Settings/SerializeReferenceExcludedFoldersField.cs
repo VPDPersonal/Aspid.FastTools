@@ -9,9 +9,6 @@ using Aspid.FastTools.UIElements.Editors.Internal;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Editable list of scan-excluded project folders: a header row that is itself the add target, then one flat row
-    // per folder with a remove button. Clicking a row re-opens the picker to re-point that entry in place. It
-    // rebuilds on ExcludedFoldersChanged, so the window's Settings tab and the Project Settings page stay mirrored.
     internal sealed class SerializeReferenceExcludedFoldersField : VisualElement
     {
         private const string StyleSheetPath =
@@ -30,14 +27,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string RemoveClass = "aspid-fasttools-excluded-folders__remove";
         private const string AddButtonClass = "aspid-fasttools-excluded-folders__add";
 
-        // The two mutually exclusive row hover tints; SetTint is their single writer.
         private static readonly string[] HoverTints = { EntryHoverClass, EntryDangerClass };
 
         private readonly VisualElement _list;
         private readonly VisualElement _header;
         private readonly Label _hint;
 
-        // The current rows with their paths, so the keyboard ring can walk them exactly as the pointer can.
         private readonly List<(VisualElement Row, string Path)> _rows = new();
 
         // The hosting keyboard ring listens to re-collect its targets, since a rebuild replaces every row element.
@@ -104,7 +99,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var path in folders)
             {
-                // The path label fills the row's full height, so clicking anywhere on it edits.
                 var label = new Label(path) { tooltip = path }.AddClass(PathClass);
                 label.RegisterCallback<ClickEvent>(_ => Edit(path));
 
@@ -131,14 +125,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             zone.RegisterCallback<PointerLeaveEvent>(_ => SetTint(entry, fallback));
         }
 
-        // The single writer, which is what keeps the row tints mutually exclusive; null clears them.
         private static void SetTint(VisualElement entry, string tint)
         {
             foreach (var cls in HoverTints) entry.EnableInClassList(cls, cls == tint);
         }
 
-        // The keyboard-ring members in visual order, mirroring the pointer affordances exactly: the header row
-        // activates the add picker, each folder row the edit picker, and removing a row does what its button does.
         internal IEnumerable<(VisualElement Element, Action Activate, Action Remove)> GetNavTargets()
         {
             yield return (_header, AddFolder, null);
@@ -158,7 +149,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SerializeReferenceSettings.ExcludedFolders = current.Append(relative).ToArray();
         }
 
-        // Re-points a row in place; a pick landing on an existing entry collapses onto it.
         private void Edit(string folder)
         {
             var relative = PickProjectFolder("Edit excluded folder", folder);
@@ -170,8 +160,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .ToArray();
         }
 
-        // The picked folder as a project-relative path; null on cancel, or on an outside-project pick, which
-        // explains itself through a dialog.
         private static string PickProjectFolder(string title, string startFolder)
         {
             var absolute = EditorUtility.OpenFolderPanel(title, startFolder, string.Empty);

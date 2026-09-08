@@ -3,9 +3,6 @@ using UnityEngine.UIElements;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // Manages the angular speed of the hover pulse animation for an AspidAnimatedLogo. The value can be inherited from
-    // the StyleProperty USS custom property or set explicitly in code; once set explicitly it is no longer overridden
-    // by USS resolution.
     internal readonly struct AspidAnimatedLogoPulseSpeedStyle
     {
         public static readonly CustomStyleProperty<float> StyleProperty =

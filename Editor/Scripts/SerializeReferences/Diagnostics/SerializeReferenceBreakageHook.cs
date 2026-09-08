@@ -6,7 +6,6 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Drives the breakage detector on asset/script changes, debounced to one scan per change burst.
     internal sealed class SerializeReferenceBreakageHook : AssetPostprocessor
     {
         private static bool _scheduled;

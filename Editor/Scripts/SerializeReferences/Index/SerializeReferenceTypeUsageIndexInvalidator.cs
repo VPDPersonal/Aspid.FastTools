@@ -5,8 +5,6 @@ using UnityEditor;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Keeps the usage index incremental: one asset's usages are patched on import, while a delete or move resets it
-    // coarsely, since a deleted path can no longer be resolved to a guid for a surgical strip.
     internal sealed class SerializeReferenceTypeUsageIndexInvalidator : AssetPostprocessor
     {
         // Exclusion is consulted only while the index is built, so a warm one would keep serving now-excluded assets.

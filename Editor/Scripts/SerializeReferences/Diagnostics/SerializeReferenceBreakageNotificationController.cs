@@ -7,8 +7,6 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Surfaces a breakage report as a fade-out toast plus one console line. The same set is shown at most once per
-    // session (a content hash in SessionState), so a recompile that re-detects it does not nag.
     internal static class SerializeReferenceBreakageNotificationController
     {
         private const string ShownPrefix = "Aspid.FastTools.SerializeReferences.Breakage.Shown.";
@@ -53,7 +51,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             ShowToast(message);
 
-            // A fully-migratable report logs at plain severity so the console matches the calm copy.
             var console = $"[Aspid FastTools] {message}. Open Tools/Aspid \U0001F40D/FastTools/Project References.";
             if (migratable == count) Debug.Log(console);
             else Debug.LogWarning(console);
@@ -78,11 +75,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 window.Repaint();
                 return;
             }
-            // No editor window open (rare) — the console warning above is the fallback signal.
         }
 
-        // A stable identity for the breakage set: its sorted, distinct stored-type keys. Two events affecting the same
-        // types are the "same" set and are not re-toasted.
         private static string ContentHash(BreakageReport report)
         {
             var keys = new SortedSet<string>(System.StringComparer.Ordinal);

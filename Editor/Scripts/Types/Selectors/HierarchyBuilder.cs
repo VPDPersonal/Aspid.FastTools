@@ -23,8 +23,6 @@ namespace Aspid.FastTools.Types.Editors
             if (includeNoneOption)
                 root.Children.Add(new TreeNode(TypeSelectorHelpers.NoneOption, null, TypeSelectorHelpers.NoneOption));
 
-            // An explicit [TypeSelectorDisplay(Group)] replaces the namespace placement — a grouped type
-            // appears only under its declared path, so it is excluded from the namespace passes entirely.
             var ungrouped = allTypes.Where(type => type.GroupPath is null).ToList();
             var grouped = allTypes.Where(type => type.GroupPath is not null).ToList();
 
@@ -50,16 +48,12 @@ namespace Aspid.FastTools.Types.Editors
             root.Children.Add(globalGroup);
         }
 
-        // Every [TypeSelectorDisplay(Group)] path becomes a chain of container nodes; shared segments reuse one
-        // node. Group nodes are never merged or flattened into the namespace trie — the author's path shows as spelled.
         private static void AddGroupHierarchy(TreeNode root, List<TypeInfo> types)
         {
             if (types.Count is 0) return;
 
             var nodesByPath = new Dictionary<string, TreeNode>(StringComparer.Ordinal);
 
-            // No ordering here: SortNode(root) re-sorts every level afterwards, and node reuse is keyed on the
-            // exact declared path (case-sensitive — the author's spelling is shown as written).
             foreach (var pathGroup in types.GroupBy(type => string.Join("/", type.GroupPath)))
             {
                 var parent = root;
@@ -171,9 +165,6 @@ namespace Aspid.FastTools.Types.Editors
             return node;
         }
 
-        // One leaf per type, labeled by TypeInfo.Label. Label collisions are disambiguated with the assembly
-        // suffix; collisions within one assembly (same Name override) fall back to the real type name. The caption
-        // prefixes the label with the node's path (namespaces join with '.', explicit groups with '/').
         private static void AddTypesWithDisambiguation(
             TreeNode parent,
             List<TypeInfo> types,
@@ -222,7 +213,6 @@ namespace Aspid.FastTools.Types.Editors
 
         private static int CompareNodes(TreeNode left, TreeNode right)
         {
-            // Keep <None> pinned to the top of the root list.
             var leftNone = left.IsNoneOption;
             var rightNone = right.IsNoneOption;
 

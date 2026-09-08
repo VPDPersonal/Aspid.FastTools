@@ -5,16 +5,6 @@ using Aspid.FastTools.SerializeReferences.Editors;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Editors
 {
-    /// <summary>
-    /// The package's settings pages under <c>Preferences → Aspid.FastTools</c> — the per-user half of the settings,
-    /// matching the pages' <see cref="SettingsScope.User"/>. The root page is the full per-user overview (every
-    /// area's section plus the reset footer); under it one focused child page per package area — SerializeReference,
-    /// Type Selector, Welcome — mirrors the Project Settings tree's shape. The team-wide controls live on the
-    /// <c>Project Settings → Aspid.FastTools → SerializeReference</c> page instead, and the window's Settings tab
-    /// shows both scopes as the one full overview. <see cref="AspidSettingsUI.BuildProviderPage"/> /
-    /// <see cref="AspidSettingsUI.BuildAreaProviderPage"/> compose the same branded page every surface shares;
-    /// all of them mirror each other live from one definition per control.
-    /// </summary>
     internal static class AspidFastToolsPreferencesProvider
     {
         private const string SettingsPath = "Preferences/Aspid.FastTools";

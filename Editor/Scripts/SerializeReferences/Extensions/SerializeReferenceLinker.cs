@@ -5,12 +5,8 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // The inverse of Make Unique: shares one managed-reference instance across several fields of the same object.
-    // There is no rid setter, so sharing means assigning the SAME instance to both paths — Unity then keeps them on
-    // one managedReferenceId, which is exactly the aliasing the shared-reference notice detects.
     internal static class SerializeReferenceLinker
     {
-        // A sibling managed reference this field could be linked to.
         public readonly struct LinkCandidate
         {
             public readonly long Rid;
@@ -66,7 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var type = value.GetType();
                 if (fieldType != null && !fieldType.IsAssignableFrom(type)) continue;
 
-                if (!seen.Add(rid)) continue; // one representative per shared instance
+                if (!seen.Add(rid)) continue;
 
                 result.Add(new LinkCandidate(rid, type, path));
             }
@@ -75,7 +71,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // The rids held by every managed-reference ancestor, found by walking the property's path prefixes.
         private static HashSet<long> CollectAncestorRids(SerializedProperty property)
         {
             var rids = new HashSet<long>();
@@ -97,7 +92,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return rids;
         }
 
-        // Points this field at the instance held by sourcePath, sharing its rid.
         public static bool LinkTo(SerializedProperty property, string sourcePath)
         {
             if (property is null || string.IsNullOrEmpty(sourcePath)) return false;

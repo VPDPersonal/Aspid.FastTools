@@ -128,8 +128,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Parses the flat payload Unity exposes for an in-memory missing reference. Only top-level keys are
-        // reported; indented and sequence-item lines are skipped.
         public static List<string> ParseTopLevelFieldNames(string serializedData)
         {
             var result = new List<string>();
@@ -150,8 +148,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // The direct keys of the entry's data block, for the Smart Fix field-shape heuristic. Nested mappings and
-        // sequences are reported by their key alone.
         public static List<string> GetReferenceFieldNames(string assetPath, long fileId, long rid)
         {
             var result = new List<string>();
@@ -176,7 +172,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // Splits a normalized property path ("_weapon._chargeEffect", "_alternates[3]") into ordered segments.
         private static List<PathSegment> ParsePathSegments(string path)
         {
             var result = new List<PathSegment>();
@@ -233,7 +228,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (inlineMatch.Success)
                 return long.TryParse(inlineMatch.Groups[1].Value, out rid) ? SegmentKind.Reference : SegmentKind.NotFound;
 
-            // Gather the indented value block (lines more indented than the field).
             var blockStart = i + 1;
             var blockEnd = rangeEnd;
             var firstChild = -1;
@@ -246,7 +240,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             if (firstChild < 0)
-                return SegmentKind.NotFound; // scalar/empty field: no managed reference here
+                return SegmentKind.NotFound;
 
             // A managed reference's value block is exactly a "rid:" scalar; anything else is a container.
             var ridScalar = Regex.Match(lines[firstChild].Trim(), @"^rid:\s*(-?\d+)$");
@@ -278,15 +272,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var item = itemPattern.Match(lines[j]);
                 if (!item.Success)
                 {
-                    if (itemIndent >= 0 && IndentOf(lines[j]) <= itemIndent) break; // dedented out of the sequence
+                    if (itemIndent >= 0 && IndentOf(lines[j]) <= itemIndent) break;
                     continue;
                 }
 
                 var indent = item.Groups["lead"].Length;
 
                 if (itemIndent < 0) itemIndent = indent;
-                else if (indent < itemIndent) break;    // dedented out of the sequence
-                else if (indent > itemIndent) continue; // item of a nested sequence, not ours
+                else if (indent < itemIndent) break;
+                else if (indent > itemIndent) continue;
 
                 if (count == index)
                 {
@@ -334,7 +328,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var match = ridPattern.Match(lines[i]);
                 if (!match.Success) continue;
 
-                // The entry runs until the next list item at its own indent, or until the block dedents out of it.
                 var entryIndent = match.Groups["indent"].Length;
                 var entryEnd = docEnd;
 
@@ -386,7 +379,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             for (var i = blockStart; i < blockEnd; i++)
             {
                 if (lines[i].Trim().Length == 0) continue;
-                if (IndentOf(lines[i]) != childIndent) continue; // a nested line, not a direct field of this block
+                if (IndentOf(lines[i]) != childIndent) continue;
 
                 var match = keyPattern.Match(lines[i]);
                 if (!match.Success) continue;

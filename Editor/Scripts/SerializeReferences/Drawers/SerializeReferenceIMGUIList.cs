@@ -9,15 +9,10 @@ using System.Runtime.CompilerServices;
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
     /// <summary>
-    /// Provides utility methods for drawing an IMGUI <c>[SerializeReference]</c> list whose add button opens the type
-    /// picker and appends a fresh instance.
+    /// Provides utility methods for drawing managed-reference lists with a type picker for new elements in IMGUI.
     /// </summary>
     /// <remarks>
-    /// In IMGUI a <c>[TypeSelector]</c> drawer is applied to array elements and can never reach the list's own "+", so
-    /// an editor that overrides <c>OnInspectorGUI</c> gets Unity's default add — which duplicates the last element and
-    /// leaves it rid-aliased. Call <see cref="Draw"/> for those lists instead. Elements still go through
-    /// <see cref="EditorGUI.PropertyField(Rect, SerializedProperty, GUIContent, bool)"/>, so the per-element drawer
-    /// applies exactly as it would by default.
+    /// The add button creates an independent instance; element fields retain their registered property drawers.
     /// </remarks>
     public static class SerializeReferenceIMGUIList
     {
@@ -40,13 +35,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _elementRightLimits.Count > 0 ? _elementRightLimits.Peek() : float.NaN;
 
         /// <summary>
-        /// Draws a <c>[SerializeReference]</c> list with a picker-backed "+".
+        /// Draws a managed-reference list whose add button selects a type and appends an independent instance.
         /// </summary>
-        /// <param name="listProperty">The array/list property to draw. Its elements must be managed references.</param>
-        /// <param name="label">Header label for the list.</param>
-        /// <param name="elementType">Declared element type constraining the picker; needed up front because an empty
-        /// list has no element to read it from.</param>
-        /// <param name="baseTypes">Base types narrowing the candidates below <paramref name="elementType"/>.</param>
+        /// <param name="listProperty">The array or list of managed references; <see langword="null"/> or a non-array property draws nothing.</param>
+        /// <param name="label">The list header; <see langword="null"/> displays no label.</param>
+        /// <param name="elementType">The declared element type constraining the picker, supplied even when the list is empty.</param>
+        /// <param name="baseTypes">Additional constraints below <paramref name="elementType"/>; <see langword="null"/> or an empty array adds none.</param>
         public static void Draw(SerializedProperty listProperty, GUIContent label, Type elementType, params Type[] baseTypes)
         {
             if (listProperty is null || !listProperty.isArray) return;
@@ -100,12 +94,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Swept on cache misses only, which are already the slow path.
             EvictDeadEntries();
 
-            // Both are stable for the field's lifetime, and Append opens its own fresh SerializedObject.
             var target = serializedObject.targetObject;
             var arrayPath = listProperty.propertyPath;
 
-            // Built before the callbacks so their lambdas can close over `list`; an object-initializer self-reference
-            // under `var` would not compile.
             var list = new ReorderableList(serializedObject, listProperty,
                 draggable: true, displayHeader: true, displayAddButton: true, displayRemoveButton: true);
 
@@ -133,7 +124,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 rect.y += EditorGUIUtility.standardVerticalSpacing;
                 rect.height = ElementHeight(element, depth);
 
-                // The pushed limit tells the element's drawer where this row's box ends.
                 _elementRightLimits.Push(boxRightEdge);
                 try
                 {
@@ -151,7 +141,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
             };
 
-            // Replaces Unity's default add, which duplicates the last element and leaves it rid-aliased.
             list.onAddDropdownCallback = (buttonRect, _) =>
             {
                 // Anchoring the picker's right edge to the button grows it leftward, so a "+" near the inspector's
@@ -165,7 +154,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return list;
         }
 
-        // Measured the same way the row is drawn, or the reserved rect and the painted content disagree.
         private static float ElementHeight(SerializedProperty element, int depth) =>
             SerializeReferenceNesting.DrawsOwnHeader(element, depth)
                 ? SerializeReferenceIMGUIPropertyDrawer.GetHeight(element, depth + 1)

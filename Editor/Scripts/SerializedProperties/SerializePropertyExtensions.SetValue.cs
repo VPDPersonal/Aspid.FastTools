@@ -21,7 +21,9 @@ namespace Aspid.FastTools.Editors
             return property.SetIntAndApply(value);
         }
 
-        /// <summary>Sets <see cref="SerializedProperty.intValue"/> and returns the property for chaining.</summary>
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.intValue"/> and returns the property for chaining.
+        /// </summary>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
         /// <param name="property">Target property.</param>
         /// <param name="value">Value to assign.</param>
@@ -36,7 +38,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.intValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetInt{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetIntAndApply<T>(this T property, int value)
             where T : SerializedProperty
         {
@@ -76,7 +81,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.uintValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetUint{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetUintAndApply<T>(this T property, uint value)
             where T : SerializedProperty
         {
@@ -116,7 +124,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.longValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetLong{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetLongAndApply<T>(this T property, long value)
             where T : SerializedProperty
         {
@@ -156,7 +167,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.ulongValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetUlong{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetUlongAndApply<T>(this T property, ulong value)
             where T : SerializedProperty
         {
@@ -196,7 +210,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.floatValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetFloat{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetFloatAndApply<T>(this T property, float value)
             where T : SerializedProperty
         {
@@ -236,7 +253,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.doubleValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetDouble{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetDoubleAndApply<T>(this T property, double value)
             where T : SerializedProperty
         {
@@ -266,7 +286,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.enumValueFlag"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetEnumFlag{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Flag value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetEnumFlagAndApply<T>(this T property, int value)
             where T : SerializedProperty
         {
@@ -294,7 +317,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.enumValueIndex"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetEnumIndex{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Index value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetEnumIndexAndApply<T>(this T property, int value)
             where T : SerializedProperty
         {
@@ -334,7 +360,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.boolValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetBool{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetBoolAndApply<T>(this T property, bool value)
             where T : SerializedProperty
         {
@@ -374,7 +403,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.rectValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetRect{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetRectAndApply<T>(this T property, Rect value)
             where T : SerializedProperty
         {
@@ -414,7 +446,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.rectIntValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetRectInt{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetRectIntAndApply<T>(this T property, RectInt value)
             where T : SerializedProperty
         {
@@ -454,7 +489,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.boundsValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetBounds{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetBoundsAndApply<T>(this T property, Bounds value)
             where T : SerializedProperty
         {
@@ -494,7 +532,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.boundsIntValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetBoundsInt{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetBoundsIntAndApply<T>(this T property, BoundsInt value)
             where T : SerializedProperty
         {
@@ -534,7 +575,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.colorValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetColor{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetColorAndApply<T>(this T property, Color value)
             where T : SerializedProperty
         {
@@ -574,7 +618,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.gradientValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetGradient{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetGradientAndApply<T>(this T property, Gradient value)
             where T : SerializedProperty
         {
@@ -614,7 +661,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.hash128Value"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetHash128{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetHash128AndApply<T>(this T property, Hash128 value)
             where T : SerializedProperty
         {
@@ -654,7 +704,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.vector4Value"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetVector4{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetVector4AndApply<T>(this T property, Vector4 value)
             where T : SerializedProperty
         {
@@ -694,7 +747,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.vector3Value"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetVector3{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetVector3AndApply<T>(this T property, Vector3 value)
             where T : SerializedProperty
         {
@@ -734,7 +790,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.vector3IntValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetVector3Int{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetVector3IntAndApply<T>(this T property, Vector3Int value)
             where T : SerializedProperty
         {
@@ -774,7 +833,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.vector2Value"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetVector2{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetVector2AndApply<T>(this T property, Vector2 value)
             where T : SerializedProperty
         {
@@ -814,7 +876,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.vector2IntValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetVector2Int{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetVector2IntAndApply<T>(this T property, Vector2Int value)
             where T : SerializedProperty
         {
@@ -854,7 +919,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.quaternionValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetQuaternion{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetQuaternionAndApply<T>(this T property, Quaternion value)
             where T : SerializedProperty
         {
@@ -894,7 +962,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.stringValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetString{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetStringAndApply<T>(this T property, string value)
             where T : SerializedProperty
         {
@@ -934,7 +1005,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.animationCurveValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetAnimationCurve{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetAnimationCurveAndApply<T>(this T property, AnimationCurve value)
             where T : SerializedProperty
         {
@@ -960,7 +1034,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.arraySize"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetArraySize{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target array property.</param>
+        /// <param name="size">New array size.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetArraySizeAndApply<T>(this T property, int size)
             where T : SerializedProperty
         {
@@ -983,7 +1060,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Increases <see cref="SerializedProperty.arraySize"/> by <paramref name="value"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="AddArraySize{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target array property.</param>
+        /// <param name="value">Amount to add to the current array size.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T AddArraySizeAndApply<T>(this T property, int value = 1)
             where T : SerializedProperty
         {
@@ -1006,7 +1086,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Decreases <see cref="SerializedProperty.arraySize"/> by <paramref name="value"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="RemoveArraySize{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target array property.</param>
+        /// <param name="value">Amount to subtract from the current array size.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T RemoveArraySizeAndApply<T>(this T property, int value = 1)
             where T : SerializedProperty
         {
@@ -1032,7 +1115,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.managedReferenceValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetManagedReference{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property (must be a <c>[SerializeReference]</c> field).</param>
+        /// <param name="value">Managed reference value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetManagedReferenceAndApply<T>(this T property, object value)
             where T : SerializedProperty
         {
@@ -1058,7 +1144,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.objectReferenceValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetObjectReference{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value"><see cref="UnityEngine.Object"/> reference to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetObjectReferenceAndApply<T>(this T property, Object value)
             where T : SerializedProperty
         {
@@ -1084,7 +1173,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.exposedReferenceValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetExposedReference{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value"><see cref="UnityEngine.Object"/> exposed reference to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetExposedReferenceAndApply<T>(this T property, Object value)
             where T : SerializedProperty
         {
@@ -1110,7 +1202,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.boxedValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetBoxed{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Boxed value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetBoxedAndApply<T>(this T property, object value)
             where T : SerializedProperty
         {
@@ -1151,7 +1246,10 @@ namespace Aspid.FastTools.Editors
         /// <summary>
         /// Sets <see cref="SerializedProperty.entityIdValue"/> then applies modified properties.
         /// </summary>
-        /// <inheritdoc cref="SetEntityId{T}"/>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
         public static T SetEntityIdAndApply<T>(this T property, EntityId value)
             where T : SerializedProperty
         {

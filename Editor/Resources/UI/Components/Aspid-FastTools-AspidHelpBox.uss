@@ -28,7 +28,6 @@
     border-color:                                               var(--aspid-colors-status-info-shade-lightness);
 }
 
-/* --- ICON --- */
 .aspid-fasttools-help-box__icon {
     min-width:                                                  34px;
     max-width:                                                  34px;
@@ -57,13 +56,10 @@
     --aspid-fasttools-icons-help_box:                           resource("d_console.erroricon@2x");
 }
 
-/* --- TEXT --- */
 .aspid-fasttools-help-box__text-container {
     flex-grow:                                                  1;
 }
 
-/* Small gap below the title (and its dividing line) so the message is not glued to the line above;
-   only present when a title is set, so title-less help boxes keep the message centered on the icon. */
 .aspid-fasttools-help-box__title {
     margin-bottom:                                              4px;
 }
@@ -73,11 +69,11 @@
     overflow:                                                   hidden;
 }
 
-:root.aspid-fasttools-status--success AspidLabel > Label { 
+:root.aspid-fasttools-status--success AspidLabel > Label {
     color:                                                      var(--aspid-colors-status-success-text-lightness);
 }
 
-:root.aspid-fasttools-status--warning AspidLabel > Label { 
+:root.aspid-fasttools-status--warning AspidLabel > Label {
     color:                                                      var(--aspid-colors-status-warning-text-lightness);
 }
 
@@ -85,6 +81,6 @@
     color:                                                      var(--aspid-colors-status-error-text-lightness);
 }
 
-:root.aspid-fasttools-status--info AspidLabel > Label { 
+:root.aspid-fasttools-status--info AspidLabel > Label {
     color:                                                      var(--aspid-colors-status-info-text-lightness);
 }

@@ -7,14 +7,6 @@ using Object = UnityEngine.Object;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // Answers whether closing a type parameter obliges its argument to be Unity-serializable — that is, whether the
-    // parameter reaches a field the engine writes BY VALUE. Asking "is this type serializable?" instead would cost
-    // real candidates: a type storing only a [SerializeReference] IConverter<T, T>[] never writes T's layout, so any
-    // T closes it safely.
-    //
-    // The walk proves the ABSENCE of an obligation and never its presence: anything it cannot follow keeps the
-    // obligation. A missed rule can only leave today's behavior in place; it can never let through an argument whose
-    // data Unity would silently drop.
     internal static class GenericArgumentRequirement
     {
         // Unity's own nesting limit is not exposed. Erring high only makes the walk conservative, since hitting the

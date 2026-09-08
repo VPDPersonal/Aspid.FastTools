@@ -7,10 +7,6 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements.Editors.Internal
 {
-    // The shared bottom bar for Aspid FastTools editor windows: a faded AspidDividingLine above a row pairing the
-    // package version (left, linking to its tagged GitHub release) with a GitHub link (right). The version is read
-    // from the installed UPM package, falling back to the bundled package.json, then to "?". Transparent by design, so
-    // a host window's shared canvas reads continuously behind it.
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidWindowFooter : VisualElement
     {
@@ -28,7 +24,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
         public AspidWindowFooter() : this(showKeysHint: true) { }
 
-        // A host without the keyboard ring passes false, so the footer never promises keys that do nothing.
         public AspidWindowFooter(bool showKeysHint)
         {
             this.AddAspidThemeStyleSheets()
@@ -50,8 +45,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var row = new VisualElement().AddClass(RowClass);
             row.AddChild(versionLabel);
 
-            // The ring is otherwise invisible until the first arrow press. Centered over the row and
-            // click-transparent, so the version and GitHub links keep their edges and their hits.
             if (showKeysHint)
                 row.AddChild(new Label("↑↓ navigate   ⏎ activate   esc dismiss")
                     .AddClass(KeysClass)

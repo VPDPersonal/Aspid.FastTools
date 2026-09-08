@@ -4,8 +4,6 @@ using System.Linq;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
 {
-    // A managed-reference type's identity as Unity stores it in YAML. A reference whose type went missing is
-    // repaired by rewriting that line directly, since the serialization API cannot reassign a missing type.
     internal readonly struct ManagedTypeName
     {
         private static readonly char[] _yamlReservedChars = { ',', '[', ']', '{', '}' };
@@ -20,13 +18,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             && string.IsNullOrWhiteSpace(Namespace)
             && string.IsNullOrWhiteSpace(Class);
 
-        // For tooltips that need the assembly too.
         public string FullName => IsEmpty
             ? string.Empty
             : string.IsNullOrWhiteSpace(Assembly) ? DisplayName : $"{DisplayName}, {Assembly}";
 
-        // The single source of the missing-type caption used by the repair dialog, the audit list and the graph
-        // header, so a nested or generic class-name display fix lands in one place.
         public string DisplayName => IsEmpty
             ? string.Empty
             : string.IsNullOrWhiteSpace(Namespace) ? Class : $"{Namespace}.{Class}";
@@ -38,7 +33,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Namespace = @namespace ?? string.Empty;
         }
 
-        // Includes the "Name`N[[arg, asm],…]" shape Unity uses for closed generics.
         public static ManagedTypeName FromType(Type type)
         {
             if (type is null) return default;
@@ -53,8 +47,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 className: NestedPrefix(type) + BuildClassName(type));
         }
 
-        // The "Outer/" (or "Outer/Middle/") prefix Unity prepends to a nested type's class identity; empty for a
-        // top-level type. Walks the declaring-type chain from the outermost inward.
         private static string NestedPrefix(Type type)
         {
             if (type.DeclaringType is null)
