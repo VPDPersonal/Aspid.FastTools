@@ -1,8 +1,6 @@
 # EnumValues Sample
 
-![The surface laboratory: a labeled track and a moving walker.](Images/scene.png)
-
-A character pacing over a row of floor tiles. The tile color, the footprint color, the step cadence and the walking speed are all `EnumValues` lookups keyed by a surface enum or a `[Flags]` terrain enum, configured in the Inspector with a default fallback. The API reference lives in [EnumValues](../../../Documentation/06-enum-values.md).
+A character pacing over a row of floor tiles. The tile color, the trail color, the color sampling interval and the walking speed are all `EnumValues` lookups keyed by a surface enum or a `[Flags]` terrain enum, configured in the Inspector with a default fallback. The API reference lives in [EnumValues](../../../Documentation/06-enum-values.md).
 
 ```csharp
 [SerializeField] private EnumValues<SurfaceType, float> _stepInterval; // enum fixed in code
@@ -16,16 +14,16 @@ Surface colors and footprint colors, each with a Default Value.
 ## Open it
 
 1. Import the sample and open `Scenes/EnumValues.unity`.
-2. Enter Play Mode: the **Walker** crosses seven tiles, leaving colored footprints that disappear after two seconds, faster on hot metal and slower on wet grass.
+2. Enter Play Mode: the **Walker** crosses seven tiles, leaving a continuous colored trail whose older end recedes after two seconds. Movement is faster on hot metal and slower on wet grass.
 
-![The walker crosses different surfaces and leaves colored footprints.](Images/demo.gif)
+![The walker crosses different surfaces and leaves a continuous colored trail.](Images/demo.gif)
 
-The walker crosses different surfaces and leaves colored footprints.
+The walker crosses different surfaces and leaves a continuous colored trail.
 
 ## Try
 
 1. **Typed variant.** Select `Data/SurfacePalette.asset`. Both tables are `EnumValues<SurfaceType, Color>`: the enum row is read-only because the type is fixed by the field. Change the `Grass` color; the tiles recolor immediately, without Play Mode.
-2. **Default value.** `Footprint Colors` has rows only for `Grass`, `Sand` and `Water`. Stone and metal footprints use `Default Value`. Right-click the field and choose **Populate Missing Enum Members** to add the rest, seeded with that default.
+2. **Default value.** `Footprint Colors` has rows only for `Grass`, `Sand` and `Water`. Trail segments on stone and metal use `Default Value`. Right-click the field and choose **Populate Missing Enum Members** to add the rest, seeded with that default.
 3. **Untyped variant.** Select **Walker**. `Speed By Terrain` is an `EnumValues<float>` whose enum, `TerrainFlags`, was picked in the header row. Each key is a flags dropdown, and `Wet, Slippery` is a row of its own.
 4. **`[Flags]` lookup rules**, visible as the walker crosses the tiles:
    - an **exact** key wins first: the `Water (Wet, Slippery)` tile resolves to the `Wet, Slippery` row (`0.5`), even though `Wet` and `Slippery` rows exist;
@@ -40,5 +38,6 @@ The walker crosses different surfaces and leaves colored footprints.
 |---|---|
 | `Scripts/SurfacePalette.cs` | `EnumValues<TEnum, TValue>` on a ScriptableObject |
 | `Scripts/Walker.cs` | Both variants in a component, `GetValue` on a plain and a `[Flags]` key, `foreach` |
+| `Scripts/SurfaceTrail.cs` | Draws a continuous ribbon and trims points by age |
 | `Scripts/SurfaceTile.cs` | Checks the palette color on editor updates, applying edits and Undo without Play Mode |
 | `Scripts/TerrainFlags.cs` | The `[Flags]` enum with combinable members |

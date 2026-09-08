@@ -1,7 +1,5 @@
 # Types Sample
 
-![The spawn arena: regular and elite enemies converge on the center.](Images/scene.png)
-
 Storing a type lets you choose which objects to create and which behavior to use in the Inspector, without changing the code that works with them. These examples show where this is useful and how to use it: configure regular and elite enemy types, choose a wave layout, and replace the type of an existing component while preserving shared data.
 
 For the API reference, see [Serializable Type System](../../../Documentation/02-serializable-types.md).

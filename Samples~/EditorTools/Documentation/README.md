@@ -9,8 +9,6 @@ rootVisualElement
     .AddChild(details.SetFlexGrow(1));
 ```
 
-![Select an ability to edit its properties and view its effect description.](Images/ability-catalog.png)
-
 Select an ability to edit its properties and view its effect description.
 
 ## Open it

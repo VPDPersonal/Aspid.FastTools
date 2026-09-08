@@ -1,7 +1,5 @@
 # SerializeReferences Sample
 
-![The weapon lab: a turret, a target and visible effects.](Images/scene.png)
-
 A turret that fires polymorphic weapons at a training dummy. Every weapon, effect and modifier is a `[SerializeReference]` field with a `[TypeSelector]` dropdown, and the sample ships assets that are broken on purpose so you can walk through the repair tools. The feature reference lives in [SerializeReference Selector](../../../Documentation/03-serialize-reference-selector.md) and [SerializeReference Tooling](../../../Documentation/04-serialize-reference-tooling.md).
 
 ```csharp
