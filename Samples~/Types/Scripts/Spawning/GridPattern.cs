@@ -4,6 +4,9 @@ using Aspid.FastTools.Types;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
+    /// <summary>
+    /// <see cref="ISpawnPattern"/> that places enemies in a square grid beyond the arena edge.
+    /// </summary>
     [TypeSelectorDisplay(
         Name = "Grid",
         Group = "Spawn Patterns",
@@ -11,6 +14,7 @@ namespace Aspid.FastTools.Samples.Types
         Icon = "d_Grid Icon")]
     public sealed class GridPattern : ISpawnPattern
     {
+        /// <inheritdoc/>
         public Vector3 GetPosition(int index, int count, float radius)
         {
             var columns = Mathf.CeilToInt(Mathf.Sqrt(count));

@@ -1,5 +1,10 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    public interface IRanged : IWeapon { }
+    /// <summary>
+    /// <see cref="IWeapon"/> for ranged attacks.
+    /// </summary>
+    public interface IRanged : IWeapon
+    {
+    }
 }

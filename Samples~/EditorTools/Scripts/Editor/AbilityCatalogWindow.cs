@@ -6,8 +6,8 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
-using Aspid.FastTools.Types.Editors;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors;
 
 // ReSharper disable once CheckNamespace
@@ -37,7 +37,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
             var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
                 System.IO.Path.GetDirectoryName(scriptPath) + "/AbilityCatalog.uss");
-            if (stylesheet != null) rootVisualElement.styleSheets.Add(stylesheet);
+            if (stylesheet != null)
+                rootVisualElement.styleSheets.Add(stylesheet);
+
             Reload();
 
             var search = new TextField()
@@ -52,8 +54,10 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddClicked(CreateAsset);
 
             var toolbar = new VisualElement()
-                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
-                .SetPaddingX(6).SetPaddingY(4)
+                .SetFlexDirection(FlexDirection.Row)
+                .SetAlignItems(Align.Center)
+                .SetPaddingX(6)
+                .SetPaddingY(4)
                 .AddChild(search)
                 .AddChild(create);
 
@@ -81,11 +85,13 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
             var left = new VisualElement()
                 .SetWidth(248)
-                .SetBorderColor(new Color(0.2f, 0.2f, 0.2f)).SetBorderWidth(right: 1)
+                .SetBorderColor(new Color(0.2f, 0.2f, 0.2f))
+                .SetBorderWidth(right: 1)
                 .AddChild(toolbar)
                 .AddChild(_list);
 
-            _details = new ScrollView().SetFlexGrow(1);
+            _details = new ScrollView()
+                .SetFlexGrow(1);
             _details.AddToClassList("ability-details");
             left.AddToClassList("ability-sidebar");
             create.AddToClassList("ability-primary");
@@ -99,11 +105,16 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             header.Add(new Label("Ability catalog") { name = "catalogTitle" });
             header.Add(new Label("Tune your abilities. See every change.") { name = "catalogSubtitle" });
             rootVisualElement.Add(header);
-            rootVisualElement.Add(new VisualElement().SetFlexDirection(FlexDirection.Row).SetFlexGrow(1)
-                .AddChild(left).AddChild(_details));
+            rootVisualElement.Add(new VisualElement()
+                .SetFlexDirection(FlexDirection.Row)
+                .SetFlexGrow(1)
+                .AddChild(left)
+                .AddChild(_details));
 
-            if (_filtered.Count > 0) _list.SetSelection(0);
-            else ShowDetails(null);
+            if (_filtered.Count > 0)
+                _list.SetSelection(0);
+            else
+                ShowDetails(null);
         }
 
         private void Reload()
@@ -137,9 +148,12 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var serializedObject = new SerializedObject(config);
             var effectType = serializedObject.FindProperty("_effectType");
 
-            var effectLabel = new Label().SetFlexGrow(1).SetWhiteSpace(WhiteSpace.Normal);
+            var effectLabel = new Label()
+                .SetFlexGrow(1)
+                .SetWhiteSpace(WhiteSpace.Normal);
             effectLabel.TrackSerializedObjectValue(serializedObject, _ => RefreshEffect());
-            var effectButton = new Button().SetText("Change…");
+            var effectButton = new Button()
+                .SetText("Change…");
 
             // The same picker the [TypeSelector] attribute opens, driven from code: anchor it to the button,
             // constrain it to IAbilityEffect implementations and write the result into the string property.
@@ -154,8 +168,11 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 }));
 
             var effectRow = new VisualElement()
-                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center).SetMarginTop(8)
-                .AddChild(new Label("Effect").SetWidth(120))
+                .SetFlexDirection(FlexDirection.Row)
+                .SetAlignItems(Align.Center)
+                .SetMarginTop(8)
+                .AddChild(new Label("Effect")
+                    .SetWidth(120))
                 .AddChild(effectLabel)
                 .AddChild(effectButton);
 
@@ -174,7 +191,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 });
 
             halveCooldown.AddToClassList("ability-action");
-            var selectAsset = new Button().SetText("Select asset")
+            var selectAsset = new Button()
+                .SetText("Select asset")
                 .AddClicked(() => Selection.activeObject = config);
             selectAsset.AddToClassList("ability-action");
             var actions = new VisualElement();
@@ -190,7 +208,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             description.AddToClassList("ability-description");
 
             var title = new Label(config.AbilityName)
-                .SetFontSize(24).AddBoldUnityFontStyleAndWeight().SetMarginBottom(18)
+                .SetFontSize(24)
+                .AddBoldUnityFontStyleAndWeight()
+                .SetMarginBottom(18)
                 .SetTooltip("Double-click to open the script")
                 .AddOpenScriptCommand(config);
             title.AddToClassList("ability-detail-title");
@@ -204,7 +224,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(title)
                 // BindTo(SerializedObject) binds every PropertyField below in one call.
                 .AddChild(new VisualElement()
-                    .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName")).AddValueChanged(_ => _list.RefreshItems()))
+                    .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName"))
+                        .AddValueChanged(_ => _list.RefreshItems()))
                     .AddChild(description)
                     .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost")))
                     .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))

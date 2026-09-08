@@ -26,38 +26,48 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetFontSize(10)
                 .AddBoldUnityFontStyleAndWeight()
                 .SetUnityTextAlign(TextAnchor.MiddleCenter)
-                .SetPaddingX(10).SetPaddingY(3)
-                .SetBorderRadius(10).SetBorderWidth(1);
+                .SetPaddingX(10)
+                .SetPaddingY(3)
+                .SetBorderRadius(10)
+                .SetBorderWidth(1);
 
             var helpBox = new HelpBox("This ability costs no mana. Intentional?", HelpBoxMessageType.Warning)
                 .SetMarginTop(8);
 
             // GetScriptName honors [AddComponentMenu]; AddOpenScriptCommand opens the script on double-click.
             var title = new Label(target.GetScriptName())
-                .SetFlexGrow(1).SetFontSize(14)
+                .SetFlexGrow(1)
+                .SetFontSize(14)
                 .AddBoldUnityFontStyleAndWeight()
                 .SetTooltip("Double-click to open the script")
                 .AddOpenScriptCommand(target);
 
             var header = new VisualElement()
-                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
-                .SetPaddingX(12).SetPaddingY(10)
-                .SetBorderColor(_border).SetBorderWidth(bottom: 1)
+                .SetFlexDirection(FlexDirection.Row)
+                .SetAlignItems(Align.Center)
+                .SetPaddingX(12)
+                .SetPaddingY(10)
+                .SetBorderColor(_border)
+                .SetBorderWidth(bottom: 1)
                 .AddChild(title)
                 .AddChild(badge);
 
             var body = new VisualElement()
-                .SetPaddingX(12).SetPaddingY(10)
+                .SetPaddingX(12)
+                .SetPaddingY(10)
                 .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName")))
                 .AddChild(new PropertyField(serializedObject.FindProperty("_description")))
                 .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))
-                .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost")).AddValueChanged(_ => Refresh()))
+                .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost"))
+                    .AddValueChanged(_ => Refresh()))
                 .AddChild(new PropertyField(serializedObject.FindProperty("_effectType")))
                 .AddChild(helpBox);
 
             Refresh();
             return new VisualElement()
-                .SetBorderColor(_border).SetBorderWidth(1).SetBorderRadius(8)
+                .SetBorderColor(_border)
+                .SetBorderWidth(1)
+                .SetBorderRadius(8)
                 .AddChild(header)
                 .AddChild(body);
 
@@ -67,7 +77,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 var color = EditorGUIUtility.isProSkin
                     ? (isFree ? _warning : _accent)
                     : (isFree ? new Color(0.6f, 0.4f, 0f) : new Color(0.25f, 0.48f, 0.28f));
-                badge.SetText(isFree ? "FREE" : $"{config.ManaCost} MP").SetColor(color).SetBorderColor(color);
+                badge.SetText(isFree ? "FREE" : $"{config.ManaCost} MP")
+                    .SetColor(color)
+                    .SetBorderColor(color);
                 helpBox.SetDisplay(isFree ? DisplayStyle.Flex : DisplayStyle.None);
             }
         }

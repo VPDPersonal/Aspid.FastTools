@@ -6,9 +6,10 @@ using Aspid.FastTools.Types;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
-    // Spawns a wave of enemies every interval. Three ways to store a System.Type in one component:
-    // a MonoBehaviour subtype referenced through its script asset, a plain C# strategy by name, and a
-    // raw string whose picker is constrained by another field.
+    // The sample stores types as a script reference, a serializable type and a constrained string.
+    /// <summary>
+    /// <see cref="MonoBehaviour"/> that spawns enemy waves using selectable types and placement patterns.
+    /// </summary>
     public sealed class EnemySpawner : MonoBehaviour
     {
         // SerializableMonoScript<T> keeps a MonoScript reference in the editor, so renaming or moving the
@@ -16,25 +17,35 @@ namespace Aspid.FastTools.Samples.Types
         // build/CI gate.
         [Header("Enemy")]
         [TypeSelector(Required = true)]
+        [Tooltip("Enemy type spawned for regular wave members.")]
         [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
 
         // Member reference: the picker offers only types assignable to whatever _enemyType currently holds,
         // so the elite variant is always a subtype of the regular one (ArmoredGrunt for Grunt, Sniper for Archer).
         [TypeSelector(nameof(_enemyType))]
+        [Tooltip("Enemy subtype spawned for elite wave members.")]
         [SerializeField] private string _eliteType;
 
-        [SerializeField] [Min(0)] private int _eliteEvery = 4;
+        [Tooltip("Number of spawns per elite enemy; zero disables elites.")]
+        [SerializeField, Min(0)] private int _eliteEvery = 4;
 
         // SerializableType<T> for a plain class. Allow = TypeAllow.None hides the interface itself; the
         // remaining candidates carry [TypeSelectorDisplay] names, one group and icons.
         [Header("Wave")]
         [TypeSelector(Allow = TypeAllow.None)]
+        [Tooltip("Placement pattern for each wave.")]
         [SerializeField] private SerializableType<ISpawnPattern> _pattern = new(typeof(CirclePattern));
 
-        [SerializeField] [Range(1, 32)] private int _count = 8;
-        [SerializeField] [Min(1f)] private float _radius = 8f;
-        [SerializeField] [Min(0.5f)] private float _interval = 6f;
+        [Tooltip("Number of enemies in each wave.")]
+        [SerializeField, Range(1, 32)] private int _count = 8;
 
+        [Tooltip("World-space scale of the spawn pattern.")]
+        [SerializeField, Min(1f)] private float _radius = 8f;
+
+        [Tooltip("Seconds between waves.")]
+        [SerializeField, Min(0.5f)] private float _interval = 6f;
+
+        [Tooltip("Material applied to generated sample objects.")]
         [SerializeField, HideInInspector] private Material _presentationMaterial;
 
         private int _spawned;
@@ -70,7 +81,8 @@ namespace Aspid.FastTools.Samples.Types
 
                 var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
                 go.name = type.Name;
-                if (_presentationMaterial != null) go.GetComponent<Renderer>().sharedMaterial = _presentationMaterial;
+                if (_presentationMaterial != null)
+                    go.GetComponent<Renderer>().sharedMaterial = _presentationMaterial;
                 go.transform.SetParent(transform);
                 go.transform.position = pattern.GetPosition(i, _count, _radius) + Vector3.up;
 

@@ -6,19 +6,26 @@ using UnityEngine.Scripting.APIUpdating;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Renamed from CrossbowLauncher. [MovedFrom] lets Unity load assets that still store the old class name
-    // (Presets/RenamedWeaponPreset.asset), and the Project References tab offers to bake the rename into
-    // those files, after which the attribute can be deleted.
+    // MovedFrom loads the old CrossbowLauncher name in RenamedWeaponPreset.asset.
+    // Project References can write the current name back to the asset.
+    /// <summary>
+    /// <see cref="IRanged"/> with a migrated class name and fixed attack damage.
+    /// </summary>
     [Serializable]
     [MovedFrom(false, null, null, "CrossbowLauncher")]
     [TypeSelectorDisplay(Group = "Weapons/Ranged", Icon = "d_Transform Icon")]
     public sealed class Crossbow : IRanged
     {
-        [SerializeField] [Min(0)] private int _damage = 14;
-        [SerializeField] [Min(1)] private int _boltCount = 8;
+        [Tooltip("Damage dealt by one attack.")]
+        [SerializeField, Min(0)] private int _damage = 14;
 
+        [Tooltip("Bolt capacity shown as sample data.")]
+        [SerializeField, Min(1)] private int _boltCount = 8;
+
+        /// <inheritdoc/>
         public string Name => "Crossbow";
 
+        /// <inheritdoc/>
         public int Fire() => _damage;
     }
 }

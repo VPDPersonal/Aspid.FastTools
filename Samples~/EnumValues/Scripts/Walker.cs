@@ -6,21 +6,32 @@ namespace Aspid.FastTools.Samples.EnumValues
 {
     // Paces over the tiles, drawing a continuous trail. Color sampling comes from the surface, speed from
     // terrain flags and trail color from the palette; every lookup has a default fallback.
+    /// <summary>
+    /// <see cref="MonoBehaviour"/> that samples surface colors and terrain speeds while drawing a trail.
+    /// </summary>
     public sealed class Walker : MonoBehaviour
     {
+        [Tooltip("Surface colors for tiles and trails.")]
         [SerializeField] private SurfacePalette _palette;
-        [SerializeField] [Min(0.1f)] private float _speed = 3f;
-        [SerializeField] [Min(1f)] private float _range = 10f;
+
+        [Tooltip("Movement speed in world units per second.")]
+        [SerializeField, Min(0.1f)] private float _speed = 3f;
+
+        [Tooltip("Distance from the center before reversing direction.")]
+        [SerializeField, Min(1f)] private float _range = 10f;
 
         // Enum fixed in code. No row for a surface means the Default Value.
-        [SerializeField] [InspectorName("Color Sample Interval")]
+        [Tooltip("Seconds between trail color samples on each surface.")]
+        [SerializeField, InspectorName("Color Sample Interval")]
         private EnumValues<SurfaceType, float> _stepInterval;
 
         // Enum picked in the Inspector (TerrainFlags here). [Flags] lookup: an exact key wins first, then the
         // first entry whose flags are all contained in the value, then the default.
+        [Tooltip("Movement speed multipliers for terrain properties.")]
         [SerializeField] private EnumValues<float> _speedByTerrain;
 
-        [SerializeField] [Min(0.1f)] [InspectorName("Trail Lifetime")]
+        [Tooltip("Seconds before trail points expire.")]
+        [SerializeField, Min(0.1f), InspectorName("Trail Lifetime")]
         private float _footprintLifetime = 2f;
 
         private int _direction = 1;
@@ -37,7 +48,8 @@ namespace Aspid.FastTools.Samples.EnumValues
         {
             var speed = _speed * (_tile is null ? 1f : _speedByTerrain.GetValue(_tile.Flags));
             var position = transform.position + Vector3.right * (_direction * speed * Time.deltaTime);
-            if (Mathf.Abs(position.x) > _range) _direction = -_direction;
+            if (Mathf.Abs(position.x) > _range)
+                _direction = -_direction;
             transform.position = position;
 
             var previousTile = _tile;
@@ -66,7 +78,8 @@ namespace Aspid.FastTools.Samples.EnumValues
                         join = Vector3.Lerp(_lastTrailPosition, trailPosition, fraction);
                         join.x = edge;
                     }
-                    if (_trail != null) _trail.AddPoint(join, true);
+                    if (_trail != null)
+                        _trail.AddPoint(join, force: true);
                     BeginTrail(join, color);
                 }
             }
@@ -88,12 +101,14 @@ namespace Aspid.FastTools.Samples.EnumValues
             _trail = trailObject.AddComponent<SurfaceTrail>();
             _trail.Initialize(_trailMaterial, color, _footprintLifetime);
             _trailColor = color;
-            _trail.AddPoint(position, true);
+            _trail.AddPoint(position, force: true);
         }
 
         private void FinishTrail()
         {
-            if (_trail == null) return;
+            if (_trail == null)
+                return;
+
             Destroy(_trail.gameObject, _footprintLifetime);
             _trail = null;
         }

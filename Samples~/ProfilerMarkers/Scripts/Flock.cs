@@ -3,15 +3,25 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.ProfilerMarkers
 {
-    // Drives the simulation and moves one cube per agent. Open Window → Analysis → Profiler, enter Play Mode
-    // and expand PlayerLoop → Update.ScriptRunBehaviourUpdate → Flock.Update to see the marker tree.
+    // In the CPU Profiler, expand Update.ScriptRunBehaviourUpdate > Flock.Update to inspect the marker tree.
+    /// <summary>
+    /// <see cref="MonoBehaviour"/> that visualizes a flock simulation with nested profiler markers.
+    /// </summary>
     public sealed class Flock : MonoBehaviour
     {
-        [SerializeField] [Range(8, 400)] private int _count = 120;
-        [SerializeField] [Min(1f)] private float _bounds = 12f;
-        [SerializeField] [Min(0.1f)] private float _neighborRadius = 3f;
-        [SerializeField] [Min(0.1f)] private float _maxSpeed = 6f;
+        [Tooltip("Number of simulated agents.")]
+        [SerializeField, Range(8, 400)] private int _count = 120;
 
+        [Tooltip("Distance from the origin at which agents turn back.")]
+        [SerializeField, Min(1f)] private float _bounds = 12f;
+
+        [Tooltip("Distance within which agents influence steering.")]
+        [SerializeField, Min(0.1f)] private float _neighborRadius = 3f;
+
+        [Tooltip("Maximum agent speed in world units per second.")]
+        [SerializeField, Min(0.1f)] private float _maxSpeed = 6f;
+
+        [Tooltip("Material applied to generated sample objects.")]
         [SerializeField, HideInInspector] private Material _presentationMaterial;
 
         private Transform[] _agents;
@@ -44,7 +54,8 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
                 var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 go.name = $"Agent {index}";
                 var renderer = go.GetComponent<Renderer>();
-                if (_presentationMaterial != null) renderer.sharedMaterial = _presentationMaterial;
+                if (_presentationMaterial != null)
+                    renderer.sharedMaterial = _presentationMaterial;
                 var block = new MaterialPropertyBlock();
                 var tint = Color.Lerp(new Color(0.25f, 0.85f, 1f), new Color(0.65f, 1f, 0.35f), (float)index / _count);
                 block.SetColor("_Color", tint);
@@ -62,7 +73,8 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
             // "Flock.Update (line)" covers the whole frame step; the simulation adds its own markers below it.
             using var _ = this.Marker();
 
-            if (_agents.Length != Mathf.Clamp(_count, 8, 400)) InitializeAgents();
+            if (_agents.Length != Mathf.Clamp(_count, 8, 400))
+                InitializeAgents();
 
             _simulation.Step(Time.deltaTime, _neighborRadius, _maxSpeed);
 
