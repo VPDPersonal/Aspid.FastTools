@@ -1,5 +1,7 @@
 # ProfilerMarkers Sample
 
+![The flock observatory: a color-coded simulation above a reference grid.](Images/scene.png)
+
 A flock of cubes steered by a plain C# simulation, with `this.Marker()` around each phase. The source generator turns every call site into a static `ProfilerMarker`, so the Profiler shows a named tree of the frame with no marker fields written by hand. The API reference lives in [ProfilerMarkers](../../../Documentation/05-profiler-markers.md).
 
 ```csharp

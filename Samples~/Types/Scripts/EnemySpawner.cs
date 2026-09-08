@@ -35,6 +35,8 @@ namespace Aspid.FastTools.Samples.Types
         [SerializeField] [Min(1f)] private float _radius = 8f;
         [SerializeField] [Min(0.5f)] private float _interval = 6f;
 
+        [SerializeField, HideInInspector] private Material _presentationMaterial;
+
         private int _spawned;
         private ISpawnPattern _patternInstance;
 
@@ -68,6 +70,7 @@ namespace Aspid.FastTools.Samples.Types
 
                 var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
                 go.name = type.Name;
+                if (_presentationMaterial != null) go.GetComponent<Renderer>().sharedMaterial = _presentationMaterial;
                 go.transform.SetParent(transform);
                 go.transform.position = pattern.GetPosition(i, _count, _radius) + Vector3.up;
 

@@ -42,6 +42,8 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         [TypeSelector]
         [SerializeReference] private List<IModifier> _perks = new();
 
+        [SerializeField, HideInInspector] private LineRenderer _shotBeam;
+
         private int _sidearmIndex;
 
         private IEnumerator Start()
@@ -70,9 +72,19 @@ namespace Aspid.FastTools.Samples.SerializeReferences
             foreach (var perk in _perks)
                 if (perk is not null) damage = perk.ModifyDamage(damage);
 
+            if (_shotBeam != null && Application.isPlaying) StartCoroutine(ShowShot());
             _target.TakeDamage(damage, weapon.Name);
             _onHit?.Apply(_target);
             (weapon as Railgun)?.ChargeEffect?.Apply(_target);
+        }
+
+        private IEnumerator ShowShot()
+        {
+            _shotBeam.SetPosition(0, transform.position + Vector3.up * 0.7f);
+            _shotBeam.SetPosition(1, _target.transform.position);
+            _shotBeam.enabled = true;
+            yield return new WaitForSeconds(0.08f);
+            _shotBeam.enabled = false;
         }
 
         // Primary, then each sidearm in turn, so every configured weapon fires.

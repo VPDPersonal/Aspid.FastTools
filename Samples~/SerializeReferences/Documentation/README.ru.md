@@ -1,5 +1,7 @@
 # Пример SerializeReferences
 
+![Оружейная лаборатория: турель, мишень и видимые эффекты.](Images/scene.png)
+
 Турель, стреляющая полиморфным оружием по тренировочному манекену. Каждое оружие, эффект и модификатор — поле `[SerializeReference]` с выпадающим списком `[TypeSelector]`, а в комплекте идут намеренно сломанные ассеты, на которых можно пройти инструменты ремонта. Справочник — [SerializeReference Selector](../../../Documentation/ru/03-serialize-reference-selector.md) и [SerializeReference Tooling](../../../Documentation/ru/04-serialize-reference-tooling.md).
 
 ```csharp

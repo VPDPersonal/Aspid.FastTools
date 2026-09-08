@@ -1,0 +1,65 @@
+.ability-catalog {
+  --catalog-bg: #10151b;
+  --catalog-fg: #e8eef1;
+  --catalog-header: #182129;
+  --catalog-line: #2c3941;
+  --catalog-accent: #a6dc81;
+  --catalog-title: #f1f5f7;
+  --catalog-muted: #a9b8c2;
+  --catalog-sidebar: #141c23;
+  --catalog-button: #25333e;
+  --catalog-border: #425462;
+  --catalog-button-text: #edf3f6;
+  --catalog-hover: #354b59;
+  --catalog-accent-ink: #17251c;
+  --catalog-accent-hover: #b9ed95;
+  --catalog-row-line: #26323b;
+  --catalog-row-title: #e5edef;
+  --catalog-secondary: #a4b7c2;
+  --catalog-selected: #2b4037;
+  --catalog-field-label: #b9c9d2;
+  --catalog-input: #0c1217;
+  --catalog-input-border: #3b4d59;
+}
+.ability-catalog--light {
+  --catalog-bg: #f6f1e8;
+  --catalog-fg: #33372e;
+  --catalog-header: #eae5d8;
+  --catalog-line: #cec8b9;
+  --catalog-accent: #41784a;
+  --catalog-title: #25291f;
+  --catalog-muted: #646958;
+  --catalog-sidebar: #eee9dd;
+  --catalog-button: #e5e0d3;
+  --catalog-border: #b5b29f;
+  --catalog-button-text: #303a2c;
+  --catalog-hover: #d6dfcc;
+  --catalog-accent-ink: #ffffff;
+  --catalog-accent-hover: #315f39;
+  --catalog-row-line: #d8d1c1;
+  --catalog-row-title: #343e2c;
+  --catalog-secondary: #636d58;
+  --catalog-selected: #d8e4cc;
+  --catalog-field-label: #515c46;
+  --catalog-input: #fffdf7;
+  --catalog-input-border: #b6b8a6;
+}
+.ability-catalog { background-color: var(--catalog-bg); color: var(--catalog-fg); }
+.ability-header { padding: 24px 24px 22px; border-bottom-width: 1px; border-bottom-color: var(--catalog-line); background-color: var(--catalog-header); }
+.ability-eyebrow { color: var(--catalog-accent); font-size: 10px; -unity-font-style: bold; margin-bottom: 8px; }
+#catalogTitle { font-size: 30px; -unity-font-style: bold; color: var(--catalog-title); }
+#catalogSubtitle { color: var(--catalog-muted); font-size: 12px; margin-top: 6px; }
+.ability-sidebar { background-color: var(--catalog-sidebar); }
+.ability-toolbar { margin: 12px 6px; }
+.ability-catalog .unity-button { padding: 6px 12px; background-color: var(--catalog-button); border-color: var(--catalog-border); border-width: 1px; border-radius: 5px; color: var(--catalog-button-text); }
+.ability-catalog .unity-button:hover { background-color: var(--catalog-hover); border-color: var(--catalog-accent); }
+.ability-catalog .ability-primary { background-color: var(--catalog-accent); color: var(--catalog-accent-ink); border-color: var(--catalog-accent); -unity-font-style: bold; }
+.ability-catalog .ability-primary:hover { background-color: var(--catalog-accent-hover); color: var(--catalog-accent-ink); }
+.ability-row { padding: 12px; border-bottom-width: 1px; border-bottom-color: var(--catalog-row-line); }
+#abilityName { font-size: 14px; -unity-font-style: bold; color: var(--catalog-row-title); }
+#abilityStats { font-size: 11px; color: var(--catalog-secondary); margin-top: 5px; }
+.ability-catalog .unity-collection-view__item--selected { background-color: var(--catalog-selected); border-left-color: var(--catalog-accent); border-left-width: 3px; }
+.ability-details .unity-base-field { margin-bottom: 10px; }
+.ability-details .unity-base-field__label { color: var(--catalog-field-label); }
+.ability-catalog .unity-base-text-field__input { background-color: var(--catalog-input); color: var(--catalog-button-text); border-color: var(--catalog-input-border); border-width: 1px; border-radius: 4px; padding: 5px; }
+.ability-hint { white-space: normal; font-size: 11px; color: var(--catalog-secondary); margin-top: 22px; }

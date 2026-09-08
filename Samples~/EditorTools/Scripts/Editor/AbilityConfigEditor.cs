@@ -15,7 +15,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
     internal sealed class AbilityConfigEditor : Editor
     {
         private static readonly Color _border = new(0.26f, 0.28f, 0.31f);
-        private static readonly Color _accent = new(0.42f, 0.69f, 1f);
+        private static readonly Color _accent = new(0.65f, 0.86f, 0.5f);
         private static readonly Color _warning = new(1f, 0.76f, 0.3f);
 
         public override VisualElement CreateInspectorGUI()
@@ -64,7 +64,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             void Refresh()
             {
                 var isFree = config.ManaCost is 0;
-                var color = isFree ? _warning : _accent;
+                var color = EditorGUIUtility.isProSkin
+                    ? (isFree ? _warning : _accent)
+                    : (isFree ? new Color(0.6f, 0.4f, 0f) : new Color(0.25f, 0.48f, 0.28f));
                 badge.SetText(isFree ? "FREE" : $"{config.ManaCost} MP").SetColor(color).SetBorderColor(color);
                 helpBox.SetDisplay(isFree ? DisplayStyle.Flex : DisplayStyle.None);
             }

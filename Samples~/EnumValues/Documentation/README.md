@@ -1,5 +1,7 @@
 # EnumValues Sample
 
+![The surface laboratory: a labeled track and a moving walker.](Images/scene.png)
+
 A character pacing over a row of floor tiles. The tile color, the footprint color, the step cadence and the walking speed are all `EnumValues` lookups keyed by a surface enum or a `[Flags]` terrain enum, configured in the Inspector with a default fallback. The API reference lives in [EnumValues](../../../Documentation/06-enum-values.md).
 
 ```csharp

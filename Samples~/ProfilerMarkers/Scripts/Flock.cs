@@ -12,6 +12,8 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         [SerializeField] [Min(0.1f)] private float _neighborRadius = 3f;
         [SerializeField] [Min(0.1f)] private float _maxSpeed = 6f;
 
+        [SerializeField, HideInInspector] private Material _presentationMaterial;
+
         private Transform[] _agents;
         private FlockSimulation _simulation;
 
@@ -41,6 +43,13 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
                 using var _ = this.Marker();
                 var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
                 go.name = $"Agent {index}";
+                var renderer = go.GetComponent<Renderer>();
+                if (_presentationMaterial != null) renderer.sharedMaterial = _presentationMaterial;
+                var block = new MaterialPropertyBlock();
+                var tint = Color.Lerp(new Color(0.25f, 0.85f, 1f), new Color(0.65f, 1f, 0.35f), (float)index / _count);
+                block.SetColor("_Color", tint);
+                block.SetColor("_BaseColor", tint);
+                renderer.SetPropertyBlock(block);
                 go.transform.SetParent(transform);
                 go.transform.localScale = new Vector3(0.3f, 0.3f, 0.8f);
                 Destroy(go.GetComponent<Collider>());
