@@ -1253,7 +1253,7 @@ GameObject:
   - component: {fileID: 646016607}
   - component: {fileID: 646016606}
   m_Layer: 0
-  m_Name: Sand
+  m_Name: Sand (Soft)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1287,7 +1287,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Aspid.FastTools.Samples.EnumValues::Aspid.FastTools.Samples.EnumValues.SurfaceTile
   _surface: 4
-  _flags: 0
+  _flags: 8
   _palette: {fileID: 11400000, guid: 6396fa00d77ba4499b47c1043df83a40, type: 2}
 --- !u!23 &646016607
 MeshRenderer:
@@ -1528,6 +1528,10 @@ MonoBehaviour:
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Wet, Slippery
       _value: 0.5
+      _enumType: Aspid.FastTools.Samples.EnumValues.TerrainFlags, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Soft
+      _value: 0.4
       _enumType: Aspid.FastTools.Samples.EnumValues.TerrainFlags, Aspid.FastTools.Samples.EnumValues,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
   _footprintLifetime: 2

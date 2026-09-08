@@ -14,7 +14,7 @@ Surface colors and footprint colors, each with a Default Value.
 ## Open it
 
 1. Import the sample and open `Scenes/EnumValues.unity`.
-2. Enter Play Mode: the **Walker** crosses seven tiles, leaving a continuous colored trail whose older end recedes after two seconds. Movement is faster on hot metal and slower on wet grass.
+2. Enter Play Mode: the **Walker** crosses seven tiles, leaving a continuous colored trail whose older end recedes after two seconds. Movement is faster on hot metal and slower on wet grass. Soft sand uses a `0.4` speed multiplier, below both dry stone (`1`) and wet, slippery stone (`0.5`).
 
 ![The walker crosses different surfaces and leaves a continuous colored trail.](Images/demo.gif)
 

@@ -55,7 +55,7 @@
 .ability-catalog .unity-button:hover { background-color: var(--catalog-hover); border-color: var(--catalog-accent); }
 .ability-catalog .ability-primary { background-color: var(--catalog-accent); color: var(--catalog-accent-ink); border-color: var(--catalog-accent); -unity-font-style: bold; }
 .ability-catalog .ability-primary:hover { background-color: var(--catalog-accent-hover); color: var(--catalog-accent-ink); }
-.ability-row { padding: 12px; border-bottom-width: 1px; border-bottom-color: var(--catalog-row-line); }
+.ability-row { flex-grow: 1; justify-content: center; padding: 10px 12px; border-bottom-width: 1px; border-bottom-color: var(--catalog-row-line); }
 #abilityName { font-size: 14px; -unity-font-style: bold; color: var(--catalog-row-title); }
 #abilityStats { font-size: 11px; color: var(--catalog-secondary); margin-top: 5px; }
 .ability-catalog .unity-collection-view__item--selected { background-color: var(--catalog-selected); border-left-color: var(--catalog-accent); border-left-width: 3px; }
@@ -63,3 +63,14 @@
 .ability-details .unity-base-field__label { color: var(--catalog-field-label); }
 .ability-catalog .unity-base-text-field__input { background-color: var(--catalog-input); color: var(--catalog-button-text); border-color: var(--catalog-input-border); border-width: 1px; border-radius: 4px; padding: 5px; }
 .ability-hint { white-space: normal; font-size: 11px; color: var(--catalog-secondary); margin-top: 22px; }
+
+.ability-details { padding: 28px 20px 20px; }
+.ability-detail-title { margin-left: 3px; }
+.ability-details .unity-base-field__label { width: 120px; min-width: 120px; padding-right: 8px; }
+.ability-details .ability-description { flex-direction: row; align-items: flex-start; }
+.ability-description .unity-base-field__label { padding-top: 6px; }
+.ability-description .unity-base-text-field__input { min-height: 58px; white-space: normal; }
+.ability-actions { margin-top: 12px; margin-left: 4px; align-items: flex-start; }
+.ability-catalog .ability-action { width: 196px; height: 30px; margin: 0 0 6px; }
+
+.ability-effect-row { margin-left: 3px; }

@@ -11,5 +11,6 @@ namespace Aspid.FastTools.Samples.EnumValues
         Wet = 1,
         Slippery = 2,
         Hot = 4,
+        Soft = 8,
     }
 }

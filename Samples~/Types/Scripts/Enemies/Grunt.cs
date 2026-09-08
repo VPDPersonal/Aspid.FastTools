@@ -10,6 +10,6 @@ namespace Aspid.FastTools.Samples.Types
         protected override Color Tint => new(0.85f, 0.35f, 0.25f);
 
         protected override void Move(float deltaTime) =>
-            transform.position = Vector3.MoveTowards(transform.position, Vector3.zero, Speed * deltaTime);
+            transform.position = Vector3.MoveTowards(transform.position, new Vector3(0f, transform.position.y, 0f), Speed * deltaTime);
     }
 }

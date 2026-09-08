@@ -11,8 +11,8 @@ namespace Aspid.FastTools.Samples.Types
 
         protected override void Start()
         {
-            base.Start();
             transform.localScale = Vector3.one * 1.4f;
+            base.Start();
         }
 
         public override string ToString() =>

@@ -9,8 +9,8 @@ namespace Aspid.FastTools.Samples.Types
 
         protected override void Start()
         {
-            base.Start();
             transform.localScale = new Vector3(0.6f, 1.6f, 0.6f);
+            base.Start();
         }
     }
 }

@@ -48,7 +48,8 @@ namespace Aspid.FastTools.Samples.EnumValues
                 return;
             }
 
-            var trailPosition = transform.position + Vector3.down * 0.49f;
+            var trailPosition = transform.position;
+            trailPosition.y = _tile.GetComponent<Collider>().bounds.max.y + 0.01f;
             if (_trail == null || previousTile != _tile || Time.time >= _nextStep)
             {
                 _nextStep = Time.time + Mathf.Max(0.02f, _stepInterval.GetValue(_tile.Surface));

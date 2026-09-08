@@ -25,6 +25,8 @@ namespace Aspid.FastTools.Samples.Types
 
         protected virtual void Start()
         {
+            // Capsule pivots are centered; keep the feet on the arena after subtype scaling.
+            transform.position -= Vector3.up * GetComponent<Renderer>().bounds.min.y;
             _block = new MaterialPropertyBlock();
             _block.SetColor(_baseColorId, Tint);
             _block.SetColor(_colorId, Tint);

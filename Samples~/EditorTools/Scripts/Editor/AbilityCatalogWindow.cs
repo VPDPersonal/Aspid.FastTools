@@ -85,7 +85,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(toolbar)
                 .AddChild(_list);
 
-            _details = new ScrollView().SetFlexGrow(1).SetPaddingX(20).SetPaddingY(20);
+            _details = new ScrollView().SetFlexGrow(1);
             _details.AddToClassList("ability-details");
             left.AddToClassList("ability-sidebar");
             create.AddToClassList("ability-primary");
@@ -159,6 +159,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(effectLabel)
                 .AddChild(effectButton);
 
+            effectRow.AddToClassList("ability-effect-row");
+
             // A one-click balance pass: chainable typed setters, Undo included, applied once at the end.
             var halveCooldown = new Button()
                 .SetText("Halve cooldown, +5 MP")
@@ -171,10 +173,27 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                     manaCost.SetIntAndApply(manaCost.intValue + 5);
                 });
 
+            halveCooldown.AddToClassList("ability-action");
+            var selectAsset = new Button().SetText("Select asset")
+                .AddClicked(() => Selection.activeObject = config);
+            selectAsset.AddToClassList("ability-action");
+            var actions = new VisualElement();
+            actions.AddToClassList("ability-actions");
+            actions.Add(halveCooldown);
+            actions.Add(selectAsset);
+
+            var description = new TextField("Description")
+            {
+                multiline = true,
+                bindingPath = "_description"
+            };
+            description.AddToClassList("ability-description");
+
             var title = new Label(config.AbilityName)
                 .SetFontSize(24).AddBoldUnityFontStyleAndWeight().SetMarginBottom(18)
                 .SetTooltip("Double-click to open the script")
                 .AddOpenScriptCommand(config);
+            title.AddToClassList("ability-detail-title");
             title.TrackSerializedObjectValue(serializedObject, _ =>
             {
                 title.SetText(config.AbilityName);
@@ -186,14 +205,12 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 // BindTo(SerializedObject) binds every PropertyField below in one call.
                 .AddChild(new VisualElement()
                     .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName")).AddValueChanged(_ => _list.RefreshItems()))
-                    .AddChild(new PropertyField(serializedObject.FindProperty("_description")))
+                    .AddChild(description)
                     .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost")))
                     .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))
                     .BindTo(serializedObject))
                 .AddChild(effectRow)
-                .AddChild(halveCooldown.SetMarginTop(12).SetAlignSelf(Align.FlexStart))
-                .AddChild(new Button().SetText("Select asset").SetAlignSelf(Align.FlexStart)
-                    .AddClicked(() => Selection.activeObject = config));
+                .AddChild(actions);
 
             var hint = new Label("Changes are saved to the asset. Use Undo to restore previous values.");
             hint.AddToClassList("ability-hint");

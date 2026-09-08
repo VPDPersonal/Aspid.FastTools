@@ -13,7 +13,7 @@ namespace Aspid.FastTools.Samples.Types
         protected override void Move(float deltaTime)
         {
             var position = transform.position;
-            var toCenter = -position;
+            var toCenter = new Vector3(-position.x, 0f, -position.z);
             var distance = toCenter.magnitude;
             if (distance < 0.01f) return;
 
