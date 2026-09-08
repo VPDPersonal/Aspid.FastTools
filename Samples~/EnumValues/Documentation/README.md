@@ -1,16 +1,24 @@
 # EnumValues Sample
 
-A character pacing over a row of floor tiles. The tile color, the footprint color, the step cadence and the walking speed are all `EnumValues` lookups keyed by a surface enum or a `[Flags]` terrain enum, configured in the Inspector with a default fallback. The API reference lives in [EnumValues](../../Documentation/06-enum-values.md).
+A character pacing over a row of floor tiles. The tile color, the footprint color, the step cadence and the walking speed are all `EnumValues` lookups keyed by a surface enum or a `[Flags]` terrain enum, configured in the Inspector with a default fallback. The API reference lives in [EnumValues](../../../Documentation/06-enum-values.md).
 
 ```csharp
 [SerializeField] private EnumValues<SurfaceType, float> _stepInterval; // enum fixed in code
 [SerializeField] private EnumValues<float> _speedByTerrain;            // enum picked in the Inspector
 ```
 
+![Surface colors and footprint colors, each with a Default Value.](Images/surface-tables.png)
+
+Surface colors and footprint colors, each with a Default Value.
+
 ## Open it
 
 1. Import the sample and open `Scenes/EnumValues.unity`.
-2. Enter Play Mode: the **Walker** crosses seven tiles, leaving colored footprints that fade, faster on hot metal and slower on wet grass.
+2. Enter Play Mode: the **Walker** crosses seven tiles, leaving colored footprints that disappear after two seconds, faster on hot metal and slower on wet grass.
+
+![The walker crosses different surfaces and leaves colored footprints.](Images/demo.gif)
+
+The walker crosses different surfaces and leaves colored footprints.
 
 ## Try
 
@@ -30,5 +38,5 @@ A character pacing over a row of floor tiles. The tile color, the footprint colo
 |---|---|
 | `Scripts/SurfacePalette.cs` | `EnumValues<TEnum, TValue>` on a ScriptableObject |
 | `Scripts/Walker.cs` | Both variants in a component, `GetValue` on a plain and a `[Flags]` key, `foreach` |
-| `Scripts/SurfaceTile.cs` | Reads the palette in the editor (`[ExecuteAlways]`) so palette edits show without Play Mode |
+| `Scripts/SurfaceTile.cs` | Checks the palette color on editor updates, applying edits and Undo without Play Mode |
 | `Scripts/TerrainFlags.cs` | The `[Flags]` enum with combinable members |

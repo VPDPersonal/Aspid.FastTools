@@ -43,8 +43,8 @@ Each feature ships with a sample: a small scene or editor tool that does somethi
 
 | Sample | What it shows |
 |---|---|
-| [Types](../Samples~/Types/README.md) | An enemy spawner: `SerializableMonoScript<T>`, `SerializableType<T>`, `[TypeSelectorDisplay]`, a member-referenced `[TypeSelector]`, `ComponentTypeSelector` |
-| [SerializeReferences](../Samples~/SerializeReferences/README.md) | A turret with polymorphic weapons: the `[SerializeReference]` picker in every field shape, broken assets for the repair tools, an IMGUI inspector |
-| [EnumValues](../Samples~/EnumValues/README.md) | A walker over surface tiles: both `EnumValues` variants, default values, `[Flags]` lookup rules |
-| [ProfilerMarkers](../Samples~/ProfilerMarkers/README.md) | A flock simulation: the generated marker tree in the Profiler |
-| [EditorTools](../Samples~/EditorTools/README.md) | An editor window and inspector: fluent `VisualElement` extensions, `SerializedProperty` setters, editor helpers, `TypeSelectorWindow` |
+| [Types](../Samples~/Types/Documentation/README.md) | An enemy spawner: `SerializableMonoScript<T>`, `SerializableType<T>`, `[TypeSelectorDisplay]`, a member-referenced `[TypeSelector]`, `ComponentTypeSelector` |
+| [SerializeReferences](../Samples~/SerializeReferences/Documentation/README.md) | A turret with polymorphic weapons: the `[SerializeReference]` picker in every field shape, broken assets for the repair tools, an IMGUI inspector |
+| [EnumValues](../Samples~/EnumValues/Documentation/README.md) | A walker over surface tiles: both `EnumValues` variants, default values, `[Flags]` lookup rules |
+| [ProfilerMarkers](../Samples~/ProfilerMarkers/Documentation/README.md) | A flock simulation: the generated marker tree in the Profiler |
+| [EditorTools](../Samples~/EditorTools/Documentation/README.md) | An editor window and inspector: fluent `VisualElement` extensions, `SerializedProperty` setters, editor helpers, `TypeSelectorWindow` |

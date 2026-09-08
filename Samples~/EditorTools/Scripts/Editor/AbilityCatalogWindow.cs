@@ -108,6 +108,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var effectType = serializedObject.FindProperty("_effectType");
 
             var effectLabel = new Label().SetFlexGrow(1);
+            effectLabel.TrackSerializedObjectValue(serializedObject, _ => RefreshEffect());
             var effectButton = new Button().SetText("Change…");
 
             // The same picker the [TypeSelector] attribute opens, driven from code: anchor it to the button,

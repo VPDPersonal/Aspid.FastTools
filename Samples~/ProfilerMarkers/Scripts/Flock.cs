@@ -15,12 +15,24 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         private Transform[] _agents;
         private FlockSimulation _simulation;
 
-        private void Start()
+        private void Start() => InitializeAgents();
+
+        private void InitializeAgents()
         {
+            if (_agents is not null)
+            {
+                foreach (var agent in _agents)
+                {
+                    agent.gameObject.SetActive(false);
+                    Destroy(agent.gameObject);
+                }
+            }
+
+            _count = Mathf.Clamp(_count, 8, 400);
             _simulation = new FlockSimulation(_count, _bounds);
             _agents = new Transform[_count];
 
-            // A local function resolves to the enclosing method: "Flock.Start (line)".
+            // A local function resolves to the enclosing method: "Flock.InitializeAgents (line)".
             for (var i = 0; i < _count; i++)
                 _agents[i] = CreateAgent(i);
 
@@ -40,6 +52,8 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         {
             // "Flock.Update (line)" covers the whole frame step; the simulation adds its own markers below it.
             using var _ = this.Marker();
+
+            if (_agents.Length != Mathf.Clamp(_count, 8, 400)) InitializeAgents();
 
             _simulation.Step(Time.deltaTime, _neighborRadius, _maxSpeed);
 

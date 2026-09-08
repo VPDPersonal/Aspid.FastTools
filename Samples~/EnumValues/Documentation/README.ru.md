@@ -1,16 +1,24 @@
 # Пример EnumValues
 
-Персонаж ходит по ряду плиток. Цвет плитки, цвет следа, частота шагов и скорость — всё это `EnumValues`-поиски по enum поверхности или `[Flags]`-enum рельефа, настроенные в инспекторе со значением по умолчанию. Справочник — [EnumValues](../../Documentation/ru/06-enum-values.md).
+Персонаж ходит по ряду плиток. Цвет плитки, цвет следа, частота шагов и скорость — всё это `EnumValues`-поиски по enum поверхности или `[Flags]`-enum рельефа, настроенные в инспекторе со значением по умолчанию. Справочник — [EnumValues](../../../Documentation/ru/06-enum-values.md).
 
 ```csharp
 [SerializeField] private EnumValues<SurfaceType, float> _stepInterval; // enum задан в коде
 [SerializeField] private EnumValues<float> _speedByTerrain;            // enum выбран в инспекторе
 ```
 
+![Цвета поверхностей и следов; у каждой таблицы есть Default Value.](Images/surface-tables.png)
+
+Цвета поверхностей и следов; у каждой таблицы есть Default Value.
+
 ## Как открыть
 
 1. Импортируйте пример и откройте `Scenes/EnumValues.unity`.
-2. Войдите в Play Mode: **Walker** проходит семь плиток, оставляя тающие цветные следы, быстрее на горячем металле и медленнее на мокрой траве.
+2. Войдите в Play Mode: **Walker** проходит семь плиток, оставляя цветные следы, которые исчезают через две секунды, быстрее на горячем металле и медленнее на мокрой траве.
+
+![Персонаж проходит по разным поверхностям и оставляет цветные следы.](Images/demo.gif)
+
+Персонаж проходит по разным поверхностям и оставляет цветные следы.
 
 ## Попробуйте
 
@@ -30,5 +38,5 @@
 |---|---|
 | `Scripts/SurfacePalette.cs` | `EnumValues<TEnum, TValue>` на ScriptableObject |
 | `Scripts/Walker.cs` | Оба варианта в компоненте, `GetValue` по обычному и `[Flags]`-ключу, `foreach` |
-| `Scripts/SurfaceTile.cs` | Читает палитру в редакторе (`[ExecuteAlways]`), чтобы правки палитры были видны без Play Mode |
+| `Scripts/SurfaceTile.cs` | Следит за цветом из палитры через editor update; применяет изменения и Undo без Play Mode |
 | `Scripts/TerrainFlags.cs` | `[Flags]`-enum с комбинируемыми членами |
