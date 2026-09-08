@@ -23,7 +23,7 @@ The walker crosses different surfaces and leaves a continuous colored trail.
 ## Try
 
 1. **Typed variant.** Select `Data/SurfacePalette.asset`. Both tables are `EnumValues<SurfaceType, Color>`: the enum row is read-only because the type is fixed by the field. Change the `Grass` color; the tiles recolor immediately, without Play Mode.
-2. **Default value.** `Footprint Colors` has rows only for `Grass`, `Sand` and `Water`. Trail segments on stone and metal use `Default Value`. Right-click the field and choose **Populate Missing Enum Members** to add the rest, seeded with that default.
+2. **Default value.** `Footprint Colors` assigns a distinct trail color to every surface: green for grass, purple for stone, red for metal, cyan for water and orange for sand. To try the fallback, remove the `Stone` row: stone then uses `Default Value`. Right-click the field and choose **Populate Missing Enum Members** to restore the missing row with that default; use Undo to return to the original palette.
 3. **Untyped variant.** Select **Walker**. `Speed By Terrain` is an `EnumValues<float>` whose enum, `TerrainFlags`, was picked in the header row. Each key is a flags dropdown, and `Wet, Slippery` is a row of its own.
 4. **`[Flags]` lookup rules**, visible as the walker crosses the tiles:
    - an **exact** key wins first: the `Water (Wet, Slippery)` tile resolves to the `Wet, Slippery` row (`0.5`), even though `Wet` and `Slippery` rows exist;
