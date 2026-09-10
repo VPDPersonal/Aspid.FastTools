@@ -1,0 +1,12 @@
+.ability-catalog, .ability-catalog *, .ability-inspector, .ability-inspector * {
+    -unity-font-definition: initial;
+    -unity-font: url("../../Fonts/iAWriterQuattroS-Regular.ttf");
+}
+
+.ability-catalog #catalogTitle, .ability-inspector .sample-title {
+    -unity-font: url("../../Fonts/IBMPlexSerif-Regular.ttf");
+}
+
+.ability-catalog #abilityStats, .ability-inspector .sample-metadata {
+    -unity-font: url("../../Fonts/IBMPlexMono-Regular.ttf");
+}

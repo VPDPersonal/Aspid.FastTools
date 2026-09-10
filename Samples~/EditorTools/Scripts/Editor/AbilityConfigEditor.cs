@@ -52,6 +52,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(title)
                 .AddChild(badge);
 
+            title.AddToClassList("sample-title");
+            badge.AddToClassList("sample-metadata");
+
             var body = new VisualElement()
                 .SetPaddingX(12)
                 .SetPaddingY(10)
@@ -64,12 +67,20 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(helpBox);
 
             Refresh();
-            return new VisualElement()
+            var root = new VisualElement()
                 .SetBorderColor(_border)
                 .SetBorderWidth(1)
                 .SetBorderRadius(8)
                 .AddChild(header)
                 .AddChild(body);
+
+            root.AddToClassList("ability-inspector");
+            var scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
+            var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
+                System.IO.Path.GetDirectoryName(scriptPath) + "/SampleFonts.uss");
+            if (stylesheet != null)
+                root.styleSheets.Add(stylesheet);
+            return root;
 
             void Refresh()
             {
