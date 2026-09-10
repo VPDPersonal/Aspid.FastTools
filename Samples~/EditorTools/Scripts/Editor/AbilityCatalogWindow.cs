@@ -99,9 +99,6 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
             var header = new VisualElement();
             header.AddToClassList("ability-header");
-            var eyebrow = new Label("ASPID FASTTOOLS  /  EDITOR TOOLS");
-            eyebrow.AddToClassList("ability-eyebrow");
-            header.Add(eyebrow);
             header.Add(new Label("Ability catalog") { name = "catalogTitle" });
             header.Add(new Label("Tune your abilities. See every change.") { name = "catalogSubtitle" });
             rootVisualElement.Add(header);

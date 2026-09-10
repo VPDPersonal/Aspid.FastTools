@@ -1,3 +1,5 @@
+@import url("SampleFonts.uss");
+
 .ability-catalog {
   --catalog-bg: #10151b;
   --catalog-fg: #e8eef1;
@@ -46,7 +48,6 @@
 }
 .ability-catalog { background-color: var(--catalog-bg); color: var(--catalog-fg); }
 .ability-header { padding: 24px 24px 22px; border-bottom-width: 1px; border-bottom-color: var(--catalog-line); background-color: var(--catalog-header); }
-.ability-eyebrow { color: var(--catalog-accent); font-size: 10px; -unity-font-style: bold; margin-bottom: 8px; }
 #catalogTitle { font-size: 30px; -unity-font-style: bold; color: var(--catalog-title); }
 #catalogSubtitle { color: var(--catalog-muted); font-size: 12px; margin-top: 6px; }
 .ability-sidebar { background-color: var(--catalog-sidebar); }
