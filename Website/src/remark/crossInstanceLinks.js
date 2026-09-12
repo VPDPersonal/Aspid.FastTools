@@ -13,6 +13,8 @@
 const DOCS_RE = /^(?:\.\.\/)+Documentation\/(?:([a-z]{2}(?:-[A-Za-z]{2,4})?)\/)?(.+?)(?:\.md)?(#.*)?$/;
 // `Samples~/` and `Documentation/` are optional so links between sibling tutorials are covered too:
 // the translated copies are all named README.md, so the `.ru` file link only exists in the package.
+// The `Samples~/README.md` overview has no counterpart in the tutorials tree; the site's overview page lives at /tutorials.
+const SAMPLES_INDEX_RE = /^(?:\.\.\/)+Samples~\/README(?:\.[a-z]{2}(?:-[A-Za-z]{2,4})?)?\.md(#.*)?$/i;
 const SAMPLES_RE = /^(?:\.\.\/)+(?:Samples~\/)?([^/]+)\/(?:Documentation\/)?README(?:\.([a-z]{2}(?:-[A-Za-z]{2,4})?))?\.md(#.*)?$/i;
 
 // `README.ru.md` → `README.md`; `ru/06-enum-values.md` → `06-enum-values.md` (only when the path stays inside the same tree).
@@ -50,6 +52,9 @@ function rewrite(url) {
   // resolve the link inside the current locale.
   const localized = decoded.match(LOCALIZED_RE);
   if (localized) return `${localized[1]}${localized[2]}.md${localized[3]}`;
+
+  const samplesIndex = decoded.match(SAMPLES_INDEX_RE);
+  if (samplesIndex) return `/tutorials${samplesIndex[1] ?? ''}`;
 
   const samples = decoded.match(SAMPLES_RE);
   if (samples) return `/tutorials/${sampleSlug(samples[1])}${samples[3] ?? ''}`;

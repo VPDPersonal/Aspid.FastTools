@@ -7,7 +7,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/github/license/VPDPersonal/Aspid.FastTools?label=License&labelColor=254d2c&color=4fa35d" alt="License" /></a>
 </p>
 
-**Aspid.FastTools** is a Unity toolset that eliminates routine boilerplate. Inside: a convenient `SerializeReference` workflow (an inspector type picker and a project-wide reference audit window), Roslyn source generators and analyzers, and runtime and editor utilities — from a serializable `System.Type` to fluent UI Toolkit extensions.
+**Aspid.FastTools** is a Unity toolset that takes the boilerplate out of everyday work. Pick a `SerializeReference` implementation right in the Inspector and audit every such reference across the project. Let Roslyn source generators and analyzers write the repetitive code for you. Round it out with runtime and editor utilities: a serializable `System.Type`, fluent UI Toolkit extensions, and more.
 
 ---
 
@@ -25,23 +25,21 @@ Install via UPM: **Package Manager → + → Install package from git URL…**
 | Specific version | `https://github.com/VPDPersonal/Aspid.FastTools.git#upm/<version>` |
 | Preview | `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview` |
 
-Prefer a manual install? Download the `.unitypackage` from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) or get the package on the [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584). Migrating from `com.aspid.fasttools`? See [Getting Started](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/01-getting-started.md).
-
 ## Features
 
 | Feature | What it gives you |
 |---|---|
-| [Serializable Type System](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/02-serializable-types.md) | `System.Type` as a serialized field, `[TypeSelector]`, a searchable type-picker window, `ComponentTypeSelector` |
-| [SerializeReference Selector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-serialize-reference-selector.md) | A type-picker dropdown for `[SerializeReference]` fields, nested inspectors, generics, per-field repair of broken references |
-| [SerializeReference Tooling](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-tooling.md) | Project-wide audit and bulk repair tabs, project settings, the build/CI gate |
-| [ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-profiler-markers.md) | Source-generated, per-call-site `ProfilerMarker`s via `this.Marker()` |
-| [EnumValues](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/06-enum-values.md) | Serializable enum → value maps, `[Flags]`-aware, boxing-free |
-| [VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-visual-element-extensions.md) | Fluent UI Toolkit tree building in code |
-| [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-serialized-property-extensions.md) | Chainable typed setters and reflection helpers |
-| [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-editor-helpers.md) | Display names for scripts in custom editors |
+| [Serializable Type System](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/02-serializable-types.md) | Store a `System.Type` in a serialized field and pick it from a searchable window in the Inspector |
+| [SerializeReference Selector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-serialize-reference-selector.md) | Pick a `[SerializeReference]` implementation from a dropdown in the Inspector, generic types included, and repair a broken reference in place |
+| [SerializeReference Tooling](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-tooling.md) | Find and repair every broken managed reference across the project, and fail the build or CI when one slips through |
+| [ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-profiler-markers.md) | A unique generated `ProfilerMarker` for every call site, one `this.Marker()` call away |
+| [EnumValues](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/06-enum-values.md) | Serializable enum → value tables that handle `[Flags]` and never box |
+| [VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-visual-element-extensions.md) | Build UI Toolkit trees in code with fluent chains instead of nested blocks |
+| [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-serialized-property-extensions.md) | Set `SerializedProperty` values in one typed, chainable call and reach the underlying field through reflection |
+| [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-editor-helpers.md) | Readable display names for scripts and Unity objects in custom editors |
 | [Claude Code Plugin](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-claude-code-plugin.md) | Skills that teach Claude Code this package |
 
-Each feature ships with a sample that doubles as a tutorial — see [Samples](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/01-getting-started.md#samples). Russian documentation: [Documentation/ru](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/ru/README.md).
+Each feature ships with a sample that doubles as a tutorial — see the [samples overview](Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.md). Russian documentation: [Documentation/ru](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/ru/README.md).
 
 ## Donate
 
