@@ -2,26 +2,26 @@
 
 # Введение
 
-**Aspid.FastTools** — набор инструментов для Unity, избавляющий от рутинного бойлерплейта. Внутри — удобная работа с `SerializeReference` (выбор типа в инспекторе и окно аудита ссылок по всему проекту), Roslyn-генераторы и анализаторы, а также runtime- и editor-утилиты: от сериализуемого `System.Type` до fluent-расширений UI Toolkit.
+**Aspid.FastTools** — набор инструментов для Unity, который убирает бойлерплейт из повседневной работы. Выбор реализации `SerializeReference` прямо в инспекторе и окно аудита таких ссылок по всему проекту. Roslyn-генераторы и анализаторы, которые пишут повторяющийся код за вас. Утилиты для рантайма и редактора: сериализуемый `System.Type`, fluent-расширения UI Toolkit и другое.
 
 [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
 ## Начало работы
 
-[Установка](01-getting-started.md) — UPM git URL, `.unitypackage`, Asset Store и примеры, поставляемые с пакетом.
+[Начало работы](01-getting-started.md) — установка через UPM или Asset Store, а также примеры к каждой фиче.
 
 ## Возможности
 
 | Возможность | Что даёт |
 |---|---|
-| [Serializable Type System](02-serializable-types.md) | `System.Type` как сериализуемое поле, `[TypeSelector]`, окно выбора типа с поиском, `ComponentTypeSelector` |
-| [SerializeReference Selector](03-serialize-reference-selector.md) | Выпадающий выбор типа для полей `[SerializeReference]`, вложенные инспекторы, generics, точечная починка битых ссылок |
-| [SerializeReference Tooling](04-serialize-reference-tooling.md) | Аудит и массовая починка по всему проекту, настройки проекта, build/CI-гейт |
-| [ProfilerMarkers](05-profiler-markers.md) | Source-generated `ProfilerMarker`, уникальные для каждого места вызова, через `this.Marker()` |
-| [EnumValues](06-enum-values.md) | Сериализуемые отображения enum → значение с поддержкой `[Flags]`, без boxing |
-| [VisualElement Extensions](07-visual-element-extensions.md) | Fluent-построение UI Toolkit-деревьев в коде |
-| [SerializedProperty Extensions](08-serialized-property-extensions.md) | Типизированные сеттеры с fluent-цепочками и рефлексионные хелперы |
-| [Editor Helpers](09-editor-helpers.md) | Отображаемые имена скриптов для кастомных редакторов |
+| [Serializable Type System](02-serializable-types.md) | Хранит `System.Type` в сериализуемом поле и даёт выбрать тип из окна с поиском прямо в инспекторе |
+| [SerializeReference Selector](03-serialize-reference-selector.md) | Выбор реализации `[SerializeReference]` из выпадающего списка в инспекторе, включая generic-типы, и починка битой ссылки на месте |
+| [SerializeReference Tooling](04-serialize-reference-tooling.md) | Поиск и починка всех битых managed-ссылок по проекту, а также проверка перед билдом и в CI |
+| [ProfilerMarkers](05-profiler-markers.md) | Уникальный генерируемый `ProfilerMarker` для каждого места вызова одним вызовом `this.Marker()` |
+| [EnumValues](06-enum-values.md) | Сериализуемые таблицы enum → значение с поддержкой `[Flags]` и без boxing |
+| [VisualElement Extensions](07-visual-element-extensions.md) | Построение деревьев UI Toolkit в коде fluent-цепочками вместо вложенных блоков |
+| [SerializedProperty Extensions](08-serialized-property-extensions.md) | Типизированная запись значений в `SerializedProperty` одним вызовом в цепочке и доступ к полю через рефлексию |
+| [Editor Helpers](09-editor-helpers.md) | Читаемые отображаемые имена скриптов и объектов Unity в кастомных редакторах |
 | [Claude Code Plugin](10-claude-code-plugin.md) | Скиллы, обучающие Claude Code этому пакету |
 
 ## Поддержать проект
