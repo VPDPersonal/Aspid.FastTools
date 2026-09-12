@@ -36,6 +36,11 @@
   },
   "samples": [
     {
+      "displayName": "EnumValues",
+      "description": "A character walking over surface tiles: EnumValues<TEnum, TValue> on a palette asset, EnumValues<TValue> with a [Flags] enum picked in the Inspector, default values and the flags lookup rules in action.",
+      "path": "Samples~/EnumValues"
+    },
+    {
       "displayName": "Types",
       "description": "An enemy spawner storing three System.Types: SerializableMonoScript<T> (rename-safe), SerializableType<T> with [TypeSelectorDisplay] candidates, a member-referenced [TypeSelector] and ComponentTypeSelector to swap a component in place.",
       "path": "Samples~/Types"
@@ -46,19 +51,14 @@
       "path": "Samples~/SerializeReferences"
     },
     {
-      "displayName": "EnumValues",
-      "description": "A character walking over surface tiles: EnumValues<TEnum, TValue> on a palette asset, EnumValues<TValue> with a [Flags] enum picked in the Inspector, default values and the flags lookup rules in action.",
-      "path": "Samples~/EnumValues"
+      "displayName": "EditorTools",
+      "description": "An editor window and a custom inspector built in code: fluent VisualElement extensions, ListView and binding, SerializedProperty setters, GetScriptName, AddOpenScriptCommand and TypeSelectorWindow as a public API.",
+      "path": "Samples~/EditorTools"
     },
     {
       "displayName": "ProfilerMarkers",
       "description": "A flock simulation with this.Marker() around each phase: the generated marker tree in the Profiler, per-iteration markers, markers in plain classes and local functions.",
       "path": "Samples~/ProfilerMarkers"
-    },
-    {
-      "displayName": "EditorTools",
-      "description": "An editor window and a custom inspector built in code: fluent VisualElement extensions, ListView and binding, SerializedProperty setters, GetScriptName, AddOpenScriptCommand and TypeSelectorWindow as a public API.",
-      "path": "Samples~/EditorTools"
     }
   ],
   "unityRelease": "0f1"

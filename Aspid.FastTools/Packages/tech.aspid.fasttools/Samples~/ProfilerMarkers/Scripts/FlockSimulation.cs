@@ -3,8 +3,10 @@ using UnityEngine;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.ProfilerMarkers
 {
-    // A plain class, not a MonoBehaviour: this.Marker() works in any type. Each call site becomes one static
-    // ProfilerMarker named "FlockSimulation.<name> (<line>)".
+    // Each this.Marker() call site generates a static marker, including in plain C# classes.
+    /// <summary>
+    /// Represents a flock with separation, alignment and cohesion steering.
+    /// </summary>
     public sealed class FlockSimulation
     {
         private readonly Vector3[] _positions;
@@ -12,6 +14,8 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
         private readonly Vector3[] _steering;
         private readonly float _bounds;
 
+        /// <param name="count">Number of agents to create.</param>
+        /// <param name="bounds">Distance from the origin at which agents turn back.</param>
         public FlockSimulation(int count, float bounds)
         {
             _bounds = bounds;
@@ -26,12 +30,31 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
             }
         }
 
+        /// <summary>
+        /// Gets the number of agents in the simulation.
+        /// </summary>
         public int Count => _positions.Length;
 
+        /// <summary>
+        /// Returns the agent position.
+        /// </summary>
+        /// <param name="index">Zero-based agent index.</param>
+        /// <returns>Agent position in world space.</returns>
         public Vector3 GetPosition(int index) => _positions[index];
 
+        /// <summary>
+        /// Returns the agent velocity.
+        /// </summary>
+        /// <param name="index">Zero-based agent index.</param>
+        /// <returns>Agent velocity in world units per second.</returns>
         public Vector3 GetVelocity(int index) => _velocities[index];
 
+        /// <summary>
+        /// Advances steering and movement by one simulation step.
+        /// </summary>
+        /// <param name="deltaTime">Elapsed time in seconds.</param>
+        /// <param name="neighborRadius">Distance within which agents influence steering.</param>
+        /// <param name="maxSpeed">Maximum speed in world units per second.</param>
         public void Step(float deltaTime, float neighborRadius, float maxSpeed)
         {
             using var _ = this.Marker(); // Wraps the whole method: "FlockSimulation.Step (line)".
@@ -59,10 +82,12 @@ namespace Aspid.FastTools.Samples.ProfilerMarkers
 
                 for (var j = 0; j < _positions.Length; j++)
                 {
-                    if (i == j) continue;
+                    if (i == j)
+                        continue;
                     var offset = _positions[j] - _positions[i];
                     var distanceSq = offset.sqrMagnitude;
-                    if (distanceSq > radiusSq) continue;
+                    if (distanceSq > radiusSq)
+                        continue;
 
                     neighbors++;
                     center += _positions[j];

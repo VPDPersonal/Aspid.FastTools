@@ -17,4 +17,4 @@ The complete guide to Aspid.FastTools for Unity. Rendered at https://vpdpersonal
 
 ## Tutorials
 
-Each sample's `README.md` is its tutorial: [Types](../Samples~/Types/README.md), [SerializeReferences](../Samples~/SerializeReferences/README.md), [EnumValues](../Samples~/EnumValues/README.md), [ProfilerMarkers](../Samples~/ProfilerMarkers/README.md), [EditorTools](../Samples~/EditorTools/README.md).
+Each sample's `Documentation/README.md` is its tutorial: [Types](../Samples~/Types/Documentation/README.md), [SerializeReferences](../Samples~/SerializeReferences/Documentation/README.md), [EnumValues](../Samples~/EnumValues/Documentation/README.md), [ProfilerMarkers](../Samples~/ProfilerMarkers/Documentation/README.md), [EditorTools](../Samples~/EditorTools/Documentation/README.md).

@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "website-dev",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "docusaurus",
+        "start",
+        "--port",
+        "3100",
+        "--no-open"
+      ],
+      "cwd": "Website",
+      "port": 3100
+    },
+    {
+      "name": "website-dev-ru",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "docusaurus",
+        "start",
+        "--locale",
+        "ru",
+        "--port",
+        "3101",
+        "--no-open"
+      ],
+      "cwd": "Website",
+      "port": 3101
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+.docItemContainer header + *,
+.docItemContainer article > *:first-child {
+  margin-top: 0;
+}
+
+/* Only the desktop column shows this copy; the page-wide footer serves mobile. */
+.columnFooter { display: none; }
+
+@media (min-width: 997px) {
+  .docItemCol {
+    max-width: 75% !important;
+  }
+
+  .columnFooter { display: block; margin-top: auto; }
+}

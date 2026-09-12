@@ -5,4 +5,5 @@ build/
 npm-install.log
 i18n/
 changelog/
+tutorials/
 docfx/projects/

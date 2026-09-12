@@ -1,7 +1,7 @@
 name: Docs
 
 # Builds the Docusaurus site in Website/ and publishes it to GitHub Pages.
-# Content comes from the package (Documentation/ and Samples~/*/README*.md, TUTORIAL*.md) and the root CHANGELOG*.md,
+# Content comes from the package (Documentation/ and Samples~/*/Documentation/) and the root CHANGELOG*.md,
 # so any change there rebuilds the site.
 
 on:
@@ -10,16 +10,14 @@ on:
     paths:
       - 'Website/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/README*.md'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/TUTORIAL*.md'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'CHANGELOG*.md'
       - '.github/workflows/docs.yml'
   pull_request:
     paths:
       - 'Website/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/README*.md'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/TUTORIAL*.md'
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'CHANGELOG*.md'
       - '.github/workflows/docs.yml'
   workflow_dispatch:

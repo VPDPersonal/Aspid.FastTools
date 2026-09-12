@@ -4,6 +4,9 @@ using Aspid.FastTools.Types;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
+    /// <summary>
+    /// <see cref="ISpawnPattern"/> that distributes enemies along the far arena edge.
+    /// </summary>
     [TypeSelectorDisplay(
         Name = "Line",
         Group = "Spawn Patterns",
@@ -11,6 +14,7 @@ namespace Aspid.FastTools.Samples.Types
         Icon = "d_BoxCollider Icon")]
     public sealed class LinePattern : ISpawnPattern
     {
+        /// <inheritdoc/>
         public Vector3 GetPosition(int index, int count, float radius)
         {
             var t = count <= 1 ? 0.5f : (float)index / (count - 1);

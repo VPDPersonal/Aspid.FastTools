@@ -41,16 +41,19 @@
   /* Venom Light: pastel beige */
   --venom-bg: #f6f1e8;
   --venom-panel: #ede6d9;
+  --venom-reading-surface: #f0e5d0;
   --venom-line: #e1d8c8;
   --venom-line-strong: #d1c5b0;
+  --venom-divider: #b7aa95;
   --venom-fg: #4b463d;
   --venom-fg-strong: #201d18;
-  --venom-muted: #877e6f;
-  --venom-accent: #3f8a4b;
+  --venom-muted: #746b5d;
+  --venom-dot-pattern: radial-gradient(circle, color-mix(in srgb, var(--venom-muted) 12%, transparent) 1px, transparent 1.2px);
+  --venom-accent: #357a42;
   --venom-accent-2: #357a42;
   --venom-accent-deep: #2f6b39;
   --venom-accent-ink: #ffffff;
-  --venom-sapphire: #2f6fd0;
+  --venom-sapphire: #2369b4;
   --venom-ruby: #c23a52;
   --venom-amber: #a8720f;
   --venom-purple: #7a4fd0;
@@ -86,26 +89,28 @@
   --ifm-navbar-background-color: rgba(246, 241, 232, 0.85);
   --ifm-navbar-shadow: 0 1px 0 var(--venom-line);
   --ifm-footer-background-color: var(--venom-panel);
-  --ifm-code-background: #fcf9f3;
-  --ifm-pre-background: #fcf9f3;
+  --ifm-code-background: #e1d8c8;
+  --ifm-pre-background: var(--ifm-code-background);
 
   --ifm-font-family-base: 'iA Writer Quattro', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
   --ifm-heading-font-family: 'IBM Plex Serif', ui-serif, Georgia, 'Times New Roman', serif;
   --ifm-font-family-monospace: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
   --ifm-font-size-base: 16px;
-  --ifm-line-height-base: 1.75;
+  --ifm-line-height-base: 1.8;
   --ifm-code-font-size: 90%;
   --ifm-heading-font-weight: 500;
-  --ifm-global-radius: 0;
-  --ifm-code-border-radius: 0;
-  --ifm-pre-border-radius: 0;
-  --ifm-button-border-radius: 0;
-  --ifm-badge-border-radius: 0;
-  --ifm-alert-border-radius: 0;
-  --ifm-breadcrumb-border-radius: 0;
-  --ifm-card-border-radius: 0;
-  --ifm-menu-link-padding-vertical: 0.45rem;
-  --ifm-navbar-height: 3.75rem;
+  --ifm-global-radius: 6px;
+  --ifm-code-border-radius: 4px;
+  --ifm-pre-border-radius: 12px;
+  --ifm-button-border-radius: 6px;
+  --ifm-badge-border-radius: 6px;
+  --ifm-alert-border-radius: 6px;
+  --ifm-breadcrumb-border-radius: 6px;
+  --ifm-card-border-radius: 6px;
+  --ifm-navbar-height: 4rem;
+  --venom-navigation-width: 260px;
+  --doc-sidebar-width: var(--venom-navigation-width);
+  --ifm-menu-link-padding-vertical: 0.4rem;
   --docusaurus-highlighted-code-line-bg: var(--venom-glow-soft);
   --ifm-color-success: var(--venom-accent);
   --ifm-color-info: var(--venom-sapphire);
@@ -123,17 +128,21 @@ html[data-theme='dark'] {
   /* Venom Dark */
   --venom-bg: #0a0b0f;
   --venom-panel: #10121a;
+  --venom-reading-surface: var(--venom-bg);
   --venom-line: #1c1f28;
   --venom-line-strong: #272b35;
+  --venom-divider: #343a46;
   --venom-fg: #c8c8cc;
   --venom-fg-strong: #f0f0f2;
-  --venom-muted: #707078;
+  --venom-muted: #92959f;
   --venom-accent: #5cb46b;
   --venom-accent-2: #a9dbb2;
   --venom-accent-deep: #357a42;
   --venom-accent-ink: #06140a;
   /* Gemstones: sapphire, ruby, amber, amethyst */
-  --venom-sapphire: #5b9cf0;
+  --venom-sapphire: #4a90d0;
+  /* USS info-dark (#0f2d55) blended over the page: a navy fill instead of a teal tint. */
+  --ifm-color-info-contrast-background: color-mix(in srgb, #0f2d55 60%, var(--venom-bg));
   --venom-ruby: #e2506a;
   --venom-amber: #e8b04a;
   --venom-purple: #b48ce6;
@@ -190,9 +199,27 @@ h6 {
   font-family: var(--ifm-heading-font-family);
 }
 
-.navbar {
+/* The blur lives on a pseudo-element: a backdrop-filter on .navbar itself would become the containing block
+   for the fixed mobile drawer and clip it to the navbar height. */
+.navbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   backdrop-filter: saturate(180%) blur(12px);
   -webkit-backdrop-filter: saturate(180%) blur(12px);
+}
+
+.navbar-sidebar {
+  --ifm-navbar-sidebar-width: 100vw;
+  background: var(--venom-bg);
+  box-shadow: none;
+}
+
+.navbar__logo img {
+  width: auto;
+  height: 100%;
+  object-fit: contain;
 }
 
 .navbar__title {
@@ -219,16 +246,18 @@ h6 {
 }
 
 .menu__link {
-  border-radius: 0;
+  border-radius: 10px;
+  line-height: 1.5;
 }
 
 .menu__link--active:not(.menu__link--sublist) {
   font-weight: 600;
 }
 
-.menu__list-item-collapsible .menu__link {
+.menu__list-item-collapsible .menu__link,
+.menu__list-item > .menu__link--sublist {
   font-family: var(--ifm-font-family-monospace);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -236,28 +265,14 @@ h6 {
 }
 
 /* Nested categories (API: Binders → Text) read as regular items; only the top level is a small-caps header. */
-.menu__list .menu__list .menu__list-item-collapsible .menu__link {
+.menu__list .menu__list .menu__list-item-collapsible .menu__link,
+.menu__list-item > .menu__link--sublist {
   font-family: var(--ifm-font-family-base);
   font-size: 0.9rem;
   font-weight: 500;
   letter-spacing: 0;
   text-transform: none;
   color: var(--venom-fg);
-}
-
-.table-of-contents::before {
-  content: 'On this page';
-  display: block;
-  margin: 0 0 0.6rem var(--ifm-toc-padding-horizontal);
-  font-family: var(--ifm-font-family-monospace);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--venom-muted);
-}
-
-.table-of-contents ul .table-of-contents::before {
-  content: none;
 }
 
 .breadcrumbs {
@@ -277,7 +292,7 @@ h6 {
 /* ---------- Content ---------- */
 
 .markdown {
-  --ifm-h1-font-size: clamp(2rem, 7vw, 2.25rem);
+  --ifm-h1-font-size: clamp(2rem, 4vw, 2.75rem);
   --ifm-h2-font-size: clamp(1.5rem, 5vw, 1.75rem);
   --ifm-h3-font-size: 1.375rem;
   --ifm-h4-font-size: 1.125rem;
@@ -291,26 +306,49 @@ h6 {
   text-wrap: balance;
 }
 
-.markdown h2,
+.markdown h2 {
+  margin-top: 3.25rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--venom-divider);
+}
+
 .markdown h3 {
-  margin-top: 3rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--venom-line);
+  margin-top: 2rem;
+  margin-bottom: 0.8rem;
 }
 
 .markdown hr {
   margin: 2.5rem 0;
+  background-color: var(--venom-divider);
 }
 
 .markdown code {
-  border: 1px solid transparent;
-  padding: 0.1rem 0.35rem;
   font-weight: 500;
 }
 
+/* Only inline code gets the chip padding; inside <pre> it collapsed the block under the copy button. */
+.markdown :not(pre) > code {
+  border: 1px solid transparent;
+  padding: 0.1rem 0.35rem;
+}
+
+.markdown :not(pre) > code {
+  border: 1px solid var(--venom-line-strong);
+}
+
+.markdown :is(h1, h2, h3, h4, h5, h6) code,
+.table-of-contents code {
+  background: none;
+  border: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+}
+
 .theme-code-block {
+  --ifm-code-border-radius: var(--ifm-pre-border-radius);
   box-shadow: none !important;
-  border: 1px solid var(--venom-line);
+  border: 2px solid var(--venom-line-strong);
   border-radius: var(--ifm-pre-border-radius);
 }
 
@@ -332,22 +370,34 @@ pre {
   font-size: 0.9rem;
 }
 
+@media (max-width: 996px) {
+  .markdown table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+  }
+}
+
 .markdown table th {
-  background: var(--ifm-background-surface-color);
+  background: var(--ifm-code-background);
   font-weight: 600;
   text-align: left;
 }
 
 .markdown table th,
 .markdown table td {
-  border-color: var(--venom-line);
+  border: 0;
+  border-right: 1px solid var(--venom-line);
+  border-bottom: 1px solid var(--venom-line);
   padding: 0.55rem 0.8rem;
 }
 
+.markdown table :is(th, td):last-child { border-right: 0; }
+.markdown table tr:last-child > td { border-bottom: 0; }
+
 .theme-admonition {
-  border: 1px solid var(--venom-line);
-  border-left: 3px solid var(--ifm-alert-border-color);
-  border-radius: var(--ifm-global-radius);
+  border: 2px solid var(--ifm-alert-border-color);
+  border-radius: 12px;
   box-shadow: none;
 }
 
@@ -356,6 +406,9 @@ pre {
 .alert--warning { --ifm-alert-border-color: var(--venom-amber); --ifm-alert-background-color: var(--ifm-color-warning-contrast-background); }
 .alert--danger { --ifm-alert-border-color: var(--venom-ruby); --ifm-alert-background-color: var(--ifm-color-danger-contrast-background); }
 .alert--secondary { --ifm-alert-border-color: var(--venom-muted); --ifm-alert-background-color: var(--venom-panel); }
+/* Docusaurus renders :::note as a grey "secondary" alert; keep it blue like :::info. */
+/* Doubled class: the production minifier reorders single-class rules, letting .alert--secondary win otherwise. */
+.theme-admonition-note.alert { --ifm-alert-border-color: var(--venom-sapphire); --ifm-alert-background-color: var(--ifm-color-info-contrast-background); }
 
 .theme-admonition,
 .theme-admonition .admonition-heading,
@@ -368,12 +421,19 @@ pre {
 }
 
 .pagination-nav__link {
-  border-color: var(--venom-line);
-  border-radius: 0;
+  border: 2px solid var(--venom-line-strong);
+  border-radius: var(--ifm-pre-border-radius);
+  padding: 1.1rem 1.25rem;
+  background: var(--ifm-code-background);
+  color: var(--venom-fg); /* a card, not an inline link: body colour at rest, the accent green on hover */
 }
 
+/* The arrows already say which way each card leads; drop the "Previous"/"Next" labels. */
+.pagination-nav__sublabel { display: none; }
+
 .pagination-nav__link:hover {
-  border-color: var(--ifm-color-primary);
+  color: var(--venom-accent);
+  border-color: var(--venom-accent);
 }
 
 .breadcrumbs__item--active .breadcrumbs__link {
@@ -384,6 +444,17 @@ pre {
 .footer {
   border-top: 1px solid var(--venom-line);
   padding: 2rem 0;
+  background: transparent;
+}
+
+/* Simple footer: a centred row of contacts with the copyright beneath it. */
+.footer .container { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; max-width: 1160px; font-size: 0.875rem; text-align: center; }
+.footer .footer__links { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 0.25rem 0.5rem; margin: 0; }
+.footer .footer__link-separator { color: var(--venom-muted); }
+.footer .footer__bottom { margin: 0; color: var(--venom-muted); }
+
+@media (max-width: 996px) {
+  .footer .container { padding: 0 1.25rem; }
 }
 
 .footer--dark {
@@ -397,154 +468,135 @@ pre {
   background: var(--venom-glow);
 }
 
-/* ---------- Docs layout: centered panels ---------- */
+/* ---------- Reading layout ---------- */
 
 html.docs-doc-page {
-  --venom-canvas: #030406;
-  --doc-panel-radius: 0;
-  --doc-panel-gap: 1rem;
-}
-
-html.docs-doc-page,
-html.docs-doc-page body {
+  --venom-canvas: #06080b;
+  scroll-padding-top: 1rem;
   background-color: var(--venom-canvas);
-}
-
-/* Dot-matrix canvas: a 20px lattice of dots, with a soft glow behind the content. */
-html.docs-doc-page body {
-  background-image: radial-gradient(circle at center, rgba(255,255,255,0.08) 1px, transparent 1.4px);
+  background-image: var(--venom-dot-pattern);
   background-size: 20px 20px;
-  background-position: 10px 10px;
-  background-repeat: repeat;
+  background-attachment: fixed;
 }
 
 html[data-theme='light'].docs-doc-page {
-  --venom-canvas: #e8dfd0;
+  --venom-canvas: #d4c8b5;
+  --venom-accent: #285c31;
+  --venom-muted: #595247;
 }
 
-html[data-theme='light'].docs-doc-page body {
-  background-image: radial-gradient(circle at center, rgba(70, 50, 20, 0.14) 1px, transparent 1.4px);
-}
+/* The root paints the full canvas even when body is only one viewport tall. */
+html.docs-doc-page body { background: transparent; }
 
-html.docs-doc-page .navbar {
-  border-bottom: 1px solid var(--venom-line);
-}
+/* A click on the empty canvas sends a ripple through the dot texture: src/components/DotRipple redraws the touched
+   dots on this fixed canvas — lifted, pushed outwards and accent-coloured at the crests, sunk in the troughs. */
+.dot-ripple-canvas { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+
+html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 
 @media (min-width: 997px) {
+  /* The sidebar panel carries the brand, section switcher, search and utilities; the navbar only serves the mobile drawer. */
+  :root { --ifm-navbar-height: 0px; }
+  .navbar { display: none; }
+
   [class*='docsWrapper_'] {
     width: 100%;
-    max-width: 1880px;
+    max-width: 1520px;
     margin: 0 auto;
-    padding: var(--doc-panel-gap);
+    padding: 1.5rem 1.5rem 0;
   }
 
-  html.docs-doc-page .footer {
-    display: none;
-  }
+  [class*='docRoot_'] { gap: 1.5rem; }
 
-  [class*='docRoot_'] {
-    gap: var(--doc-panel-gap);
-  }
-
-  /* Sidebar panel */
   .theme-doc-sidebar-container {
+    --doc-sidebar-width: var(--venom-navigation-width);
     position: sticky;
-    top: calc(var(--ifm-navbar-height) + var(--doc-panel-gap));
+    top: calc(var(--ifm-navbar-height) + 1.5rem);
     align-self: flex-start;
-    height: calc(100vh - var(--ifm-navbar-height) - var(--doc-panel-gap) * 2);
+    height: calc(100dvh - var(--ifm-navbar-height) - 3rem);
     margin-top: 0 !important;
     border: none !important;
-    border-radius: var(--doc-panel-radius);
-    background: var(--venom-bg);
-    overflow: hidden;
+    background: transparent;
     clip-path: none !important;
-  }
-
-  .theme-doc-sidebar-container [class*='sidebarViewport_'] {
-    position: static;
-    max-height: none;
   }
 
   .theme-doc-sidebar-container [class*='sidebarViewport_'],
   .theme-doc-sidebar-container [class*='sidebar_'] {
-    height: 100%;
-  }
-
-  .theme-doc-sidebar-container [class*='sidebar_'] {
     position: static;
-    padding-top: 0;
+    height: 100%;
     max-height: none;
+    padding-top: 0;
   }
 
-  /* Content + TOC */
-  [class*='docMainContainer_'] > .container {
-    max-width: none;
-    padding: 0 !important;
-  }
+  [class*='docMainContainer_'] { min-width: 0; }
+  .theme-doc-sidebar-container + [class*='docMainContainer_'] { max-width: calc(100% - var(--venom-navigation-width) - 1.5rem); }
+  [class*='docMainContainer_'] > .container { max-width: none; padding: 0 !important; }
+  [class*='docMainContainer_'] .row { margin: 0; gap: 1.5rem; flex-wrap: nowrap; align-items: flex-start; }
 
-  [class*='docMainContainer_'] .row {
-    margin: 0;
-    gap: var(--doc-panel-gap);
-    flex-wrap: nowrap;
-    align-items: flex-start;
-  }
+  /* The site footer closes the central column (DocItem/Layout); the page-wide one is hidden here. */
+  #__docusaurus > .theme-layout-footer { display: none; }
+  .doc-column-footer .footer { padding: 1.75rem 0 2rem; }
+  .doc-column-footer .footer .container { max-width: 960px; padding: 0 clamp(1.5rem, 3vw, 3rem); }
 
-  [class*='docItemCol_'] {
-    position: relative;
+  [class*='docMainContainer_'] > .container > .row > .col:first-child {
     display: flex;
-    flex: 1 1 auto;
     flex-direction: column;
+    flex: 1 1 0;
     min-width: 0;
+    min-height: calc(100dvh - var(--ifm-navbar-height) - 3rem);
     max-width: none !important;
-    height: calc(100vh - var(--ifm-navbar-height) - var(--doc-panel-gap) * 2);
+    margin-bottom: 1.5rem;
     padding: 0;
+    background: var(--venom-reading-surface);
     border: none;
-    border-radius: var(--doc-panel-radius);
-    background: var(--venom-bg);
-    overflow: hidden;
-  }
-
-  [class*='docItemCol_']::before {
-    content: '';
-    display: block;
-    height: 3px;
-    background: linear-gradient(90deg, var(--venom-accent), var(--venom-accent-deep) 60%, var(--venom-sapphire));
+    border-radius: 12px;
   }
 
   [class*='docItemContainer_'] {
-    flex: 1 1 auto;
-    min-height: 0;
-    max-width: none;
-    padding: 2rem 3.5rem 3rem;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--venom-line-strong) transparent;
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 2.5rem clamp(1.5rem, 3vw, 3rem) 3rem;
   }
 
   [class*='docMainContainer_'] .col.col--3 {
     position: sticky;
-    top: calc(var(--ifm-navbar-height) + var(--doc-panel-gap));
-    flex: 0 0 19rem;
-    max-width: 19rem;
-    height: calc(100vh - var(--ifm-navbar-height) - var(--doc-panel-gap) * 2);
-    padding: 1.25rem 1rem;
-    overflow: hidden;
-    border: none;
-    border-radius: var(--doc-panel-radius);
-    background: var(--venom-bg);
+    top: calc(var(--ifm-navbar-height) + 1.5rem);
+    flex: 0 0 var(--venom-navigation-width);
+    max-width: var(--venom-navigation-width);
+    height: calc(100dvh - var(--ifm-navbar-height) - 3rem);
+    padding: 0 0.5rem 1rem; /* the first TOC link shares the article card's top edge */
   }
 
   .theme-doc-toc-desktop {
     position: static !important;
-    top: auto !important;
     margin: 0;
-    max-height: 100%;
+    max-height: calc(100dvh - var(--ifm-navbar-height) - 4rem);
+    overflow-y: auto;
   }
 
-  .theme-doc-toc-desktop .table-of-contents {
-    padding-top: 0;
-    padding-bottom: 0;
+  .theme-doc-toc-desktop > .table-of-contents { padding: 0; border: none; }
+  .theme-doc-toc-desktop .table-of-contents li { margin: 0.25rem 0; }
+  .theme-doc-toc-desktop .table-of-contents__link { padding: 0.4rem 0.75rem; line-height: 1.5; }
+}
+
+/* Keep the article column stable even when the page has no table of contents. */
+@media (min-width: 1400px) {
+  [class*='docMainContainer_'] > .container > .row > .col:first-child {
+    max-width: calc(100% - var(--venom-navigation-width) - 1.5rem) !important;
   }
+}
+
+/* Give the article priority on laptops; use the in-article TOC disclosure. */
+@media (min-width: 997px) and (max-width: 1399px) {
+  [class*='docMainContainer_'] .col.col--3 { display: none; }
+  .theme-doc-toc-mobile { display: block; margin-block: 1.5rem; }
+}
+
+@media (max-width: 996px) {
+  html.docs-doc-page { background: var(--venom-reading-surface); }
+  [class*='docMainContainer_'] > .container { padding: 1.5rem 1.25rem 3rem !important; }
+  .theme-doc-sidebar-container { border: 0 !important; }
 }
 
 /* Active items: translucent fill, accent text */
@@ -552,14 +604,13 @@ html.docs-doc-page .navbar {
 .menu__link--active:not(.menu__link--sublist):hover {
   background: var(--venom-glow-soft);
   color: var(--venom-accent);
-  box-shadow: inset 2px 0 0 var(--venom-accent);
 }
 
 .table-of-contents__link--active {
   color: var(--venom-accent) !important;
 }
 
-.markdown a:not(.card):not(.pagination-nav__link) {
+.markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']) {
   color: var(--venom-accent);
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, var(--venom-accent) 45%, transparent);
@@ -567,6 +618,149 @@ html.docs-doc-page .navbar {
   text-underline-offset: 0.2em;
 }
 
-.markdown a:not(.card):not(.pagination-nav__link):hover {
+.markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):hover {
   text-decoration-color: var(--venom-accent);
 }
+
+/* Documentation media uses the same frame as code blocks in both themes. */
+.theme-doc-markdown img {
+  border: 1px solid var(--venom-line-strong);
+  border-radius: var(--ifm-pre-border-radius);
+}
+
+/* The introduction banner is branding, so it has no media frame. */
+.theme-doc-markdown img[src$='/aspid_fasttools_readme_banner.gif'] {
+  border: 0;
+  border-radius: 0;
+}
+
+/* Center standalone documentation images while preserving their natural size. */
+.theme-doc-markdown > p > img:only-child {
+  display: block;
+  margin-inline: auto;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Paired sample media follows the site's explicit theme, including before hydration. */
+.theme-doc-markdown .theme-image--dark,
+.theme-doc-markdown .theme-image--light {
+  display: block;
+}
+.theme-doc-markdown .theme-image--dark img,
+.theme-doc-markdown .theme-image--light img {
+  display: block;
+  margin-inline: auto;
+  max-width: 100%;
+  height: auto;
+}
+/* Specificity, not source order, decides: the minifier merges and reorders identical declarations. */
+html:not([data-theme='light']) .theme-doc-markdown .theme-image--light,
+html[data-theme='light'] .theme-doc-markdown .theme-image--dark {
+  display: none;
+}
+
+/* Scene captures share the code surface while keeping their original colors and animation. */
+.sample-scene img { filter: url('#sample-scene-background-dark'); }
+html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-background-light'); }
+
+/* ---------- Shared details ---------- */
+.navbar { font-size: 0.875rem; }
+.navbar__title { font-size: 1rem; }
+.navbar__link { padding-inline: 0.75rem; }
+.navbar__link.navbar-github { font-size: 0; padding-inline: 0.65rem; }
+.navbar__link.navbar-github::before {
+  content: '';
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
+  background: currentColor;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 .5C5.37.5 0 5.87 0 12.5c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.23c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.33-1.76-1.33-1.76-1.09-.75.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.53.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.29-1.55 3.3-1.23 3.3-1.23.66 1.65.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.6-2.81 5.62-5.49 5.92.43.38.82 1.1.82 2.22v3.3c0 .32.22.7.83.58A12 12 0 0 0 24 12.5C24 5.87 18.63.5 12 .5z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.navbar__link.navbar-github svg { display: none; }
+.navbar .dropdown > .navbar__link.navbar-locale { display: inline-flex; align-items: center; min-height: 2.5rem; font-size: 0; padding-inline: 0.65rem; }
+.navbar .dropdown > .navbar__link.navbar-locale svg { width: 22px; height: 22px; vertical-align: middle; }
+
+/* Right cluster order: GitHub, language, theme, search. */
+.navbar__items--right > .navbar__item:has(> .navbar-locale) { order: 2; }
+.navbar__items--right > .navbar-github { order: 1; }
+.navbar__items--right > [class*='colorModeToggle_'] { order: 3; }
+.navbar__items--right > [class*='navbarSearchContainer_'] { order: 4; margin-left: 0.5rem; }
+.menu { padding: 0.5rem 0.5rem 1rem !important; font-size: 0.875rem; }
+.menu__list-item > .menu__link--sublist { margin-top: 1.4rem; }
+.menu__list .menu__list { margin-left: 0; padding-left: 0; }
+.menu__list .menu__list .menu__list { padding-left: 0.85rem; }
+.doc-menu-group > .menu__list-item-collapsible,
+.doc-menu-group > .menu__list-item-collapsible:hover {
+  margin: 1.25rem 0 0.5rem;
+  background: var(--ifm-code-background);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.doc-menu-group > .menu__list-item-collapsible > .menu__link,
+.doc-menu-group > .menu__list-item-collapsible > .menu__link:hover {
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  box-shadow: none;
+  color: var(--venom-fg);
+  font: 600 0.75rem/1.5 var(--ifm-font-family-monospace);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: default;
+}
+.api-namespace > .menu__list-item-collapsible .menu__link { text-transform: none; letter-spacing: 0; font-size: 0.8125rem; }
+.table-of-contents { font-size: 0.875rem; line-height: 1.6; }
+.table-of-contents li { margin-block: 0.65rem; }
+.markdown > :is(p, ul, ol, blockquote) { max-width: 76ch; }
+.markdown > h1 { margin-bottom: 1.5rem; }
+.markdown > h1 + p { color: var(--venom-fg); font-size: 1.025rem; }
+.markdown li + li { margin-top: 0.6rem; }
+.markdown li::marker { color: var(--venom-muted); }
+.markdown :not(pre) > code { overflow-wrap: anywhere; border-radius: 4px; font-size: 0.875em; }
+.markdown pre code { overflow-wrap: normal; }
+.markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: separate; border-spacing: 0; border: 2px solid var(--venom-line-strong); border-radius: 12px; }
+.theme-code-block { margin-block: 1.5rem; }
+.prism-code { font-size: 0.875rem; }
+.theme-admonition { margin-block: 1.5rem; }
+.breadcrumbs { margin-bottom: 1.5rem; font-size: 0.75rem; }
+/* "Edit this page" becomes a pencil icon in the article column's top-right margin. */
+[class*='docItemContainer_'] { position: relative; }
+.theme-doc-footer { position: absolute; top: 0.125rem; right: 0.125rem; left: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 !important; }
+.theme-doc-footer :is(.row, .col) { display: contents; }
+.theme-doc-footer .theme-edit-this-page { order: 2; margin-left: auto; }
+.theme-doc-footer [class*='lastUpdated_'] { order: 1; color: var(--venom-muted); font-size: 0.75rem; font-style: normal; }
+.theme-doc-footer [class*='lastUpdated_'] b { font-weight: 500; }
+/* Dev builds append a "(Simulated during dev…)" note; only the date line is wanted. */
+.theme-doc-footer [class*='lastUpdated_'] small { display: none; }
+.theme-edit-this-page { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 10px; color: var(--venom-muted); font-size: 0; line-height: 0; }
+.theme-edit-this-page:hover { color: var(--venom-accent); background: var(--venom-glow-soft); }
+.theme-edit-this-page svg { width: 18px; height: 18px; margin: 0; }
+/* Mobile has no reserved top margin: keep metadata in flow above the article and TOC. */
+@media (max-width: 996px) {
+  .theme-doc-footer { position: static; margin-bottom: 1rem !important; }
+}
+.pagination-nav { margin-top: 2.5rem; }
+:where(a, button, [role='button']):focus-visible { outline: 2px solid var(--venom-accent); outline-offset: 4px; }
+
+/* Inspector screenshots stay compact; scene captures can use the article width. */
+.theme-doc-markdown img.doc-zoom-image[role='button'] { display: block; width: auto; max-width: min(100%, 640px); max-height: 520px; object-fit: contain; margin-inline: auto; cursor: zoom-in; background: var(--ifm-code-background); }
+.theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
+.theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem 0.75rem; }
+.theme-doc-markdown .doc-media-caption { max-width: none; text-align: center; color: var(--venom-muted); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 2rem; }
+.doc-image-dialog { position: fixed; inset: 0; margin: auto; width: fit-content; max-width: 94vw; max-height: 94dvh; padding: 3.25rem 1rem 1rem; color: var(--venom-fg); background: var(--venom-bg); border: 1px solid var(--venom-line-strong); border-radius: 6px; cursor: zoom-out; }
+.doc-image-dialog::backdrop { background: #030609dc; backdrop-filter: blur(5px); }
+.doc-image-dialog img { display: block; max-width: 100%; max-height: 76dvh; width: auto; height: auto; object-fit: contain; margin: auto; border-radius: 4px; }
+.doc-image-dialog p { font-size: 0.8125rem; color: var(--venom-muted); margin: 0.8rem 0 0; text-align: center; }
+.doc-image-close { position: absolute; top: 0.7rem; right: 1rem; padding: 4px 8px; background: var(--venom-panel); color: var(--venom-fg); border: 1px solid var(--venom-line-strong); border-radius: 4px; font: 0.8125rem var(--ifm-font-family-base); cursor: pointer; }
+.doc-image-close kbd { margin-left: 6px; box-shadow: none; font-size: 0.75rem; }
+/* In-article TOC disclosure: the same quiet language as the sidebar group headers, no box. */
+article > .theme-doc-toc-mobile { margin-block: 1.5rem; background: transparent; border: 0; border-bottom: 1px solid var(--venom-line); border-radius: 0; font-size: 0.875rem; }
+.theme-doc-toc-mobile > button { padding: 0.5rem 0; color: var(--venom-muted); font: 600 0.75rem/1.5 var(--ifm-font-family-monospace); letter-spacing: 0.06em; text-transform: uppercase; }
+.theme-doc-toc-mobile > button:hover { color: var(--venom-fg); }
+.theme-doc-toc-mobile > button::after { width: 1rem; height: 1rem; background-size: 1.25rem 1.25rem; opacity: 0.7; }
+.theme-doc-toc-mobile > div > ul { border-top: 1px solid var(--venom-line); padding: 0.5rem 0 0.75rem; font-size: 0.875rem; }
+.theme-doc-toc-mobile > div ul li { margin: 0.45rem 0; }
+.theme-doc-toc-mobile > div ul ul { padding-left: 0.9rem; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }

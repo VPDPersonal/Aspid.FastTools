@@ -1,13 +1,21 @@
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Root of the polymorphic hierarchy. A [SerializeReference] [TypeSelector] field of this type offers every
-    // concrete implementation below; IMelee / IRanged exist so a field can be narrowed to one branch.
+    // IMelee and IRanged let a field restrict the picker to one branch of the hierarchy.
+    /// <summary>
+    /// Defines a named weapon that returns damage for each attack.
+    /// </summary>
     public interface IWeapon
     {
+        /// <summary>
+        /// Gets the display name.
+        /// </summary>
         string Name { get; }
 
-        // Damage dealt by one shot.
+        /// <summary>
+        /// Returns the damage dealt by one attack.
+        /// </summary>
+        /// <returns>Damage before loadout modifiers and status effects.</returns>
         int Fire();
     }
 }

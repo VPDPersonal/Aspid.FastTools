@@ -4,14 +4,18 @@ using Aspid.FastTools.Types;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.SerializeReferences
 {
-    // Assignable to every IWeapon field but never offered by the picker: Hidden is for types that only code
-    // should create. A value already stored in an asset keeps rendering, and the repair picker still lists it.
+    // Hidden excludes assignment candidates; existing values still render and remain repairable.
+    /// <summary>
+    /// <see cref="IWeapon"/> with maximum damage, hidden from the assignment picker.
+    /// </summary>
     [Serializable]
     [TypeSelectorDisplay(Hidden = true)]
     public sealed class DebugWeapon : IWeapon
     {
+        /// <inheritdoc/>
         public string Name => "Debug (one-shot)";
 
+        /// <inheritdoc/>
         public int Fire() => int.MaxValue;
     }
 }

@@ -4,8 +4,10 @@ using Aspid.FastTools.Types;
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Samples.Types
 {
-    // TypeSelectorDisplay controls how the type is presented in the picker: a friendlier name, an explicit
-    // group instead of the namespace path, a tooltip and a built-in editor icon.
+    // TypeSelectorDisplay customizes the picker label, group, tooltip and icon.
+    /// <summary>
+    /// <see cref="ISpawnPattern"/> that distributes enemies around a circle.
+    /// </summary>
     [TypeSelectorDisplay(
         Name = "Circle",
         Group = "Spawn Patterns",
@@ -13,6 +15,7 @@ namespace Aspid.FastTools.Samples.Types
         Icon = "d_SphereCollider Icon")]
     public sealed class CirclePattern : ISpawnPattern
     {
+        /// <inheritdoc/>
         public Vector3 GetPosition(int index, int count, float radius)
         {
             var angle = index * Mathf.PI * 2f / Mathf.Max(count, 1);
