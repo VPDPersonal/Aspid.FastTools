@@ -36,7 +36,7 @@ This installs the preview version covered by this documentation. Git must be ins
 
 - **Latest preview:** use `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview`. Updating the package can bring in a newer preview.
 - **Another version:** copy its UPM tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases).
-- **Unity Asset Store:** the package is also [available there](https://assetstore.unity.com/packages/slug/365584); check the listed version before following these docs.
+- **Unity Asset Store:** the package is not yet available in the store. For now, install it using the Git URL above.
 
 > [!WARNING]
 > The `upm` branch currently contains the older `com.aspid.fasttools` package (`1.0.0-rc.2`). Use the URL above for `tech.aspid.fasttools` and the features described here.
@@ -58,7 +58,7 @@ Start with the [samples](../Samples~/README.md) to see the tools in action and e
 
 Report bugs or ask questions in [GitHub Issues](https://github.com/VPDPersonal/Aspid.FastTools/issues). Include your Unity version, package version and steps to reproduce a problem.
 
-Support development by purchasing the package on the [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584).
+Once the package is available on the [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584), you can support development by purchasing it. **Not yet available in the store.**
 
 ## License
 
