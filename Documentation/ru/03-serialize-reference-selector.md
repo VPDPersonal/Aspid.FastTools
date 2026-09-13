@@ -55,7 +55,7 @@ public sealed class Loadout : MonoBehaviour
 IMGUI и UIToolkit. Тот же атрибут работает и с полями `string` и `SerializableType` —
 см. [TypeSelectorAttribute](02-serializable-types.md#typeselectorattribute).
 
-![Выбор реализации в managed-ссылке: пикер и вложенный inspector выбранного экземпляра](../Images/aspid_fasttools_serialize_reference_selector.gif)
+![При смене Pistol на Shotgun сохраняется Damage = 37 и появляется поле Pellets](../Images/aspid_fasttools_serialize_reference_selector.gif)
 
 | Возможность | Что делает |
 |---|---|

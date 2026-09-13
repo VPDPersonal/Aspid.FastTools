@@ -56,7 +56,7 @@ cost. It works with single fields, arrays and `List<T>`, in both IMGUI and UIToo
 inspectors. The same attribute also works on `string` and `SerializableType` fields —
 see [TypeSelectorAttribute](02-serializable-types.md#typeselectorattribute).
 
-![Picking an implementation into a managed reference: the picker and the nested inspector of the chosen instance](Images/aspid_fasttools_serialize_reference_selector.gif)
+![Switching from Pistol to Shotgun preserves Damage = 37 and exposes Pellets](Images/aspid_fasttools_serialize_reference_selector.gif)
 
 | Feature | What it does |
 |---|---|

@@ -13,7 +13,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     /// </summary>
     [Serializable]
     [MovedFrom(false, null, null, "CrossbowLauncher")]
-    [TypeSelectorDisplay(Group = "Weapons/Ranged", Icon = "d_Transform Icon")]
+    [TypeSelectorDisplay(Group = "Weapons/Ranged")]
     public sealed class Crossbow : IRanged
     {
         [Tooltip("Damage dealt by one attack.")]

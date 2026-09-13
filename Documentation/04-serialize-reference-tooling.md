@@ -28,7 +28,7 @@ auditing and mass repair live in two dedicated tabs of the FastTools window.
 The **Asset References** tab lays out one asset's managed-reference graph as cards with
 `MISSING` / `SHARED` badges and inline repair:
 
-![Asset References tab: an asset's reference graph with a Fix Missing card](Images/aspid_fasttools_serialize_reference_asset_references.png)
+![Repair GhostWeapon as Pistol: the missing reference becomes valid](Images/aspid_fasttools_serialize_reference_tooling.gif)
 
 The **Project References** tab groups the whole project's findings by stored type — one
 group is repaired at once with a single `Fix all`:

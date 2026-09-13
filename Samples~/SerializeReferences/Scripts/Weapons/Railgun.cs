@@ -10,7 +10,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     /// <see cref="IRanged"/> with a nested charge effect.
     /// </summary>
     [Serializable]
-    [TypeSelectorDisplay(Group = "Weapons/Ranged", Icon = "d_Transform Icon", Tooltip = "Fixed damage with a nested charge effect")]
+    [TypeSelectorDisplay(Group = "Weapons/Ranged", Tooltip = "Fixed damage with a nested charge effect")]
     public sealed class Railgun : IRanged
     {
         [Tooltip("Damage dealt by one attack.")]

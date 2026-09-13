@@ -27,7 +27,7 @@ managed-ссылок, страница Project Settings с гейтом на с�
 Вкладка **Asset References** раскладывает граф managed-ссылок одного ассета по карточкам
 со значками `MISSING` / `SHARED` и инлайн-починкой:
 
-![Вкладка Asset References: граф ссылок ассета с карточкой Fix Missing](../Images/aspid_fasttools_serialize_reference_asset_references.png)
+![Восстановление GhostWeapon как Pistol: ссылка снова исправна](../Images/aspid_fasttools_serialize_reference_tooling.gif)
 
 Вкладка **Project References** группирует находки всего проекта по сохранённому типу —
 одна группа чинится целиком одним `Fix all`:
