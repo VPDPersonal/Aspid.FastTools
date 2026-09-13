@@ -1,0 +1,13 @@
+var w=(UnityEditor.EditorWindow)UnityEditor.EditorUtility.InstanceIDToObject(-69010);
+UnityEngine.UIElements.VisualElement Find(UnityEngine.UIElements.VisualElement e) {
+ if(e.GetType().Name=="SerializeReferenceField") {
+  var prop=(UnityEditor.SerializedProperty)e.GetType().GetField("_property",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(e);
+  if(prop.propertyPath=="_primary") return e;
+ }
+ foreach(var child in e.Children()) { var match=Find(child);if(match!=null)return match; }
+ return null;
+}
+var field=Find(w.rootVisualElement);
+var evt=UnityEngine.UIElements.PointerDownEvent.GetPooled(new UnityEngine.Event{type=UnityEngine.EventType.MouseDown,button=0});
+field.GetType().GetMethod("OnDropdownClicked",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(field,new object[]{evt});evt.Dispose();
+return true;

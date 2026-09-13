@@ -149,6 +149,8 @@ for (const locale of locales) {
     const images = path.join(documentationDir, 'Images');
     if (fs.existsSync(images)) {
       copy(images, path.join(i18nDir, locale, 'docusaurus-plugin-content-docs-tutorials', 'current', sample.name, 'Images'));
+      // Main docs reference sample previews with their original package-relative paths.
+      copy(images, path.join(i18nDir, locale, 'Samples~', sample.name, 'Documentation', 'Images'));
     }
     const suffix = `.${locale}.md`;
     for (const file of fs.readdirSync(documentationDir)) {

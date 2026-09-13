@@ -1,0 +1,14 @@
+var path="Assets/FastToolsDocumentationCapture";
+if(UnityEditor.AssetDatabase.IsValidFolder(path)) throw new System.Exception("Capture folder already exists");
+UnityEditor.AssetDatabase.CreateFolder("Assets","FastToolsDocumentationCapture");
+if(!UnityEditor.AssetDatabase.CopyAsset("Assets/Samples/Aspid.FastTools/1.0.0-rc.8/SerializeReferences/Presets/BrokenWeaponPreset.asset",path+"/WeaponPreset.asset")) throw new System.Exception("Copy failed");
+var target=UnityEditor.AssetDatabase.LoadMainAssetAtPath(path+"/WeaponPreset.asset");
+var asm=typeof(Aspid.FastTools.Types.Editors.TypeSelectorWindow).Assembly;
+var wt=asm.GetType("Aspid.FastTools.Editors.TabWindow");
+var w=(UnityEditor.EditorWindow)UnityEngine.ScriptableObject.CreateInstance(wt);
+wt.GetField("_pendingTarget",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(w,target);
+w.ShowUtility();
+var switcher=wt.GetMethod("SwitchMode",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic);
+switcher.Invoke(w,new[]{System.Enum.Parse(switcher.GetParameters()[0].ParameterType,"AssetReference")});
+w.minSize=new UnityEngine.Vector2(880,640);w.maxSize=new UnityEngine.Vector2(880,640);w.position=new UnityEngine.Rect(100,100,880,640);
+w.Focus();return new{window=w.GetInstanceID(),asset=target.GetInstanceID()};

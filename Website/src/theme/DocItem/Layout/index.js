@@ -38,17 +38,19 @@ export default function DocItemLayout({children}) {
         <ContentVisibility metadata={metadata} />
         <DocVersionBanner />
         <div className={styles.docItemContainer}>
-          <DocItemFooter />
           <article>
             <DocBreadcrumbs />
             <DocVersionBadge />
-            {docTOC.mobile}
+            {metadata.id !== 'README' && docTOC.mobile}
             <DocItemContent>{children}</DocItemContent>
           </article>
           <DocItemPaginator />
         </div>
-        <div className={clsx(styles.columnFooter, 'doc-column-footer')}>
-          <Footer />
+        <div className={styles.pageFooter}>
+          <DocItemFooter />
+          <div className={clsx(styles.columnFooter, 'doc-column-footer')}>
+            <Footer />
+          </div>
         </div>
       </div>
       {docTOC.desktop && <div className="col col--3">{docTOC.desktop}</div>}

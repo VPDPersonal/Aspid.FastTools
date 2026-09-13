@@ -9,6 +9,7 @@ on:
     branches: [main]
     paths:
       - 'Website/**'
+      - 'README.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'CHANGELOG*.md'
@@ -16,6 +17,7 @@ on:
   pull_request:
     paths:
       - 'Website/**'
+      - 'README.md'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
       - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
       - 'CHANGELOG*.md'
@@ -42,6 +44,8 @@ jobs:
           cache: npm
           cache-dependency-path: Website/package-lock.json
       - run: npm ci
+        working-directory: Website
+      - run: npm run check-readme
         working-directory: Website
       - run: npm run build
         working-directory: Website

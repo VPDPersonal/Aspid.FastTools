@@ -9,7 +9,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     /// <see cref="IMelee"/> with a chance to deal double damage.
     /// </summary>
     [Serializable]
-    [TypeSelectorDisplay(Group = "Weapons/Melee", Icon = "d_Transform Icon")]
+    [TypeSelectorDisplay(Group = "Weapons/Melee")]
     public sealed class Sword : IMelee
     {
         [Tooltip("Damage dealt by one attack.")]

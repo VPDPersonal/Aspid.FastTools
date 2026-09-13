@@ -4,6 +4,7 @@ import venom from './src/prism/venom.js';
 import remarkGithubAdmonitionsToDirectives from 'remark-github-admonitions-to-directives';
 import remarkCrossInstanceLinks from './src/remark/crossInstanceLinks.js';
 import remarkThemedImages from './src/remark/themedImages.js';
+import remarkIntroBanner, {remarkStatusBadges} from './src/remark/introBanner.js';
 
 const PACKAGE = '../Aspid.FastTools/Packages/tech.aspid.fasttools';
 const PACKAGE_DIR = PACKAGE.replace(/^\.\.\//, ''); // repository-relative, for "Edit this page" links
@@ -56,6 +57,16 @@ const config = {
   onBrokenLinks: 'throw',
   onBrokenAnchors: 'warn',
   markdown: {
+    // The shared introduction uses a banner instead of a heading; retain its page metadata.
+    async parseFrontMatter({filePath, fileContent, defaultParseFrontMatter}) {
+      const result = await defaultParseFrontMatter({filePath, fileContent});
+      if (fileContent.includes('/aspid_fasttools_readme_banner.gif')) {
+        result.frontMatter.title ??= 'Aspid.FastTools';
+        result.frontMatter.hide_title = true;
+        result.frontMatter.description ??= fileContent.match(/^Tools for Unity.*$|^Инструменты для Unity.*$/m)?.[0];
+      }
+      return result;
+    },
     hooks: { onBrokenMarkdownLinks: 'throw' },
   },
 
@@ -83,6 +94,8 @@ const config = {
           exclude: ['**/SUMMARY.md', '**/*.meta', ...TRANSLATION_FOLDERS],
           versions: { current: { label: PACKAGE_VERSION } },
           ...markdownOptions,
+          beforeDefaultRemarkPlugins: [[remarkIntroBanner, {baseUrl: '/Aspid.FastTools/', siteUrl: 'https://vpdpersonal.github.io'}], ...markdownOptions.beforeDefaultRemarkPlugins],
+          remarkPlugins: [remarkStatusBadges],
         },
         blog: false,
         theme: { customCss: './src/css/custom.css' },

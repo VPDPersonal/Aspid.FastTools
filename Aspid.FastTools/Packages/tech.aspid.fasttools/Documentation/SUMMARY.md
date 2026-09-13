@@ -4,16 +4,17 @@ The complete guide to Aspid.FastTools for Unity. Rendered at https://vpdpersonal
 
 ## Contents
 
-1. [Getting Started](01-getting-started.md): installation, samples
-2. [Serializable Type System](02-serializable-types.md): `SerializableType`, `[TypeSelector]`, `[TypeSelectorDisplay]`, `TypeSelectorWindow`, `ComponentTypeSelector`
-3. [SerializeReference Selector](03-serialize-reference-selector.md): the Inspector dropdown for `[SerializeReference]`, repairing broken references
-4. [SerializeReference Tooling](04-serialize-reference-tooling.md): bulk repair tabs, project settings, the build/CI gate
-5. [ProfilerMarkers](05-profiler-markers.md): `this.Marker()` and the generated markers
-6. [EnumValues](06-enum-values.md): `EnumValues<TValue>`, `EnumValues<TEnum, TValue>`
-7. [VisualElement Extensions](07-visual-element-extensions.md): the fluent UI Toolkit API
-8. [SerializedProperty Extensions](08-serialized-property-extensions.md): typed setters, arrays, references, reflection helpers
-9. [Editor Helpers](09-editor-helpers.md): `GetScriptName`, `GetScriptNameWithIndex`
-10. [Claude Code Plugin](10-claude-code-plugin.md): the `aspid-fasttools` plugin
+Installation and samples are covered in the [introduction](README.md).
+
+1. [Serializable Type System](02-serializable-types.md): `SerializableType`, `[TypeSelector]`, `[TypeSelectorDisplay]`, `TypeSelectorWindow`, `ComponentTypeSelector`
+2. [SerializeReference Selector](03-serialize-reference-selector.md): the Inspector dropdown for `[SerializeReference]`, repairing broken references
+3. [SerializeReference Tooling](04-serialize-reference-tooling.md): bulk repair tabs, project settings, the build/CI gate
+4. [ProfilerMarkers](05-profiler-markers.md): `this.Marker()` and the generated markers
+5. [EnumValues](06-enum-values.md): `EnumValues<TValue>`, `EnumValues<TEnum, TValue>`
+6. [VisualElement Extensions](07-visual-element-extensions.md): the fluent UI Toolkit API
+7. [SerializedProperty Extensions](08-serialized-property-extensions.md): typed setters, arrays, references, reflection helpers
+8. [Editor Helpers](09-editor-helpers.md): `GetScriptName`, `GetScriptNameWithIndex`
+9. [Claude Code Plugin](10-claude-code-plugin.md): the `aspid-fasttools` plugin
 
 ## Tutorials
 

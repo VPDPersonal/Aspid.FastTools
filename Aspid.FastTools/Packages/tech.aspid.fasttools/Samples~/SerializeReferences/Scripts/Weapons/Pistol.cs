@@ -10,7 +10,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     /// <see cref="IRanged"/> that automatically reloads an empty magazine.
     /// </summary>
     [Serializable]
-    [TypeSelectorDisplay(Group = "Weapons/Ranged", Icon = "d_Transform Icon")]
+    [TypeSelectorDisplay(Group = "Weapons/Ranged")]
     public sealed class Pistol : IRanged
     {
         [Tooltip("Damage dealt by one attack.")]

@@ -18,6 +18,11 @@ export default function DocImage(props) {
       opener.current?.focus();
     };
   }, [preview]);
+  // Status badges are links, not documentation screenshots to enlarge.
+  if (props.className?.split(' ').includes('readme-status-badge')
+    || (typeof props.src === 'string' && props.src.startsWith('https://img.shields.io/'))) {
+    return <OriginalImg {...props} />;
+  }
   function show(event) {
     if (event.currentTarget.closest('a')) return;
     opener.current = event.currentTarget;

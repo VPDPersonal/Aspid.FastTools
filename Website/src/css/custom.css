@@ -78,7 +78,8 @@
   --ifm-hr-border-color: var(--venom-line);
   --ifm-hr-background-color: var(--venom-line);
   --ifm-table-border-color: var(--venom-line);
-  --ifm-table-stripe-background: rgba(60, 40, 10, 0.03);
+  --ifm-table-stripe-background: transparent;
+  --venom-disclosure-surface: transparent;
   --ifm-color-emphasis-300: var(--venom-line);
   --ifm-link-color: var(--venom-accent-2);
   --ifm-link-hover-color: var(--venom-accent);
@@ -167,7 +168,8 @@ html[data-theme='dark'] {
   --ifm-hr-border-color: var(--venom-line);
   --ifm-hr-background-color: var(--venom-line);
   --ifm-table-border-color: var(--venom-line);
-  --ifm-table-stripe-background: rgba(255, 255, 255, 0.02);
+  --ifm-table-stripe-background: transparent;
+  --venom-disclosure-surface: transparent;
   --ifm-color-emphasis-300: var(--venom-line);
   --ifm-link-color: var(--venom-accent-2);
   --ifm-link-hover-color: var(--venom-accent);
@@ -378,11 +380,15 @@ pre {
   }
 }
 
+/* The header shares the <details> surface; body rows alternate the reading panel and code-block backgrounds. */
 .markdown table th {
-  background: var(--ifm-code-background);
+  background: var(--venom-disclosure-surface);
   font-weight: 600;
   text-align: left;
 }
+
+.markdown table tbody tr:nth-child(odd) { background: var(--ifm-pre-background); }
+.markdown table tbody tr:nth-child(even) { background: var(--venom-reading-surface); }
 
 .markdown table th,
 .markdown table td {
@@ -409,6 +415,27 @@ pre {
 /* Docusaurus renders :::note as a grey "secondary" alert; keep it blue like :::info. */
 /* Doubled class: the production minifier reorders single-class rules, letting .alert--secondary win otherwise. */
 .theme-admonition-note.alert { --ifm-alert-border-color: var(--venom-sapphire); --ifm-alert-background-color: var(--ifm-color-info-contrast-background); }
+
+/* Markdown <details>: an outlined disclosure on the article surface, not the blue info alert Docusaurus defaults to. */
+.theme-doc-markdown details.alert {
+  --docusaurus-details-decoration-color: var(--venom-muted);
+  --docusaurus-details-transition: transform 0.2s ease;
+  --ifm-alert-border-color: var(--venom-line-strong);
+  --ifm-alert-background-color: var(--venom-disclosure-surface);
+  --ifm-alert-background-color-highlight: var(--ifm-pre-background); /* Infima aliases --ifm-code-background to this inside .alert */
+  --ifm-alert-foreground-color: var(--venom-fg);
+  margin-block: 1.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--ifm-alert-border-color);
+  border-radius: var(--ifm-pre-border-radius);
+  box-shadow: none;
+}
+.theme-doc-markdown details.alert > summary { padding-left: 1.25rem; color: var(--venom-fg); }
+.theme-doc-markdown details.alert > summary::before { top: 0.375rem; left: 0; border-color: transparent transparent transparent var(--venom-muted); }
+.theme-doc-markdown details.alert > summary:hover { color: var(--venom-accent); }
+.theme-doc-markdown details.alert > summary:hover::before { border-left-color: var(--venom-accent); }
+.theme-doc-markdown details.alert [class*='collapsibleContent_'] { margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--venom-line); }
+.theme-doc-markdown details.alert [class*='collapsibleContent_'] > :last-child { margin-bottom: 0; }
 
 .theme-admonition,
 .theme-admonition .admonition-heading,
@@ -536,9 +563,10 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
   /* The site footer closes the central column (DocItem/Layout); the page-wide one is hidden here. */
   #__docusaurus > .theme-layout-footer { display: none; }
   .doc-column-footer .footer { padding: 1.75rem 0 2rem; }
-  .doc-column-footer .footer .container { max-width: 960px; padding: 0 clamp(1.5rem, 3vw, 3rem); }
+  .doc-column-footer .footer .container { max-width: 960px; padding: 0 1.5rem; }
 
   [class*='docMainContainer_'] > .container > .row > .col:first-child {
+    container-type: inline-size;
     display: flex;
     flex-direction: column;
     flex: 1 1 0;
@@ -556,7 +584,7 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
     width: 100%;
     max-width: 960px;
     margin: 0 auto;
-    padding: 2.5rem clamp(1.5rem, 3vw, 3rem) 3rem;
+    padding: clamp(1.5rem, 3vw, 3rem) 1.5rem 1rem;
   }
 
   [class*='docMainContainer_'] .col.col--3 {
@@ -610,15 +638,16 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
   color: var(--venom-accent) !important;
 }
 
+/* Article links are set apart by colour alone; the underline appears on hover as an affordance. */
 .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']) {
   color: var(--venom-accent);
-  text-decoration: underline;
-  text-decoration-color: color-mix(in srgb, var(--venom-accent) 45%, transparent);
+  text-decoration: none;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
 }
 
 .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):hover {
+  text-decoration: underline;
   text-decoration-color: var(--venom-accent);
 }
 
@@ -628,10 +657,52 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
   border-radius: var(--ifm-pre-border-radius);
 }
 
-/* The introduction banner is branding, so it has no media frame. */
-.theme-doc-markdown img[src$='/aspid_fasttools_readme_banner.gif'] {
+/* README badges keep their own SVG shape and intrinsic size. */
+.theme-doc-markdown img[src^='https://img.shields.io/'],
+.theme-doc-markdown img.readme-status-badge {
   border: 0;
   border-radius: 0;
+  vertical-align: middle;
+}
+
+.theme-doc-markdown p:has(.readme-status-badge) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* The introduction banner spans the reading panel without a media frame. */
+.theme-doc-markdown img[src$='/aspid_fasttools_readme_banner.gif'] {
+  display: block;
+  width: calc(100% + 2.5rem);
+  max-width: none;
+  height: auto;
+  margin-inline: -1.25rem;
+  margin-bottom: 0.75rem;
+  border: 0;
+  border-radius: 0;
+}
+
+@media (min-width: 997px) {
+  .theme-doc-markdown img[src$='/aspid_fasttools_readme_banner.gif'] {
+    width: 100cqw;
+    margin-inline: calc(50% - 50cqw);
+  }
+}
+
+/* The introduction starts with its banner; the compact TOC follows it. */
+@media (min-width: 997px) {
+  .theme-doc-markdown > img[src$='/aspid_fasttools_readme_banner.gif']:first-child {
+    margin-top: calc(-1 * clamp(1.5rem, 3vw, 3rem));
+    border-radius: 12px 12px 0 0;
+  }
+}
+
+@media (max-width: 996px) {
+  .theme-doc-markdown > img[src$='/aspid_fasttools_readme_banner.gif']:first-child {
+    margin-top: -1.5rem;
+  }
 }
 
 /* Center standalone documentation images while preserving their natural size. */
@@ -725,9 +796,8 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .prism-code { font-size: 0.875rem; }
 .theme-admonition { margin-block: 1.5rem; }
 .breadcrumbs { margin-bottom: 1.5rem; font-size: 0.75rem; }
-/* "Edit this page" becomes a pencil icon in the article column's top-right margin. */
-[class*='docItemContainer_'] { position: relative; }
-.theme-doc-footer { position: absolute; top: 0.125rem; right: 0.125rem; left: 0.75rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 0 !important; }
+/* Page metadata follows the page navigation, with the edit pencil aligned to the right. */
+.theme-doc-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: 2rem 0 0 !important; }
 .theme-doc-footer :is(.row, .col) { display: contents; }
 .theme-doc-footer .theme-edit-this-page { order: 2; margin-left: auto; }
 .theme-doc-footer [class*='lastUpdated_'] { order: 1; color: var(--venom-muted); font-size: 0.75rem; font-style: normal; }
@@ -737,16 +807,60 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .theme-edit-this-page { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 10px; color: var(--venom-muted); font-size: 0; line-height: 0; }
 .theme-edit-this-page:hover { color: var(--venom-accent); background: var(--venom-glow-soft); }
 .theme-edit-this-page svg { width: 18px; height: 18px; margin: 0; }
-/* Mobile has no reserved top margin: keep metadata in flow above the article and TOC. */
-@media (max-width: 996px) {
-  .theme-doc-footer { position: static; margin-bottom: 1rem !important; }
-}
 .pagination-nav { margin-top: 2.5rem; }
 :where(a, button, [role='button']):focus-visible { outline: 2px solid var(--venom-accent); outline-offset: 4px; }
 
 /* Inspector screenshots stay compact; scene captures can use the article width. */
 .theme-doc-markdown img.doc-zoom-image[role='button'] { display: block; width: auto; max-width: min(100%, 640px); max-height: 520px; object-fit: contain; margin-inline: auto; cursor: zoom-in; background: var(--ifm-code-background); }
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
+.theme-doc-markdown .readme-feature-table { table-layout: fixed; }
+.theme-doc-markdown .readme-feature-table :is(th, td):first-child { width: 25%; }
+.theme-doc-markdown .readme-feature-table :is(th, td):last-child { width: 34%; }
+.theme-doc-markdown .readme-feature-table td { vertical-align: middle; overflow-wrap: anywhere; }
+.theme-doc-markdown .readme-feature-table .theme-code-block {
+  --ifm-pre-padding: 0.5rem;
+  width: 220px;
+  max-width: 100%;
+  margin: 0 auto;
+  border: 1px solid var(--venom-line-strong);
+  border-radius: 6px;
+}
+.theme-doc-markdown .readme-feature-table .theme-code-block pre {
+  padding: 0;
+  font-size: 0.75rem;
+  line-height: 1.6;
+}
+.theme-doc-markdown .readme-feature-table img.doc-zoom-image[role='button'] {
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+@media (max-width: 996px) {
+  .theme-doc-markdown .readme-feature-table { display: table; }
+}
+@media (max-width: 600px) {
+  .theme-doc-markdown .readme-feature-table { display: block; font-size: 0.85rem; }
+  .theme-doc-markdown .readme-feature-table thead { display: none; }
+  .theme-doc-markdown .readme-feature-table tbody { display: block; }
+  .theme-doc-markdown .readme-feature-table tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--venom-line);
+  }
+  .theme-doc-markdown .readme-feature-table tbody tr:last-child { border-bottom: 0; }
+  .theme-doc-markdown .readme-feature-table td { width: auto !important; padding: 0.5rem; border: 0; }
+  .theme-doc-markdown .readme-feature-table td:first-child { grid-column: 1 / -1; font-weight: 600; }
+  .theme-doc-markdown .readme-feature-table td:last-child { align-self: center; }
+  .theme-doc-markdown .readme-feature-table tr:has(.theme-code-block) td {
+    grid-column: 1 / -1;
+  }
+}
 .theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem 0.75rem; }
 .theme-doc-markdown .doc-media-caption { max-width: none; text-align: center; color: var(--venom-muted); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 2rem; }
 .doc-image-dialog { position: fixed; inset: 0; margin: auto; width: fit-content; max-width: 94vw; max-height: 94dvh; padding: 3.25rem 1rem 1rem; color: var(--venom-fg); background: var(--venom-bg); border: 1px solid var(--venom-line-strong); border-radius: 6px; cursor: zoom-out; }
@@ -756,8 +870,10 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .doc-image-close { position: absolute; top: 0.7rem; right: 1rem; padding: 4px 8px; background: var(--venom-panel); color: var(--venom-fg); border: 1px solid var(--venom-line-strong); border-radius: 4px; font: 0.8125rem var(--ifm-font-family-base); cursor: pointer; }
 .doc-image-close kbd { margin-left: 6px; box-shadow: none; font-size: 0.75rem; }
 /* In-article TOC disclosure: the same quiet language as the sidebar group headers, no box. */
-article > .theme-doc-toc-mobile { margin-block: 1.5rem; background: transparent; border: 0; border-bottom: 1px solid var(--venom-line); border-radius: 0; font-size: 0.875rem; }
+article > .theme-doc-toc-mobile,
+.theme-doc-markdown > .theme-doc-toc-mobile { margin-block: 1.5rem; background: transparent; border: 0; border-bottom: 1px solid var(--venom-line); border-radius: 0; font-size: 0.875rem; }
 .theme-doc-toc-mobile > button { padding: 0.5rem 0; color: var(--venom-muted); font: 600 0.75rem/1.5 var(--ifm-font-family-monospace); letter-spacing: 0.06em; text-transform: uppercase; }
+article > .theme-doc-toc-mobile:first-child > button { padding-top: 0; }
 .theme-doc-toc-mobile > button:hover { color: var(--venom-fg); }
 .theme-doc-toc-mobile > button::after { width: 1rem; height: 1rem; background-size: 1.25rem 1.25rem; opacity: 0.7; }
 .theme-doc-toc-mobile > div > ul { border-top: 1px solid var(--venom-line); padding: 0.5rem 0 0.75rem; font-size: 0.875rem; }

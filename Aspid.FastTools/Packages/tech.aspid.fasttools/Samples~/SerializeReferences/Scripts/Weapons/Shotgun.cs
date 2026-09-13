@@ -9,7 +9,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     /// <see cref="IRanged"/> that randomizes the number of pellets hitting the target.
     /// </summary>
     [Serializable]
-    [TypeSelectorDisplay(Group = "Weapons/Ranged", Icon = "d_Transform Icon")]
+    [TypeSelectorDisplay(Group = "Weapons/Ranged")]
     public sealed class Shotgun : IRanged
     {
         [Tooltip("Damage dealt by each pellet that hits.")]

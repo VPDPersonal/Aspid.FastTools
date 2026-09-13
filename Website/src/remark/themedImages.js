@@ -16,7 +16,7 @@ export default function remarkThemedImages() {
           caption.data = {...caption.data, hProperties: {...caption.data?.hProperties, className: 'doc-media-caption'}};
         }
       });
-      if (node.type === 'paragraph' && node.children?.length === 1) {
+      if ((node.type === 'paragraph' || node.type === 'tableCell') && node.children?.length === 1) {
         const image = node.children[0];
         if (image.type === 'image' && !/^(?:[a-z]+:|\/|#)/i.test(image.url)) {
           const lightUrl = image.url.replace(/(?<!-light)(\.(?:png|gif|jpe?g|webp))$/i, '-light$1');

@@ -8,7 +8,7 @@ export function searchEntries(entries, query) {
   const normalized = normalize(query.trim());
   const terms = normalized.split(/\s+/).filter(Boolean);
   if (!terms.length) {
-    const order = (entry) => /\/docs\/?$/.test(entry.url) ? 0 : /\/getting-started\/?$/.test(entry.url) ? 1 : entry.section === 'Docs' ? 2 : 3;
+    const order = (entry) => /\/docs\/?$/.test(entry.url) ? 0 : entry.section === 'Docs' ? 1 : 2;
     return entries.filter((entry) => entry.section !== 'API').sort((a, b) => order(a) - order(b)).slice(0, 8);
   }
   return entries.map((entry) => {

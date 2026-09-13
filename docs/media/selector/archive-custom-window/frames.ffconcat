@@ -1,0 +1,10 @@
+ffconcat version 1.0
+file '01-pistol.jpg'
+duration 2
+file '02-picker.jpg'
+duration 1.5
+file '03-selection.jpg'
+duration 1
+file '04-shotgun.jpg'
+duration 3
+file '04-shotgun.jpg'

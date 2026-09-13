@@ -8,7 +8,7 @@ user-invocable: false
 
 One source of truth: Markdown files inside the UPM package. The same file is read by GitHub, by Unity
 (as a `TextAsset` in the Inspector) and by the Docusaurus site in `Website/`. Nothing is copied by hand
-and the root `README.md` is only an overview with links. Write GitHub Flavored Markdown; the site adapts
+and the root `README.md` is generated from `Documentation/README.md` with file links rebased to the repository root. Run `npm --prefix Website run sync-readme` after editing the introduction; never edit the root README by hand. `prestart`/`prebuild` refresh it automatically, and CI runs `check-readme` before building to reject stale copies. Write GitHub Flavored Markdown; the site adapts
 to it, never the other way round.
 
 ## Layout
@@ -49,7 +49,7 @@ and Editor & tooling. Add each new page to the appropriate group.
   `[Types sample](../Samples~/Types/Documentation/README.md)`. GitHub follows them as files; links that cross between
   the two plugin instances are rewritten to site routes by `Website/src/remark/crossInstanceLinks.js`.
   Never link by site URL.
-- **One `# H1` per file.** Use `##` in the body.
+- **One `# H1` per file.** Use `##` in the body. Exception: the introduction (`Documentation/README.md` and its translations) starts with the banner and description, without an H1; the site supplies its page title as metadata and suppresses the automatic visible heading.
 - **Images** for main docs live in package-level `Documentation/Images/`; each sample keeps its own images in
   `Samples~/<Sample>/Documentation/Images/`. Reference sample images as `Images/x.png` from its README.
 - **Every `.md` in the package needs a `.meta`** (`TextScriptImporter`) — Unity would otherwise generate one
@@ -66,7 +66,7 @@ and Editor & tooling. Add each new page to the appropriate group.
 
 Drop `NN-name.md` into `Documentation/`, add its row to `Documentation/README.md` (feature table) and to
 `SUMMARY.md`, add the `.meta`, optionally the translation at `Documentation/ru/NN-name.md`, and add its id to
-`Website/sidebars.js`. Also update the feature table in the root `README.md`.
+`Website/sidebars.js`. Run `npm --prefix Website run sync-readme` to refresh the root `README.md`.
 
 ## Adding a sample
 
@@ -74,7 +74,7 @@ Drop `NN-name.md` into `Documentation/`, add its row to `Documentation/README.md
    Put that sample's documentation images in `Documentation/Images/`.
 2. Add a category with `<slug>/readme` and `<slug>/tutorial` to `Website/sidebarsTutorials.js`; drop the
    `items` entry if there is no `TUTORIAL.md`.
-3. Register the sample in `package.json` → `samples`, and add its row to `01-getting-started.md` (EN and `ru/`).
+3. Register the sample in `package.json` → `samples`; the samples overview (`Samples~/README.md`, `README.ru.md`) lists it.
 
 ## Local run / check
 
