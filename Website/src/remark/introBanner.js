@@ -39,6 +39,23 @@ export function remarkStatusBadges() {
 
 export default function remarkIntroBanner({baseUrl, siteUrl}) {
   return (tree) => {
+    // Two-column tables made entirely of code are before/after comparisons.
+    // Keep portable HTML in package Markdown and use native code blocks on the site.
+    for (const table of tree.children.filter((node) => node.type === 'table')) {
+      const [header, ...rows] = table.children;
+      if (header.children.length !== 2 || rows.length === 0
+        || !header.children.every((cell) => cell.children.every((part) => part.type === 'text'))
+        || !rows.every((row) => row.children.length === 2 && row.children.every((cell) =>
+          cell.children.length === 1 && cell.children[0].type === 'mdxJsxTextElement'
+          && cell.children[0].name === 'pre'))) continue;
+      enhanceTableCode(table);
+      if (!rows.every((row) => row.children.every((cell) => cell.children[0].type === 'code'))) continue;
+      table.data = {...table.data, hProperties: {...table.data?.hProperties, className: 'doc-code-comparison'}};
+      const labels = header.children.map((cell) => cell.children.map((part) => part.value).join(''));
+      rows.forEach((row) => row.children.forEach((cell, index) => {
+        cell.data = {...cell.data, hProperties: {...cell.data?.hProperties, 'data-label': labels[index]}};
+      }));
+    }
     // Translated copies can start with generated front matter.
     const banner = tree.children.find((node) => node.type === 'mdxJsxFlowElement' && node.name === 'img');
     if (banner?.type === 'mdxJsxFlowElement' && banner.name === 'img'

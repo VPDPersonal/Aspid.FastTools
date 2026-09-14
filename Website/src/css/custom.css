@@ -811,6 +811,35 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .pagination-nav { margin-top: 2.5rem; }
 :where(a, button, [role='button']):focus-visible { outline: 2px solid var(--venom-accent); outline-offset: 4px; }
 
+/* Full code blocks in before/after tables; each cell keeps its own copy button. */
+.markdown .doc-code-comparison { table-layout: fixed; }
+.markdown .doc-code-comparison td { vertical-align: top; padding: 0; }
+.markdown .doc-code-comparison .theme-code-block {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.markdown .doc-code-comparison pre {
+  border-radius: 0;
+  /* Override Prism's inline background so shorter blocks share the row's color. */
+  background: transparent !important;
+}
+@media (max-width: 600px) {
+  .markdown .doc-code-comparison,
+  .markdown .doc-code-comparison :is(tbody, tr, td) { display: block; width: 100%; }
+  .markdown .doc-code-comparison thead { display: none; }
+  .markdown .doc-code-comparison td { border: 0; }
+  .markdown .doc-code-comparison td::before {
+    content: attr(data-label);
+    display: block;
+    padding: 0.55rem 0.8rem;
+    font-weight: 600;
+    background: var(--venom-disclosure-surface);
+    border-bottom: 1px solid var(--venom-line);
+  }
+}
+
 /* Inspector screenshots stay compact; scene captures can use the article width. */
 .theme-doc-markdown img.doc-zoom-image[role='button'] { display: block; width: auto; max-width: min(100%, 640px); max-height: 520px; object-fit: contain; margin-inline: auto; cursor: zoom-in; background: var(--ifm-code-background); }
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
