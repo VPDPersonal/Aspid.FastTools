@@ -1,79 +1,227 @@
 # SerializeReference Tooling
 
-The [Inspector-side selector](03-serialize-reference-selector.md) repairs references one field at a
-time; this document covers the project-wide side: the FastTools window tabs that audit
-and mass-repair managed references, the Project Settings page with the player-build gate,
-and the same check running headless in CI. The gate also covers unset
-`[TypeSelector(Required = true)]` fields — see the `Required` property on
-[TypeSelectorAttribute](02-serializable-types.md#typeselectorattribute).
+Find missing `[SerializeReference]` types in prefabs, assets, and scenes, repair them in groups, and check the project before building. FastTools reads stored references from YAML, including entries the ordinary Inspector no longer shows.
 
-**Reference sections:**
+<a id="check-the-project"></a>
 
-* [`Bulk repair tabs`](#bulk-repair-tabs) — the **Asset References** and
-  **Project References** tabs for auditing and mass repair across the project;
-* [`Project settings & the build/CI gate`](#project-settings--the-buildci-gate) —
-  the Project Settings page, setting scopes and the player-build gate;
-* [`Headless CI`](#headless-ci) — `SerializeReferenceCiGate.RunCheck` for batchmode pipelines.
+## Quick start
 
-## Bulk repair tabs
+After renaming or deleting a class, check which assets still store its old name:
 
-There is no need to [fix references one by one](03-serialize-reference-selector.md#repairing-broken-references):
-auditing and mass repair live in two dedicated tabs of the FastTools window.
+1. Save modified scenes and assets — scanning reads files on disk.
+2. Open **Tools → Aspid 🐍 → FastTools → Project References**.
+3. Click **Scan Project**. Missing references are grouped by stored type.
+4. Click **Fix all** in the relevant group, choose a replacement, and review the changes in the **Rewrite** dialog.
+5. Review the summary and the affected assets' values. If needed, use **Undo** in the operation summary; then click **Rescan** to check again.
 
-| Tab | Purpose |
+File rewrites skip references in open scenes and Prefab Mode. Save and close those scenes or prefabs before repair, or repair a visible field using [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types).
+
+> [!NOTE]
+> Analysis requires text YAML assets. In Unity's editor settings, select **Asset Serialization → Mode → Force Text**. Existing binary assets need to be saved again; changing the mode alone does not make them scannable.
+
+<a id="bulk-repair-tabs"></a>
+
+## Audit and repair windows
+
+| Task | Tool |
 |---|---|
-| **Asset References** (`Tools → Aspid 🐍 → FastTools → Asset References`) | Maps an asset's whole managed-reference graph from its YAML — a per-component tree with field paths, shared and orphaned references, `MISSING` / `SHARED` badges, and an inline type dropdown on every card. Surfaces the missing references the Inspector cannot show. |
-| **Project References** (`Tools → Aspid 🐍 → FastTools → Project References`) | `Scan Project` sweeps every `.prefab` / `.asset` / `.unity` under `Assets/`, groups broken references by stored type, and rewrites a whole group with a single `Fix all` (plus Smart Fix). A group whose stored type matches a declared `[MovedFrom]` rename reads as a pending migration instead of a breakage — one **Migrate all** click bakes the rename into the files, after which the attribute can be removed from code. |
+| Repair one visible field | [Inspector selector](03-serialize-reference-selector.md#repairing-missing-types) |
+| Inspect connections within one saved asset | **Asset References** |
+| Find a missing type throughout the project | **Project References** |
+| Write the new type name after `[MovedFrom]` | **Migrate all** in Project References |
+| Validate data before building | **Build / CI gate** in project settings |
 
-The **Asset References** tab lays out one asset's managed-reference graph as cards with
-`MISSING` / `SHARED` badges and inline repair:
+Both tabs open through **Tools → Aspid 🐍 → FastTools**. Project scanning processes `.prefab`, `.asset`, and `.unity` files under `Assets/`, respecting **Excluded scan folders**. It covers eligible project files, not just scenes included in the build.
 
-![Repair GhostWeapon as Pistol: the missing reference becomes valid](Images/aspid_fasttools_serialize_reference_tooling.gif)
+## Project References: repair a group
 
-The **Project References** tab groups the whole project's findings by stored type — one
-group is repaired at once with a single `Fix all`:
+Each group card shows the stored type and reference and file counts. Asset paths and reference IDs (`rid`) appear below. Click a row to open its asset in **Asset References**:
 
-![Project References tab: a group of broken references with Fix all and Smart Fix](Images/aspid_fasttools_serialize_reference_project_references.png)
+![A missing-reference group with Fix all and Smart Fix actions](Images/aspid_fasttools_serialize_reference_project_references.png)
 
-## Project settings & the build/CI gate
+A missing-reference group with Fix all and Smart Fix actions
 
-**`Project Settings → Aspid FastTools → SerializeReference`** exposes:
+### Choosing an action
 
-| Setting | Scope | What it does |
+| Action | Behaviour |
+|---|---|
+| **Fix all** | Opens the type picker and applies the replacement to all writable references in the group |
+| **Smart Fix** | Uses the suggested type and opens replacement confirmation |
+| **Migrate all** | Rewrites the old name to the type uniquely identified through `[MovedFrom]` |
+| **Reassign all** | Lets you choose a different replacement for a group recognized as a migration |
+
+**Smart Fix** appears when type information, name similarity, and fields identify a suitable candidate. Review the suggestion; scanning alone does not repair anything.
+
+### What repair preserves
+
+Replacing a missing type changes its `class`, `ns`, and `asm` entry in YAML while retaining the data block and `rid`. Unity then reimports the file and reads the data as the new type.
+
+Choose a type compatible with both the declared field type and the stored data. Renaming does not automatically transform the field layout. If a group spans different field types, the dialog warns you: the chosen class may not fit every entry, and incompatible references become `null` on import.
+
+Bulk replacement produces a summary with an **Undo** button. It restores the old type name on references that still contain the applied replacement. This summary action does not restore every previous asset value. Review the result before scanning again: **Rescan** clears earlier operation summaries.
+
+### Choosing None
+
+`<None>` clears references and deletes their stored data. If several fields share a `rid`, all pointers to that instance are cleared. The tool asks for confirmation; this operation cannot be undone.
+
+Bulk clearing may null references in open scenes or Prefab Mode in memory. Save those objects: file-based scans continue to show the old entries until they are saved.
+
+## Asset References: inspect one asset
+
+Open **Asset References** and assign a saved prefab, ScriptableObject, or scene file to the object field beside **Rescan**. You can also arrive here from a **Project References** result row.
+
+The graph groups references by host object and field path:
+
+| Label | Meaning |
+|---|---|
+| **MISSING** | The reference's stored type cannot be found |
+| **SHARED** | Several fields use the same managed-reference instance |
+| **Orphaned** | A YAML entry remains with no field pointing to it |
+| `rid` | A managed-reference identifier within its host object |
+
+`SHARED` does not inherently mean an error: sharing can be intentional. Matching colours help locate connected fields; the colour is derived from the ID and has no separate setting.
+
+Open **Fix** on a missing-reference card and choose a replacement. In this example, `GhostWeapon` becomes `Pistol`:
+
+![Repairing GhostWeapon as Pistol while preserving reference data](Images/aspid_fasttools_serialize_reference_tooling.gif)
+
+Repairing GhostWeapon as Pistol while preserving reference data
+
+The scene or prefab must be closed for a YAML rewrite. If a regular field cannot be edited from this window — for example, it is in a scene or beneath a missing parent reference — repair the parent or open the field in the Inspector.
+
+Orphaned entries offer **Clear**. This deletes the file entry after confirmation and does not support Undo.
+
+## Migrations with MovedFrom
+
+For an intentional rename or move, `[MovedFrom]` connects the old identity to the new type. For example, renaming `GhostWeapon` to `Pistol` within the same assembly and namespace:
+
+| Before — GhostWeapon | After — Pistol |
+|---|---|
+| <pre lang="csharp"><code>[Serializable]<br />public sealed class GhostWeapon<br />&#123;<br />    public int Damage = 10;<br />&#125;</code></pre> | <pre lang="csharp"><code>[Serializable]<br />[MovedFrom(true,<br />    sourceClassName: "GhostWeapon")]<br />public sealed class Pistol<br />&#123;<br />    public int Damage = 10;<br />&#125;</code></pre> |
+
+The attributes require `using System;` and `using UnityEngine.Scripting.APIUpdating;`. For moves, also supply the old `sourceNamespace` and `sourceAssembly`.
+
+After compilation:
+
+1. Click **Scan Project** or **Rescan**.
+2. If the old identity uniquely maps to a suitable type, the group appears as a pending migration.
+3. Click **Migrate all** to write the new name to the files. Until then, Unity uses the attribute when loading the old name.
+
+A pending migration does not count as a missing type for build checks. If multiple types claim one old identity, the tool does not automatically choose a winner. Stored closed generic types are not recognized as unambiguous migrations by this mechanism either.
+
+Remove `[MovedFrom]` only after migrating all data that must remain loadable, including assets outside the current project and folders excluded from scanning.
+
+<a id="project-settings--the-buildci-gate"></a>
+
+## Pre-build checks
+
+Open **Project Settings → Aspid FastTools → SerializeReference** and set **Build / CI gate**:
+
+| Mode | Player build | Standalone CI run |
 |---|---|---|
-| **Breakage detection** | per-user | The proactive toast + console warning when references newly become missing after a recompile / import. |
-| **Auto de-alias duplicated list elements** | committed | A duplicated list element gets its own instance instead of sharing the original's reference id. |
-| **Build / CI gate** | committed | `Off` / `Warn` / `Fail`: at player-build time, log or abort on missing (and, for CI, unset-required) managed references. |
-| **Excluded scan folders** | committed | Paths skipped by every project scan. |
+| `Off` | Skips validation | Skips scanning and report writing; exit code `0` |
+| `Warn` | Warns and continues building | Logs violations; exit code `0` |
+| `Fail` | Missing types stop the build | Exit code `1` when violations are found |
 
-- Committed values live in `ProjectSettings/SerializeReferenceSharedSettings.asset` — commit it so teammates and CI behave identically; breakage detection stays per-machine (`EditorPrefs`).
-- Rid colours are not a setting — a shared reference is always colour-coded by id, so matching colours reveal shared instances at a glance.
+The default is `Warn`. This setting controls validation; it does not repair references.
 
-The same options are mirrored in the window's **Settings** tab (`Tools → Aspid 🐍 → FastTools → Settings`) and at **`Preferences → Aspid FastTools`**, alongside the picker's per-user preferences:
+### Where required fields are checked
 
-- **Favorites** — section on/off toggle.
-- **Recent items** — capacity slider (0–20; 0 hides the section and pauses recording without wiping history).
-- **Saved lists** — clears the stored Favorites / Recent.
-- **Welcome** — auto-show toggle.
+| Run | Missing types | Empty fields with `TypeSelector(Required = true)` |
+|---|---|---|
+| **Project References → Scan Project** | Yes, including pending-migration groups | Yes in `Warn` or `Fail`; a separate **Required violations** group |
+| Player build | Yes in `Warn` or `Fail` | No |
+| CI without `-srGateRequired` | Yes, when enabled | No |
+| CI with `-srGateRequired` | Yes, when enabled | Yes |
 
-Every row carries a scope stripe (green — committed, blue — per-user); a pinned footer offers **Reset to defaults** per scope (saved Favorites / Recent lists survive a reset). All surfaces stay in live sync.
+Required checks follow the traversal limits in [Running in CI](#running-in-ci). Project scanning for missing types is available even in `Off`; only the additional Required check is disabled.
 
-## Headless CI
+### Shared and personal settings
 
-For headless CI, the same check runs via `SerializeReferenceCiGate.RunCheck`: it scans
-the project, writes a report, logs every violation, and honours the committed gate
-severity — `Off` skips the check, `Warn` logs but exits 0, `Fail` exits 1 when
-violations exist (exit code 2 marks an internal failure of the check itself).
+| Setting | Storage | Purpose |
+|---|---|---|
+| **Build / CI gate** | Project | Validation severity |
+| **Excluded scan folders** | Project | Folders skipped by project scans |
+| **Auto de-alias duplicated list elements** | Project | Creates an independent copy when duplicating a list entry |
+| **Breakage detection** | Local `EditorPrefs` | A notification and Console warning for newly missing references after import or recompilation |
+
+Shared settings are saved in `ProjectSettings/SerializeReferenceSharedSettings.asset`. Commit this file so the team and CI use the same rules.
+
+<details>
+<summary>Other window and selector settings</summary>
+
+The same options are available in the FastTools window's **Settings** tab and **Preferences → Aspid FastTools**. Personal settings are nearby:
+
+- **Favorites** — shows or hides favourites.
+- **Recent items** — history capacity from 0 to 20. Setting 0 hides the section and pauses recording while retaining history.
+- **Saved lists** — clears Favorites and Recent.
+- **Welcome** — shows the welcome screen automatically.
+
+A green stripe marks project settings; blue marks personal settings. **Reset to defaults** resets each group separately and preserves Favorites and Recent. Changes immediately appear in all settings views.
+
+</details>
+
+<a id="headless-ci"></a>
+
+## Running in CI
+
+Run the Unity Editor from the Unity project root. `Unity` stands for the editor executable; supply its full path if it is not on `PATH`.
 
 ```bash
 Unity -batchmode -quit -projectPath . \
   -executeMethod Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceCiGate.RunCheck \
-  -srGateReport SerializeReferenceGateReport.txt -srGateRequired
+  -srGateReport SerializeReferenceGateReport.txt \
+  -srGateRequired -srGateFail
 ```
 
-| Flag | Description |
+This checks missing types and unset required fields, writes a report, and exits with code `1` on violations. `-srGateFail` explicitly enables strict mode even if the project uses `Off`. Running the check does not repair assets.
+
+### Command-line flags
+
+| Flag | Behaviour |
 |---|---|
-| `-srGateReport <path>` | Report file path; defaults to `SerializeReferenceGateReport.txt` in the project root. Each violation is a machine-readable line with the violation kind, asset path and field path. |
-| `-srGateRequired` | Also flags unset `[TypeSelector(Required = true)]` fields across prefabs, ScriptableObjects and scenes (top-level fields, pure-YAML pass). |
-| `-srGateWarnOnly` | Overrides the committed severity to `Warn` for this run: violations are logged but the exit code is 0. Wins over `-srGateFail` if both are passed. |
-| `-srGateFail` | Overrides the committed severity to `Fail` for this run: exit code 1 when violations exist. |
+| `-srGateReport <path>` | Report path; defaults to `SerializeReferenceGateReport.txt` |
+| `-srGateRequired` | Also checks unset fields with `Required = true` |
+| `-srGateFail` | Uses `Fail` instead of the project setting |
+| `-srGateWarnOnly` | Uses `Warn`; takes precedence over `-srGateFail` if both are passed |
+
+Without a severity flag, the project setting applies. For a trial run, replace `-srGateFail` with `-srGateWarnOnly`.
+
+In `Warn`, violations are logged as errors, but the process returns `0`. Check the exit code in CI. In `Off`, no fresh report is written; a report from an earlier run may remain on disk.
+
+### Required check boundaries
+
+For prefabs and ScriptableObjects, validation traverses serialized properties, including accessible nested fields. Scenes are read from YAML: top-level fields and fields within by-value containers are checked. Scene traversal does not descend into collection entries or managed references.
+
+This limitation applies to unset required fields. Missing-type detection separately reads stored managed-reference entries.
+
+### Report and exit codes
+
+After the header, each violation occupies one line. Fields are tab-separated:
+
+```text
+KIND    assetPath    fileId    rid    className    fieldPath
+```
+
+| Field | Contents |
+|---|---|
+| `KIND` | `MissingType` or `RequiredUnset` |
+| `assetPath` | File path, such as `Assets/Weapons/Pistol.prefab` |
+| `fileId` | Host object ID within the file |
+| `rid` | Managed-reference ID; `0` for a required string field |
+| `className` | Stored class name for `MissingType`, without separate namespace or assembly fields |
+| `fieldPath` | Required field path; empty for `MissingType` |
+
+Save the report as a CI artifact. The asset path, `fileId`, and `rid` together help locate the entry in Asset References.
+
+| Code | Meaning |
+|---|---|
+| `0` | No violations, `Warn` selected, or validation disabled |
+| `1` | Violations found in `Fail` mode |
+| `2` | An internal check error, such as failure to write the report |
+
+## Next steps
+
+- [SerializeReference Selector](03-serialize-reference-selector.md) — type selection, shared references, and individual field repair in the Inspector.
+- [Serializable Types](02-serializable-types.md) — `TypeSelector` and required-field configuration.
+- [SerializeReferences sample](../Samples~/SerializeReferences/Documentation/README.md) — polymorphic weapon and effect data in a working scene.

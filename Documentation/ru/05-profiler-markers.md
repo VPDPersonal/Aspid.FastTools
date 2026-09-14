@@ -1,75 +1,19 @@
 # ProfilerMarkers
 
-Измеряйте метод или отдельный блок кода одним вызовом `this.Marker()`. Генератор создаёт и переиспользует статический `ProfilerMarker` для каждого места вызова; вручную объявлять маркеры и подбирать им уникальные имена не нужно.
+`this.Marker()` автоматически создаёт маркер Unity Profiler.
 
 ## Быстрый старт
 
-Добавьте `using var` в начало метода. Измерение завершится при выходе из его области видимости, в том числе через `return` или исключение.
-
-```csharp
-using UnityEngine;
-
-public sealed class MotionSimulation : MonoBehaviour
-{
-    [SerializeField] private Transform[] _agents;
-
-    private void Update()
-    {
-        using var marker = this.Marker();
-
-        foreach (var agent in _agents)
-            agent.position += Vector3.forward * Time.deltaTime;
-    }
-}
-```
-
-Отдельный `using Aspid.FastTools…` для `Marker()` не нужен: исходное расширение объявлено в глобальном пространстве имён. Генератор поставляется вместе с пакетом.
-
-Откройте **Window → Analysis → Profiler**, запустите сцену и найдите `MotionSimulation.Update` в модуле **CPU Usage**. Имя маркера содержит также номер строки вызова. Для готовой сцены с несколькими измеряемыми этапами используйте [пример ProfilerMarkers](../../Samples~/ProfilerMarkers/Documentation/README.ru.md).
-
-![Маркеры с именами методов и номерами строк в Unity Profiler](../Images/aspid_fasttools_profiler_markers.png)
-
-Маркеры с именами методов и номерами строк в Unity Profiler
-
-## Измерение отдельного блока
-
-`using (this.Marker())` измеряет только код внутри фигурных скобок. В примере ниже `ApplyResults()` выполняется после завершения измерения:
-
-```csharp
-using (this.Marker())
-{
-    Simulate();
-}
-
-ApplyResults();
-```
-
-`Simulate` и `ApplyResults` здесь обозначают методы вашей системы. Вложенные области `using` позволяют отдельно измерять этапы внутри общего маркера.
-
-## Собственное имя
-
-Добавьте `.WithName("…")`, чтобы заменить имя метода в подписи маркера на имя этапа:
-
-```csharp
-using (this.Marker().WithName("Find neighbours"))
-{
-    FindNeighbours();
-}
-```
-
-| Вызов внутри `Flock.Update` | Имя в Profiler |
+| До — Unity API | После — FastTools |
 |---|---|
-| `this.Marker()` | `Flock.Update (номер строки)` |
-| `this.Marker().WithName("Find neighbours")` | `Flock.Find neighbours (номер строки)` |
+| <pre lang="csharp"><code>private static readonly<br />    ProfilerMarker UpdateMarker =<br />    new("MotionSimulation.Update");<br /><br />private void Update()<br />&#123;<br />    using var _ =<br />        UpdateMarker.Auto();<br />    Simulate();<br />&#125;</code></pre> | <pre lang="csharp"><code>private void Update()<br />&#123;<br />    using var _ = this.Marker();<br />    Simulate();<br />&#125;</code></pre> |
 
-Имя читается из исходного кода при компиляции. Передавайте строковый литерал; переменная или интерполяция с подстановками не переименует маркер. Вызовы внутри лямбд и локальных функций относятся к ближайшему объявленному методу, полю или свойству.
-
-## Сгенерированный код
-
-Для каждого места вызова генератор создаёт статическое поле и добавляет расширение `Marker` для вызывающего типа. Номер строки, переданный через `CallerLineNumber`, выбирает нужный маркер.
+Работает в `MonoBehaviour` и обычных C#-классах. Генератор входит в пакет; расширение находится в глобальном пространстве имён — дополнительные `using`, атрибуты и `partial` не нужны.
 
 <details>
-<summary>Упрощённый пример результата генерации</summary>
+<summary>Пример сгенерированного кода</summary>
+
+Для класса `MotionSimulation` с вызовом `this.Marker()` на строке 10. Полные имена типов сокращены, атрибуты `GeneratedCode` опущены.
 
 ```csharp
 using Unity.Profiling;
@@ -77,26 +21,83 @@ using System.Runtime.CompilerServices;
 
 internal static class __MotionSimulationProfilerMarkerExtensions
 {
-    private static readonly ProfilerMarker UpdateMarker =
-        new("MotionSimulation.Update (9)");
+    private static readonly ProfilerMarker Update_Marker_Line_10 =
+        new("MotionSimulation.Update (10)");
 
     public static ProfilerMarker.AutoScope Marker(
-        this MotionSimulation instance,
-        [CallerLineNumber] int line = -1)
+        this MotionSimulation _, [CallerLineNumber] int line = -1)
     {
 #if ENABLE_PROFILER
-        if (line == 9) return UpdateMarker.Auto();
+        if (line is 10) return Update_Marker_Line_10.Auto();
 #endif
         return default;
     }
 }
 ```
 
-Имена полей здесь сокращены для наглядности; номер строки зависит от расположения вызова в вашем файле. Этот код генерируется автоматически — добавлять его в проект вручную не нужно.
-
 </details>
 
-В сборке без `ENABLE_PROFILER` диспетчер возвращает пустую область `default`, и измерение не выполняется. Для generic-типов статические маркеры создаются отдельно для каждого закрытого типа; подпись включает имена аргументов типов.
+## Область измерения
 
-> [!TIP]
-> Начните с маркера на весь метод. Когда найдёте дорогой метод, добавьте отдельные именованные блоки вокруг его этапов — так результаты в Profiler проще сопоставить с кодом.
+`Marker()` возвращает `ProfilerMarker.AutoScope`: замер начинается при вызове и завершается при выходе из `using`, включая `return` и исключения.
+
+Один пример для вложенных этапов, собственного имени и цикла внутри класса `FlockSimulation`:
+
+```csharp
+public void Step()
+{
+    using var _ = this.Marker();
+
+    using (this.Marker().WithName("Steering"))
+    {
+        foreach (var agent in _agents)
+        {
+            using var agentScope = this.Marker().WithName("Steering.Agent");
+            ComputeSteering(agent);
+        }
+    }
+
+    using (this.Marker().WithName("Integrate"))
+    {
+        Integrate();
+    }
+}
+```
+
+В Profiler при 120 итерациях цикла:
+
+```text
+FlockSimulation.Step (…)
+├── FlockSimulation.Steering (…)
+│   └── FlockSimulation.Steering.Agent (…) — 120 вызовов одного маркера
+└── FlockSimulation.Integrate (…)
+```
+
+> [!IMPORTANT]
+> Не вызывайте `this.Marker()` без `using`: замер не завершится автоматически. Область не должна пересекать `await` или `yield`; измеряйте синхронные участки отдельно ([ограничение Unity](https://docs.unity3d.com/6000.0/Documentation/Manual/profiler-add-markers-code.html)).
+
+## Собственное имя
+
+Добавьте `.WithName("Steering")` непосредственно к `this.Marker()`: вместо `FlockSimulation.Step (строка)` получите `FlockSimulation.Steering (строка)`. Меняется только имя метода; тип и номер строки остаются.
+
+- **Поддерживаются:** строковые литералы `"Steering"`, `@"Steering"` и интерполяция без подстановок `$"Steering"`.
+- **Не поддерживаются:** переменные, `const`, `nameof`, конкатенация и интерполяция с подстановками (`$"Agent {index}"`). С ними остаётся исходное имя метода.
+
+Генератор читает текст литерала из исходника, но не вычисляет выражения — даже константные. Во время выполнения аргумент `WithName` всё равно вычисляется, поэтому динамическая строка может добавить лишнюю работу в замер.
+
+## Особенности генерации
+
+- **Номер строки.** Сгенерированное расширение выбирает статический маркер по `CallerLineNumber`. Каждый вызов в пределах типа должен иметь свой номер строки, в том числе в разных файлах `partial`-типа. Перенос вызова меняет суффикс имени.
+- **Лямбды и локальные функции.** Используется имя ближайшего объявленного метода, поля или свойства. У конструктора — `Ctor`, у аксессора — имя свойства.
+- **Generic-типы.** У каждого закрытого типа свои статические маркеры. Например, `Worker<int>.Run()` → `Worker<Int32>.Run (строка)`; аргументы именуются через `typeof(T).Name`.
+- **Без `ENABLE_PROFILER`.** Расширение возвращает `default`, замер не начинается, код внутри `using` выполняется. Статические поля остаются в сгенерированном исходнике, аргументы `WithName` по-прежнему вычисляются.
+
+## Результат в Profiler
+
+Откройте **Window → Analysis → Profiler**, включите запись и запустите сцену. Выберите кадр в **CPU Usage → Hierarchy** и найдите имя типа. Deep Profile не нужен.
+
+![Маркеры Flock и FlockSimulation в CPU Usage: у Steering.Agent — 120 вызовов](../../Samples~/ProfilerMarkers/Documentation/Images/profiler-markers.png)
+
+Маркеры Flock и FlockSimulation в CPU Usage: у Steering.Agent — 120 вызовов
+
+Чтобы повторить, импортируйте [пример ProfilerMarkers](../../Samples~/ProfilerMarkers/Documentation/README.ru.md), откройте `Scenes/ProfilerMarkers.unity` и найдите `Flock` в Profiler. Время зависит от кадра и машины; эксперименты с числом агентов — в [документации примера](../../Samples~/ProfilerMarkers/Documentation/README.ru.md#попробуйте).
