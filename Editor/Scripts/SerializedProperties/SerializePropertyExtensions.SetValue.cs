@@ -21,6 +21,13 @@ namespace Aspid.FastTools.Editors
             return property.SetIntAndApply(value);
         }
 
+        /// <inheritdoc cref="SetIntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, int value)
+            where T : SerializedProperty
+        {
+            return property.SetIntAndApplyWithoutUndo(value);
+        }
+
         /// <summary>
         /// Sets <see cref="SerializedProperty.intValue"/> and returns the property for chaining.
         /// </summary>
@@ -47,6 +54,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetInt(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.intValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetIntAndApplyWithoutUndo<T>(this T property, int value)
+            where T : SerializedProperty
+        {
+            return property.SetInt(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Uint
@@ -62,6 +82,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetUintAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetUintAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, uint value)
+            where T : SerializedProperty
+        {
+            return property.SetUintAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -90,6 +117,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetUint(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.uintValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetUintAndApplyWithoutUndo<T>(this T property, uint value)
+            where T : SerializedProperty
+        {
+            return property.SetUint(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Long
@@ -105,6 +145,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetLongAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetLongAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, long value)
+            where T : SerializedProperty
+        {
+            return property.SetLongAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -133,6 +180,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetLong(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.longValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetLongAndApplyWithoutUndo<T>(this T property, long value)
+            where T : SerializedProperty
+        {
+            return property.SetLong(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Ulong
@@ -148,6 +208,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetUlongAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetUlongAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, ulong value)
+            where T : SerializedProperty
+        {
+            return property.SetUlongAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -176,6 +243,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetUlong(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.ulongValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetUlongAndApplyWithoutUndo<T>(this T property, ulong value)
+            where T : SerializedProperty
+        {
+            return property.SetUlong(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Float
@@ -191,6 +271,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetFloatAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetFloatAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, float value)
+            where T : SerializedProperty
+        {
+            return property.SetFloatAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -219,6 +306,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetFloat(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.floatValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetFloatAndApplyWithoutUndo<T>(this T property, float value)
+            where T : SerializedProperty
+        {
+            return property.SetFloat(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Double
@@ -234,6 +334,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetDoubleAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetDoubleAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, double value)
+            where T : SerializedProperty
+        {
+            return property.SetDoubleAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -261,6 +368,19 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetDouble(value).ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.doubleValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetDoubleAndApplyWithoutUndo<T>(this T property, double value)
+            where T : SerializedProperty
+        {
+            return property.SetDouble(value).ApplyModifiedPropertiesWithoutUndo();
         }
         #endregion
 
@@ -297,6 +417,19 @@ namespace Aspid.FastTools.Editors
         }
 
         /// <summary>
+        /// Sets <see cref="SerializedProperty.enumValueFlag"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Flag value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetEnumFlagAndApplyWithoutUndo<T>(this T property, int value)
+            where T : SerializedProperty
+        {
+            return property.SetEnumFlag(value).ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
         /// Sets <see cref="SerializedProperty.enumValueIndex"/> and returns the property for chaining.
         /// </summary>
         /// <remarks>
@@ -326,6 +459,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetEnumIndex(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.enumValueIndex"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Index value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetEnumIndexAndApplyWithoutUndo<T>(this T property, int value)
+            where T : SerializedProperty
+        {
+            return property.SetEnumIndex(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Bool
@@ -341,6 +487,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetBoolAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetBoolAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, bool value)
+            where T : SerializedProperty
+        {
+            return property.SetBoolAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -369,6 +522,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetBool(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.boolValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetBoolAndApplyWithoutUndo<T>(this T property, bool value)
+            where T : SerializedProperty
+        {
+            return property.SetBool(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Rect
@@ -384,6 +550,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetRectAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetRectAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Rect value)
+            where T : SerializedProperty
+        {
+            return property.SetRectAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -412,6 +585,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetRect(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.rectValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetRectAndApplyWithoutUndo<T>(this T property, Rect value)
+            where T : SerializedProperty
+        {
+            return property.SetRect(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region RectInt
@@ -427,6 +613,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetRectIntAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetRectIntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, RectInt value)
+            where T : SerializedProperty
+        {
+            return property.SetRectIntAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -455,6 +648,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetRectInt(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.rectIntValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetRectIntAndApplyWithoutUndo<T>(this T property, RectInt value)
+            where T : SerializedProperty
+        {
+            return property.SetRectInt(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Bounds
@@ -470,6 +676,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetBoundsAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetBoundsAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Bounds value)
+            where T : SerializedProperty
+        {
+            return property.SetBoundsAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -498,6 +711,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetBounds(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.boundsValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetBoundsAndApplyWithoutUndo<T>(this T property, Bounds value)
+            where T : SerializedProperty
+        {
+            return property.SetBounds(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region BoundsInt
@@ -513,6 +739,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetBoundsIntAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetBoundsIntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, BoundsInt value)
+            where T : SerializedProperty
+        {
+            return property.SetBoundsIntAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -541,6 +774,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetBoundsInt(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.boundsIntValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetBoundsIntAndApplyWithoutUndo<T>(this T property, BoundsInt value)
+            where T : SerializedProperty
+        {
+            return property.SetBoundsInt(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Color
@@ -556,6 +802,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetColorAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetColorAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Color value)
+            where T : SerializedProperty
+        {
+            return property.SetColorAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -584,6 +837,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetColor(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.colorValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetColorAndApplyWithoutUndo<T>(this T property, Color value)
+            where T : SerializedProperty
+        {
+            return property.SetColor(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Gradient
@@ -599,6 +865,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetGradientAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetGradientAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Gradient value)
+            where T : SerializedProperty
+        {
+            return property.SetGradientAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -627,6 +900,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetGradient(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.gradientValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetGradientAndApplyWithoutUndo<T>(this T property, Gradient value)
+            where T : SerializedProperty
+        {
+            return property.SetGradient(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Hash128
@@ -642,6 +928,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetHash128AndApply(value);
+        }
+
+        /// <inheritdoc cref="SetHash128AndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Hash128 value)
+            where T : SerializedProperty
+        {
+            return property.SetHash128AndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -670,6 +963,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetHash128(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.hash128Value"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetHash128AndApplyWithoutUndo<T>(this T property, Hash128 value)
+            where T : SerializedProperty
+        {
+            return property.SetHash128(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Vector4
@@ -685,6 +991,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetVector4AndApply(value);
+        }
+
+        /// <inheritdoc cref="SetVector4AndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector4 value)
+            where T : SerializedProperty
+        {
+            return property.SetVector4AndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -713,6 +1026,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetVector4(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.vector4Value"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetVector4AndApplyWithoutUndo<T>(this T property, Vector4 value)
+            where T : SerializedProperty
+        {
+            return property.SetVector4(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Vector3
@@ -728,6 +1054,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetVector3AndApply(value);
+        }
+
+        /// <inheritdoc cref="SetVector3AndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector3 value)
+            where T : SerializedProperty
+        {
+            return property.SetVector3AndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -756,6 +1089,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetVector3(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.vector3Value"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetVector3AndApplyWithoutUndo<T>(this T property, Vector3 value)
+            where T : SerializedProperty
+        {
+            return property.SetVector3(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Vector3Int
@@ -771,6 +1117,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetVector3IntAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetVector3IntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector3Int value)
+            where T : SerializedProperty
+        {
+            return property.SetVector3IntAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -799,6 +1152,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetVector3Int(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.vector3IntValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetVector3IntAndApplyWithoutUndo<T>(this T property, Vector3Int value)
+            where T : SerializedProperty
+        {
+            return property.SetVector3Int(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Vector2
@@ -814,6 +1180,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetVector2AndApply(value);
+        }
+
+        /// <inheritdoc cref="SetVector2AndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector2 value)
+            where T : SerializedProperty
+        {
+            return property.SetVector2AndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -842,6 +1215,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetVector2(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.vector2Value"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetVector2AndApplyWithoutUndo<T>(this T property, Vector2 value)
+            where T : SerializedProperty
+        {
+            return property.SetVector2(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Vector2Int
@@ -857,6 +1243,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetVector2IntAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetVector2IntAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector2Int value)
+            where T : SerializedProperty
+        {
+            return property.SetVector2IntAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -885,6 +1278,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetVector2Int(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.vector2IntValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetVector2IntAndApplyWithoutUndo<T>(this T property, Vector2Int value)
+            where T : SerializedProperty
+        {
+            return property.SetVector2Int(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Quaternion
@@ -900,6 +1306,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetQuaternionAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetQuaternionAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, Quaternion value)
+            where T : SerializedProperty
+        {
+            return property.SetQuaternionAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -928,6 +1341,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetQuaternion(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.quaternionValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetQuaternionAndApplyWithoutUndo<T>(this T property, Quaternion value)
+            where T : SerializedProperty
+        {
+            return property.SetQuaternion(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region String
@@ -943,6 +1369,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetStringAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetStringAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, string value)
+            where T : SerializedProperty
+        {
+            return property.SetStringAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -971,6 +1404,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetString(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.stringValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetStringAndApplyWithoutUndo<T>(this T property, string value)
+            where T : SerializedProperty
+        {
+            return property.SetString(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region AnimationCurve
@@ -986,6 +1432,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetAnimationCurveAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetAnimationCurveAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, AnimationCurve value)
+            where T : SerializedProperty
+        {
+            return property.SetAnimationCurveAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -1013,6 +1466,19 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetAnimationCurve(value).ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.animationCurveValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetAnimationCurveAndApplyWithoutUndo<T>(this T property, AnimationCurve value)
+            where T : SerializedProperty
+        {
+            return property.SetAnimationCurve(value).ApplyModifiedPropertiesWithoutUndo();
         }
         #endregion
 
@@ -1045,6 +1511,19 @@ namespace Aspid.FastTools.Editors
         }
 
         /// <summary>
+        /// Sets <see cref="SerializedProperty.arraySize"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target array property.</param>
+        /// <param name="size">New array size.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetArraySizeAndApplyWithoutUndo<T>(this T property, int size)
+            where T : SerializedProperty
+        {
+            return property.SetArraySize(size).ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
         /// Increases <see cref="SerializedProperty.arraySize"/> by <paramref name="value"/> and returns the property for chaining.
         /// </summary>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
@@ -1071,6 +1550,19 @@ namespace Aspid.FastTools.Editors
         }
 
         /// <summary>
+        /// Increases <see cref="SerializedProperty.arraySize"/> by <paramref name="value"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target array property.</param>
+        /// <param name="value">Amount to add to the current array size.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T AddArraySizeAndApplyWithoutUndo<T>(this T property, int value = 1)
+            where T : SerializedProperty
+        {
+            return SetArraySizeAndApplyWithoutUndo(property, size: property.arraySize + value);
+        }
+
+        /// <summary>
         /// Decreases <see cref="SerializedProperty.arraySize"/> by <paramref name="value"/> and returns the property for chaining.
         /// </summary>
         /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
@@ -1094,6 +1586,19 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return SetArraySizeAndApply(property, size: property.arraySize - value);
+        }
+
+        /// <summary>
+        /// Decreases <see cref="SerializedProperty.arraySize"/> by <paramref name="value"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target array property.</param>
+        /// <param name="value">Amount to subtract from the current array size.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T RemoveArraySizeAndApplyWithoutUndo<T>(this T property, int value = 1)
+            where T : SerializedProperty
+        {
+            return SetArraySizeAndApplyWithoutUndo(property, size: property.arraySize - value);
         }
         #endregion
 
@@ -1124,6 +1629,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetManagedReference(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.managedReferenceValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property (must be a <c>[SerializeReference]</c> field).</param>
+        /// <param name="value">Managed reference value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetManagedReferenceAndApplyWithoutUndo<T>(this T property, object value)
+            where T : SerializedProperty
+        {
+            return property.SetManagedReference(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region ObjectReference
@@ -1152,6 +1670,19 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetObjectReference(value).ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.objectReferenceValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value"><see cref="UnityEngine.Object"/> reference to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetObjectReferenceAndApplyWithoutUndo<T>(this T property, Object value)
+            where T : SerializedProperty
+        {
+            return property.SetObjectReference(value).ApplyModifiedPropertiesWithoutUndo();
         }
         #endregion
 
@@ -1182,6 +1713,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetExposedReference(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.exposedReferenceValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value"><see cref="UnityEngine.Object"/> exposed reference to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetExposedReferenceAndApplyWithoutUndo<T>(this T property, Object value)
+            where T : SerializedProperty
+        {
+            return property.SetExposedReference(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
         #region Boxed
@@ -1211,6 +1755,19 @@ namespace Aspid.FastTools.Editors
         {
             return property.SetBoxed(value).ApplyModifiedProperties();
         }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.boxedValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Boxed value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetBoxedAndApplyWithoutUndo<T>(this T property, object value)
+            where T : SerializedProperty
+        {
+            return property.SetBoxed(value).ApplyModifiedPropertiesWithoutUndo();
+        }
         #endregion
 
 #if UNITY_6000_2_OR_NEWER
@@ -1227,6 +1784,13 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetEntityIdAndApply(value);
+        }
+
+        /// <inheritdoc cref="SetEntityIdAndApplyWithoutUndo{T}"/>
+        public static T SetValueAndApplyWithoutUndo<T>(this T property, EntityId value)
+            where T : SerializedProperty
+        {
+            return property.SetEntityIdAndApplyWithoutUndo(value);
         }
 
         /// <summary>
@@ -1254,6 +1818,19 @@ namespace Aspid.FastTools.Editors
             where T : SerializedProperty
         {
             return property.SetEntityId(value).ApplyModifiedProperties();
+        }
+
+        /// <summary>
+        /// Sets <see cref="SerializedProperty.entityIdValue"/> then applies modified properties without recording Undo.
+        /// </summary>
+        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
+        /// <param name="property">Target property.</param>
+        /// <param name="value">Value to assign.</param>
+        /// <returns>The same <paramref name="property"/> instance.</returns>
+        public static T SetEntityIdAndApplyWithoutUndo<T>(this T property, EntityId value)
+            where T : SerializedProperty
+        {
+            return property.SetEntityId(value).ApplyModifiedPropertiesWithoutUndo();
         }
         #endregion
 #endif
