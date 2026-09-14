@@ -576,7 +576,7 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
     width: 100%;
     max-width: 960px;
     margin: 0 auto;
-    padding: clamp(1.5rem, 3vw, 3rem) 1.5rem 1rem;
+    padding: 1.5rem 1.5rem 1rem;
   }
 
   [class*='docMainContainer_'] .col.col--3 {
@@ -686,7 +686,7 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 /* The introduction starts with its banner; the compact TOC follows it. */
 @media (min-width: 997px) {
   .theme-doc-markdown > img[src$='/aspid_fasttools_readme_banner.gif']:first-child {
-    margin-top: calc(-1 * clamp(1.5rem, 3vw, 3rem));
+    margin-top: -1.5rem;
     border-radius: 12px 12px 0 0;
   }
 }
