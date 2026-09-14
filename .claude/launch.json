@@ -28,6 +28,16 @@
       ],
       "cwd": "Website",
       "port": 3101
+    },
+    {
+      "name": "website-serve-all",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "npm run build && npx docusaurus serve --port 3001 --no-open"
+      ],
+      "cwd": "Website",
+      "port": 3001
     }
   ]
 }

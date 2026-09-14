@@ -754,23 +754,24 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .menu__list-item > .menu__link--sublist { margin-top: 1.4rem; }
 .menu__list .menu__list { margin-left: 0; padding-left: 0; }
 .menu__list .menu__list .menu__list { padding-left: 0.85rem; }
+/* Group headers leave the item grid: serif, sentence case, flush with the panel edge, so they read as
+   section titles rather than as one more menu entry. */
 .doc-menu-group > .menu__list-item-collapsible,
 .doc-menu-group > .menu__list-item-collapsible:hover {
-  margin: 1.25rem 0 0.5rem;
-  background: var(--ifm-code-background);
-  border: 1px solid var(--venom-line-strong);
-  border-radius: 10px;
-  overflow: hidden;
+  margin: 1.6rem 0 0.35rem;
+  background: transparent;
 }
 .doc-menu-group > .menu__list-item-collapsible > .menu__link,
 .doc-menu-group > .menu__list-item-collapsible > .menu__link:hover {
-  padding: 0.5rem 0.75rem;
+  padding: 0 0 0.3rem 0.25rem;
   background: transparent;
   box-shadow: none;
-  color: var(--venom-fg);
-  font: 600 0.75rem/1.5 var(--ifm-font-family-monospace);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  border-bottom: 1px solid var(--venom-line);
+  border-radius: 0;
+  color: var(--venom-muted);
+  font: 500 0.9rem/1.4 var(--ifm-heading-font-family);
+  letter-spacing: 0.01em;
+  text-transform: none;
   cursor: default;
 }
 .api-namespace > .menu__list-item-collapsible .menu__link { text-transform: none; letter-spacing: 0; font-size: 0.8125rem; }
