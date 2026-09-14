@@ -672,7 +672,29 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+  margin-bottom: 1.5rem;
 }
+
+/* The introduction opens with a lede and a quiet link row before the feature table. */
+.theme-doc-markdown .readme-lede {
+  max-width: 40rem;
+  margin-bottom: 1rem;
+  font-family: var(--ifm-heading-font-family);
+  font-size: 1.2rem;
+  line-height: 1.55;
+  color: var(--venom-fg-strong);
+}
+.theme-doc-markdown .readme-lede code {
+  font-size: 0.8em;
+  vertical-align: 0.05em;
+}
+.theme-doc-markdown .readme-links {
+  margin-bottom: 2.75rem;
+  font-size: 0.875rem;
+  color: var(--venom-muted);
+}
+.theme-doc-markdown .readme-links a { color: var(--venom-muted); }
+.theme-doc-markdown .readme-links a:hover { color: var(--venom-accent); text-decoration: none; }
 
 /* The introduction banner spans the reading panel without a media frame. */
 .theme-doc-markdown img[src$='/aspid_fasttools_readme_banner.gif'] {
@@ -899,6 +921,15 @@ html.docs-background-windows.docs-doc-page {
   mask-repeat: no-repeat;
   pointer-events: none;
 }
+/* Blue notices tint the real canvas visible through the article's cutout. */
+@media (min-width: 997px) {
+  .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
+    background: color-mix(in srgb, var(--venom-sapphire) 12%, transparent);
+  }
+  html[data-theme='dark'] .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
+    background: rgb(15 45 85 / 45%);
+  }
+}
 /* Keep the frame and image above the shared background. */
 .theme-doc-markdown .doc-profiler-panel {
   display: block;
@@ -917,29 +948,36 @@ html.docs-background-windows.docs-doc-page {
   .theme-doc-markdown .doc-profiler-panel > img.doc-zoom-image { border: 0; box-shadow: none; }
 }
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
+/* Feature table: the preview column carries the page, so it gets the width and a uniform height. */
 .theme-doc-markdown .readme-feature-table { table-layout: fixed; }
-.theme-doc-markdown .readme-feature-table :is(th, td):first-child { width: 25%; }
-.theme-doc-markdown .readme-feature-table :is(th, td):last-child { width: 34%; }
+.theme-doc-markdown .readme-feature-table :is(th, td):first-child { width: 22%; }
+.theme-doc-markdown .readme-feature-table :is(th, td):last-child { width: 46%; }
 .theme-doc-markdown .readme-feature-table td { vertical-align: middle; overflow-wrap: anywhere; }
+.theme-doc-markdown .readme-feature-table td:first-child a { font-weight: 600; }
+.theme-doc-markdown .readme-feature-table td:last-child { padding: 0.6rem; }
+.theme-doc-markdown .readme-feature-table tr:has(.theme-code-block) > td { height: 10rem; }
 .theme-doc-markdown .readme-feature-table .theme-code-block {
-  --ifm-pre-padding: 0.5rem;
-  width: 220px;
-  max-width: 100%;
-  margin: 0 auto;
+  --ifm-pre-padding: 0.6rem 0.75rem;
+  width: 100%;
+  margin: 0;
   border: 1px solid var(--venom-line-strong);
   border-radius: 6px;
 }
+.theme-doc-markdown .readme-feature-table .theme-code-block [class*='buttonGroup'] { display: none; }
 .theme-doc-markdown .readme-feature-table .theme-code-block pre {
   padding: 0;
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   line-height: 1.6;
 }
 .theme-doc-markdown .readme-feature-table img.doc-zoom-image[role='button'] {
-  width: 220px;
+  display: block;
+  width: 100%;
   max-width: 100%;
   height: auto;
   max-height: none;
+  aspect-ratio: 3 / 2;
   object-fit: contain;
+  object-position: center;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -959,6 +997,8 @@ html.docs-background-windows.docs-doc-page {
   }
   .theme-doc-markdown .readme-feature-table tbody tr:last-child { border-bottom: 0; }
   .theme-doc-markdown .readme-feature-table td { width: auto !important; padding: 0.5rem; border: 0; }
+  .theme-doc-markdown .readme-feature-table img.doc-zoom-image[role='button'] { aspect-ratio: auto; }
+  .theme-doc-markdown .readme-feature-table tr:has(.theme-code-block) > td { height: auto; }
   .theme-doc-markdown .readme-feature-table td:first-child { grid-column: 1 / -1; font-weight: 600; }
   .theme-doc-markdown .readme-feature-table td:last-child { align-self: center; }
   .theme-doc-markdown .readme-feature-table tr:has(.theme-code-block) td {

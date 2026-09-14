@@ -45,7 +45,9 @@ This installs the preview version covered by this documentation. Git must be ins
 
 ## Quick start
 
-Start with the [samples](../Samples~/README.md) to see the tools in action and explore their code.
+1. Install the package with the Git URL above.
+2. In **Window → Package Manager**, select **Aspid.FastTools**, open the **Samples** tab and import a sample.
+3. Open its scene and read the sample's README; the [samples overview](../Samples~/README.md) lists what each one shows.
 
 ## Documentation and samples
 
@@ -58,8 +60,6 @@ Start with the [samples](../Samples~/README.md) to see the tools in action and e
 
 Report bugs or ask questions in [GitHub Issues](https://github.com/VPDPersonal/Aspid.FastTools/issues). Include your Unity version, package version and steps to reproduce a problem.
 
-Once the package is available on the [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584), you can support development by purchasing it. **Not yet available in the store.**
+Once the package is available on the [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584), you can support development by purchasing it.
 
-## License
-
-[MIT](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE).
+Distributed under the [MIT License](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE).

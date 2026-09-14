@@ -63,6 +63,27 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
         && typeof attribute.value === 'string'
         && attribute.value.endsWith('/aspid_fasttools_readme_banner.gif'))) {
       banner.name = 'IntroBanner';
+      // The paragraph after the badges is the project lede; the next one is the link row.
+      const badges = tree.children.findIndex((node) => node.type === 'paragraph'
+        && node.children.some((part) => part.type === 'link'
+          && part.children.some((child) => child.type === 'image' && child.url.includes('status-badge-'))));
+      const addClass = (node, className) => {
+        if (node?.type !== 'paragraph') return;
+        node.data = {...node.data, hProperties: {...node.data?.hProperties, className}};
+      };
+      if (badges !== -1) {
+        addClass(tree.children[badges + 1], 'readme-lede');
+        const links = tree.children[badges + 2];
+        addClass(links, 'readme-links');
+        // On the site the "Documentation" link points at this very page: drop it and its separator.
+        const self = new RegExp(`^${siteUrl}${baseUrl}(?:[a-z-]+/)?docs/?$`);
+        if (links?.type === 'paragraph' && links.children[0]?.type === 'link' && self.test(links.children[0].url)) {
+          links.children.splice(0, 1);
+          if (links.children[0]?.type === 'text') {
+            links.children[0].value = links.children[0].value.replace(/^\s*[·|\-–—]\s*/, '');
+          }
+        }
+      }
       const features = tree.children.find((node) => node.type === 'table');
       if (features) {
         features.data = {...features.data, hProperties: {...features.data?.hProperties, className: 'readme-feature-table'}};

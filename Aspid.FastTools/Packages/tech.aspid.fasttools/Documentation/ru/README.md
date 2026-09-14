@@ -45,7 +45,9 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
 
 ## Быстрый старт
 
-Начните с [изучения примеров](../../Samples~/README.ru.md), чтобы попробовать инструменты в действии и разобраться в их коде.
+1. Установите пакет по Git URL выше.
+2. В **Window → Package Manager** выберите **Aspid.FastTools**, откройте вкладку **Samples** и импортируйте пример.
+3. Откройте его сцену и README; в [обзоре примеров](../../Samples~/README.ru.md) описано, что показывает каждый из них.
 
 ## Документация и примеры
 
@@ -58,8 +60,6 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
 
 Сообщайте об ошибках и задавайте вопросы в [GitHub Issues](https://github.com/VPDPersonal/Aspid.FastTools/issues). Для ошибки укажите версию Unity, версию пакета и шаги воспроизведения.
 
-После публикации в [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584) вы сможете поддержать разработку покупкой пакета. **Пока недоступен в магазине.**
+После публикации в [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584) вы сможете поддержать разработку покупкой пакета.
 
-## Лицензия
-
-[MIT](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE).
+Распространяется по [лицензии MIT](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE).
