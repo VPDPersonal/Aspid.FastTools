@@ -975,9 +975,6 @@ html.docs-background-windows.docs-doc-page {
   max-width: 100%;
   height: auto;
   max-height: none;
-  aspect-ratio: 3 / 2;
-  object-fit: contain;
-  object-position: center;
   border: 0;
   border-radius: 0;
   background: transparent;
@@ -997,7 +994,6 @@ html.docs-background-windows.docs-doc-page {
   }
   .theme-doc-markdown .readme-feature-table tbody tr:last-child { border-bottom: 0; }
   .theme-doc-markdown .readme-feature-table td { width: auto !important; padding: 0.5rem; border: 0; }
-  .theme-doc-markdown .readme-feature-table img.doc-zoom-image[role='button'] { aspect-ratio: auto; }
   .theme-doc-markdown .readme-feature-table tr:has(.theme-code-block) > td { height: auto; }
   .theme-doc-markdown .readme-feature-table td:first-child { grid-column: 1 / -1; font-weight: 600; }
   .theme-doc-markdown .readme-feature-table td:last-child { align-self: center; }
