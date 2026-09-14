@@ -121,7 +121,7 @@ function titleOf(markdown, file) {
 
 for (const file of files) {
   const filePath = path.join(apiDir, file);
-  let markdown = fs.readFileSync(filePath, 'utf8');
+  let markdown = fs.readFileSync(filePath, 'utf8').replace(/\r\n?/g, '\n');
   if (markdown.startsWith('---\n')) continue; // already processed
 
   markdown = convertXrefs(markdown);
@@ -146,7 +146,7 @@ for (const file of files) {
     '---',
     '',
   ].join('\n');
-  fs.writeFileSync(filePath, frontMatter + markdown);
+  fs.writeFileSync(filePath, frontMatter + markdown.replace(/, +$/gm, ','));
 }
 
 // ---- toc.yml → sidebar.js ------------------------------------------------------------------------

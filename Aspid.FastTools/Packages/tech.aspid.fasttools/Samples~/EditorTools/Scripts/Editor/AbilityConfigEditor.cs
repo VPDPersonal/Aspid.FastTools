@@ -34,8 +34,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var helpBox = new HelpBox("This ability costs no mana. Intentional?", HelpBoxMessageType.Warning)
                 .SetMarginTop(8);
 
-            // GetScriptName honors [AddComponentMenu]; AddOpenScriptCommand opens the script on double-click.
-            var title = new Label(target.GetScriptName())
+            // GetDisplayName honors [AddComponentMenu]; AddOpenScriptCommand opens the script on double-click.
+            var title = new Label(target.GetDisplayName())
                 .SetFlexGrow(1)
                 .SetFontSize(14)
                 .AddBoldUnityFontStyleAndWeight()

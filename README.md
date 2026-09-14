@@ -21,7 +21,7 @@ Tools for Unity that reduce repetitive code: pick and repair `SerializeReference
 |[ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-profiler-markers.md)|Generate a unique profiler marker per call site with `this.Marker()`|<pre lang="csharp"><code>using (this.Marker())<br />{<br />    Simulate();<br />}</code></pre>|
 |[VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-visual-element-extensions.md)|Build UI Toolkit trees with fluent chains|<pre lang="csharp"><code>new VisualElement()<br />  .SetPadding(8)<br />  .AddChild(<br />    new Label("Stats"));</code></pre>|
 |[SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-serialized-property-extensions.md)|Set values, resize arrays, and inspect the field type and owning object|<pre lang="csharp"><code>property<br />  .Update()<br />  .SetIntAndApply(42);</code></pre>|
-|[Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-editor-helpers.md)|Get readable script and object names for custom editors|<pre lang="csharp"><code>audio.GetScriptName();<br />// "Audio Source"<br /><br />secondAudio<br />  .GetScriptNameWithIndex();<br />// "Audio Source (2)"</code></pre>|
+|[Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-editor-helpers.md)|Get readable object and component display names for custom editors|<pre lang="csharp"><code>audio.GetDisplayName();<br />// "Audio Source"<br /><br />secondAudio<br />  .GetDisplayNameWithIndex();<br />// "Audio Source (2)"</code></pre>|
 
 ## Installation
 

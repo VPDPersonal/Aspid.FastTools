@@ -52,7 +52,7 @@
     },
     {
       "displayName": "EditorTools",
-      "description": "An editor window and a custom inspector built in code: fluent VisualElement extensions, ListView and binding, SerializedProperty setters, GetScriptName, AddOpenScriptCommand and TypeSelectorWindow as a public API.",
+      "description": "An editor window and a custom inspector built in code: fluent VisualElement extensions, ListView and binding, SerializedProperty setters, GetDisplayName, AddOpenScriptCommand and TypeSelectorWindow as a public API.",
       "path": "Samples~/EditorTools"
     },
     {

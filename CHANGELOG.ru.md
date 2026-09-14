@@ -7,6 +7,12 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 проект следует [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Изменено
+
+- `GetScriptName()` переименован в `GetDisplayName()`, а `GetScriptNameWithIndex()` — в `GetDisplayNameWithIndex()`; замените старые вызовы новыми именами. Оба метода возвращают `string.Empty` для null и уничтоженных объектов. Поиск индекса компонента использует список из пула вместо временных массивов и LINQ.
+
 ## [1.0.0-rc.8] — 2026-09-06
 
 Первый релиз. Unity **6000.0**, сборки `Aspid.FastTools` / `Aspid.FastTools.Editor`, предсобранные Roslyn-DLL `Aspid.FastTools.Generators` / `Aspid.FastTools.Analyzers`. Все инспекторные возможности работают и в IMGUI, и в UI Toolkit.

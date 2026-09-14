@@ -1,30 +1,20 @@
 # SerializeReference Selector
 
-Стандартный Inspector не умеет заполнять поля `[SerializeReference]`: managed-ссылку нельзя
-создать из UI, а при переименовании или удалении типа Unity молча очищает данные.
-SerializeReference Selector закрывает оба пробела: выпадающий выбор реализации прямо
-в Инспекторе плюс точечная починка сломанных ссылок у самого поля. Аудит по всему проекту,
-массовая починка и build/CI-гейт — в [SerializeReference Tooling](04-serialize-reference-tooling.md).
+Выбирайте реализацию интерфейса или базового класса прямо в поле `[SerializeReference]`. Селектор создаёт экземпляр, показывает его поля и переносит совместимые данные при смене типа. Если сохранённый тип потерян, действия восстановления появляются рядом с полем.
 
-**Разделы справочника:**
+![Смена Pistol на Shotgun сохраняет Damage = 37 и добавляет поле Pellets](../Images/aspid_fasttools_serialize_reference_selector.gif)
 
-* [`Inspector type dropdown`](#inspector-type-dropdown) — дропдаун `[TypeSelector]`
-  на полях `[SerializeReference]`: выбор реализации, вложенный inspector, generics,
-  copy/paste;
-* [`Repairing broken references`](#repairing-broken-references) — жёлтое предупреждение
-  вместо молчаливой очистки, **Fix** / **Smart Fix** / **Make unique**.
+Смена Pistol на Shotgun сохраняет Damage = 37 и добавляет поле Pellets
 
-## Inspector type dropdown
+<a id="inspector-type-dropdown"></a>
 
-Добавьте `[TypeSelector]` рядом с `[SerializeReference]` — Inspector заменит стандартный
-UI managed-ссылки иерархическим [окном выбора типа](02-serializable-types.md#typeselectorwindow) с поиском.
-Вы прямо в инспекторе выбираете, какая конкретная реализация типа поля будет создана;
-`<None>` очищает ссылку.
+## Быстрый старт
+
+Добавьте `[TypeSelector]` рядом с `[SerializeReference]`. Реализации должны быть сериализуемыми классами, совместимыми с типом поля.
 
 ```csharp
 using System;
 using UnityEngine;
-using System.Collections.Generic;
 using Aspid.FastTools.Types;
 
 public interface IWeapon
@@ -35,59 +25,100 @@ public interface IWeapon
 [Serializable]
 public sealed class Pistol : IWeapon
 {
-    [SerializeField] [Min(0)] private int _damage = 10;
+    [SerializeField, Min(0)] private int _damage = 10;
 
     public void Fire() => Debug.Log($"Pistol: {_damage} dmg");
+}
+
+[Serializable]
+public sealed class Shotgun : IWeapon
+{
+    [SerializeField, Min(0)] private int _damage = 20;
+    [SerializeField, Min(1)] private int _pellets = 6;
+
+    public void Fire() => Debug.Log($"Shotgun: {_damage} dmg, {_pellets} pellets");
 }
 
 public sealed class Loadout : MonoBehaviour
 {
     [TypeSelector]
     [SerializeReference] private IWeapon _primary;
-
-    [TypeSelector]
-    [SerializeReference] private List<IWeapon> _sidearms;
 }
 ```
 
-Атрибут существует только в редакторе (`[Conditional("UNITY_EDITOR")]`) и не несёт
-стоимости в рантайме. Работает с одиночными полями, массивами и `List<T>`, в инспекторах
-IMGUI и UIToolkit. Тот же атрибут работает и с полями `string` и `SerializableType` —
-см. [TypeSelectorAttribute](02-serializable-types.md#typeselectorattribute).
+1. Добавьте `Loadout` на GameObject и откройте поле **Primary**.
+2. Выберите **Pistol** и измените **Damage** на `37`.
+3. Переключите тип на **Shotgun**: значение **Damage** сохранится, рядом появится **Pellets**.
+4. Выберите `<None>`, чтобы очистить ссылку.
 
-![При смене Pistol на Shotgun сохраняется Damage = 37 и появляется поле Pellets](../Images/aspid_fasttools_serialize_reference_selector.gif)
+Готовая сцена с оружием и вложенными модификаторами есть в [примере SerializeReferences](../../Samples~/SerializeReferences/Documentation/README.ru.md).
 
-| Возможность | Что делает |
+## Настройка выбора
+
+| Задача | Как сделать |
 |---|---|
-| **Выбор реализации** | В списке — конкретные классы (не наследники `UnityEngine.Object`), совместимые с типом поля. `[TypeSelector(typeof(IMelee))]` сужает список до реализаций `IMelee`, а `[TypeSelectorDisplay(Hidden = true)]` убирает из пикера отдельный тип. |
-| **Open generics** | `Modifier<T>` и подобные: аргументы выводятся из поля — в том числе через реализуемые им интерфейсы, поэтому поле `IConverter<string, string>` сразу закрывает кандидата `Sequence<T> : IConverter<T, T>`, — либо выбираются на второй странице селектора, если поле оставляет параметр неопределённым. Определённый кандидат показывается в списке закрытым (`Sequence<String>`), так что строка называет то, что создастся. Кандидат, которого не закрыть под поле ни одним аргументом, не показывается вовсе — `ToString<TFrom> : IConverter<TFrom, string>` отсутствует у поля `IConverter<float, float>`, — при этом объявленная вариантность учитывается, поэтому для `IConverter<float, object>` он остаётся. Аргумент обязан быть сериализуемым только там, где кандидат его хранит: кандидат, держащий `T` за `[SerializeReference]`, закрывается любым `T`, — а страница аргументов по-прежнему предлагает только сериализуемые типы. |
-| **Вложенные ссылки** | Поле `[SerializeReference]` (или массив/список) *внутри* назначенного экземпляра получает тот же дропдаун, поэтому граф настраивается на всю глубину без аннотаций на каждом уровне — на 8 уровней, дальше отрисовку снова ведёт Unity. Дочернее поле, для которого у Unity уже есть drawer (собственный `[TypeSelector]` или зарегистрированный для его типа `[CustomPropertyDrawer]`), этот drawer сохраняет. |
-| **Сохранение данных** | При смене типа поля, совпадающие по имени и сериализуемой форме, переносятся, а не сбрасываются в значения по умолчанию. |
-| **Copy / Paste** | Правый клик по заголовку копирует значение и вставляет его независимым экземпляром в любое совместимое поле. |
-| **Мультивыделение** | Смешанное выделение показывает смешанное состояние dropdown; выбор или вставка применяется к каждому объекту в одной группе Undo. |
-| **Проверка компилятором** | Анализатор Roslyn: `AFT0004` (ошибка) — тип наследует `UnityEngine.Object`; `AFT0005` (предупреждение) — селектор оказался бы пустым. |
+| Ограничить реализации дополнительным интерфейсом | `[TypeSelector(typeof(IMelee))]`, где `IMelee` — ваш интерфейс |
+| Сделать заполнение обязательным | `[TypeSelector(Required = true)]` |
+| Изменить имя, группу или иконку кандидата | [`TypeSelectorDisplay`](02-serializable-types.md#typeselectordisplay) на классе |
+| Скрыть класс из обычного выбора | `[TypeSelectorDisplay(Hidden = true)]` |
+| Хранить несколько реализаций | Добавить оба атрибута к массиву или `List<IWeapon>` |
 
-Пустое поле с `[TypeSelector(Required = true)]` показывает предупреждение «required»
-в инспекторе и считается нарушением для
-[build/CI-гейта](04-serialize-reference-tooling.md#project-settings--the-buildci-gate) —
-см. свойство `Required` в [TypeSelectorAttribute](02-serializable-types.md#typeselectorattribute).
+`Required` показывает предупреждение у пустого поля. Для проверки таких полей в CI нужен флаг [`-srGateRequired`](04-serialize-reference-tooling.md#запуск-в-ci).
 
-## Repairing broken references
+Атрибут работает в инспекторах IMGUI и UI Toolkit и не попадает в сборку плеера. Для хранения **имени типа** в строке или обёртке используйте [Serializable Type System](02-serializable-types.md).
 
-Когда сохранённый в ассете тип перестаёт резолвиться или два поля незаметно делят
-один экземпляр, селектор не молчит — каждая проблема получает заметку в инспекторе
-и кнопку починки рядом:
+## Работа с данными
 
-| Случай | Решение |
-|---|---|
-| **Потерянный тип** (переименован или удалён) | Жёлтое предупреждение вместо молчаливой очистки. Подчёркнутое **Fix** открывает селектор и переназначает тип с сохранением данных — на любой глубине, в сохранённых ассетах и прямо в Prefab Mode. |
-| **Smart Fix** | Рядом с **Fix** предлагает наиболее вероятную замену (`[MovedFrom]`, другой namespace/сборка, регистр, близкое имя) и применяет в один клик — никогда не автоматически. |
-| **Общая ссылка** (два поля делят экземпляр) | Помечается лейблом; **Make unique** расщепляет её в независимую копию. Дублирование элемента списка (Ctrl+D, `+`) больше не создаёт алиас. |
+При смене реализации переносятся поля, совпадающие по имени и сериализуемой форме. Новые поля получают значения нового экземпляра; перенос несовместимых полей не гарантируется.
 
-![Заметка Missing type с кнопками Fix и Smart Fix на сломанной managed-ссылке](../Images/aspid_fasttools_serialize_reference_repair.png)
+Правый клик по заголовку открывает **Copy / Paste**. Вставка создаёт независимый экземпляр в совместимом поле. При мультивыделении выбор типа или вставка применяется к каждому объекту в одной группе Undo; разные исходные значения отображаются как смешанное состояние.
 
-![Заметка Shared reference с действием Make unique на двух полях, делящих один экземпляр](../Images/aspid_fasttools_serialize_reference_make_unique.png)
+### Вложенные ссылки
 
-Про аудит и массовую починку по всему проекту — см.
-[Bulk repair tabs](04-serialize-reference-tooling.md#bulk-repair-tabs).
+Внутренние поля `[SerializeReference]`, включая массивы и списки, получают такой же селектор без повторения `[TypeSelector]` на каждом уровне. Автоматическая отрисовка охватывает восемь уровней вложенности, после чего используется стандартная отрисовка Unity.
 
+Если у дочернего поля уже есть собственный `[TypeSelector]` или `[CustomPropertyDrawer]` для его типа, этот drawer сохраняется.
+
+### Generic-типы
+
+Селектор умеет закрывать generic-кандидатов по типу поля. Например, для поля `IConverter<string, string>` кандидат `Sequence<T> : IConverter<T, T>` показывается как `Sequence<String>`. Если аргумент вывести нельзя, окно предлагает выбрать его на отдельной странице.
+
+<details>
+<summary>Совместимость и ограничения generic-аргументов</summary>
+
+Кандидат исключается, если его нельзя закрыть под тип поля. Например, `ToString<TFrom> : IConverter<TFrom, string>` не подходит полю `IConverter<float, float>`. Если выходной параметр `IConverter` объявлен ковариантным, он может подойти полю `IConverter<float, object>`.
+
+Аргумент, выведенный из поля, обязан быть сериализуемым как значение только там, где кандидат хранит его как значение. Параметр, используемый за `[SerializeReference]`, проверяется по правилам managed-ссылок. Страница ручного выбора аргументов предлагает сериализуемые типы.
+
+</details>
+
+<a id="repairing-broken-references"></a>
+
+## Восстановление потерянного типа
+
+После переименования, переноса или удаления класса сохранённое имя типа может перестать разрешаться. У поля появляется **Missing type**; пока данные ссылки остаются в ассете, их можно переназначить существующей реализации.
+
+![Потерянная ссылка с действиями Fix и Smart Fix в инспекторе](../Images/aspid_fasttools_serialize_reference_repair.png)
+
+Потерянная ссылка с действиями Fix и Smart Fix в инспекторе
+
+- **Fix** открывает окно выбора замены и переназначает тип с сохранением данных. Работает во вложенных полях, сохранённых ассетах и Prefab Mode.
+- **Smart Fix** предлагает вероятную замену по `[MovedFrom]`, имени, namespace или сборке. Применяется только по нажатию пользователя.
+
+Для проверки и восстановления сразу нескольких ассетов переходите к [SerializeReference Tooling](04-serialize-reference-tooling.md).
+
+## Общие ссылки и Make unique
+
+Два поля могут хранить один экземпляр: изменение его данных отразится в обоих местах. Селектор помечает такое состояние как **Shared reference**.
+
+![Действие Make unique создаёт независимую копию общей ссылки](../Images/aspid_fasttools_serialize_reference_make_unique.png)
+
+Действие Make unique создаёт независимую копию общей ссылки
+
+Нажмите **Make unique**, если поля должны редактироваться независимо. Автоматическое создание независимой копии при дублировании элемента списка управляется настройкой **Auto de-alias duplicated list elements** в [настройках FastTools](04-serialize-reference-tooling.md#проверка-перед-сборкой).
+
+## Если нужного типа нет в списке
+
+Проверьте, что класс сериализуемый, конкретный, совместим с типом поля и дополнительными ограничениями, не наследует `UnityEngine.Object` и не помечен `Hidden = true`.
+
+Анализатор помогает найти ошибки до открытия инспектора: `AFT0004` сообщает о несовместимости с `UnityEngine.Object`, `AFT0005` предупреждает о потенциально пустом селекторе.

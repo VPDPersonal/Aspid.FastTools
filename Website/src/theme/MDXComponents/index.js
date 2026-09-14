@@ -8,6 +8,10 @@ function ReadmeLink(props) {
   return <Link {...props} autoAddBaseUrl={false} target="_self" />;
 }
 
+function DocTable(props) {
+  return <div className="doc-table-scroll"><table {...props} /></div>;
+}
+
 function IntroBanner(props) {
   const {toc, frontMatter} = useDoc();
   return <>
@@ -16,4 +20,4 @@ function IntroBanner(props) {
   </>;
 }
 
-export default {...MDXComponents, IntroBanner, ReadmeLink};
+export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink};

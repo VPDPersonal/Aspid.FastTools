@@ -19,7 +19,7 @@
 | [ProfilerMarkers](05-profiler-markers.md) | Уникальный маркер профилирования для каждого места вызова через `this.Marker()` | <pre lang="csharp"><code>using (this.Marker())<br />&#123;<br />    Simulate();<br />&#125;</code></pre> |
 | [VisualElement Extensions](07-visual-element-extensions.md) | Построение деревьев UI Toolkit fluent-цепочками | <pre lang="csharp"><code>new VisualElement()<br />  .SetPadding(8)<br />  .AddChild(<br />    new Label("Stats"));</code></pre> |
 | [SerializedProperty Extensions](08-serialized-property-extensions.md) | Запись значений, изменение размера массивов, получение типа поля и объекта-владельца | <pre lang="csharp"><code>property<br />  .Update()<br />  .SetIntAndApply(42);</code></pre> |
-| [Editor Helpers](09-editor-helpers.md) | Читаемые имена скриптов и объектов для редакторских инструментов | <pre lang="csharp"><code>audio.GetScriptName();<br />// "Audio Source"<br /><br />secondAudio<br />  .GetScriptNameWithIndex();<br />// "Audio Source (2)"</code></pre> |
+| [Editor Helpers](09-editor-helpers.md) | Читаемые подписи объектов и компонентов для редакторских инструментов | <pre lang="csharp"><code>audio.GetDisplayName();<br />// "Audio Source"<br /><br />secondAudio<br />  .GetDisplayNameWithIndex();<br />// "Audio Source (2)"</code></pre> |
 
 ## Установка
 

@@ -372,14 +372,6 @@ pre {
   font-size: 0.9rem;
 }
 
-@media (max-width: 996px) {
-  .markdown table {
-    display: block;
-    max-width: 100%;
-    overflow-x: auto;
-  }
-}
-
 /* The header shares the <details> surface; body rows alternate the reading panel and code-block backgrounds. */
 .markdown table th {
   background: var(--venom-disclosure-surface);
@@ -791,7 +783,16 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .markdown li::marker { color: var(--venom-muted); }
 .markdown :not(pre) > code { overflow-wrap: anywhere; border-radius: 4px; font-size: 0.875em; }
 .markdown pre code { overflow-wrap: normal; }
-.markdown table { display: block; max-width: 100%; overflow-x: auto; border-collapse: separate; border-spacing: 0; border: 2px solid var(--venom-line-strong); border-radius: 12px; }
+.markdown table { border-collapse: separate; border-spacing: 0; }
+/* Keep the table grid full-width; its wrapper handles clipping and horizontal scrolling. */
+.markdown .doc-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: var(--ifm-leading);
+  border: 2px solid var(--venom-line-strong);
+  border-radius: 12px;
+}
+.markdown .doc-table-scroll > table { margin-bottom: 0; }
 .theme-code-block { margin-block: 1.5rem; }
 .prism-code { font-size: 0.875rem; }
 .theme-admonition { margin-block: 1.5rem; }

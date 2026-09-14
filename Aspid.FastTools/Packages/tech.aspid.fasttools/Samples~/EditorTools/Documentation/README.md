@@ -26,7 +26,7 @@ Halve cooldown, +5 MP updates both the fields and effect description; Undo resto
 2. **Binding.** The detail pane's fields are plain `PropertyField`s under one container with `.BindTo(serializedObject)`. Edit the name: the list updates, the asset is dirty, Undo works, and the standard Inspector shows the same value.
 3. **Typed property setters.** Press **Halve cooldown, +5 MP**. The handler chains `SetFloat` and `SetIntAndApply` on `SerializedProperty` instead of touching the asset directly, so the change is one Undo step and lands in the file.
 4. **The type picker from code.** Press **Change…** next to `Effect`. `TypeSelectorWindow.Show` opens the same searchable window `[TypeSelector]` uses, anchored to the button and filtered to `IAbilityEffect` implementations; the result is written into a `string` property. Pick `HealEffect`. Change `Mana Cost` in the window or Inspector, then Undo/Redo: the effect description follows the data.
-5. **Display names and script access.** The pane title is `config.GetScriptName()`, which honors `[AddComponentMenu]` when present. Double-click it: `AddOpenScriptCommand` opens `AbilityConfig.cs` in your IDE.
+5. **Display names and script access.** The pane title is `config.GetDisplayName()`, which honors `[AddComponentMenu]` when present. Double-click it: `AddOpenScriptCommand` opens `AbilityConfig.cs` in your IDE.
 6. **The inspector.** Select `Data/Sprint.asset` in the Project window. `AbilityConfigEditor` draws a card with a status badge and a warning `HelpBox` that appears only while `Mana Cost` is `0`; `PropertyField.AddValueChanged` drives both. Set the cost to `10` and back.
 7. **Create.** Press **Create** to add an asset next to the selected one; it appears in the list, selected.
 
@@ -34,7 +34,7 @@ Halve cooldown, +5 MP updates both the fields and effect description; Undo resto
 
 | File | Shows |
 |---|---|
-| `Scripts/Editor/AbilityCatalogWindow.cs` | `ListView` extensions, `BindTo`, `SetFloat` / `SetIntAndApply`, `TypeSelectorWindow.Show` with a `TypeSelectorFilter`, `GetScriptName`, `AddOpenScriptCommand` |
+| `Scripts/Editor/AbilityCatalogWindow.cs` | `ListView` extensions, `BindTo`, `SetFloat` / `SetIntAndApply`, `TypeSelectorWindow.Show` with a `TypeSelectorFilter`, `GetDisplayName`, `AddOpenScriptCommand` |
 | `Scripts/Editor/AbilityConfigEditor.cs` | A reactive custom inspector with the style and layout setters |
 | `Scripts/AbilityConfig.cs` | The data; `[TypeSelector]` on the effect string so the plain Inspector gets the same picker |
 | `Scripts/Effects/` | The candidate types the picker offers |
