@@ -35,9 +35,7 @@ namespace Aspid.FastTools.Editors
         public static string GetDisplayNameWithIndex(this Component targetComponent)
         {
             if (!targetComponent) return string.Empty;
-#if d
 
-  #endif
             var type = targetComponent.GetType();
             var displayName = targetComponent.GetDisplayName();
             using var pooled = ListPool<Component>.Get(out var components);
