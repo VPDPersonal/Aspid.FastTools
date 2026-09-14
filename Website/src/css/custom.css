@@ -598,6 +598,16 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
   .theme-doc-toc-desktop > .table-of-contents { padding: 0; border: none; }
   .theme-doc-toc-desktop .table-of-contents li { margin: 0.25rem 0; }
   .theme-doc-toc-desktop .table-of-contents__link { padding: 0.4rem 0.75rem; line-height: 1.5; }
+
+  /* Subsections hang off a hairline under their section, smaller and quieter, so the outline reads at a glance. */
+  .theme-doc-toc-desktop .table-of-contents ul {
+    margin: 0.1rem 0 0.4rem 0.75rem;
+    padding-left: 0.5rem;
+    border-left: 1px solid var(--venom-line-strong);
+  }
+  .theme-doc-toc-desktop .table-of-contents ul li { margin: 0.1rem 0; }
+  .theme-doc-toc-desktop .table-of-contents ul .table-of-contents__link { padding: 0.3rem 0.6rem; font-size: 0.8125rem; color: var(--venom-muted); }
+  .theme-doc-toc-desktop .table-of-contents ul .table-of-contents__link:hover { color: var(--venom-fg-strong); }
 }
 
 /* Keep the article column stable even when the page has no table of contents. */
@@ -760,13 +770,15 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .doc-menu-group > .menu__list-item-collapsible:hover {
   margin: 1.6rem 0 0.35rem;
   background: transparent;
+  border-bottom: 1px solid var(--venom-line);
 }
+/* The first section sits as close to the header rule as "Введение" does in the docs sidebar. */
+.theme-doc-sidebar-menu > .doc-menu-group:first-child > .menu__list-item-collapsible { margin-top: 0.35rem; }
 .doc-menu-group > .menu__list-item-collapsible > .menu__link,
 .doc-menu-group > .menu__list-item-collapsible > .menu__link:hover {
   padding: 0 0 0.3rem 0.25rem;
   background: transparent;
   box-shadow: none;
-  border-bottom: 1px solid var(--venom-line);
   border-radius: 0;
   color: var(--venom-muted);
   font: 500 0.9rem/1.4 var(--ifm-heading-font-family);
@@ -774,7 +786,26 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
   text-transform: none;
   cursor: default;
 }
-.api-namespace > .menu__list-item-collapsible .menu__link { text-transform: none; letter-spacing: 0; font-size: 0.8125rem; }
+/* API: the section title is a real link to the namespace page. */
+.api-namespace > .menu__list-item-collapsible > .menu__link { cursor: pointer; }
+.api-namespace > .menu__list-item-collapsible > .menu__link:hover { color: var(--venom-fg-strong); }
+.api-namespace > .menu__list-item-collapsible > .menu__link--active,
+.api-namespace > .menu__list-item-collapsible > .menu__link--active:hover { color: var(--venom-accent); background: transparent; }
+/* The caret is its own control beside the title: it folds the section, the title navigates. */
+.api-namespace > .menu__list-item-collapsible > .menu__caret {
+  align-self: flex-start;
+  margin: -0.15rem 0 0;
+  padding: 0.15rem;
+  border-radius: 6px;
+  opacity: 0.55;
+}
+.api-namespace > .menu__list-item-collapsible > .menu__caret:hover { opacity: 1; background: var(--venom-glow-soft); }
+.api-namespace > .menu__list-item-collapsible > .menu__caret::before,
+.api-namespace > .menu__list-item-collapsible > .menu__link--sublist-caret::after { width: 1rem; height: 1rem; background-size: 1.25rem 1.25rem; }
+.api-namespace > .menu__list-item-collapsible > .menu__link--sublist-caret::after { margin-right: 0.15rem; opacity: 0.55; }
+/* Expanded lists hang off a hairline, in the API sidebar at both levels. */
+.api-namespace > .menu__list,
+.api-overloads > .menu__list { margin: 0.1rem 0 0.4rem 0.75rem; padding-left: 0.5rem; border-left: 1px solid var(--venom-line-strong); }
 .table-of-contents { font-size: 0.875rem; line-height: 1.6; }
 .table-of-contents li { margin-block: 0.65rem; }
 .markdown > :is(p, ul, ol, blockquote) { max-width: 76ch; }
