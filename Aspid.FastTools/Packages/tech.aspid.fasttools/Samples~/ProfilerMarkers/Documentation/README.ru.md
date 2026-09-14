@@ -8,9 +8,9 @@ using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (lin
     ComputeSteering(neighborRadius);
 ```
 
-![Поиск Flock показывает сгенерированные имена маркеров. У Steering.Agent — 120 вызовов на 120 агентов; время зависит от машины.](Images/profiler-markers.png)
+![Дерево Flock показывает вложенность сгенерированных маркеров. У Steering.Agent — 120 вызовов на 120 агентов; время зависит от машины.](Images/profiler-markers.png)
 
-Поиск Flock показывает сгенерированные имена маркеров. У Steering.Agent — 120 вызовов на 120 агентов; время зависит от машины.
+Дерево Flock показывает вложенность сгенерированных маркеров. У Steering.Agent — 120 вызовов на 120 агентов; время зависит от машины.
 
 ## Как открыть
 

@@ -8,9 +8,9 @@ using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (lin
     ComputeSteering(neighborRadius);
 ```
 
-![Filter by Flock to see generated marker names. Steering.Agent has 120 calls for 120 agents; timings vary by machine.](Images/profiler-markers.png)
+![The Flock tree shows how generated markers nest. Steering.Agent has 120 calls for 120 agents; timings vary by machine.](Images/profiler-markers.png)
 
-Filter by Flock to see generated marker names. Steering.Agent has 120 calls for 120 agents; timings vary by machine.
+The Flock tree shows how generated markers nest. Steering.Agent has 120 calls for 120 agents; timings vary by machine.
 
 ## Open it
 

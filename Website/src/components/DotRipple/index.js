@@ -138,7 +138,11 @@ export default function DotRipple() {
     const onPointerDown = (event) => {
       if (event.button !== 0) return;
       if (!document.documentElement.classList.contains('docs-doc-page')) return;
-      if (!(event.target instanceof Element) || event.target.closest(CONTENT)) return;
+      if (!(event.target instanceof Element)) return;
+      const backgroundWindow = event.target.closest('.doc-background-window');
+      if (backgroundWindow) {
+        if (event.target.closest('a, button, [role="button"]')) return;
+      } else if (event.target.closest(CONTENT)) return;
       colors = readColors();
       waves.push({x: event.clientX, y: event.clientY, start: performance.now()});
       if (waves.length > MAX_WAVES) waves.shift();

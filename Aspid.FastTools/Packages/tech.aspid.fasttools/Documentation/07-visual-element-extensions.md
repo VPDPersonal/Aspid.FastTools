@@ -1,23 +1,994 @@
 # VisualElement Extensions
 
-Fluent extension methods for building UIToolkit trees in code. All methods return `T` (the element itself) for chaining.
+UI Toolkit extensions for building element trees, setting styles, subscribing to events, and binding editor fields. Methods return the configured element so calls can be chained.
+
+<a id="example"></a>
+
+## Quick start
+
+Add `using Aspid.FastTools.UIElements;` to a script that imports `UnityEngine.UIElements`. These examples create the same panel with a heading:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>var title = new Label("Stats");<br />title.style.fontSize = 18;<br /><br />var panel = new VisualElement();<br />panel.style.paddingLeft = 12;<br />panel.style.paddingRight = 12;<br />panel.style.paddingTop = 8;<br />panel.style.paddingBottom = 8;<br />panel.Add(title);</code></pre> | <pre lang="csharp"><code>var panel = new VisualElement()<br />    .SetPaddingX(12)<br />    .SetPaddingY(8)<br />    .AddChild(new Label("Stats")<br />        .SetFontSize(18));</code></pre> |
+
+Add `panel` to an editor window's `rootVisualElement` or a runtime UI's `UIDocument.rootVisualElement`.
+
+<details>
+<summary>Complete example: a Stats window with a button</summary>
+
+Create `StatsWindow.cs` in an `Editor` folder:
 
 ```csharp
-using Aspid.FastTools.UIElements;         // runtime extensions
-using Aspid.FastTools.UIElements.Editors; // editor-only extensions (e.g. AddOpenScriptCommand)
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements;
+
+public sealed class StatsWindow : EditorWindow
+{
+    [MenuItem("Tools/Stats")]
+    private static void Open() => GetWindow<StatsWindow>("Stats");
+
+    public void CreateGUI()
+    {
+        rootVisualElement
+            .SetPadding(12)
+            .AddChild(new Label("Stats").SetFontSize(18))
+            .AddChild(new Button(() => Debug.Log("Refresh"))
+                .SetText("Refresh")
+                .SetMarginTop(8));
+    }
+}
 ```
 
-## Example
+Open **Tools → Stats**. The **Refresh** button prints a message to the Console.
 
-A reactive editor for an `AbilityConfig` `ScriptableObject` — title and status pill in the header, and a Warning `HelpBox` that toggles based on `ManaCost`.
+</details>
+
+### Reading a chain
+
+Setters preserve the type: `new Button().SetText("Refresh")` returns a `Button`. Child operations return the **parent**, so the next call continues configuring it:
 
 ```csharp
+var panel = new VisualElement()
+    .AddChild(new Label("Health").SetFontSize(14))
+    .SetMarginTop(12); // margin on panel
+```
+
+Chains on `element.style`, `textField.textEdition`, and `textField.textSelection` return their respective interfaces. Query methods such as `IsFocused()`, `GetOwnerWindow()`, and `TryGetByEnum(...)` return the query result.
+
+Core extensions work in both the editor and the game. `SerializedObject` binding and editor commands also require `Aspid.FastTools.UIElements.Editors`; put that code in an editor assembly, such as an `Editor` folder.
+
+## Find an extension
+
+| Task | Section |
+|---|---|
+| Build a tree, set a name, or enable an element | [Elements and children](#elements-and-children) |
+| Control focus and keyboard navigation | [Focus](#focus) |
+| Attach USS and switch classes | [USS and classes](#uss-and-classes) |
+| Set dimensions, spacing, colours, and borders | [Styles](#styles) |
+| Set a field value and subscribe to changes | [Values and events](#values-and-events) |
+| Configure a button, field, or image | [Specific elements](#specific-elements) |
+| Create a list that reuses rows | [Lists and trees](#lists-and-trees) |
+| Bind a SerializedObject or open a script | [Editor extensions](#editor-extensions) |
+| Read a custom USS property as an enum | [Custom USS properties](#custom-uss-properties) |
+
+<a id="core-element-operations"></a>
+
+## Elements and children
+
+Here, `panel` is the parent; `title`, `content`, and `warning` are existing elements; and `showWarning` controls whether to add the warning:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.name = "ability-panel";<br />panel.Add(title);<br />panel.Add(content);<br />if (showWarning)<br />    panel.Add(warning);</code></pre> | <pre lang="csharp"><code>panel<br />    .SetName("ability-panel")<br />    .AddChildren(title, content)<br />    .AddChildIf(showWarning, warning);</code></pre> |
+| <pre lang="csharp"><code>panel.Insert(0, title);<br />panel.Remove(content);<br />panel.RemoveAt(0);<br />panel.Clear();</code></pre> | <pre lang="csharp"><code>panel<br />    .InsertChild(0, title)<br />    .RemoveChild(content)<br />    .RemoveChildAt(0)<br />    .ClearChildren();</code></pre> |
+
+These methods return the parent element, so they can be chained. `AddChildren` and `InsertChildren` preserve the order of the supplied elements.
+
+`*If` checks the condition only at call time. Arguments are evaluated first: `AddChildIf(false, new Label("Warning"))` creates the `Label` but does not add it to the tree. Use a normal `if` when construction is expensive.
+
+<details>
+<summary>All element and child operations</summary>
+
+| Method | Description |
+|-------|----------|
+| `SetName(string)` | Sets `element.name` |
+| `SetVisible(bool)` | Sets `element.visible` |
+| `SetTooltip(string)` | Sets `element.tooltip` |
+| `SetUserData(object)` | Sets `element.userData` |
+| `SetEnabledSelf(bool)` | Calls `element.SetEnabled` to control interaction |
+| `SetPickingMode(PickingMode)` | Sets `element.pickingMode` |
+| `SetUsageHints(UsageHints)` | Sets `element.usageHints`; configure before attaching the element to a panel |
+| `SetViewDataKey(string)` | Sets `element.viewDataKey` |
+| `SetLanguageDirection(LanguageDirection)` | Sets `element.languageDirection` |
+| `SetDisablePlayModeTint(bool)` | Sets `element.disablePlayModeTint` |
+| `SetDataSource(object)` | Sets `element.dataSource` |
+| `SetDataSourceType(Type)` | Sets `element.dataSourceType` |
+| `SetDataSourcePath(PropertyPath)` | Sets `element.dataSourcePath` |
+| `AddChild(VisualElement)` | Appends a child, returns the parent |
+| `AddChildren(params VisualElement[])` | Appends multiple children |
+| `InsertChild(int, VisualElement)` | Inserts a child at the specified index |
+| `InsertChildren(int, params VisualElement[])` | Inserts multiple children starting at an index |
+| `RemoveChild(VisualElement)` | Removes a child, returns the parent |
+| `RemoveChildAt(int)` | Removes the child at the specified index |
+| `ClearChildren()` | Removes all children |
+
+`AddChildren` and `InsertChildren` accept `params VisualElement[]`, `IEnumerable<VisualElement>`, `List<VisualElement>`, `Span<VisualElement>`, and `ReadOnlySpan<VisualElement>`.
+
+> Every child operation has an `*If` variant (`AddChildIf`, `AddChildrenIf`, `InsertChildIf`, `InsertChildrenIf`, `RemoveChildIf`, `RemoveChildAtIf`, `ClearChildrenIf`) with a leading `bool condition`. It runs only when `condition == true`.
+
+</details>
+
+### Visibility and interaction
+
+Choose how hiding or disabling should behave. The rows show separate alternatives:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>element.visible = false;<br />element.style.display =<br />    DisplayStyle.None;<br />element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>element.SetVisible(false);<br />element.SetDisplay(DisplayStyle.None);<br /><br />element.SetEnabledSelf(false);</code></pre> |
+
+| Call | Result |
+|---|---|
+| `SetVisible(false)` | Hides the element while retaining its layout space |
+| `SetDisplay(DisplayStyle.None)` | Removes the element and its descendants from rendering and layout |
+| `SetEnabledSelf(false)` | Disables interaction with the element and its descendants |
+
+Restore the element with `SetVisible(true)`, `SetDisplay(DisplayStyle.Flex)`, or `SetEnabledSelf(true)`, respectively. A child's enabled state also depends on its parents.
+
+<a id="focusable"></a>
+
+## Focus
+
+For a `search` element already attached to a panel:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>search.focusable = true;<br />search.tabIndex = 0;<br />search.Focus();</code></pre> | <pre lang="csharp"><code>search<br />    .SetFocusable(true)<br />    .SetTabIndex(0)<br />    .FocusSelf();</code></pre> |
+
+`FocusSelf()` calls the normal `Focus()`: the element must be focusable. `IsFocused()` compares the element with `focusController.focusedElement` and returns `false` when detached.
+
+| Method | Description |
+|-------|----------|
+| `FocusSelf()` | Attempts to give focus to the element |
+| `BlurSelf()` | Tells the element to release focus |
+| `IsFocused()` | Returns whether the element currently has keyboard focus |
+| `SetTabIndex(int)` | Sets `element.tabIndex` |
+| `SetFocusable(bool)` | Sets `element.focusable` |
+| `SetDelegatesFocus(bool)` | Sets `element.delegatesFocus` |
+
+<a id="uss--class-operations"></a>
+
+## USS and classes
+
+Here, `sheet` is a loaded `StyleSheet`, and `isSelected` is the panel's current selection state:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.styleSheets.Add(sheet);<br />panel.AddToClassList("ability-card");<br />panel.EnableInClassList(<br />    "selected", isSelected);</code></pre> | <pre lang="csharp"><code>panel<br />    .AddStyleSheet(sheet)<br />    .AddClass("ability-card")<br />    .EnableClass("selected", isSelected);</code></pre> |
+
+`EnableClass` sets class membership to the requested state. `ToggleClass` reverses class membership on each call.
+
+<details>
+<summary>Class and style-sheet methods</summary>
+
+| Method | Description |
+|-------|----------|
+| `AddClass(string)` | Adds a USS class |
+| `RemoveClass(string)` | Removes a USS class |
+| `ClearClasses()` | Removes all USS classes |
+| `ToggleClass(string)` | Toggles a USS class on/off |
+| `EnableClass(string, bool)` | Adds or removes a USS class based on a condition |
+| `AddStyleSheet(StyleSheet)` | Adds a `StyleSheet` |
+| `RemoveStyleSheet(StyleSheet)` | Removes a `StyleSheet` |
+| `AddStyleSheetFromResources(string)` | Adds a stylesheet loaded via `Resources.Load` |
+| `RemoveStyleSheetFromResources(string)` | Removes a stylesheet loaded via `Resources.Load` |
+
+</details>
+
+For `AddStyleSheetFromResources("UI/AbilityCard")`, place the file in a `Resources` folder, such as `Assets/Resources/UI/AbilityCard.uss`. Omit the extension from the path. If the resource is missing, the method logs a warning and returns the unchanged element.
+
+<a id="style-extensions--by-category"></a>
+
+## Styles
+
+Setters write the element's inline styles. Keep shared appearance rules in USS and use chains for the dimensions and state of individual elements.
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.flexDirection =<br />    FlexDirection.Row;<br />panel.style.alignItems = Align.Center;<br />panel.style.width = 240;<br />panel.style.height = 48;<br />panel.style.marginTop = 8;</code></pre> | <pre lang="csharp"><code>panel<br />    .SetFlexDirection(FlexDirection.Row)<br />    .SetAlignItems(Align.Center)<br />    .SetSize(240, 48)<br />    .SetMarginTop(8);</code></pre> |
+
+### Sides, axes, and units
+
+A shared value sets all sides; `X` means left and right, and `Y` means top and bottom. In overloads with optional parameters, omitted sides keep their previous values:
+
+```csharp
+panel
+    .SetPadding(8)               // all sides
+    .SetPaddingX(12)             // left and right
+    .SetMargin(top: 4, bottom: 8)
+    .SetSize(width: Length.Percent(100));
+```
+
+Numeric `StyleLength` values use pixels; use `Length.Percent(...)` for percentages. `SetDistance` writes `top`, `right`, `bottom`, and `left`. For example, `SetPosition(Position.Absolute).SetDistance(0)` stretches an element to its parent's edges.
+
+### Configuring IStyle
+
+The same methods are available on `element.style`. That chain returns `IStyle`, so resume element methods in a separate call:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.paddingLeft = 12;<br />panel.style.paddingRight = 12;<br />panel.style.height = 48;</code></pre> | <pre lang="csharp"><code>panel.style<br />    .SetPaddingX(12)<br />    .SetHeight(48);</code></pre> |
+
+### Style reference
+
+The main examples target Unity 6.0. Disclosure sections mark methods that require newer Unity versions.
+
+<details>
+<summary>Layout</summary>
+
+| Method | Style property |
+|-------|----------------|
+| `SetFlexBasis(StyleLength)` | `flexBasis` |
+| `SetFlexGrow(StyleFloat)` | `flexGrow` |
+| `SetFlexShrink(StyleFloat)` | `flexShrink` |
+| `SetFlexWrap(StyleEnum<Wrap>)` | `flexWrap` |
+| `SetFlexDirection(FlexDirection)` | `flexDirection` |
+| `SetAlignSelf(StyleEnum<Align>)` | `alignSelf` |
+| `SetAlignItems(StyleEnum<Align>)` | `alignItems` |
+| `SetAlignContent(StyleEnum<Align>)` | `alignContent` |
+| `SetJustifyContent(StyleEnum<Justify>)` | `justifyContent` |
+| `SetPosition(StyleEnum<Position>)` | `position` |
+
+</details>
+
+<details>
+<summary>Size</summary>
+
+| Method | Description |
+|-------|----------|
+| `SetSize(StyleLength)` | Sets both width and height |
+| `SetSize(width?, height?)` | Sets width and/or height independently |
+| `SetMinSize(StyleLength)` | Sets both minWidth and minHeight |
+| `SetMinSize(minWidth?, minHeight?)` | Minimum width and/or height independently |
+| `SetMaxSize(StyleLength)` | Sets both maxWidth and maxHeight |
+| `SetMaxSize(maxWidth?, maxHeight?)` | Maximum width and/or height independently |
+| `SetWidth(StyleLength)` | `width` |
+| `SetMinWidth(StyleLength)` | `minWidth` |
+| `SetMaxWidth(StyleLength)` | `maxWidth` |
+| `SetHeight(StyleLength)` | `height` |
+| `SetMinHeight(StyleLength)` | `minHeight` |
+| `SetMaxHeight(StyleLength)` | `maxHeight` |
+
+</details>
+
+<details>
+<summary>Spacing and positioning</summary>
+
+`SetMargin`, `SetPadding`, and `SetDistance` support one shared value, individual sides (`top`, `right`, `bottom`, `left`), and X/Y axis pairs.
+
+| Method | Style properties |
+|-------|----------------|
+| `SetMargin(…)` / `SetPadding(…)` / `SetDistance(…)` | `Top/Right/Bottom/Left` (uniform or per-side) |
+| `SetMarginX/Y` · `SetPaddingX/Y` · `SetDistanceX/Y` | Sets the horizontal (X = `Left`+`Right`) or vertical (Y = `Top`+`Bottom`) pair |
+| `SetMarginTop/Right/Bottom/Left` | Single-side margin |
+| `SetPaddingTop/Right/Bottom/Left` | Single-side padding |
+| `SetTop` / `SetRight` / `SetBottom` / `SetLeft` | Offset for one side (`top` / `right` / `bottom` / `left`) |
+
+> `SetDistance` wraps the four `top`/`right`/`bottom`/`left` properties used for absolute positioning. `SetTop`, `SetRight`, `SetBottom`, and `SetLeft` directly alias one property each.
+
+</details>
+
+<details>
+<summary>Font</summary>
+
+| Method | Style property |
+|-------|----------------|
+| `SetUnityFont(StyleFont)` | `unityFont` |
+| `SetFontSize(StyleLength)` | `fontSize` |
+| `SetUnityFontDefinition(StyleFontDefinition)` | `unityFontDefinition` |
+| `SetUnityFontStyleAndWeight(StyleEnum<FontStyle>)` | `unityFontStyleAndWeight` |
+
+</details>
+
+<details>
+<summary>Font style presets</summary>
+
+Convenience methods toggle bold or italic without overwriting the other flag:
+
+| Method | Description |
+|-------|----------|
+| `SetNormalUnityFontStyleAndWeight()` | Resets to `FontStyle.Normal` |
+| `AddBoldUnityFontStyleAndWeight()` | Adds bold, preserving italic |
+| `RemoveBoldUnityFontStyleAndWeight()` | Removes bold, preserving italic |
+| `AddItalicUnityFontStyleAndWeight()` | Adds italic, preserving bold |
+| `RemoveItalicUnityFontStyleAndWeight()` | Removes italic, preserving bold |
+
+</details>
+
+<details>
+<summary>Text</summary>
+
+| Method | Style property | Notes |
+|-------|---------------|------------|
+| `SetWordSpacing(StyleLength)` | `wordSpacing` | |
+| `SetLetterSpacing(StyleLength)` | `letterSpacing` | |
+| `SetUnityTextAlign(TextAnchor)` | `unityTextAlign` | |
+| `SetTextShadow(StyleTextShadow)` | `textShadow` | |
+| `SetUnityTextOutlineColor(StyleColor)` | `unityTextOutlineColor` | |
+| `SetUnityTextOutlineWidth(StyleFloat)` | `unityTextOutlineWidth` | |
+| `SetUnityParagraphSpacing(StyleLength)` | `unityParagraphSpacing` | |
+| `SetTextOverflow(StyleEnum<TextOverflow>)` | `textOverflow` | |
+| `SetUnityTextOverflowPosition(TextOverflowPosition)` | `unityTextOverflowPosition` | |
+| `SetUnityTextGenerator(TextGeneratorType)` | `unityTextGenerator` | Unity 6+ |
+| `SetUnityEditorTextRenderingMode(EditorTextRenderingMode)` | `unityEditorTextRenderingMode` | Unity 6+ |
+| `SetUnityTextAutoSize(StyleTextAutoSize)` | `unityTextAutoSize` | Unity 6.2+ |
+| `SetWhiteSpace(StyleEnum<WhiteSpace>)` | `whiteSpace` | |
+
+</details>
+
+<details>
+<summary>Colour and opacity</summary>
+
+| Method | Style property |
+|-------|----------------|
+| `SetColor(StyleColor)` | `color` |
+| `SetColor(string)` | `color` parsed from an HTML string (`"#RRGGBB"` or a named color) |
+| `SetOpacity(StyleFloat)` | `opacity` |
+
+</details>
+
+<details>
+<summary>Border</summary>
+
+| Method | Description |
+|-------|----------|
+| `SetBorderColor(StyleColor)` | All sides |
+| `SetBorderColor(top?, right?, bottom?, left?)` | Per side |
+| `SetBorderColorX(StyleColor)` · `SetBorderColorY(StyleColor)` | Horizontal (left + right) or vertical (top + bottom) pair |
+| `SetBorderColorTop/Right/Bottom/Left(StyleColor)` | Single side |
+| `SetBorderRadius(StyleLength)` | All corners |
+| `SetBorderRadius(topLeft?, topRight?, bottomLeft?, bottomRight?)` | Per corner |
+| `SetBorderRadiusTop(StyleLength)` · `SetBorderRadiusBottom(StyleLength)` | Top or bottom corner pair |
+| `SetBorderRadiusTopLeft/TopRight/BottomLeft/BottomRight(StyleLength)` | Single corner |
+| `SetBorderWidth(StyleFloat)` | All sides |
+| `SetBorderWidth(top?, right?, bottom?, left?)` | Per side |
+| `SetBorderWidthX(StyleFloat)` · `SetBorderWidthY(StyleFloat)` | Horizontal or vertical pair |
+| `SetBorderWidthTop/Right/Bottom/Left(StyleFloat)` | Single side |
+
+</details>
+
+<details>
+<summary>Background</summary>
+
+| Method | Style property |
+|-------|----------------|
+| `SetBackgroundColor(StyleColor)` | `backgroundColor` |
+| `SetBackgroundColor(string)` | `backgroundColor` parsed from an HTML string (`"#RRGGBB"` or a named color) |
+| `SetBackgroundImage(StyleBackground)` | `backgroundImage` |
+| `SetBackgroundImageFromResources(string)` | Loads a `Texture2D` via `Resources.Load` and assigns it to `backgroundImage` |
+| `SetBackgroundSize(StyleBackgroundSize)` | `backgroundSize` |
+| `SetBackgroundRepeat(StyleBackgroundRepeat)` | `backgroundRepeat` |
+| `SetBackgroundPosition(StyleBackgroundPosition)` | Both X and Y |
+| `SetBackgroundPosition(x?, y?)` | Independently |
+| `SetBackgroundPositionX(StyleBackgroundPosition)` | `backgroundPositionX` |
+| `SetBackgroundPositionY(StyleBackgroundPosition)` | `backgroundPositionY` |
+| `SetUnityBackgroundImageTintColor(StyleColor)` | `unityBackgroundImageTintColor` |
+
+</details>
+
+<details>
+<summary>Transform</summary>
+
+| Method | Style property |
+|-------|----------------|
+| `SetScale(StyleScale)` | `scale` |
+| `SetRotate(StyleRotate)` | `rotate` |
+| `SetTranslate(StyleTranslate)` | `translate` |
+| `SetTransformOrigin(StyleTransformOrigin)` | `transformOrigin` |
+
+</details>
+
+<details>
+<summary>Aspect, filter, and material</summary>
+
+Available starting with Unity 6000.3.
+
+| Method | Style property |
+|-------|----------------|
+| `SetAspectRatio(StyleRatio)` | `aspectRatio` |
+| `SetFilter(StyleList<FilterFunction>)` | `filter` |
+| `SetUnityMaterial(StyleMaterialDefinition)` | `unityMaterial` |
+
+</details>
+
+<details>
+<summary>Transition</summary>
+
+| Method | Style property |
+|-------|----------------|
+| `SetTransitionDelay(StyleList<TimeValue>)` | `transitionDelay` |
+| `SetTransitionDuration(StyleList<TimeValue>)` | `transitionDuration` |
+| `SetTransitionProperty(StyleList<StylePropertyName>)` | `transitionProperty` |
+| `SetTransitionTimingFunction(StyleList<EasingFunction>)` | `transitionTimingFunction` |
+
+</details>
+
+<details>
+<summary>Overflow and visibility</summary>
+
+| Method | Style property |
+|-------|----------------|
+| `SetOverflow(StyleEnum<Overflow>)` | `overflow` |
+| `SetUnityOverflowClipBox(StyleEnum<OverflowClipBox>)` | `unityOverflowClipBox` |
+| `SetVisibility(StyleEnum<Visibility>)` | `visibility` |
+| `SetDisplay(DisplayStyle)` | `display` |
+
+</details>
+
+<details>
+<summary>Image slicing</summary>
+
+| Method | Description |
+|-------|----------|
+| `SetUnitySlice(StyleInt)` | All sides |
+| `SetUnitySlice(top?, right?, bottom?, left?)` | Per side |
+| `SetUnitySliceX(StyleInt)` · `SetUnitySliceY(StyleInt)` | Horizontal (left + right) or vertical (top + bottom) pair |
+| `SetUnitySliceTop/Right/Bottom/Left(StyleInt)` | Single side |
+| `SetUnitySliceScale(StyleFloat)` | `unitySliceScale` |
+| `SetUnitySliceType(StyleEnum<SliceType>)` | Unity 6+ |
+
+</details>
+
+<details>
+<summary>Cursor</summary>
+
+| Method | Style property |
+|-------|----------------|
+| `SetCursor(StyleCursor)` | `cursor` |
+
+</details>
+
+<a id="inotifyvaluechangedt"></a>
+
+## Values and events
+
+### Field values
+
+For an `IntegerField` named `field`:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>field.value = 42;<br />field.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>field.SetValue(42);<br />field.SetValue(10, notify: false);</code></pre> |
+
+By default, `SetValue` assigns `value` and preserves Unity's event behaviour. `notify: false` calls `SetValueWithoutNotify`: it updates the field without sending a `ChangeEvent`. This is useful for synchronizing UI with data.
+
+### Subscribing and unsubscribing
+
+Keep the handler if you need to remove it later. This one updates a `Label` named `status`:
+
+```csharp
+EventCallback<ChangeEvent<int>> onChanged =
+    evt => status.SetText($"Mana: {evt.newValue}");
+```
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>field.RegisterValueChangedCallback(<br />    onChanged);<br /><br />// When the handler is no longer needed<br />field.UnregisterValueChangedCallback(<br />    onChanged);</code></pre> | <pre lang="csharp"><code>field.AddValueChanged(onChanged);<br /><br /><br />// When the handler is no longer needed<br />field.RemoveValueChanged(onChanged);</code></pre> |
+
+Pass the same delegate when unsubscribing. A new lambda with similar code does not remove the previous subscription.
+
+<details>
+<summary>Value types and Unity.Mathematics integration</summary>
+
+Typed overloads are available for `int`, `uint`, `nint`, `nuint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal`, `char`, `string`, `bool`, `Color`, `Vector2/3/4`, `Vector2Int/3Int`, `Rect/RectInt`, `Bounds/BoundsInt`, `Hash128`, `GUID` (Unity 6.4+), `Quaternion`, `Matrix4x4`, `Gradient`, `AnimationCurve`, `Delegate`, `Enum`, `Object`, and `object`. A generic `SetValue<T, TValue>` covers other types.
+
+> Installing `com.unity.mathematics` automatically sets `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION` and adds `SetValue` / `AddValueChanged` / `RemoveValueChanged` overloads for `int2/3/4` (and `intMxN`), `float2/3/4` (and `floatMxN`), `half`/`half2/3/4`, `bool2/3/4` (and `boolMxN`), and `quaternion`.
+
+</details>
+
+### Buttons and manipulators
+
+For a `Button` named `button` and a `Refresh()` method:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>button.text = "Refresh";<br />button.clicked += Refresh;<br /><br />// Unsubscribe<br />button.clicked -= Refresh;</code></pre> | <pre lang="csharp"><code>button<br />    .SetText("Refresh")<br />    .AddClicked(Refresh);<br />// Unsubscribe<br />button.RemoveClicked(Refresh);</code></pre> |
+
+An ordinary `VisualElement` can also be clickable. An `out` overload lets you keep the manipulator for removal:
+
+```csharp
+panel.AddClickable(Refresh, out var clickable);
+
+// When the click is no longer needed
+panel.RemoveManipulatorSelf(clickable);
+```
+
+| Method | Task |
+|---|---|
+| `AddManipulatorSelf` / `RemoveManipulatorSelf` | Add or remove an existing `IManipulator` |
+| `AddClickable` | Handle clicks; overloads support an event and repetition via `delay` / `interval` |
+| `AddKeyboardNavigationManipulator` | Handle keyboard navigation |
+| `AddContextualMenuManipulator` | Populate a context menu |
+
+Manipulator creation methods have `out` overloads. For other events, use standard UI Toolkit `RegisterCallback` and `UnregisterCallback`.
+
+<a id="specialized-element-extensions"></a>
+
+## Specific elements
+
+Expand a type to see its configuration example and available methods.
+
+<details>
+<summary>TextElement</summary>
+
+```csharp
+label
+    .SetText("Hello World")
+    .SetEnableRichText(true)
+    .SetParseEscapeSequences(true);
+```
+
+| Method | Description |
+|-------|----------|
+| `SetText(string)` | Sets the displayed text |
+| `SetEnableRichText(bool)` | Enables rich-text tag parsing |
+| `SetEmojiFallbackSupport(bool)` | Enables emoji fallback rendering |
+| `SetParseEscapeSequences(bool)` | Whether escape sequences (e.g. `\n`) are parsed |
+| `SetDisplayTooltipWhenElided(bool)` | Shows the elided text in a tooltip on hover |
+
+</details>
+
+<details>
+<summary>ITextEdition (TextField, IntegerField, …)</summary>
+
+Use a text field's `textEdition`. The chain returns that interface rather than the field itself.
+
+```csharp
+textField.textEdition
+    .SetPlaceholder("Search…")
+    .SetMaxLength(64)
+    .SetDelayed(true);
+```
+
+| Method | Description |
+|-------|----------|
+| `SetMaxLength(int)` | Maximum number of characters |
+| `SetMaskChar(char)` | Character used to mask password input |
+| `SetDelayed(bool)` | Defers value change until focus loss / Enter |
+| `SetReadOnly(bool)` | Disables editing |
+| `SetPassword(bool)` | Toggles password mode (uses mask char) |
+| `SetPlaceholder(string)` | Placeholder text shown when empty |
+| `SetAutoCorrection(bool)` | Enables auto-correction (mobile) |
+| `SetHideMobileInput(bool)` | Hides the native input field on a mobile device |
+| `SetHideSoftKeyboard(bool)` | Hides the on-screen keyboard (Unity 6.4+) |
+| `SetHidePlaceholderOnFocus(bool)` | Removes the placeholder on focus |
+| `SetKeyboardType(TouchScreenKeyboardType)` | Sets the touch-screen keyboard type |
+
+</details>
+
+<details>
+<summary>ITextSelection</summary>
+
+Configure a text field's selection through `textSelection`.
+
+```csharp
+textField.textSelection
+    .SetSelectable(true)
+    .SetSelectAllOnFocus(true);
+```
+
+| Method | Description |
+|-------|----------|
+| `AddOnCursorIndexChange(Action)` / `RemoveOnCursorIndexChange(Action)` | Subscribe to cursor position changes (Unity 6.3+) |
+| `AddOnSelectIndexChange(Action)` / `RemoveOnSelectIndexChange(Action)` | Subscribe to selection anchor changes (Unity 6.3+) |
+| `SetCursorIndex(int)` | Current cursor position |
+| `SetSelectIndex(int)` | Sets the current selection anchor |
+| `SetSelectable(bool)` | Whether text can be selected |
+| `SetSelectAllOnFocus(bool)` | Selects all text on focus |
+| `SetSelectAllOnMouseUp(bool)` | Selects all text on mouse release |
+| `SetDoubleClickSelectsWord(bool)` | Double-click selects the word under cursor |
+| `SetTripleClickSelectsLine(bool)` | Triple-click selects the line under cursor |
+
+</details>
+
+<details>
+<summary>BaseField&lt;TValueType&gt;</summary>
+
+```csharp
+var field = new IntegerField()
+    .SetLabel("Mana cost")
+    .SetValue(42, notify: false);
+```
+
+</details>
+
+<details>
+<summary>BaseBoolField (Toggle)</summary>
+
+```csharp
+toggle
+    .SetLabel("Enabled")
+    .SetText("Show advanced settings")
+    .SetToggleOnLabelClick(true);
+```
+
+| Method | Description |
+|-------|----------|
+| `SetText(string)` | Sets the text beside the checkbox |
+| `SetLabel(string)` | Sets the field-level label |
+| `SetToggleOnLabelClick(bool)` | Whether clicking the label toggles the value |
+
+</details>
+
+<details>
+<summary>IMixedValueSupport</summary>
+
+```csharp
+field.SetShowMixedValue(true); // show the mixed-value indicator
+```
+
+</details>
+
+<details>
+<summary>Button</summary>
+
+```csharp
+button
+    .AddClicked(() => Debug.Log("Clicked"))
+    .SetIconImage(myBackground);
+```
+
+| Method | Description |
+|-------|----------|
+| `AddClicked(Action)` | Subscribe to `Button.clicked` |
+| `RemoveClicked(Action)` | Unsubscribe from `Button.clicked` |
+| `SetClickable(Clickable)` | Replace the click manipulator. Configure it before `AddClicked` subscriptions |
+| `SetIconImage(Background)` | Sets `Button.iconImage` |
+
+</details>
+
+<details>
+<summary>Slider / BaseSlider&lt;TValue&gt;</summary>
+
+```csharp
+slider
+    .SetLowValue(0f)
+    .SetHighValue(100f)
+    .SetShowInputField(true);
+```
+
+| Method | Description |
+|-------|----------|
+| `SetLowValue(TValue)` | Sets the minimum slider value |
+| `SetHighValue(TValue)` | Sets the maximum slider value |
+| `SetFill(bool)` | Whether the track is filled up to the current value |
+| `SetInverted(bool)` | Reverses the slider direction |
+| `SetPageSize(float)` | Controls how much the value changes per page step |
+| `SetShowInputField(bool)` | Shows a numeric input field alongside the slider |
+| `SetDirection(SliderDirection)` | Sets the slider orientation |
+
+</details>
+
+<details>
+<summary>ProgressBar</summary>
+
+```csharp
+progressBar.SetTitle("Loading...").SetLowValue(0f).SetHighValue(100f);
+```
+
+| Method | Description |
+|-------|----------|
+| `SetTitle(string)` | Sets the title displayed in the center |
+| `SetLowValue(float)` | Sets the minimum value |
+| `SetHighValue(float)` | Sets the maximum value |
+
+</details>
+
+<details>
+<summary>HelpBox</summary>
+
+```csharp
+helpBox
+    .SetText("Something went wrong")
+    .SetMessageType(HelpBoxMessageType.Warning);
+```
+
+| Method | Description |
+|-------|----------|
+| `SetText(string)` | Sets the help-box message |
+| `SetMessageType(HelpBoxMessageType)` | Sets the icon / severity (`None` / `Info` / `Warning` / `Error`) |
+
+</details>
+
+<details>
+<summary>Foldout</summary>
+
+```csharp
+foldout
+    .SetText("Section Title")
+    .SetToggleOnLabelClick(true)
+    .SetValue(true);
+```
+
+| Method | Description |
+|-------|----------|
+| `SetText(string)` | Sets the foldout title |
+| `SetToggleOnLabelClick(bool)` | Whether clicking the title toggles expansion |
+
+</details>
+
+<details>
+<summary>Image</summary>
+
+```csharp
+image
+    .SetImage(myTexture)
+    .SetTintColor(Color.white)
+    .SetScaleMode(ScaleMode.ScaleToFit);
+```
+
+| Method | Description |
+|-------|----------|
+| `SetImage(Texture)` | Sets `Image.image` |
+| `SetImageFromResources(string)` | Loads a texture via `Resources.Load<Texture2D>` |
+| `SetSprite(Sprite)` | Sets `Image.sprite` |
+| `SetSpriteFromResources(string)` | Loads a sprite via `Resources.Load<Sprite>` |
+| `SetVectorImage(VectorImage)` | Sets `Image.vectorImage` |
+| `SetVectorImageFromResources(string)` | Loads a vector image via `Resources.Load<VectorImage>` |
+| `SetUv(Rect)` | Sets the UV rect |
+| `SetSourceRect(Rect)` | Sets the source rect |
+| `SetTintColor(Color)` | Sets the image tint |
+| `SetScaleMode(ScaleMode)` | Sets the scale mode |
+
+</details>
+
+<details>
+<summary>IMGUIContainer</summary>
+
+```csharp
+container
+    .SetOnGUIHandler(() => GUILayout.Label("IMGUI"))
+    .SetCullingEnabled(true);
+```
+
+| Method | Description |
+|-------|----------|
+| `SetOnGUIHandler(Action)` | Replace the `onGUIHandler` callback |
+| `AddOnGUIHandler(Action)` | Subscribe to `onGUIHandler` |
+| `RemoveOnGUIHandler(Action)` | Unsubscribe from `onGUIHandler` |
+| `SetCullingEnabled(bool)` | Skip `onGUIHandler` when the element is off-screen |
+| `SetContextType(ContextType)` | Sets the IMGUI context type |
+| `MarkDirtyLayout()` | Marks the IMGUI layout dirty so it is recomputed |
+
+</details>
+
+<a id="collection-views-listview-treeview-multicolumn-variants"></a>
+
+## Lists and trees
+
+`ListView` creates rows through `makeItem` and reuses them through `bindItem`. Set a list height and data source:
+
+```csharp
+var items = new List<string> { "Fireball", "Heal", "Shield" };
+var listView = new ListView();
+```
+
+`List<string>` requires `using System.Collections.Generic;`.
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>listView.itemsSource = items;<br />listView.makeItem = () =&gt; new Label();<br />listView.bindItem = (row, index) =&gt;<br />    ((Label)row).text = items[index];<br />listView.selectionType =<br />    SelectionType.Single;<br />listView.fixedItemHeight = 24;<br />listView.style.height = 120;</code></pre> | <pre lang="csharp"><code>listView<br />    .SetItemsSource(items)<br />    .SetMakeItem(() =&gt; new Label())<br />    .SetBindItem((row, index) =&gt;<br />        ((Label)row).SetText(items[index]))<br />    .SetSelectionType(SelectionType.Single)<br />    .SetFixedItemHeight(24)<br />    .SetHeight(120);</code></pre> |
+
+Add `listView` to the UI tree. After changing `items`, call `listView.RefreshItems()`. If a row has handlers tied to its current data item, remove them on unbinding through `SetUnbindItem` so reuse does not accumulate subscriptions.
+
+<details>
+<summary>List and tree methods</summary>
+
+Shared settings apply to `ListView`, `TreeView`, and their `MultiColumn` variants. `SetMakeItem`, `SetBindItem`, `SetUnbindItem`, and `SetDestroyItem` apply to ordinary `ListView` and `TreeView`.
+
+#### BaseVerticalCollectionView data and behaviour
+
+| Method | Description |
+|-------|----------|
+| `SetItemsSource(IList)` | Underlying data source |
+| `SetReorderable(bool)` | Enables drag-to-reorder |
+| `SetSelectedIndex(int)` | Selects a specific index |
+| `SetSelectionType(SelectionType)` | None / Single / Multiple |
+| `SetFixedItemHeight(float)` | Fixed item height (for `FixedHeight` virtualization) |
+| `SetVirtualizationMethod(CollectionVirtualizationMethod)` | `FixedHeight` or `DynamicHeight` |
+| `SetHorizontalScrollingEnabled(bool)` | Enables horizontal scrolling |
+| `SetShowAlternatingRowBackgrounds(AlternatingRowBackground)` | Zebra striping mode |
+
+#### BaseVerticalCollectionView events
+
+| Method | Description |
+|-------|----------|
+| `AddItemsChosen(Action<IEnumerable<object>>)` / `RemoveItemsChosen` | Items confirmed (e.g. double-click / Enter) |
+| `AddSelectionChanged(Action<IEnumerable<object>>)` / `RemoveSelectionChanged` | Selection changed (objects) |
+| `AddSelectedIndicesChanged(Action<IEnumerable<int>>)` / `RemoveSelectedIndicesChanged` | Selection changed (indices) |
+| `AddItemIndexChanged(Action<int, int>)` / `RemoveItemIndexChanged` | Item moved (drag-reorder) |
+| `AddItemsSourceChanged(Action)` / `RemoveItemsSourceChanged` | `itemsSource` reference changed |
+| `AddCanStartDrag(Func<CanStartDragArgs, bool>)` / `RemoveCanStartDrag` | Custom drag-start gating |
+| `AddSetupDragAndDrop(Func<SetupDragAndDropArgs, StartDragArgs>)` / `RemoveSetupDragAndDrop` | Drag-and-drop preparation |
+| `AddDragAndDropUpdate(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveDragAndDropUpdate` | Drag-and-drop visual mode |
+| `AddHandleDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveHandleDrop` | Drop handling |
+
+#### BaseListView configuration
+
+| Method | Description |
+|-------|----------|
+| `SetAllowAdd(bool)` · `SetAllowRemove(bool)` | Toggles built-in add/remove buttons |
+| `SetHeaderTitle(string)` | Title shown when foldout header is on |
+| `SetShowFoldoutHeader(bool)` | Wraps the list in a `Foldout` |
+| `SetShowAddRemoveFooter(bool)` | Toggles the add/remove footer |
+| `SetShowBoundCollectionSize(bool)` | Shows the collection-size field |
+| `SetReorderMode(ListViewReorderMode)` | `Simple` or `Animated` |
+| `SetBindingSourceSelectionMode(BindingSourceSelectionMode)` | Auto-assign / manual |
+| `SetOnAdd(Action<BaseListView>)` · `AddOnAdd` · `RemoveOnAdd` | Custom add-button handler |
+| `SetOnRemove(Action<BaseListView>)` · `AddOnRemove` · `RemoveOnRemove` | Custom remove-button handler |
+| `SetOverridingAddButtonBehavior(Action<BaseListView, Button>)` · `AddOverridingAddButtonBehavior` · `RemoveOverridingAddButtonBehavior` | Replace add-button behaviour |
+| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Footer factory (Unity 6+) |
+| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Header factory (Unity 6+) |
+| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Empty-state factory (Unity 6+) |
+| `AddItemsAdded(Action<IEnumerable<int>>)` / `RemoveItemsAdded` | Items added by index |
+| `AddItemsRemoved(Action<IEnumerable<int>>)` / `RemoveItemsRemoved` | Items removed by index |
+
+#### BaseTreeView configuration
+
+| Method | Description |
+|-------|----------|
+| `SetAutoExpand(bool)` | Auto-expand new nodes |
+| `AddItemExpandedChanged(Action<TreeViewExpansionChangedArgs>)` / `RemoveItemExpandedChanged` | Subscribe to expansion changes |
+
+#### Creating ListView and TreeView items
+
+These methods exist in both `ListViewExtensions` and `TreeViewExtensions`, each targeting its own view type.
+
+| Method | Description |
+|-------|----------|
+| `SetMakeItem(Func<VisualElement>)` · `AddMakeItem` · `RemoveMakeItem` | Item factory |
+| `SetBindItem(Action<VisualElement, int>)` · `AddBindItem` · `RemoveBindItem` | Item binding |
+| `SetUnbindItem(Action<VisualElement, int>)` · `AddUnbindItem` · `RemoveUnbindItem` | Item unbinding |
+| `SetDestroyItem(Action<VisualElement>)` · `AddDestroyItem` · `RemoveDestroyItem` | Item teardown |
+| `SetItemTemplate(VisualTreeAsset)` | UXML template used to build items |
+
+#### `MultiColumnListView` / `MultiColumnTreeView`
+
+| Method | Description |
+|-------|----------|
+| `SetSortingMode(ColumnSortingMode)` | Built-in sorting mode for the column header |
+
+</details>
+
+<a id="editor-commands-editor-only"></a>
+
+## Editor extensions
+
+Add `using Aspid.FastTools.UIElements.Editors;` and `using UnityEditor.UIElements;` to your editor script.
+
+### SerializedObject binding
+
+For an existing `IntegerField` named `field` and a serialized `int` field named `_manaCost`:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>field.bindingPath = "_manaCost";<br />field.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>field.BindTo(<br />    serializedObject, "_manaCost");</code></pre> |
+| <pre lang="csharp"><code>var property = serializedObject<br />    .FindProperty("_manaCost");<br />field.BindProperty(property);</code></pre> | <pre lang="csharp"><code>var property = serializedObject<br />    .FindProperty("_manaCost");<br />field.BindPropertyTo(property);</code></pre> |
+| <pre lang="csharp"><code>root.Bind(serializedObject);<br /><br />// Unbind<br />root.Unbind();</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);<br /><br />// Unbind<br />root.UnbindFrom();</code></pre> |
+
+The rows show independent binding approaches. For a `root` tree, first set field paths with `SetBindingPath`, then call `BindTo` on the root.
+
+In `CreateInspectorGUI()`, [Unity automatically binds the returned tree](https://docs.unity3d.com/6000.0/Documentation/Manual/UIE-Binding.html) to `serializedObject`. Setting the path is sufficient in that Inspector:
+
+```csharp
+public override VisualElement CreateInspectorGUI()
+{
+    return new IntegerField("Mana cost")
+        .SetBindingPath("_manaCost");
+}
+```
+
+`SetDataSource`, `SetDataSourceType`, and `SetDataSourcePath` configure UI Toolkit runtime data binding sources. They do not create a `SerializedObject` binding by themselves.
+
+### PropertyField
+
+`PropertyField.AddValueChanged` receives a `SerializedPropertyChangeEvent`. For a regular `IntegerField.AddValueChanged`, the argument is a `ChangeEvent<int>`:
+
+```csharp
+var manaCost = serializedObject.FindProperty("_manaCost");
+var field = new PropertyField(manaCost)
+    .SetLabel("Mana cost")
+    .AddValueChanged(evt =>
+        Debug.Log(evt.changedProperty.intValue));
+```
+
+`RemoveValueChanged` removes the same delegate's subscription. To write properties from your own code, see [SerializedProperty Extensions](08-serialized-property-extensions.md).
+
+### Opening scripts and finding the owner window
+
+```csharp
+image.AddOpenScriptCommand(target);
+// Double-click opens the target's script in the IDE
+
+var window = image.GetOwnerWindow();
+```
+
+`target` is the `MonoBehaviour` or `ScriptableObject` whose script should open. `GetOwnerWindow()` looks up the window through the element's panel. If none is found, it falls back to the focused window, then the window under the cursor; the result can be `null`. This helps position a popup when a click has arrived but focus has not switched yet.
+
+`EnumField` and the editor's `EnumFlagsField` also support chaining `Initialize(defaultValue, includeObsoleteValues: false)`.
+
+<a id="uss-custom-style-helpers-icustomstyle"></a>
+
+## Custom USS properties
+
+`TryGetByEnum` reads a string USS property and parses it as an enum, ignoring case. For example, with this rule in an attached USS file:
+
+```css
+.ability-panel {
+    --ability-theme: dark;
+}
+```
+
+Create an element that responds when custom styles are resolved:
+
+```csharp
+using UnityEngine;
+using UnityEngine.UIElements;
+using Aspid.FastTools.UIElements;
+
+public sealed class AbilityPanel : VisualElement
+{
+    private enum PanelTheme { Dark, Light }
+
+    private static readonly CustomStyleProperty<string> ThemeProperty =
+        new("--ability-theme");
+
+    public AbilityPanel()
+    {
+        this.AddClass("ability-panel");
+        RegisterCallback<CustomStyleResolvedEvent>(evt =>
+        {
+            if (evt.customStyle.TryGetByEnum(ThemeProperty, out PanelTheme theme))
+                this.SetBackgroundColor(theme == PanelTheme.Dark
+                    ? new Color(0.15f, 0.15f, 0.15f)
+                    : new Color(0.9f, 0.9f, 0.9f));
+        });
+    }
+}
+```
+
+Add `AbilityPanel` to a tree with the USS attached. Both `dark` and `Dark` parse as `PanelTheme.Dark`. The method returns `false` if the property is missing or the string cannot be parsed.
+
+## Practical example
+
+[EditorTools](../Samples~/EditorTools/Documentation/README.md) contains an ability catalogue and a reactive Inspector. The mana-cost field controls the status label and warning visibility:
+
+![Changing mana cost updates the status and warning in the Inspector](Images/aspid_fasttools_visual_element.gif)
+
+Changing mana cost updates the status and warning in the Inspector
+
+<details>
+<summary>Inspector code with a cost field and warning</summary>
+
+This example targets an existing `AbilityConfig` with a serialized `int _manaCost` field. Save the editor in an `Editor` folder: the heading shows the cost, and a `HelpBox` appears at zero. The complete version with data is in [EditorTools](../Samples~/EditorTools/Documentation/README.md).
+
+```csharp
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
+using Aspid.FastTools.Editors;
+using Aspid.FastTools.UIElements;
+using Aspid.FastTools.UIElements.Editors;
+
 [CustomEditor(typeof(AbilityConfig))]
 internal sealed class AbilityConfigEditor : Editor
 {
     public override VisualElement CreateInspectorGUI()
     {
-        var config = (AbilityConfig)target;
+        var manaCost = serializedObject.FindProperty("_manaCost");
 
         var badge = new Label()
             .SetFontSize(10).SetUnityFontStyleAndWeight(FontStyle.Bold)
@@ -33,616 +1004,23 @@ internal sealed class AbilityConfigEditor : Editor
                 .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
                 .AddChild(new Label(target.GetDisplayName()).SetFlexGrow(1).SetFontSize(15))
                 .AddChild(badge))
-            .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost")).AddValueChanged(_ => Refresh()))
+            .AddChild(new PropertyField(manaCost).AddValueChanged(_ => Refresh()))
             .AddChild(helpBox);
 
         void Refresh()
         {
-            var isFree = config.ManaCost is 0;
-            badge.SetText(isFree ? "FREE" : $"{config.ManaCost} MP");
+            var isFree = manaCost.intValue == 0;
+            badge.SetText(isFree ? "FREE" : $"{manaCost.intValue} MP");
             helpBox.SetDisplay(isFree ? DisplayStyle.Flex : DisplayStyle.None);
         }
     }
 }
 ```
 
-![The AbilityConfig inspector built with the fluent extensions](Images/aspid_fasttools_visual_element.gif)
+</details>
 
-## Core element operations
+## Next steps
 
-```csharp
-element
-    .SetName("MyElement")
-    .SetVisible(true)
-    .SetTooltip("Tooltip text")
-    .AddChild(new Label("Hello"))
-    .AddChildren(child1, child2, child3);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetName(string)` | Sets `element.name` |
-| `SetVisible(bool)` | Sets `element.visible` |
-| `SetTooltip(string)` | Sets `element.tooltip` |
-| `SetUserData(object)` | Sets `element.userData` |
-| `SetEnabledSelf(bool)` | Sets `element.enabledSelf` |
-| `SetPickingMode(PickingMode)` | Sets `element.pickingMode` |
-| `SetUsageHints(UsageHints)` | Sets `element.usageHints` |
-| `SetViewDataKey(string)` | Sets `element.viewDataKey` |
-| `SetLanguageDirection(LanguageDirection)` | Sets `element.languageDirection` |
-| `SetDisablePlayModeTint(bool)` | Sets `element.disablePlayModeTint` |
-| `SetDataSource(object)` | Sets `element.dataSource` |
-| `SetDataSourceType(Type)` | Sets `element.dataSourceType` |
-| `SetDataSourcePath(PropertyPath)` | Sets `element.dataSourcePath` |
-| `AddChild(VisualElement)` | Appends a child, returns the parent |
-| `AddChildren(params VisualElement[])` | Appends multiple children |
-| `AddChildren(IEnumerable<VisualElement>)` | Appends from a sequence |
-| `AddChildren(List<VisualElement>)` | Appends from a list |
-| `AddChildren(Span<VisualElement>)` | Appends from a span |
-| `AddChildren(ReadOnlySpan<VisualElement>)` | Appends from a read-only span |
-| `InsertChild(int, VisualElement)` | Inserts a child at the specified index |
-| `InsertChildren(int, params VisualElement[])` | Inserts multiple children starting at an index |
-| `InsertChildren(int, IEnumerable<VisualElement>)` | Inserts from a sequence |
-| `InsertChildren(int, List<VisualElement>)` | Inserts from a list |
-| `InsertChildren(int, Span<VisualElement>)` | Inserts from a span |
-| `InsertChildren(int, ReadOnlySpan<VisualElement>)` | Inserts from a read-only span |
-| `RemoveChild(VisualElement)` | Removes a child, returns the parent |
-| `RemoveChildAt(int)` | Removes the child at the specified index |
-| `ClearChildren()` | Removes all children |
-
-> Every child operation has an `*If` counterpart (`AddChildIf`, `AddChildrenIf`, `InsertChildIf`, `InsertChildrenIf`, `RemoveChildIf`, `RemoveChildAtIf`, `ClearChildrenIf`) taking a leading `bool condition` — the operation is applied only when the condition is `true`.
-
-> `RegisterCallbackOnce<TEventType>` and `RegisterCallbackOnce<TEventType, TUserArgsType>` are available on all Unity versions (polyfill included for versions prior to 2023.1).
-
-## Focusable
-
-| Method | Description |
-|--------|-------------|
-| `FocusSelf()` | Attempts to give focus to the element |
-| `BlurSelf()` | Tells the element to release focus |
-| `IsFocused()` | Returns whether the element currently has keyboard focus |
-| `SetTabIndex(int)` | Sets `element.tabIndex` |
-| `SetFocusable(bool)` | Sets `element.focusable` |
-| `SetDelegatesFocus(bool)` | Sets `element.delegatesFocus` |
-
-## USS & class operations
-
-| Method | Description |
-|--------|-------------|
-| `AddClass(string)` | Adds a USS class |
-| `RemoveClass(string)` | Removes a USS class |
-| `ClearClasses()` | Removes all USS classes |
-| `ToggleClass(string)` | Toggles a USS class on/off |
-| `EnableClass(string, bool)` | Adds or removes a USS class based on a condition |
-| `AddStyleSheet(StyleSheet)` | Adds a `StyleSheet` |
-| `RemoveStyleSheet(StyleSheet)` | Removes a `StyleSheet` |
-| `AddStyleSheetFromResources(string)` | Adds a stylesheet loaded via `Resources.Load` |
-| `RemoveStyleSheetFromResources(string)` | Removes a stylesheet loaded via `Resources.Load` |
-
-## Style extensions — by category
-
-All style methods are also available on `IStyle` directly (same method names, operate on the style object).
-
-### Layout
-
-| Method | Style property |
-|--------|---------------|
-| `SetFlexBasis(StyleLength)` | `flexBasis` |
-| `SetFlexGrow(StyleFloat)` | `flexGrow` |
-| `SetFlexShrink(StyleFloat)` | `flexShrink` |
-| `SetFlexWrap(StyleEnum<Wrap>)` | `flexWrap` |
-| `SetFlexDirection(FlexDirection)` | `flexDirection` |
-| `SetAlignSelf(StyleEnum<Align>)` | `alignSelf` |
-| `SetAlignItems(StyleEnum<Align>)` | `alignItems` |
-| `SetAlignContent(StyleEnum<Align>)` | `alignContent` |
-| `SetJustifyContent(StyleEnum<Justify>)` | `justifyContent` |
-| `SetPosition(StyleEnum<Position>)` | `position` |
-
-### Size
-
-| Method | Description |
-|--------|-------------|
-| `SetSize(StyleLength)` | Sets both width and height |
-| `SetSize(width?, height?)` | Sets width and/or height independently |
-| `SetMinSize(StyleLength)` | Sets both minWidth and minHeight |
-| `SetMinSize(width?, height?)` | |
-| `SetMaxSize(StyleLength)` | Sets both maxWidth and maxHeight |
-| `SetMaxSize(width?, height?)` | |
-| `SetWidth(StyleLength)` | `width` |
-| `SetMinWidth(StyleLength)` | `minWidth` |
-| `SetMaxWidth(StyleLength)` | `maxWidth` |
-| `SetHeight(StyleLength)` | `height` |
-| `SetMinHeight(StyleLength)` | `minHeight` |
-| `SetMaxHeight(StyleLength)` | `maxHeight` |
-
-### Spacing
-
-All spacing methods have a uniform-value overload, a per-side overload (`top`, `right`, `bottom`, `left`), single-side setters, and X/Y-axis pair setters.
-
-| Method | Style properties |
-|--------|------------------|
-| `SetMargin(…)` / `SetPadding(…)` / `SetDistance(…)` | `Top/Right/Bottom/Left` (uniform or per-side) |
-| `SetMarginX/Y` · `SetPaddingX/Y` · `SetDistanceX/Y` | Sets the horizontal (X = `Left`+`Right`) or vertical (Y = `Top`+`Bottom`) pair |
-| `SetMarginTop/Right/Bottom/Left` | Single-side margin |
-| `SetPaddingTop/Right/Bottom/Left` | Single-side padding |
-| `SetDistanceTop/Right/Bottom/Left` *(via `SetTop` / `SetRight` / `SetBottom` / `SetLeft`)* | Single-side absolute offset (`top` / `right` / `bottom` / `left` style properties) |
-
-> `SetDistance` is the wrapper for the four `top`/`right`/`bottom`/`left` style properties used by absolute positioning. `SetTop`, `SetRight`, `SetBottom`, `SetLeft` are direct single-property aliases.
-
-### Font
-
-| Method | Style property |
-|--------|---------------|
-| `SetUnityFont(StyleFont)` | `unityFont` |
-| `SetFontSize(StyleLength)` | `fontSize` |
-| `SetUnityFontDefinition(StyleFontDefinition)` | `unityFontDefinition` |
-| `SetUnityFontStyleAndWeight(StyleEnum<FontStyle>)` | `unityFontStyleAndWeight` |
-
-### Font style presets
-
-Convenience methods for toggling bold / italic without overwriting the other flag:
-
-| Method | Description |
-|--------|-------------|
-| `SetNormalUnityFontStyleAndWeight()` | Resets to `FontStyle.Normal` |
-| `AddBoldUnityFontStyleAndWeight()` | Adds bold, preserving italic |
-| `RemoveBoldUnityFontStyleAndWeight()` | Removes bold, preserving italic |
-| `AddItalicUnityFontStyleAndWeight()` | Adds italic, preserving bold |
-| `RemoveItalicUnityFontStyleAndWeight()` | Removes italic, preserving bold |
-
-### Text
-
-| Method | Style property | Notes |
-|--------|---------------|-------|
-| `SetWordSpacing(StyleLength)` | `wordSpacing` | |
-| `SetLetterSpacing(StyleLength)` | `letterSpacing` | |
-| `SetUnityTextAlign(TextAnchor)` | `unityTextAlign` | |
-| `SetTextShadow(StyleTextShadow)` | `textShadow` | |
-| `SetUnityTextOutlineColor(StyleColor)` | `unityTextOutlineColor` | |
-| `SetUnityTextOutlineWidth(StyleFloat)` | `unityTextOutlineWidth` | |
-| `SetUnityParagraphSpacing(StyleLength)` | `unityParagraphSpacing` | |
-| `SetTextOverflow(StyleEnum<TextOverflow>)` | `textOverflow` | |
-| `SetUnityTextOverflowPosition(TextOverflowPosition)` | `unityTextOverflowPosition` | |
-| `SetUnityTextGenerator(TextGeneratorType)` | `unityTextGenerator` | Unity 6+ |
-| `SetUnityEditorTextRenderingMode(EditorTextRenderingMode)` | `unityEditorTextRenderingMode` | Unity 6+ |
-| `SetUnityTextAutoSize(StyleTextAutoSize)` | `unityTextAutoSize` | Unity 6.2+ |
-| `SetWhiteSpace(StyleEnum<WhiteSpace>)` | `whiteSpace` | |
-
-### Color & Opacity
-
-| Method | Style property |
-|--------|---------------|
-| `SetColor(StyleColor)` | `color` |
-| `SetColor(string)` | `color` parsed from an HTML string (`"#RRGGBB"` or a named color) |
-| `SetOpacity(StyleFloat)` | `opacity` |
-
-### Border
-
-| Method | Description |
-|--------|-------------|
-| `SetBorderColor(StyleColor)` | All sides |
-| `SetBorderColor(top?, right?, bottom?, left?)` | Per side |
-| `SetBorderColorX(StyleColor)` · `SetBorderColorY(StyleColor)` | Horizontal (left + right) or vertical (top + bottom) pair |
-| `SetBorderColorTop/Right/Bottom/Left(StyleColor)` | Single side |
-| `SetBorderRadius(StyleLength)` | All corners |
-| `SetBorderRadius(topLeft?, topRight?, bottomLeft?, bottomRight?)` | Per corner |
-| `SetBorderRadiusTop(StyleLength)` · `SetBorderRadiusBottom(StyleLength)` | Top or bottom corner pair |
-| `SetBorderRadiusTopLeft/TopRight/BottomLeft/BottomRight(StyleLength)` | Single corner |
-| `SetBorderWidth(StyleFloat)` | All sides |
-| `SetBorderWidth(top?, right?, bottom?, left?)` | Per side |
-| `SetBorderWidthX(StyleFloat)` · `SetBorderWidthY(StyleFloat)` | Horizontal or vertical pair |
-| `SetBorderWidthTop/Right/Bottom/Left(StyleFloat)` | Single side |
-
-### Background
-
-| Method | Style property |
-|--------|---------------|
-| `SetBackgroundColor(StyleColor)` | `backgroundColor` |
-| `SetBackgroundColor(string)` | `backgroundColor` parsed from an HTML string (`"#RRGGBB"` or a named color) |
-| `SetBackgroundImage(StyleBackground)` | `backgroundImage` |
-| `SetBackgroundImageFromResources(string)` | Loads a `Texture2D` via `Resources.Load` and assigns it to `backgroundImage` |
-| `SetBackgroundSize(StyleBackgroundSize)` | `backgroundSize` |
-| `SetBackgroundRepeat(StyleBackgroundRepeat)` | `backgroundRepeat` |
-| `SetBackgroundPosition(StyleBackgroundPosition)` | Both X and Y |
-| `SetBackgroundPosition(x?, y?)` | Independently |
-| `SetBackgroundPositionX(StyleBackgroundPosition)` | `backgroundPositionX` |
-| `SetBackgroundPositionY(StyleBackgroundPosition)` | `backgroundPositionY` |
-| `SetUnityBackgroundImageTintColor(StyleColor)` | `unityBackgroundImageTintColor` |
-
-### Transform
-
-| Method | Style property |
-|--------|---------------|
-| `SetScale(StyleScale)` | `scale` |
-| `SetRotate(StyleRotate)` | `rotate` |
-| `SetTranslate(StyleTranslate)` | `translate` |
-| `SetTransformOrigin(StyleTransformOrigin)` | `transformOrigin` |
-
-### Aspect, Filter & Material
-
-Available on Unity 6000.3+.
-
-| Method | Style property |
-|--------|---------------|
-| `SetAspectRatio(StyleRatio)` | `aspectRatio` |
-| `SetFilter(StyleList<FilterFunction>)` | `filter` |
-| `SetUnityMaterial(StyleMaterialDefinition)` | `unityMaterial` |
-
-### Transition
-
-| Method | Style property |
-|--------|---------------|
-| `SetTransitionDelay(StyleList<TimeValue>)` | `transitionDelay` |
-| `SetTransitionDuration(StyleList<TimeValue>)` | `transitionDuration` |
-| `SetTransitionProperty(StyleList<StylePropertyName>)` | `transitionProperty` |
-| `SetTransitionTimingFunction(StyleList<EasingFunction>)` | `transitionTimingFunction` |
-
-### Overflow & Visibility
-
-| Method | Style property |
-|--------|---------------|
-| `SetOverflow(StyleEnum<Overflow>)` | `overflow` |
-| `SetUnityOverflowClipBox(StyleEnum<OverflowClipBox>)` | `unityOverflowClipBox` |
-| `SetVisibility(StyleEnum<Visibility>)` | `visibility` |
-| `SetDisplay(DisplayStyle)` | `display` |
-
-### Unity Slice
-
-| Method | Description |
-|--------|-------------|
-| `SetUnitySlice(StyleInt)` | All sides |
-| `SetUnitySlice(top?, right?, bottom?, left?)` | Per side |
-| `SetUnitySliceX(StyleInt)` · `SetUnitySliceY(StyleInt)` | Horizontal (left + right) or vertical (top + bottom) pair |
-| `SetUnitySliceTop/Right/Bottom/Left(StyleInt)` | Single side |
-| `SetUnitySliceScale(StyleFloat)` | `unitySliceScale` |
-| `SetUnitySliceType(StyleEnum<SliceType>)` | Unity 6+ |
-
-### Cursor
-
-| Method | Style property |
-|--------|---------------|
-| `SetCursor(StyleCursor)` | `cursor` |
-
-## Specialized element extensions
-
-### TextElement
-
-```csharp
-label
-    .SetText("Hello World")
-    .SetEnableRichText(true)
-    .SetParseEscapeSequences(true);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetText(string)` | Sets the displayed text |
-| `SetEnableRichText(bool)` | Enables rich-text tag parsing |
-| `SetEmojiFallbackSupport(bool)` | Enables emoji fallback rendering |
-| `SetParseEscapeSequences(bool)` | Whether escape sequences (e.g. `\n`) are parsed |
-| `SetDisplayTooltipWhenElided(bool)` | Shows the elided text in a tooltip on hover |
-
-### ITextEdition (TextField, IntegerField, …)
-
-```csharp
-textField
-    .SetPlaceholder("Search…")
-    .SetMaxLength(64)
-    .SetDelayed(true);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetMaxLength(int)` | Maximum number of characters |
-| `SetMaskChar(char)` | Character used to mask password input |
-| `SetDelayed(bool)` | Defers value change until focus loss / Enter |
-| `SetReadOnly(bool)` | Disables editing |
-| `SetPassword(bool)` | Toggles password mode (uses mask char) |
-| `SetPlaceholder(string)` | Placeholder text shown when empty |
-| `SetAutoCorrection(bool)` | Enables auto-correction (mobile) |
-| `SetHideMobileInput(bool)` | Hides the mobile soft input |
-| `SetHideSoftKeyboard(bool)` | Hides the on-screen soft keyboard |
-| `SetHidePlaceholderOnFocus(bool)` | Removes the placeholder on focus |
-| `SetKeyboardType(TouchScreenKeyboardType)` | Sets the touch-screen keyboard type |
-
-### ITextSelection
-
-```csharp
-textField
-    .SetSelectable(true)
-    .SetSelectAllOnFocus(true)
-    .AddOnCursorIndexChange(() => Debug.Log(textField.cursorIndex));
-```
-
-| Method | Description |
-|--------|-------------|
-| `AddOnCursorIndexChange(Action)` / `RemoveOnCursorIndexChange(Action)` | Cursor-index change subscription |
-| `AddOnSelectIndexChange(Action)` / `RemoveOnSelectIndexChange(Action)` | Selection-index change subscription |
-| `SetCursorIndex(int)` | Sets the current cursor index |
-| `SetSelectIndex(int)` | Sets the current selection anchor |
-| `SetSelectable(bool)` | Whether text can be selected |
-| `SetSelectAllOnFocus(bool)` | Selects all text on focus |
-| `SetSelectAllOnMouseUp(bool)` | Selects all text on mouse release |
-| `SetDoubleClickSelectsWord(bool)` | Double-click selects the word under cursor |
-| `SetTripleClickSelectsLine(bool)` | Triple-click selects the line under cursor |
-
-### BaseField\<TValueType\>
-
-```csharp
-field.SetLabel("My Field");
-field.SetValue(42);
-```
-
-### BaseBoolField (Toggle)
-
-```csharp
-toggle
-    .SetLabel("Enabled")
-    .SetText("Show advanced settings")
-    .SetToggleOnLabelClick(true);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetText(string)` | Sets the label next to the toggle box |
-| `SetLabel(string)` | Sets the field-level label |
-| `SetToggleOnLabelClick(bool)` | Whether clicking the label toggles the value |
-
-### INotifyValueChanged\<T\>
-
-```csharp
-field.SetValue(42, notify: false); // sets value without raising ChangeEvent
-field.AddValueChanged(evt => Debug.Log(evt.newValue));
-field.RemoveValueChanged(myCallback);
-```
-
-Typed overloads are provided for `int`, `uint`, `nint`, `nuint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal`, `char`, `string`, `bool`, `Color`, `Vector2/3/4`, `Vector2Int/3Int`, `Rect/RectInt`, `Bounds/BoundsInt`, `Hash128`, `GUID`, `Quaternion`, `Matrix4x4`, `Gradient`, `AnimationCurve`, `Delegate`, `Enum`, `Object`, `object`, plus a generic `SetValue<T, TValue>` fallback.
-
-> When the `com.unity.mathematics` package is installed, the `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION` define is set automatically and adds `SetValue` / `AddValueChanged` / `RemoveValueChanged` overloads for `int2/3/4` (and `intMxN`), `float2/3/4` (and `floatMxN`), `half`/`half2/3/4`, `bool2/3/4` (and `boolMxN`), and `quaternion`.
-
-### IMixedValueSupport
-
-```csharp
-field.SetShowMixedValue(true); // shows the mixed-value indicator
-```
-
-### Button
-
-```csharp
-button
-    .AddClicked(() => Debug.Log("Clicked"))
-    .SetClickable(new Clickable(() => { }))
-    .SetIconImage(myBackground);
-```
-
-| Method | Description |
-|--------|-------------|
-| `AddClicked(Action)` | Subscribes to `Button.clicked` |
-| `RemoveClicked(Action)` | Unsubscribes from `Button.clicked` |
-| `SetClickable(Clickable)` | Sets `Button.clickable` |
-| `SetIconImage(Background)` | Sets `Button.iconImage` |
-
-### Slider / BaseSlider\<TValue\>
-
-```csharp
-slider
-    .SetLowValue(0f)
-    .SetHighValue(100f)
-    .SetShowInputField(true);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetLowValue(TValue)` | Sets the minimum slider value |
-| `SetHighValue(TValue)` | Sets the maximum slider value |
-| `SetFill(bool)` | Whether the track is filled up to the current value |
-| `SetInverted(bool)` | Reverses the slider direction |
-| `SetPageSize(float)` | Controls how much the value changes per page step |
-| `SetShowInputField(bool)` | Shows a numeric input field alongside the slider |
-| `SetDirection(SliderDirection)` | Sets the slider orientation |
-
-### ProgressBar
-
-```csharp
-progressBar.SetTitle("Loading...").SetLowValue(0f).SetHighValue(100f);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetTitle(string)` | Sets the title displayed in the center |
-| `SetLowValue(float)` | Sets the minimum value |
-| `SetHighValue(float)` | Sets the maximum value |
-
-### HelpBox
-
-```csharp
-helpBox
-    .SetText("Something went wrong")
-    .SetMessageType(HelpBoxMessageType.Warning);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetText(string)` | Sets the help-box message text |
-| `SetMessageType(HelpBoxMessageType)` | Sets the icon / severity (`None` / `Info` / `Warning` / `Error`) |
-
-### Foldout
-
-```csharp
-foldout
-    .SetText("Section Title")
-    .SetToggleOnLabelClick(true)
-    .SetValue(true);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetText(string)` | Sets the foldout title |
-| `SetToggleOnLabelClick(bool)` | Whether clicking the title toggles expansion |
-
-### Image
-
-```csharp
-image
-    .SetImage(myTexture)
-    .SetTintColor(Color.white)
-    .SetScaleMode(ScaleMode.ScaleToFit);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetImage(Texture)` | Sets `Image.image` |
-| `SetImageFromResources(string)` | Loads a texture via `Resources.Load<Texture2D>` |
-| `SetSprite(Sprite)` | Sets `Image.sprite` |
-| `SetSpriteFromResources(string)` | Loads a sprite via `Resources.Load<Sprite>` |
-| `SetVectorImage(VectorImage)` | Sets `Image.vectorImage` |
-| `SetVectorImageFromResources(string)` | Loads a vector image via `Resources.Load<VectorImage>` |
-| `SetUv(Rect)` | Sets the UV rect |
-| `SetSourceRect(Rect)` | Sets the source rect |
-| `SetTintColor(Color)` | Sets the image tint |
-| `SetScaleMode(ScaleMode)` | Sets the scale mode |
-
-### IMGUIContainer
-
-```csharp
-container
-    .SetOnGUIHandler(() => GUILayout.Label("IMGUI"))
-    .SetCullingEnabled(true);
-```
-
-| Method | Description |
-|--------|-------------|
-| `SetOnGUIHandler(Action)` | Replaces the `onGUIHandler` callback |
-| `AddOnGUIHandler(Action)` | Subscribes to `onGUIHandler` |
-| `RemoveOnGUIHandler(Action)` | Unsubscribes from `onGUIHandler` |
-| `SetCullingEnabled(bool)` | Skips `onGUIHandler` when the element is offscreen |
-| `SetContextType(ContextType)` | Sets the IMGUI context type |
-| `MarkDirtyLayout()` | Marks the IMGUI layout dirty so it is recomputed |
-
-### Collection views (ListView, TreeView, MultiColumn variants)
-
-Common methods are spread across multiple targeted extensions:
-
-- `BaseVerticalCollectionViewExtensions` — applies to **all** collection views (ListView, TreeView, MultiColumn variants).
-- `BaseListViewExtensions` — applies to ListView and MultiColumnListView.
-- `BaseTreeViewExtensions` — applies to TreeView and MultiColumnTreeView.
-- `ListViewExtensions` / `TreeViewExtensions` — `MakeItem`/`BindItem`/`UnbindItem`/`DestroyItem` factories per view.
-- `MultiColumnListViewExtensions` / `MultiColumnTreeViewExtensions` — multi-column-specific helpers.
-
-```csharp
-listView
-    .SetItemsSource(items)
-    .SetMakeItem(() => new Label())
-    .SetBindItem((el, i) => ((Label)el).SetText(items[i]))
-    .SetSelectionType(SelectionType.Single)
-    .AddSelectionChanged(selected => Debug.Log(selected));
-```
-
-#### Source, layout and behavior — `BaseVerticalCollectionView`
-
-| Method | Description |
-|--------|-------------|
-| `SetItemsSource(IList)` | Underlying data source |
-| `SetReorderable(bool)` | Enables drag-to-reorder |
-| `SetSelectedIndex(int)` | Selects a specific index |
-| `SetSelectionType(SelectionType)` | None / Single / Multiple |
-| `SetFixedItemHeight(float)` | Fixed item height (for `FixedHeight` virtualization) |
-| `SetVirtualizationMethod(CollectionVirtualizationMethod)` | `FixedHeight` or `DynamicHeight` |
-| `SetHorizontalScrollingEnabled(bool)` | Enables horizontal scrolling |
-| `SetShowAlternatingRowBackgrounds(AlternatingRowBackground)` | Zebra striping mode |
-
-#### Events — `BaseVerticalCollectionView`
-
-| Method | Description |
-|--------|-------------|
-| `AddItemsChosen(Action<IEnumerable<object>>)` / `RemoveItemsChosen` | Items confirmed (e.g. double-click / Enter) |
-| `AddSelectionChanged(Action<IEnumerable<object>>)` / `RemoveSelectionChanged` | Selection changed (objects) |
-| `AddSelectedIndicesChanged(Action<IEnumerable<int>>)` / `RemoveSelectedIndicesChanged` | Selection changed (indices) |
-| `AddItemIndexChanged(Action<int, int>)` / `RemoveItemIndexChanged` | Item moved (drag-reorder) |
-| `AddItemsSourceChanged(Action)` / `RemoveItemsSourceChanged` | `itemsSource` reference changed |
-| `AddCanStartDrag(Func<CanStartDragArgs, bool>)` / `RemoveCanStartDrag` | Custom drag-start gating |
-| `AddSetupDragAndDrop(Func<SetupDragAndDropArgs, StartDragArgs>)` / `RemoveSetupDragAndDrop` | Drag-and-drop preparation |
-| `AddDragAndDropUpdate(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveDragAndDropUpdate` | Drag-and-drop visual mode |
-| `AddHandleDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveHandleDrop` | Drop handling |
-
-#### `BaseListView`-specific
-
-| Method | Description |
-|--------|-------------|
-| `SetAllowAdd(bool)` · `SetAllowRemove(bool)` | Toggles built-in add/remove buttons |
-| `SetHeaderTitle(string)` | Title shown when foldout header is on |
-| `SetShowFoldoutHeader(bool)` | Wraps the list in a `Foldout` |
-| `SetShowAddRemoveFooter(bool)` | Toggles the add/remove footer |
-| `SetShowBoundCollectionSize(bool)` | Shows the collection-size field |
-| `SetReorderMode(ListViewReorderMode)` | `Simple` or `Animated` |
-| `SetBindingSourceSelectionMode(BindingSourceSelectionMode)` | Auto-assign / manual |
-| `SetOnAdd(Action<BaseListView>)` · `AddOnAdd` · `RemoveOnAdd` | Custom add-button callback |
-| `SetOnRemove(Action<BaseListView>)` · `AddOnRemove` · `RemoveOnRemove` | Custom remove-button callback |
-| `SetOverridingAddButtonBehavior(Action<BaseListView, Button>)` · `AddOverridingAddButtonBehavior` · `RemoveOverridingAddButtonBehavior` | Replace default add-button click |
-| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Footer factory (Unity 6+) |
-| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Header factory (Unity 6+) |
-| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Empty-state factory (Unity 6+) |
-| `AddItemsAdded(Action<IEnumerable<int>>)` / `RemoveItemsAdded` | Items added by index |
-| `AddItemsRemoved(Action<IEnumerable<int>>)` / `RemoveItemsRemoved` | Items removed by index |
-
-#### `BaseTreeView`-specific
-
-| Method | Description |
-|--------|-------------|
-| `SetAutoExpand(bool)` | Auto-expand new nodes |
-| `AddItemExpandedChanged(Action<TreeViewExpansionChangedArgs>)` / `RemoveItemExpandedChanged` | Subscription to expansion changes |
-
-#### `ListView` / `TreeView` item factories
-
-These methods are duplicated across `ListViewExtensions` and `TreeViewExtensions` (each operating on its own view type).
-
-| Method | Description |
-|--------|-------------|
-| `SetMakeItem(Func<VisualElement>)` · `AddMakeItem` · `RemoveMakeItem` | Item factory |
-| `SetBindItem(Action<VisualElement, int>)` · `AddBindItem` · `RemoveBindItem` | Item binding |
-| `SetUnbindItem(Action<VisualElement, int>)` · `AddUnbindItem` · `RemoveUnbindItem` | Item unbinding |
-| `SetDestroyItem(Action<VisualElement>)` · `AddDestroyItem` · `RemoveDestroyItem` | Item teardown |
-| `SetItemTemplate(VisualTreeAsset)` | UXML template used to build items |
-
-#### `MultiColumnListView` / `MultiColumnTreeView`
-
-| Method | Description |
-|--------|-------------|
-| `SetSortingMode(ColumnSortingMode)` | Built-in sorting mode for the column header |
-
-## Editor commands (editor-only)
-
-```csharp
-using Aspid.FastTools.UIElements.Editors;
-
-image.AddOpenScriptCommand(target);
-// Double-clicking the element opens the script for 'target' in the IDE
-```
-
-| Method | Target | Description |
-|--------|--------|-------------|
-| `AddOpenScriptCommand(Object)` | `VisualElement` | Registers a double-click handler that opens the source script for the given `MonoBehaviour` / `ScriptableObject` in the IDE. |
-| `GetOwnerWindow()` | `VisualElement` | Returns the `EditorWindow` whose panel hosts the element (falls back to the focused / mouse-over window for detached elements). Use it instead of `EditorWindow.focusedWindow` when anchoring popups to an element — pointer events arrive before focus moves to the clicked window. |
-| `BindTo(SerializedObject)` | `VisualElement` | Calls `BindingExtensions.Bind` on the element. |
-| `BindTo(SerializedObject, string propertyPath)` | `IBindable` | Sets `bindingPath` and binds to the given `SerializedObject`. |
-| `BindPropertyTo(SerializedProperty)` | `IBindable` | Calls `BindingExtensions.BindProperty` with the supplied property. |
-| `Initialize(Enum defaultValue, bool includeObsoleteValues = false)` | `EnumField` / `EnumFlagsField` | Initializes the field to the supplied default enum value. |
-| `AddValueChanged(EventCallback<SerializedPropertyChangeEvent>)` / `RemoveValueChanged(...)` | `PropertyField` | Subscribes / unsubscribes to property change notifications. |
-
-## USS custom-style helpers (`ICustomStyle`)
-
-```csharp
-using Aspid.FastTools.UIElements;
-
-private static readonly CustomStyleProperty<string> ThemeProperty = new("--aspid-fasttools-prop-theme");
-
-void OnCustomStyleResolved(CustomStyleResolvedEvent evt)
-{
-    if (evt.customStyle.TryGetByEnum(ThemeProperty, out ThemeStyle.Type theme))
-        ApplyTheme(theme);
-}
-```
-
-| Method | Description |
-|--------|-------------|
-| `ICustomStyle.TryGetByEnum<T>(CustomStyleProperty<string>, out T)` | Resolves a string-typed USS custom property and parses it case-insensitively as the enum `T`. Used by every `*Style` struct that exposes a USS-driven enum (`ThemeStyle`, `StatusStyle`, `AspidLabelSizeStyle`, etc.). |
+- [EditorTools](../Samples~/EditorTools/Documentation/README.md) — a complete window with search, a list, and asset editing.
+- [SerializedProperty Extensions](08-serialized-property-extensions.md) — changing data through Unity serialization.
+- [Editor Helpers](09-editor-helpers.md) — object and component labels.

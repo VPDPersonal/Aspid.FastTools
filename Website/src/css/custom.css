@@ -842,6 +842,48 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 
 /* Inspector screenshots stay compact; scene captures can use the article width. */
 .theme-doc-markdown img.doc-zoom-image[role='button'] { display: block; width: auto; max-width: min(100%, 640px); max-height: 520px; object-fit: contain; margin-inline: auto; cursor: zoom-in; background: var(--ifm-code-background); }
+.theme-doc-markdown img.doc-zoom-image[src*='/profiler-markers'] { max-width: 100%; max-height: none; }
+/* The article surface is a separate masked layer so page ripples pass through its windows. */
+html.docs-background-windows.docs-doc-page {
+  background-color: var(--venom-canvas);
+  background-image: var(--venom-dot-pattern);
+  background-size: 20px 20px;
+  background-attachment: fixed;
+}
+[class*='docMainContainer_'] > .container > .row > .col.doc-column-with-windows:first-child {
+  position: relative;
+  isolation: isolate;
+  background: transparent;
+}
+.doc-column-with-windows::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--venom-reading-surface);
+  mask-image: var(--doc-surface-mask);
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  pointer-events: none;
+}
+/* Keep the frame and image above the shared background. */
+.theme-doc-markdown .doc-profiler-panel {
+  display: block;
+  position: relative;
+  padding: clamp(1.5rem, 4vw, 3rem);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: var(--ifm-pre-border-radius);
+}
+.theme-doc-markdown .doc-profiler-panel > img.doc-zoom-image {
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 10px 24px #0003, 0 2px 6px #0002;
+}
+@media (max-width: 996px) {
+  .theme-doc-markdown .doc-profiler-panel { padding: 0; border: 0; }
+  .theme-doc-markdown .doc-profiler-panel > img.doc-zoom-image { border: 0; box-shadow: none; }
+}
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
 .theme-doc-markdown .readme-feature-table { table-layout: fixed; }
 .theme-doc-markdown .readme-feature-table :is(th, td):first-child { width: 25%; }

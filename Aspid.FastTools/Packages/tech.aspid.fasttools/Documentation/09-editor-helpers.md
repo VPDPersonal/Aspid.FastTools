@@ -36,4 +36,4 @@ Both methods return `string.Empty` for null or destroyed objects.
 
 ## Package sample
 
-In [EditorTools](../Samples~/EditorTools/Documentation/README.md), `GetDisplayName()` supplies the selected ability's pane title. Combine it with the [open-script command](07-visual-element-extensions.md#editor-commands-editor-only) to open the source file in your IDE on a double-click.
+In [EditorTools](../Samples~/EditorTools/Documentation/README.md), `GetDisplayName()` supplies the selected ability's pane title. Combine it with the [open-script command](07-visual-element-extensions.md#editor-extensions) to open the source file in your IDE on a double-click.
