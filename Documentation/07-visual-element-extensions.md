@@ -31,7 +31,7 @@ internal sealed class AbilityConfigEditor : Editor
             .SetBorderRadius(10).SetBorderWidth(1).SetPaddingX(14).SetPaddingY(12)
             .AddChild(new VisualElement()
                 .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
-                .AddChild(new Label(target.GetScriptName()).SetFlexGrow(1).SetFontSize(15))
+                .AddChild(new Label(target.GetDisplayName()).SetFlexGrow(1).SetFontSize(15))
                 .AddChild(badge))
             .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost")).AddValueChanged(_ => Refresh()))
             .AddChild(helpBox);

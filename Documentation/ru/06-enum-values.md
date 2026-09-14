@@ -1,53 +1,106 @@
 # EnumValues
 
-Сериализуемые отображения enum → значение, настраиваемые через Inspector.
+Настраивайте урон, цвета, звуки и другие значения для каждого члена enum прямо в инспекторе. В коде достаточно вызвать `GetValue`: таблица вернёт найденное значение или заданный `Default Value`.
 
-## EnumValues\<TValue\>
+![Таблицы поверхностей: enum-ключи и значения редактируются в инспекторе](../../Samples~/EnumValues/Documentation/Images/surface-tables.png)
 
-Сериализуемая коллекция записей `EnumValue<TValue>` с настраиваемым значением по умолчанию. Реализует `IEnumerable<KeyValuePair<Enum, TValue>>`.
+Таблицы поверхностей: enum-ключи и значения редактируются в инспекторе
 
-`GetValue` возвращает сопоставленное значение, а при отсутствии ключа — настроенное значение по умолчанию. `[Flags]`-перечисления поддерживаются: сопоставление использует `HasFlag` и корректно обрабатывает члены со значением `0`.
+## Быстрый старт
+
+Если перечисление известно в коде, используйте `EnumValues<TEnum, TValue>`. Например, таблицу множителей урона:
 
 ```csharp
-using System;
 using UnityEngine;
 using Aspid.FastTools.Enums;
 
 public enum DamageType { Physical, Fire, Ice, Poison }
 
-[Flags]
-public enum StatusEffect { None = 0, Burning = 1, Frozen = 2, Slowed = 4, Stunned = 8 }
-
 public sealed class DamageDealer : MonoBehaviour
 {
-    [SerializeField] private EnumValues<float> _damageMultipliers;
+    [SerializeField] private EnumValues<DamageType, float> _multipliers;
 
-    // Комбинации флагов (например Burning | Slowed) сопоставляются через HasFlag, побеждает первое
-    // совпадение — поэтому составные записи ставьте ПЕРЕД их отдельными флагами.
-    [SerializeField] private EnumValues<float> _speedMultipliersByStatus;
-
-    public float GetMultiplier(DamageType type) => _damageMultipliers.GetValue(type);
-
-    public float GetSpeedModifier(StatusEffect effects) => _speedMultipliersByStatus.GetValue(effects);
+    public float CalculateDamage(DamageType type, float baseDamage) =>
+        baseDamage * _multipliers.GetValue(type);
 }
 ```
 
-![EnumValues в Инспекторе](../Images/aspid_fasttools_enum_values.png)
+1. Добавьте `DamageDealer` на GameObject и раскройте `Multipliers` в инспекторе.
+2. Задайте **Default Value = 1** — урон без отдельной настройки останется прежним.
+3. В контекстном меню свойства выберите **Populate Missing Enum Members**. Отсутствующие ключи добавятся с текущим значением по умолчанию.
+4. Установите для `Fire` значение `1.5`. Вызов `CalculateDamage(DamageType.Fire, 10)` вернёт `15`.
 
-В Inspector выберите тип перечисления в заголовке `EnumValues`, затем назначьте значение для каждого члена перечисления. Нажмите правой кнопкой мыши по свойству, чтобы открыть контекстное меню с пунктом **Populate Missing Enum Members** — он добавит записи для всех отсутствующих членов перечисления, используя текущее Default Value как начальное значение.
+Чтобы проверить таблицы в действии, импортируйте [пример EnumValues](../../Samples~/EnumValues/Documentation/README.ru.md): там тип поверхности управляет цветом и следом персонажа.
 
-## EnumValues\<TEnum, TValue\>
+## Какой вариант выбрать
 
-Типизированный вариант `EnumValues<TValue>` для частого случая, когда тип перечисления уже известен в коде. Тип фиксируется generic-аргументом, поэтому выбор типа в Inspector заблокирован, а обращения проверяются на этапе компиляции. Поиск не использует boxing — ключи сравниваются как закэшированные числовые значения, — а `foreach` по обоим вариантам использует struct-энумератор и не аллоцирует. Реализует `IEnumerable<KeyValuePair<TEnum, TValue>>`.
+| Задача | Тип поля | Выбор enum в инспекторе |
+|---|---|---|
+| Перечисление известно при написании кода | `EnumValues<TEnum, TValue>` | Зафиксирован аргументом `TEnum` |
+| Перечисление должен выбрать автор ассета | `EnumValues<TValue>` | Доступен в заголовке таблицы |
+
+Оба варианта поддерживают значение по умолчанию, `[Flags]` и перебор записей. Тип `TValue` должен поддерживаться сериализацией Unity.
+
+### EnumValues\<TEnum, TValue\>
+
+Типизированная таблица проверяет тип ключа при компиляции. Поиск сравнивает закэшированные числовые значения enum без упаковки ключа в `object`.
 
 ```csharp
-public sealed class HitEffect : MonoBehaviour
-{
-    // Выбор типа в Inspector заблокирован — перечисление зафиксировано как DamageType.
-    [SerializeField] private EnumValues<DamageType, Color> _damageColors;
+[SerializeField] private EnumValues<DamageType, Color> _colors;
 
-    public Color GetColor(DamageType type) => _damageColors.GetValue(type);
+public Color GetColor(DamageType type) => _colors.GetValue(type);
+```
+
+### EnumValues\<TValue\>
+
+Универсальная таблица хранит тип enum, выбранный в инспекторе. Для неё можно использовать один и тот же класс конфигурации с разными перечислениями.
+
+```csharp
+[SerializeField] private EnumValues<float> _multipliers;
+
+public float GetMultiplier(DamageType type) => _multipliers.GetValue(type);
+```
+
+Для этого примера выберите `DamageType` в заголовке таблицы. Передавайте в `GetValue` ключи выбранного перечисления.
+
+## Как сопоставляются флаги
+
+Для `[Flags]` поиск идёт в два этапа: сначала **точное совпадение**, затем первая запись, все биты которой входят в запрошенное значение. Если совпадений нет, возвращается `Default Value`. Значение `0` совпадает только с `0`.
+
+```csharp
+[System.Flags]
+public enum StatusEffect
+{
+    None = 0,
+    Burning = 1,
+    Slowed = 2,
+    Frozen = 4
 }
 ```
 
-Семантика поиска (включая обработку `[Flags]`) идентична `EnumValues<TValue>`.
+Допустим, таблица содержит следующие записи в указанном порядке, а `Default Value` равен `1`:
+
+| Ключ | Значение |
+|---|---|
+| `Burning` | `0.9` |
+| `Slowed` | `0.5` |
+| `Burning \| Slowed` | `0.3` |
+| `None` | `1` |
+
+| Запрос | Результат | Причина |
+|---|---|---|
+| `Burning \| Slowed` | `0.3` | Точное совпадение имеет приоритет, даже если стоит ниже |
+| `Burning \| Frozen` | `0.9` | Точного совпадения нет; первая подходящая запись — `Burning` |
+| `Frozen` | `1` | Нет подходящей записи, используется `Default Value` |
+| `None` | `1` | Точное совпадение с нулём |
+
+Порядок записей важен при частичном совпадении. Если для `Burning | Slowed | Frozen` составная запись должна победить отдельный `Burning`, переместите её выше. Значения подходящих записей не суммируются и не перемножаются.
+
+## Перебор записей
+
+```csharp
+foreach (var entry in _multipliers)
+    Debug.Log($"{entry.Key}: {entry.Value}");
+```
+
+Оба варианта используют структурный перечислитель при прямом `foreach` по коллекции. Приведение к `IEnumerable` может привести к упаковке перечислителя. Типизированный вариант реализует `IEnumerable<KeyValuePair<TEnum, TValue>>`, универсальный — `IEnumerable<KeyValuePair<Enum, TValue>>`.

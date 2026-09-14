@@ -1,14 +1,39 @@
 # SerializedProperty Extensions
 
-Цепочные методы расширения над `SerializedProperty` для синхронизации владеющего `SerializedObject`, установки значений и рефлексии над полем-источником.
+Изменяйте сериализованные поля из инспекторов и окон редактора короткими цепочками: обновите данные, задайте значение и примените изменения. Дополнительные методы работают с размером массивов и помогают найти тип поля и его владельца.
 
 ```csharp
 using Aspid.FastTools.Editors;
 ```
 
-Все расширения обобщены по `T : SerializedProperty` и возвращают тот же экземпляр, поэтому вызовы можно свободно объединять в цепочки.
+Сеттеры и методы синхронизации возвращают то же свойство; методы рефлексии возвращают найденный тип, поле или объект. Код доступен только в редакторе — размещайте его в папке `Editor` или сборке для Editor.
 
-## Update / Apply
+## Быстрый старт
+
+В обработчике кнопки вашего `Editor` или `EditorWindow` можно изменить поле `_manaCost` типа `int`:
+
+```csharp
+var manaCost = serializedObject.FindProperty("_manaCost");
+manaCost.Update().SetIntAndApply(42);
+```
+
+`Update` считывает актуальное состояние объекта, `SetInt` меняет сериализованное значение, а `AndApply` применяет изменения через Unity. Обычный инспектор увидит новое значение; изменение поддерживает Undo.
+
+Для нескольких полей обновляйте `SerializedObject` один раз до записи и применяйте изменения после последнего сеттера:
+
+```csharp
+serializedObject.Update();
+serializedObject.FindProperty("_cooldown").SetFloat(0.5f);
+serializedObject.FindProperty("_manaCost").SetInt(10);
+serializedObject.ApplyModifiedProperties();
+```
+
+Здесь `_cooldown` — поле `float`, `_manaCost` — поле `int` того же объекта. Готовый пример такой кнопки есть в [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md).
+
+> [!IMPORTANT]
+> `Update()` обновляет весь `SerializedObject` и сбрасывает ещё не применённые изменения. Вызывайте его до серии записей. `ApplyModifiedProperties()` и все варианты `AndApply` применяют все накопленные изменения этого `SerializedObject`.
+
+## Обновление и применение
 
 Тонкие обёртки над одноимёнными методами `SerializedObject` у `property.serializedObject`.
 
@@ -23,20 +48,21 @@ property
 |-------|----------|
 | `Update()` | Вызывает `serializedObject.Update()` |
 | `UpdateIfRequiredOrScript()` | Вызывает `serializedObject.UpdateIfRequiredOrScript()` |
-| `ApplyModifiedProperties()` | Вызывает `serializedObject.ApplyModifiedProperties()` |
+| `ApplyModifiedProperties()` | Применяет изменения с поддержкой Undo |
+| `ApplyModifiedPropertiesWithoutUndo()` | Применяет изменения без записи шага Undo |
 
-## SetValue / SetXxx — typed setters
+## Запись значений
 
 Для каждого поддерживаемого типа существуют четыре варианта:
 
 | Вариант | Поведение |
 |---------|-----------|
-| `SetValue(value)` | Обобщённый диспетчер — выбирает нужный типизированный сеттер по runtime-типу значения, возвращает `property` |
+| `SetValue(value)` | Перегруженный метод: тип аргумента при компиляции определяет нужный сеттер |
 | `SetValueAndApply(value)` | `SetValue(value)` плюс `ApplyModifiedProperties()` |
 | `SetXxx(value)` | Типизированный сеттер (например, `SetInt`), пишущий в соответствующее поле `SerializedProperty.xxxValue` |
 | `SetXxxAndApply(value)` | `SetXxx(value)` плюс `ApplyModifiedProperties()` |
 
-### Supported types
+### Поддерживаемые типы
 
 | Семейство методов | Unity-тип | Примечания |
 |-------------------|-----------|------------|
@@ -60,7 +86,7 @@ property
 | `SetAnimationCurve` | `AnimationCurve` | |
 | `SetEntityId` | `EntityId` (`UnityEngine`) | Unity 6.2+ |
 
-### Enum setters
+### Перечисления
 
 Значения enum не идут через `SetValue` — используйте явную пару ниже в зависимости от того, является ли поле `[Flags]`-перечислением:
 
@@ -69,25 +95,11 @@ property
 | `SetEnumFlag(int)` / `SetEnumFlagAndApply(int)` | Пишет в `enumValueFlag` |
 | `SetEnumIndex(int)` / `SetEnumIndexAndApply(int)` | Пишет в `enumValueIndex` |
 
-### Example
+Тип сеттера должен соответствовать типу поля. Например, `SetValue(10)` выбирает запись `int`, а `SetValue(10f)` — `float`; метод не определяет нужный тип по содержимому `SerializedProperty`. Для `object` используйте явный сеттер ссылки или `SetBoxed` по назначению.
 
-```csharp
-SerializedProperty property = GetProperty();
+`SetEnumIndex` принимает индекс в списке значений enum, а не числовое значение перечисления. Например, для `enum Tier { Basic = 10, Advanced = 20 }` индекс `Advanced` равен `1`.
 
-// Эквивалентные формы
-property.SetValue(10).ApplyModifiedProperties();
-property.SetValueAndApply(10);
-property.SetInt(10).ApplyModifiedProperties();
-property.SetIntAndApply(10);
-
-// Цепочка из нескольких сеттеров
-property
-    .SetVector3(Vector3.up)
-    .SetBool(true)
-    .ApplyModifiedProperties();
-```
-
-## Array operations
+## Массивы и списки
 
 | Метод | Описание |
 |-------|----------|
@@ -95,7 +107,16 @@ property
 | `AddArraySize(int = 1)` / `AddArraySizeAndApply(int = 1)` | Увеличивает `arraySize` на указанное количество (по умолчанию `1`) |
 | `RemoveArraySize(int = 1)` / `RemoveArraySizeAndApply(int = 1)` | Уменьшает `arraySize` на указанное количество (по умолчанию `1`) |
 
-## Reference setters
+Методы меняют размер массива или списка, а не задают содержимое новых элементов. Получите добавленный элемент через `GetArrayElementAtIndex` и явно заполните его:
+
+```csharp
+var weights = serializedObject.FindProperty("_weights"); // float[]
+weights.Update().AddArraySize();
+weights.GetArrayElementAtIndex(weights.arraySize - 1).SetFloat(1f);
+weights.ApplyModifiedProperties();
+```
+
+## Ссылки и boxed-значения
 
 | Метод | Описание | Примечания |
 |-------|----------|------------|
@@ -104,9 +125,9 @@ property
 | `SetExposedReference(Object)` / `SetExposedReferenceAndApply(Object)` | Пишет в `exposedReferenceValue` | |
 | `SetBoxed(object)` / `SetBoxedAndApply(object)` | Пишет в `boxedValue` | Unity 6+ |
 
-## Reflection helpers
+## Тип поля и объект-владелец
 
-Для drawer-/inspector-кода, которому нужно получить runtime-тип или экземпляр, стоящий за property:
+Эти методы помогают разобрать поле в пользовательском drawer или инспекторе:
 
 | Метод | Возвращает | Описание |
 |-------|------------|----------|
@@ -117,8 +138,16 @@ property
 ```csharp
 public override void OnGUI(Rect rect, SerializedProperty property, GUIContent label)
 {
-    var declaringType = property.GetPropertyType();
+    var fieldType = property.GetPropertyType();
     var owner = property.GetDeclaringInstance();
     // …
 }
 ```
+
+`GetPropertyType()` возвращает объявленный тип поля. Для конкретной реализации managed-ссылки используйте `property.managedReferenceValue?.GetType()`. При мультивыделении `GetDeclaringInstance()` идёт от `targetObject`, то есть первого целевого объекта.
+
+## Независимое свойство
+
+`Persistent()` возвращает свойство с тем же путём на новом `SerializedObject`. Оно полезно, если свойство нужно сохранить отдельно от исходного потока инспектора. Ещё не применённые изменения исходного объекта не копируются.
+
+Новый `SerializedObject` принадлежит вызывающему коду: освободите его через `Dispose`, когда он больше не нужен. Метод может вернуть `null`, если путь на целевых объектах больше не существует.

@@ -13,7 +13,7 @@ Installation and samples are covered in the [introduction](README.md).
 5. [EnumValues](06-enum-values.md): `EnumValues<TValue>`, `EnumValues<TEnum, TValue>`
 6. [VisualElement Extensions](07-visual-element-extensions.md): the fluent UI Toolkit API
 7. [SerializedProperty Extensions](08-serialized-property-extensions.md): typed setters, arrays, references, reflection helpers
-8. [Editor Helpers](09-editor-helpers.md): `GetScriptName`, `GetScriptNameWithIndex`
+8. [Editor Helpers](09-editor-helpers.md): `GetDisplayName`, `GetDisplayNameWithIndex`
 9. [Claude Code Plugin](10-claude-code-plugin.md): the `aspid-fasttools` plugin
 
 ## Tutorials
