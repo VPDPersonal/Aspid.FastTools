@@ -8,7 +8,7 @@
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var manaCost = serializedObject<br />    .FindProperty("_manaCost");<br /><br />serializedObject.Update();<br />manaCost.intValue = 42;<br />serializedObject<br />    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>var manaCost = serializedObject<br />    .FindProperty("_manaCost");<br /><br />manaCost<br />    .Update()<br />    .SetIntAndApply(42);</code></pre> |
+| <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;serializedObject.Update();&#10;manaCost.intValue = 42;&#10;serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;manaCost&#10;    .Update()&#10;    .SetIntAndApply(42);</code></pre> |
 
 Сеттеры, `Update` и `Apply` возвращают исходное свойство для цепочек вызовов. В примере запись применяется с Undo.
 
@@ -32,8 +32,8 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>property.serializedObject<br />    .Update();<br />property.serializedObject<br />    .UpdateIfRequiredOrScript();</code></pre> | <pre lang="csharp"><code>property.Update();<br /><br />property<br />    .UpdateIfRequiredOrScript();</code></pre> |
-| <pre lang="csharp"><code>property.serializedObject<br />    .ApplyModifiedProperties();<br />property.serializedObject<br />    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>property<br />    .ApplyModifiedProperties();<br />property<br />    .ApplyModifiedPropertiesWithoutUndo();</code></pre> |
+| <pre lang="csharp"><code>property.serializedObject&#10;    .Update();&#10;property.serializedObject&#10;    .UpdateIfRequiredOrScript();</code></pre> | <pre lang="csharp"><code>property.Update();&#10;&#10;property&#10;    .UpdateIfRequiredOrScript();</code></pre> |
+| <pre lang="csharp"><code>property.serializedObject&#10;    .ApplyModifiedProperties();&#10;property.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>property&#10;    .ApplyModifiedProperties();&#10;property&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> |
 
 ## Запись значений
 
@@ -41,9 +41,9 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Применить позже<br />manaCost.intValue = 42;</code></pre> | <pre lang="csharp"><code>// Применить позже<br />manaCost.SetInt(42);</code></pre> |
-| <pre lang="csharp"><code>// С Undo<br />manaCost.intValue = 42;<br />manaCost.serializedObject<br />    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>// С Undo<br />manaCost.SetIntAndApply(42);</code></pre> |
-| <pre lang="csharp"><code>// Без Undo<br />manaCost.intValue = 42;<br />manaCost.serializedObject<br />    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>// Без Undo<br />manaCost<br />    .SetIntAndApplyWithoutUndo(42);</code></pre> |
+| <pre lang="csharp"><code>// Применить позже&#10;manaCost.intValue = 42;</code></pre> | <pre lang="csharp"><code>// Применить позже&#10;manaCost.SetInt(42);</code></pre> |
+| <pre lang="csharp"><code>// С Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>// С Undo&#10;manaCost.SetIntAndApply(42);</code></pre> |
+| <pre lang="csharp"><code>// Без Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>// Без Undo&#10;manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
 
 Вместо явного сеттера можно использовать `SetValue`: `SetValue(42)` эквивалентен `SetInt(42)`, а `SetValue(0.5f)` — `SetFloat(0.5f)`. Перегрузка выбирается **по типу аргумента**, который должен соответствовать типу поля.
 
@@ -81,7 +81,7 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Второй пункт enum<br />mode.enumValueIndex = 1;<br /><br />// Битовая маска [Flags]<br />flags.enumValueFlag = mask;</code></pre> | <pre lang="csharp"><code>// Второй пункт enum<br />mode.SetEnumIndex(1);<br /><br />// Битовая маска [Flags]<br />flags.SetEnumFlag(mask);</code></pre> |
+| <pre lang="csharp"><code>// Второй пункт enum&#10;mode.enumValueIndex = 1;&#10;&#10;// Битовая маска [Flags]&#10;flags.enumValueFlag = mask;</code></pre> | <pre lang="csharp"><code>// Второй пункт enum&#10;mode.SetEnumIndex(1);&#10;&#10;// Битовая маска [Flags]&#10;flags.SetEnumFlag(mask);</code></pre> |
 
 ## Массивы и списки
 
@@ -89,7 +89,7 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>items.arraySize = 5;<br />items.arraySize += 1;<br />items.arraySize += 2;<br />items.arraySize -= 2;<br />items.arraySize -= 1;</code></pre> | <pre lang="csharp"><code>items.SetArraySize(5);<br />items.AddArraySize();     // +1<br />items.AddArraySize(2);    // +2<br />items.RemoveArraySize(2); // -2<br />items.RemoveArraySize();  // -1</code></pre> |
+| <pre lang="csharp"><code>items.arraySize = 5;&#10;items.arraySize += 1;&#10;items.arraySize += 2;&#10;items.arraySize -= 2;&#10;items.arraySize -= 1;</code></pre> | <pre lang="csharp"><code>items.SetArraySize(5);&#10;items.AddArraySize();     // +1&#10;items.AddArraySize(2);    // +2&#10;items.RemoveArraySize(2); // -2&#10;items.RemoveArraySize();  // -1</code></pre> |
 
 Методы меняют только размер коллекции. `RemoveArraySize` убирает элементы с конца; новые элементы инициализируйте отдельно через `GetArrayElementAtIndex()`.
 
@@ -99,7 +99,7 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// [SerializeReference]<br />property.managedReferenceValue = instance;<br /><br />// UnityEngine.Object<br />property.objectReferenceValue = asset;<br /><br />// ExposedReference&lt;T&gt;<br />property.exposedReferenceValue = target;<br /><br />// boxedValue<br />property.boxedValue = value;</code></pre> | <pre lang="csharp"><code>// [SerializeReference]<br />property.SetManagedReference(instance);<br /><br />// UnityEngine.Object<br />property.SetObjectReference(asset);<br /><br />// ExposedReference&lt;T&gt;<br />property.SetExposedReference(target);<br /><br />// boxedValue<br />property.SetBoxed(value);</code></pre> |
+| <pre lang="csharp"><code>// [SerializeReference]&#10;property.managedReferenceValue = instance;&#10;&#10;// UnityEngine.Object&#10;property.objectReferenceValue = asset;&#10;&#10;// ExposedReference&lt;T&gt;&#10;property.exposedReferenceValue = target;&#10;&#10;// boxedValue&#10;property.boxedValue = value;</code></pre> | <pre lang="csharp"><code>// [SerializeReference]&#10;property.SetManagedReference(instance);&#10;&#10;// UnityEngine.Object&#10;property.SetObjectReference(asset);&#10;&#10;// ExposedReference&lt;T&gt;&#10;property.SetExposedReference(target);&#10;&#10;// boxedValue&#10;property.SetBoxed(value);</code></pre> |
 
 ## Тип поля и объект-владелец
 
@@ -183,7 +183,7 @@ manaCost.GetDeclaringInstance(); // Экземпляр Ability
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var independentObject =<br />    new SerializedObject(property<br />        .serializedObject.targetObjects);<br />var independent = independentObject<br />    .FindProperty(property.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = property.Persistent();</code></pre> |
+| <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(property&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(property.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = property.Persistent();</code></pre> |
 
 Для свойства типа `int` захватите `independent` в одноразовом делегате и освободите ресурсы после записи:
 

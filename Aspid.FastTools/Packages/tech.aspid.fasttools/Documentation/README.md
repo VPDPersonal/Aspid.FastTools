@@ -16,10 +16,10 @@ Tools for Unity that cut repetitive code in serialization and editor tooling.
 | [SerializeReference Selector](03-serialize-reference-selector.md) | Choose implementations and repair broken references in place | ![Switch Pistol to Shotgun while keeping Damage at 37](Images/aspid_fasttools_serialize_reference_selector.gif) |
 | [SerializeReference Tooling](04-serialize-reference-tooling.md) | Audit and repair references across the whole project, before builds and in CI | ![Repair a missing weapon type without losing its data](Images/aspid_fasttools_serialize_reference_tooling.gif) |
 | [EnumValues](06-enum-values.md) | Edit enum → value tables in the Inspector, including flags | ![Edit enum keys and their values in the Inspector](../Samples~/EnumValues/Documentation/Images/surface-tables.png) |
-| [ProfilerMarkers](05-profiler-markers.md) | Generate a unique profiler marker per call site with `this.Marker()` | <pre lang="csharp"><code>using (this.Marker())<br />&#123;<br />    Simulate();<br />&#125;</code></pre> |
-| [VisualElement Extensions](07-visual-element-extensions.md) | Build UI Toolkit trees with fluent chains | <pre lang="csharp"><code>new VisualElement()<br />  .SetPadding(8)<br />  .AddChild(<br />    new Label("Stats"));</code></pre> |
-| [SerializedProperty Extensions](08-serialized-property-extensions.md) | Set values, resize arrays, and inspect the field type and owning object | <pre lang="csharp"><code>property<br />  .Update()<br />  .SetIntAndApply(42);</code></pre> |
-| [Editor Helpers](09-editor-helpers.md) | Get readable object and component display names for custom editors | <pre lang="csharp"><code>audio.GetDisplayName();<br />// "Audio Source"<br /><br />secondAudio<br />  .GetDisplayNameWithIndex();<br />// "Audio Source (2)"</code></pre> |
+| [ProfilerMarkers](05-profiler-markers.md) | Generate a unique profiler marker per call site with `this.Marker()` | <pre lang="csharp"><code>using (this.Marker())&#10;&#123;&#10;    Simulate();&#10;&#125;</code></pre> |
+| [VisualElement Extensions](07-visual-element-extensions.md) | Build UI Toolkit trees with fluent chains | <pre lang="csharp"><code>new VisualElement()&#10;  .SetPadding(8)&#10;  .AddChild(&#10;    new Label("Stats"));</code></pre> |
+| [SerializedProperty Extensions](08-serialized-property-extensions.md) | Set values, resize arrays, and inspect the field type and owning object | <pre lang="csharp"><code>property&#10;  .Update()&#10;  .SetIntAndApply(42);</code></pre> |
+| [Editor Helpers](09-editor-helpers.md) | Get readable object and component display names for custom editors | <pre lang="csharp"><code>audio.GetDisplayName();&#10;// "Audio Source"&#10;&#10;secondAudio&#10;  .GetDisplayNameWithIndex();&#10;// "Audio Source (2)"</code></pre> |
 
 ## Installation
 

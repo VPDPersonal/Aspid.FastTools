@@ -8,7 +8,7 @@ Add `using Aspid.FastTools.Editors;` to your Editor script. Here, `serializedObj
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var manaCost = serializedObject<br />    .FindProperty("_manaCost");<br /><br />serializedObject.Update();<br />manaCost.intValue = 42;<br />serializedObject<br />    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>var manaCost = serializedObject<br />    .FindProperty("_manaCost");<br /><br />manaCost<br />    .Update()<br />    .SetIntAndApply(42);</code></pre> |
+| <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;serializedObject.Update();&#10;manaCost.intValue = 42;&#10;serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;manaCost&#10;    .Update()&#10;    .SetIntAndApply(42);</code></pre> |
 
 Setters, `Update`, and `Apply` return the original property for chaining. This example applies the write with Undo.
 
@@ -32,8 +32,8 @@ The same Unity operations, called on a property. Each line below shows a separat
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>property.serializedObject<br />    .Update();<br />property.serializedObject<br />    .UpdateIfRequiredOrScript();</code></pre> | <pre lang="csharp"><code>property.Update();<br /><br />property<br />    .UpdateIfRequiredOrScript();</code></pre> |
-| <pre lang="csharp"><code>property.serializedObject<br />    .ApplyModifiedProperties();<br />property.serializedObject<br />    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>property<br />    .ApplyModifiedProperties();<br />property<br />    .ApplyModifiedPropertiesWithoutUndo();</code></pre> |
+| <pre lang="csharp"><code>property.serializedObject&#10;    .Update();&#10;property.serializedObject&#10;    .UpdateIfRequiredOrScript();</code></pre> | <pre lang="csharp"><code>property.Update();&#10;&#10;property&#10;    .UpdateIfRequiredOrScript();</code></pre> |
+| <pre lang="csharp"><code>property.serializedObject&#10;    .ApplyModifiedProperties();&#10;property.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>property&#10;    .ApplyModifiedProperties();&#10;property&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> |
 
 ## Writing values
 
@@ -41,9 +41,9 @@ Choose when to apply the write:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Apply later<br />manaCost.intValue = 42;</code></pre> | <pre lang="csharp"><code>// Apply later<br />manaCost.SetInt(42);</code></pre> |
-| <pre lang="csharp"><code>// With Undo<br />manaCost.intValue = 42;<br />manaCost.serializedObject<br />    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>// With Undo<br />manaCost.SetIntAndApply(42);</code></pre> |
-| <pre lang="csharp"><code>// Without Undo<br />manaCost.intValue = 42;<br />manaCost.serializedObject<br />    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>// Without Undo<br />manaCost<br />    .SetIntAndApplyWithoutUndo(42);</code></pre> |
+| <pre lang="csharp"><code>// Apply later&#10;manaCost.intValue = 42;</code></pre> | <pre lang="csharp"><code>// Apply later&#10;manaCost.SetInt(42);</code></pre> |
+| <pre lang="csharp"><code>// With Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>// With Undo&#10;manaCost.SetIntAndApply(42);</code></pre> |
+| <pre lang="csharp"><code>// Without Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>// Without Undo&#10;manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
 
 Use `SetValue` as an alternative to an explicit setter: `SetValue(42)` is equivalent to `SetInt(42)`, and `SetValue(0.5f)` to `SetFloat(0.5f)`. The overload is selected **by the argument’s type**, which must match the field.
 
@@ -81,7 +81,7 @@ Each type has an explicit setter and `SetValue` overloads:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Second enum entry<br />mode.enumValueIndex = 1;<br /><br />// [Flags] bitmask<br />flags.enumValueFlag = mask;</code></pre> | <pre lang="csharp"><code>// Second enum entry<br />mode.SetEnumIndex(1);<br /><br />// [Flags] bitmask<br />flags.SetEnumFlag(mask);</code></pre> |
+| <pre lang="csharp"><code>// Second enum entry&#10;mode.enumValueIndex = 1;&#10;&#10;// [Flags] bitmask&#10;flags.enumValueFlag = mask;</code></pre> | <pre lang="csharp"><code>// Second enum entry&#10;mode.SetEnumIndex(1);&#10;&#10;// [Flags] bitmask&#10;flags.SetEnumFlag(mask);</code></pre> |
 
 ## Arrays and lists
 
@@ -89,7 +89,7 @@ For an array or list property named `items`:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>items.arraySize = 5;<br />items.arraySize += 1;<br />items.arraySize += 2;<br />items.arraySize -= 2;<br />items.arraySize -= 1;</code></pre> | <pre lang="csharp"><code>items.SetArraySize(5);<br />items.AddArraySize();     // +1<br />items.AddArraySize(2);    // +2<br />items.RemoveArraySize(2); // -2<br />items.RemoveArraySize();  // -1</code></pre> |
+| <pre lang="csharp"><code>items.arraySize = 5;&#10;items.arraySize += 1;&#10;items.arraySize += 2;&#10;items.arraySize -= 2;&#10;items.arraySize -= 1;</code></pre> | <pre lang="csharp"><code>items.SetArraySize(5);&#10;items.AddArraySize();     // +1&#10;items.AddArraySize(2);    // +2&#10;items.RemoveArraySize(2); // -2&#10;items.RemoveArraySize();  // -1</code></pre> |
 
 These methods only resize the collection. `RemoveArraySize` removes elements from the end; initialize new elements separately through `GetArrayElementAtIndex()`.
 
@@ -99,7 +99,7 @@ Choose a setter according to how the field is serialized; each entry below is a 
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// [SerializeReference]<br />property.managedReferenceValue = instance;<br /><br />// UnityEngine.Object<br />property.objectReferenceValue = asset;<br /><br />// ExposedReference&lt;T&gt;<br />property.exposedReferenceValue = target;<br /><br />// boxedValue<br />property.boxedValue = value;</code></pre> | <pre lang="csharp"><code>// [SerializeReference]<br />property.SetManagedReference(instance);<br /><br />// UnityEngine.Object<br />property.SetObjectReference(asset);<br /><br />// ExposedReference&lt;T&gt;<br />property.SetExposedReference(target);<br /><br />// boxedValue<br />property.SetBoxed(value);</code></pre> |
+| <pre lang="csharp"><code>// [SerializeReference]&#10;property.managedReferenceValue = instance;&#10;&#10;// UnityEngine.Object&#10;property.objectReferenceValue = asset;&#10;&#10;// ExposedReference&lt;T&gt;&#10;property.exposedReferenceValue = target;&#10;&#10;// boxedValue&#10;property.boxedValue = value;</code></pre> | <pre lang="csharp"><code>// [SerializeReference]&#10;property.SetManagedReference(instance);&#10;&#10;// UnityEngine.Object&#10;property.SetObjectReference(asset);&#10;&#10;// ExposedReference&lt;T&gt;&#10;property.SetExposedReference(target);&#10;&#10;// boxedValue&#10;property.SetBoxed(value);</code></pre> |
 
 ## Field type and owner
 
@@ -183,7 +183,7 @@ Using the properties from the previous example:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var independentObject =<br />    new SerializedObject(property<br />        .serializedObject.targetObjects);<br />var independent = independentObject<br />    .FindProperty(property.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = property.Persistent();</code></pre> |
+| <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(property&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(property.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = property.Persistent();</code></pre> |
 
 For an `int` property, capture `independent` in a one-shot delegate and dispose the resources after writing:
 

@@ -97,7 +97,7 @@ For an intentional rename or move, `[MovedFrom]` connects the old identity to th
 
 | Before — GhostWeapon | After — Pistol |
 |---|---|
-| <pre lang="csharp"><code>[Serializable]<br />public sealed class GhostWeapon<br />&#123;<br />    public int Damage = 10;<br />&#125;</code></pre> | <pre lang="csharp"><code>[Serializable]<br />[MovedFrom(true,<br />    sourceClassName: "GhostWeapon")]<br />public sealed class Pistol<br />&#123;<br />    public int Damage = 10;<br />&#125;</code></pre> |
+| <pre lang="csharp"><code>[Serializable]&#10;public sealed class GhostWeapon&#10;&#123;&#10;    public int Damage = 10;&#10;&#125;</code></pre> | <pre lang="csharp"><code>[Serializable]&#10;[MovedFrom(true,&#10;    sourceClassName: "GhostWeapon")]&#10;public sealed class Pistol&#10;&#123;&#10;    public int Damage = 10;&#10;&#125;</code></pre> |
 
 The attributes require `using System;` and `using UnityEngine.Scripting.APIUpdating;`. For moves, also supply the old `sourceNamespace` and `sourceAssembly`.
 

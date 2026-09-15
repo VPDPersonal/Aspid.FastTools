@@ -8,7 +8,7 @@ Unity не сериализует поле `System.Type` напрямую. Вм�
 
 | До — строка с именем типа | После — SerializableType |
 |---|---|
-| <pre lang="csharp"><code>[SerializeField]<br />private string _colliderTypeName;<br /><br />public System.Type ColliderType =&gt;<br />    string.IsNullOrEmpty(_colliderTypeName)<br />        ? null<br />        : System.Type.GetType(<br />            _colliderTypeName, false);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]<br />[SerializeField]<br />private SerializableType&lt;Collider&gt;<br />    _colliderType;<br /><br />public System.Type ColliderType =&gt;<br />    _colliderType?.Type;</code></pre> |
+| <pre lang="csharp"><code>[SerializeField]&#10;private string _colliderTypeName;&#10;&#10;public System.Type ColliderType =&gt;&#10;    string.IsNullOrEmpty(_colliderTypeName)&#10;        ? null&#10;        : System.Type.GetType(&#10;            _colliderTypeName, false);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;Collider&gt;&#10;    _colliderType;&#10;&#10;public System.Type ColliderType =&gt;&#10;    _colliderType?.Type;</code></pre> |
 
 Для варианта справа нужны `using UnityEngine;` и `using Aspid.FastTools.Types;`. Сама обёртка уже имеет селектор; атрибут здесь исключает абстрактные классы и интерфейсы.
 
@@ -100,7 +100,7 @@ var empty = new SerializableType<Collider>(null);
 
 | Хранение имени | Связь с ассетом скрипта |
 |---|---|
-| <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]<br />[SerializeField]<br />private SerializableType&lt;MonoBehaviour&gt;<br />    _componentType;</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]<br />[SerializeField]<br />private SerializableMonoScript&lt;MonoBehaviour&gt;<br />    _componentType;</code></pre> |
+| <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;MonoBehaviour&gt;&#10;    _componentType;</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableMonoScript&lt;MonoBehaviour&gt;&#10;    _componentType;</code></pre> |
 
 | Возможность | SerializableType | SerializableMonoScript |
 |---|---|---|
@@ -374,7 +374,7 @@ public abstract class EnemyBase : MonoBehaviour
 
 | FastEnemy.cs | ArmoredEnemy.cs |
 |---|---|
-| <pre lang="csharp"><code>using UnityEngine;<br /><br />public sealed class FastEnemy : EnemyBase<br />&#123;<br />    [SerializeField] private float _speed = 25f;<br /><br />    public override void Attack() =&gt;<br />        Debug.Log($"Speed: &#123;_speed&#125;");<br />&#125;</code></pre> | <pre lang="csharp"><code>using UnityEngine;<br /><br />public sealed class ArmoredEnemy : EnemyBase<br />&#123;<br />    [SerializeField] private int _armor = 10;<br /><br />    public override void Attack() =&gt;<br />        Debug.Log($"Armor: &#123;_armor&#125;");<br />&#125;</code></pre> |
+| <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private float _speed = 25f;&#10;&#10;    public override void Attack() =&gt;&#10;        Debug.Log($"Speed: &#123;_speed&#125;");&#10;&#125;</code></pre> | <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private int _armor = 10;&#10;&#10;    public override void Attack() =&gt;&#10;        Debug.Log($"Armor: &#123;_armor&#125;");&#10;&#125;</code></pre> |
 
 Добавьте **FastEnemy** на GameObject, задайте **Health = 75** и через селектор выберите **ArmoredEnemy**. Общий `Health` сохранится, поле `Speed` исчезнет, появится `Armor`. Уникальные поля прежнего класса не следует считать сохранёнными для обратного переключения.
 
