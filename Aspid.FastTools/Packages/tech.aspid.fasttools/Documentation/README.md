@@ -4,7 +4,7 @@
 [![Preview 1.0.0-rc.8](Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 [![MIT License](Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Tools for Unity that reduce repetitive code: pick and repair `SerializeReference` implementations in the Inspector, serialize types and enum tables, generate profiler markers, and build editor UI with fluent UI Toolkit extensions.
+Tools for Unity that cut repetitive code in serialization and editor tooling.
 
 [Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
@@ -14,7 +14,7 @@ Tools for Unity that reduce repetitive code: pick and repair `SerializeReference
 |---|---|---|
 | [Serializable Type System](02-serializable-types.md) | Store and pick a `System.Type` in the Inspector | ![Select a serializable type in the Inspector](Images/aspid_fasttools_serializable_type.gif) |
 | [SerializeReference Selector](03-serialize-reference-selector.md) | Choose implementations and repair broken references in place | ![Switch Pistol to Shotgun while keeping Damage at 37](Images/aspid_fasttools_serialize_reference_selector.gif) |
-| [SerializeReference Tooling](04-serialize-reference-tooling.md) | Audit and repair references across the project; check them before builds and in CI | ![Repair a missing weapon type without losing its data](Images/aspid_fasttools_serialize_reference_tooling.gif) |
+| [SerializeReference Tooling](04-serialize-reference-tooling.md) | Audit and repair references across the whole project, before builds and in CI | ![Repair a missing weapon type without losing its data](Images/aspid_fasttools_serialize_reference_tooling.gif) |
 | [EnumValues](06-enum-values.md) | Edit enum → value tables in the Inspector, including flags | ![Edit enum keys and their values in the Inspector](../Samples~/EnumValues/Documentation/Images/surface-tables.png) |
 | [ProfilerMarkers](05-profiler-markers.md) | Generate a unique profiler marker per call site with `this.Marker()` | <pre lang="csharp"><code>using (this.Marker())<br />&#123;<br />    Simulate();<br />&#125;</code></pre> |
 | [VisualElement Extensions](07-visual-element-extensions.md) | Build UI Toolkit trees with fluent chains | <pre lang="csharp"><code>new VisualElement()<br />  .SetPadding(8)<br />  .AddChild(<br />    new Label("Stats"));</code></pre> |

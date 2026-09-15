@@ -727,7 +727,7 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 .theme-doc-markdown .readme-links a:hover { color: var(--venom-accent); text-decoration: none; }
 
 /* The introduction banner spans the reading panel without a media frame. */
-.theme-doc-markdown img[src$='/aspid_fasttools_readme_banner.gif'] {
+.theme-doc-markdown img.readme-banner {
   display: block;
   width: calc(100% + 2.5rem);
   max-width: none;
@@ -739,7 +739,7 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 }
 
 @media (min-width: 997px) {
-  .theme-doc-markdown img[src$='/aspid_fasttools_readme_banner.gif'] {
+  .theme-doc-markdown img.readme-banner {
     width: 100cqw;
     margin-inline: calc(50% - 50cqw);
   }
@@ -747,14 +747,14 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 
 /* The introduction starts with its banner; the compact TOC follows it. */
 @media (min-width: 997px) {
-  .theme-doc-markdown > img[src$='/aspid_fasttools_readme_banner.gif']:first-child {
+  .theme-doc-markdown > img.readme-banner:first-child {
     margin-top: -1.5rem;
     border-radius: 12px 12px 0 0;
   }
 }
 
 @media (max-width: 996px) {
-  .theme-doc-markdown > img[src$='/aspid_fasttools_readme_banner.gif']:first-child {
+  .theme-doc-markdown > img.readme-banner:first-child {
     margin-top: -1.5rem;
   }
 }
@@ -1046,9 +1046,11 @@ html.docs-background-windows.docs-doc-page {
   height: 114%;
   object-fit: fill;
 }
+/* Code previews need less height than captures: a few lines sit in a shorter box. */
+.theme-doc-markdown .feature-card__preview:has(> .theme-code-block) { aspect-ratio: 16 / 9; min-height: max-content; }
 /* Code previews are the code block itself, edge to edge. */
 .theme-doc-markdown .feature-card__preview .theme-code-block {
-  --ifm-pre-padding: 1.5rem 1.75rem;
+  --ifm-pre-padding: 1rem 1.75rem;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -1061,7 +1063,7 @@ html.docs-background-windows.docs-doc-page {
 }
 .theme-doc-markdown .feature-card__preview .theme-code-block [class*='buttonGroup'] { display: none; }
 .theme-doc-markdown .feature-card__preview .theme-code-block > div:first-child,
-.theme-doc-markdown .feature-card__preview .theme-code-block pre { padding: 0; font-size: 0.95rem; line-height: 1.7; }
+.theme-doc-markdown .feature-card__preview .theme-code-block pre { padding: 0; font-size: 0.95rem; line-height: 1.6; }
 .theme-doc-markdown .feature-card__body { display: flex; flex: 1; flex-direction: column; padding: 22px 26px 24px; }
 .theme-doc-markdown .feature-card__title {
   display: flex;

@@ -6,7 +6,7 @@
 [![Preview 1.0.0-rc.8](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 [![MIT License](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Tools for Unity that reduce repetitive code: pick and repair `SerializeReference` implementations in the Inspector, serialize types and enum tables, generate profiler markers, and build editor UI with fluent UI Toolkit extensions.
+Tools for Unity that cut repetitive code in serialization and editor tooling.
 
 [Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
@@ -16,7 +16,7 @@ Tools for Unity that reduce repetitive code: pick and repair `SerializeReference
 |-|-|-|
 |[Serializable Type System](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/02-serializable-types.md)|Store and pick a `System.Type` in the Inspector|![Select a serializable type in the Inspector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serializable_type.gif)|
 |[SerializeReference Selector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-serialize-reference-selector.md)|Choose implementations and repair broken references in place|![Switch Pistol to Shotgun while keeping Damage at 37](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector.gif)|
-|[SerializeReference Tooling](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-tooling.md)|Audit and repair references across the project; check them before builds and in CI|![Repair a missing weapon type without losing its data](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_tooling.gif)|
+|[SerializeReference Tooling](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-tooling.md)|Audit and repair references across the whole project, before builds and in CI|![Repair a missing weapon type without losing its data](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_tooling.gif)|
 |[EnumValues](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/06-enum-values.md)|Edit enum → value tables in the Inspector, including flags|![Edit enum keys and their values in the Inspector](Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/EnumValues/Documentation/Images/surface-tables.png)|
 |[ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-profiler-markers.md)|Generate a unique profiler marker per call site with `this.Marker()`|<pre lang="csharp"><code>using (this.Marker())<br />{<br />    Simulate();<br />}</code></pre>|
 |[VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-visual-element-extensions.md)|Build UI Toolkit trees with fluent chains|<pre lang="csharp"><code>new VisualElement()<br />  .SetPadding(8)<br />  .AddChild(<br />    new Label("Stats"));</code></pre>|
