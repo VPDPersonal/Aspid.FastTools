@@ -834,7 +834,7 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .table-of-contents li { margin-block: 0.65rem; }
 .markdown > :is(p, ul, ol, blockquote) { max-width: 76ch; }
 .markdown > h1 { margin-bottom: 1.5rem; }
-.markdown > :is(h1, .article-toc) + p { color: var(--venom-fg); font-size: 1.025rem; }
+.markdown > h1 + p { color: var(--venom-fg); font-size: 1.025rem; }
 .markdown li + li { margin-top: 0.6rem; }
 .markdown li::marker { color: var(--venom-muted); }
 .markdown :not(pre) > code { overflow-wrap: anywhere; border-radius: 4px; font-size: 0.875em; }
@@ -1017,21 +1017,14 @@ html.docs-background-windows.docs-doc-page {
 .doc-image-dialog p { font-size: 0.8125rem; color: var(--venom-muted); margin: 0.8rem 0 0; text-align: center; }
 .doc-image-close { position: absolute; top: 0.7rem; right: 1rem; padding: 4px 8px; background: var(--venom-panel); color: var(--venom-fg); border: 1px solid var(--venom-line-strong); border-radius: 4px; font: 0.8125rem var(--ifm-font-family-base); cursor: pointer; }
 .doc-image-close kbd { margin-left: 6px; box-shadow: none; font-size: 0.75rem; }
-/* In-article TOC: a one-line disclosure under the title; the list opens in two columns. */
-.article-toc { margin: -0.5rem 0 1.75rem; border-top: 1px solid var(--venom-line); border-bottom: 1px solid var(--venom-line); font-size: 0.875rem; }
-.article-toc__toggle { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.55rem 0; color: var(--venom-muted); font: 600 0.75rem/1.5 var(--ifm-font-family-monospace); letter-spacing: 0.06em; text-transform: uppercase; text-align: left; }
-.article-toc__toggle:hover { color: var(--venom-fg); }
-.article-toc__count { font-weight: 400; letter-spacing: 0.02em; text-transform: none; color: var(--venom-muted); opacity: 0.8; }
-.article-toc__count::before { content: '·'; margin-right: 0.6rem; }
-.article-toc__toggle::after { content: ''; margin-left: auto; width: 1rem; height: 1rem; background: var(--ifm-menu-link-sublist-icon) 50% 50% / 1.25rem 1.25rem no-repeat; filter: var(--ifm-menu-link-sublist-icon-filter); opacity: 0.7; transform: rotate(180deg); transition: transform var(--ifm-transition-fast); }
-.article-toc--open .article-toc__toggle::after { transform: none; }
-.article-toc__list > ul { border-top: 1px solid var(--venom-line); padding: 0.6rem 0 0.9rem; columns: 2; column-gap: 2.5rem; }
-.article-toc__list li { margin: 0.35rem 0; break-inside: avoid; }
-.article-toc__list ul ul { padding-left: 0.9rem; }
-.article-toc__list .table-of-contents__link { display: block; color: var(--venom-fg); }
-.article-toc__list .table-of-contents__link:hover { color: var(--venom-accent); }
-.article-toc__list ul ul .table-of-contents__link { color: var(--venom-muted); font-size: 0.8125rem; }
-@media (max-width: 700px) { .article-toc__list > ul { columns: 1; } }
-/* Wide screens have the sticky outline on the right instead. */
-@media (min-width: 1400px) { .article-toc { display: none; } }
+/* In-article TOC disclosure: the same quiet language as the sidebar group headers, no box. */
+article > .theme-doc-toc-mobile,
+.theme-doc-markdown > .theme-doc-toc-mobile { margin-block: 1.5rem; background: transparent; border: 0; border-bottom: 1px solid var(--venom-line); border-radius: 0; font-size: 0.875rem; }
+.theme-doc-toc-mobile > button { padding: 0.5rem 0; color: var(--venom-muted); font: 600 0.75rem/1.5 var(--ifm-font-family-monospace); letter-spacing: 0.06em; text-transform: uppercase; }
+article > .theme-doc-toc-mobile:first-child > button { padding-top: 0; }
+.theme-doc-toc-mobile > button:hover { color: var(--venom-fg); }
+.theme-doc-toc-mobile > button::after { width: 1rem; height: 1rem; background-size: 1.25rem 1.25rem; opacity: 0.7; }
+.theme-doc-toc-mobile > div > ul { border-top: 1px solid var(--venom-line); padding: 0.5rem 0 0.75rem; font-size: 0.875rem; }
+.theme-doc-toc-mobile > div ul li { margin: 0.45rem 0; }
+.theme-doc-toc-mobile > div ul ul { padding-left: 0.9rem; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }

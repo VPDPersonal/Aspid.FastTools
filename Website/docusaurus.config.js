@@ -5,7 +5,6 @@ import remarkGithubAdmonitionsToDirectives from 'remark-github-admonitions-to-di
 import remarkCrossInstanceLinks from './src/remark/crossInstanceLinks.js';
 import remarkThemedImages from './src/remark/themedImages.js';
 import remarkIntroBanner, {remarkStatusBadges} from './src/remark/introBanner.js';
-import remarkArticleToc from './src/remark/articleToc.js';
 
 const PACKAGE = '../Aspid.FastTools/Packages/tech.aspid.fasttools';
 const PACKAGE_DIR = PACKAGE.replace(/^\.\.\//, ''); // repository-relative, for "Edit this page" links
@@ -35,7 +34,7 @@ function samplePrefixParser(filename) {
  * between the two plugin instances become site routes.
  */
 const markdownOptions = {
-  beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives, remarkCrossInstanceLinks, remarkThemedImages, remarkArticleToc],
+  beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives, remarkCrossInstanceLinks, remarkThemedImages],
   showLastUpdateTime: true,
   // Translations live next to the English sources: `Documentation/<locale>/<file>`.
   editUrl: ({ docPath, locale }) =>
@@ -140,7 +139,7 @@ const config = {
         sidebarPath: './changelog/sidebars.json',
         showLastUpdateTime: true,
         editUrl: ({ locale }) => `${REPO}/edit/main/CHANGELOG${locale === 'en' ? '' : `.${locale}`}.md`,
-        beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives, remarkArticleToc],
+        beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives],
       }),
     ],
     [
@@ -155,7 +154,6 @@ const config = {
         sidebarPath: './sidebarsApi.js',
         showLastUpdateTime: false,
         editUrl: undefined,
-        beforeDefaultRemarkPlugins: [remarkArticleToc],
       }),
     ],
   ],
