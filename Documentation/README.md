@@ -8,31 +8,63 @@ Aspid.FastTools is a Unity package that fills the gaps Unity leaves in serializa
 
 [Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
+## Installation
+
+In **Window → Package Manager**, choose **+ → Install package from git URL…** and paste:
+
+```text
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
+```
+
+This installs the preview version covered by this documentation. Git must be installed for UPM Git URLs.
+
+<details>
+<summary>Other installation options</summary>
+
+- **Latest preview:** updating the package can bring in a newer preview.
+
+  ```text
+  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
+  ```
+
+- **Another version:** copy its UPM tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases), for example:
+
+  ```text
+  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.7
+  ```
+
+- **Unity Asset Store:** the package is not yet available in the store. For now, install it using the Git URL above.
+
+> [!WARNING]
+> The `upm` branch currently contains the older `com.aspid.fasttools` package (`1.0.0-rc.2`). Use the URL above for `tech.aspid.fasttools` and the features described here.
+
+</details>
+
 ## Features
 
 ### [Serializable Type System](02-serializable-types.md)
 
 Store and pick a `System.Type` in the Inspector.
 
-![Select a serializable type in the Inspector](Images/aspid_fasttools_serializable_type.gif)
+<img src="Images/aspid_fasttools_serializable_type.gif" alt="Select a serializable type in the Inspector" width="640" />
 
 ### [SerializeReference Selector](03-serialize-reference-selector.md)
 
 Pick which class a `SerializeReference` field holds, straight from the Inspector.
 
-![Switch Pistol to Shotgun while keeping Damage at 37](Images/aspid_fasttools_serialize_reference_selector.gif)
+<img src="Images/aspid_fasttools_serialize_reference_selector.gif" alt="Switch Pistol to Shotgun while keeping Damage at 37" width="640" />
 
 ### [SerializeReference Tooling](04-serialize-reference-tooling.md)
 
 Audit and repair references across the whole project, before builds and in CI.
 
-![Repair a missing weapon type without losing its data](Images/aspid_fasttools_serialize_reference_tooling.gif)
+<img src="Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Repair a missing weapon type without losing its data" width="640" />
 
 ### [EnumValues](06-enum-values.md)
 
 Edit enum → value tables in the Inspector, including flags.
 
-![Edit enum keys and their values in the Inspector](Images/aspid_fasttools_enum_values.gif)
+<img src="Images/aspid_fasttools_enum_values.gif" alt="Edit enum keys and their values in the Inspector" width="640" />
 
 ### [ProfilerMarkers](05-profiler-markers.md)
 
@@ -78,38 +110,6 @@ secondAudio
   .GetDisplayNameWithIndex();
 // "Audio Source (2)"
 ```
-
-## Installation
-
-In **Window → Package Manager**, choose **+ → Install package from git URL…** and paste:
-
-```text
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
-```
-
-This installs the preview version covered by this documentation. Git must be installed for UPM Git URLs.
-
-<details>
-<summary>Other installation options</summary>
-
-- **Latest preview:** updating the package can bring in a newer preview.
-
-  ```text
-  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
-  ```
-
-- **Another version:** copy its UPM tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases), for example:
-
-  ```text
-  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.7
-  ```
-
-- **Unity Asset Store:** the package is not yet available in the store. For now, install it using the Git URL above.
-
-> [!WARNING]
-> The `upm` branch currently contains the older `com.aspid.fasttools` package (`1.0.0-rc.2`). Use the URL above for `tech.aspid.fasttools` and the features described here.
-
-</details>
 
 ## Quick start
 
