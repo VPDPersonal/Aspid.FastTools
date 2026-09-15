@@ -86,7 +86,8 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
       }
       // On GitHub the features are plain sections: a linked heading, a sentence and a preview.
       // The site shows the same sections as a card grid, like the samples overview.
-      const features = tree.children.findIndex((node) => node.type === 'heading' && node.depth === 2);
+      const features = tree.children.findIndex((node, index) => node.type === 'heading' && node.depth === 2
+        && tree.children[index + 1]?.type === 'heading' && tree.children[index + 1].depth === 3);
       if (features !== -1) {
         let end = features + 1;
         while (end < tree.children.length && !(tree.children[end].type === 'heading' && tree.children[end].depth === 2)) end++;
@@ -96,7 +97,12 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           const heading = section[i];
           if (heading.type !== 'heading' || heading.depth !== 3) continue;
           const summary = section[i + 1];
-          const preview = section[i + 2];
+          let preview = section[i + 2];
+          // GitHub reads a sized <img>; the site lays the same capture out as a Markdown image.
+          if (preview?.type === 'mdxJsxFlowElement' && preview.name === 'img') {
+            const attribute = (name) => preview.attributes.find((item) => item.name === name)?.value;
+            preview = {type: 'paragraph', children: [{type: 'image', url: attribute('src'), alt: attribute('alt') ?? ''}]};
+          }
           if (summary?.type !== 'paragraph' || !preview
             || !(preview.type === 'code' || (preview.type === 'paragraph' && preview.children[0]?.type === 'image'))) continue;
           const jsx = (name, className, children) => ({

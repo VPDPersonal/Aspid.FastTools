@@ -8,31 +8,63 @@ Aspid.FastTools — пакет для Unity, закрывающий пробел
 
 [Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
+## Установка
+
+В **Window → Package Manager** выберите **+ → Install package from git URL…** и вставьте:
+
+```text
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
+```
+
+Этот URL устанавливает preview-версию, описанную в документации. Для установки через Git URL в системе должен быть установлен Git.
+
+<details>
+<summary>Другие варианты установки</summary>
+
+- **Последний preview:** при обновлении пакета может установиться более новая preview-версия.
+
+  ```text
+  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
+  ```
+
+- **Другая версия:** скопируйте её UPM-тег со страницы [релизов](https://github.com/VPDPersonal/Aspid.FastTools/releases), например:
+
+  ```text
+  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.7
+  ```
+
+- **Unity Asset Store:** пакет пока недоступен в магазине. Для установки используйте Git URL выше.
+
+> [!WARNING]
+> Ветка `upm` сейчас содержит старый пакет `com.aspid.fasttools` (`1.0.0-rc.2`). Для `tech.aspid.fasttools` и описанных здесь возможностей используйте URL выше.
+
+</details>
+
 ## Возможности
 
 ### [Serializable Type System](02-serializable-types.md)
 
 Хранение и выбор `System.Type` в инспекторе.
 
-![Выбор сериализуемого типа в инспекторе](../Images/aspid_fasttools_serializable_type.gif)
+<img src="../Images/aspid_fasttools_serializable_type.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
 
 ### [SerializeReference Selector](03-serialize-reference-selector.md)
 
 Выбор класса для поля `SerializeReference` прямо в инспекторе.
 
-![Смена Pistol на Shotgun с сохранением Damage = 37](../Images/aspid_fasttools_serialize_reference_selector.gif)
+<img src="../Images/aspid_fasttools_serialize_reference_selector.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
 
 ### [SerializeReference Tooling](04-serialize-reference-tooling.md)
 
 Аудит и восстановление ссылок по всему проекту, в том числе перед сборкой и в CI.
 
-![Восстановление потерянного типа оружия с сохранением данных](../Images/aspid_fasttools_serialize_reference_tooling.gif)
+<img src="../Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Восстановление потерянного типа оружия с сохранением данных" width="640" />
 
 ### [EnumValues](06-enum-values.md)
 
 Редактирование таблиц enum → значение в инспекторе, включая флаги.
 
-![Редактирование enum-ключей и значений в инспекторе](../Images/aspid_fasttools_enum_values.gif)
+<img src="../Images/aspid_fasttools_enum_values.gif" alt="Редактирование enum-ключей и значений в инспекторе" width="640" />
 
 ### [ProfilerMarkers](05-profiler-markers.md)
 
@@ -78,38 +110,6 @@ secondAudio
   .GetDisplayNameWithIndex();
 // "Audio Source (2)"
 ```
-
-## Установка
-
-В **Window → Package Manager** выберите **+ → Install package from git URL…** и вставьте:
-
-```text
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
-```
-
-Этот URL устанавливает preview-версию, описанную в документации. Для установки через Git URL в системе должен быть установлен Git.
-
-<details>
-<summary>Другие варианты установки</summary>
-
-- **Последний preview:** при обновлении пакета может установиться более новая preview-версия.
-
-  ```text
-  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
-  ```
-
-- **Другая версия:** скопируйте её UPM-тег со страницы [релизов](https://github.com/VPDPersonal/Aspid.FastTools/releases), например:
-
-  ```text
-  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.7
-  ```
-
-- **Unity Asset Store:** пакет пока недоступен в магазине. Для установки используйте Git URL выше.
-
-> [!WARNING]
-> Ветка `upm` сейчас содержит старый пакет `com.aspid.fasttools` (`1.0.0-rc.2`). Для `tech.aspid.fasttools` и описанных здесь возможностей используйте URL выше.
-
-</details>
 
 ## Быстрый старт
 
