@@ -84,36 +84,49 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           }
         }
       }
-      // The feature table stays a table on GitHub; the site shows the same rows as a card grid,
-      // like the samples overview: preview on top, then the linked name and what the feature gives.
-      const features = tree.children.find((node) => node.type === 'table');
-      if (features) {
-        enhanceTableCode(features);
-        const jsx = (name, className, children) => ({
-          type: 'mdxJsxFlowElement',
-          name,
-          attributes: [{type: 'mdxJsxAttribute', name: 'className', value: className}],
-          children,
-        });
-        const [, ...rows] = features.children;
-        const cards = rows.map(({children: [name, summary, preview]}, index) => {
-          const media = preview.children.map((part) => part.type === 'code'
-            ? part
-            : {type: 'paragraph', children: [part]});
-          return jsx('article', 'feature-card', [
-            jsx('div', 'feature-card__preview', media),
+      // On GitHub the features are plain sections: a linked heading, a sentence and a preview.
+      // The site shows the same sections as a card grid, like the samples overview.
+      const features = tree.children.findIndex((node) => node.type === 'heading' && node.depth === 2);
+      if (features !== -1) {
+        let end = features + 1;
+        while (end < tree.children.length && !(tree.children[end].type === 'heading' && tree.children[end].depth === 2)) end++;
+        const section = tree.children.slice(features + 1, end);
+        const cards = [];
+        for (let i = 0; i < section.length; i++) {
+          const heading = section[i];
+          if (heading.type !== 'heading' || heading.depth !== 3) continue;
+          const summary = section[i + 1];
+          const preview = section[i + 2];
+          if (summary?.type !== 'paragraph' || !preview
+            || !(preview.type === 'code' || (preview.type === 'paragraph' && preview.children[0]?.type === 'image'))) continue;
+          const jsx = (name, className, children) => ({
+            type: 'mdxJsxFlowElement',
+            name,
+            attributes: [{type: 'mdxJsxAttribute', name: 'className', value: className}],
+            children,
+          });
+          cards.push(jsx('article', 'feature-card', [
+            jsx('div', 'feature-card__preview', [preview]),
             jsx('div', 'feature-card__body', [
               {type: 'paragraph', data: {hProperties: {className: 'feature-card__title'}}, children: [
                 {type: 'mdxJsxTextElement', name: 'span', attributes: [{type: 'mdxJsxAttribute', name: 'className', value: 'feature-card__index'}],
-                  children: [{type: 'text', value: `${String(index + 1).padStart(2, '0')} /`}]},
+                  children: [{type: 'text', value: `${String(cards.length + 1).padStart(2, '0')} /`}]},
                 {type: 'text', value: ' '},
-                ...name.children,
+                ...heading.children,
               ]},
               {type: 'paragraph', data: {hProperties: {className: 'feature-card__text'}}, children: summary.children},
             ]),
-          ]);
-        });
-        tree.children.splice(tree.children.indexOf(features), 1, jsx('div', 'feature-cards', cards));
+          ]));
+          i += 2;
+        }
+        if (cards.length > 0) {
+          tree.children.splice(features + 1, end - features - 1, {
+            type: 'mdxJsxFlowElement',
+            name: 'div',
+            attributes: [{type: 'mdxJsxAttribute', name: 'className', value: 'feature-cards'}],
+            children: cards,
+          });
+        }
       }
       // Keep portable file links on GitHub, and native local links on the site.
       // pathname:// follows Docusaurus locale links across independently built locales.
