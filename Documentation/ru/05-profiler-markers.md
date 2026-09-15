@@ -6,7 +6,7 @@
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>private static readonly<br />    ProfilerMarker UpdateMarker =<br />    new("MotionSimulation.Update");<br /><br />private void Update()<br />&#123;<br />    using var _ =<br />        UpdateMarker.Auto();<br />    Simulate();<br />&#125;</code></pre> | <pre lang="csharp"><code>private void Update()<br />&#123;<br />    using var _ = this.Marker();<br />    Simulate();<br />&#125;</code></pre> |
+| <pre lang="csharp"><code>private static readonly&#10;    ProfilerMarker UpdateMarker =&#10;    new("MotionSimulation.Update");&#10;&#10;private void Update()&#10;&#123;&#10;    using var _ =&#10;        UpdateMarker.Auto();&#10;    Simulate();&#10;&#125;</code></pre> | <pre lang="csharp"><code>private void Update()&#10;&#123;&#10;    using var _ = this.Marker();&#10;    Simulate();&#10;&#125;</code></pre> |
 
 Работает в `MonoBehaviour` и обычных C#-классах. Генератор входит в пакет; расширение находится в глобальном пространстве имён — дополнительные `using`, атрибуты и `partial` не нужны. Маркер называется `Тип.Метод (строка)`.
 

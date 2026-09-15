@@ -8,7 +8,7 @@
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var title = new Label("Stats");<br />title.style.fontSize = 18;<br /><br />var panel = new VisualElement();<br />panel.style.paddingLeft = 12;<br />panel.style.paddingRight = 12;<br />panel.style.paddingTop = 8;<br />panel.style.paddingBottom = 8;<br />panel.Add(title);</code></pre> | <pre lang="csharp"><code>var panel = new VisualElement()<br />    .SetPaddingX(12)<br />    .SetPaddingY(8)<br />    .AddChild(new Label("Stats")<br />        .SetFontSize(18));</code></pre> |
+| <pre lang="csharp"><code>var title = new Label("Stats");&#10;title.style.fontSize = 18;&#10;&#10;var panel = new VisualElement();&#10;panel.style.paddingLeft = 12;&#10;panel.style.paddingRight = 12;&#10;panel.style.paddingTop = 8;&#10;panel.style.paddingBottom = 8;&#10;panel.Add(title);</code></pre> | <pre lang="csharp"><code>var panel = new VisualElement()&#10;    .SetPaddingX(12)&#10;    .SetPaddingY(8)&#10;    .AddChild(new Label("Stats")&#10;        .SetFontSize(18));</code></pre> |
 
 Добавьте `panel` в `rootVisualElement` окна редактора или в `UIDocument.rootVisualElement` игрового интерфейса.
 
@@ -78,8 +78,8 @@ var panel = new VisualElement()
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>panel.name = "ability-panel";<br />panel.Add(title);<br />panel.Add(content);<br />if (showWarning)<br />    panel.Add(warning);</code></pre> | <pre lang="csharp"><code>panel<br />    .SetName("ability-panel")<br />    .AddChildren(title, content)<br />    .AddChildIf(showWarning, warning);</code></pre> |
-| <pre lang="csharp"><code>panel.Insert(0, title);<br />panel.Remove(content);<br />panel.RemoveAt(0);<br />panel.Clear();</code></pre> | <pre lang="csharp"><code>panel<br />    .InsertChild(0, title)<br />    .RemoveChild(content)<br />    .RemoveChildAt(0)<br />    .ClearChildren();</code></pre> |
+| <pre lang="csharp"><code>panel.name = "ability-panel";&#10;panel.Add(title);&#10;panel.Add(content);&#10;if (showWarning)&#10;    panel.Add(warning);</code></pre> | <pre lang="csharp"><code>panel&#10;    .SetName("ability-panel")&#10;    .AddChildren(title, content)&#10;    .AddChildIf(showWarning, warning);</code></pre> |
+| <pre lang="csharp"><code>panel.Insert(0, title);&#10;panel.Remove(content);&#10;panel.RemoveAt(0);&#10;panel.Clear();</code></pre> | <pre lang="csharp"><code>panel&#10;    .InsertChild(0, title)&#10;    .RemoveChild(content)&#10;    .RemoveChildAt(0)&#10;    .ClearChildren();</code></pre> |
 
 Эти методы возвращают родительский элемент, поэтому их можно объединять в цепочку. `AddChildren` и `InsertChildren` сохраняют порядок переданных элементов.
 
@@ -123,7 +123,7 @@ var panel = new VisualElement()
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>element.visible = false;<br />element.style.display =<br />    DisplayStyle.None;<br />element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>element.SetVisible(false);<br />element.SetDisplay(DisplayStyle.None);<br /><br />element.SetEnabledSelf(false);</code></pre> |
+| <pre lang="csharp"><code>element.visible = false;&#10;element.style.display =&#10;    DisplayStyle.None;&#10;element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>element.SetVisible(false);&#10;element.SetDisplay(DisplayStyle.None);&#10;&#10;element.SetEnabledSelf(false);</code></pre> |
 
 | Вызов | Результат |
 |---|---|
@@ -139,7 +139,7 @@ var panel = new VisualElement()
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>search.focusable = true;<br />search.tabIndex = 0;<br />search.Focus();</code></pre> | <pre lang="csharp"><code>search<br />    .SetFocusable(true)<br />    .SetTabIndex(0)<br />    .FocusSelf();</code></pre> |
+| <pre lang="csharp"><code>search.focusable = true;&#10;search.tabIndex = 0;&#10;search.Focus();</code></pre> | <pre lang="csharp"><code>search&#10;    .SetFocusable(true)&#10;    .SetTabIndex(0)&#10;    .FocusSelf();</code></pre> |
 
 `FocusSelf()` вызывает обычный `Focus()`: элемент должен поддерживать фокус. `IsFocused()` сравнивает элемент с `focusController.focusedElement`; для отсоединённого элемента возвращает `false`.
 
@@ -158,7 +158,7 @@ var panel = new VisualElement()
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>panel.styleSheets.Add(sheet);<br />panel.AddToClassList("ability-card");<br />panel.EnableInClassList(<br />    "selected", isSelected);</code></pre> | <pre lang="csharp"><code>panel<br />    .AddStyleSheet(sheet)<br />    .AddClass("ability-card")<br />    .EnableClass("selected", isSelected);</code></pre> |
+| <pre lang="csharp"><code>panel.styleSheets.Add(sheet);&#10;panel.AddToClassList("ability-card");&#10;panel.EnableInClassList(&#10;    "selected", isSelected);</code></pre> | <pre lang="csharp"><code>panel&#10;    .AddStyleSheet(sheet)&#10;    .AddClass("ability-card")&#10;    .EnableClass("selected", isSelected);</code></pre> |
 
 `EnableClass` приводит класс к заданному состоянию. `ToggleClass` каждый раз меняет наличие класса на противоположное.
 
@@ -187,7 +187,7 @@ var panel = new VisualElement()
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>panel.style.flexDirection =<br />    FlexDirection.Row;<br />panel.style.alignItems = Align.Center;<br />panel.style.width = 240;<br />panel.style.height = 48;<br />panel.style.marginTop = 8;</code></pre> | <pre lang="csharp"><code>panel<br />    .SetFlexDirection(FlexDirection.Row)<br />    .SetAlignItems(Align.Center)<br />    .SetSize(240, 48)<br />    .SetMarginTop(8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.flexDirection =&#10;    FlexDirection.Row;&#10;panel.style.alignItems = Align.Center;&#10;panel.style.width = 240;&#10;panel.style.height = 48;&#10;panel.style.marginTop = 8;</code></pre> | <pre lang="csharp"><code>panel&#10;    .SetFlexDirection(FlexDirection.Row)&#10;    .SetAlignItems(Align.Center)&#10;    .SetSize(240, 48)&#10;    .SetMarginTop(8);</code></pre> |
 
 ### Стороны, оси и единицы измерения
 
@@ -209,7 +209,7 @@ panel
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>panel.style.paddingLeft = 12;<br />panel.style.paddingRight = 12;<br />panel.style.height = 48;</code></pre> | <pre lang="csharp"><code>panel.style<br />    .SetPaddingX(12)<br />    .SetHeight(48);</code></pre> |
+| <pre lang="csharp"><code>panel.style.paddingLeft = 12;&#10;panel.style.paddingRight = 12;&#10;panel.style.height = 48;</code></pre> | <pre lang="csharp"><code>panel.style&#10;    .SetPaddingX(12)&#10;    .SetHeight(48);</code></pre> |
 
 ### Справочник стилей
 
@@ -448,7 +448,7 @@ panel
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>field.value = 42;<br />field.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>field.SetValue(42);<br />field.SetValue(10, notify: false);</code></pre> |
+| <pre lang="csharp"><code>field.value = 42;&#10;field.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>field.SetValue(42);&#10;field.SetValue(10, notify: false);</code></pre> |
 
 По умолчанию `SetValue` присваивает `value` и сохраняет поведение событий Unity. `notify: false` вызывает `SetValueWithoutNotify`: поле обновляется без отправки `ChangeEvent`. Это удобно при синхронизации интерфейса с данными.
 
@@ -463,7 +463,7 @@ EventCallback<ChangeEvent<int>> onChanged =
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>field.RegisterValueChangedCallback(<br />    onChanged);<br /><br />// Когда обработчик больше не нужен<br />field.UnregisterValueChangedCallback(<br />    onChanged);</code></pre> | <pre lang="csharp"><code>field.AddValueChanged(onChanged);<br /><br /><br />// Когда обработчик больше не нужен<br />field.RemoveValueChanged(onChanged);</code></pre> |
+| <pre lang="csharp"><code>field.RegisterValueChangedCallback(&#10;    onChanged);&#10;&#10;// Когда обработчик больше не нужен&#10;field.UnregisterValueChangedCallback(&#10;    onChanged);</code></pre> | <pre lang="csharp"><code>field.AddValueChanged(onChanged);&#10;&#10;&#10;// Когда обработчик больше не нужен&#10;field.RemoveValueChanged(onChanged);</code></pre> |
 
 При отписке передавайте тот же делегат. Новая лямбда с похожим кодом не удалит прежнюю подписку.
 
@@ -482,7 +482,7 @@ EventCallback<ChangeEvent<int>> onChanged =
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>button.text = "Refresh";<br />button.clicked += Refresh;<br /><br />// Отписка<br />button.clicked -= Refresh;</code></pre> | <pre lang="csharp"><code>button<br />    .SetText("Refresh")<br />    .AddClicked(Refresh);<br />// Отписка<br />button.RemoveClicked(Refresh);</code></pre> |
+| <pre lang="csharp"><code>button.text = "Refresh";&#10;button.clicked += Refresh;&#10;&#10;// Отписка&#10;button.clicked -= Refresh;</code></pre> | <pre lang="csharp"><code>button&#10;    .SetText("Refresh")&#10;    .AddClicked(Refresh);&#10;// Отписка&#10;button.RemoveClicked(Refresh);</code></pre> |
 
 Обычный `VisualElement` тоже можно сделать кликабельным. Перегрузка с `out` позволяет сохранить манипулятор для удаления:
 
@@ -763,7 +763,7 @@ var listView = new ListView();
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>listView.itemsSource = items;<br />listView.makeItem = () =&gt; new Label();<br />listView.bindItem = (row, index) =&gt;<br />    ((Label)row).text = items[index];<br />listView.selectionType =<br />    SelectionType.Single;<br />listView.fixedItemHeight = 24;<br />listView.style.height = 120;</code></pre> | <pre lang="csharp"><code>listView<br />    .SetItemsSource(items)<br />    .SetMakeItem(() =&gt; new Label())<br />    .SetBindItem((row, index) =&gt;<br />        ((Label)row).SetText(items[index]))<br />    .SetSelectionType(SelectionType.Single)<br />    .SetFixedItemHeight(24)<br />    .SetHeight(120);</code></pre> |
+| <pre lang="csharp"><code>listView.itemsSource = items;&#10;listView.makeItem = () =&gt; new Label();&#10;listView.bindItem = (row, index) =&gt;&#10;    ((Label)row).text = items[index];&#10;listView.selectionType =&#10;    SelectionType.Single;&#10;listView.fixedItemHeight = 24;&#10;listView.style.height = 120;</code></pre> | <pre lang="csharp"><code>listView&#10;    .SetItemsSource(items)&#10;    .SetMakeItem(() =&gt; new Label())&#10;    .SetBindItem((row, index) =&gt;&#10;        ((Label)row).SetText(items[index]))&#10;    .SetSelectionType(SelectionType.Single)&#10;    .SetFixedItemHeight(24)&#10;    .SetHeight(120);</code></pre> |
 
 Добавьте `listView` в дерево интерфейса. После изменения содержимого `items` вызовите `listView.RefreshItems()`. Если строка содержит обработчики, которые зависят от текущего элемента данных, снимайте их при отвязке через `SetUnbindItem`, чтобы не накапливать подписки при переиспользовании.
 
@@ -858,9 +858,9 @@ var listView = new ListView();
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>field.bindingPath = "_manaCost";<br />field.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>field.BindTo(<br />    serializedObject, "_manaCost");</code></pre> |
-| <pre lang="csharp"><code>var property = serializedObject<br />    .FindProperty("_manaCost");<br />field.BindProperty(property);</code></pre> | <pre lang="csharp"><code>var property = serializedObject<br />    .FindProperty("_manaCost");<br />field.BindPropertyTo(property);</code></pre> |
-| <pre lang="csharp"><code>root.Bind(serializedObject);<br /><br />// Отключить привязку<br />root.Unbind();</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);<br /><br />// Отключить привязку<br />root.UnbindFrom();</code></pre> |
+| <pre lang="csharp"><code>field.bindingPath = "_manaCost";&#10;field.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>field.BindTo(&#10;    serializedObject, "_manaCost");</code></pre> |
+| <pre lang="csharp"><code>var property = serializedObject&#10;    .FindProperty("_manaCost");&#10;field.BindProperty(property);</code></pre> | <pre lang="csharp"><code>var property = serializedObject&#10;    .FindProperty("_manaCost");&#10;field.BindPropertyTo(property);</code></pre> |
+| <pre lang="csharp"><code>root.Bind(serializedObject);&#10;&#10;// Отключить привязку&#10;root.Unbind();</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);&#10;&#10;// Отключить привязку&#10;root.UnbindFrom();</code></pre> |
 
 Строки показывают отдельные способы привязки. Для дерева `root` сначала задайте пути полям через `SetBindingPath`, затем вызовите `BindTo` у корня.
 

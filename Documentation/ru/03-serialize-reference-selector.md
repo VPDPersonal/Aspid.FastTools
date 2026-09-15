@@ -10,7 +10,7 @@
 
 | Создание в коде | Выбор в инспекторе |
 |---|---|
-| <pre lang="csharp"><code>[SerializeReference]<br />private IWeapon _primary = new Pistol();</code></pre> | <pre lang="csharp"><code>[TypeSelector]<br />[SerializeReference]<br />private IWeapon _primary;</code></pre> |
+| <pre lang="csharp"><code>[SerializeReference]&#10;private IWeapon _primary = new Pistol();</code></pre> | <pre lang="csharp"><code>[TypeSelector]&#10;[SerializeReference]&#10;private IWeapon _primary;</code></pre> |
 
 Селектор хранит **экземпляр с данными**. Если нужно сохранить только имя класса и создать объект позже из кода, используйте [Serializable Type System](02-serializable-types.md).
 

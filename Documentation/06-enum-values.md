@@ -17,7 +17,7 @@ Inside a component, the table replaces separate serialized fields and a `switch`
 
 | Before — separate fields and switch | After — EnumValues |
 |---|---|
-| <pre lang="csharp"><code>[SerializeField]<br />private float _defaultMultiplier = 1f;<br />[SerializeField]<br />private float _fireMultiplier = 1.5f;<br /><br />public float GetMultiplier(<br />    DamageType type) =&gt; type switch<br />&#123;<br />    DamageType.Fire =&gt; _fireMultiplier,<br />    _ =&gt; _defaultMultiplier<br />&#125;;</code></pre> | <pre lang="csharp"><code>[SerializeField]<br />private EnumValues&lt;DamageType, float&gt;<br />    _multipliers = new();<br /><br />public float GetMultiplier(<br />    DamageType type) =&gt;<br />    _multipliers.GetValue(type);</code></pre> |
+| <pre lang="csharp"><code>[SerializeField]&#10;private float _defaultMultiplier = 1f;&#10;[SerializeField]&#10;private float _fireMultiplier = 1.5f;&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt; type switch&#10;&#123;&#10;    DamageType.Fire =&gt; _fireMultiplier,&#10;    _ =&gt; _defaultMultiplier&#10;&#125;;</code></pre> | <pre lang="csharp"><code>[SerializeField]&#10;private EnumValues&lt;DamageType, float&gt;&#10;    _multipliers = new();&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt;&#10;    _multipliers.GetValue(type);</code></pre> |
 
 For the same result, set `_multipliers` to **Default Value = 1** and add **Fire = 1.5**. The values on the right are configured in the Inspector; `new()` creates an empty table with an initial default of `0` for `float`.
 

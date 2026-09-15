@@ -8,7 +8,7 @@ Unity does not serialize a `System.Type` field directly. Instead of manually fil
 
 | Before — a type-name string | After — SerializableType |
 |---|---|
-| <pre lang="csharp"><code>[SerializeField]<br />private string _colliderTypeName;<br /><br />public System.Type ColliderType =&gt;<br />    string.IsNullOrEmpty(_colliderTypeName)<br />        ? null<br />        : System.Type.GetType(<br />            _colliderTypeName, false);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]<br />[SerializeField]<br />private SerializableType&lt;Collider&gt;<br />    _colliderType;<br /><br />public System.Type ColliderType =&gt;<br />    _colliderType?.Type;</code></pre> |
+| <pre lang="csharp"><code>[SerializeField]&#10;private string _colliderTypeName;&#10;&#10;public System.Type ColliderType =&gt;&#10;    string.IsNullOrEmpty(_colliderTypeName)&#10;        ? null&#10;        : System.Type.GetType(&#10;            _colliderTypeName, false);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;Collider&gt;&#10;    _colliderType;&#10;&#10;public System.Type ColliderType =&gt;&#10;    _colliderType?.Type;</code></pre> |
 
 The right-hand version requires `using UnityEngine;` and `using Aspid.FastTools.Types;`. The wrapper already has a picker; the attribute here excludes abstract classes and interfaces.
 
@@ -100,7 +100,7 @@ Use this family when the selected type is backed by a script file. In the editor
 
 | Stored name | Script-asset reference |
 |---|---|
-| <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]<br />[SerializeField]<br />private SerializableType&lt;MonoBehaviour&gt;<br />    _componentType;</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]<br />[SerializeField]<br />private SerializableMonoScript&lt;MonoBehaviour&gt;<br />    _componentType;</code></pre> |
+| <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;MonoBehaviour&gt;&#10;    _componentType;</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableMonoScript&lt;MonoBehaviour&gt;&#10;    _componentType;</code></pre> |
 
 | Capability | SerializableType | SerializableMonoScript |
 |---|---|---|
@@ -372,7 +372,7 @@ Save the base class as `EnemyBase.cs`. Create subclasses in **separate files** m
 
 | FastEnemy.cs | ArmoredEnemy.cs |
 |---|---|
-| <pre lang="csharp"><code>using UnityEngine;<br /><br />public sealed class FastEnemy : EnemyBase<br />&#123;<br />    [SerializeField] private float _speed = 25f;<br /><br />    public override void Attack() =&gt;<br />        Debug.Log($"Speed: &#123;_speed&#125;");<br />&#125;</code></pre> | <pre lang="csharp"><code>using UnityEngine;<br /><br />public sealed class ArmoredEnemy : EnemyBase<br />&#123;<br />    [SerializeField] private int _armor = 10;<br /><br />    public override void Attack() =&gt;<br />        Debug.Log($"Armor: &#123;_armor&#125;");<br />&#125;</code></pre> |
+| <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private float _speed = 25f;&#10;&#10;    public override void Attack() =&gt;&#10;        Debug.Log($"Speed: &#123;_speed&#125;");&#10;&#125;</code></pre> | <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private int _armor = 10;&#10;&#10;    public override void Attack() =&gt;&#10;        Debug.Log($"Armor: &#123;_armor&#125;");&#10;&#125;</code></pre> |
 
 Add **FastEnemy** to a GameObject, set **Health = 75**, and select **ArmoredEnemy** in the picker. The shared `Health` remains, `Speed` disappears, and `Armor` appears. Do not assume fields unique to the previous class will survive a later switch back.
 

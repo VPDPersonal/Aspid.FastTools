@@ -10,7 +10,7 @@ Add `[TypeSelector]` next to `[SerializeReference]` to choose implementations in
 
 | Creation in code | Selection in the Inspector |
 |---|---|
-| <pre lang="csharp"><code>[SerializeReference]<br />private IWeapon _primary = new Pistol();</code></pre> | <pre lang="csharp"><code>[TypeSelector]<br />[SerializeReference]<br />private IWeapon _primary;</code></pre> |
+| <pre lang="csharp"><code>[SerializeReference]&#10;private IWeapon _primary = new Pistol();</code></pre> | <pre lang="csharp"><code>[TypeSelector]&#10;[SerializeReference]&#10;private IWeapon _primary;</code></pre> |
 
 The selector stores an **instance with data**. To store only a class name and create the object later from code, use [Serializable Type System](02-serializable-types.md).
 
