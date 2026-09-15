@@ -37,7 +37,7 @@ This installs the preview version covered by this documentation. Git must be ins
 
 - **Unity Asset Store:** the package is not yet available in the store. For now, install it using the Git URL above.
 
-> \[!WARNING]
+> [!WARNING]
 > The `upm` branch currently contains the older `com.aspid.fasttools` package (`1.0.0-rc.2`). Use the URL above for `tech.aspid.fasttools` and the features described here.
 
 </details>

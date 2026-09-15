@@ -32,7 +32,9 @@ function visit(node) {
 }
 visit(tree);
 
-const result = `<!-- Generated from ${sourcePath}. Edit that file, then run npm --prefix Website run sync-readme. -->\n\n${processor.stringify(tree)}`;
+// remark escapes the bracket that opens a GitHub alert (`> [!WARNING]`); GitHub needs it literal.
+const markdown = processor.stringify(tree).replace(/^(>\s*)\\\[!(?=[A-Z]+\])/gm, '$1[!');
+const result = `<!-- Generated from ${sourcePath}. Edit that file, then run npm --prefix Website run sync-readme. -->\n\n${markdown}`;
 if (process.argv.includes('--check')) {
   if (!fs.existsSync(destination) || fs.readFileSync(destination, 'utf8') !== result) {
     console.error('README.md is out of date. Run npm --prefix Website run sync-readme.');
