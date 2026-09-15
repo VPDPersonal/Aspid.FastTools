@@ -1024,7 +1024,14 @@ article > .theme-doc-toc-mobile,
 article > .theme-doc-toc-mobile:first-child > button { padding-top: 0; }
 .theme-doc-toc-mobile > button:hover { color: var(--venom-fg); }
 .theme-doc-toc-mobile > button::after { width: 1rem; height: 1rem; background-size: 1.25rem 1.25rem; opacity: 0.7; }
+/* The open list mirrors the desktop outline: subsections hang off a hairline, smaller and quieter. */
 .theme-doc-toc-mobile > div > ul { border-top: 1px solid var(--venom-line); padding: 0.5rem 0 0.75rem; font-size: 0.875rem; }
-.theme-doc-toc-mobile > div ul li { margin: 0.45rem 0; }
-.theme-doc-toc-mobile > div ul ul { padding-left: 0.9rem; }
+.theme-doc-toc-mobile > div ul li { margin: 0.25rem 0; }
+.theme-doc-toc-mobile > div ul .table-of-contents__link { display: block; padding: 0.4rem 0.75rem; line-height: 1.5; color: var(--venom-fg); }
+.theme-doc-toc-mobile > div ul .table-of-contents__link:hover { color: var(--venom-accent); }
+.theme-doc-toc-mobile > div ul .table-of-contents__link--active { color: var(--ifm-color-primary); font-weight: 600; }
+.theme-doc-toc-mobile > div ul ul { margin: 0.1rem 0 0.4rem 0.75rem; padding-left: 0.5rem; border-left: 1px solid var(--venom-line-strong); }
+.theme-doc-toc-mobile > div ul ul li { margin: 0.1rem 0; }
+.theme-doc-toc-mobile > div ul ul .table-of-contents__link { padding: 0.3rem 0.6rem; font-size: 0.8125rem; color: var(--venom-muted); }
+.theme-doc-toc-mobile > div ul ul .table-of-contents__link:hover { color: var(--venom-fg-strong); }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }
