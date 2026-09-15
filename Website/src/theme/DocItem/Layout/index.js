@@ -7,7 +7,6 @@ import DocItemPaginator from '@theme/DocItem/Paginator';
 import DocVersionBanner from '@theme/DocVersionBanner';
 import DocVersionBadge from '@theme/DocVersionBadge';
 import DocItemFooter from '@theme/DocItem/Footer';
-import DocItemTOCMobile from '@theme/DocItem/TOC/Mobile';
 import DocItemTOCDesktop from '@theme/DocItem/TOC/Desktop';
 import DocItemContent from '@theme/DocItem/Content';
 import FloatingToc from '../../../components/FloatingToc';
@@ -22,11 +21,10 @@ function useDocTOC() {
   const windowSize = useWindowSize();
   const hidden = frontMatter.hide_table_of_contents;
   const canRender = !hidden && toc.length > 0;
-  const mobile = canRender ? <DocItemTOCMobile /> : undefined;
-  // Laptop widths hide the right column (custom.css) and use the floating popover instead.
-  const floating = canRender && (windowSize === 'desktop' || windowSize === 'ssr') ? <FloatingToc /> : undefined;
+  // Below 1400px the right column is hidden (custom.css) and the floating popover serves every width.
+  const floating = canRender ? <FloatingToc /> : undefined;
   const desktop = canRender && (windowSize === 'desktop' || windowSize === 'ssr') ? <DocItemTOCDesktop /> : undefined;
-  return {hidden, mobile, floating, desktop};
+  return {hidden, floating, desktop};
 }
 
 /**
@@ -47,7 +45,6 @@ export default function DocItemLayout({children}) {
           <article>
             <DocBreadcrumbs />
             <DocVersionBadge />
-            {metadata.id !== 'README' && docTOC.mobile}
             <DocItemContent>{children}</DocItemContent>
           </article>
           <DocItemPaginator />

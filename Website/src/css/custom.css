@@ -620,11 +620,15 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 /* Give the article priority on laptops; use the in-article TOC disclosure. */
 @media (min-width: 997px) and (max-width: 1399px) {
   [class*='docMainContainer_'] .col.col--3 { display: none; }
-  .floating-toc.floating-toc { display: block; } /* outranks the base `display: none` declared below */
 }
 
 /* Floating TOC: a pinned corner button opening a popover with the desktop outline. Shown on laptop widths only. */
+@media (max-width: 1399px) { .floating-toc.floating-toc { display: block; } } /* outranks the base `display: none` below */
 .floating-toc { display: none; position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 200; }
+@media (max-width: 996px) {
+  .floating-toc { right: 1rem; bottom: 1rem; }
+  .floating-toc__panel { width: min(19rem, calc(100vw - 2rem)); max-height: min(60vh, 30rem); }
+}
 .floating-toc__button {
   display: grid; place-items: center; width: 2.5rem; height: 2.5rem;
   color: var(--venom-muted); background: var(--ifm-pre-background); border: 1px solid var(--venom-line-strong); border-radius: 6px;
@@ -1041,21 +1045,4 @@ html.docs-background-windows.docs-doc-page {
 .doc-image-dialog p { font-size: 0.8125rem; color: var(--venom-muted); margin: 0.8rem 0 0; text-align: center; }
 .doc-image-close { position: absolute; top: 0.7rem; right: 1rem; padding: 4px 8px; background: var(--venom-panel); color: var(--venom-fg); border: 1px solid var(--venom-line-strong); border-radius: 4px; font: 0.8125rem var(--ifm-font-family-base); cursor: pointer; }
 .doc-image-close kbd { margin-left: 6px; box-shadow: none; font-size: 0.75rem; }
-/* In-article TOC disclosure: the same quiet language as the sidebar group headers, no box. */
-article > .theme-doc-toc-mobile,
-.theme-doc-markdown > .theme-doc-toc-mobile { margin-block: 1.5rem; background: transparent; border: 0; border-bottom: 1px solid var(--venom-line); border-radius: 0; font-size: 0.875rem; }
-.theme-doc-toc-mobile > button { padding: 0.5rem 0; color: var(--venom-muted); font: 600 0.75rem/1.5 var(--ifm-font-family-monospace); letter-spacing: 0.06em; text-transform: uppercase; }
-article > .theme-doc-toc-mobile:first-child > button { padding-top: 0; }
-.theme-doc-toc-mobile > button:hover { color: var(--venom-fg); }
-.theme-doc-toc-mobile > button::after { width: 1rem; height: 1rem; background-size: 1.25rem 1.25rem; opacity: 0.7; }
-/* The open list mirrors the desktop outline: subsections hang off a hairline, smaller and quieter. */
-.theme-doc-toc-mobile > div > ul { border-top: 1px solid var(--venom-line); padding: 0.5rem 0 0.75rem; font-size: 0.875rem; }
-.theme-doc-toc-mobile > div ul li { margin: 0.25rem 0; }
-.theme-doc-toc-mobile > div ul .table-of-contents__link { display: block; padding: 0.4rem 0.75rem; line-height: 1.5; color: var(--venom-fg); }
-.theme-doc-toc-mobile > div ul .table-of-contents__link:hover { color: var(--venom-accent); }
-.theme-doc-toc-mobile > div ul .table-of-contents__link--active { color: var(--ifm-color-primary); font-weight: 600; }
-.theme-doc-toc-mobile > div ul ul { margin: 0.1rem 0 0.4rem 0.75rem; padding-left: 0.5rem; border-left: 1px solid var(--venom-line-strong); }
-.theme-doc-toc-mobile > div ul ul li { margin: 0.1rem 0; }
-.theme-doc-toc-mobile > div ul ul .table-of-contents__link { padding: 0.3rem 0.6rem; font-size: 0.8125rem; color: var(--venom-muted); }
-.theme-doc-toc-mobile > div ul ul .table-of-contents__link:hover { color: var(--venom-fg-strong); }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto !important; } }
