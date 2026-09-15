@@ -620,7 +620,8 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 /* Give the article priority on laptops; use the in-article TOC disclosure. */
 @media (min-width: 997px) and (max-width: 1399px) {
   [class*='docMainContainer_'] .col.col--3 { display: none; }
-  .theme-doc-toc-mobile { display: block; margin-block: 1.5rem; }
+  /* Doubled class outranks the theme's own `display: none` above 997px regardless of bundle order. */
+  .theme-doc-toc-mobile.theme-doc-toc-mobile { display: block; margin-block: 1.5rem; }
 }
 
 @media (max-width: 996px) {
