@@ -984,58 +984,104 @@ html.docs-background-windows.docs-doc-page {
   .theme-doc-markdown .doc-image-panel > img.doc-zoom-image { border: 0; box-shadow: none; }
 }
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
-/* Feature table: the preview column carries the page, so it gets the width and a uniform height. */
-.theme-doc-markdown .readme-feature-table { table-layout: fixed; }
-.theme-doc-markdown .readme-feature-table :is(th, td):first-child { width: 22%; }
-.theme-doc-markdown .readme-feature-table :is(th, td):last-child { width: 46%; }
-.theme-doc-markdown .readme-feature-table td { vertical-align: middle; overflow-wrap: anywhere; }
-.theme-doc-markdown .readme-feature-table td:first-child a { font-weight: 600; }
-.theme-doc-markdown .readme-feature-table td:last-child { padding: 0.6rem; }
-.theme-doc-markdown .readme-feature-table tr:has(.theme-code-block) > td { height: 10rem; }
-.theme-doc-markdown .readme-feature-table .theme-code-block {
-  --ifm-pre-padding: 0.6rem 0.75rem;
-  width: 100%;
-  margin: 0;
-  border: 1px solid var(--venom-line-strong);
-  border-radius: 6px;
+/* Feature cards: the intro's feature table rendered like the samples overview. */
+.theme-doc-markdown .feature-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  margin-bottom: 2.5rem;
 }
-.theme-doc-markdown .readme-feature-table .theme-code-block [class*='buttonGroup'] { display: none; }
-.theme-doc-markdown .readme-feature-table .theme-code-block pre {
-  padding: 0;
-  font-size: 0.8rem;
-  line-height: 1.6;
+.theme-doc-markdown .feature-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--ifm-code-background);
+  border: 2px solid var(--venom-line-strong);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.18s ease;
 }
-.theme-doc-markdown .readme-feature-table img.doc-zoom-image[role='button'] {
+.theme-doc-markdown .feature-card:has(.feature-card__title a:hover) { border-color: var(--venom-accent); }
+/* Equal preview boxes align the card bodies; captures retain their full proportions inside. */
+.theme-doc-markdown .feature-card__preview {
+  display: flex;
+  flex-direction: column;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--venom-panel);
+  border-bottom: 1px solid var(--venom-line-strong);
+}
+/* Beats the generic `p:has(.doc-zoom-image)` margins without cropping wider captures. */
+.theme-doc-markdown .feature-card__preview > p:has(.doc-zoom-image) { display: flex; flex: 1; width: 100%; max-width: none; margin: 0; }
+.theme-doc-markdown .feature-card__preview img.doc-zoom-image[role='button'] {
   display: block;
   width: 100%;
-  max-width: 100%;
-  height: auto;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
   max-height: none;
+  object-fit: contain;
   border: 0;
   border-radius: 0;
   background: transparent;
 }
-@media (max-width: 996px) {
-  .theme-doc-markdown .readme-feature-table { display: table; }
+/* Continue each capture's background into the letterbox space. */
+.theme-doc-markdown .feature-card__preview:has(img[src*='/aspid_fasttools_serialize_reference_tooling']) { background: #000; }
+.theme-doc-markdown .feature-card__preview:has(img[src*='/surface-tables']) { background: #383838; }
+/* Crop the capture's 20px side gutters (808px wide), keeping both tables visible. */
+.theme-doc-markdown .feature-card__preview img.doc-zoom-image[src*='/surface-tables'] {
+  transform: scale(1.0521);
 }
-@media (max-width: 600px) {
-  .theme-doc-markdown .readme-feature-table { display: block; font-size: 0.85rem; }
-  .theme-doc-markdown .readme-feature-table thead { display: none; }
-  .theme-doc-markdown .readme-feature-table tbody { display: block; }
-  .theme-doc-markdown .readme-feature-table tbody tr {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    padding: 0.5rem;
-    border-bottom: 1px solid var(--venom-line);
-  }
-  .theme-doc-markdown .readme-feature-table tbody tr:last-child { border-bottom: 0; }
-  .theme-doc-markdown .readme-feature-table td { width: auto !important; padding: 0.5rem; border: 0; }
-  .theme-doc-markdown .readme-feature-table tr:has(.theme-code-block) > td { height: auto; }
-  .theme-doc-markdown .readme-feature-table td:first-child { grid-column: 1 / -1; font-weight: 600; }
-  .theme-doc-markdown .readme-feature-table td:last-child { align-self: center; }
-  .theme-doc-markdown .readme-feature-table tr:has(.theme-code-block) td {
-    grid-column: 1 / -1;
-  }
+/* Hide the thin window edges baked into the Selector capture. */
+.theme-doc-markdown .feature-card__preview img.doc-zoom-image[src*='/aspid_fasttools_serialize_reference_selector'] {
+  transform: scaleX(1.0053);
+}
+.theme-doc-markdown .feature-card__preview:has(img[src*='/aspid_fasttools_serializable_type']) { background: #2f2f2f; }
+.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serializable_type']) { position: relative; }
+/* Fill the card with the Inspector content, excluding its title, tab and thin window border. */
+.theme-doc-markdown .feature-card__preview img.doc-zoom-image[src*='/aspid_fasttools_serializable_type'] {
+  position: absolute;
+  left: -0.35%;
+  top: -11.9%;
+  width: 100.7%;
+  height: 114%;
+  object-fit: fill;
+}
+/* Code previews are the code block itself, edge to edge. */
+.theme-doc-markdown .feature-card__preview .theme-code-block {
+  --ifm-pre-padding: 1.5rem 1.75rem;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+.theme-doc-markdown .feature-card__preview .theme-code-block [class*='buttonGroup'] { display: none; }
+.theme-doc-markdown .feature-card__preview .theme-code-block > div:first-child,
+.theme-doc-markdown .feature-card__preview .theme-code-block pre { padding: 0; font-size: 0.95rem; line-height: 1.7; }
+.theme-doc-markdown .feature-card__body { display: flex; flex: 1; flex-direction: column; padding: 22px 26px 24px; }
+.theme-doc-markdown .feature-card__title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  max-width: none;
+  margin-bottom: 10px;
+  font: 500 clamp(1.15rem, 2vw, 1.4rem)/1.25 var(--ifm-heading-font-family);
+  letter-spacing: -0.02em;
+}
+.theme-doc-markdown .feature-card__index { flex-shrink: 0; color: var(--venom-accent); }
+.markdown .feature-card__title a { color: var(--venom-fg-strong); text-decoration: none; }
+.markdown .feature-card__title a:hover { color: var(--venom-accent); text-decoration: none; }
+.theme-doc-markdown .feature-card__text { max-width: none; margin-bottom: 0; font-size: 0.95rem; line-height: 1.65; color: var(--venom-fg); }
+@media (max-width: 700px) {
+  .theme-doc-markdown .feature-cards { grid-template-columns: 1fr; gap: 22px; }
+  .theme-doc-markdown .feature-card__body { padding: 20px 22px 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-doc-markdown .feature-card { transition: none; }
 }
 .theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem 0.75rem; }
 .theme-doc-markdown .doc-media-caption { max-width: none; text-align: center; color: var(--venom-muted); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 2rem; }

@@ -84,10 +84,36 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           }
         }
       }
+      // The feature table stays a table on GitHub; the site shows the same rows as a card grid,
+      // like the samples overview: preview on top, then the linked name and what the feature gives.
       const features = tree.children.find((node) => node.type === 'table');
       if (features) {
-        features.data = {...features.data, hProperties: {...features.data?.hProperties, className: 'readme-feature-table'}};
         enhanceTableCode(features);
+        const jsx = (name, className, children) => ({
+          type: 'mdxJsxFlowElement',
+          name,
+          attributes: [{type: 'mdxJsxAttribute', name: 'className', value: className}],
+          children,
+        });
+        const [, ...rows] = features.children;
+        const cards = rows.map(({children: [name, summary, preview]}, index) => {
+          const media = preview.children.map((part) => part.type === 'code'
+            ? part
+            : {type: 'paragraph', children: [part]});
+          return jsx('article', 'feature-card', [
+            jsx('div', 'feature-card__preview', media),
+            jsx('div', 'feature-card__body', [
+              {type: 'paragraph', data: {hProperties: {className: 'feature-card__title'}}, children: [
+                {type: 'mdxJsxTextElement', name: 'span', attributes: [{type: 'mdxJsxAttribute', name: 'className', value: 'feature-card__index'}],
+                  children: [{type: 'text', value: `${String(index + 1).padStart(2, '0')} /`}]},
+                {type: 'text', value: ' '},
+                ...name.children,
+              ]},
+              {type: 'paragraph', data: {hProperties: {className: 'feature-card__text'}}, children: summary.children},
+            ]),
+          ]);
+        });
+        tree.children.splice(tree.children.indexOf(features), 1, jsx('div', 'feature-cards', cards));
       }
       // Keep portable file links on GitHub, and native local links on the site.
       // pathname:// follows Docusaurus locale links across independently built locales.
