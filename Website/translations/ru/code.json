@@ -1,3 +1,4 @@
 {
-  "theme.TOCCollapsible.toggleButtonLabel": {"message": "Содержание"}
+  "theme.TOCCollapsible.toggleButtonLabel": {"message": "Содержание"},
+  "venom.articleToc.sections": {"message": "{count} раздел|{count} раздела|{count} разделов"}
 }
