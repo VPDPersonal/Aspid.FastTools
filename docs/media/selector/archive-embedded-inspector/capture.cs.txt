@@ -1,0 +1,13 @@
+var scene=UnityEditor.SceneManagement.EditorSceneManager.NewPreviewScene();
+var go=new UnityEngine.GameObject("Loadout");
+UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(go,scene);
+var c=go.AddComponent<Aspid.FastTools.Samples.SerializeReferences.Loadout>();
+var so=new UnityEditor.SerializedObject(c);
+var p=so.FindProperty("_primary");p.managedReferenceValue=new Aspid.FastTools.Samples.SerializeReferences.Pistol();so.ApplyModifiedPropertiesWithoutUndo();p.FindPropertyRelative("_damage").intValue=37;p.isExpanded=true;so.ApplyModifiedPropertiesWithoutUndo();
+UnityEditorInternal.InternalEditorUtility.SetIsInspectorExpanded(go.transform,false);
+UnityEditor.Selection.activeGameObject=go;
+var type=typeof(UnityEditor.Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+var w=(UnityEditor.EditorWindow)UnityEngine.ScriptableObject.CreateInstance(type);
+w.ShowUtility();w.minSize=new UnityEngine.Vector2(840,640);w.maxSize=new UnityEngine.Vector2(840,640);w.position=new UnityEngine.Rect(120,100,840,640);
+var root=w.rootVisualElement;root.style.width=560;root.style.height=426.6667f;root.style.transformOrigin=new UnityEngine.UIElements.TransformOrigin(0,0,0);root.style.scale=new UnityEngine.UIElements.Scale(new UnityEngine.Vector3(1.5f,1.5f,1));
+w.Focus();return new{window=w.GetInstanceID(),go=go.GetInstanceID(),target=c.GetInstanceID()};

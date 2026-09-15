@@ -1,0 +1,16 @@
+.page { padding: 8px 0 24px; }
+.header { max-width: 780px; margin-bottom: 42px; }
+.header h1 { font-size: clamp(2.3rem, 5vw, 3.5rem); line-height: 1.1; letter-spacing: -.04em; margin-bottom: 22px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.card { display: flex; flex-direction: column; color: var(--venom-fg); background: var(--ifm-code-background); border: 2px solid var(--venom-line-strong); border-radius: 12px; overflow: hidden; transition: border-color .18s ease, transform .18s ease; }
+.card:hover { color: var(--venom-fg); text-decoration: none; border-color: var(--venom-accent); transform: translateY(-3px); }
+.card:focus-visible { outline: 3px solid var(--venom-accent); outline-offset: 4px; }
+.preview { position: relative; overflow: hidden; aspect-ratio: 16 / 9; background: var(--venom-panel); border-bottom: 1px solid var(--venom-line-strong); display: flex; align-items: center; justify-content: center; }
+/* The card clips the corners; undo the framed-media rule from custom.css. */
+.preview img { width: 100%; height: 100%; object-fit: cover; border: 0; border-radius: 0; }
+.content { display: flex; flex: 1; flex-direction: column; padding: 26px; }
+.content .feature { display: flex; align-items: baseline; gap: 10px; font: 500 clamp(1.25rem, 2.5vw, 1.75rem)/1.2 var(--ifm-heading-font-family); letter-spacing: -.025em; color: var(--venom-fg-strong); margin-bottom: 14px; }
+.index { flex-shrink: 0; color: var(--venom-accent); }
+.content > p { font-size: 1rem; line-height: 1.7; color: var(--venom-fg); margin-bottom: 0; }
+@media (max-width: 700px) { .grid { grid-template-columns: 1fr; gap: 22px; } .header { margin-bottom: 30px; } .content { padding: 22px; } }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover { transform: none; } }

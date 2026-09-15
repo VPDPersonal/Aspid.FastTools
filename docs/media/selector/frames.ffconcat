@@ -1,0 +1,14 @@
+ffconcat version 1.0
+file '07-pistol-returned.png'
+duration 1.2
+file '02-picker.png'
+duration 0.7
+file '03-selection.png'
+duration 0.5
+file '04-shotgun.png'
+duration 1
+file '05-return-picker.png'
+duration 0.7
+file '06-return-selection.png'
+duration 0.5
+file '07-pistol-returned.png'

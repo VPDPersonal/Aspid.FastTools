@@ -1,203 +1,217 @@
 # Serializable Type System
 
-Unity cannot serialize `System.Type` out of the box — the Serializable Type System closes that gap: the type is picked in the Inspector through a hierarchical, searchable window, stored as an assembly-qualified name, and lazily resolved to a `System.Type` on first access.
+Choose a type in the Inspector, persist it with a component or asset, and read it as `System.Type` in code. The wrappers store the selected type; your code creates the instance. To store an instance with editable data, use [SerializeReference Selector](03-serialize-reference-selector.md).
 
-**Reference sections:**
+## Quick start
 
-* [`SerializableType`](#serializabletype) — a serializable field wrapper over `System.Type`;
-* [`SerializableMonoScript`](#serializablemonoscript) — the same wrapper referenced through the
-  script asset, so a class rename does not break the field;
-* [`TypeSelectorAttribute`](#typeselectorattribute) — a type-picker button on `string`,
-  `SerializableType` and `[SerializeReference]` fields, including
-  [dynamic base types via member references](#dynamic-base-types-via-member-references);
-* [`TypeSelectorDisplay`](#typeselectordisplay) — a candidate type's name, group, tooltip and icon
-  in the picker;
-* [`TypeSelectorWindow`](#typeselectorwindow) — the same picker window as a public API for
-  your own editor code;
-* [`ComponentTypeSelector`](#componenttypeselector) — an Inspector dropdown that switches
-  a component or ScriptableObject to a subtype.
+Unity does not serialize a `System.Type` field directly. Instead of manually filling and resolving a string, declare `SerializableType<T>`. The argument `T` constrains selection to compatible types. This example uses `Collider`:
 
-## SerializableType
+| Before — a type-name string | After — SerializableType |
+|---|---|
+| <pre lang="csharp"><code>[SerializeField]&#10;private string _colliderTypeName;&#10;&#10;public System.Type ColliderType =&gt;&#10;    string.IsNullOrEmpty(_colliderTypeName)&#10;        ? null&#10;        : System.Type.GetType(&#10;            _colliderTypeName, false);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;Collider&gt;&#10;    _colliderType;&#10;&#10;public System.Type ColliderType =&gt;&#10;    _colliderType?.Type;</code></pre> |
 
-A serializable wrapper over `System.Type`: it stores the selected type as an assembly-qualified name and lazily resolves it to a `System.Type` on first access. Two variants are available:
+The right-hand version requires `using UnityEngine;` and `using Aspid.FastTools.Types;`. The wrapper already has a picker; the attribute here excludes abstract classes and interfaces.
 
-- **`SerializableType`** — stores any type;
-- **`SerializableType<T>`** — stores a type constrained to `T` or its subclasses.
+### Example: add the selected Collider
 
-Both support implicit conversion to `System.Type`, can be created from code with a `Type`-taking constructor
-(`new SerializableType<Ability>(typeof(Dash))` — the constrained one throws for a type not assignable to `T`),
-and expose the stored name through `AssemblyQualifiedName`. `SerializableType<T>` derives from `SerializableType`;
-both build on the abstract `SerializableTypeBase`. Keep in mind that Unity serializes a field by its declared type:
-a `SerializableType<T>` assigned from code to a plain `SerializableType` field reloads as the unconstrained wrapper.
+Save this code as `ColliderSpawner.cs`:
 
 ```csharp
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-public abstract class Ability : MonoBehaviour
+public sealed class ColliderSpawner : MonoBehaviour
 {
-    public abstract void Activate();
-}
-
-public sealed class AbilitySelector : MonoBehaviour
-{
-    [SerializeField] private SerializableType<Ability> _abilityType;
+    [TypeSelector(Allow = TypeAllow.None)]
+    [SerializeField] private SerializableType<Collider> _colliderType;
 
     private void Start()
     {
-        var ability = (Ability)gameObject.AddComponent(_abilityType.Type);
-        ability.Activate();
+        var type = _colliderType?.Type;
+        if (type == null || type.IsAbstract || type.ContainsGenericParameters)
+            return;
+        if (!typeof(Collider).IsAssignableFrom(type)) return;
+
+        gameObject.AddComponent(type);
     }
 }
 ```
 
-![SerializableType field with type selection in the Inspector](Images/aspid_fasttools_serializable_type.gif)
+1. Add `ColliderSpawner` to a GameObject.
+2. Open **Collider Type**, search for **BoxCollider**, and select it.
+3. Enter Play Mode: a **Box Collider** appears on the object.
+4. Exit Play Mode and choose `<None>`: on the next run, the component adds nothing.
+
+![Selecting a serializable type in the Inspector](Images/aspid_fasttools_serializable_type.gif)
+
+Selecting a serializable type in the Inspector
+
+Ready-made enemy-type and spawn-pattern scenarios are included in the [Types sample](../Samples~/Types/Documentation/README.md).
+
+## Choosing a tool
+
+| Task | Tool |
+|---|---|
+| Store a type, including nested and generic types | [`SerializableType`](#serializabletype) |
+| Retain selection when renaming a class and its file | [`SerializableMonoScript`](#serializablemonoscript) |
+| Add a type picker to a string or constrain a field | [`TypeSelector`](#typeselectorattribute) |
+| Store an instance in `[SerializeReference]` | [SerializeReference Selector](03-serialize-reference-selector.md) |
+| Customize a candidate's name, group, icon, or visibility | [`TypeSelectorDisplay`](#typeselectordisplay) |
+| Open the window from editor code | [`TypeSelectorWindow`](#typeselectorwindow) |
+| Switch the component or ScriptableObject's own type | [`ComponentTypeSelector`](#componenttypeselector) |
+
+## SerializableType
+
+`SerializableType` stores an assembly-qualified name: the type name together with its assembly. `Type` resolves the string lazily and caches the resulting `System.Type`; deserialization resets the cache. The wrapper does not store the selected class's fields.
+
+| Variant | Selection constraint |
+|---|---|
+| `SerializableType` | No base-type constraint |
+| `SerializableType<T>` | Types assignable to `T`, including interface implementations |
+
+Both variants convert implicitly to `System.Type` and have a public constructor taking a `Type`:
+
+```csharp
+var selected = new SerializableType<Collider>(typeof(BoxCollider));
+System.Type type = selected;
+
+var empty = new SerializableType<Collider>(null);
+```
+
+`new SerializableType<Collider>(typeof(string))` throws `ArgumentException`. There is no public parameterless constructor: pass `null` to create an empty wrapper from code, or let Unity initialize a serialized field.
+
+| Property or call | Result |
+|---|---|
+| `Type` | The resolved `System.Type`; `null` for an empty selection or unresolved name |
+| `AssemblyQualifiedName` | The stored name, even if the type is missing; an empty string for no selection |
+| `BaseType` | `typeof(object)`, or `typeof(T)` for the generic variant |
+| `ToString()` | The resolved type's short name; otherwise the stored name |
+
+### Empty values and renames
+
+Check `Type` before using it. Both an empty selection and a missing type return `null`, but a missing type retains its `AssemblyQualifiedName`, and the Inspector shows `<Missing>`. Renaming a class, namespace, or assembly can make the old string unresolvable; storing a name does not provide migration by itself.
+
+> [!NOTE]
+> Unity serializes a wrapper by the field's declared type. Assigning `SerializableType<T>` to a `SerializableType` field preserves the selected type after loading, but loses the `T` constraint. Declare the generic variant on the field itself. The same rule applies to `SerializableMonoScript<T>`.
 
 ## SerializableMonoScript
 
-The same field, referenced through the script asset instead of the type name. `SerializableMonoScript` and
-`SerializableMonoScript<T>` keep an editor-only `MonoScript` reference next to the assembly-qualified name; in the
-editor the script is the source of truth, so **renaming or moving the class keeps the field intact** — the stored name
-is re-read from the script whenever the object is serialized. The reference exists only under `UNITY_EDITOR`: a player
-build serializes just the name, and at runtime the wrapper resolves from it exactly like `SerializableType`.
+Use this family when the selected type is backed by a script file. In the editor, the wrapper stores a `MonoScript` reference and refreshes the type name from that asset during serialization. Selection survives renames and moves while Unity recognizes the intended class in the same script asset.
 
-The trade-off is Unity's own: only a type that maps to a script asset qualifies — a top-level, non-generic class
-declared in a file of the same name (what `MonoScript.GetClass()` reports). The picker lists only such types, and a
-`MonoScript` can be dragged from the Project window onto the field. Nested and generic types need `SerializableType`.
+| Stored name | Script-asset reference |
+|---|---|
+| <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;MonoBehaviour&gt;&#10;    _componentType;</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableMonoScript&lt;MonoBehaviour&gt;&#10;    _componentType;</code></pre> |
 
-```csharp
-public sealed class EnemySpawner : MonoBehaviour
-{
-    // Survives renaming Grunt to Soldier; the picker offers Enemy subtypes backed by a script file.
-    [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
+| Capability | SerializableType | SerializableMonoScript |
+|---|---|---|
+| Searchable picker | Yes | Yes, only types backed by a suitable MonoScript |
+| Nested and generic types | Yes | No |
+| Types without a separate script, such as BoxCollider | Yes | No |
+| Name update after a script rename | Manual | From the stored MonoScript during serialization |
+| Construction from a `Type` in code | Public constructor | No public constructor |
+| In a player | Type name | Type name; the MonoScript reference is editor-only |
 
-    private void Spawn() =>
-        gameObject.AddComponent(_enemyType.Type);
-}
-```
+Choose a type through search or drag its `.cs` file from **Project**. It must be a class returned by `MonoScript.GetClass()`: top-level, non-generic, in a matching file. Rename the class and file together, retaining the asset and its `.meta`. If the script is deleted or no longer resolves its class, the wrapper keeps the last known name but does not restore the class automatically.
 
-A wrapper constructed from code (`new SerializableMonoScript(typeof(Dash))`) carries the type name only and becomes
-rename-safe once a type is picked in the Inspector.
-
-`[TypeSelector]` (including `Required = true`) applies to these fields the same way it does to `SerializableType`.
-`SerializableMonoScript<T>` derives from `SerializableMonoScript`, which shares the abstract `SerializableTypeBase` with
-`SerializableType` but is not one (its serialized layout differs). The referenced asset is exposed through the
-editor-only `Script` property.
+Both families derive from `SerializableTypeBase`, but `SerializableMonoScript` does not derive from `SerializableType`. Both expose `.Type` and implicit conversion to `System.Type`; configure `SerializableMonoScript` through the Inspector.
 
 ## TypeSelectorAttribute
 
-Adds a type-picker button to a field in the Inspector: it opens a hierarchical, searchable window listing only the types assignable to the given base types (when several are given, to all of them at once; with no arguments, any type qualifies). What happens on selection depends on the field's shape:
+The attribute configures field selection. Wrappers already have a picker without the attribute; on a plain string, it adds one.
 
-- `string` — the assembly-qualified name of the selected type is written into the field;
-- `SerializableType` / `SerializableType<T>` and `SerializableMonoScript` / `SerializableMonoScript<T>` — narrows the built-in selector; the attribute's base types intersect with the generic argument `T`;
-- `[SerializeReference]` managed reference — the selected type is instantiated into the field immediately (see [SerializeReference Selector](03-serialize-reference-selector.md)).
+| Field | Selection result |
+|---|---|
+| `string` | Stores the assembly-qualified name |
+| `SerializableType` / `SerializableMonoScript` | Configures the wrapper's selection |
+| `[SerializeReference]` | Creates an instance of the selected implementation |
 
-The attribute is editor-only (`[Conditional("UNITY_EDITOR")]`) and carries no runtime cost.
+### Constraints and collections
 
 ```csharp
-using UnityEngine;
-using Aspid.FastTools.Types;
+[TypeSelector(typeof(MonoBehaviour), Allow = TypeAllow.None)]
+[SerializeField] private string _componentTypeName;
 
-public interface IStackable { }
+[TypeSelector(typeof(IDamageable), Allow = TypeAllow.None)]
+[SerializeField] private SerializableType<MonoBehaviour> _damageableType;
 
-public abstract class AbilityModifier
-{
-    public abstract void Apply();
-}
-
-public sealed class AbilitySelector : MonoBehaviour
-{
-    // string — the assembly-qualified name of the selected type is stored.
-    // Each array element is its own picker, constrained to AbilityModifier.
-    [TypeSelector(typeof(AbilityModifier))]
-    [SerializeField] private string[] _modifierTypes;
-
-    // SerializableType — narrows the picker the field already has.
-    [TypeSelector(typeof(AbilityModifier))]
-    [SerializeField] private SerializableType _modifierType;
-
-    // SerializableType<T> — T already narrows the picker on its own; the base
-    // types of the attribute intersect with it: only AbilityModifier
-    // implementations that are also IStackable qualify.
-    [TypeSelector(typeof(IStackable))]
-    [SerializeField] private SerializableType<AbilityModifier> _stackableModifierType;
-
-    // For a [SerializeReference] field picking a type immediately creates
-    // an instance and assigns it to the field. With no arguments the attribute
-    // offers subtypes of the field's own type (here — AbilityModifier).
-    // Required = true flags an unset field: an inspector warning
-    // plus a violation for the build/CI gate.
-    [TypeSelector(Required = true)]
-    [SerializeReference] private AbilityModifier _modifier;
-}
+[TypeSelector(Allow = TypeAllow.None)]
+[SerializeField] private SerializableType<Collider>[] _colliderTypes;
 ```
+
+`IDamageable` is your interface. `_damageableType` offers components that both inherit `MonoBehaviour` and implement `IDamageable`. For strings and wrappers, multiple constraints intersect: a candidate must satisfy **every** constraint. Arrays and lists get a picker for each entry.
+
+For `[SerializeReference]`, see the [instance selector rules](03-serialize-reference-selector.md#configuring-selection). The attribute has `[Conditional("UNITY_EDITOR")]`, so its usage is omitted from player builds.
 
 ### Constructors and properties
 
+| Property | Default | Behaviour |
+|---|---|---|
+| `Allow` | `TypeAllow.All` | `Abstract` adds abstract classes; `Interface` adds interfaces. `All` enables both categories; `None` excludes them. Ignored on `[SerializeReference]` |
+| `Required` | `false` | Warns about an empty type name or a `null` managed reference |
+
+`TypeAllow.None` means concrete types, not an empty list. Static classes are not offered. This filter does not check for the constructor your code needs: account for your factory's requirements before creating an ordinary C# object.
+
+<details>
+<summary>TypeSelector argument forms</summary>
+
 ```csharp
-[Conditional("UNITY_EDITOR")]
-public sealed class TypeSelectorAttribute : PropertyAttribute
-{
-    public TypeSelectorAttribute() // base type: object
-    public TypeSelectorAttribute(Type type)
-    public TypeSelectorAttribute(params Type[] types)
-    public TypeSelectorAttribute(string assemblyQualifiedName)
-    public TypeSelectorAttribute(params string[] assemblyQualifiedNames)
-
-    public TypeAllow Allow { get; set; }  // default: TypeAllow.All
-    public bool Required { get; set; }    // default: false
-}
-
-[Flags]
-public enum TypeAllow
-{
-    None      = 0,
-    Abstract  = 1,
-    Interface = 2,
-    All       = Abstract | Interface
-}
+[TypeSelector]
+[TypeSelector(typeof(MonoBehaviour))]
+[TypeSelector(typeof(MonoBehaviour), typeof(IDamageable))]
+[TypeSelector("Namespace.TypeName, AssemblyName")]
+[TypeSelector(nameof(_category))]
 ```
 
-| Property | Description |
-|----------|-------------|
-| `Allow` | Which special type categories (abstract classes, interfaces) the picker includes in addition to plain concrete classes. Default: `TypeAllow.All` (a type-name field lists abstract classes and interfaces too; set `TypeAllow.None` to restrict it to concrete types). Ignored on a `[SerializeReference]` managed reference |
-| `Required` | Flags an unset field: a `[SerializeReference]` managed reference left `null`, or a `string` field left empty, shows an inline "required" warning in the Inspector and counts as a violation for the build/CI gate. Also covers a `SerializableType` / `SerializableMonoScript` field (its stored type name left empty). Default: `false` |
+These are alternatives, not attributes to stack on one field. Constructors accept a `Type`, a `Type` array, a string, or a string array. A string identifies an object member or a type name with its assembly.
 
-#### The Required notice
+</details>
 
-An empty field with `Required = true` looks like this in the Inspector:
+### The Required notice
 
-![A filled picker field next to an empty Required field showing the inline notice](Images/aspid_fasttools_type_selector_required.png)
+```csharp
+[TypeSelector(Required = true, Allow = TypeAllow.None)]
+[SerializeField] private SerializableType<Collider> _requiredType;
+```
 
-To find and fix such violations project-wide from the FastTools window instead of chasing them
-one Inspector at a time, see [Bulk repair tabs](04-serialize-reference-tooling.md#bulk-repair-tabs).
+![An empty required field shows a notice beside the picker](Images/aspid_fasttools_type_selector_required.png)
+
+An empty required field shows a notice beside the picker
+
+`Required` does not select a type automatically, block `<None>`, or replace validation in code. For strings and wrappers, it checks an **empty stored name**: a nonempty name for a missing type is a different problem and does not become a `Required` violation.
+
+Project-wide required-field checks run in [Project References](04-serialize-reference-tooling.md#where-required-fields-are-checked) when validation is enabled. CI requires [`-srGateRequired`](04-serialize-reference-tooling.md#running-in-ci); the normal player pre-build check does not validate these fields.
 
 ## Dynamic base types via member references
 
-The string constructors resolve **member-first**: when the string is a valid C# identifier that matches an instance field or property on the same object, that member's *current value* supplies the base type(s) — so one field can constrain another's picker, live in the Inspector. Any other string is treated as an assembly-qualified type name (`Type.GetType`), which is what you need for a type the call site cannot reference with `typeof` (across an editor or asmdef boundary).
+Pass `nameof(...)` to let a field or property's current value control the candidate list. For example, a base category and a dependent selection:
 
 ```csharp
-public sealed class Loadout : MonoBehaviour
-{
-    // The category chosen here drives the picker of _weaponType below.
-    [SerializeField] private SerializableType<Weapon> _category;
+[SerializeField] private SerializableType<MonoBehaviour> _category;
 
-    // Constrained live to whatever _category currently holds.
-    [TypeSelector(nameof(_category))]
-    [SerializeField] private string _weaponType;
-}
+[TypeSelector(nameof(_category), Allow = TypeAllow.None)]
+[SerializeField] private string _componentTypeName;
 ```
 
-The referenced member must be an instance field or property of type `Type`, `string`, or `SerializableType` / `SerializableType<T>` — or an array of any of these. Prefer `nameof(...)` so a rename keeps the link. An unknown member name, or a member of an unsuitable shape, is a **compile error** (analyzer rules `AFT0006`–`AFT0008`); for cases the analyzer cannot see (precompiled assemblies, a rename without recompilation) the drawer shows an inline warning below the field instead.
+Change **Category**, then open **Component Type Name**: the list is constrained to the selected type and its subclasses. Changing a constraint does not clear an earlier selection by itself; review the dependent field and select a new type if needed.
+
+| Constraint source | Support |
+|---|---|
+| `System.Type` | One type |
+| `string` | A type name resolved through `Type.GetType` |
+| `SerializableType`, `SerializableMonoScript`, and their generic variants | The resolved `.Type` value |
+| An array of these values | Multiple simultaneous constraints |
+
+The source must be an instance field or readable property on the object being edited. Inherited members work; indexers do not. An empty source contributes no constraint. A generic wrapper's own `T` continues to constrain selection.
+
+The string is resolved as an object member first, then as a type name. Prefer `typeof` for an accessible type and `nameof` for a member. Analyzer rules `AFT0006`–`AFT0008` validate member references; if a constraint cannot be resolved while the Inspector is running, the field shows a notice.
 
 ## TypeSelectorDisplay
 
-Decorate a candidate type with `[TypeSelectorDisplay]` to tune how it appears in the picker — an editor-only attribute (`[Conditional("UNITY_EDITOR")]`) in `Aspid.FastTools.Types` that carries no runtime cost. The compiler evaluates that condition where the attribute is *written*, so declare it from inside the Unity project: a type compiled outside Unity — a plugin `.dll` built by `dotnet build` — carries none of these settings, `Hidden` included.
+The attribute changes a candidate's presentation while retaining its real name and identity in stored data. For an ordinary class:
 
 ```csharp
 using Aspid.FastTools.Types;
 
-// Rename the type in the picker, place it under an explicit group, give it a tooltip and an icon:
 [TypeSelectorDisplay(
     Name = "Damage ×",
     Group = "Combat/Modifiers",
@@ -206,78 +220,140 @@ using Aspid.FastTools.Types;
 public sealed class DamageModifier { }
 ```
 
-| Member | Description |
-|--------|-------------|
-| `Name` | Display name shown instead of the type's short name — in the picker rows and in the closed dropdown's caption. Search still matches the real type name too, and the hover tooltip keeps revealing the full `Namespace.Class, Assembly` identity. `null` or whitespace means no override. |
-| `Group` | Explicit picker path with `/` separating levels (e.g. `"Combat/Melee"`). **Replaces** the type's namespace placement — the type appears only under this path, and path segments are shared between types. `null` or whitespace keeps the namespace placement. |
-| `Tooltip` | Tooltip shown when hovering the type's row. `null` means no tooltip override. |
-| `Icon` | Editor icon shown left of the label — an `EditorGUIUtility.IconContent` name, a project-relative asset path with extension (loaded via `AssetDatabase`), or a `Resources` texture path without extension. `null` means no icon. |
-| `Hidden` | When `true`, the picker never offers the type. Not inherited, so hiding a base type leaves the subclasses meant to replace it offered as usual. Assigning the type from code is unaffected, and a value already stored in a field keeps rendering. |
+![The Damage × name, icon, and Combat/Modifiers group in the picker](Images/aspid_fasttools_type_selector_display.png)
 
-Use `Hidden` for a type that is assignable but not meant to be authored in the Inspector — a delegate-backed adapter, a test double, a base implementation kept only for code:
+The Damage × name, icon, and Combat/Modifiers group in the picker
 
-```csharp
-[TypeSelectorDisplay(Hidden = true)]
-public sealed class DelegateModifier : IModifier { }
-```
+| Property | Result |
+|---|---|
+| `Name` | Caption in the list and closed field. Search still matches the real type name |
+| `Group` | Grouping instead of the namespace; `/` separates levels, such as `Combat/Melee` |
+| `Tooltip` | Text shown on hover |
+| `Icon` | An `EditorGUIUtility.IconContent` name, an asset path with extension, or a `Resources` path without extension |
+| `Hidden` | When `true`, hides the type from normal selection. Not inherited; code assignment and display of stored values still work |
 
-`Hidden` governs authoring, not recovery. A **repair** picker — the missing-reference **Fix** and the References window's bulk fix — still offers hidden types, because a reference already stored as one has to stay re-pointable. **Smart Fix**, which proposes a type rather than letting you choose, never suggests one.
+Empty `Name` and `Group` values retain the default presentation; `null` for `Tooltip` or `Icon` supplies no override. Generic captions retain their argument list. A class stored only as a type name does not need `[Serializable]`; if stored as a `[SerializeReference]` instance, serialization requirements apply separately.
 
-In the picker, the `DamageModifier` from the example above appears under `Combat/Modifiers` as "Damage ×" with its icon — next to siblings that keep their default look:
+Manual **Fix** and bulk repair can offer hidden types. **Smart Fix** does not suggest them: hiding a type from normal selection must not prevent recovery of older data.
 
-![Custom name, icon and group in the picker via TypeSelectorDisplay](Images/aspid_fasttools_type_selector_display.png)
+> [!NOTE]
+> `TypeSelectorDisplay` depends on `UNITY_EDITOR` in the assembly where the attribute is applied. A class compiled into an external DLL without that symbol carries none of these settings, including `Hidden`.
 
 ## TypeSelectorWindow
 
-A searchable, namespace-hierarchical type-picker popup — the same picker opened by `[TypeSelector]` and `SerializableType`, also available as a public API. The window offers:
+The shared picker used by fields is also a public API for custom inspectors and `EditorWindow` tools. Types are grouped by namespace or `Group`; search finds candidates without manual navigation. The window disambiguates identical names by assembly.
 
-- Hierarchical namespace organization
-- Text search with filtering
-- Keyboard navigation (Arrow keys, Enter, Escape; Space toggles a favorite)
-- Breadcrumb trail with back navigation (Left arrow or a click on a crumb)
-- Assembly disambiguation for types with identical names
-- **Favorites** (★ on hover) and **Recent** (last picks) sections on the root page — stored locally per project (`EditorPrefs`, never committed), hidden while searching
-- A `<None>` option pinned at the top and a ✓ mark on the current value — its row is pre-selected on open
-- Type counters on namespace/group rows and section headers
-- Generic type support — picking an open generic walks through its type parameters and emits the constructed type
-- Favorites/Recent tuning (on/off, Recent capacity) in the Settings tab of the SerializeReference window
+![Favorites and Recent on the picker root page](Images/aspid_fasttools_type_selector_window.png)
 
-![Root page of the picker with Favorites, Recent and namespace counters](Images/aspid_fasttools_type_selector_window.png)
+Favorites and Recent on the picker root page
 
-Picking an open generic walks through its argument page and returns the constructed type:
+| Action | Control |
+|---|---|
+| Move / select / close | Arrow keys / Enter / Escape |
+| Return to the parent group | Left arrow or breadcrumbs |
+| Toggle a favourite | Space or the star on hover |
+| Clear the value | `<None>` |
 
-![Picking an open generic via its argument page](Images/aspid_fasttools_type_selector_generic.gif)
+**Favorites** and **Recent** are stored locally per project in `EditorPrefs` and hidden while searching. Configure visibility and history capacity in the FastTools window's **Settings** tab. The current type has a check mark, and groups show candidate counts.
 
-> The argument page only lists types Unity can serialize as a field value: primitives, `enum`, `string`, `UnityEngine.Object`-derived references, and `[Serializable]` classes/structs. Abstract types, interfaces, open generics, and delegates never appear as candidates. Give a candidate type the `[Serializable]` attribute to make it selectable.
+### Generic types
 
-The window is available as a public API — open it from any editor code (custom inspectors, `EditorWindow`, menu items) when you need a type picker outside the standard `SerializableType` / `[TypeSelector]` flow.
+Picking an open generic type opens its argument pages and returns a constructed closed type. For example, choosing `int` for `Container<T>` produces `Container<int>`. A generic argument can itself be generic; the window resolves its parameters first.
+
+![Choosing a generic type argument in the picker](Images/aspid_fasttools_type_selector_generic.gif)
+
+Choosing a generic type argument in the picker
+
+Arguments must satisfy the parameter's base-type, interface, and `where` constraints. The ordinary type-name picker does not require `[Serializable]` on an argument: it stores a name rather than a value of that type. `[SerializeReference]` adds its own [serialization and inference rules](03-serialize-reference-selector.md#generic-types).
+
+### Opening from code
+
+In an editor script, import `Aspid.FastTools.Types.Editors`. `screenRect` is the button rectangle in **screen coordinates**, and `selectedTypeName` is the current type-name string:
 
 ```csharp
-namespace Aspid.FastTools.Types.Editors
-{
-    public sealed class TypeSelectorWindow : EditorWindow
+TypeSelectorWindow.Show(
+    screenRect,
+    new TypeSelectorFilter
     {
-        public static void Show(
-            Rect screenRect,
-            TypeSelectorFilter filter = default,
-            string currentAqn = "",
-            Action<string> onSelected = null);
+        Types = new[] { typeof(MonoBehaviour) },
+        Allow = TypeAllow.None
+    },
+    currentAqn: selectedTypeName,
+    onSelected: aqn => selectedTypeName = aqn);
+```
+
+The callback receives an assembly-qualified name, or `null` for `<None>`. Dismissing the window without a choice does not assign a value. If the result belongs to an asset, write it through `SerializedProperty` and apply the changes.
+
+<details>
+<summary>Complete IMGUI window with a picker button</summary>
+
+Create `TypePickerWindow.cs` in an `Editor` folder and open **Tools → Type Picker**. It displays the selected name without creating a component:
+
+```csharp
+using System;
+using UnityEditor;
+using UnityEngine;
+using Aspid.FastTools.Types;
+using Aspid.FastTools.Types.Editors;
+
+public sealed class TypePickerWindow : EditorWindow
+{
+    [SerializeField] private string _selectedTypeName;
+
+    [MenuItem("Tools/Type Picker")]
+    private static void Open() => GetWindow<TypePickerWindow>("Type Picker");
+
+    private void OnGUI()
+    {
+        var caption = string.IsNullOrEmpty(_selectedTypeName)
+            ? "<None>"
+            : Type.GetType(_selectedTypeName, false)?.Name ?? "<Missing>";
+        var rect = GUILayoutUtility.GetRect(new GUIContent(caption), GUI.skin.button);
+
+        if (GUI.Button(rect, caption))
+        {
+            TypeSelectorWindow.Show(
+                GUIUtility.GUIToScreenRect(rect),
+                new TypeSelectorFilter
+                {
+                    Types = new[] { typeof(MonoBehaviour) },
+                    Allow = TypeAllow.None
+                },
+                _selectedTypeName,
+                aqn =>
+                {
+                    _selectedTypeName = aqn;
+                    Repaint();
+                });
+        }
     }
 }
 ```
 
-| Parameter | Description |
-|-----------|-------------|
-| `screenRect` | Screen-space rectangle the dropdown is anchored to. |
-| `filter` | Bundles which types the selector offers: base types (`Types`, only types assignable to **all** entries are listed; defaults to `typeof(object)`), the included kinds (`Allow`), an optional per-type `Predicate`, verbatim `AdditionalTypes`, the open-generic `ArgumentFilter` (which types an argument page offers) and `InferredArgumentFilter` (whether an argument the field itself determines is admissible for that particular parameter), and `HideNoneOption` (leave the `<None>` row out when the target must always hold a type). |
-| `currentAqn` | Assembly-qualified name of the currently selected type, used to pre-navigate to its location. Pass `null` or empty to start at the root. |
-| `onSelected` | Callback invoked with the assembly-qualified name of the selected type, or `null` if the user chose `<None>`. |
+</details>
+
+### Window filters
+
+`TypeSelectorFilter` is a struct. Its `default` has `Allow = None`, unlike the `[TypeSelector]` attribute, which defaults to `All`. Set the mode explicitly when you need abstract classes or interfaces.
+
+| Property | Purpose |
+|---|---|
+| `Types` | Base types every candidate must satisfy |
+| `Allow` | Allowed categories: abstract classes and interfaces |
+| `Predicate` | An additional condition after type and category checks |
+| `AdditionalTypes` | Candidates that bypass `Types`, `Allow`, and `Predicate`; `Hidden` filtering remains |
+| `ArgumentFilter` | An additional filter for manually selected arguments |
+| `InferredArgumentFilter` | A filter for arguments inferred from the field type |
+| `IncludeHidden` | Offer types marked `Hidden = true` |
+| `HideNoneOption` | Hide `<None>` on the root page |
+
+`AdditionalTypes` is not an extra constraint: use `Predicate` to narrow the list. `currentAqn` controls the current mark; an empty string selects the empty row, while `null` leaves selection unmarked.
+
+For a window that edits assets, see [EditorTools](../Samples~/EditorTools/Documentation/README.md).
 
 ## ComponentTypeSelector
 
-A serializable struct that adds a type-switch dropdown to the Inspector. Add it as a field on a base class — picking a subtype rewrites `m_Script` on the `SerializedObject`, effectively turning the component or ScriptableObject into the selected subtype.
-
-The list is automatically restricted to subtypes of the class declaring the field. No extra configuration is required.
+This selector changes the **component or ScriptableObject itself**, rather than storing a type for later creation. Add the field to a base class: selection is restricted to concrete types assignable to the class that declares the field. `<None>` is hidden.
 
 ```csharp
 using UnityEngine;
@@ -286,22 +362,41 @@ using Aspid.FastTools.Types;
 public abstract class EnemyBase : MonoBehaviour
 {
     [SerializeField] private ComponentTypeSelector _enemyType;
-    [SerializeField] [Min(0)] private float _health = 100f;
+    [SerializeField, Min(0)] private float _health = 100f;
 
     public abstract void Attack();
 }
-
-public sealed class FastEnemy : EnemyBase
-{
-    [SerializeField] [Min(0)] private float _speed = 25f;
-
-    public override void Attack() =>
-        Debug.Log($"Fast enemy strikes! (speed: {_speed})");
-}
 ```
 
-![ComponentTypeSelector switches the component type in the Inspector](Images/aspid_fasttools_component_type_selector.gif)
+Save the base class as `EnemyBase.cs`. Create subclasses in **separate files** matching their class names:
 
-Notes on the type-switching dropdown's behavior:
+| FastEnemy.cs | ArmoredEnemy.cs |
+|---|---|
+| <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class FastEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private float _speed = 25f;&#10;&#10;    public override void Attack() =&gt;&#10;        Debug.Log($"Speed: &#123;_speed&#125;");&#10;&#125;</code></pre> | <pre lang="csharp"><code>using UnityEngine;&#10;&#10;public sealed class ArmoredEnemy : EnemyBase&#10;&#123;&#10;    [SerializeField] private int _armor = 10;&#10;&#10;    public override void Attack() =&gt;&#10;        Debug.Log($"Armor: &#123;_armor&#125;");&#10;&#125;</code></pre> |
 
-- Because the dropdown owns type-switching, the Inspector's built-in **Script** row is hidden while the selector is present — you change the type only through the dropdown (UIToolkit inspectors only; the legacy IMGUI inspector draws that row itself).
+Add **FastEnemy** to a GameObject, set **Health = 75**, and select **ArmoredEnemy** in the picker. The shared `Health` remains, `Speed` disappears, and `Armor` appears. Do not assume fields unique to the previous class will survive a later switch back.
+
+![Switching a component type with ComponentTypeSelector](Images/aspid_fasttools_component_type_selector.gif)
+
+Switching a component type with ComponentTypeSelector
+
+The editor replaces `m_Script` through Unity serialization. This is not a general migration between incompatible classes: review shared and new fields after switching. The selected class must have its own `MonoScript`, whose `GetClass()` returns that exact class. If no suitable script is found, the type stays unchanged and the Console receives a warning.
+
+In UI Toolkit inspectors, the standard **Script** row is hidden while the selector is present; IMGUI inspectors still draw that row themselves. Try type switching and shared-field preservation in the [Types sample](../Samples~/Types/Documentation/README.md).
+
+## Troubleshooting selection
+
+| Symptom | What to check |
+|---|---|
+| A class is missing | Compatibility with the base and every constraint, `Allow`, `Hidden`, and compilation errors |
+| A type appears in SerializableType but not SerializableMonoScript | Whether it has a separate script file and `MonoScript.GetClass()` returns the intended class |
+| Changing Category leaves the old value | Constraints change the candidate list, not the dependent field's stored value |
+| `<Missing>` with a nonempty name | Whether the class, namespace, or assembly changed; select an existing type again |
+| Required does not warn about a missing type | For strings and wrappers, it checks an empty name rather than successful resolution |
+| A type is selected but no object appears | Storing a type does not instantiate it; use your creation code or SerializeReference Selector |
+
+## Next steps
+
+- [Types](../Samples~/Types/Documentation/README.md) — a working scene with enemies, dependent selection, and component replacement.
+- [SerializeReference Selector](03-serialize-reference-selector.md) — instances with data, nested references, and repair.
+- [SerializeReference Tooling](04-serialize-reference-tooling.md) — project validation and CI.

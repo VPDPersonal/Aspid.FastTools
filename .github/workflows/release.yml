@@ -84,6 +84,18 @@ jobs:
           fi
           echo "package.json version matches: $PKG_VERSION"
 
+      - name: Validate documentation version
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          for f in README.md "$PACKAGE_PATH/Documentation/README.md" "$PACKAGE_PATH/Documentation/ru/README.md" \
+                   "$PACKAGE_PATH/Documentation/Images/status-badge-preview.svg"; do
+            if ! grep -qF "$VERSION" "$f"; then
+              echo "::error file=$f::$f does not mention $VERSION. Run scripts/set-version.sh $VERSION."
+              exit 1
+            fi
+          done
+
       - name: Extract CHANGELOG section
         id: changelog
         run: |

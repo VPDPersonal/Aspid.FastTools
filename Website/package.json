@@ -5,15 +5,18 @@
   "scripts": {
     "sync-i18n": "node scripts/sync-i18n.mjs",
     "api": "node scripts/docfx-projects.mjs && rm -rf api && docfx metadata docfx/docfx.json && node scripts/docfx-postprocess.mjs",
-    "prestart": "npm run sync-i18n",
-    "prebuild": "npm run sync-i18n",
+    "prestart": "npm run sync-readme && npm run sync-i18n",
+    "prebuild": "npm run sync-readme && npm run sync-i18n",
     "start": "docusaurus start",
     "start:ru": "docusaurus start --locale ru",
     "build": "docusaurus build",
     "serve": "docusaurus serve",
     "clear": "docusaurus clear",
     "write-translations": "docusaurus write-translations",
-    "version": "docusaurus docs:version"
+    "version": "docusaurus docs:version",
+    "sync-readme": "node scripts/sync-readme.mjs",
+    "check-readme": "node scripts/sync-readme.mjs --check",
+    "prestart:ru": "npm run sync-readme && npm run sync-i18n"
   },
   "dependencies": {
     "@docusaurus/core": "^3.9.1",
@@ -26,7 +29,11 @@
   },
   "devDependencies": {
     "@docusaurus/module-type-aliases": "^3.9.1",
-    "@docusaurus/types": "^3.9.1"
+    "@docusaurus/types": "^3.9.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-stringify": "^11.0.0",
+    "unified": "^11.0.5"
   },
   "browserslist": {
     "production": [

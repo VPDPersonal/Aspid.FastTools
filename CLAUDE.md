@@ -13,3 +13,5 @@ Unity package `tech.aspid.fasttools` (`Aspid.FastTools/Packages/tech.aspid.fastt
 
 - A change to generator or analyzer source reaches Unity **only** after `dotnet build -c Release` in that solution;
   `dotnet test` (Debug) deliberately does not copy the DLL, so it is safe to run.
+- The version lives in `package.json`, the badge SVG and the install URLs of both READMEs; bump all of them with
+  `scripts/set-version.sh <version>`, which the release workflow checks.

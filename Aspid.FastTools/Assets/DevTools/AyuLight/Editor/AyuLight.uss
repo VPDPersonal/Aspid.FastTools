@@ -1,0 +1,105 @@
+/* Ayu Light: https://github.com/ayu-theme/ayu-colors/blob/master/themes/light.yaml */
+.ayu-light {
+    --ayu-bg: #fcfcfc;
+    --ayu-panel: #f8f9fa;
+    --ayu-field: #ffffff;
+    --ayu-line: #e7eaed;
+    --ayu-line-strong: #d7dde3;
+    --ayu-fg: #5c6166;
+    --ayu-muted: #828e9f;
+    --ayu-accent: #f29718;
+    --unity-colors-window-background: #fcfcfc;
+    --unity-colors-default-background: #fcfcfc;
+    --unity-colors-default-text: #5c6166;
+    --unity-colors-default-border: #e7eaed;
+    --unity-colors-inspector_titlebar-background: #f8f9fa;
+    --unity-colors-toolbar-background: #f8f9fa;
+    --unity-colors-highlight-background: #d6e4f8;
+    --unity-colors-highlight-text: #5c6166;
+    --unity-colors-highlight-background-hover: #e5eaf0;
+    --unity-colors-highlight-background-inactive: #e5eaf0;
+    --unity-colors-highlight-border: #f29718;
+    --unity-colors-app_toolbar-background: #f8f9fa;
+    color: var(--ayu-fg);
+}
+
+.ayu-light .unity-inspector-main-container,
+.ayu-light .unity-inspector-editors-list,
+.ayu-light .unity-tree-view,
+.ayu-light .unity-list-view,
+.ayu-light .unity-multi-column-tree-view {
+    background-color: var(--ayu-bg);
+}
+
+.ayu-light .unity-toolbar,
+.ayu-light .unity-editor-toolbar,
+.ayu-light .unity-inspector-element__header,
+.ayu-light .unity-overlay__header,
+.ayu-light .unity-overlay__content {
+    background-color: var(--ayu-panel);
+    border-color: var(--ayu-line);
+}
+
+.ayu-light .unity-base-field__label,
+.ayu-light .unity-label,
+.ayu-light .unity-foldout__text {
+    color: var(--ayu-fg);
+}
+
+.ayu-light .unity-base-text-field__input,
+.ayu-light .unity-enum-field__input,
+.ayu-light .unity-base-popup-field__input,
+.ayu-light .unity-object-field__input {
+    background-color: var(--ayu-field);
+    border-color: var(--ayu-line-strong);
+    color: var(--ayu-fg);
+    --unity-selection-color: #e5eaf0;
+    --unity-cursor-color: #3d424d;
+}
+
+.ayu-light .unity-base-text-field__input:focus,
+.ayu-light .unity-enum-field__input:focus,
+.ayu-light .unity-base-popup-field__input:focus,
+.ayu-light .unity-object-field__input:focus {
+    border-color: var(--ayu-accent);
+}
+
+.ayu-light .unity-button {
+    background-color: var(--ayu-field);
+    border-color: var(--ayu-line-strong);
+    color: var(--ayu-fg);
+}
+
+.ayu-light .unity-button:hover,
+.ayu-light .unity-toolbar-button:hover {
+    background-color: var(--ayu-line);
+}
+
+.ayu-light .unity-button:active,
+.ayu-light .unity-toolbar-toggle:checked {
+    background-color: var(--ayu-accent);
+    color: #3d424d;
+}
+
+.ayu-light .unity-collection-view__item:selected {
+    background-color: #e5eaf0;
+}
+
+.ayu-light .unity-collection-view:focus .unity-collection-view__item:selected {
+    background-color: #d6e4f8;
+}
+
+.ayu-light .unity-collection-view:focus .unity-collection-view__item:selected .unity-label {
+    color: #3d424d;
+}
+
+.ayu-light .unity-button:disabled,
+.ayu-light .unity-base-field:disabled .unity-base-field__label {
+    color: var(--ayu-muted);
+}
+
+.ayu-light .aspid-fasttools-enum-values__header,
+.ayu-light .aspid-fasttools-enum-values__container {
+    background-color: var(--ayu-panel);
+    border-color: var(--ayu-line);
+}
