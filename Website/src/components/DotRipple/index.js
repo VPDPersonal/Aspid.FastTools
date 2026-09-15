@@ -1,4 +1,5 @@
 import {useEffect} from 'react';
+import {BACKGROUND_WINDOWS, TINTED_WINDOWS} from '../BackgroundWindows';
 
 // Anything that reads as "content" rather than canvas. Only the filled parts of the navigation panel and the TOC count,
 // so the empty space under a short menu still behaves like background.
@@ -38,6 +39,14 @@ function readColors() {
     accent: [(value >> 16) & 255, (value >> 8) & 255, value & 255],
     canvas: style.getPropertyValue('--venom-canvas').trim() || '#000',
   };
+}
+
+// Read once per frame, outside the dot loop: scrolling and resizing can move a window during a wave.
+function readTintedWindows() {
+  return [...document.querySelectorAll(`.doc-column-with-windows :is(${TINTED_WINDOWS})`)]
+    .filter((element) => !element.closest('details:not([open])'))
+    .map((element) => ({rect: element.getBoundingClientRect(), color: getComputedStyle(element).borderTopColor}))
+    .filter(({rect}) => rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth);
 }
 
 // Signed height of the water at distance `d` from the origin of a wave whose front is at radius `r`.
@@ -80,6 +89,7 @@ export default function DotRipple() {
       ctx.clearRect(0, 0, innerWidth, innerHeight);
       const farthest = Math.hypot(innerWidth, innerHeight) + CRESTS[CRESTS.length - 1][0] + WIDTH * 3;
       waves = waves.filter((wave) => radiusAt(now - wave.start) < farthest);
+      const tintedWindows = waves.length ? readTintedWindows() : [];
 
       for (const wave of waves) {
         const r = radiusAt(now - wave.start);
@@ -109,24 +119,29 @@ export default function DotRipple() {
             const ny = d > 0 ? dy / d : 0;
             const px = cx + nx * PUSH * h;
             const py = cy + ny * PUSH * h;
+            const tint = tintedWindows.find(({rect}) => px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom);
 
             if (h > 0) {
               // Crest: the dot rises — bigger, brighter, pushed outwards. The resting dot is hidden underneath it.
               const [cr, cg, cb] = colors.accent;
-              ctx.fillStyle = `rgba(${cr}, ${cg}, ${cb}, ${Math.min(0.15 + h * 0.75, 0.9)})`;
+              ctx.fillStyle = tint?.color ?? `rgb(${cr}, ${cg}, ${cb})`;
+              ctx.globalAlpha = Math.min(0.15 + h * 0.75, 0.9);
               ctx.beginPath();
               ctx.arc(px, py, BASE_DOT + LIFT * h, 0, Math.PI * 2);
               ctx.fill();
+              ctx.globalAlpha = 1;
             } else {
               // Trough: the dot sinks — the resting dot is covered with the canvas colour and a fainter one drawn.
               ctx.fillStyle = colors.canvas;
               ctx.beginPath();
               ctx.arc(cx, cy, BASE_DOT + 0.6, 0, Math.PI * 2);
               ctx.fill();
-              ctx.fillStyle = `rgba(120, 128, 140, ${Math.max(0.12 + h * 0.12, 0.02)})`;
+              ctx.fillStyle = tint?.color ?? 'rgb(120, 128, 140)';
+              ctx.globalAlpha = Math.max(0.12 + h * 0.12, 0.02);
               ctx.beginPath();
               ctx.arc(px, py, Math.max(BASE_DOT + h * 0.6, 0.3), 0, Math.PI * 2);
               ctx.fill();
+              ctx.globalAlpha = 1;
             }
           }
         }
@@ -139,7 +154,7 @@ export default function DotRipple() {
       if (event.button !== 0) return;
       if (!document.documentElement.classList.contains('docs-doc-page')) return;
       if (!(event.target instanceof Element)) return;
-      const backgroundWindow = event.target.closest('.doc-background-window');
+      const backgroundWindow = event.target.closest(BACKGROUND_WINDOWS);
       if (backgroundWindow) {
         if (event.target.closest('a, button, [role="button"]')) return;
       } else if (event.target.closest(CONTENT)) return;

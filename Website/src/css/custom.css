@@ -921,13 +921,19 @@ html.docs-background-windows.docs-doc-page {
   mask-repeat: no-repeat;
   pointer-events: none;
 }
-/* Blue notices tint the real canvas visible through the article's cutout. */
+/* Notices tint the real canvas visible through the article's cutout. */
 @media (min-width: 997px) {
   .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
     background: color-mix(in srgb, var(--venom-sapphire) 12%, transparent);
   }
   html[data-theme='dark'] .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
     background: rgb(15 45 85 / 45%);
+  }
+  .doc-column-with-windows .theme-admonition-warning {
+    background: color-mix(in srgb, var(--venom-amber) 12%, transparent);
+  }
+  html[data-theme='dark'] .doc-column-with-windows .theme-admonition-warning {
+    background: rgb(90 62 7 / 45%);
   }
 }
 /* Keep the frame and image above the shared background. */

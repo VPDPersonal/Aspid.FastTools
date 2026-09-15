@@ -2,16 +2,13 @@ import React, {useEffect, useRef, useState} from 'react';
 import {createPortal} from 'react-dom';
 import OriginalImg from '@theme-original/MDXComponents/Img';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import useBackgroundWindow from './useBackgroundWindow';
 
 export default function DocImage(props) {
   const ru = useDocusaurusContext().i18n.currentLocale === 'ru';
   const [preview, setPreview] = useState(null);
   const dialog = useRef(null);
   const opener = useRef(null);
-  const panel = useRef(null);
   const profilerCapture = typeof props.src === 'string' && props.src.includes('/profiler-markers');
-  useBackgroundWindow(panel, profilerCapture);
   useEffect(() => {
     if (!preview) return undefined;
     const overflow = document.body.style.overflow;
@@ -39,7 +36,7 @@ export default function DocImage(props) {
       }} />;
   return <>
     {profilerCapture
-      ? <span ref={panel} className="doc-profiler-panel doc-background-window">{image}</span>
+      ? <span className="doc-profiler-panel doc-background-window">{image}</span>
       : image}
     {preview && createPortal(<dialog ref={dialog} className="doc-image-dialog" aria-label={props.alt || (ru ? 'Просмотр изображения' : 'Image preview')}
       onCancel={() => setPreview(null)} onClick={() => setPreview(null)}>

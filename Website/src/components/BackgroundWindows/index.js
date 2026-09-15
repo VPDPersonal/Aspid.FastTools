@@ -1,12 +1,14 @@
 import {useEffect} from 'react';
 
+export const TINTED_WINDOWS = '.theme-admonition-info, .theme-admonition-note, .theme-admonition-warning';
+export const BACKGROUND_WINDOWS = `.doc-background-window, ${TINTED_WINDOWS}`;
+
 // Mask only the article's painted surface, leaving its content and the shared page canvas intact.
-export default function useBackgroundWindow(ref, enabled) {
+export default function useBackgroundWindows(ref, documentKey) {
   useEffect(() => {
-    if (!enabled || !ref.current) return undefined;
-    const panel = ref.current;
-    const column = panel.closest('[class*="docMainContainer_"] > .container > .row > .col:first-child');
+    const column = ref.current;
     if (!column) return undefined;
+    const observedWindows = new Set();
     let frame;
     const clear = () => {
       column.classList.remove('doc-column-with-windows');
@@ -14,14 +16,28 @@ export default function useBackgroundWindow(ref, enabled) {
       document.documentElement.classList.remove('docs-background-windows');
     };
     const update = () => {
-      if (!matchMedia('(min-width: 997px)').matches) {
+      const windows = [...column.querySelectorAll(BACKGROUND_WINDOWS)]
+        .filter((window) => !window.closest('details:not([open])'));
+      for (const window of observedWindows) {
+        if (!windows.includes(window)) {
+          observer.unobserve(window);
+          observedWindows.delete(window);
+        }
+      }
+      for (const window of windows) {
+        if (!observedWindows.has(window)) {
+          observer.observe(window);
+          observedWindows.add(window);
+        }
+      }
+      if (!windows.length || !matchMedia('(min-width: 997px)').matches) {
         clear();
         return;
       }
       const bounds = column.getBoundingClientRect();
       if (!bounds.width || !bounds.height) return;
       let path = `M0 0H${bounds.width}V${bounds.height}H0Z`;
-      for (const window of column.querySelectorAll('.doc-background-window')) {
+      for (const window of windows) {
         const rect = window.getBoundingClientRect();
         const x = rect.left - bounds.left;
         const y = rect.top - bounds.top;
@@ -41,17 +57,20 @@ export default function useBackgroundWindow(ref, enabled) {
     };
     const observer = new ResizeObserver(schedule);
     observer.observe(column);
-    observer.observe(panel);
-    // Expanding a disclosure above the image can move it without resizing the column.
+    // Content mounted after hydration and disclosures can add or move windows.
+    const mutations = new MutationObserver(schedule);
+    mutations.observe(column, {childList: true, subtree: true});
+    // Expanding a disclosure above a window can move it without resizing the column.
     column.addEventListener('toggle', schedule, true);
     addEventListener('resize', schedule);
     update();
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
+      mutations.disconnect();
       column.removeEventListener('toggle', schedule, true);
       removeEventListener('resize', schedule);
       clear();
     };
-  }, [enabled, ref]);
+  }, [documentKey, ref]);
 }
