@@ -642,14 +642,15 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 }
 
 /* Article links are set apart by colour alone; the underline appears on hover as an affordance. */
-.markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']) {
+/* The introduction hosts its TOC disclosure inside the article; its links keep the TOC look, not the article link accent. */
+.markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link) {
   color: var(--venom-accent);
   text-decoration: none;
   text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
 }
 
-.markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):hover {
+.markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):hover {
   text-decoration: underline;
   text-decoration-color: var(--venom-accent);
 }
@@ -938,21 +939,21 @@ html.docs-background-windows.docs-doc-page {
   }
 }
 /* Keep the frame and image above the shared background. */
-.theme-doc-markdown .doc-profiler-panel {
+.theme-doc-markdown .doc-image-panel {
   display: block;
   position: relative;
   padding: clamp(1.5rem, 4vw, 3rem);
   border: 1px solid var(--venom-line-strong);
   border-radius: var(--ifm-pre-border-radius);
 }
-.theme-doc-markdown .doc-profiler-panel > img.doc-zoom-image {
+.theme-doc-markdown .doc-image-panel > img.doc-zoom-image {
   height: auto;
   border-radius: 4px;
   box-shadow: 0 10px 24px #0003, 0 2px 6px #0002;
 }
 @media (max-width: 996px) {
-  .theme-doc-markdown .doc-profiler-panel { padding: 0; border: 0; }
-  .theme-doc-markdown .doc-profiler-panel > img.doc-zoom-image { border: 0; box-shadow: none; }
+  .theme-doc-markdown .doc-image-panel { padding: 0; border: 0; }
+  .theme-doc-markdown .doc-image-panel > img.doc-zoom-image { border: 0; box-shadow: none; }
 }
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
 /* Feature table: the preview column carries the page, so it gets the width and a uniform height. */
