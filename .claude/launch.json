@@ -2,6 +2,21 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "website-ru-3001",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "docusaurus",
+        "start",
+        "--locale",
+        "ru",
+        "--port",
+        "3001",
+        "--no-open"
+      ],
+      "cwd": "Website",
+      "port": 3001
+    },
+    {
       "name": "website-dev",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
