@@ -34,9 +34,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
   ```
 
 - **Unity Asset Store:** пакет пока недоступен в магазине. Для установки используйте Git URL выше.
-
-> [!WARNING]
-> Ветка `upm` сейчас содержит старый пакет `com.aspid.fasttools` (`1.0.0-rc.2`). Для `tech.aspid.fasttools` и описанных здесь возможностей используйте URL выше.
+- **Ветка `upm`:** всё ещё содержит старый пакет `com.aspid.fasttools` (`1.0.0-rc.2`). Для `tech.aspid.fasttools` и описанных здесь возможностей используйте URL выше.
 
 </details>
 
