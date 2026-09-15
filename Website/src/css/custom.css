@@ -620,9 +620,32 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 /* Give the article priority on laptops; use the in-article TOC disclosure. */
 @media (min-width: 997px) and (max-width: 1399px) {
   [class*='docMainContainer_'] .col.col--3 { display: none; }
-  /* Doubled class outranks the theme's own `display: none` above 997px regardless of bundle order. */
-  .theme-doc-toc-mobile.theme-doc-toc-mobile { display: block; margin-block: 1.5rem; }
+  .floating-toc.floating-toc { display: block; } /* outranks the base `display: none` declared below */
 }
+
+/* Floating TOC: a pinned corner button opening a popover with the desktop outline. Shown on laptop widths only. */
+.floating-toc { display: none; position: fixed; right: 1.5rem; bottom: 1.5rem; z-index: 50; }
+.floating-toc__button {
+  display: grid; place-items: center; width: 2.5rem; height: 2.5rem;
+  color: var(--venom-muted); background: var(--venom-panel); border: 1px solid var(--venom-line-strong); border-radius: 8px;
+  box-shadow: 0 6px 18px #0006; transition: color var(--ifm-transition-fast), border-color var(--ifm-transition-fast);
+}
+.floating-toc__button:hover, .floating-toc--open .floating-toc__button { color: var(--venom-fg-strong); border-color: var(--venom-accent); }
+.floating-toc__panel {
+  position: absolute; right: 0; bottom: calc(100% + 0.6rem); width: 19rem; max-height: min(65vh, 34rem); overflow-y: auto;
+  padding: 0.75rem 0.75rem 0.85rem; background: var(--venom-panel); border: 1px solid var(--venom-line-strong); border-radius: 8px;
+  box-shadow: 0 12px 32px #0008;
+}
+.floating-toc__title { padding: 0 0.75rem 0.5rem; color: var(--venom-muted); font: 600 0.75rem/1.5 var(--ifm-font-family-monospace); letter-spacing: 0.06em; text-transform: uppercase; border-bottom: 1px solid var(--venom-line); margin-bottom: 0.4rem; }
+.floating-toc__panel .table-of-contents { padding: 0; border: 0; font-size: 0.875rem; }
+.floating-toc__panel .table-of-contents li { margin: 0.25rem 0; }
+.floating-toc__panel .table-of-contents__link { display: block; padding: 0.4rem 0.75rem; line-height: 1.5; color: var(--venom-fg); }
+.floating-toc__panel .table-of-contents__link:hover { color: var(--venom-accent); }
+.floating-toc__panel .table-of-contents__link--active { color: var(--ifm-color-primary); font-weight: 600; }
+.floating-toc__panel .table-of-contents ul { margin: 0.1rem 0 0.4rem 0.75rem; padding-left: 0.5rem; border-left: 1px solid var(--venom-line-strong); }
+.floating-toc__panel .table-of-contents ul li { margin: 0.1rem 0; }
+.floating-toc__panel .table-of-contents ul .table-of-contents__link { padding: 0.3rem 0.6rem; font-size: 0.8125rem; color: var(--venom-muted); }
+.floating-toc__panel .table-of-contents ul .table-of-contents__link:hover { color: var(--venom-fg-strong); }
 
 @media (max-width: 996px) {
   html.docs-doc-page { background: var(--venom-reading-surface); }

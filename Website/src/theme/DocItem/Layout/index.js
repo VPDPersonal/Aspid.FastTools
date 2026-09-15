@@ -10,6 +10,7 @@ import DocItemFooter from '@theme/DocItem/Footer';
 import DocItemTOCMobile from '@theme/DocItem/TOC/Mobile';
 import DocItemTOCDesktop from '@theme/DocItem/TOC/Desktop';
 import DocItemContent from '@theme/DocItem/Content';
+import FloatingToc from '../../../components/FloatingToc';
 import DocBreadcrumbs from '@theme/DocBreadcrumbs';
 import ContentVisibility from '@theme/ContentVisibility';
 import Footer from '@theme/Footer';
@@ -22,8 +23,10 @@ function useDocTOC() {
   const hidden = frontMatter.hide_table_of_contents;
   const canRender = !hidden && toc.length > 0;
   const mobile = canRender ? <DocItemTOCMobile /> : undefined;
+  // Laptop widths hide the right column (custom.css) and use the floating popover instead.
+  const floating = canRender && (windowSize === 'desktop' || windowSize === 'ssr') ? <FloatingToc /> : undefined;
   const desktop = canRender && (windowSize === 'desktop' || windowSize === 'ssr') ? <DocItemTOCDesktop /> : undefined;
-  return {hidden, mobile, desktop};
+  return {hidden, mobile, floating, desktop};
 }
 
 /**
@@ -49,6 +52,7 @@ export default function DocItemLayout({children}) {
           </article>
           <DocItemPaginator />
         </div>
+        {metadata.id !== 'README' && docTOC.floating}
         <div className={styles.pageFooter}>
           <DocItemFooter />
           <div className={clsx(styles.columnFooter, 'doc-column-footer')}>
