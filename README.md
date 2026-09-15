@@ -6,9 +6,9 @@
 [![Preview 1.0.0-rc.8](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 [![MIT License](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Aspid.FastTools is a set of Unity tools that remove boilerplate around serialization and editor code. Pick a `System.Type` or a `SerializeReference` implementation right in the Inspector, repair broken references across the whole project, edit enum → value tables, and build UI Toolkit trees with fluent chains.
+Aspid.FastTools is a Unity package that fills the gaps Unity leaves in serialization and editor tooling. Serialized types and polymorphic references stay valid through renames, or get repaired without data loss when they break. The Inspector shows what a `SerializeReference` field holds and lets you swap it. Editor and profiling helpers take a line where Unity needs a class.
 
-[Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) · [Русская версия](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/ru/README.md)
+[Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
 ## Features
 
@@ -20,7 +20,7 @@ Store and pick a `System.Type` in the Inspector.
 
 ### [SerializeReference Selector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-serialize-reference-selector.md)
 
-Choose implementations and repair broken references in place.
+Pick which class a `SerializeReference` field holds, straight from the Inspector.
 
 ![Switch Pistol to Shotgun while keeping Damage at 37](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector.gif)
 
@@ -34,7 +34,7 @@ Audit and repair references across the whole project, before builds and in CI.
 
 Edit enum → value tables in the Inspector, including flags.
 
-![Edit enum keys and their values in the Inspector](Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/EnumValues/Documentation/Images/surface-tables.png)
+![Edit enum keys and their values in the Inspector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_enum_values.gif)
 
 ### [ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-profiler-markers.md)
 
@@ -94,8 +94,18 @@ This installs the preview version covered by this documentation. Git must be ins
 <details>
 <summary>Other installation options</summary>
 
-- **Latest preview:** use `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview`. Updating the package can bring in a newer preview.
-- **Another version:** copy its UPM tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases).
+- **Latest preview:** updating the package can bring in a newer preview.
+
+  ```text
+  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
+  ```
+
+- **Another version:** copy its UPM tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases), for example:
+
+  ```text
+  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.7
+  ```
+
 - **Unity Asset Store:** the package is not yet available in the store. For now, install it using the Git URL above.
 
 > \[!WARNING]
@@ -105,9 +115,9 @@ This installs the preview version covered by this documentation. Git must be ins
 
 ## Quick start
 
-1. Install the package with the Git URL above.
-2. In **Window → Package Manager**, select **Aspid.FastTools**, open the **Samples** tab and import a sample.
-3. Open its scene and read the sample's README; the [samples overview](Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.md) lists what each one shows.
+1. After installation the **Welcome** window opens on its own. Reopen it any time from **Tools → Aspid 🐍 → FastTools → Welcome**.
+2. Press **Import** on a sample; it lands in `Assets/Samples`.
+3. Open its scene and read the sample's README.
 
 ## Documentation and samples
 

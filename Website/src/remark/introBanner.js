@@ -128,14 +128,10 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           });
         }
       }
-      // Keep portable file links on GitHub, and native local links on the site.
-      // pathname:// follows Docusaurus locale links across independently built locales.
+      // Keep absolute site links on GitHub, and native local links on the site.
       function visit(node) {
         if (node.type === 'link') {
-          const href = node.url === 'ru/README.md' ? `pathname://${baseUrl}ru/docs`
-            : node.url === '../README.md' ? `pathname://${baseUrl}docs`
-            : node.url.startsWith(`${siteUrl}${baseUrl}`) ? node.url.slice(siteUrl.length)
-            : undefined;
+          const href = node.url.startsWith(`${siteUrl}${baseUrl}`) ? node.url.slice(siteUrl.length) : undefined;
           if (href) {
             node.type = 'mdxJsxTextElement';
             node.name = 'ReadmeLink';
