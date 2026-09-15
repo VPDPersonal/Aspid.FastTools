@@ -4,7 +4,7 @@
 [![Preview 1.0.0-rc.8](../Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 [![MIT License](../Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Инструменты для Unity, которые сокращают повторяющийся код: выбор и восстановление реализаций `SerializeReference` в инспекторе, сериализация типов и enum-таблиц, генерация маркеров профилирования и fluent-расширения UI Toolkit для интерфейсов редактора.
+Инструменты для Unity, которые сокращают повторяющийся код в сериализации и редакторских утилитах.
 
 [Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
@@ -14,7 +14,7 @@
 |---|---|---|
 | [Serializable Type System](02-serializable-types.md) | Хранение и выбор `System.Type` в инспекторе | ![Выбор сериализуемого типа в инспекторе](../Images/aspid_fasttools_serializable_type.gif) |
 | [SerializeReference Selector](03-serialize-reference-selector.md) | Выбор реализации и восстановление битых ссылок на месте | ![Смена Pistol на Shotgun с сохранением Damage = 37](../Images/aspid_fasttools_serialize_reference_selector.gif) |
-| [SerializeReference Tooling](04-serialize-reference-tooling.md) | Аудит и восстановление ссылок по проекту; проверка перед сборкой и в CI | ![Восстановление потерянного типа оружия с сохранением данных](../Images/aspid_fasttools_serialize_reference_tooling.gif) |
+| [SerializeReference Tooling](04-serialize-reference-tooling.md) | Аудит и восстановление ссылок по всему проекту, в том числе перед сборкой и в CI | ![Восстановление потерянного типа оружия с сохранением данных](../Images/aspid_fasttools_serialize_reference_tooling.gif) |
 | [EnumValues](06-enum-values.md) | Редактирование таблиц enum → значение в инспекторе, включая флаги | ![Редактирование enum-ключей и значений в инспекторе](../../Samples~/EnumValues/Documentation/Images/surface-tables.png) |
 | [ProfilerMarkers](05-profiler-markers.md) | Уникальный маркер профилирования для каждого места вызова через `this.Marker()` | <pre lang="csharp"><code>using (this.Marker())<br />&#123;<br />    Simulate();<br />&#125;</code></pre> |
 | [VisualElement Extensions](07-visual-element-extensions.md) | Построение деревьев UI Toolkit fluent-цепочками | <pre lang="csharp"><code>new VisualElement()<br />  .SetPadding(8)<br />  .AddChild(<br />    new Label("Stats"));</code></pre> |
