@@ -6,9 +6,9 @@
 [![Preview 1.0.0-rc.8](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 [![MIT License](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Tools for Unity that cut repetitive code in serialization and editor tooling.
+Aspid.FastTools is a set of Unity tools that remove boilerplate around serialization and editor code. Pick a `System.Type` or a `SerializeReference` implementation right in the Inspector, repair broken references across the whole project, edit enum → value tables, and build UI Toolkit trees with fluent chains.
 
-[Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+[Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases) · [Русская версия](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/ru/README.md)
 
 ## Features
 

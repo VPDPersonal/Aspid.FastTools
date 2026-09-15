@@ -63,7 +63,7 @@ const config = {
       if (fileContent.includes('/aspid_fasttools_readme_banner.gif')) {
         result.frontMatter.title ??= 'Aspid.FastTools';
         result.frontMatter.hide_title = true;
-        result.frontMatter.description ??= fileContent.match(/^Tools for Unity.*$|^Инструменты для Unity.*$/m)?.[0];
+        result.frontMatter.description ??= fileContent.match(/^Aspid\.FastTools (is|—) .*$/m)?.[0];
       }
       return result;
     },
@@ -91,7 +91,7 @@ const config = {
           routeBasePath: 'docs',
           breadcrumbs: false,
           sidebarPath: './sidebars.js',
-          exclude: ['**/SUMMARY.md', '**/*.meta', ...TRANSLATION_FOLDERS],
+          exclude: ['**/*.meta', ...TRANSLATION_FOLDERS],
           versions: { current: { label: PACKAGE_VERSION } },
           ...markdownOptions,
           beforeDefaultRemarkPlugins: [[remarkIntroBanner, {baseUrl: '/Aspid.FastTools/', siteUrl: 'https://vpdpersonal.github.io'}], ...markdownOptions.beforeDefaultRemarkPlugins],

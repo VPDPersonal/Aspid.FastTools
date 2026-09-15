@@ -707,7 +707,6 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 
 /* The introduction opens with a lede and a quiet link row before the feature table. */
 .theme-doc-markdown .readme-lede {
-  max-width: 40rem;
   margin-bottom: 1rem;
   font-family: var(--ifm-heading-font-family);
   font-size: 1.2rem;
