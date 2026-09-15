@@ -1,58 +1,43 @@
 # Claude Code Plugin
 
-Плагин `aspid-fasttools` добавляет в Claude Code скиллы с инструкциями по API пакета: как расставлять маркеры профилирования и собирать интерфейсы через fluent-расширения `VisualElement`. Он устанавливается в Claude Code отдельно от Unity-пакета.
+`aspid-fasttools` добавляет в [Claude Code](https://docs.claude.com/en/docs/claude-code) скиллы для профилирования методов и построения UI через fluent-расширения `VisualElement` из пакета.
 
-> [!IMPORTANT]
-> В [манифесте плагина](https://github.com/VPDPersonal/Aspid.Claude.Plugins/blob/main/plugins/aspid-fasttools/.claude-plugin/plugin.json) сейчас указана версия **0.2.0-alpha**. Его документация ориентирована на прежний `com.aspid.fasttools`, а эти руководства — на `tech.aspid.fasttools`. Перед использованием сверяйте предлагаемый код с API установленной версии пакета.
+## Быстрый старт
 
-## Установка
-
-Сначала [установите Aspid.FastTools в Unity-проект](README.md#установка) и откройте проект в [Claude Code](https://docs.claude.com/en/docs/claude-code).
-
-В интерактивной сессии Claude Code добавьте маркетплейс:
+[Установите Aspid.FastTools](README.md#установка) в Unity-проект и откройте проект в Claude Code. В сессии Claude Code добавьте маркетплейс, затем установите плагин:
 
 ```text
 /plugin marketplace add VPDPersonal/Aspid.Claude.Plugins
 ```
 
-Затем установите плагин:
-
 ```text
 /plugin install aspid-fasttools@aspid-claude-plugins
 ```
 
-Откройте `/plugin`, чтобы проверить наличие `aspid-fasttools` среди установленных плагинов. Эти команды вводятся в Claude Code.
+Плагин устанавливается отдельно от Unity-пакета. Откройте `/plugin`, чтобы проверить наличие `aspid-fasttools` среди установленных плагинов.
 
-## Какие задачи покрывает
+## Скиллы
 
-В опубликованном плагине три скилла. Для текущего пакета полезны прежде всего два:
+Скиллы активируются автоматически при подходящих запросах. Эти два покрывают возможности, описанные в документации пакета:
 
-| Скилл | Назначение | Руководство по API |
+| Скилл | Задача | Руководство по API |
 |---|---|---|
-| `aspid-profiler-marker` | Добавление `this.Marker()` и областей `using` | [ProfilerMarkers](05-profiler-markers.md) |
-| `aspid-visual-element-fluent` | Построение и оформление UI Toolkit в коде | [VisualElement Extensions](07-visual-element-extensions.md) |
+| `aspid-profiler-marker` | Добавление областей замера методов и блоков через `this.Marker()` | [ProfilerMarkers](05-profiler-markers.md) |
+| `aspid-visual-element-fluent` | Построение и оформление элементов UI Toolkit в C# | [VisualElement Extensions](07-visual-element-extensions.md) |
 
-Третий, `aspid-id-struct`, посвящён `IId` и `[UniqueId]` из прежнего пакета. Он не относится к возможностям, описанным в этой версии документации. Актуальный состав и требования перечислены в [README плагина](https://github.com/VPDPersonal/Aspid.Claude.Plugins/blob/main/plugins/aspid-fasttools/README_RU.md).
-
-## Примеры запросов
-
-Для профилирования:
+Например, выделите метод и попросите:
 
 ```text
-Добавь маркер на весь метод Simulate и отдельный именованный
-маркер на поиск соседей. Используй this.Marker() из Aspid.FastTools.
+Добавь маркер на весь метод Simulate и отдельный
+именованный маркер на поиск соседей.
+Используй this.Marker() из Aspid.FastTools.
 ```
 
-Для интерфейса редактора:
+После применения изменений проверьте компиляцию и маркеры в Unity Profiler.
 
-```text
-Собери инспектор AbilityConfig через fluent-расширения VisualElement
-из Aspid.FastTools. Добавь заголовок, поле стоимости маны и HelpBox,
-который появляется при нулевой стоимости. Целевая версия Unity — 6.0.
-```
+## Совместимость
 
-После изменения кода проверьте компиляцию в Unity и результат в инспекторе или Profiler. Скилл помогает выбрать API и форму кода; результат зависит от контекста проекта и версии плагина.
+> [!IMPORTANT]
+> Плагин находится в alpha. Его [документация](https://github.com/VPDPersonal/Aspid.Claude.Plugins/blob/main/plugins/aspid-fasttools/README_RU.md) ориентирована на прежний пакет `com.aspid.fasttools`, а эти руководства — на `tech.aspid.fasttools`. Сверяйте предлагаемый код с API установленного пакета.
 
-## Обновления и обратная связь
-
-Плагин выпускается независимо от Unity-пакета. Следите за [релизами Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins/releases); об ошибках скиллов сообщайте в [Issues плагина](https://github.com/VPDPersonal/Aspid.Claude.Plugins/issues), указав запрос, полученный код и версии плагина и Unity-пакета.
+Плагин также содержит `aspid-id-struct` для API `IId` и `[UniqueId]` прежнего пакета, которые не входят в эту документацию. Плагин выпускается независимо; см. [релизы и обновления](https://github.com/VPDPersonal/Aspid.Claude.Plugins/releases).

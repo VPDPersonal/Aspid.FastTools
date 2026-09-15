@@ -1,21 +1,43 @@
 # Claude Code Plugin
 
-If you use [Claude Code](https://docs.claude.com/en/docs/claude-code), the companion [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) marketplace ships the `aspid-fasttools` plugin — a set of skills that teach Claude Code this package's conventions and APIs.
+`aspid-fasttools` adds skills to [Claude Code](https://docs.claude.com/en/docs/claude-code) for profiling methods and building UI with the package’s fluent `VisualElement` extensions.
 
-> [!WARNING]
-> The plugin is still in beta — its skills and commands may change between releases.
+## Quick start
 
-Add the marketplace and install the plugin:
+[Install Aspid.FastTools](README.md#installation) in your Unity project and open the project in Claude Code. Add the marketplace, then install the plugin in the Claude Code session:
 
-```sh
+```text
 /plugin marketplace add VPDPersonal/Aspid.Claude.Plugins
 ```
 
-```sh
+```text
 /plugin install aspid-fasttools@aspid-claude-plugins
 ```
 
-Included skills:
+The plugin is installed separately from the Unity package. Open `/plugin` to check that `aspid-fasttools` is installed.
 
-- **`aspid-profiler-marker`** — insert `this.Marker()` call sites with the right `using`/scope shape.
-- **`aspid-visual-element-fluent`** — build editor or runtime UI using the fluent [`VisualElement` extensions](07-visual-element-extensions.md).
+## Skills
+
+Skills activate automatically for matching requests. These two cover features documented in this package:
+
+| Skill | Task | API guide |
+|---|---|---|
+| `aspid-profiler-marker` | Add method and block scopes with `this.Marker()` | [ProfilerMarkers](05-profiler-markers.md) |
+| `aspid-visual-element-fluent` | Build and style UI Toolkit elements in C# | [VisualElement Extensions](07-visual-element-extensions.md) |
+
+For example, select a method and ask:
+
+```text
+Add a marker for the entire Simulate method and a separate
+named marker for the neighbour search.
+Use this.Marker() from Aspid.FastTools.
+```
+
+Check compilation and inspect the markers in Unity Profiler after applying the changes.
+
+## Compatibility
+
+> [!IMPORTANT]
+> The plugin is in alpha. Its [documentation](https://github.com/VPDPersonal/Aspid.Claude.Plugins/blob/main/plugins/aspid-fasttools/README.md) targets the earlier `com.aspid.fasttools` package; these guides describe `tech.aspid.fasttools`. Check suggested code against the installed package’s API.
+
+The plugin also includes `aspid-id-struct` for the earlier package’s `IId` and `[UniqueId]` APIs, which are outside this documentation. The plugin is released independently; see [releases and updates](https://github.com/VPDPersonal/Aspid.Claude.Plugins/releases).
