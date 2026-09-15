@@ -26,8 +26,8 @@ to it, never the other way round.
 The site folder is `Website/`, not `Docs/`: the repo already has `docs/` (internal working documents) and
 macOS treats the two names as one directory.
 
-Two docs plugin instances: the default one (`docs`) points at `Documentation/` (translation folders and
-`SUMMARY.md` excluded), while the second (`id: 'tutorials'`) reads the generated `Website/tutorials/` tree.
+Two docs plugin instances: the default one (`docs`) points at `Documentation/` (translation folders
+excluded), while the second (`id: 'tutorials'`) reads the generated `Website/tutorials/` tree.
 `sync-i18n.mjs` builds that tree from every sample's `Documentation/` folder so public routes stay unchanged.
 Scripts, scenes and `.meta` files are never copied.
 
@@ -36,7 +36,7 @@ Scripts, scenes and `.meta` files are never copied.
 `Website/i18n/` layout Docusaurus expects. `Website/tutorials/` and `Website/i18n/` are build artifacts and are
 gitignored; never edit them by hand.
 
-`SUMMARY.md` is the GitHub table of contents; `Website/sidebars.js` groups the main docs into Serialization
+`Website/sidebars.js` groups the main docs into Serialization
 and Editor & tooling. Add each new page to the appropriate group.
 
 ## Writing rules (so all three renderers agree)
@@ -64,8 +64,8 @@ and Editor & tooling. Add each new page to the appropriate group.
 
 ## Adding a main doc page
 
-Drop `NN-name.md` into `Documentation/`, add its row to `Documentation/README.md` (feature table) and to
-`SUMMARY.md`, add the `.meta`, optionally the translation at `Documentation/ru/NN-name.md`, and add its id to
+Drop `NN-name.md` into `Documentation/`, add its section to `Documentation/README.md` (and `ru/README.md`),
+add the `.meta`, optionally the translation at `Documentation/ru/NN-name.md`, and add its id to
 `Website/sidebars.js`. Run `npm --prefix Website run sync-readme` to refresh the root `README.md`.
 
 ## Adding a sample
@@ -78,18 +78,32 @@ Drop `NN-name.md` into `Documentation/`, add its row to `Documentation/README.md
 
 ## Local run / check
 
+**Shared server (default).** The user works on the English and Russian versions at the same time, and other
+agents work on the site in parallel, so everything is checked on **one shared production build** served on
+port 3001 — never on per-agent dev servers:
+
 ```bash
-cd Website
-npm ci
-npm start                # http://localhost:3000/Aspid.FastTools/ (prestart syncs translations)
-npm run start:ru         # Russian locale (dev server serves one locale at a time)
-npm run build            # what CI runs; fails on broken links
+Website/scripts/serve-all.sh          # kill the old server, `npm run build` (en + ru), serve detached on 3001
+Website/scripts/serve-all.sh --stop
 ```
+
+- English: `http://localhost:3001/Aspid.FastTools/`, Russian: `http://localhost:3001/Aspid.FastTools/ru/`.
+- The server is detached (`nohup`, log in `Website/.serve-all.log`), so it outlives the session that started it
+  and every agent and the user see the same site. Do not start it through `preview_start` — that ties it to one
+  session.
+- A static build does **not** pick up edits: after **every** change you want to verify (Markdown, config, remark
+  plugins, CSS, sidebars), rerun `serve-all.sh` yourself and only then check in the browser. Never ask the user
+  to restart it. The rebuild takes about a minute.
+- If port 3001 is already answering when you start, another agent's build is up — rerun the script anyway after
+  your edits; it replaces the server safely. Do not run `npm run build` or a dev server from `Website/` while the
+  script is building (they share `.docusaurus/`, `build/` and `i18n/`).
+
+Dev servers (`npm start`, `npm run start:ru`; `website-dev`/`website-dev-ru` in `.claude/launch.json` on
+3100/3101) serve one locale at a time and are only for quick hot-reload iteration on a single page — they don't
+reload config or remark plugins, and the user does not look at them.
 
 `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
 (`onBrokenAnchors` only warns — check the log for `#anchor` typos).
-Do not run `npm run build` while a dev server is running from the same folder — they share `.docusaurus/`
-and `i18n/`.
 
 ## Versioning
 

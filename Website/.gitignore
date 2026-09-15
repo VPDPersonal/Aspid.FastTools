@@ -7,3 +7,4 @@ i18n/
 changelog/
 tutorials/
 docfx/projects/
+.serve-all.log
