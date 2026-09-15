@@ -1025,7 +1025,11 @@ html.docs-background-windows.docs-doc-page {
 }
 /* Continue each capture's background into the letterbox space. */
 .theme-doc-markdown .feature-card__preview:has(img[src*='/aspid_fasttools_serialize_reference_tooling']) { background: #000; }
-.theme-doc-markdown .feature-card__preview:has(img[src*='/aspid_fasttools_enum_values']) { background: #383838; }
+.theme-doc-markdown .feature-card__preview:has(img[src*='/surface-tables']) { background: #383838; }
+/* Crop the capture's 20px side gutters (808px wide), keeping both tables visible. */
+.theme-doc-markdown .feature-card__preview img.doc-zoom-image[src*='/surface-tables'] {
+  transform: scale(1.0521);
+}
 /* Hide the thin window edges baked into the Selector capture. */
 .theme-doc-markdown .feature-card__preview img.doc-zoom-image[src*='/aspid_fasttools_serialize_reference_selector'] {
   transform: scaleX(1.0053);

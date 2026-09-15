@@ -65,7 +65,7 @@ Audit and repair references across the whole project, before builds and in CI.
 
 Edit enum → value tables in the Inspector, including flags.
 
-<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_enum_values.gif" alt="Edit enum keys and their values in the Inspector" width="640" />
+<img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/EnumValues/Documentation/Images/surface-tables.png" alt="Edit enum keys and their values in the Inspector" width="640" />
 
 ### [ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-profiler-markers.md)
 

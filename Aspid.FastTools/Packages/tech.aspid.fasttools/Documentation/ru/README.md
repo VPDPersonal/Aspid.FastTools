@@ -62,7 +62,7 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
 
 Редактирование таблиц enum → значение в инспекторе, включая флаги.
 
-<img src="../Images/aspid_fasttools_enum_values.gif" alt="Редактирование enum-ключей и значений в инспекторе" width="640" />
+<img src="../../Samples~/EnumValues/Documentation/Images/surface-tables.png" alt="Редактирование enum-ключей и значений в инспекторе" width="640" />
 
 ### [ProfilerMarkers](05-profiler-markers.md)
 
