@@ -4,9 +4,9 @@
 [![Preview 1.0.0-rc.8](../Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 [![MIT License](../Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Инструменты для Unity, которые сокращают повторяющийся код в сериализации и редакторских утилитах.
+Aspid.FastTools — набор инструментов для Unity, который убирает рутинный код вокруг сериализации и редактора. Выбирайте `System.Type` или реализацию `SerializeReference` прямо в Inspector, чините битые ссылки по всему проекту, редактируйте таблицы enum → значение и собирайте деревья UI Toolkit цепочками вызовов.
 
-[Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+[Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases) · [English version](../README.md)
 
 ## Возможности
 
