@@ -54,7 +54,7 @@ var panel = new VisualElement()
     .SetMarginTop(12); // отступ у panel
 ```
 
-Цепочки на `element.style`, `textField.textEdition` и `textField.textSelection` возвращают соответствующий интерфейс. Методы-запросы `IsFocused()`, `GetOwnerWindow()` и `TryGetByEnum(...)` возвращают результат запроса.
+Цепочки на `element.style`, `textField.textEdition` и `textField.textSelection` возвращают соответствующий интерфейс. Методы-запросы `IsFocused()`, `GetOwnerWindow()` и `TryGetByEnum(...)` цепочку не продолжают: они возвращают `bool` или найденное окно.
 
 Основные расширения работают в редакторе и в игре. Для привязки к `SerializedObject` и редакторских команд дополнительно нужен `Aspid.FastTools.UIElements.Editors`; такой код размещайте в editor-сборке, например в папке `Editor`.
 
@@ -74,16 +74,17 @@ var panel = new VisualElement()
 
 ## Элементы и дочерние узлы
 
-Здесь `panel` — родитель, `title`, `content` и `warning` — уже созданные элементы, а `showWarning` — условие добавления предупреждения:
+Для `panel` из быстрого старта. Дочерние элементы создаются на месте; `*If` добавляет элемент только при истинном условии:
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>panel.name = "ability-panel";&#10;panel.Add(title);&#10;panel.Add(content);&#10;if (showWarning)&#10;    panel.Add(warning);</code></pre> | <pre lang="csharp"><code>panel&#10;    .SetName("ability-panel")&#10;    .AddChildren(title, content)&#10;    .AddChildIf(showWarning, warning);</code></pre> |
-| <pre lang="csharp"><code>panel.Insert(0, title);&#10;panel.Remove(content);&#10;panel.RemoveAt(0);&#10;panel.Clear();</code></pre> | <pre lang="csharp"><code>panel&#10;    .InsertChild(0, title)&#10;    .RemoveChild(content)&#10;    .RemoveChildAt(0)&#10;    .ClearChildren();</code></pre> |
+| <pre lang="csharp"><code>panel.name = "ability-panel";&#10;panel.Add(new Label("Fireball"));&#10;panel.Add(new Label("Deals 40 damage"));&#10;if (Application.isPlaying)&#10;    panel.Add(new Label("Play mode"));</code></pre> | <pre lang="csharp"><code>panel&#10;    .SetName("ability-panel")&#10;    .AddChildren(&#10;        new Label("Fireball"),&#10;        new Label("Deals 40 damage"))&#10;    .AddChildIf(Application.isPlaying,&#10;        new Label("Play mode"));</code></pre> |
+| <pre lang="csharp"><code>var header = new Label("Header");&#10;panel.Insert(0, header);&#10;panel.Remove(header);&#10;panel.RemoveAt(0);&#10;panel.Clear();</code></pre> | <pre lang="csharp"><code>var header = new Label("Header");&#10;panel&#10;    .InsertChild(0, header)&#10;    .RemoveChild(header)&#10;    .RemoveChildAt(0)&#10;    .ClearChildren();</code></pre> |
 
 Эти методы возвращают родительский элемент, поэтому их можно объединять в цепочку. `AddChildren` и `InsertChildren` сохраняют порядок переданных элементов.
 
-`*If` проверяет условие только в момент вызова. Аргументы вычисляются заранее: `AddChildIf(false, new Label("Warning"))` создаст `Label`, но не добавит его в дерево. Для дорогого создания используйте обычный `if`.
+> [!NOTE]
+> `*If` проверяет условие только в момент вызова. Аргументы вычисляются заранее: `AddChildIf(false, new Label("Warning"))` создаст `Label`, но не добавит его в дерево. Для дорогого создания используйте обычный `if`.
 
 <details>
 <summary>Все методы элемента и операции с дочерними узлами</summary>
@@ -119,27 +120,23 @@ var panel = new VisualElement()
 
 ### Видимость и доступность
 
-Выберите поведение при скрытии или блокировке. Строки показывают отдельные варианты:
+Выберите поведение при скрытии или блокировке:
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>element.visible = false;&#10;element.style.display =&#10;    DisplayStyle.None;&#10;element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>element.SetVisible(false);&#10;element.SetDisplay(DisplayStyle.None);&#10;&#10;element.SetEnabledSelf(false);</code></pre> |
-
-| Вызов | Результат |
-|---|---|
-| `SetVisible(false)` | Скрывает элемент, сохраняя его место в раскладке |
-| `SetDisplay(DisplayStyle.None)` | Убирает элемент и его потомков из отображения и раскладки |
-| `SetEnabledSelf(false)` | Отключает взаимодействие с элементом и его потомками |
+| <pre lang="csharp"><code>// Скрыть, сохранив место в раскладке&#10;element.visible = false;</code></pre> | <pre lang="csharp"><code>// Скрыть, сохранив место в раскладке&#10;element.SetVisible(false);</code></pre> |
+| <pre lang="csharp"><code>// Убрать элемент и потомков из раскладки&#10;element.style.display =&#10;    DisplayStyle.None;</code></pre> | <pre lang="csharp"><code>// Убрать элемент и потомков из раскладки&#10;element.SetDisplay(DisplayStyle.None);</code></pre> |
+| <pre lang="csharp"><code>// Отключить взаимодействие с элементом и потомками&#10;element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>// Отключить взаимодействие с элементом и потомками&#10;element.SetEnabledSelf(false);</code></pre> |
 
 Чтобы вернуть элемент, используйте `SetVisible(true)`, `SetDisplay(DisplayStyle.Flex)` или `SetEnabledSelf(true)` соответственно. Доступность дочернего элемента также зависит от доступности его родителей.
 
 ## Фокус
 
-Для элемента `search`, уже подключённого к панели:
+Для поля поиска, уже подключённого к `panel`:
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>search.focusable = true;&#10;search.tabIndex = 0;&#10;search.Focus();</code></pre> | <pre lang="csharp"><code>search&#10;    .SetFocusable(true)&#10;    .SetTabIndex(0)&#10;    .FocusSelf();</code></pre> |
+| <pre lang="csharp"><code>var search = panel.Q&lt;TextField&gt;("search");&#10;search.focusable = true;&#10;search.tabIndex = 0;&#10;search.Focus();</code></pre> | <pre lang="csharp"><code>panel.Q&lt;TextField&gt;("search")&#10;    .SetFocusable(true)&#10;    .SetTabIndex(0)&#10;    .FocusSelf();</code></pre> |
 
 `FocusSelf()` вызывает обычный `Focus()`: элемент должен поддерживать фокус. `IsFocused()` сравнивает элемент с `focusController.focusedElement`; для отсоединённого элемента возвращает `false`.
 
@@ -154,11 +151,11 @@ var panel = new VisualElement()
 
 ## USS и классы
 
-Здесь `sheet` — загруженный `StyleSheet`, а `isSelected` — текущее состояние панели:
+Таблица стилей `Assets/Resources/UI/AbilityCard.uss` подключается к `panel`, а класс `playing` включается по состоянию:
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>panel.styleSheets.Add(sheet);&#10;panel.AddToClassList("ability-card");&#10;panel.EnableInClassList(&#10;    "selected", isSelected);</code></pre> | <pre lang="csharp"><code>panel&#10;    .AddStyleSheet(sheet)&#10;    .AddClass("ability-card")&#10;    .EnableClass("selected", isSelected);</code></pre> |
+| <pre lang="csharp"><code>panel.styleSheets.Add(&#10;    Resources.Load&lt;StyleSheet&gt;("UI/AbilityCard"));&#10;panel.AddToClassList("ability-card");&#10;panel.EnableInClassList(&#10;    "playing", Application.isPlaying);</code></pre> | <pre lang="csharp"><code>panel&#10;    .AddStyleSheetFromResources("UI/AbilityCard")&#10;    .AddClass("ability-card")&#10;    .EnableClass("playing", Application.isPlaying);</code></pre> |
 
 `EnableClass` приводит класс к заданному состоянию. `ToggleClass` каждый раз меняет наличие класса на противоположное.
 
@@ -179,7 +176,7 @@ var panel = new VisualElement()
 
 </details>
 
-Для `AddStyleSheetFromResources("UI/AbilityCard")` файл должен лежать в папке `Resources`, например `Assets/Resources/UI/AbilityCard.uss`. Путь указывайте без расширения. Если ресурс не найден, метод выведет предупреждение и вернёт элемент без изменений.
+`AddStyleSheetFromResources` принимает путь внутри папки `Resources` без расширения. Если ресурс не найден, метод выведет предупреждение и вернёт элемент без изменений.
 
 ## Стили
 
@@ -311,8 +308,8 @@ panel
 | `SetUnityParagraphSpacing(StyleLength)` | `unityParagraphSpacing` | |
 | `SetTextOverflow(StyleEnum<TextOverflow>)` | `textOverflow` | |
 | `SetUnityTextOverflowPosition(TextOverflowPosition)` | `unityTextOverflowPosition` | |
-| `SetUnityTextGenerator(TextGeneratorType)` | `unityTextGenerator` | Unity 6+ |
-| `SetUnityEditorTextRenderingMode(EditorTextRenderingMode)` | `unityEditorTextRenderingMode` | Unity 6+ |
+| `SetUnityTextGenerator(TextGeneratorType)` | `unityTextGenerator` | |
+| `SetUnityEditorTextRenderingMode(EditorTextRenderingMode)` | `unityEditorTextRenderingMode` | |
 | `SetUnityTextAutoSize(StyleTextAutoSize)` | `unityTextAutoSize` | Unity 6.2+ |
 | `SetWhiteSpace(StyleEnum<WhiteSpace>)` | `whiteSpace` | |
 
@@ -427,7 +424,7 @@ panel
 | `SetUnitySliceX(StyleInt)` · `SetUnitySliceY(StyleInt)` | Горизонтальная (left + right) или вертикальная (top + bottom) пара |
 | `SetUnitySliceTop/Right/Bottom/Left(StyleInt)` | Одна сторона |
 | `SetUnitySliceScale(StyleFloat)` | `unitySliceScale` |
-| `SetUnitySliceType(StyleEnum<SliceType>)` | Unity 6+ |
+| `SetUnitySliceType(StyleEnum<SliceType>)` | `unitySliceType` |
 
 </details>
 
@@ -444,19 +441,18 @@ panel
 
 ### Значение поля
 
-Для `IntegerField` с именем `field`:
-
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>field.value = 42;&#10;field.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>field.SetValue(42);&#10;field.SetValue(10, notify: false);</code></pre> |
+| <pre lang="csharp"><code>var field = new IntegerField("Mana cost");&#10;field.value = 42;&#10;field.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>var field = new IntegerField("Mana cost");&#10;field.SetValue(42);&#10;field.SetValue(10, notify: false);</code></pre> |
 
 По умолчанию `SetValue` присваивает `value` и сохраняет поведение событий Unity. `notify: false` вызывает `SetValueWithoutNotify`: поле обновляется без отправки `ChangeEvent`. Это удобно при синхронизации интерфейса с данными.
 
 ### Подписка и отписка
 
-Сохраните обработчик, если понадобится его удалить. Здесь он обновляет `Label` с именем `status`:
+Сохраните обработчик, если понадобится его удалить:
 
 ```csharp
+var status = new Label();
 EventCallback<ChangeEvent<int>> onChanged =
     evt => status.SetText($"Mana: {evt.newValue}");
 ```
@@ -478,7 +474,10 @@ EventCallback<ChangeEvent<int>> onChanged =
 
 ### Кнопки и манипуляторы
 
-Для `Button` с именем `button` и метода `Refresh()`:
+```csharp
+var button = new Button();
+void Refresh() => Debug.Log("Refresh");
+```
 
 | До — Unity API | После — FastTools |
 |---|---|
@@ -689,6 +688,19 @@ helpBox
 </details>
 
 <details>
+<summary>EnumField / EnumFlagsField</summary>
+
+```csharp
+enumField.Initialize(Mode.Default, includeObsoleteValues: false);
+```
+
+| Метод | Описание |
+|-------|----------|
+| `Initialize(Enum, bool)` | Задаёт значение по умолчанию и набор пунктов; редакторский `EnumFlagsField` поддерживает тот же вызов |
+
+</details>
+
+<details>
 <summary>Foldout</summary>
 
 ```csharp
@@ -752,14 +764,14 @@ container
 
 ## Списки и деревья
 
-`ListView` создаёт строки через `makeItem` и переиспользует их через `bindItem`. Задайте высоту списка и источник данных:
+`ListView` создаёт строки через `makeItem` и переиспользует их через `bindItem`. Список из трёх строк и пустой `ListView`:
 
 ```csharp
+using System.Collections.Generic;
+
 var items = new List<string> { "Fireball", "Heal", "Shield" };
 var listView = new ListView();
 ```
-
-Для `List<string>` нужен `using System.Collections.Generic;`.
 
 | До — Unity API | После — FastTools |
 |---|---|
@@ -813,9 +825,9 @@ var listView = new ListView();
 | `SetOnAdd(Action<BaseListView>)` · `AddOnAdd` · `RemoveOnAdd` | Собственный обработчик кнопки добавления |
 | `SetOnRemove(Action<BaseListView>)` · `AddOnRemove` · `RemoveOnRemove` | Собственный обработчик кнопки удаления |
 | `SetOverridingAddButtonBehavior(Action<BaseListView, Button>)` · `AddOverridingAddButtonBehavior` · `RemoveOverridingAddButtonBehavior` | Заменяет поведение кнопки добавления |
-| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Фабрика подвала (Unity 6+) |
-| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Фабрика заголовка (Unity 6+) |
-| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Фабрика элемента пустого списка (Unity 6+) |
+| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Фабрика подвала |
+| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Фабрика заголовка |
+| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Фабрика элемента пустого списка |
 | `AddItemsAdded(Action<IEnumerable<int>>)` / `RemoveItemsAdded` | Добавление элементов по индексам |
 | `AddItemsRemoved(Action<IEnumerable<int>>)` / `RemoveItemsRemoved` | Удаление элементов по индексам |
 
@@ -846,23 +858,26 @@ var listView = new ListView();
 
 </details>
 
-<a id="editor-commands-editor-only"></a>
-
 ## Расширения редактора
 
 Добавьте `using Aspid.FastTools.UIElements.Editors;` и `using UnityEditor.UIElements;` в editor-скрипт.
 
 ### Привязка к SerializedObject
 
-Для уже созданного `IntegerField` с именем `field` и сериализованного поля `_manaCost` типа `int`:
+Поле `_manaCost` — из компонента `AbilityBook` на странице [SerializedProperty Extensions](08-serialized-property-extensions.md#быстрый-старт):
+
+```csharp
+var field = new IntegerField("Mana cost");
+```
 
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>field.bindingPath = "_manaCost";&#10;field.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>field.BindTo(&#10;    serializedObject, "_manaCost");</code></pre> |
 | <pre lang="csharp"><code>var property = serializedObject&#10;    .FindProperty("_manaCost");&#10;field.BindProperty(property);</code></pre> | <pre lang="csharp"><code>var property = serializedObject&#10;    .FindProperty("_manaCost");&#10;field.BindPropertyTo(property);</code></pre> |
-| <pre lang="csharp"><code>root.Bind(serializedObject);&#10;&#10;// Отключить привязку&#10;root.Unbind();</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);&#10;&#10;// Отключить привязку&#10;root.UnbindFrom();</code></pre> |
+| <pre lang="csharp"><code>root.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);</code></pre> |
+| <pre lang="csharp"><code>// Отключить привязку&#10;root.Unbind();</code></pre> | <pre lang="csharp"><code>// Отключить привязку&#10;root.UnbindFrom();</code></pre> |
 
-Строки показывают отдельные способы привязки. Для дерева `root` сначала задайте пути полям через `SetBindingPath`, затем вызовите `BindTo` у корня.
+Для дерева `root` сначала задайте пути полям через `SetBindingPath`, затем вызовите `BindTo` у корня.
 
 В `CreateInspectorGUI()` [Unity автоматически привязывает возвращённое дерево](https://docs.unity3d.com/6000.0/Documentation/Manual/UIE-Binding.html) к `serializedObject`. В таком инспекторе достаточно указать путь:
 
@@ -900,8 +915,6 @@ var window = image.GetOwnerWindow();
 ```
 
 `target` — `MonoBehaviour` или `ScriptableObject`, чей скрипт нужно открыть. `GetOwnerWindow()` ищет окно по панели элемента. Если найти его не удалось, возвращает окно в фокусе, затем окно под курсором; результат может быть `null`. Это полезно при позиционировании попапа, когда клик уже пришёл, а фокус ещё не переключился.
-
-`EnumField` и редакторский `EnumFlagsField` также поддерживают цепочку `Initialize(defaultValue, includeObsoleteValues: false)`.
 
 ## Собственные свойства USS
 
@@ -945,11 +958,11 @@ public sealed class AbilityPanel : VisualElement
 
 ## Практический пример
 
-В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) собраны каталог способностей и реактивный инспектор. Поле стоимости маны управляет подписью и видимостью предупреждения:
+В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) собраны каталог способностей и реактивный инспектор, построенные на этих расширениях:
 
-![Изменение стоимости маны обновляет статус и предупреждение в инспекторе](../Images/aspid_fasttools_visual_element.gif)
+![Halve cooldown, +5 MP обновляет поля и описание эффекта; Undo возвращает прежние значения.](../../Samples~/EditorTools/Documentation/Images/demo.gif)
 
-Изменение стоимости маны обновляет статус и предупреждение в инспекторе
+Halve cooldown, +5 MP обновляет поля и описание эффекта; Undo возвращает прежние значения.
 
 <details>
 <summary>Код инспектора с полем стоимости и предупреждением</summary>
@@ -973,18 +986,31 @@ internal sealed class AbilityConfigEditor : Editor
         var manaCost = serializedObject.FindProperty("_manaCost");
 
         var badge = new Label()
-            .SetFontSize(10).SetUnityFontStyleAndWeight(FontStyle.Bold)
-            .SetPaddingX(10).SetPaddingY(3).SetBorderRadius(10).SetBorderWidth(1);
+            .SetFontSize(10)
+            .SetUnityFontStyleAndWeight(FontStyle.Bold)
+            .SetPaddingX(10)
+            .SetPaddingY(3)
+            .SetBorderRadius(10)
+            .SetBorderWidth(1);
 
-        var helpBox = new HelpBox("This ability costs no mana — is that intentional?", HelpBoxMessageType.Warning)
-            .SetMarginTop(8).SetBorderRadius(6);
+        var helpBox = new HelpBox(
+                "This ability costs no mana — is that intentional?",
+                HelpBoxMessageType.Warning)
+            .SetMarginTop(8)
+            .SetBorderRadius(6);
 
         Refresh();
         return new VisualElement()
-            .SetBorderRadius(10).SetBorderWidth(1).SetPaddingX(14).SetPaddingY(12)
+            .SetBorderRadius(10)
+            .SetBorderWidth(1)
+            .SetPaddingX(14)
+            .SetPaddingY(12)
             .AddChild(new VisualElement()
-                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
-                .AddChild(new Label(target.GetDisplayName()).SetFlexGrow(1).SetFontSize(15))
+                .SetFlexDirection(FlexDirection.Row)
+                .SetAlignItems(Align.Center)
+                .AddChild(new Label(target.GetDisplayName())
+                    .SetFlexGrow(1)
+                    .SetFontSize(15))
                 .AddChild(badge))
             .AddChild(new PropertyField(manaCost).AddValueChanged(_ => Refresh()))
             .AddChild(helpBox);

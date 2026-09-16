@@ -56,7 +56,7 @@ var panel = new VisualElement()
     .SetMarginTop(12); // margin on panel
 ```
 
-Chains on `element.style`, `textField.textEdition`, and `textField.textSelection` return their respective interfaces. Query methods such as `IsFocused()`, `GetOwnerWindow()`, and `TryGetByEnum(...)` return the query result.
+Chains on `element.style`, `textField.textEdition`, and `textField.textSelection` return their respective interfaces. Query methods such as `IsFocused()`, `GetOwnerWindow()`, and `TryGetByEnum(...)` do not continue the chain: they return a `bool` or the resolved window.
 
 Core extensions work in both the editor and the game. `SerializedObject` binding and editor commands also require `Aspid.FastTools.UIElements.Editors`; put that code in an editor assembly, such as an `Editor` folder.
 
@@ -78,16 +78,17 @@ Core extensions work in both the editor and the game. `SerializedObject` binding
 
 ## Elements and children
 
-Here, `panel` is the parent; `title`, `content`, and `warning` are existing elements; and `showWarning` controls whether to add the warning:
+For the `panel` from the quick start. Children are created inline; `*If` adds the element only when the condition is true:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>panel.name = "ability-panel";&#10;panel.Add(title);&#10;panel.Add(content);&#10;if (showWarning)&#10;    panel.Add(warning);</code></pre> | <pre lang="csharp"><code>panel&#10;    .SetName("ability-panel")&#10;    .AddChildren(title, content)&#10;    .AddChildIf(showWarning, warning);</code></pre> |
-| <pre lang="csharp"><code>panel.Insert(0, title);&#10;panel.Remove(content);&#10;panel.RemoveAt(0);&#10;panel.Clear();</code></pre> | <pre lang="csharp"><code>panel&#10;    .InsertChild(0, title)&#10;    .RemoveChild(content)&#10;    .RemoveChildAt(0)&#10;    .ClearChildren();</code></pre> |
+| <pre lang="csharp"><code>panel.name = "ability-panel";&#10;panel.Add(new Label("Fireball"));&#10;panel.Add(new Label("Deals 40 damage"));&#10;if (Application.isPlaying)&#10;    panel.Add(new Label("Play mode"));</code></pre> | <pre lang="csharp"><code>panel&#10;    .SetName("ability-panel")&#10;    .AddChildren(&#10;        new Label("Fireball"),&#10;        new Label("Deals 40 damage"))&#10;    .AddChildIf(Application.isPlaying,&#10;        new Label("Play mode"));</code></pre> |
+| <pre lang="csharp"><code>var header = new Label("Header");&#10;panel.Insert(0, header);&#10;panel.Remove(header);&#10;panel.RemoveAt(0);&#10;panel.Clear();</code></pre> | <pre lang="csharp"><code>var header = new Label("Header");&#10;panel&#10;    .InsertChild(0, header)&#10;    .RemoveChild(header)&#10;    .RemoveChildAt(0)&#10;    .ClearChildren();</code></pre> |
 
 These methods return the parent element, so they can be chained. `AddChildren` and `InsertChildren` preserve the order of the supplied elements.
 
-`*If` checks the condition only at call time. Arguments are evaluated first: `AddChildIf(false, new Label("Warning"))` creates the `Label` but does not add it to the tree. Use a normal `if` when construction is expensive.
+> [!NOTE]
+> `*If` checks the condition only at call time. Arguments are evaluated first: `AddChildIf(false, new Label("Warning"))` creates the `Label` but does not add it to the tree. Use a normal `if` when construction is expensive.
 
 <details>
 <summary>All element and child operations</summary>
@@ -123,17 +124,13 @@ These methods return the parent element, so they can be chained. `AddChildren` a
 
 ### Visibility and interaction
 
-Choose how hiding or disabling should behave. The rows show separate alternatives:
+Choose how hiding or disabling should behave:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>element.visible = false;&#10;element.style.display =&#10;    DisplayStyle.None;&#10;element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>element.SetVisible(false);&#10;element.SetDisplay(DisplayStyle.None);&#10;&#10;element.SetEnabledSelf(false);</code></pre> |
-
-| Call | Result |
-|---|---|
-| `SetVisible(false)` | Hides the element while retaining its layout space |
-| `SetDisplay(DisplayStyle.None)` | Removes the element and its descendants from rendering and layout |
-| `SetEnabledSelf(false)` | Disables interaction with the element and its descendants |
+| <pre lang="csharp"><code>// Hide while retaining layout space&#10;element.visible = false;</code></pre> | <pre lang="csharp"><code>// Hide while retaining layout space&#10;element.SetVisible(false);</code></pre> |
+| <pre lang="csharp"><code>// Remove the element and descendants from layout&#10;element.style.display =&#10;    DisplayStyle.None;</code></pre> | <pre lang="csharp"><code>// Remove the element and descendants from layout&#10;element.SetDisplay(DisplayStyle.None);</code></pre> |
+| <pre lang="csharp"><code>// Disable interaction with the element and descendants&#10;element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>// Disable interaction with the element and descendants&#10;element.SetEnabledSelf(false);</code></pre> |
 
 Restore the element with `SetVisible(true)`, `SetDisplay(DisplayStyle.Flex)`, or `SetEnabledSelf(true)`, respectively. A child's enabled state also depends on its parents.
 
@@ -141,11 +138,11 @@ Restore the element with `SetVisible(true)`, `SetDisplay(DisplayStyle.Flex)`, or
 
 ## Focus
 
-For a `search` element already attached to a panel:
+For a search field already attached to `panel`:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>search.focusable = true;&#10;search.tabIndex = 0;&#10;search.Focus();</code></pre> | <pre lang="csharp"><code>search&#10;    .SetFocusable(true)&#10;    .SetTabIndex(0)&#10;    .FocusSelf();</code></pre> |
+| <pre lang="csharp"><code>var search = panel.Q&lt;TextField&gt;("search");&#10;search.focusable = true;&#10;search.tabIndex = 0;&#10;search.Focus();</code></pre> | <pre lang="csharp"><code>panel.Q&lt;TextField&gt;("search")&#10;    .SetFocusable(true)&#10;    .SetTabIndex(0)&#10;    .FocusSelf();</code></pre> |
 
 `FocusSelf()` calls the normal `Focus()`: the element must be focusable. `IsFocused()` compares the element with `focusController.focusedElement` and returns `false` when detached.
 
@@ -162,11 +159,11 @@ For a `search` element already attached to a panel:
 
 ## USS and classes
 
-Here, `sheet` is a loaded `StyleSheet`, and `isSelected` is the panel's current selection state:
+The `Assets/Resources/UI/AbilityCard.uss` style sheet is attached to `panel`, and the `playing` class follows the current state:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>panel.styleSheets.Add(sheet);&#10;panel.AddToClassList("ability-card");&#10;panel.EnableInClassList(&#10;    "selected", isSelected);</code></pre> | <pre lang="csharp"><code>panel&#10;    .AddStyleSheet(sheet)&#10;    .AddClass("ability-card")&#10;    .EnableClass("selected", isSelected);</code></pre> |
+| <pre lang="csharp"><code>panel.styleSheets.Add(&#10;    Resources.Load&lt;StyleSheet&gt;("UI/AbilityCard"));&#10;panel.AddToClassList("ability-card");&#10;panel.EnableInClassList(&#10;    "playing", Application.isPlaying);</code></pre> | <pre lang="csharp"><code>panel&#10;    .AddStyleSheetFromResources("UI/AbilityCard")&#10;    .AddClass("ability-card")&#10;    .EnableClass("playing", Application.isPlaying);</code></pre> |
 
 `EnableClass` sets class membership to the requested state. `ToggleClass` reverses class membership on each call.
 
@@ -321,8 +318,8 @@ Convenience methods toggle bold or italic without overwriting the other flag:
 | `SetUnityParagraphSpacing(StyleLength)` | `unityParagraphSpacing` | |
 | `SetTextOverflow(StyleEnum<TextOverflow>)` | `textOverflow` | |
 | `SetUnityTextOverflowPosition(TextOverflowPosition)` | `unityTextOverflowPosition` | |
-| `SetUnityTextGenerator(TextGeneratorType)` | `unityTextGenerator` | Unity 6+ |
-| `SetUnityEditorTextRenderingMode(EditorTextRenderingMode)` | `unityEditorTextRenderingMode` | Unity 6+ |
+| `SetUnityTextGenerator(TextGeneratorType)` | `unityTextGenerator` | |
+| `SetUnityEditorTextRenderingMode(EditorTextRenderingMode)` | `unityEditorTextRenderingMode` | |
 | `SetUnityTextAutoSize(StyleTextAutoSize)` | `unityTextAutoSize` | Unity 6.2+ |
 | `SetWhiteSpace(StyleEnum<WhiteSpace>)` | `whiteSpace` | |
 
@@ -437,7 +434,7 @@ Available starting with Unity 6000.3.
 | `SetUnitySliceX(StyleInt)` · `SetUnitySliceY(StyleInt)` | Horizontal (left + right) or vertical (top + bottom) pair |
 | `SetUnitySliceTop/Right/Bottom/Left(StyleInt)` | Single side |
 | `SetUnitySliceScale(StyleFloat)` | `unitySliceScale` |
-| `SetUnitySliceType(StyleEnum<SliceType>)` | Unity 6+ |
+| `SetUnitySliceType(StyleEnum<SliceType>)` | `unitySliceType` |
 
 </details>
 
@@ -456,19 +453,18 @@ Available starting with Unity 6000.3.
 
 ### Field values
 
-For an `IntegerField` named `field`:
-
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>field.value = 42;&#10;field.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>field.SetValue(42);&#10;field.SetValue(10, notify: false);</code></pre> |
+| <pre lang="csharp"><code>var field = new IntegerField("Mana cost");&#10;field.value = 42;&#10;field.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>var field = new IntegerField("Mana cost");&#10;field.SetValue(42);&#10;field.SetValue(10, notify: false);</code></pre> |
 
 By default, `SetValue` assigns `value` and preserves Unity's event behaviour. `notify: false` calls `SetValueWithoutNotify`: it updates the field without sending a `ChangeEvent`. This is useful for synchronizing UI with data.
 
 ### Subscribing and unsubscribing
 
-Keep the handler if you need to remove it later. This one updates a `Label` named `status`:
+Keep the handler if you need to remove it later:
 
 ```csharp
+var status = new Label();
 EventCallback<ChangeEvent<int>> onChanged =
     evt => status.SetText($"Mana: {evt.newValue}");
 ```
@@ -490,7 +486,10 @@ Typed overloads are available for `int`, `uint`, `nint`, `nuint`, `long`, `ulong
 
 ### Buttons and manipulators
 
-For a `Button` named `button` and a `Refresh()` method:
+```csharp
+var button = new Button();
+void Refresh() => Debug.Log("Refresh");
+```
 
 | Before — Unity API | After — FastTools |
 |---|---|
@@ -703,6 +702,19 @@ helpBox
 </details>
 
 <details>
+<summary>EnumField / EnumFlagsField</summary>
+
+```csharp
+enumField.Initialize(Mode.Default, includeObsoleteValues: false);
+```
+
+| Method | Description |
+|-------|----------|
+| `Initialize(Enum, bool)` | Sets the default value and the choice set; the editor's `EnumFlagsField` supports the same call |
+
+</details>
+
+<details>
 <summary>Foldout</summary>
 
 ```csharp
@@ -768,14 +780,14 @@ container
 
 ## Lists and trees
 
-`ListView` creates rows through `makeItem` and reuses them through `bindItem`. Set a list height and data source:
+`ListView` creates rows through `makeItem` and reuses them through `bindItem`. A list of three strings and an empty `ListView`:
 
 ```csharp
+using System.Collections.Generic;
+
 var items = new List<string> { "Fireball", "Heal", "Shield" };
 var listView = new ListView();
 ```
-
-`List<string>` requires `using System.Collections.Generic;`.
 
 | Before — Unity API | After — FastTools |
 |---|---|
@@ -829,9 +841,9 @@ Shared settings apply to `ListView`, `TreeView`, and their `MultiColumn` variant
 | `SetOnAdd(Action<BaseListView>)` · `AddOnAdd` · `RemoveOnAdd` | Custom add-button handler |
 | `SetOnRemove(Action<BaseListView>)` · `AddOnRemove` · `RemoveOnRemove` | Custom remove-button handler |
 | `SetOverridingAddButtonBehavior(Action<BaseListView, Button>)` · `AddOverridingAddButtonBehavior` · `RemoveOverridingAddButtonBehavior` | Replace add-button behaviour |
-| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Footer factory (Unity 6+) |
-| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Header factory (Unity 6+) |
-| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Empty-state factory (Unity 6+) |
+| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Footer factory |
+| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Header factory |
+| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Empty-state factory |
 | `AddItemsAdded(Action<IEnumerable<int>>)` / `RemoveItemsAdded` | Items added by index |
 | `AddItemsRemoved(Action<IEnumerable<int>>)` / `RemoveItemsRemoved` | Items removed by index |
 
@@ -870,15 +882,20 @@ Add `using Aspid.FastTools.UIElements.Editors;` and `using UnityEditor.UIElement
 
 ### SerializedObject binding
 
-For an existing `IntegerField` named `field` and a serialized `int` field named `_manaCost`:
+The `_manaCost` field belongs to the `AbilityBook` component from [SerializedProperty Extensions](08-serialized-property-extensions.md#quick-start):
+
+```csharp
+var field = new IntegerField("Mana cost");
+```
 
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>field.bindingPath = "_manaCost";&#10;field.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>field.BindTo(&#10;    serializedObject, "_manaCost");</code></pre> |
 | <pre lang="csharp"><code>var property = serializedObject&#10;    .FindProperty("_manaCost");&#10;field.BindProperty(property);</code></pre> | <pre lang="csharp"><code>var property = serializedObject&#10;    .FindProperty("_manaCost");&#10;field.BindPropertyTo(property);</code></pre> |
-| <pre lang="csharp"><code>root.Bind(serializedObject);&#10;&#10;// Unbind&#10;root.Unbind();</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);&#10;&#10;// Unbind&#10;root.UnbindFrom();</code></pre> |
+| <pre lang="csharp"><code>root.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);</code></pre> |
+| <pre lang="csharp"><code>// Unbind&#10;root.Unbind();</code></pre> | <pre lang="csharp"><code>// Unbind&#10;root.UnbindFrom();</code></pre> |
 
-The rows show independent binding approaches. For a `root` tree, first set field paths with `SetBindingPath`, then call `BindTo` on the root.
+For a `root` tree, first set field paths with `SetBindingPath`, then call `BindTo` on the root.
 
 In `CreateInspectorGUI()`, [Unity automatically binds the returned tree](https://docs.unity3d.com/6000.0/Documentation/Manual/UIE-Binding.html) to `serializedObject`. Setting the path is sufficient in that Inspector:
 
@@ -916,8 +933,6 @@ var window = image.GetOwnerWindow();
 ```
 
 `target` is the `MonoBehaviour` or `ScriptableObject` whose script should open. `GetOwnerWindow()` looks up the window through the element's panel. If none is found, it falls back to the focused window, then the window under the cursor; the result can be `null`. This helps position a popup when a click has arrived but focus has not switched yet.
-
-`EnumField` and the editor's `EnumFlagsField` also support chaining `Initialize(defaultValue, includeObsoleteValues: false)`.
 
 <a id="uss-custom-style-helpers-icustomstyle"></a>
 
@@ -963,11 +978,11 @@ Add `AbilityPanel` to a tree with the USS attached. Both `dark` and `Dark` parse
 
 ## Practical example
 
-[EditorTools](../Samples~/EditorTools/Documentation/README.md) contains an ability catalogue and a reactive Inspector. The mana-cost field controls the status label and warning visibility:
+[EditorTools](../Samples~/EditorTools/Documentation/README.md) contains an ability catalogue and a reactive Inspector built on these extensions:
 
-![Changing mana cost updates the status and warning in the Inspector](Images/aspid_fasttools_visual_element.gif)
+![Halve cooldown, +5 MP updates both the fields and effect description; Undo restores them.](../Samples~/EditorTools/Documentation/Images/demo.gif)
 
-Changing mana cost updates the status and warning in the Inspector
+Halve cooldown, +5 MP updates both the fields and effect description; Undo restores them.
 
 <details>
 <summary>Inspector code with a cost field and warning</summary>
@@ -991,18 +1006,31 @@ internal sealed class AbilityConfigEditor : Editor
         var manaCost = serializedObject.FindProperty("_manaCost");
 
         var badge = new Label()
-            .SetFontSize(10).SetUnityFontStyleAndWeight(FontStyle.Bold)
-            .SetPaddingX(10).SetPaddingY(3).SetBorderRadius(10).SetBorderWidth(1);
+            .SetFontSize(10)
+            .SetUnityFontStyleAndWeight(FontStyle.Bold)
+            .SetPaddingX(10)
+            .SetPaddingY(3)
+            .SetBorderRadius(10)
+            .SetBorderWidth(1);
 
-        var helpBox = new HelpBox("This ability costs no mana — is that intentional?", HelpBoxMessageType.Warning)
-            .SetMarginTop(8).SetBorderRadius(6);
+        var helpBox = new HelpBox(
+                "This ability costs no mana — is that intentional?",
+                HelpBoxMessageType.Warning)
+            .SetMarginTop(8)
+            .SetBorderRadius(6);
 
         Refresh();
         return new VisualElement()
-            .SetBorderRadius(10).SetBorderWidth(1).SetPaddingX(14).SetPaddingY(12)
+            .SetBorderRadius(10)
+            .SetBorderWidth(1)
+            .SetPaddingX(14)
+            .SetPaddingY(12)
             .AddChild(new VisualElement()
-                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
-                .AddChild(new Label(target.GetDisplayName()).SetFlexGrow(1).SetFontSize(15))
+                .SetFlexDirection(FlexDirection.Row)
+                .SetAlignItems(Align.Center)
+                .AddChild(new Label(target.GetDisplayName())
+                    .SetFlexGrow(1)
+                    .SetFontSize(15))
                 .AddChild(badge))
             .AddChild(new PropertyField(manaCost).AddValueChanged(_ => Refresh()))
             .AddChild(helpBox);
