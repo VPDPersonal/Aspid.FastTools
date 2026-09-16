@@ -2,8 +2,9 @@ using System;
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-// Docs-media harness: open-generic picking demo for the TypeSelectorWindow GIF in Types.md —
-// picking Amplify<T> walks through its argument page before returning the constructed type.
+// Docs-media harness for Images/aspid_fasttools_type_selector_generic.gif in
+// Documentation/02-serializable-types.md — picking Amplify<T> walks through its argument page
+// before returning the constructed type.
 
 // ReSharper disable once CheckNamespace
 namespace Game.Combat

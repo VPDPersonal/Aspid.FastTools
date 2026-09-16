@@ -1,8 +1,9 @@
 using UnityEngine;
 using Aspid.FastTools.Types;
 
-// Docs-media harness: Required = true demo for the Types.md screenshot — _primaryWeapon is
-// filled in the shot, _secondaryWeapon stays empty to show the inline "required" notice.
+// Docs-media harness for Images/aspid_fasttools_type_selector_required.png in
+// Documentation/02-serializable-types.md — _primaryWeapon is filled in the shot, _secondaryWeapon
+// stays empty to show the inline "required" notice.
 
 // ReSharper disable once CheckNamespace
 namespace Game.Combat

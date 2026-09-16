@@ -13,7 +13,9 @@ export default function DocImage(props) {
   const framedCapture = typeof props.src === 'string'
     && (props.src.includes('/profiler-markers')
       || (props.src.includes('/aspid_fasttools_serializable_type')
-        && /\/docs\/serializable-types\/?$/.test(pathname)));
+        && /\/docs\/serializable-types\/?$/.test(pathname))
+      || (props.src.includes('/demo')
+        && /\/docs\/visual-element-extensions\/?$/.test(pathname)));
   useEffect(() => {
     if (!preview) return undefined;
     const overflow = document.body.style.overflow;

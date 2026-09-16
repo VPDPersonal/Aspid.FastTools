@@ -925,7 +925,8 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 
 /* Inspector screenshots stay compact; scene captures can use the article width. */
 .theme-doc-markdown img.doc-zoom-image[role='button'] { display: block; width: auto; max-width: min(100%, 640px); max-height: 520px; object-fit: contain; margin-inline: auto; cursor: zoom-in; background: var(--ifm-code-background); }
-.theme-doc-markdown img.doc-zoom-image[src*='/profiler-markers'] { max-width: 100%; max-height: none; }
+.theme-doc-markdown img.doc-zoom-image[src*='/profiler-markers'],
+.theme-doc-markdown .doc-image-panel > img.doc-zoom-image { max-width: 100%; max-height: none; }
 /* The article surface is a separate masked layer so page ripples pass through its windows. */
 html.docs-background-windows.docs-doc-page {
   background-color: var(--venom-canvas);
