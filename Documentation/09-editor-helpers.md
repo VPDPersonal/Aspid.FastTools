@@ -1,6 +1,6 @@
 # Editor Helpers
 
-Two methods for readable component and ScriptableObject display names. They replace the repeated name formatting and distinguish components of the same type on one GameObject.
+`GetDisplayName()` turns an object’s type name into a readable label: `FireAbility` → “Fire Ability”. `GetDisplayNameWithIndex()` adds a number when a GameObject holds several components of that type: “Fire Ability (2)”.
 
 ## Quick start
 

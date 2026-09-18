@@ -1,6 +1,6 @@
 # Editor Helpers
 
-Два метода для читаемых подписей компонентов и ScriptableObject. Они убирают повторяющийся код форматирования имён и помогают различать одинаковые компоненты на одном GameObject.
+`GetDisplayName()` превращает имя типа объекта в читаемую подпись: `FireAbility` → «Fire Ability». `GetDisplayNameWithIndex()` добавляет номер, когда на GameObject несколько одинаковых компонентов: «Fire Ability (2)».
 
 ## Быстрый старт
 
