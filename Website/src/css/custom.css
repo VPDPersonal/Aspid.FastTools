@@ -705,9 +705,9 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
   margin-bottom: 1.5rem;
 }
 
-/* The introduction opens with a lede and a quiet link row before the feature table. */
+/* The introduction opens with a lede; the README's link row is dropped on the site. */
 .theme-doc-markdown .readme-lede {
-  margin-bottom: 1rem;
+  margin-bottom: 2.75rem;
   font-family: var(--ifm-heading-font-family);
   font-size: 1.2rem;
   line-height: 1.55;
@@ -717,14 +717,6 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
   font-size: 0.8em;
   vertical-align: 0.05em;
 }
-.theme-doc-markdown .readme-links {
-  margin-bottom: 2.75rem;
-  font-size: 0.875rem;
-  color: var(--venom-muted);
-}
-.theme-doc-markdown .readme-links a { color: var(--venom-muted); }
-.theme-doc-markdown .readme-links a:hover { color: var(--venom-accent); text-decoration: none; }
-
 /* The introduction banner spans the reading panel without a media frame. */
 .theme-doc-markdown img.readme-banner {
   display: block;

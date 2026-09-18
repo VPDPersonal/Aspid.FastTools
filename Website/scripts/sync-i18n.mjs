@@ -3,8 +3,8 @@
  * single source of truth and contributors never touch Docusaurus' plugin-named folders by hand.
  *
  *   Documentation/<locale>/**              → i18n/<locale>/docusaurus-plugin-content-docs/current/**
- *   Samples~/<Sample>/Documentation/<Name>.md          → tutorials/<Sample>/<Name>.md
- *   Samples~/<Sample>/Documentation/<Name>.<locale>.md → i18n/<locale>/docusaurus-plugin-content-docs-tutorials/current/<Sample>/<Name>.md
+ *   Samples~/<Sample>/Documentation/README.md          → tutorials/<Sample>/README.md
+ *   Samples~/<Sample>/Documentation/README.<locale>.md → i18n/<locale>/docusaurus-plugin-content-docs-tutorials/current/<Sample>/README.md
  *   CHANGELOG.md / CHANGELOG.<locale>.md   → changelog/index.md / i18n/<locale>/docusaurus-plugin-content-docs-changelog/current/index.md
  *
  * Files are copied, not symlinked: webpack resolves symlinks to their real path, which breaks the
@@ -119,9 +119,8 @@ for (const sample of fs.readdirSync(samplesDir, { withFileTypes: true })) {
   const images = path.join(documentationDir, 'Images');
   if (fs.existsSync(images)) copy(images, path.join(outputDir, 'Images'));
 
-  for (const file of fs.readdirSync(documentationDir)) {
-    if (/^(README|TUTORIAL)\.md$/.test(file)) copy(path.join(documentationDir, file), path.join(outputDir, file));
-  }
+  const readme = path.join(documentationDir, 'README.md');
+  if (fs.existsSync(readme)) copy(readme, path.join(outputDir, 'README.md'));
 }
 
 for (const locale of locales) {

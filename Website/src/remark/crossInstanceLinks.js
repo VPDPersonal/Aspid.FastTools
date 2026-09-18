@@ -47,7 +47,7 @@ function rewrite(url) {
   // Images under Documentation/Images/ are assets, not pages — leave the file path for webpack.
   if (/\.(png|gif|jpe?g|svg|webp)$/i.test(decoded)) return null;
 
-  // A locale-specific sibling (`README.ru.md`, `TUTORIAL.ru.md`) or a translation folder (`ru/06-enum-values.md`):
+  // A locale-specific sibling (`README.ru.md`) or a translation folder (`ru/06-enum-values.md`):
   // the i18n copies are all named like the English originals, so drop the locale marker and let Docusaurus
   // resolve the link inside the current locale.
   const localized = decoded.match(LOCALIZED_RE);

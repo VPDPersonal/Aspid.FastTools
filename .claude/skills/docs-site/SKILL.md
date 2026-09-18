@@ -1,80 +1,114 @@
 ---
 name: docs-site
-description: How Aspid.FastTools documentation is authored and published — Markdown inside the UPM package (`Documentation/`, `Documentation/ru/`, and each sample's `Documentation/` folder) read by GitHub, Unity and the Docusaurus site in `Website/`, deployed to GitHub Pages. Use when adding or editing any documentation page, translation, sample README, or the site itself.
+description: How Aspid.FastTools documentation is authored and published — Markdown inside the UPM package (`Documentation/`, `Documentation/ru/`, each sample's `Documentation/`) plus the root `CHANGELOG*.md`, read by GitHub, Unity and the Docusaurus site in `Website/`, deployed to GitHub Pages. Use when adding or editing any documentation page, translation, sample README, image, or the site itself.
 user-invocable: false
 ---
 
 # Documentation site
 
-One source of truth: Markdown files inside the UPM package. The same file is read by GitHub, by Unity
-(as a `TextAsset` in the Inspector) and by the Docusaurus site in `Website/`. Nothing is copied by hand
-and the root `README.md` is generated from `Documentation/README.md` with file links rebased to the repository root. Run `npm --prefix Website run sync-readme` after editing the introduction; never edit the root README by hand. `prestart`/`prebuild` refresh it automatically, and CI runs `check-readme` before building to reject stale copies. Write GitHub Flavored Markdown; the site adapts
-to it, never the other way round.
+One source of truth: Markdown inside the UPM package. The same file is read by GitHub, by Unity (as a
+`TextAsset` in the Inspector) and by the Docusaurus site in `Website/`. Nothing is copied by hand — the root
+`README.md`, the tutorials tree, the i18n tree, the changelog page and the API reference are all generated.
+Write GitHub Flavored Markdown; the site adapts to it, never the other way round.
+
+Package-relative paths below are rooted at `Aspid.FastTools/Packages/tech.aspid.fasttools/`.
 
 ## Layout
 
-| What | Where | Site route |
+| What | Source | Site route |
 |---|---|---|
-| Main docs | `Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/NN-*.md` | `/docs/<name>` (`02-serializable-types.md` → `/docs/serializable-types`) |
 | Introduction | `Documentation/README.md` | `/docs` |
-| Tutorials | `Samples~/<Sample>/Documentation/README.md` and `TUTORIAL.md` | `/tutorials/<slug>`, `/tutorials/<slug>/tutorial` (`SerializeReferences` → `serialize-references`; an optional `NN. ` folder prefix orders and is stripped) |
-| Translations | `Documentation/ru/**` (same names), `Samples~/<Sample>/Documentation/README.ru.md`, `TUTORIAL.ru.md` | `/ru/...` |
-| Images | `Documentation/Images/` | referenced relatively |
-| Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js` | |
+| Main docs | `Documentation/NN-*.md` | `/docs/<name>` (`02-serializable-types.md` → `/docs/serializable-types`) |
+| Samples | `Samples~/<Sample>/Documentation/README.md` | `/tutorials/<slug>` (`SerializeReferences` → `serialize-references`; an optional `NN. ` folder prefix orders and is stripped) |
+| Samples overview | `Website/src/samples/index.mdx`, `index.ru.mdx` → `<SamplesGallery/>` | `/tutorials` |
+| Changelog | root `CHANGELOG.md`, `CHANGELOG.ru.md` | `/changelog` |
+| API reference | generated into `Website/api/` by DocFX (committed) | `/api` |
+| Translations | `Documentation/ru/**` (same names), `Samples~/<Sample>/Documentation/README.ru.md` | `/ru/...` |
+| Images | `Documentation/Images/`, `Samples~/<Sample>/Documentation/Images/` | referenced relatively |
+| Root README | generated from `Documentation/README.md` (committed) | — |
+| Site config | `Website/docusaurus.config.js`, `sidebars.js`, `sidebarsTutorials.js`, `sidebarsApi.js` | |
 | CI | `.github/workflows/docs.yml` → GitHub Pages `https://vpdpersonal.github.io/Aspid.FastTools/` | |
 
-The site folder is `Website/`, not `Docs/`: the repo already has `docs/` (internal working documents) and
+The site folder is `Website/`, not `Docs/`: the repo already has `docs/` (internal working documents, plus
+`docs/images/` which hosts the README banner GIF that GitHub serves over `raw.githubusercontent.com`), and
 macOS treats the two names as one directory.
 
-Two docs plugin instances: the default one (`docs`) points at `Documentation/` (translation folders
-excluded), while the second (`id: 'tutorials'`) reads the generated `Website/tutorials/` tree.
-`sync-i18n.mjs` builds that tree from every sample's `Documentation/` folder so public routes stay unchanged.
-Scripts, scenes and `.meta` files are never copied.
+**Four docs plugin instances**, all in `docusaurus.config.js`:
 
-`Website/scripts/sync-i18n.mjs` (run by `prestart`/`prebuild`) copies the English sample documentation into
-`Website/tutorials/`, plus `Documentation/<locale>/`, every sample-local `*.<locale>.md`, and images into the
-`Website/i18n/` layout Docusaurus expects. `Website/tutorials/` and `Website/i18n/` are build artifacts and are
-gitignored; never edit them by hand.
+- `docs` — reads the package `Documentation/` in place; locale folders are excluded through `LOCALES`.
+- `tutorials` — reads the generated `Website/tutorials/` tree (`include: ['index.mdx', '*/README.md']`).
+  One page per sample; the overview page comes from `src/samples/index.mdx`.
+- `changelog` — reads the generated `Website/changelog/`, whose sidebar is built from the `## [version]`
+  headings (each gets a `{#v…}` anchor).
+- `api` — reads the committed `Website/api/`.
 
-`Website/sidebars.js` groups the main docs into Serialization
-and Editor & tooling. Add each new page to the appropriate group.
+Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/changelog/`, `Website/build/`,
+`Website/docfx/projects/`. Never edit them by hand. Generated **and committed**: the root `README.md` and
+`Website/api/`.
 
 ## Writing rules (so all three renderers agree)
 
-- **No front matter.** Unity and GitHub would show it as text. Title comes from the first `# H1`,
-  slug and order come from the file name (`NN-` prefix orders, is stripped from the route).
+- **No front matter.** Unity and GitHub would show it as text. Title comes from the first `# H1`, slug and
+  order from the file name (`NN-` prefix orders, is stripped from the route).
+- **One `# H1` per file.** Use `##` in the body. Exception: the introduction (`Documentation/README.md` and
+  its translations) starts with the banner `<img>` and the status badges, without an H1. `parseFrontMatter`
+  in `docusaurus.config.js` recognises that page by the banner's file name and supplies the title,
+  description and `hide_title` — do not rename `aspid_fasttools_readme_banner.gif`.
 - **Admonitions**: GitHub style only — `> [!NOTE]`, `TIP`, `IMPORTANT`, `WARNING`, `CAUTION`. Never `:::note`.
 - **Links** are relative paths to the `.md` file: `[EnumValues](06-enum-values.md)`, from a sample
   `[Selector](../../../Documentation/03-serialize-reference-selector.md)`, from a doc
-  `[Types sample](../Samples~/Types/Documentation/README.md)`. GitHub follows them as files; links that cross between
-  the two plugin instances are rewritten to site routes by `Website/src/remark/crossInstanceLinks.js`.
+  `[Types sample](../Samples~/Types/Documentation/README.md)`. GitHub follows them as files; links that cross
+  between plugin instances are rewritten to site routes by `Website/src/remark/crossInstanceLinks.js`.
   Never link by site URL.
-- **One `# H1` per file.** Use `##` in the body. Exception: the introduction (`Documentation/README.md` and its translations) starts with the banner and description, without an H1; the site supplies its page title as metadata and suppresses the automatic visible heading.
-- **Images** for main docs live in package-level `Documentation/Images/`; each sample keeps its own images in
-  `Samples~/<Sample>/Documentation/Images/`. Reference sample images as `Images/x.png` from its README.
-- **Every `.md` in the package needs a `.meta`** (`TextScriptImporter`) — Unity would otherwise generate one
-  in the consumer's project. Copy an existing one and give it a fresh GUID.
+- **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
+  on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`).
+- **Every `.md` and every image in the package needs a `.meta`** (`TextScriptImporter` for Markdown) — Unity
+  would otherwise generate one in the consumer's project. Copy an existing one and give it a fresh GUID.
 - The package is English. A translation is a sibling file: `Documentation/ru/06-enum-values.md`,
   `README.ru.md` next to `README.md`. Missing pages fall back to English. A translated file links translated
-  targets (`../../Samples~/Types/Documentation/README.ru.md`) so GitHub stays in the same language; the site drops the
-  locale segment itself.
-- Adding a language: create `Documentation/<locale>/` and `*.<locale>.md` files and add the locale to
-  `LOCALES` in `docusaurus.config.js`. Nothing else: `sync-i18n.mjs` discovers locale folders by name, and
-  `LOCALES` is what keeps them out of the English `docs` instance.
+  targets (`../../Samples~/Types/Documentation/README.ru.md`) so GitHub stays in the same language; the site
+  drops the locale segment itself.
+- Adding a language: create `Documentation/<locale>/` and `*.<locale>.md` files, add `Website/translations/<locale>/`
+  for the interface strings, and add the locale to `LOCALES` in `docusaurus.config.js`. Nothing else:
+  `sync-i18n.mjs` discovers locale folders by name, and `LOCALES` is what keeps them out of the English
+  `docs` instance.
+
+### Images
+
+- Main docs use `Documentation/Images/`; each sample keeps its own in `Samples~/<Sample>/Documentation/Images/`
+  and references them as `Images/x.png`. A main doc may point at a sample image by path
+  (`../Samples~/EnumValues/Documentation/Images/demo.gif`); `sync-i18n.mjs` mirrors those folders for i18n.
+- **Every capture needs a light-theme sibling**: `x.png` plus `x-light.png` in the same folder.
+  `src/remark/themedImages.js` swaps them per theme; without the sibling, light mode shows the dark capture.
+- **Editor captures are framed automatically.** In `/docs` and `/tutorials` an image renders inside the
+  window frame (`doc-image-panel`, `src/theme/MDXComponents/Img`). The exception is `demo`/`scene`
+  (`.gif`/`.png`) on a *tutorial* page, which keeps the bare scene look; the same file on a doc page is framed.
+  So name inspector captures anything but `demo`/`scene`, and name scene footage exactly that.
+- `.sample-scene` (the background-recolouring filter) is applied by `themedImages.js` only to `demo`/`scene`
+  files inside a **hardcoded list of sample folders** — a new sample must be added to that regex.
+- A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
+- Click or Enter opens the image in a modal (Esc closes). Unframed images are capped at 640×520;
+  framed and `.sample-scene` media fill the article.
+- Status badges (`Images/status-badge-*.svg`) are links, not captures: they keep their size and do not zoom.
 
 ## Adding a main doc page
 
 Drop `NN-name.md` into `Documentation/`, add its section to `Documentation/README.md` (and `ru/README.md`),
-add the `.meta`, optionally the translation at `Documentation/ru/NN-name.md`, and add its id to
-`Website/sidebars.js`. Run `npm --prefix Website run sync-readme` to refresh the root `README.md`.
+add the `.meta`, optionally the translation at `Documentation/ru/NN-name.md`, and add its id to the right
+group in `Website/sidebars.js` (Serialization / Editor & tooling). Run `npm --prefix Website run sync-readme`
+to refresh the root `README.md`.
 
 ## Adding a sample
 
-1. Create `Samples~/<Name>/Documentation/README.md` (+ `TUTORIAL.md` if there is a guided scene), with `.meta` files.
-   Put that sample's documentation images in `Documentation/Images/`.
-2. Add a category with `<slug>/readme` and `<slug>/tutorial` to `Website/sidebarsTutorials.js`; drop the
-   `items` entry if there is no `TUTORIAL.md`.
-3. Register the sample in `package.json` → `samples`; the samples overview (`Samples~/README.md`, `README.ru.md`) lists it.
+1. `Samples~/<Name>/Documentation/README.md` (+ `README.ru.md`), with `.meta` files. Images go in that
+   sample's `Documentation/Images/`, each with its `-light` sibling.
+2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
+3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
+   description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png`.
+4. If the sample ships `demo`/`scene` captures, add its folder to the sample regex in
+   `Website/src/remark/themedImages.js`.
+5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) and register it in the package
+   `package.json` → `samples`.
 
 ## Local run / check
 
@@ -84,6 +118,9 @@ port 3001 — never on per-agent dev servers:
 
 ```bash
 Website/scripts/serve-all.sh          # kill the old server, `npm run build` (en + ru), serve detached on 3001
+```
+
+```bash
 Website/scripts/serve-all.sh --stop
 ```
 
@@ -98,12 +135,26 @@ Website/scripts/serve-all.sh --stop
   your edits; it replaces the server safely. Do not run `npm run build` or a dev server from `Website/` while the
   script is building (they share `.docusaurus/`, `build/` and `i18n/`).
 
-Dev servers (`npm start`, `npm run start:ru`; `website-dev`/`website-dev-ru` in `.claude/launch.json` on
-3100/3101) serve one locale at a time and are only for quick hot-reload iteration on a single page — they don't
-reload config or remark plugins, and the user does not look at them.
+Dev servers serve one locale at a time and are only for quick hot-reload iteration on a single page — they
+don't reload config or remark plugins, and the user does not look at them: `npm start` / `npm run start:ru`, or
+`website-dev` / `website-dev-ru` in `.claude/launch.json` (3100/3101). The `website-ru-3001` and
+`website-serve-all` entries in that file both occupy port 3001 and would replace the shared build with a
+session-bound server — do not launch them.
 
 `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
 (`onBrokenAnchors` only warns — check the log for `#anchor` typos).
+
+## Generated content
+
+- `npm --prefix Website run sync-readme` regenerates the root `README.md` from `Documentation/README.md`,
+  rebasing file links to the repository root. Never edit the root README by hand. `prestart`/`prebuild` refresh
+  it automatically and CI runs `check-readme` before building to reject a stale copy.
+- `Website/scripts/sync-i18n.mjs` (also run by `prestart`/`prebuild`) builds `Website/tutorials/`,
+  `Website/changelog/` and `Website/i18n/` from the package: English sample READMEs and their images,
+  `Documentation/<locale>/`, every sample-local `*.<locale>.md`, the root changelogs and
+  `Website/translations/<locale>/`. Scripts, scenes and `.meta` files are never copied. Because the copies are
+  untracked, each page's "Last updated" date is stamped from the **source file's last commit** — an
+  uncommitted page shows no date.
 
 ## Versioning
 
@@ -119,10 +170,15 @@ installation, which CI does not have.
 
 ```bash
 dotnet tool install -g docfx            # once; the tool lands in ~/.dotnet/tools — make sure it is on PATH
+```
+
+```bash
 cd Website && npm run api               # regenerate after public API or XML doc changes
 ```
 
-`npm run api` runs three steps (`Website/scripts/docfx-*.mjs`, `Website/docfx/docfx.json`):
+`npm run api` deletes `Website/api/` and runs three steps (`Website/scripts/docfx-*.mjs`,
+`Website/docfx/docfx.json`) — if DocFX fails midway, the directory stays empty and the site build breaks, so
+regenerate or `git checkout Website/api` before building:
 
 1. `docfx-projects.mjs` writes SDK-style projects for `Aspid.FastTools` and `Aspid.FastTools.Editor` under
    `Website/docfx/projects/` (gitignored, absolute paths). Sources come from each asmdef folder (so a stale
@@ -138,11 +194,11 @@ cd Website && npm run api               # regenerate after public API or XML doc
    namespace suffix in its label — Docusaurus derives one translation key per label and the `ru` build fails
    on duplicates.
 
-The pages are served by the third docs plugin instance (`id: 'api'`). `Website/sidebarsApi.js` adapts the generated
-sidebar labels for display, omitting the repeated `Aspid.FastTools.` namespace prefix. Never edit files in `Website/api/` by hand;
-fix the XML comment or the postprocess script and regenerate. Translations are not generated; the `ru` locale
-falls back to the English pages. The Math satellite assembly is not documented — it compiles only when
-`com.unity.mathematics` is installed, which this project does not.
+`Website/sidebarsApi.js` adapts the generated sidebar for display (drops the repeated `Aspid.FastTools.`
+prefix, folds the `SetLabel` overloads). Never edit files in `Website/api/` by hand; fix the XML comment or the
+postprocess script and regenerate. Translations are not generated; the `ru` locale falls back to the English
+pages. The Math satellite assembly is not documented — it compiles only when `com.unity.mathematics` is
+installed, which this project does not.
 
 ## Design
 
@@ -157,28 +213,18 @@ redirects `/` to `/docs` — there is no landing page yet.
 The page uses normal document scrolling with sticky navigation. The borderless article has an opaque reading
 surface (graphite in dark mode, warm linen in light mode). The fixed dot texture is painted on `html`, not the
 viewport-height `body`, so it remains visible in the margins throughout long articles. Both navigation columns
-share `--venom-navigation-width` (260px); group headings use distinct blocks, and the right TOC has no left rule.
-Below 1400px the right TOC becomes an in-article disclosure, and below 997px the navigation uses Docusaurus'
-mobile menu. Code blocks, images and other components share 4–6px corner radii.
-
-`src/theme/MDXComponents/Img` opens documentation images in a native modal dialog (click/Enter to open, Esc to
-close). Inspector screenshots are capped at 640px; `.sample-scene` media can fill the article. Repeated alt-text
-captions receive a class from `remark/themedImages.js` without changing package Markdown.
+share `--venom-navigation-width` (260px). Below 1400px the right TOC becomes an in-article disclosure, and
+below 997px the navigation uses Docusaurus' mobile menu. On desktop (≥997px) the navbar is hidden and
+`src/theme/DocSidebar/Desktop` wraps the sidebar into a full-height panel: pinned header (brand, section
+switcher built from the navbar's left items, search), scrolling document list, pinned footer (GitHub,
+language, theme).
 
 `src/plugins/search` builds a locale-specific index from Docusaurus' resolved document sources and permalinks.
-`src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow keys,
-Enter and Esc. `node --test scripts/search.test.mjs` checks matching and Markdown extraction.
-Site interface translations live in `Website/translations/<locale>/`; `sync-i18n.mjs` copies them into generated
-`i18n/` before each build.
-
-On desktop (≥997px) the navbar is hidden and `src/theme/DocSidebar/Desktop` wraps the sidebar into a full-height
-panel: pinned header (brand, section switcher built from the navbar's left items, search), scrolling document list,
-pinned footer (GitHub, language, theme). Below 997px the stock navbar and mobile drawer remain. The changelog gets its
-sidebar from `changelog/sidebars.json`, generated by `sync-i18n.mjs` from the `## [version]` headings, which also
-receive `{#v…}` anchors.
+`src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow
+keys, Enter and Esc. `node --test scripts/search.test.mjs` checks matching and Markdown extraction.
 
 ## Deploy
 
-`.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, `Documentation/` or a sample
-`README*.md` / `TUTORIAL*.md`, and on PRs (build only). Pages source must be set to "GitHub Actions" once in the
-repository settings.
+`.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package `Documentation/`,
+a sample's `Documentation/`, the root `README.md` or `CHANGELOG*.md`, and on PRs (build only); it runs
+`check-readme` before the build. Pages source must be set to "GitHub Actions" once in the repository settings.

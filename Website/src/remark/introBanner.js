@@ -73,15 +73,11 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
       };
       if (badges !== -1) {
         addClass(tree.children[badges + 1], 'readme-lede');
+        // The link row repeats the navigation the site already has, and points at this very page.
         const links = tree.children[badges + 2];
-        addClass(links, 'readme-links');
-        // On the site the "Documentation" link points at this very page: drop it and its separator.
-        const self = new RegExp(`^${siteUrl}${baseUrl}(?:[a-z-]+/)?docs/?$`);
-        if (links?.type === 'paragraph' && links.children[0]?.type === 'link' && self.test(links.children[0].url)) {
-          links.children.splice(0, 1);
-          if (links.children[0]?.type === 'text') {
-            links.children[0].value = links.children[0].value.replace(/^\s*[·|\-–—]\s*/, '');
-          }
+        if (links?.type === 'paragraph' && links.children.every((part) => part.type === 'link'
+          || (part.type === 'text' && /^[\s·|\-–—]*$/.test(part.value)))) {
+          tree.children.splice(badges + 2, 1);
         }
       }
       // On GitHub the features are plain sections: a linked heading, a sentence and a preview.

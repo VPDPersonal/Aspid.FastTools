@@ -10,12 +10,12 @@ export default function DocImage(props) {
   const [preview, setPreview] = useState(null);
   const dialog = useRef(null);
   const opener = useRef(null);
-  const framedCapture = typeof props.src === 'string'
-    && (props.src.includes('/profiler-markers')
-      || (props.src.includes('/aspid_fasttools_serializable_type')
-        && /\/docs\/serializable-types\/?$/.test(pathname))
-      || (props.src.includes('/demo')
-        && /\/docs\/visual-element-extensions\/?$/.test(pathname)));
+  // Every editor capture in a guide or tutorial sits in a framed window; scene and demo
+  // captures keep the plain sample-scene look in tutorials and get the frame only in guides.
+  const article = /\/(?:docs|tutorials)\/./.test(pathname);
+  const sceneCapture = typeof props.src === 'string'
+    && /\/(?:demo|scene)(?:-light)?(?:-[0-9a-f]{8,})?\.(?:gif|png)$/i.test(props.src);
+  const framedCapture = article && (!sceneCapture || /\/docs\//.test(pathname));
   useEffect(() => {
     if (!preview) return undefined;
     const overflow = document.body.style.overflow;

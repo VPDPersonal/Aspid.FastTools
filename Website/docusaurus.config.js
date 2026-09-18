@@ -116,14 +116,14 @@ const config = {
         routeBasePath: 'tutorials',
         breadcrumbs: false,
         sidebarPath: './sidebarsTutorials.js',
-        include: ['index.mdx', '*/README.md', '*/TUTORIAL.md'],
+        include: ['index.mdx', '*/README.md'],
         numberPrefixParser: samplePrefixParser,
         ...markdownOptions,
         // `<Sample>/README.md` → `Samples~/<Sample>/Documentation/README.md`, translations as `README.<locale>.md`.
         editUrl: ({ docPath, locale }) =>
           `${REPO}/edit/main/${PACKAGE_DIR}/Samples~/${docPath.replace(
-            /\/(README|TUTORIAL)\.md$/,
-            locale === 'en' ? '/Documentation/$1.md' : `/Documentation/$1.${locale}.md`,
+            /\/README\.md$/,
+            locale === 'en' ? '/Documentation/README.md' : `/Documentation/README.${locale}.md`,
           )}`,
       }),
     ],
