@@ -1,0 +1,10 @@
+ffconcat version 1.0
+file '01-missing.png'
+duration 1.5
+file '02-picker.png'
+duration 1
+file '03-selection.png'
+duration 0.6
+file '04-repaired.png'
+duration 1
+file '04-repaired.png'

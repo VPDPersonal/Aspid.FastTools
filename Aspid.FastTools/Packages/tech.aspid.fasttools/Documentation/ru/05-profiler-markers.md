@@ -1,59 +1,69 @@
 # ProfilerMarkers
 
-Регистрация `ProfilerMarker` через source generation. Генератор создаёт статический маркер для каждого места вызова, идентифицируемый по вызывающему методу и номеру строки.
+`this.Marker()` автоматически создаёт маркер Unity Profiler.
+
+## Быстрый старт
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>private static readonly&#10;    ProfilerMarker UpdateMarker =&#10;    new("MotionSimulation.Update");&#10;&#10;private void Update()&#10;&#123;&#10;    using var _ =&#10;        UpdateMarker.Auto();&#10;    Simulate();&#10;&#125;</code></pre> | <pre lang="csharp"><code>private void Update()&#10;&#123;&#10;    using var _ = this.Marker();&#10;    Simulate();&#10;&#125;</code></pre> |
+
+Работает в `MonoBehaviour` и обычных C#-классах. Генератор входит в пакет; расширение находится в глобальном пространстве имён — дополнительные `using`, атрибуты и `partial` не нужны. Маркер называется `Тип.Метод (строка)`.
+
+## Область и имя
+
+`Marker()` возвращает `ProfilerMarker.AutoScope`: замер начинается при вызове и завершается при выходе из `using`, включая `return` и исключения. `.WithName("Steering")` заменяет часть имени с методом; тип и номер строки остаются.
 
 ```csharp
-using UnityEngine;
-
-public class MyBehaviour : MonoBehaviour
+public void Step()
 {
-    private void DoSomething1()
-    {
-        using var _ = this.Marker();
-        // Некоторый код
-    }
+    using var _ = this.Marker();
 
-    private void DoSomething2()
+    using (this.Marker().WithName("Steering"))
     {
-        using (this.Marker())
+        foreach (var agent in _agents)
         {
-            // Некоторый код
-            using var _ = this.Marker().WithName("Calculate");
-            // Некоторый код
+            using var agentScope = this.Marker().WithName("Steering.Agent");
+            ComputeSteering(agent);
         }
     }
-}
-```
 
-## Сгенерированный код
-
-```csharp
-using Unity.Profiling;
-using System.Runtime.CompilerServices;
-
-internal static class __MyBehaviourProfilerMarkerExtensions
-{
-    private static readonly ProfilerMarker DoSomething1_Marker_Line_7 = new("MyBehaviour.DoSomething1 (7)");
-    private static readonly ProfilerMarker DoSomething2_Marker_Line_13 = new("MyBehaviour.DoSomething2 (13)");
-    private static readonly ProfilerMarker DoSomething2_Marker_Line_16 = new("MyBehaviour.Calculate (16)");
-
-    public static ProfilerMarker.AutoScope Marker(this MyBehaviour _, [CallerLineNumberAttribute] int line = -1)
+    using (this.Marker().WithName("Integrate"))
     {
-#if ENABLE_PROFILER
-        if (line is 7) return DoSomething1_Marker_Line_7.Auto();
-        if (line is 13) return DoSomething2_Marker_Line_13.Auto();
-        if (line is 16) return DoSomething2_Marker_Line_16.Auto();
-#endif
-        return default;
+        Integrate();
     }
 }
 ```
 
-Тело диспетчера обёрнуто в `#if ENABLE_PROFILER`: в сборке без профайлера каждый вызов возвращает `default` и ничего не стоит.
+В Profiler при 120 итерациях цикла:
 
-- **Имя маркера** — `"{TypeName}.{method} ({line})"`; `.WithName("…")` заменяет часть с именем члена. Для generic-типов имя строится через `typeof(T).Name`, так что у каждого закрытого типа свой маркер.
-- **Вызовы внутри лямбд и локальных функций** относятся к ближайшему объявленному методу, полю или свойству.
+```text
+FlockSimulation.Step (…)
+├── FlockSimulation.Steering (…)
+│   └── FlockSimulation.Steering.Agent (…) — 120 вызовов одного маркера
+└── FlockSimulation.Integrate (…)
+```
 
-## Результат
+`WithName` принимает только строковый литерал: `"Steering"`, `@"Steering"` или `$"Steering"` без подстановок. Переменные, `const`, `nameof`, конкатенация и `$"Agent {index}"` оставляют исходное имя метода — генератор читает текст исходника и не вычисляет выражения. Сам аргумент во время выполнения всё равно вычисляется.
 
-![Сгенерированные маркеры в окне Unity Profiler](../Images/aspid_fasttools_profiler_markers.png)
+> [!IMPORTANT]
+> Не вызывайте `this.Marker()` без `using`: замер не завершится автоматически. Область не должна пересекать `await` или `yield`; измеряйте синхронные участки отдельно ([ограничение Unity](https://docs.unity3d.com/6000.0/Documentation/Manual/profiler-add-markers-code.html)).
+
+## Особенности генерации
+
+- **Номер строки.** Маркер выбирается по `CallerLineNumber`, поэтому каждому вызову в типе нужна своя строка, в том числе в разных файлах `partial`. Перенос вызова меняет суффикс имени.
+- **Лямбды и локальные функции** используют ближайший объявленный член: `Ctor` для конструктора, имя свойства для аксессора.
+- **Generic-типы** получают отдельные маркеры на каждый закрытый тип: `Worker<int>.Run()` → `Worker<Int32>.Run (строка)`.
+- **Без `ENABLE_PROFILER`** расширение возвращает `default`: ничего не измеряется, код внутри `using` выполняется, аргументы `WithName` по-прежнему вычисляются.
+
+<a id="result"></a>
+
+## Результат в Profiler
+
+Откройте **Window → Analysis → Profiler**, включите запись и запустите сцену. Выберите кадр в **CPU Usage → Hierarchy** и найдите имя типа. Deep Profile не нужен.
+
+![Маркеры Flock и FlockSimulation в CPU Usage: у Steering.Agent — 120 вызовов](../../Samples~/ProfilerMarkers/Documentation/Images/profiler-markers.png)
+
+Маркеры Flock и FlockSimulation в CPU Usage: у Steering.Agent — 120 вызовов
+
+Чтобы повторить, импортируйте [пример ProfilerMarkers](../../Samples~/ProfilerMarkers/Documentation/README.ru.md#попробуйте), откройте `Scenes/ProfilerMarkers.unity` и найдите `Flock`. Время зависит от кадра и машины.

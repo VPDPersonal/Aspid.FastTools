@@ -68,10 +68,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             : this(preset, obj: null) { }
 
         public AspidInspectorHeader(Object obj)
-            : this(AspidInspectorHeaderPreset.Default.SetText(obj.GetScriptName()), obj) { }
+            : this(AspidInspectorHeaderPreset.Default.SetText(obj.GetDisplayName()), obj) { }
 
         public AspidInspectorHeader(Component component)
-            : this(AspidInspectorHeaderPreset.Default.SetText(component.GetScriptNameWithIndex()), component) { }
+            : this(AspidInspectorHeaderPreset.Default.SetText(component.GetDisplayNameWithIndex()), component) { }
 
         public AspidInspectorHeader(string label, Object obj)
             : this(AspidInspectorHeaderPreset.Default.SetText(label), obj) { }

@@ -51,5 +51,11 @@ namespace Aspid.FastTools.DevTests.Enums
 
         // [Flags] key handling.
         [SerializeField] private EnumValues<Modifier, float> _typedFlags;
+
+        // Object-reference values: the row draws an object field rather than a plain value or a foldout.
+        [SerializeField] private EnumValues<Element, AudioClip> _typedObjectValues;
+
+        // Tables inside a collection: the drawer is applied per element, one table per array entry.
+        [SerializeField] private EnumValues<Element, Color>[] _typedArray;
     }
 }

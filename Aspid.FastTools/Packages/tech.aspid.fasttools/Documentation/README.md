@@ -1,33 +1,125 @@
 <img src="https://raw.githubusercontent.com/VPDPersonal/Aspid.FastTools/main/docs/images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
-# Introduction
+[![Unity 6.0+](Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/slug/365584)
+[![Preview 1.0.0-rc.8](Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+[![MIT License](Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-**Aspid.FastTools** is a Unity toolset that eliminates routine boilerplate. Inside: a convenient `SerializeReference` workflow (an inspector type picker and a project-wide reference audit window), Roslyn source generators and analyzers, and runtime and editor utilities — from a serializable `System.Type` to fluent UI Toolkit extensions.
+Aspid.FastTools is a Unity package that fills the gaps Unity leaves in serialization and editor tooling. Serialized types and polymorphic references stay valid through renames, or get repaired without data loss when they break. The Inspector shows what a `SerializeReference` field holds and lets you swap it. Editor and profiling helpers take a line where Unity needs a class.
 
-[Source Code](https://github.com/VPDPersonal/Aspid.FastTools) · [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+[Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
-## Getting started
+## Installation
 
-[Installation](01-getting-started.md) — UPM git URL, `.unitypackage`, Asset Store, and the samples that ship with the package.
+In **Window → Package Manager**, choose **+ → Install package from git URL…** and paste:
+
+```text
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
+```
+
+This installs the latest preview, and updating the package brings in a newer one. Git must be installed for UPM Git URLs.
+
+<details>
+<summary>Other installation options</summary>
+
+- **Another version:** copy its UPM tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases), for example:
+
+  ```text
+  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.7
+  ```
+
+- **Unity Asset Store:** the package is not yet available in the store. For now, install it using the Git URL above.
+- **`upm` branch:** still holds the older `com.aspid.fasttools` package (`1.0.0-rc.2`). Use the URLs above for `tech.aspid.fasttools` and the features described here.
+
+</details>
 
 ## Features
 
-| Feature | What it gives you |
-|---|---|
-| [Serializable Type System](02-serializable-types.md) | `System.Type` as a serialized field, `[TypeSelector]`, a searchable type-picker window, `ComponentTypeSelector` |
-| [SerializeReference Selector](03-serialize-reference-selector.md) | A type-picker dropdown for `[SerializeReference]` fields, nested inspectors, generics, per-field repair of broken references |
-| [SerializeReference Tooling](04-serialize-reference-tooling.md) | Project-wide audit and bulk repair tabs, project settings, the build/CI gate |
-| [ProfilerMarkers](05-profiler-markers.md) | Source-generated, per-call-site `ProfilerMarker`s via `this.Marker()` |
-| [EnumValues](06-enum-values.md) | Serializable enum → value maps, `[Flags]`-aware, boxing-free |
-| [VisualElement Extensions](07-visual-element-extensions.md) | Fluent UI Toolkit tree building in code |
-| [SerializedProperty Extensions](08-serialized-property-extensions.md) | Chainable typed setters and reflection helpers |
-| [Editor Helpers](09-editor-helpers.md) | Display names for scripts in custom editors |
-| [Claude Code Plugin](10-claude-code-plugin.md) | Skills that teach Claude Code this package |
+### [Serializable Type System](02-serializable-types.md)
 
-## Donate
+Store and pick a `System.Type` in the Inspector.
 
-This project is developed on a voluntary basis. If you find it useful, you can support its development by purchasing the package on the [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584) — that helps allocate more time to improving and maintaining **Aspid.FastTools**.
+<img src="Images/aspid_fasttools_serializable_type.gif" alt="Select a serializable type in the Inspector" width="640" />
 
-## License
+### [SerializeReference Selector](03-serialize-reference-selector.md)
 
-**Aspid.FastTools** is distributed under the [MIT License](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE). Release history lives in the [CHANGELOG](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md).
+Pick which class a `SerializeReference` field holds, straight from the Inspector.
+
+<img src="Images/aspid_fasttools_serialize_reference_selector.gif" alt="Switch Pistol to Shotgun while keeping Damage at 37" width="640" />
+
+### [SerializeReference Tooling](04-serialize-reference-tooling.md)
+
+Audit and repair references across the whole project, before builds and in CI.
+
+<img src="Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Repair a missing weapon type without losing its data" width="640" />
+
+### [EnumValues](06-enum-values.md)
+
+Edit enum → value tables in the Inspector, including flags.
+
+<img src="../Samples~/EnumValues/Documentation/Images/surface-tables.png" alt="Edit enum keys and their values in the Inspector" width="640" />
+
+### [ProfilerMarkers](05-profiler-markers.md)
+
+Generate a unique profiler marker per call site with `this.Marker()`.
+
+```csharp
+using (this.Marker())
+{
+    Simulate();
+}
+```
+
+### [VisualElement Extensions](07-visual-element-extensions.md)
+
+Build UI Toolkit trees with fluent chains.
+
+```csharp
+new VisualElement()
+  .SetPadding(8)
+  .AddChild(
+    new Label("Stats"));
+```
+
+### [SerializedProperty Extensions](08-serialized-property-extensions.md)
+
+Set values, resize arrays, and inspect the field type and owning object.
+
+```csharp
+property
+  .Update()
+  .SetIntAndApply(42);
+```
+
+### [Editor Helpers](09-editor-helpers.md)
+
+Get readable object and component display names for custom editors.
+
+```csharp
+audio.GetDisplayName();
+// "Audio Source"
+
+secondAudio
+  .GetDisplayNameWithIndex();
+// "Audio Source (2)"
+```
+
+## Quick start
+
+1. After installation the **Welcome** window opens on its own. Reopen it any time from **Tools → Aspid 🐍 → FastTools → Welcome**.
+2. Press **Import** on a sample; it lands in `Assets/Samples`.
+3. Open its scene and read the sample's README.
+
+## Documentation and samples
+
+- [Samples overview](../Samples~/README.md) — scenes and editor tools for serialization, enum tables, profiling and editor UI.
+- [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools) — public types and members. The feature links above explain how to use them.
+- [Claude Code plugin](10-claude-code-plugin.md) — optional skills for working with this package in Claude Code.
+- [Changelog](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md) — release history.
+
+## Help and support
+
+Report bugs or ask questions in [GitHub Issues](https://github.com/VPDPersonal/Aspid.FastTools/issues). Include your Unity version, package version and steps to reproduce a problem.
+
+Once the package is available on the [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584), you can support development by purchasing it.
+
+Distributed under the [MIT License](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE).

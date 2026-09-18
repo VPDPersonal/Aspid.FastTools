@@ -1,27 +1,51 @@
 # Editor Helpers
 
-Display-name helpers for Unity objects in custom editors:
+`GetDisplayName()` turns an object’s type name into a readable label: `FireAbility` → “Fire Ability”. `GetDisplayNameWithIndex()` adds a number when a GameObject holds several components of that type: “Fire Ability (2)”.
 
-| Method | Returns |
-|---|---|
-| `GetScriptName()` | The object's display name — `ObjectNames.GetInspectorTitle` when the type has `[AddComponentMenu]`, otherwise the nicified type name |
-| `GetScriptNameWithIndex()` | The same name plus a count suffix when the GameObject holds several components of the same type — e.g. `"Audio Source (2)"` |
+## Quick start
+
+Two components carry the examples: one names itself through `[AddComponentMenu]`, the other does not.
+
+```csharp
+using UnityEngine;
+
+[AddComponentMenu("Gameplay/Fire Ability")]
+public sealed class FireAbility : MonoBehaviour { }
+
+public sealed class AbilityConfig : MonoBehaviour { }
+```
 
 ```csharp
 using Aspid.FastTools.Editors;
 
-[CustomEditor(typeof(MyBehaviour))]
-public class MyBehaviourEditor : Editor
-{
-    public override VisualElement CreateInspectorGUI()
-    {
-        // "My Behaviour" — or "Custom Name" if [AddComponentMenu("Custom Name")] is present
-        var name = target.GetScriptName();
+fireAbility.GetDisplayName();       // "Fire Ability"
+abilityConfig.GetDisplayName();     // "Ability Config"
 
-        // "My Behaviour (2)" when a second component of the same type exists
-        var nameWithIndex = ((Component)target).GetScriptNameWithIndex();
-
-        return new Label(name);
-    }
-}
+// The second AbilityConfig on the same GameObject
+abilityConfig.GetDisplayNameWithIndex(); // "Ability Config (2)"
 ```
+
+> [!NOTE]
+> These methods are editor-only. Place calling code in an `Editor` folder or an assembly restricted to the Editor platform.
+
+## Object display name
+
+`GetDisplayName()` extends `UnityEngine.Object`. When the type has an `[AddComponentMenu]` attribute, it uses `ObjectNames.GetInspectorTitle`. Otherwise, it formats the type name with `ObjectNames.NicifyVariableName`. A null or destroyed object returns `string.Empty`.
+
+| Component | `GetDisplayName()` | `ObjectNames.GetInspectorTitle()` |
+|---|---|---|
+| `FireAbility`, with the attribute | `Fire Ability` | `Fire Ability` |
+| `AbilityConfig`, without it | `Ability Config` | `Ability Config (Script)` |
+
+## Component index
+
+`GetDisplayNameWithIndex()` extends `Component` and counts components of the **exact same type** on the same GameObject. The suffix follows component order, starting at one. A null or destroyed component returns `string.Empty`.
+
+| Components on the GameObject | Labels |
+|---|---|
+| `AbilityConfig` | `Ability Config` |
+| `AbilityConfig`, `AbilityConfig` | `Ability Config (1)`, `Ability Config (2)` |
+
+## Package sample
+
+In [EditorTools](../Samples~/EditorTools/Documentation/README.md), `GetDisplayName()` supplies the selected ability's pane title.
