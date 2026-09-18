@@ -91,6 +91,28 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   framed and `.sample-scene` media fill the article.
 - Status badges (`Images/status-badge-*.svg`) are links, not captures: they keep their size and do not zoom.
 
+## Writing a feature page (docs/)
+
+Rules the user confirmed while reworking `08-serialized-property-extensions.md` and `09-editor-helpers.md`; apply them
+to every main doc page, always to the English file and its `ru/` twin together.
+
+- **Lead paragraph = what the feature does, not a table of contents.** One or two sentences a reader understands
+  without knowing the API, ideally with the visible result (`FireAbility` → "Fire Ability"). No "for X, Y and Z"
+  enumerations of sections, no "use it for titles and lists" purpose sentence, no abstract wording
+  ("resolves the property back to its owner").
+- **One concrete example type per page**, declared in the quick start ("The examples on this page work with the
+  `AbilityBook` component:") and reused by every section. Extend that type rather than inventing a second one.
+- **Verify every claim against the source** (`Editor/Scripts/...`) before writing it; drop anything the code does
+  not back (e.g. the "inherited attribute" note was removed from `GetDisplayName`).
+- **Results go in tables**: property × method result tables and Unity-API-vs-FastTools before/after tables replace
+  runs of small code blocks. Long method lists (setters) become a grouped table, not a comma list.
+- **Say each fact once.** No repeat between a table's cell comments and the paragraph under it, and no repeat
+  between quick start and a later section (`AndApply` is explained once).
+- **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`").
+  Never stack two admonitions. A pitfall that silently loses data gets a `> [!WARNING]` (boxed struct copy).
+- **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence and the
+  link to the sample README — no GIF, no extra buttons described. The GIF lives on the sample's own page.
+
 ## Adding a main doc page
 
 Drop `NN-name.md` into `Documentation/`, add its section to `Documentation/README.md` (and `ru/README.md`),

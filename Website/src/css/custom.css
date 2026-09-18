@@ -868,6 +868,8 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
   border-radius: 12px;
 }
 .markdown .doc-table-scroll > table { margin-bottom: 0; }
+/* Columns share the width evenly, so neighbouring tables line up instead of tracking their content. */
+.markdown .doc-table-scroll > table { table-layout: fixed; width: 100%; }
 .theme-code-block { margin-block: 1.5rem; }
 .prism-code { font-size: 0.875rem; }
 .theme-admonition { margin-block: 1.5rem; }

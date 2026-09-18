@@ -1,15 +1,23 @@
 # SerializedProperty Extensions
 
-Расширения `SerializedProperty` для записи значений, изменения размера коллекций и поиска типа поля и его владельца.
+Цепочечные методы расширения, с которыми `SerializedProperty` записывает и применяет своё значение одним вызовом, не обращаясь к своему `SerializedObject`. Вторая группа методов отвечает, какое поле C# и какой объект стоят за свойством.
 
 ## Быстрый старт
 
-Примеры на этой странице работают с компонентом `AbilityBook.cs`:
+Примеры на этой странице работают с компонентом `AbilityBook`:
 
 ```csharp
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+
+public interface IAbilityEffect { }
+
+[Serializable]
+public class BurnEffect : IAbilityEffect
+{
+    public float Damage = 5f;
+}
 
 [Serializable]
 public class Ability
@@ -22,6 +30,7 @@ public class AbilityBook : MonoBehaviour
     [SerializeField] private int _manaCost = 10;
     [SerializeField] private float _cooldown = 1f;
     [SerializeField] private List<Ability> _abilities = new() { new Ability() };
+    [SerializeReference] private IAbilityEffect _effect = new BurnEffect();
 }
 ```
 
@@ -31,7 +40,7 @@ public class AbilityBook : MonoBehaviour
 |---|---|
 | <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;serializedObject.Update();&#10;manaCost.intValue = 42;&#10;serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;manaCost&#10;    .Update()&#10;    .SetIntAndApply(42);</code></pre> |
 
-Сеттеры, `Update()` и оба `Apply…()` возвращают исходное свойство, поэтому вызовы выстраиваются в цепочку. Суффикс `AndApply` применяет запись с Undo.
+Сеттеры, `Update()` и оба `Apply…()` возвращают исходное свойство, поэтому вызовы выстраиваются в цепочку. У каждого сеттера есть варианты `AndApply` (с Undo) и `AndApplyWithoutUndo`.
 
 **Несколько полей:** обновите объект один раз, запишите значения и примените их вместе:
 
@@ -40,8 +49,6 @@ serializedObject.Update();
 serializedObject.FindProperty("_cooldown").SetFloat(0.5f);
 serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 ```
-
-Рабочий пример кнопки есть в [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md).
 
 > [!IMPORTANT]
 > Применение затрагивает **все накопленные изменения** связанного `SerializedObject`.
@@ -68,13 +75,20 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 | <pre lang="csharp"><code>// С Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>// С Undo&#10;manaCost.SetIntAndApply(42);</code></pre> |
 | <pre lang="csharp"><code>// Без Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>// Без Undo&#10;manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
 
-Вместо явного сеттера можно использовать `SetValue`: `SetValue(42)` эквивалентен `SetInt(42)`, а `SetValue(0.5f)` — `SetFloat(0.5f)`. Перегрузка выбирается **по типу аргумента**, который должен соответствовать типу поля.
-
-Суффиксы `AndApply` и `AndApplyWithoutUndo` доступны для всех сеттеров ниже, включая `SetValue`, enum, коллекции и ссылки.
+`SetValue` — альтернатива явному сеттеру: `SetValue(42)` эквивалентен `SetInt(42)`, а `SetValue(0.5f)` — `SetFloat(0.5f)`. Перегрузка выбирается **по типу аргумента**, который должен соответствовать типу поля.
 
 ### Поддерживаемые типы
 
-Явный сеттер и перегрузка `SetValue` есть для каждого типа значения `SerializedProperty`: `SetInt`, `SetUint`, `SetLong`, `SetUlong`, `SetFloat`, `SetDouble`, `SetBool`, `SetString`, `SetColor`, `SetGradient`, `SetHash128`, `SetRect`, `SetRectInt`, `SetBounds`, `SetBoundsInt`, `SetVector2`, `SetVector2Int`, `SetVector3`, `SetVector3Int`, `SetVector4`, `SetQuaternion` и `SetAnimationCurve`. `SetEntityId` для `UnityEngine.EntityId` доступен только в Unity 6.2 и новее.
+Явный сеттер и перегрузка `SetValue` есть для каждого типа значения `SerializedProperty`:
+
+| Значения | Сеттеры |
+|---|---|
+| Числа | `SetInt`, `SetUint`, `SetLong`, `SetUlong`, `SetFloat`, `SetDouble` |
+| Текст и флаги | `SetString`, `SetBool`, `SetHash128` |
+| Векторы | `SetVector2`, `SetVector2Int`, `SetVector3`, `SetVector3Int`, `SetVector4`, `SetQuaternion` |
+| Области | `SetRect`, `SetRectInt`, `SetBounds`, `SetBoundsInt` |
+| Типы Unity | `SetColor`, `SetGradient`, `SetAnimationCurve` |
+| Unity 6.2 и новее | `SetEntityId` для `UnityEngine.EntityId` |
 
 ### Перечисления
 
@@ -99,54 +113,43 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// [SerializeReference]&#10;property.managedReferenceValue = instance;</code></pre> | <pre lang="csharp"><code>// [SerializeReference]&#10;property.SetManagedReference(instance);</code></pre> |
+| <pre lang="csharp"><code>// [SerializeReference]&#10;effect.managedReferenceValue = instance;</code></pre> | <pre lang="csharp"><code>// [SerializeReference]&#10;effect.SetManagedReference(instance);</code></pre> |
 | <pre lang="csharp"><code>// UnityEngine.Object&#10;property.objectReferenceValue = asset;</code></pre> | <pre lang="csharp"><code>// UnityEngine.Object&#10;property.SetObjectReference(asset);</code></pre> |
 | <pre lang="csharp"><code>// ExposedReference&lt;T&gt;&#10;property.exposedReferenceValue = target;</code></pre> | <pre lang="csharp"><code>// ExposedReference&lt;T&gt;&#10;property.SetExposedReference(target);</code></pre> |
 | <pre lang="csharp"><code>// boxedValue&#10;property.boxedValue = value;</code></pre> | <pre lang="csharp"><code>// boxedValue&#10;property.SetBoxed(value);</code></pre> |
 
 ## Тип поля и объект-владелец
 
-Для `AbilityBook` из быстрого старта получим свойства коллекции, первого элемента и его поля. Список должен содержать хотя бы один элемент:
+Три метода через рефлексию находят поле C#, стоящее за свойством. Для `AbilityBook` из быстрого старта:
 
 ```csharp
-var abilities = serializedObject.FindProperty("_abilities");
-var ability = abilities.GetArrayElementAtIndex(0);
-var abilityName = ability.FindPropertyRelative("Name");
+var abilities    = serializedObject.FindProperty("_abilities");
+var ability      = abilities.GetArrayElementAtIndex(0);
+var abilityName  = ability.FindPropertyRelative("Name");
+var effect       = serializedObject.FindProperty("_effect");
+var effectDamage = effect.FindPropertyRelative("Damage");
 ```
 
-### GetPropertyType()
+| Свойство | `GetPropertyType()` | `GetFieldInfo()` | `GetDeclaringInstance()` |
+|---|---|---|---|
+| `abilities` | `List<Ability>` | `AbilityBook._abilities` | экземпляр `AbilityBook` |
+| `ability` | `Ability` | `AbilityBook._abilities` | экземпляр `AbilityBook` |
+| `abilityName` | `string` | `Ability.Name` | `Ability` с индексом 0 |
+| `effect` | `IAbilityEffect` | `AbilityBook._effect` | экземпляр `AbilityBook` |
+| `effectDamage` | `float` | `BurnEffect.Damage` | экземпляр `BurnEffect` |
 
-Возвращает объявленный тип поля, в том числе для `[SerializeReference]`. Для элемента коллекции — тип элемента:
+- `GetPropertyType()` возвращает **объявленный** тип поля: для `[SerializeReference]` — интерфейс или базовый класс, а не тип экземпляра; для элемента коллекции — тип элемента.
+- `GetFieldInfo()` ищет поле по фактическому типу владельца, включая приватные поля базовых классов.
+- `GetDeclaringInstance()` возвращает объект, которому принадлежит поле; для элемента коллекции — владельца коллекции.
 
-```csharp
-abilities.GetPropertyType();   // typeof(List<Ability>)
-ability.GetPropertyType();     // typeof(Ability)
-abilityName.GetPropertyType(); // typeof(string)
-```
+Все три метода возвращают `null`, если поиск не удался: поле не найдено, на пути встретилась `null`-ссылка или индекс вышел за границы списка. Они читают **первый** целевой объект (`targetObject`) и видят только применённые значения, поэтому сначала примените накопленные записи.
 
-### GetFieldInfo()
-
-Возвращает `FieldInfo`, учитывая поля базовых классов и поля внутри `[SerializeReference]`:
-
-```csharp
-abilityName.GetFieldInfo(); // Поле Ability.Name
-ability.GetFieldInfo();     // Поле AbilityBook._abilities
-```
-
-### GetDeclaringInstance()
-
-Возвращает объект, которому принадлежит поле. Для элемента коллекции это владелец коллекции:
-
-```csharp
-ability.GetDeclaringInstance();     // Экземпляр AbilityBook
-abilityName.GetDeclaringInstance(); // Экземпляр Ability
-```
-
-Все три метода возвращают `null`, если поиск не удался. Они читают первый целевой объект (`targetObject`), поэтому сначала примените накопленные записи. Владелец-структура возвращается как boxed-копия: её изменение не обновляет оригинал.
+> [!WARNING]
+> Если владелец поля — структура, `GetDeclaringInstance()` возвращает её boxed-копию. Изменения такой копии не попадают в оригинал; записывайте значения через `SerializedProperty`.
 
 ## Имя поля и проверка свойства
 
-Для свойств из предыдущего раздела:
+Для тех же свойств:
 
 | Вызов | Результат |
 |---|---|
@@ -156,8 +159,9 @@ abilityName.GetDeclaringInstance(); // Экземпляр Ability
 | `abilityName.IsArrayElement()` | `false` — поле внутри элемента |
 | `ability.HasFoldout()` | `true` |
 | `abilityName.HasFoldout()` | `false` |
+| `effect.HasFoldout()` | `false` — `[SerializeReference]` |
 
-`HasFoldout()` проверяет тип `Generic` и наличие видимых дочерних свойств. Managed-ссылки и разметка пользовательских `PropertyDrawer` не учитываются.
+`HasFoldout()` — это `true` только для свойства `Generic` с видимыми дочерними свойствами, как у стандартного инспектора. `[SerializeReference]` и пользовательские `PropertyDrawer` не учитываются.
 
 ## Независимое свойство
 
@@ -181,4 +185,8 @@ EditorApplication.delayCall += () =>
 };
 ```
 
-`Persistent()` возвращает `null`, если путь свойства больше не существует. Неприменённые записи исходного объекта не копируются; исходное представление увидит изменения после `Update()`. Целевые объекты и путь свойства должны оставаться действительными до вызова.
+`Persistent()` возвращает `null`, если путь свойства больше не существует. Неприменённые записи исходного объекта не копируются; исходное представление увидит изменения после `Update()`. Целевые объекты должны существовать до момента отложенного вызова.
+
+## Пример в пакете
+
+В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) кнопка **Halve cooldown, +5 MP** записывает два свойства через `SetFloat` и `SetIntAndApply` одним шагом Undo.
