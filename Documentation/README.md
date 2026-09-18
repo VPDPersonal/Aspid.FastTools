@@ -13,19 +13,13 @@ Aspid.FastTools is a Unity package that fills the gaps Unity leaves in serializa
 In **Window → Package Manager**, choose **+ → Install package from git URL…** and paste:
 
 ```text
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
-This installs the preview version covered by this documentation. Git must be installed for UPM Git URLs.
+This installs the latest preview, and updating the package brings in a newer one. Git must be installed for UPM Git URLs.
 
 <details>
 <summary>Other installation options</summary>
-
-- **Latest preview:** updating the package can bring in a newer preview.
-
-  ```text
-  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
-  ```
 
 - **Another version:** copy its UPM tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases), for example:
 

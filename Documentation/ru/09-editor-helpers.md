@@ -1,19 +1,28 @@
 # Editor Helpers
 
-Два метода для читаемых подписей компонентов и ScriptableObject в заголовках инспекторов, списках и окнах редактора. Они убирают повторяющийся код форматирования имён и помогают различать одинаковые компоненты на одном GameObject.
+Два метода для читаемых подписей компонентов и ScriptableObject. Они убирают повторяющийся код форматирования имён и помогают различать одинаковые компоненты на одном GameObject.
 
-Оба метода — расширения: `GetDisplayName()` вызывается у любого `UnityEngine.Object`, `GetDisplayNameWithIndex()` — у `Component`.
+## Быстрый старт
+
+Примеры построены на двух компонентах: один задаёт себе имя через `[AddComponentMenu]`, другой — нет.
+
+```csharp
+using UnityEngine;
+
+[AddComponentMenu("Gameplay/Fire Ability")]
+public sealed class FireAbility : MonoBehaviour { }
+
+public sealed class AbilityConfig : MonoBehaviour { }
+```
 
 ```csharp
 using Aspid.FastTools.Editors;
 
-[SerializeField] private AudioSource _audioSource;
+fireAbility.GetDisplayName();       // "Fire Ability"
+abilityConfig.GetDisplayName();     // "Ability Config"
 
-var title = _audioSource.GetDisplayName();
-// "Audio Source"
-
-var indexedTitle = _audioSource.GetDisplayNameWithIndex();
-// "Audio Source (2)", если это второй AudioSource на том же GameObject
+// Второй AbilityConfig на том же GameObject
+abilityConfig.GetDisplayNameWithIndex(); // "Ability Config (2)"
 ```
 
 > [!NOTE]
@@ -21,22 +30,22 @@ var indexedTitle = _audioSource.GetDisplayNameWithIndex();
 
 ## Имя объекта
 
-`GetDisplayName()` работает с `UnityEngine.Object`. Если у типа есть `[AddComponentMenu]`, включая унаследованный атрибут, метод берёт заголовок через `ObjectNames.GetInspectorTitle`. В остальных случаях он преобразует имя типа через `ObjectNames.NicifyVariableName`.
+`GetDisplayName()` работает с `UnityEngine.Object`. Если у типа есть `[AddComponentMenu]`, метод берёт заголовок через `ObjectNames.GetInspectorTitle`. В остальных случаях он преобразует имя типа через `ObjectNames.NicifyVariableName`. Для `null` или уничтоженного объекта метод возвращает `string.Empty`.
 
-Метод описывает тип, а не объект: имя GameObject или ассета на результат не влияет.
+| Компонент | `GetDisplayName()` | `ObjectNames.GetInspectorTitle()` |
+|---|---|---|
+| `FireAbility`, с атрибутом | `Fire Ability` | `Fire Ability` |
+| `AbilityConfig`, без атрибута | `Ability Config` | `Ability Config (Script)` |
 
 ## Номер компонента
 
-`GetDisplayNameWithIndex()` работает с `Component` и учитывает только компоненты **точно того же типа** на том же GameObject. Суффикс соответствует порядку компонентов, начиная с единицы.
+`GetDisplayNameWithIndex()` работает с `Component` и учитывает только компоненты **точно того же типа** на том же GameObject. Суффикс соответствует порядку компонентов, начиная с единицы. Для `null` или уничтоженного компонента метод возвращает `string.Empty`.
 
 | Компоненты на GameObject | Подписи |
 |---|---|
-| `AudioSource` | `Audio Source` |
-| `AudioSource`, `AudioSource` | `Audio Source (1)`, `Audio Source (2)` |
-| `AudioSource`, `BoxCollider` | `Audio Source`, `Box Collider` |
-
-Для `null` или уничтоженного объекта оба метода возвращают `string.Empty`.
+| `AbilityConfig` | `Ability Config` |
+| `AbilityConfig`, `AbilityConfig` | `Ability Config (1)`, `Ability Config (2)` |
 
 ## Пример в пакете
 
-В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) метод `GetDisplayName()` формирует заголовок панели выбранной способности. Его можно дополнить [`AddOpenScriptCommand`](07-visual-element-extensions.md#открытие-скрипта-и-окно-владелец): двойной клик по заголовку откроет исходный файл в IDE.
+В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) метод `GetDisplayName()` формирует заголовок панели выбранной способности.

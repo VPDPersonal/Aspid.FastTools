@@ -13,19 +13,13 @@ Aspid.FastTools — пакет для Unity, закрывающий пробел
 В **Window → Package Manager** выберите **+ → Install package from git URL…** и вставьте:
 
 ```text
-https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.8
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
-Этот URL устанавливает preview-версию, описанную в документации. Для установки через Git URL в системе должен быть установлен Git.
+Этот URL устанавливает последнюю preview-версию, а при обновлении пакета подтянется более новая. Для установки через Git URL в системе должен быть установлен Git.
 
 <details>
 <summary>Другие варианты установки</summary>
-
-- **Последний preview:** при обновлении пакета может установиться более новая preview-версия.
-
-  ```text
-  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
-  ```
 
 - **Другая версия:** скопируйте её UPM-тег со страницы [релизов](https://github.com/VPDPersonal/Aspid.FastTools/releases), например:
 
