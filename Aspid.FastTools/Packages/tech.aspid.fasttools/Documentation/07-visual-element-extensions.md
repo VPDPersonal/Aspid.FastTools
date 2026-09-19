@@ -1,5 +1,4 @@
 # VisualElement Extensions
-
 UI Toolkit extensions for building element trees, setting styles, subscribing to events, and binding editor fields. Methods return the configured element so calls can be chained.
 
 <a id="example"></a>
@@ -12,13 +11,7 @@ Add `using Aspid.FastTools.UIElements;` to a script that imports `UnityEngine.UI
 |---|---|
 | <pre lang="csharp"><code>var title = new Label("Stats");&#10;title.style.fontSize = 18;&#10;&#10;var panel = new VisualElement();&#10;panel.style.paddingLeft = 12;&#10;panel.style.paddingRight = 12;&#10;panel.style.paddingTop = 8;&#10;panel.style.paddingBottom = 8;&#10;panel.Add(title);</code></pre> | <pre lang="csharp"><code>var panel = new VisualElement()&#10;    .SetPaddingX(12)&#10;    .SetPaddingY(8)&#10;    .AddChild(new Label("Stats")&#10;        .SetFontSize(18));</code></pre> |
 
-Setters preserve the type: `new Button().SetText("Refresh")` returns a `Button`. Child operations return the **parent**, so the next call continues configuring it:
-
-```csharp
-var panel = new VisualElement()
-    .AddChild(new Label("Health").SetFontSize(14))
-    .SetMarginTop(12); // margin on panel
-```
+Setters preserve the type: `new Button().SetText("Refresh")` returns a `Button`. Child operations return the **parent**, so the next call continues configuring it.
 
 ## Find an extension
 
@@ -38,23 +31,6 @@ var panel = new VisualElement()
 
 ## Elements and children
 
-For the `panel` from the quick start. Children are created inline; `*If` adds the element only when the condition is true:
-
-| Before — Unity API | After — FastTools |
-|---|---|
-| <pre lang="csharp"><code>panel.name = "ability-panel";&#10;panel.Add(new Label("Fireball"));&#10;panel.Add(new Label("Deals 40 damage"));&#10;if (Application.isPlaying)&#10;    panel.Add(new Label("Play mode"));</code></pre> | <pre lang="csharp"><code>panel&#10;    .SetName("ability-panel")&#10;    .AddChildren(&#10;        new Label("Fireball"),&#10;        new Label("Deals 40 damage"))&#10;    .AddChildIf(Application.isPlaying,&#10;        new Label("Play mode"));</code></pre> |
-| <pre lang="csharp"><code>var header = new Label("Header");&#10;panel.Insert(0, header);&#10;panel.Remove(header);&#10;panel.RemoveAt(0);&#10;panel.Clear();</code></pre> | <pre lang="csharp"><code>var header = new Label("Header");&#10;panel&#10;    .InsertChild(0, header)&#10;    .RemoveChild(header)&#10;    .RemoveChildAt(0)&#10;    .ClearChildren();</code></pre> |
-
-These methods return the parent element, so they can be chained. `AddChildren` and `InsertChildren` preserve the order of the supplied elements.
-
-> [!NOTE]
-> `*If` checks the condition only at call time. Arguments are evaluated first: `AddChildIf(false, new Label("Warning"))` creates the `Label` but does not add it to the tree. Use a normal `if` when construction is expensive.
-
-<details>
-<summary>All element and child operations</summary>
-
-Element properties (`SetUsageHints` must be configured before attaching the element to a panel):
-
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>element.name = name;</code></pre> | <pre lang="csharp"><code>element.SetName(name);</code></pre> |
@@ -71,8 +47,6 @@ Element properties (`SetUsageHints` must be configured before attaching the elem
 | <pre lang="csharp"><code>element.dataSourceType = type;</code></pre> | <pre lang="csharp"><code>element.SetDataSourceType(type);</code></pre> |
 | <pre lang="csharp"><code>element.dataSourcePath = path;</code></pre> | <pre lang="csharp"><code>element.SetDataSourcePath(path);</code></pre> |
 
-Child operations return the parent; the `*If` variant takes a leading `bool condition`:
-
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>panel.Add(child);</code></pre> | <pre lang="csharp"><code>panel.AddChild(child);&#10;panel.AddChildIf(condition, child);</code></pre> |
@@ -83,79 +57,51 @@ Child operations return the parent; the `*If` variant takes a leading `bool cond
 | <pre lang="csharp"><code>panel.RemoveAt(index);</code></pre> | <pre lang="csharp"><code>panel.RemoveChildAt(index);&#10;panel.RemoveChildAtIf(condition, index);</code></pre> |
 | <pre lang="csharp"><code>panel.Clear();</code></pre> | <pre lang="csharp"><code>panel.ClearChildren();&#10;panel.ClearChildrenIf(condition);</code></pre> |
 
-</details>
+These methods return the parent element, so they can be chained. `AddChildren` and `InsertChildren` preserve the order of the supplied elements.
+
+> [!NOTE]
+> `*If` checks the condition only at call time. Arguments are evaluated first: `AddChildIf(false, new Label("Warning"))` creates the `Label` but does not add it to the tree. Use a normal `if` when construction is expensive.
 
 ### Visibility and interaction
 
-Choose how hiding or disabling should behave:
-
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Hide while retaining layout space&#10;element.visible = false;</code></pre> | <pre lang="csharp"><code>// Hide while retaining layout space&#10;element.SetVisible(false);</code></pre> |
-| <pre lang="csharp"><code>// Remove the element and descendants from layout&#10;element.style.display =&#10;    DisplayStyle.None;</code></pre> | <pre lang="csharp"><code>// Remove the element and descendants from layout&#10;element.SetDisplay(DisplayStyle.None);</code></pre> |
-| <pre lang="csharp"><code>// Disable interaction with the element and descendants&#10;element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>// Disable interaction with the element and descendants&#10;element.SetEnabledSelf(false);</code></pre> |
+| <pre lang="csharp"><code>element.visible = false;</code></pre> | <pre lang="csharp"><code>element.SetVisible(false);</code></pre> |
+| <pre lang="csharp"><code>element.style.display =&#10;    DisplayStyle.None;</code></pre> | <pre lang="csharp"><code>element.SetDisplay(DisplayStyle.None);</code></pre> |
+| <pre lang="csharp"><code>element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>element.SetEnabledSelf(false);</code></pre> |
 
 <a id="focusable"></a>
 
 ## Focus
 
-For a search field already attached to `panel`:
-
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var search = panel.Q&lt;TextField&gt;("search");&#10;search.focusable = true;&#10;search.tabIndex = 0;&#10;search.Focus();</code></pre> | <pre lang="csharp"><code>panel.Q&lt;TextField&gt;("search")&#10;    .SetFocusable(true)&#10;    .SetTabIndex(0)&#10;    .FocusSelf();</code></pre> |
-
-`FocusSelf()` calls the normal `Focus()`: the element must be focusable. `IsFocused()` compares the element with `focusController.focusedElement` and returns `false` when detached.
-
-| Method | Description |
-|-------|----------|
-| `FocusSelf()` | Attempts to give focus to the element |
-| `BlurSelf()` | Tells the element to release focus |
-| `IsFocused()` | Returns whether the element currently has keyboard focus |
-| `SetTabIndex(int)` | Sets `element.tabIndex` |
-| `SetFocusable(bool)` | Sets `element.focusable` |
-| `SetDelegatesFocus(bool)` | Sets `element.delegatesFocus` |
+| <pre lang="csharp"><code>search.Focus();</code></pre> | <pre lang="csharp"><code>search.FocusSelf();</code></pre> |
+| <pre lang="csharp"><code>search.Blur();</code></pre> | <pre lang="csharp"><code>search.BlurSelf();</code></pre> |
+| <pre lang="csharp"><code>bool focused =&#10;    search.focusController?.focusedElement&#10;        == search;</code></pre> | <pre lang="csharp"><code>bool focused = search.IsFocused();</code></pre> |
+| <pre lang="csharp"><code>search.tabIndex = 0;</code></pre> | <pre lang="csharp"><code>search.SetTabIndex(0);</code></pre> |
+| <pre lang="csharp"><code>search.focusable = true;</code></pre> | <pre lang="csharp"><code>search.SetFocusable(true);</code></pre> |
+| <pre lang="csharp"><code>search.delegatesFocus = true;</code></pre> | <pre lang="csharp"><code>search.SetDelegatesFocus(true);</code></pre> |
 
 <a id="uss--class-operations"></a>
 
 ## USS and classes
 
-The `Assets/Resources/UI/AbilityCard.uss` style sheet is attached to `panel`, and the `playing` class follows the current state:
-
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>panel.styleSheets.Add(&#10;    Resources.Load&lt;StyleSheet&gt;("UI/AbilityCard"));&#10;panel.AddToClassList("ability-card");&#10;panel.EnableInClassList(&#10;    "playing", Application.isPlaying);</code></pre> | <pre lang="csharp"><code>panel&#10;    .AddStyleSheetFromResources("UI/AbilityCard")&#10;    .AddClass("ability-card")&#10;    .EnableClass("playing", Application.isPlaying);</code></pre> |
-
-`EnableClass` sets class membership to the requested state. `ToggleClass` reverses class membership on each call.
-
-<details>
-<summary>Class and style-sheet methods</summary>
-
-| Method | Description |
-|-------|----------|
-| `AddClass(string)` | Adds a USS class |
-| `RemoveClass(string)` | Removes a USS class |
-| `ClearClasses()` | Removes all USS classes |
-| `ToggleClass(string)` | Toggles a USS class on/off |
-| `EnableClass(string, bool)` | Adds or removes a USS class based on a condition |
-| `AddStyleSheet(StyleSheet)` | Adds a `StyleSheet` |
-| `RemoveStyleSheet(StyleSheet)` | Removes a `StyleSheet` |
-| `AddStyleSheetFromResources(string)` | Adds a stylesheet loaded via `Resources.Load` |
-| `RemoveStyleSheetFromResources(string)` | Removes a stylesheet loaded via `Resources.Load` |
-
-</details>
-
-For `AddStyleSheetFromResources("UI/AbilityCard")`, place the file in a `Resources` folder, such as `Assets/Resources/UI/AbilityCard.uss`. Omit the extension from the path. If the resource is missing, the method logs a warning and returns the unchanged element.
+| <pre lang="csharp"><code>panel.AddToClassList("ability-card");</code></pre> | <pre lang="csharp"><code>panel.AddClass("ability-card");</code></pre> |
+| <pre lang="csharp"><code>panel.RemoveFromClassList("ability-card");</code></pre> | <pre lang="csharp"><code>panel.RemoveClass("ability-card");</code></pre> |
+| <pre lang="csharp"><code>panel.ClearClassList();</code></pre> | <pre lang="csharp"><code>panel.ClearClasses();</code></pre> |
+| <pre lang="csharp"><code>panel.ToggleInClassList("playing");</code></pre> | <pre lang="csharp"><code>panel.ToggleClass("playing");</code></pre> |
+| <pre lang="csharp"><code>panel.EnableInClassList(&#10;    "playing", Application.isPlaying);</code></pre> | <pre lang="csharp"><code>panel.EnableClass(&#10;    "playing", Application.isPlaying);</code></pre> |
+| <pre lang="csharp"><code>panel.styleSheets.Add(styleSheet);</code></pre> | <pre lang="csharp"><code>panel.AddStyleSheet(styleSheet);</code></pre> |
+| <pre lang="csharp"><code>panel.styleSheets.Remove(styleSheet);</code></pre> | <pre lang="csharp"><code>panel.RemoveStyleSheet(styleSheet);</code></pre> |
+| <pre lang="csharp"><code>panel.styleSheets.Add(&#10;    Resources.Load&lt;StyleSheet&gt;("UI/AbilityCard"));</code></pre> | <pre lang="csharp"><code>panel.AddStyleSheetFromResources("UI/AbilityCard");</code></pre> |
+| <pre lang="csharp"><code>panel.styleSheets.Remove(&#10;    Resources.Load&lt;StyleSheet&gt;("UI/AbilityCard"));</code></pre> | <pre lang="csharp"><code>panel.RemoveStyleSheetFromResources("UI/AbilityCard");</code></pre> |
 
 <a id="style-extensions--by-category"></a>
 
 ## Styles
-
-Setters write the element's inline styles. Keep shared appearance rules in USS and use chains for the dimensions and state of individual elements.
-
-| Before — Unity API | After — FastTools |
-|---|---|
-| <pre lang="csharp"><code>panel.style.flexDirection =&#10;    FlexDirection.Row;&#10;panel.style.alignItems = Align.Center;&#10;panel.style.width = 240;&#10;panel.style.height = 48;&#10;panel.style.marginTop = 8;</code></pre> | <pre lang="csharp"><code>panel&#10;    .SetFlexDirection(FlexDirection.Row)&#10;    .SetAlignItems(Align.Center)&#10;    .SetSize(240, 48)&#10;    .SetMarginTop(8);</code></pre> |
 
 ### Sides, axes, and units
 
@@ -168,8 +114,6 @@ panel
     .SetMargin(top: 4, bottom: 8)
     .SetSize(width: Length.Percent(100));
 ```
-
-Numeric `StyleLength` values use pixels; use `Length.Percent(...)` for percentages. `SetDistance` writes `top`, `right`, `bottom`, and `left`. For example, `SetPosition(Position.Absolute).SetDistance(0)` stretches an element to its parent's edges.
 
 ### Configuring IStyle
 
@@ -186,53 +130,73 @@ The main examples target Unity 6.0. Disclosure sections mark methods that requir
 <details>
 <summary>Layout</summary>
 
-| Method | Style property |
-|-------|----------------|
-| `SetFlexBasis(StyleLength)` | `flexBasis` |
-| `SetFlexGrow(StyleFloat)` | `flexGrow` |
-| `SetFlexShrink(StyleFloat)` | `flexShrink` |
-| `SetFlexWrap(StyleEnum<Wrap>)` | `flexWrap` |
-| `SetFlexDirection(FlexDirection)` | `flexDirection` |
-| `SetAlignSelf(StyleEnum<Align>)` | `alignSelf` |
-| `SetAlignItems(StyleEnum<Align>)` | `alignItems` |
-| `SetAlignContent(StyleEnum<Align>)` | `alignContent` |
-| `SetJustifyContent(StyleEnum<Justify>)` | `justifyContent` |
-| `SetPosition(StyleEnum<Position>)` | `position` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.flexBasis = 120;</code></pre> | <pre lang="csharp"><code>panel.SetFlexBasis(120);</code></pre> |
+| <pre lang="csharp"><code>panel.style.flexGrow = 1;</code></pre> | <pre lang="csharp"><code>panel.SetFlexGrow(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.flexShrink = 0;</code></pre> | <pre lang="csharp"><code>panel.SetFlexShrink(0);</code></pre> |
+| <pre lang="csharp"><code>panel.style.flexWrap = Wrap.Wrap;</code></pre> | <pre lang="csharp"><code>panel.SetFlexWrap(Wrap.Wrap);</code></pre> |
+| <pre lang="csharp"><code>panel.style.flexDirection = FlexDirection.Row;</code></pre> | <pre lang="csharp"><code>panel.SetFlexDirection(FlexDirection.Row);</code></pre> |
+| <pre lang="csharp"><code>panel.style.alignSelf = Align.Center;</code></pre> | <pre lang="csharp"><code>panel.SetAlignSelf(Align.Center);</code></pre> |
+| <pre lang="csharp"><code>panel.style.alignItems = Align.Center;</code></pre> | <pre lang="csharp"><code>panel.SetAlignItems(Align.Center);</code></pre> |
+| <pre lang="csharp"><code>panel.style.alignContent = Align.Stretch;</code></pre> | <pre lang="csharp"><code>panel.SetAlignContent(Align.Stretch);</code></pre> |
+| <pre lang="csharp"><code>panel.style.justifyContent = Justify.SpaceBetween;</code></pre> | <pre lang="csharp"><code>panel.SetJustifyContent(Justify.SpaceBetween);</code></pre> |
+| <pre lang="csharp"><code>panel.style.position = Position.Absolute;</code></pre> | <pre lang="csharp"><code>panel.SetPosition(Position.Absolute);</code></pre> |
 
 </details>
 
 <details>
 <summary>Size</summary>
 
-| Method | Description |
-|-------|----------|
-| `SetSize(StyleLength)` | Sets both width and height |
-| `SetSize(width?, height?)` | Sets width and/or height independently |
-| `SetMinSize(StyleLength)` | Sets both minWidth and minHeight |
-| `SetMinSize(minWidth?, minHeight?)` | Minimum width and/or height independently |
-| `SetMaxSize(StyleLength)` | Sets both maxWidth and maxHeight |
-| `SetMaxSize(maxWidth?, maxHeight?)` | Maximum width and/or height independently |
-| `SetWidth(StyleLength)` | `width` |
-| `SetMinWidth(StyleLength)` | `minWidth` |
-| `SetMaxWidth(StyleLength)` | `maxWidth` |
-| `SetHeight(StyleLength)` | `height` |
-| `SetMinHeight(StyleLength)` | `minHeight` |
-| `SetMaxHeight(StyleLength)` | `maxHeight` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.width = 48;&#10;panel.style.height = 48;</code></pre> | <pre lang="csharp"><code>panel.SetSize(48);</code></pre> |
+| <pre lang="csharp"><code>panel.style.width = 240;&#10;panel.style.height = 48;</code></pre> | <pre lang="csharp"><code>panel.SetSize(240, 48);</code></pre> |
+| <pre lang="csharp"><code>panel.style.width = Length.Percent(100);</code></pre> | <pre lang="csharp"><code>panel.SetSize(width: Length.Percent(100));</code></pre> |
+| <pre lang="csharp"><code>panel.style.minWidth = 120;&#10;panel.style.minHeight = 120;</code></pre> | <pre lang="csharp"><code>panel.SetMinSize(120);</code></pre> |
+| <pre lang="csharp"><code>panel.style.minWidth = 120;&#10;panel.style.minHeight = 32;</code></pre> | <pre lang="csharp"><code>panel.SetMinSize(120, 32);</code></pre> |
+| <pre lang="csharp"><code>panel.style.minHeight = 32;</code></pre> | <pre lang="csharp"><code>panel.SetMinSize(minHeight: 32);</code></pre> |
+| <pre lang="csharp"><code>panel.style.maxWidth = 480;&#10;panel.style.maxHeight = 480;</code></pre> | <pre lang="csharp"><code>panel.SetMaxSize(480);</code></pre> |
+| <pre lang="csharp"><code>panel.style.maxWidth = 480;&#10;panel.style.maxHeight = 320;</code></pre> | <pre lang="csharp"><code>panel.SetMaxSize(480, 320);</code></pre> |
+| <pre lang="csharp"><code>panel.style.maxWidth = 480;</code></pre> | <pre lang="csharp"><code>panel.SetMaxSize(maxWidth: 480);</code></pre> |
+| <pre lang="csharp"><code>panel.style.width = 240;</code></pre> | <pre lang="csharp"><code>panel.SetWidth(240);</code></pre> |
+| <pre lang="csharp"><code>panel.style.minWidth = 120;</code></pre> | <pre lang="csharp"><code>panel.SetMinWidth(120);</code></pre> |
+| <pre lang="csharp"><code>panel.style.maxWidth = 480;</code></pre> | <pre lang="csharp"><code>panel.SetMaxWidth(480);</code></pre> |
+| <pre lang="csharp"><code>panel.style.height = 48;</code></pre> | <pre lang="csharp"><code>panel.SetHeight(48);</code></pre> |
+| <pre lang="csharp"><code>panel.style.minHeight = 32;</code></pre> | <pre lang="csharp"><code>panel.SetMinHeight(32);</code></pre> |
+| <pre lang="csharp"><code>panel.style.maxHeight = 320;</code></pre> | <pre lang="csharp"><code>panel.SetMaxHeight(320);</code></pre> |
 
 </details>
 
 <details>
 <summary>Spacing and positioning</summary>
 
-`SetMargin`, `SetPadding`, and `SetDistance` support one shared value, individual sides (`top`, `right`, `bottom`, `left`), and X/Y axis pairs.
-
-| Method | Style properties |
-|-------|----------------|
-| `SetMargin(…)` / `SetPadding(…)` / `SetDistance(…)` | `Top/Right/Bottom/Left` (uniform or per-side) |
-| `SetMarginX/Y` · `SetPaddingX/Y` · `SetDistanceX/Y` | Sets the horizontal (X = `Left`+`Right`) or vertical (Y = `Top`+`Bottom`) pair |
-| `SetMarginTop/Right/Bottom/Left` | Single-side margin |
-| `SetPaddingTop/Right/Bottom/Left` | Single-side padding |
-| `SetTop` / `SetRight` / `SetBottom` / `SetLeft` | Offset for one side (`top` / `right` / `bottom` / `left`) |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.marginTop = 8;&#10;panel.style.marginRight = 8;&#10;panel.style.marginBottom = 8;&#10;panel.style.marginLeft = 8;</code></pre> | <pre lang="csharp"><code>panel.SetMargin(8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.marginTop = 8;&#10;panel.style.marginBottom = 8;</code></pre> | <pre lang="csharp"><code>panel.SetMargin(top: 8, bottom: 8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.marginLeft = 8;&#10;panel.style.marginRight = 8;</code></pre> | <pre lang="csharp"><code>panel.SetMarginX(8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.marginTop = 8;&#10;panel.style.marginBottom = 8;</code></pre> | <pre lang="csharp"><code>panel.SetMarginY(8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.marginTop = 8;</code></pre> | <pre lang="csharp"><code>panel.SetMarginTop(8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.marginRight = 8;</code></pre> | <pre lang="csharp"><code>panel.SetMarginRight(8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.marginBottom = 8;</code></pre> | <pre lang="csharp"><code>panel.SetMarginBottom(8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.marginLeft = 8;</code></pre> | <pre lang="csharp"><code>panel.SetMarginLeft(8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.paddingTop = 12;&#10;panel.style.paddingRight = 12;&#10;panel.style.paddingBottom = 12;&#10;panel.style.paddingLeft = 12;</code></pre> | <pre lang="csharp"><code>panel.SetPadding(12);</code></pre> |
+| <pre lang="csharp"><code>panel.style.paddingTop = 12;&#10;panel.style.paddingBottom = 12;</code></pre> | <pre lang="csharp"><code>panel.SetPadding(top: 12, bottom: 12);</code></pre> |
+| <pre lang="csharp"><code>panel.style.paddingLeft = 12;&#10;panel.style.paddingRight = 12;</code></pre> | <pre lang="csharp"><code>panel.SetPaddingX(12);</code></pre> |
+| <pre lang="csharp"><code>panel.style.paddingTop = 12;&#10;panel.style.paddingBottom = 12;</code></pre> | <pre lang="csharp"><code>panel.SetPaddingY(12);</code></pre> |
+| <pre lang="csharp"><code>panel.style.paddingTop = 12;</code></pre> | <pre lang="csharp"><code>panel.SetPaddingTop(12);</code></pre> |
+| <pre lang="csharp"><code>panel.style.paddingRight = 12;</code></pre> | <pre lang="csharp"><code>panel.SetPaddingRight(12);</code></pre> |
+| <pre lang="csharp"><code>panel.style.paddingBottom = 12;</code></pre> | <pre lang="csharp"><code>panel.SetPaddingBottom(12);</code></pre> |
+| <pre lang="csharp"><code>panel.style.paddingLeft = 12;</code></pre> | <pre lang="csharp"><code>panel.SetPaddingLeft(12);</code></pre> |
+| <pre lang="csharp"><code>panel.style.top = 0;&#10;panel.style.right = 0;&#10;panel.style.bottom = 0;&#10;panel.style.left = 0;</code></pre> | <pre lang="csharp"><code>panel.SetDistance(0);</code></pre> |
+| <pre lang="csharp"><code>panel.style.top = 0;&#10;panel.style.bottom = 0;</code></pre> | <pre lang="csharp"><code>panel.SetDistance(top: 0, bottom: 0);</code></pre> |
+| <pre lang="csharp"><code>panel.style.left = 0;&#10;panel.style.right = 0;</code></pre> | <pre lang="csharp"><code>panel.SetDistanceX(0);</code></pre> |
+| <pre lang="csharp"><code>panel.style.top = 0;&#10;panel.style.bottom = 0;</code></pre> | <pre lang="csharp"><code>panel.SetDistanceY(0);</code></pre> |
+| <pre lang="csharp"><code>panel.style.top = 0;</code></pre> | <pre lang="csharp"><code>panel.SetTop(0);</code></pre> |
+| <pre lang="csharp"><code>panel.style.right = 0;</code></pre> | <pre lang="csharp"><code>panel.SetRight(0);</code></pre> |
+| <pre lang="csharp"><code>panel.style.bottom = 0;</code></pre> | <pre lang="csharp"><code>panel.SetBottom(0);</code></pre> |
+| <pre lang="csharp"><code>panel.style.left = 0;</code></pre> | <pre lang="csharp"><code>panel.SetLeft(0);</code></pre> |
 
 > `SetDistance` wraps the four `top`/`right`/`bottom`/`left` properties used for absolute positioning. `SetTop`, `SetRight`, `SetBottom`, and `SetLeft` directly alias one property each.
 
@@ -241,12 +205,12 @@ The main examples target Unity 6.0. Disclosure sections mark methods that requir
 <details>
 <summary>Font</summary>
 
-| Method | Style property |
-|-------|----------------|
-| `SetUnityFont(StyleFont)` | `unityFont` |
-| `SetFontSize(StyleLength)` | `fontSize` |
-| `SetUnityFontDefinition(StyleFontDefinition)` | `unityFontDefinition` |
-| `SetUnityFontStyleAndWeight(StyleEnum<FontStyle>)` | `unityFontStyleAndWeight` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.unityFont = font;</code></pre> | <pre lang="csharp"><code>panel.SetUnityFont(font);</code></pre> |
+| <pre lang="csharp"><code>panel.style.fontSize = 14;</code></pre> | <pre lang="csharp"><code>panel.SetFontSize(14);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityFontDefinition = fontDefinition;</code></pre> | <pre lang="csharp"><code>panel.SetUnityFontDefinition(fontDefinition);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityFontStyleAndWeight = FontStyle.Bold;</code></pre> | <pre lang="csharp"><code>panel.SetUnityFontStyleAndWeight(FontStyle.Bold);</code></pre> |
 
 </details>
 
@@ -255,96 +219,111 @@ The main examples target Unity 6.0. Disclosure sections mark methods that requir
 
 Convenience methods toggle bold or italic without overwriting the other flag:
 
-| Method | Description |
-|-------|----------|
-| `SetNormalUnityFontStyleAndWeight()` | Resets to `FontStyle.Normal` |
-| `AddBoldUnityFontStyleAndWeight()` | Adds bold, preserving italic |
-| `RemoveBoldUnityFontStyleAndWeight()` | Removes bold, preserving italic |
-| `AddItalicUnityFontStyleAndWeight()` | Adds italic, preserving bold |
-| `RemoveItalicUnityFontStyleAndWeight()` | Removes italic, preserving bold |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.unityFontStyleAndWeight =&#10;    FontStyle.Normal;</code></pre> | <pre lang="csharp"><code>panel.SetNormalUnityFontStyleAndWeight();</code></pre> |
+| <pre lang="csharp"><code>var current =&#10;    panel.style.unityFontStyleAndWeight.value;&#10;panel.style.unityFontStyleAndWeight =&#10;    current == FontStyle.Italic&#10;        ? FontStyle.BoldAndItalic&#10;        : FontStyle.Bold;</code></pre> | <pre lang="csharp"><code>panel.AddBoldUnityFontStyleAndWeight();</code></pre> |
+| <pre lang="csharp"><code>var current =&#10;    panel.style.unityFontStyleAndWeight.value;&#10;panel.style.unityFontStyleAndWeight =&#10;    current == FontStyle.BoldAndItalic&#10;        ? FontStyle.Italic&#10;        : FontStyle.Normal;</code></pre> | <pre lang="csharp"><code>panel.RemoveBoldUnityFontStyleAndWeight();</code></pre> |
+| <pre lang="csharp"><code>var current =&#10;    panel.style.unityFontStyleAndWeight.value;&#10;panel.style.unityFontStyleAndWeight =&#10;    current == FontStyle.Bold&#10;        ? FontStyle.BoldAndItalic&#10;        : FontStyle.Italic;</code></pre> | <pre lang="csharp"><code>panel.AddItalicUnityFontStyleAndWeight();</code></pre> |
+| <pre lang="csharp"><code>var current =&#10;    panel.style.unityFontStyleAndWeight.value;&#10;panel.style.unityFontStyleAndWeight =&#10;    current == FontStyle.BoldAndItalic&#10;        ? FontStyle.Bold&#10;        : FontStyle.Normal;</code></pre> | <pre lang="csharp"><code>panel.RemoveItalicUnityFontStyleAndWeight();</code></pre> |
 
 </details>
 
 <details>
 <summary>Text</summary>
 
-| Method | Style property | Notes |
-|-------|---------------|------------|
-| `SetWordSpacing(StyleLength)` | `wordSpacing` | |
-| `SetLetterSpacing(StyleLength)` | `letterSpacing` | |
-| `SetUnityTextAlign(TextAnchor)` | `unityTextAlign` | |
-| `SetTextShadow(StyleTextShadow)` | `textShadow` | |
-| `SetUnityTextOutlineColor(StyleColor)` | `unityTextOutlineColor` | |
-| `SetUnityTextOutlineWidth(StyleFloat)` | `unityTextOutlineWidth` | |
-| `SetUnityParagraphSpacing(StyleLength)` | `unityParagraphSpacing` | |
-| `SetTextOverflow(StyleEnum<TextOverflow>)` | `textOverflow` | |
-| `SetUnityTextOverflowPosition(TextOverflowPosition)` | `unityTextOverflowPosition` | |
-| `SetUnityTextGenerator(TextGeneratorType)` | `unityTextGenerator` | |
-| `SetUnityEditorTextRenderingMode(EditorTextRenderingMode)` | `unityEditorTextRenderingMode` | |
-| `SetUnityTextAutoSize(StyleTextAutoSize)` | `unityTextAutoSize` | Unity 6.2+ |
-| `SetWhiteSpace(StyleEnum<WhiteSpace>)` | `whiteSpace` | |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.wordSpacing = 2;</code></pre> | <pre lang="csharp"><code>panel.SetWordSpacing(2);</code></pre> |
+| <pre lang="csharp"><code>panel.style.letterSpacing = 1;</code></pre> | <pre lang="csharp"><code>panel.SetLetterSpacing(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityTextAlign = TextAnchor.MiddleCenter;</code></pre> | <pre lang="csharp"><code>panel.SetUnityTextAlign(TextAnchor.MiddleCenter);</code></pre> |
+| <pre lang="csharp"><code>panel.style.textShadow = shadow;</code></pre> | <pre lang="csharp"><code>panel.SetTextShadow(shadow);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityTextOutlineColor = Color.black;</code></pre> | <pre lang="csharp"><code>panel.SetUnityTextOutlineColor(Color.black);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityTextOutlineWidth = 1;</code></pre> | <pre lang="csharp"><code>panel.SetUnityTextOutlineWidth(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityParagraphSpacing = 8;</code></pre> | <pre lang="csharp"><code>panel.SetUnityParagraphSpacing(8);</code></pre> |
+| <pre lang="csharp"><code>panel.style.textOverflow = TextOverflow.Ellipsis;</code></pre> | <pre lang="csharp"><code>panel.SetTextOverflow(TextOverflow.Ellipsis);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityTextOverflowPosition = &#10;    TextOverflowPosition.End;</code></pre> | <pre lang="csharp"><code>panel.SetUnityTextOverflowPosition(&#10;    TextOverflowPosition.End);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityTextGenerator = &#10;    TextGeneratorType.Advanced;</code></pre> | <pre lang="csharp"><code>panel.SetUnityTextGenerator(&#10;    TextGeneratorType.Advanced);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityEditorTextRenderingMode = &#10;    EditorTextRenderingMode.SDF;</code></pre> | <pre lang="csharp"><code>panel.SetUnityEditorTextRenderingMode(&#10;    EditorTextRenderingMode.SDF);</code></pre> |
+| <pre lang="csharp"><code>panel.style.whiteSpace = WhiteSpace.NoWrap;</code></pre> | <pre lang="csharp"><code>panel.SetWhiteSpace(WhiteSpace.NoWrap);</code></pre> |
+| <pre lang="csharp"><code>// Unity 6.2+&#10;panel.style.unityTextAutoSize = autoSize;</code></pre> | <pre lang="csharp"><code>// Unity 6.2+&#10;panel.SetUnityTextAutoSize(autoSize);</code></pre> |
 
 </details>
 
 <details>
 <summary>Colour and opacity</summary>
 
-| Method | Style property |
-|-------|----------------|
-| `SetColor(StyleColor)` | `color` |
-| `SetColor(string)` | `color` parsed from an HTML string (`"#RRGGBB"` or a named color) |
-| `SetOpacity(StyleFloat)` | `opacity` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.color = Color.white;</code></pre> | <pre lang="csharp"><code>panel.SetColor(Color.white);</code></pre> |
+| <pre lang="csharp"><code>if (ColorUtility.TryParseHtmlString(&#10;        "#FF8800", out var color))&#10;    panel.style.color = color;</code></pre> | <pre lang="csharp"><code>panel.SetColor("#FF8800");</code></pre> |
+| <pre lang="csharp"><code>panel.style.opacity = 0.5f;</code></pre> | <pre lang="csharp"><code>panel.SetOpacity(0.5f);</code></pre> |
 
 </details>
 
 <details>
 <summary>Border</summary>
 
-| Method | Description |
-|-------|----------|
-| `SetBorderColor(StyleColor)` | All sides |
-| `SetBorderColor(top?, right?, bottom?, left?)` | Per side |
-| `SetBorderColorX(StyleColor)` · `SetBorderColorY(StyleColor)` | Horizontal (left + right) or vertical (top + bottom) pair |
-| `SetBorderColorTop/Right/Bottom/Left(StyleColor)` | Single side |
-| `SetBorderRadius(StyleLength)` | All corners |
-| `SetBorderRadius(topLeft?, topRight?, bottomLeft?, bottomRight?)` | Per corner |
-| `SetBorderRadiusTop(StyleLength)` · `SetBorderRadiusBottom(StyleLength)` | Top or bottom corner pair |
-| `SetBorderRadiusTopLeft/TopRight/BottomLeft/BottomRight(StyleLength)` | Single corner |
-| `SetBorderWidth(StyleFloat)` | All sides |
-| `SetBorderWidth(top?, right?, bottom?, left?)` | Per side |
-| `SetBorderWidthX(StyleFloat)` · `SetBorderWidthY(StyleFloat)` | Horizontal or vertical pair |
-| `SetBorderWidthTop/Right/Bottom/Left(StyleFloat)` | Single side |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.borderTopColor = Color.gray;&#10;panel.style.borderRightColor = Color.gray;&#10;panel.style.borderBottomColor = Color.gray;&#10;panel.style.borderLeftColor = Color.gray;</code></pre> | <pre lang="csharp"><code>panel.SetBorderColor(Color.gray);</code></pre> |
+| <pre lang="csharp"><code>if (ColorUtility.TryParseHtmlString(&#10;        "#333333", out var color))&#10;&#123;&#10;    panel.style.borderTopColor = color;&#10;    panel.style.borderRightColor = color;&#10;    panel.style.borderBottomColor = color;&#10;    panel.style.borderLeftColor = color;&#10;&#125;</code></pre> | <pre lang="csharp"><code>panel.SetBorderColor("#333333");</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopColor = Color.gray;&#10;panel.style.borderBottomColor = Color.gray;</code></pre> | <pre lang="csharp"><code>panel.SetBorderColor(&#10;    top: Color.gray, bottom: Color.gray);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderLeftColor = Color.gray;&#10;panel.style.borderRightColor = Color.gray;</code></pre> | <pre lang="csharp"><code>panel.SetBorderColorX(Color.gray);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopColor = Color.gray;&#10;panel.style.borderBottomColor = Color.gray;</code></pre> | <pre lang="csharp"><code>panel.SetBorderColorY(Color.gray);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopColor = Color.gray;</code></pre> | <pre lang="csharp"><code>panel.SetBorderColorTop(Color.gray);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderRightColor = Color.gray;</code></pre> | <pre lang="csharp"><code>panel.SetBorderColorRight(Color.gray);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderBottomColor = Color.gray;</code></pre> | <pre lang="csharp"><code>panel.SetBorderColorBottom(Color.gray);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderLeftColor = Color.gray;</code></pre> | <pre lang="csharp"><code>panel.SetBorderColorLeft(Color.gray);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopLeftRadius = 6;&#10;panel.style.borderTopRightRadius = 6;&#10;panel.style.borderBottomRightRadius = 6;&#10;panel.style.borderBottomLeftRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadius(6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopLeftRadius = 6;&#10;panel.style.borderTopRightRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadius(&#10;    topLeft: 6, topRight: 6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopLeftRadius = 6;&#10;panel.style.borderTopRightRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadiusTop(6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderBottomLeftRadius = 6;&#10;panel.style.borderBottomRightRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadiusBottom(6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopLeftRadius = 6;&#10;panel.style.borderBottomLeftRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadiusLeft(6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopRightRadius = 6;&#10;panel.style.borderBottomRightRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadiusRight(6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopLeftRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadiusTopLeft(6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopRightRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadiusTopRight(6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderBottomRightRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadiusBottomRight(6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderBottomLeftRadius = 6;</code></pre> | <pre lang="csharp"><code>panel.SetBorderRadiusBottomLeft(6);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopWidth = 1;&#10;panel.style.borderRightWidth = 1;&#10;panel.style.borderBottomWidth = 1;&#10;panel.style.borderLeftWidth = 1;</code></pre> | <pre lang="csharp"><code>panel.SetBorderWidth(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopWidth = 1;&#10;panel.style.borderBottomWidth = 1;</code></pre> | <pre lang="csharp"><code>panel.SetBorderWidth(top: 1, bottom: 1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderLeftWidth = 1;&#10;panel.style.borderRightWidth = 1;</code></pre> | <pre lang="csharp"><code>panel.SetBorderWidthX(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopWidth = 1;&#10;panel.style.borderBottomWidth = 1;</code></pre> | <pre lang="csharp"><code>panel.SetBorderWidthY(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderTopWidth = 1;</code></pre> | <pre lang="csharp"><code>panel.SetBorderWidthTop(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderRightWidth = 1;</code></pre> | <pre lang="csharp"><code>panel.SetBorderWidthRight(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderBottomWidth = 1;</code></pre> | <pre lang="csharp"><code>panel.SetBorderWidthBottom(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.borderLeftWidth = 1;</code></pre> | <pre lang="csharp"><code>panel.SetBorderWidthLeft(1);</code></pre> |
 
 </details>
 
 <details>
 <summary>Background</summary>
 
-| Method | Style property |
-|-------|----------------|
-| `SetBackgroundColor(StyleColor)` | `backgroundColor` |
-| `SetBackgroundColor(string)` | `backgroundColor` parsed from an HTML string (`"#RRGGBB"` or a named color) |
-| `SetBackgroundImage(StyleBackground)` | `backgroundImage` |
-| `SetBackgroundImageFromResources(string)` | Loads a `Texture2D` via `Resources.Load` and assigns it to `backgroundImage` |
-| `SetBackgroundSize(StyleBackgroundSize)` | `backgroundSize` |
-| `SetBackgroundRepeat(StyleBackgroundRepeat)` | `backgroundRepeat` |
-| `SetBackgroundPosition(StyleBackgroundPosition)` | Both X and Y |
-| `SetBackgroundPosition(x?, y?)` | Independently |
-| `SetBackgroundPositionX(StyleBackgroundPosition)` | `backgroundPositionX` |
-| `SetBackgroundPositionY(StyleBackgroundPosition)` | `backgroundPositionY` |
-| `SetUnityBackgroundImageTintColor(StyleColor)` | `unityBackgroundImageTintColor` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.backgroundColor = Color.black;</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundColor(Color.black);</code></pre> |
+| <pre lang="csharp"><code>if (ColorUtility.TryParseHtmlString(&#10;        "#1B1B1B", out var color))&#10;    panel.style.backgroundColor = color;</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundColor("#1B1B1B");</code></pre> |
+| <pre lang="csharp"><code>panel.style.backgroundImage = texture;</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundImage(texture);</code></pre> |
+| <pre lang="csharp"><code>panel.style.backgroundImage =&#10;    Resources.Load&lt;Texture2D&gt;("UI/CardBackground");</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundImageFromResources(&#10;    "UI/CardBackground");</code></pre> |
+| <pre lang="csharp"><code>panel.style.backgroundSize = backgroundSize;</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundSize(backgroundSize);</code></pre> |
+| <pre lang="csharp"><code>panel.style.backgroundRepeat = backgroundRepeat;</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundRepeat(backgroundRepeat);</code></pre> |
+| <pre lang="csharp"><code>panel.style.backgroundPositionX = position;&#10;panel.style.backgroundPositionY = position;</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundPosition(position);</code></pre> |
+| <pre lang="csharp"><code>panel.style.backgroundPositionY = position;</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundPosition(y: position);</code></pre> |
+| <pre lang="csharp"><code>panel.style.backgroundPositionX = position;</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundPositionX(position);</code></pre> |
+| <pre lang="csharp"><code>panel.style.backgroundPositionY = position;</code></pre> | <pre lang="csharp"><code>panel.SetBackgroundPositionY(position);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityBackgroundImageTintColor =&#10;    Color.white;</code></pre> | <pre lang="csharp"><code>panel.SetUnityBackgroundImageTintColor(&#10;    Color.white);</code></pre> |
 
 </details>
 
 <details>
 <summary>Transform</summary>
 
-| Method | Style property |
-|-------|----------------|
-| `SetScale(StyleScale)` | `scale` |
-| `SetRotate(StyleRotate)` | `rotate` |
-| `SetTranslate(StyleTranslate)` | `translate` |
-| `SetTransformOrigin(StyleTransformOrigin)` | `transformOrigin` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.scale = new Scale(Vector2.one * 1.2f);</code></pre> | <pre lang="csharp"><code>panel.SetScale(new Scale(Vector2.one * 1.2f));</code></pre> |
+| <pre lang="csharp"><code>panel.style.rotate = new Rotate(45);</code></pre> | <pre lang="csharp"><code>panel.SetRotate(new Rotate(45));</code></pre> |
+| <pre lang="csharp"><code>panel.style.translate = new Translate(8, 0);</code></pre> | <pre lang="csharp"><code>panel.SetTranslate(new Translate(8, 0));</code></pre> |
+| <pre lang="csharp"><code>panel.style.transformOrigin = transformOrigin;</code></pre> | <pre lang="csharp"><code>panel.SetTransformOrigin(transformOrigin);</code></pre> |
 
 </details>
 
@@ -353,58 +332,62 @@ Convenience methods toggle bold or italic without overwriting the other flag:
 
 Available starting with Unity 6000.3.
 
-| Method | Style property |
-|-------|----------------|
-| `SetAspectRatio(StyleRatio)` | `aspectRatio` |
-| `SetFilter(StyleList<FilterFunction>)` | `filter` |
-| `SetUnityMaterial(StyleMaterialDefinition)` | `unityMaterial` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.aspectRatio = aspectRatio;</code></pre> | <pre lang="csharp"><code>panel.SetAspectRatio(aspectRatio);</code></pre> |
+| <pre lang="csharp"><code>panel.style.filter = filter;</code></pre> | <pre lang="csharp"><code>panel.SetFilter(filter);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityMaterial = material;</code></pre> | <pre lang="csharp"><code>panel.SetUnityMaterial(material);</code></pre> |
 
 </details>
 
 <details>
 <summary>Transition</summary>
 
-| Method | Style property |
-|-------|----------------|
-| `SetTransitionDelay(StyleList<TimeValue>)` | `transitionDelay` |
-| `SetTransitionDuration(StyleList<TimeValue>)` | `transitionDuration` |
-| `SetTransitionProperty(StyleList<StylePropertyName>)` | `transitionProperty` |
-| `SetTransitionTimingFunction(StyleList<EasingFunction>)` | `transitionTimingFunction` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.transitionDelay =&#10;    new List&lt;TimeValue&gt; &#123; 0.1f &#125;;</code></pre> | <pre lang="csharp"><code>panel.SetTransitionDelay(&#10;    new List&lt;TimeValue&gt; &#123; 0.1f &#125;);</code></pre> |
+| <pre lang="csharp"><code>panel.style.transitionDuration =&#10;    new List&lt;TimeValue&gt; &#123; 0.3f &#125;;</code></pre> | <pre lang="csharp"><code>panel.SetTransitionDuration(&#10;    new List&lt;TimeValue&gt; &#123; 0.3f &#125;);</code></pre> |
+| <pre lang="csharp"><code>panel.style.transitionProperty =&#10;    new List&lt;StylePropertyName&gt; &#123; "opacity" &#125;;</code></pre> | <pre lang="csharp"><code>panel.SetTransitionProperty(&#10;    new List&lt;StylePropertyName&gt; &#123; "opacity" &#125;);</code></pre> |
+| <pre lang="csharp"><code>panel.style.transitionTimingFunction =&#10;    new List&lt;EasingFunction&gt; &#123; EasingMode.EaseInOut &#125;;</code></pre> | <pre lang="csharp"><code>panel.SetTransitionTimingFunction(&#10;    new List&lt;EasingFunction&gt; &#123; EasingMode.EaseInOut &#125;);</code></pre> |
 
 </details>
 
 <details>
 <summary>Overflow and visibility</summary>
 
-| Method | Style property |
-|-------|----------------|
-| `SetOverflow(StyleEnum<Overflow>)` | `overflow` |
-| `SetUnityOverflowClipBox(StyleEnum<OverflowClipBox>)` | `unityOverflowClipBox` |
-| `SetVisibility(StyleEnum<Visibility>)` | `visibility` |
-| `SetDisplay(DisplayStyle)` | `display` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.overflow = Overflow.Hidden;</code></pre> | <pre lang="csharp"><code>panel.SetOverflow(Overflow.Hidden);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unityOverflowClipBox = &#10;    OverflowClipBox.ContentBox;</code></pre> | <pre lang="csharp"><code>panel.SetUnityOverflowClipBox(&#10;    OverflowClipBox.ContentBox);</code></pre> |
+| <pre lang="csharp"><code>panel.style.visibility = Visibility.Hidden;</code></pre> | <pre lang="csharp"><code>panel.SetVisibility(Visibility.Hidden);</code></pre> |
+| <pre lang="csharp"><code>panel.style.display = DisplayStyle.None;</code></pre> | <pre lang="csharp"><code>panel.SetDisplay(DisplayStyle.None);</code></pre> |
 
 </details>
 
 <details>
 <summary>Image slicing</summary>
 
-| Method | Description |
-|-------|----------|
-| `SetUnitySlice(StyleInt)` | All sides |
-| `SetUnitySlice(top?, right?, bottom?, left?)` | Per side |
-| `SetUnitySliceX(StyleInt)` · `SetUnitySliceY(StyleInt)` | Horizontal (left + right) or vertical (top + bottom) pair |
-| `SetUnitySliceTop/Right/Bottom/Left(StyleInt)` | Single side |
-| `SetUnitySliceScale(StyleFloat)` | `unitySliceScale` |
-| `SetUnitySliceType(StyleEnum<SliceType>)` | `unitySliceType` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.unitySliceTop = 4;&#10;panel.style.unitySliceRight = 4;&#10;panel.style.unitySliceBottom = 4;&#10;panel.style.unitySliceLeft = 4;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySlice(4);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unitySliceTop = 4;&#10;panel.style.unitySliceBottom = 4;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySlice(top: 4, bottom: 4);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unitySliceLeft = 4;&#10;panel.style.unitySliceRight = 4;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySliceX(4);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unitySliceTop = 4;&#10;panel.style.unitySliceBottom = 4;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySliceY(4);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unitySliceTop = 4;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySliceTop(4);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unitySliceRight = 4;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySliceRight(4);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unitySliceBottom = 4;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySliceBottom(4);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unitySliceLeft = 4;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySliceLeft(4);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unitySliceScale = 1;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySliceScale(1);</code></pre> |
+| <pre lang="csharp"><code>panel.style.unitySliceType = SliceType.Sliced;</code></pre> | <pre lang="csharp"><code>panel.SetUnitySliceType(SliceType.Sliced);</code></pre> |
 
 </details>
 
 <details>
 <summary>Cursor</summary>
 
-| Method | Style property |
-|-------|----------------|
-| `SetCursor(StyleCursor)` | `cursor` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.style.cursor = cursor;</code></pre> | <pre lang="csharp"><code>panel.SetCursor(cursor);</code></pre> |
 
 </details>
 
@@ -416,25 +399,13 @@ Available starting with Unity 6000.3.
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var field = new IntegerField("Mana cost");&#10;field.value = 42;&#10;field.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>var field = new IntegerField("Mana cost");&#10;field.SetValue(42);&#10;field.SetValue(10, notify: false);</code></pre> |
-
-By default, `SetValue` assigns `value` and preserves Unity's event behaviour. `notify: false` calls `SetValueWithoutNotify`: it updates the field without sending a `ChangeEvent`. This is useful for synchronizing UI with data.
+| <pre lang="csharp"><code>var field = new IntegerField("Mana cost");&#10;field.value = 42;&#10;field.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>var field = new IntegerField("Mana cost")&#10;    .SetValue(42)&#10;    .SetValue(10, notify: false);</code></pre> |
 
 ### Subscribing and unsubscribing
 
-Keep the handler if you need to remove it later:
-
-```csharp
-var status = new Label();
-EventCallback<ChangeEvent<int>> onChanged =
-    evt => status.SetText($"Mana: {evt.newValue}");
-```
-
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>field.RegisterValueChangedCallback(&#10;    onChanged);&#10;&#10;// When the handler is no longer needed&#10;field.UnregisterValueChangedCallback(&#10;    onChanged);</code></pre> | <pre lang="csharp"><code>field.AddValueChanged(onChanged);&#10;&#10;&#10;// When the handler is no longer needed&#10;field.RemoveValueChanged(onChanged);</code></pre> |
-
-Pass the same delegate when unsubscribing. A new lambda with similar code does not remove the previous subscription.
+| <pre lang="csharp"><code>field.RegisterValueChangedCallback(&#10;    onChanged);&#10;&#10;field.UnregisterValueChangedCallback(&#10;    onChanged);</code></pre> | <pre lang="csharp"><code>field.AddValueChanged(onChanged);&#10;&#10;field.RemoveValueChanged(onChanged);</code></pre> |
 
 <details>
 <summary>Value types and Unity.Mathematics integration</summary>
@@ -447,15 +418,6 @@ Typed overloads are available for `int`, `uint`, `nint`, `nuint`, `long`, `ulong
 
 ### Buttons and manipulators
 
-```csharp
-var button = new Button();
-void Refresh() => Debug.Log("Refresh");
-```
-
-| Before — Unity API | After — FastTools |
-|---|---|
-| <pre lang="csharp"><code>button.text = "Refresh";&#10;button.clicked += Refresh;&#10;&#10;// Unsubscribe&#10;button.clicked -= Refresh;</code></pre> | <pre lang="csharp"><code>button&#10;    .SetText("Refresh")&#10;    .AddClicked(Refresh);&#10;// Unsubscribe&#10;button.RemoveClicked(Refresh);</code></pre> |
-
 An ordinary `VisualElement` can also be clickable. An `out` overload lets you keep the manipulator for removal:
 
 ```csharp
@@ -465,275 +427,197 @@ panel.AddClickable(Refresh, out var clickable);
 panel.RemoveManipulatorSelf(clickable);
 ```
 
-| Method | Task |
+| Before — Unity API | After — FastTools |
 |---|---|
-| `AddManipulatorSelf` / `RemoveManipulatorSelf` | Add or remove an existing `IManipulator` |
-| `AddClickable` | Handle clicks; overloads support an event and repetition via `delay` / `interval` |
-| `AddKeyboardNavigationManipulator` | Handle keyboard navigation |
-| `AddContextualMenuManipulator` | Populate a context menu |
-
-Manipulator creation methods have `out` overloads. For other events, use standard UI Toolkit `RegisterCallback` and `UnregisterCallback`.
+| <pre lang="csharp"><code>panel.AddManipulator(manipulator);</code></pre> | <pre lang="csharp"><code>panel.AddManipulatorSelf(manipulator);</code></pre> |
+| <pre lang="csharp"><code>panel.RemoveManipulator(manipulator);</code></pre> | <pre lang="csharp"><code>panel.RemoveManipulatorSelf(manipulator);</code></pre> |
+| <pre lang="csharp"><code>panel.AddManipulator(new Clickable(Refresh));</code></pre> | <pre lang="csharp"><code>panel.AddClickable(Refresh);</code></pre> |
+| <pre lang="csharp"><code>var clickable = new Clickable(Refresh);&#10;panel.AddManipulator(clickable);</code></pre> | <pre lang="csharp"><code>panel.AddClickable(Refresh, out var clickable);</code></pre> |
+| <pre lang="csharp"><code>panel.AddManipulator(&#10;    new Clickable(evt =&gt; Refresh()));</code></pre> | <pre lang="csharp"><code>panel.AddClickable(evt =&gt; Refresh());</code></pre> |
+| <pre lang="csharp"><code>panel.AddManipulator(&#10;    new Clickable(Refresh, delay: 500, interval: 100));</code></pre> | <pre lang="csharp"><code>panel.AddClickable(&#10;    Refresh, delay: 500, interval: 100);</code></pre> |
+| <pre lang="csharp"><code>panel.AddManipulator(&#10;    new KeyboardNavigationManipulator(OnNavigate));</code></pre> | <pre lang="csharp"><code>panel.AddKeyboardNavigationManipulator(OnNavigate);</code></pre> |
+| <pre lang="csharp"><code>panel.AddManipulator(&#10;    new ContextualMenuManipulator(BuildMenu));</code></pre> | <pre lang="csharp"><code>panel.AddContextualMenuManipulator(BuildMenu);</code></pre> |
 
 <a id="specialized-element-extensions"></a>
 
 ## Specific elements
 
-Expand a type to see its configuration example and available methods.
-
 <details>
 <summary>TextElement</summary>
 
-```csharp
-label
-    .SetText("Hello World")
-    .SetEnableRichText(true)
-    .SetParseEscapeSequences(true);
-```
-
-| Method | Description |
-|-------|----------|
-| `SetText(string)` | Sets the displayed text |
-| `SetEnableRichText(bool)` | Enables rich-text tag parsing |
-| `SetEmojiFallbackSupport(bool)` | Enables emoji fallback rendering |
-| `SetParseEscapeSequences(bool)` | Whether escape sequences (e.g. `\n`) are parsed |
-| `SetDisplayTooltipWhenElided(bool)` | Shows the elided text in a tooltip on hover |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>label.text = "Hello World";</code></pre> | <pre lang="csharp"><code>label.SetText("Hello World");</code></pre> |
+| <pre lang="csharp"><code>label.enableRichText = true;</code></pre> | <pre lang="csharp"><code>label.SetEnableRichText(true);</code></pre> |
+| <pre lang="csharp"><code>label.emojiFallbackSupport = true;</code></pre> | <pre lang="csharp"><code>label.SetEmojiFallbackSupport(true);</code></pre> |
+| <pre lang="csharp"><code>label.parseEscapeSequences = true;</code></pre> | <pre lang="csharp"><code>label.SetParseEscapeSequences(true);</code></pre> |
+| <pre lang="csharp"><code>label.displayTooltipWhenElided = true;</code></pre> | <pre lang="csharp"><code>label.SetDisplayTooltipWhenElided(true);</code></pre> |
 
 </details>
 
 <details>
 <summary>ITextEdition (TextField, IntegerField, …)</summary>
 
-Use a text field's `textEdition`. The chain returns that interface rather than the field itself.
-
-```csharp
-textField.textEdition
-    .SetPlaceholder("Search…")
-    .SetMaxLength(64)
-    .SetDelayed(true);
-```
-
-| Method | Description |
-|-------|----------|
-| `SetMaxLength(int)` | Maximum number of characters |
-| `SetMaskChar(char)` | Character used to mask password input |
-| `SetDelayed(bool)` | Defers value change until focus loss / Enter |
-| `SetReadOnly(bool)` | Disables editing |
-| `SetPassword(bool)` | Toggles password mode (uses mask char) |
-| `SetPlaceholder(string)` | Placeholder text shown when empty |
-| `SetAutoCorrection(bool)` | Enables auto-correction (mobile) |
-| `SetHideMobileInput(bool)` | Hides the native input field on a mobile device |
-| `SetHideSoftKeyboard(bool)` | Hides the on-screen keyboard (Unity 6.4+) |
-| `SetHidePlaceholderOnFocus(bool)` | Removes the placeholder on focus |
-| `SetKeyboardType(TouchScreenKeyboardType)` | Sets the touch-screen keyboard type |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>textField.textEdition.maxLength = 64;</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetMaxLength(64);</code></pre> |
+| <pre lang="csharp"><code>textField.textEdition.maskChar = '*';</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetMaskChar('*');</code></pre> |
+| <pre lang="csharp"><code>textField.textEdition.isDelayed = true;</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetDelayed(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textEdition.isReadOnly = true;</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetReadOnly(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textEdition.isPassword = true;</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetPassword(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textEdition.placeholder = "Search…";</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetPlaceholder("Search…");</code></pre> |
+| <pre lang="csharp"><code>textField.textEdition.autoCorrection = true;</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetAutoCorrection(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textEdition.hideMobileInput = true;</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetHideMobileInput(true);</code></pre> |
+| <pre lang="csharp"><code>// Unity 6.4+&#10;textField.textEdition.hideSoftKeyboard = true;</code></pre> | <pre lang="csharp"><code>// Unity 6.4+&#10;textField.textEdition.SetHideSoftKeyboard(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textEdition.hidePlaceholderOnFocus = true;</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetHidePlaceholderOnFocus(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textEdition.keyboardType =&#10;    TouchScreenKeyboardType.NumberPad;</code></pre> | <pre lang="csharp"><code>textField.textEdition.SetKeyboardType(&#10;    TouchScreenKeyboardType.NumberPad);</code></pre> |
 
 </details>
 
 <details>
 <summary>ITextSelection</summary>
 
-Configure a text field's selection through `textSelection`.
-
-```csharp
-textField.textSelection
-    .SetSelectable(true)
-    .SetSelectAllOnFocus(true);
-```
-
-| Method | Description |
-|-------|----------|
-| `AddOnCursorIndexChange(Action)` / `RemoveOnCursorIndexChange(Action)` | Subscribe to cursor position changes (Unity 6.3+) |
-| `AddOnSelectIndexChange(Action)` / `RemoveOnSelectIndexChange(Action)` | Subscribe to selection anchor changes (Unity 6.3+) |
-| `SetCursorIndex(int)` | Current cursor position |
-| `SetSelectIndex(int)` | Sets the current selection anchor |
-| `SetSelectable(bool)` | Whether text can be selected |
-| `SetSelectAllOnFocus(bool)` | Selects all text on focus |
-| `SetSelectAllOnMouseUp(bool)` | Selects all text on mouse release |
-| `SetDoubleClickSelectsWord(bool)` | Double-click selects the word under cursor |
-| `SetTripleClickSelectsLine(bool)` | Triple-click selects the line under cursor |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>// Unity 6.3+&#10;textField.textSelection.OnCursorIndexChange += OnCursor;&#10;textField.textSelection.OnCursorIndexChange -= OnCursor;</code></pre> | <pre lang="csharp"><code>// Unity 6.3+&#10;textField.textSelection.AddOnCursorIndexChange(OnCursor);&#10;textField.textSelection.RemoveOnCursorIndexChange(OnCursor);</code></pre> |
+| <pre lang="csharp"><code>// Unity 6.3+&#10;textField.textSelection.OnSelectIndexChange += OnSelect;&#10;textField.textSelection.OnSelectIndexChange -= OnSelect;</code></pre> | <pre lang="csharp"><code>// Unity 6.3+&#10;textField.textSelection.AddOnSelectIndexChange(OnSelect);&#10;textField.textSelection.RemoveOnSelectIndexChange(OnSelect);</code></pre> |
+| <pre lang="csharp"><code>textField.textSelection.cursorIndex = 0;</code></pre> | <pre lang="csharp"><code>textField.textSelection.SetCursorIndex(0);</code></pre> |
+| <pre lang="csharp"><code>textField.textSelection.selectIndex = 0;</code></pre> | <pre lang="csharp"><code>textField.textSelection.SetSelectIndex(0);</code></pre> |
+| <pre lang="csharp"><code>textField.textSelection.isSelectable = true;</code></pre> | <pre lang="csharp"><code>textField.textSelection.SetSelectable(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textSelection.selectAllOnFocus = true;</code></pre> | <pre lang="csharp"><code>textField.textSelection.SetSelectAllOnFocus(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textSelection.selectAllOnMouseUp = true;</code></pre> | <pre lang="csharp"><code>textField.textSelection.SetSelectAllOnMouseUp(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textSelection.doubleClickSelectsWord = true;</code></pre> | <pre lang="csharp"><code>textField.textSelection.SetDoubleClickSelectsWord(true);</code></pre> |
+| <pre lang="csharp"><code>textField.textSelection.tripleClickSelectsLine = true;</code></pre> | <pre lang="csharp"><code>textField.textSelection.SetTripleClickSelectsLine(true);</code></pre> |
 
 </details>
 
 <details>
 <summary>BaseField&lt;TValueType&gt;</summary>
 
-```csharp
-var field = new IntegerField()
-    .SetLabel("Mana cost")
-    .SetValue(42, notify: false);
-```
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>field.label = "Mana cost";</code></pre> | <pre lang="csharp"><code>field.SetLabel("Mana cost");</code></pre> |
 
 </details>
 
 <details>
 <summary>BaseBoolField (Toggle)</summary>
 
-```csharp
-toggle
-    .SetLabel("Enabled")
-    .SetText("Show advanced settings")
-    .SetToggleOnLabelClick(true);
-```
-
-| Method | Description |
-|-------|----------|
-| `SetText(string)` | Sets the text beside the checkbox |
-| `SetLabel(string)` | Sets the field-level label |
-| `SetToggleOnLabelClick(bool)` | Whether clicking the label toggles the value |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>toggle.text = "Show advanced settings";</code></pre> | <pre lang="csharp"><code>toggle.SetText("Show advanced settings");</code></pre> |
+| <pre lang="csharp"><code>toggle.label = "Enabled";</code></pre> | <pre lang="csharp"><code>toggle.SetLabel("Enabled");</code></pre> |
+| <pre lang="csharp"><code>toggle.toggleOnLabelClick = true;</code></pre> | <pre lang="csharp"><code>toggle.SetToggleOnLabelClick(true);</code></pre> |
 
 </details>
 
 <details>
 <summary>IMixedValueSupport</summary>
 
-```csharp
-field.SetShowMixedValue(true); // show the mixed-value indicator
-```
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>field.showMixedValue = true;</code></pre> | <pre lang="csharp"><code>field.SetShowMixedValue(true);</code></pre> |
 
 </details>
 
 <details>
 <summary>Button</summary>
 
-```csharp
-button
-    .AddClicked(() => Debug.Log("Clicked"))
-    .SetIconImage(myBackground);
-```
-
-| Method | Description |
-|-------|----------|
-| `AddClicked(Action)` | Subscribe to `Button.clicked` |
-| `RemoveClicked(Action)` | Unsubscribe from `Button.clicked` |
-| `SetClickable(Clickable)` | Replace the click manipulator. Configure it before `AddClicked` subscriptions |
-| `SetIconImage(Background)` | Sets `Button.iconImage` |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>button.clicked += Refresh;</code></pre> | <pre lang="csharp"><code>button.AddClicked(Refresh);</code></pre> |
+| <pre lang="csharp"><code>button.clicked -= Refresh;</code></pre> | <pre lang="csharp"><code>button.RemoveClicked(Refresh);</code></pre> |
+| <pre lang="csharp"><code>button.clickable = clickable;</code></pre> | <pre lang="csharp"><code>button.SetClickable(clickable);</code></pre> |
+| <pre lang="csharp"><code>button.clickable = new Clickable(Refresh);</code></pre> | <pre lang="csharp"><code>button.SetClickable(Refresh);</code></pre> |
+| <pre lang="csharp"><code>button.iconImage = iconImage;</code></pre> | <pre lang="csharp"><code>button.SetIconImage(iconImage);</code></pre> |
 
 </details>
 
 <details>
 <summary>Slider / BaseSlider&lt;TValue&gt;</summary>
 
-```csharp
-slider
-    .SetLowValue(0f)
-    .SetHighValue(100f)
-    .SetShowInputField(true);
-```
-
-| Method | Description |
-|-------|----------|
-| `SetLowValue(TValue)` | Sets the minimum slider value |
-| `SetHighValue(TValue)` | Sets the maximum slider value |
-| `SetFill(bool)` | Whether the track is filled up to the current value |
-| `SetInverted(bool)` | Reverses the slider direction |
-| `SetPageSize(float)` | Controls how much the value changes per page step |
-| `SetShowInputField(bool)` | Shows a numeric input field alongside the slider |
-| `SetDirection(SliderDirection)` | Sets the slider orientation |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>slider.lowValue = 0f;</code></pre> | <pre lang="csharp"><code>slider.SetLowValue(0f);</code></pre> |
+| <pre lang="csharp"><code>slider.highValue = 100f;</code></pre> | <pre lang="csharp"><code>slider.SetHighValue(100f);</code></pre> |
+| <pre lang="csharp"><code>slider.fill = true;</code></pre> | <pre lang="csharp"><code>slider.SetFill(true);</code></pre> |
+| <pre lang="csharp"><code>slider.inverted = true;</code></pre> | <pre lang="csharp"><code>slider.SetInverted(true);</code></pre> |
+| <pre lang="csharp"><code>slider.pageSize = 10f;</code></pre> | <pre lang="csharp"><code>slider.SetPageSize(10f);</code></pre> |
+| <pre lang="csharp"><code>slider.showInputField = true;</code></pre> | <pre lang="csharp"><code>slider.SetShowInputField(true);</code></pre> |
+| <pre lang="csharp"><code>slider.direction = SliderDirection.Vertical;</code></pre> | <pre lang="csharp"><code>slider.SetDirection(SliderDirection.Vertical);</code></pre> |
 
 </details>
 
 <details>
 <summary>ProgressBar</summary>
 
-```csharp
-progressBar.SetTitle("Loading...").SetLowValue(0f).SetHighValue(100f);
-```
-
-| Method | Description |
-|-------|----------|
-| `SetTitle(string)` | Sets the title displayed in the center |
-| `SetLowValue(float)` | Sets the minimum value |
-| `SetHighValue(float)` | Sets the maximum value |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>progressBar.title = "Loading…";</code></pre> | <pre lang="csharp"><code>progressBar.SetTitle("Loading…");</code></pre> |
+| <pre lang="csharp"><code>progressBar.lowValue = 0f;</code></pre> | <pre lang="csharp"><code>progressBar.SetLowValue(0f);</code></pre> |
+| <pre lang="csharp"><code>progressBar.highValue = 100f;</code></pre> | <pre lang="csharp"><code>progressBar.SetHighValue(100f);</code></pre> |
+| <pre lang="csharp"><code>progressBar.value = 42f;</code></pre> | <pre lang="csharp"><code>progressBar.SetValue(42f);</code></pre> |
 
 </details>
 
 <details>
 <summary>HelpBox</summary>
 
-```csharp
-helpBox
-    .SetText("Something went wrong")
-    .SetMessageType(HelpBoxMessageType.Warning);
-```
-
-| Method | Description |
-|-------|----------|
-| `SetText(string)` | Sets the help-box message |
-| `SetMessageType(HelpBoxMessageType)` | Sets the icon / severity (`None` / `Info` / `Warning` / `Error`) |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>helpBox.text = "Something went wrong";</code></pre> | <pre lang="csharp"><code>helpBox.SetText("Something went wrong");</code></pre> |
+| <pre lang="csharp"><code>helpBox.messageType =&#10;    HelpBoxMessageType.Warning;</code></pre> | <pre lang="csharp"><code>helpBox.SetMessageType(&#10;    HelpBoxMessageType.Warning);</code></pre> |
 
 </details>
 
 <details>
 <summary>EnumField / EnumFlagsField</summary>
 
-```csharp
-enumField.Initialize(Mode.Default, includeObsoleteValues: false);
-```
-
-| Method | Description |
-|-------|----------|
-| `Initialize(Enum, bool)` | Sets the default value and the choice set; the editor's `EnumFlagsField` supports the same call |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>enumField.Init(&#10;    Mode.Default, includeObsoleteValues: false);</code></pre> | <pre lang="csharp"><code>enumField.Initialize(&#10;    Mode.Default, includeObsoleteValues: false);</code></pre> |
 
 </details>
 
 <details>
 <summary>Foldout</summary>
 
-```csharp
-foldout
-    .SetText("Section Title")
-    .SetToggleOnLabelClick(true)
-    .SetValue(true);
-```
-
-| Method | Description |
-|-------|----------|
-| `SetText(string)` | Sets the foldout title |
-| `SetToggleOnLabelClick(bool)` | Whether clicking the title toggles expansion |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>foldout.text = "Section Title";</code></pre> | <pre lang="csharp"><code>foldout.SetText("Section Title");</code></pre> |
+| <pre lang="csharp"><code>foldout.toggleOnLabelClick = true;</code></pre> | <pre lang="csharp"><code>foldout.SetToggleOnLabelClick(true);</code></pre> |
 
 </details>
 
 <details>
 <summary>Image</summary>
 
-```csharp
-image
-    .SetImage(myTexture)
-    .SetTintColor(Color.white)
-    .SetScaleMode(ScaleMode.ScaleToFit);
-```
-
-| Method | Description |
-|-------|----------|
-| `SetImage(Texture)` | Sets `Image.image` |
-| `SetImageFromResources(string)` | Loads a texture via `Resources.Load<Texture2D>` |
-| `SetSprite(Sprite)` | Sets `Image.sprite` |
-| `SetSpriteFromResources(string)` | Loads a sprite via `Resources.Load<Sprite>` |
-| `SetVectorImage(VectorImage)` | Sets `Image.vectorImage` |
-| `SetVectorImageFromResources(string)` | Loads a vector image via `Resources.Load<VectorImage>` |
-| `SetUv(Rect)` | Sets the UV rect |
-| `SetSourceRect(Rect)` | Sets the source rect |
-| `SetTintColor(Color)` | Sets the image tint |
-| `SetScaleMode(ScaleMode)` | Sets the scale mode |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>image.image = texture;</code></pre> | <pre lang="csharp"><code>image.SetImage(texture);</code></pre> |
+| <pre lang="csharp"><code>image.image =&#10;    Resources.Load&lt;Texture&gt;("UI/Icon");</code></pre> | <pre lang="csharp"><code>image.SetImageFromResources("UI/Icon");</code></pre> |
+| <pre lang="csharp"><code>image.sprite = sprite;</code></pre> | <pre lang="csharp"><code>image.SetSprite(sprite);</code></pre> |
+| <pre lang="csharp"><code>image.sprite =&#10;    Resources.Load&lt;Sprite&gt;("UI/Icon");</code></pre> | <pre lang="csharp"><code>image.SetSpriteFromResources("UI/Icon");</code></pre> |
+| <pre lang="csharp"><code>image.vectorImage = vectorImage;</code></pre> | <pre lang="csharp"><code>image.SetVectorImage(vectorImage);</code></pre> |
+| <pre lang="csharp"><code>image.vectorImage =&#10;    Resources.Load&lt;VectorImage&gt;("UI/Icon");</code></pre> | <pre lang="csharp"><code>image.SetVectorImageFromResources("UI/Icon");</code></pre> |
+| <pre lang="csharp"><code>image.uv = new Rect(0, 0, 1, 1);</code></pre> | <pre lang="csharp"><code>image.SetUv(new Rect(0, 0, 1, 1));</code></pre> |
+| <pre lang="csharp"><code>image.sourceRect = sourceRect;</code></pre> | <pre lang="csharp"><code>image.SetSourceRect(sourceRect);</code></pre> |
+| <pre lang="csharp"><code>image.tintColor = Color.white;</code></pre> | <pre lang="csharp"><code>image.SetTintColor(Color.white);</code></pre> |
+| <pre lang="csharp"><code>image.scaleMode = ScaleMode.ScaleToFit;</code></pre> | <pre lang="csharp"><code>image.SetScaleMode(ScaleMode.ScaleToFit);</code></pre> |
 
 </details>
 
 <details>
 <summary>IMGUIContainer</summary>
 
-```csharp
-container
-    .SetOnGUIHandler(() => GUILayout.Label("IMGUI"))
-    .SetCullingEnabled(true);
-```
-
-| Method | Description |
-|-------|----------|
-| `SetOnGUIHandler(Action)` | Replace the `onGUIHandler` callback |
-| `AddOnGUIHandler(Action)` | Subscribe to `onGUIHandler` |
-| `RemoveOnGUIHandler(Action)` | Unsubscribe from `onGUIHandler` |
-| `SetCullingEnabled(bool)` | Skip `onGUIHandler` when the element is off-screen |
-| `SetContextType(ContextType)` | Sets the IMGUI context type |
-| `MarkDirtyLayout()` | Marks the IMGUI layout dirty so it is recomputed |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>container.onGUIHandler = OnGUI;</code></pre> | <pre lang="csharp"><code>container.SetOnGUIHandler(OnGUI);</code></pre> |
+| <pre lang="csharp"><code>container.onGUIHandler += OnGUI;</code></pre> | <pre lang="csharp"><code>container.AddOnGUIHandler(OnGUI);</code></pre> |
+| <pre lang="csharp"><code>container.onGUIHandler -= OnGUI;</code></pre> | <pre lang="csharp"><code>container.RemoveOnGUIHandler(OnGUI);</code></pre> |
+| <pre lang="csharp"><code>container.cullingEnabled = true;</code></pre> | <pre lang="csharp"><code>container.SetCullingEnabled(true);</code></pre> |
+| <pre lang="csharp"><code>container.contextType = ContextType.Editor;</code></pre> | <pre lang="csharp"><code>container.SetContextType(ContextType.Editor);</code></pre> |
+| <pre lang="csharp"><code>container.MarkDirtyLayout();</code></pre> | <pre lang="csharp"><code>container.MarkDirtyLayout();</code></pre> |
 
 </details>
 
@@ -741,99 +625,80 @@ container
 
 ## Lists and trees
 
-`ListView` creates rows through `makeItem` and reuses them through `bindItem`. A list of three strings and an empty `ListView`:
-
-```csharp
-using System.Collections.Generic;
-
-var items = new List<string> { "Fireball", "Heal", "Shield" };
-var listView = new ListView();
-```
-
-| Before — Unity API | After — FastTools |
-|---|---|
-| <pre lang="csharp"><code>listView.itemsSource = items;&#10;listView.makeItem = () =&gt; new Label();&#10;listView.bindItem = (row, index) =&gt;&#10;    ((Label)row).text = items[index];&#10;listView.selectionType =&#10;    SelectionType.Single;&#10;listView.fixedItemHeight = 24;&#10;listView.style.height = 120;</code></pre> | <pre lang="csharp"><code>listView&#10;    .SetItemsSource(items)&#10;    .SetMakeItem(() =&gt; new Label())&#10;    .SetBindItem((row, index) =&gt;&#10;        ((Label)row).SetText(items[index]))&#10;    .SetSelectionType(SelectionType.Single)&#10;    .SetFixedItemHeight(24)&#10;    .SetHeight(120);</code></pre> |
-
-Add `listView` to the UI tree. After changing `items`, call `listView.RefreshItems()`. If a row has handlers tied to its current data item, remove them on unbinding through `SetUnbindItem` so reuse does not accumulate subscriptions.
-
-<details>
-<summary>List and tree methods</summary>
-
 Shared settings apply to `ListView`, `TreeView`, and their `MultiColumn` variants. `SetMakeItem`, `SetBindItem`, `SetUnbindItem`, and `SetDestroyItem` apply to ordinary `ListView` and `TreeView`.
 
 #### BaseVerticalCollectionView data and behaviour
 
-| Method | Description |
-|-------|----------|
-| `SetItemsSource(IList)` | Underlying data source |
-| `SetReorderable(bool)` | Enables drag-to-reorder |
-| `SetSelectedIndex(int)` | Selects a specific index |
-| `SetSelectionType(SelectionType)` | None / Single / Multiple |
-| `SetFixedItemHeight(float)` | Fixed item height (for `FixedHeight` virtualization) |
-| `SetVirtualizationMethod(CollectionVirtualizationMethod)` | `FixedHeight` or `DynamicHeight` |
-| `SetHorizontalScrollingEnabled(bool)` | Enables horizontal scrolling |
-| `SetShowAlternatingRowBackgrounds(AlternatingRowBackground)` | Zebra striping mode |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>listView.itemsSource = items;</code></pre> | <pre lang="csharp"><code>listView.SetItemsSource(items);</code></pre> |
+| <pre lang="csharp"><code>listView.reorderable = true;</code></pre> | <pre lang="csharp"><code>listView.SetReorderable(true);</code></pre> |
+| <pre lang="csharp"><code>listView.selectedIndex = 0;</code></pre> | <pre lang="csharp"><code>listView.SetSelectedIndex(0);</code></pre> |
+| <pre lang="csharp"><code>listView.selectionType = SelectionType.Single;</code></pre> | <pre lang="csharp"><code>listView.SetSelectionType(SelectionType.Single);</code></pre> |
+| <pre lang="csharp"><code>listView.fixedItemHeight = 24;</code></pre> | <pre lang="csharp"><code>listView.SetFixedItemHeight(24);</code></pre> |
+| <pre lang="csharp"><code>listView.virtualizationMethod =&#10;    CollectionVirtualizationMethod.DynamicHeight;</code></pre> | <pre lang="csharp"><code>listView.SetVirtualizationMethod(&#10;    CollectionVirtualizationMethod.DynamicHeight);</code></pre> |
+| <pre lang="csharp"><code>listView.horizontalScrollingEnabled = true;</code></pre> | <pre lang="csharp"><code>listView.SetHorizontalScrollingEnabled(true);</code></pre> |
+| <pre lang="csharp"><code>listView.showAlternatingRowBackgrounds =&#10;    AlternatingRowBackground.All;</code></pre> | <pre lang="csharp"><code>listView.SetShowAlternatingRowBackgrounds(&#10;    AlternatingRowBackground.All);</code></pre> |
 
 #### BaseVerticalCollectionView events
 
-| Method | Description |
-|-------|----------|
-| `AddItemsChosen(Action<IEnumerable<object>>)` / `RemoveItemsChosen` | Items confirmed (e.g. double-click / Enter) |
-| `AddSelectionChanged(Action<IEnumerable<object>>)` / `RemoveSelectionChanged` | Selection changed (objects) |
-| `AddSelectedIndicesChanged(Action<IEnumerable<int>>)` / `RemoveSelectedIndicesChanged` | Selection changed (indices) |
-| `AddItemIndexChanged(Action<int, int>)` / `RemoveItemIndexChanged` | Item moved (drag-reorder) |
-| `AddItemsSourceChanged(Action)` / `RemoveItemsSourceChanged` | `itemsSource` reference changed |
-| `AddCanStartDrag(Func<CanStartDragArgs, bool>)` / `RemoveCanStartDrag` | Custom drag-start gating |
-| `AddSetupDragAndDrop(Func<SetupDragAndDropArgs, StartDragArgs>)` / `RemoveSetupDragAndDrop` | Drag-and-drop preparation |
-| `AddDragAndDropUpdate(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveDragAndDropUpdate` | Drag-and-drop visual mode |
-| `AddHandleDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveHandleDrop` | Drop handling |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>listView.itemsChosen += OnItemsChosen;&#10;listView.itemsChosen -= OnItemsChosen;</code></pre> | <pre lang="csharp"><code>listView.AddItemsChosen(OnItemsChosen);&#10;listView.RemoveItemsChosen(OnItemsChosen);</code></pre> |
+| <pre lang="csharp"><code>listView.selectionChanged += OnSelectionChanged;&#10;listView.selectionChanged -= OnSelectionChanged;</code></pre> | <pre lang="csharp"><code>listView.AddSelectionChanged(OnSelectionChanged);&#10;listView.RemoveSelectionChanged(OnSelectionChanged);</code></pre> |
+| <pre lang="csharp"><code>listView.selectedIndicesChanged += OnIndicesChanged;&#10;listView.selectedIndicesChanged -= OnIndicesChanged;</code></pre> | <pre lang="csharp"><code>listView.AddSelectedIndicesChanged(OnIndicesChanged);&#10;listView.RemoveSelectedIndicesChanged(OnIndicesChanged);</code></pre> |
+| <pre lang="csharp"><code>listView.itemIndexChanged += OnItemMoved;&#10;listView.itemIndexChanged -= OnItemMoved;</code></pre> | <pre lang="csharp"><code>listView.AddItemIndexChanged(OnItemMoved);&#10;listView.RemoveItemIndexChanged(OnItemMoved);</code></pre> |
+| <pre lang="csharp"><code>listView.itemsSourceChanged += OnSourceChanged;&#10;listView.itemsSourceChanged -= OnSourceChanged;</code></pre> | <pre lang="csharp"><code>listView.AddItemsSourceChanged(OnSourceChanged);&#10;listView.RemoveItemsSourceChanged(OnSourceChanged);</code></pre> |
+| <pre lang="csharp"><code>listView.canStartDrag += CanStartDrag;&#10;listView.canStartDrag -= CanStartDrag;</code></pre> | <pre lang="csharp"><code>listView.AddCanStartDrag(CanStartDrag);&#10;listView.RemoveCanStartDrag(CanStartDrag);</code></pre> |
+| <pre lang="csharp"><code>listView.setupDragAndDrop += SetupDrag;&#10;listView.setupDragAndDrop -= SetupDrag;</code></pre> | <pre lang="csharp"><code>listView.AddSetupDragAndDrop(SetupDrag);&#10;listView.RemoveSetupDragAndDrop(SetupDrag);</code></pre> |
+| <pre lang="csharp"><code>listView.dragAndDropUpdate += UpdateDrag;&#10;listView.dragAndDropUpdate -= UpdateDrag;</code></pre> | <pre lang="csharp"><code>listView.AddDragAndDropUpdate(UpdateDrag);&#10;listView.RemoveDragAndDropUpdate(UpdateDrag);</code></pre> |
+| <pre lang="csharp"><code>listView.handleDrop += HandleDrop;&#10;listView.handleDrop -= HandleDrop;</code></pre> | <pre lang="csharp"><code>listView.AddHandleDrop(HandleDrop);&#10;listView.RemoveHandleDrop(HandleDrop);</code></pre> |
 
 #### BaseListView configuration
 
-| Method | Description |
-|-------|----------|
-| `SetAllowAdd(bool)` · `SetAllowRemove(bool)` | Toggles built-in add/remove buttons |
-| `SetHeaderTitle(string)` | Title shown when foldout header is on |
-| `SetShowFoldoutHeader(bool)` | Wraps the list in a `Foldout` |
-| `SetShowAddRemoveFooter(bool)` | Toggles the add/remove footer |
-| `SetShowBoundCollectionSize(bool)` | Shows the collection-size field |
-| `SetReorderMode(ListViewReorderMode)` | `Simple` or `Animated` |
-| `SetBindingSourceSelectionMode(BindingSourceSelectionMode)` | Auto-assign / manual |
-| `SetOnAdd(Action<BaseListView>)` · `AddOnAdd` · `RemoveOnAdd` | Custom add-button handler |
-| `SetOnRemove(Action<BaseListView>)` · `AddOnRemove` · `RemoveOnRemove` | Custom remove-button handler |
-| `SetOverridingAddButtonBehavior(Action<BaseListView, Button>)` · `AddOverridingAddButtonBehavior` · `RemoveOverridingAddButtonBehavior` | Replace add-button behaviour |
-| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Footer factory |
-| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Header factory |
-| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Empty-state factory |
-| `AddItemsAdded(Action<IEnumerable<int>>)` / `RemoveItemsAdded` | Items added by index |
-| `AddItemsRemoved(Action<IEnumerable<int>>)` / `RemoveItemsRemoved` | Items removed by index |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>listView.allowAdd = true;&#10;listView.allowRemove = true;</code></pre> | <pre lang="csharp"><code>listView.SetAllowAdd(true).SetAllowRemove(true);</code></pre> |
+| <pre lang="csharp"><code>listView.headerTitle = "Abilities";</code></pre> | <pre lang="csharp"><code>listView.SetHeaderTitle("Abilities");</code></pre> |
+| <pre lang="csharp"><code>listView.showFoldoutHeader = true;</code></pre> | <pre lang="csharp"><code>listView.SetShowFoldoutHeader(true);</code></pre> |
+| <pre lang="csharp"><code>listView.showAddRemoveFooter = true;</code></pre> | <pre lang="csharp"><code>listView.SetShowAddRemoveFooter(true);</code></pre> |
+| <pre lang="csharp"><code>listView.showBoundCollectionSize = true;</code></pre> | <pre lang="csharp"><code>listView.SetShowBoundCollectionSize(true);</code></pre> |
+| <pre lang="csharp"><code>listView.reorderMode = ListViewReorderMode.Animated;</code></pre> | <pre lang="csharp"><code>listView.SetReorderMode(ListViewReorderMode.Animated);</code></pre> |
+| <pre lang="csharp"><code>listView.bindingSourceSelectionMode =&#10;    BindingSourceSelectionMode.AutoAssign;</code></pre> | <pre lang="csharp"><code>listView.SetBindingSourceSelectionMode(&#10;    BindingSourceSelectionMode.AutoAssign);</code></pre> |
+| <pre lang="csharp"><code>listView.onAdd = OnAdd;&#10;listView.onAdd += OnAdd;&#10;listView.onAdd -= OnAdd;</code></pre> | <pre lang="csharp"><code>listView.SetOnAdd(OnAdd);&#10;listView.AddOnAdd(OnAdd);&#10;listView.RemoveOnAdd(OnAdd);</code></pre> |
+| <pre lang="csharp"><code>listView.onRemove = OnRemove;&#10;listView.onRemove += OnRemove;&#10;listView.onRemove -= OnRemove;</code></pre> | <pre lang="csharp"><code>listView.SetOnRemove(OnRemove);&#10;listView.AddOnRemove(OnRemove);&#10;listView.RemoveOnRemove(OnRemove);</code></pre> |
+| <pre lang="csharp"><code>listView.overridingAddButtonBehavior = OnAddButton;&#10;listView.overridingAddButtonBehavior += OnAddButton;&#10;listView.overridingAddButtonBehavior -= OnAddButton;</code></pre> | <pre lang="csharp"><code>listView.SetOverridingAddButtonBehavior(OnAddButton);&#10;listView.AddOverridingAddButtonBehavior(OnAddButton);&#10;listView.RemoveOverridingAddButtonBehavior(OnAddButton);</code></pre> |
+| <pre lang="csharp"><code>listView.makeFooter = () =&gt; new Label();</code></pre> | <pre lang="csharp"><code>listView.SetMakeFooter(() =&gt; new Label());</code></pre> |
+| <pre lang="csharp"><code>listView.makeHeader = () =&gt; new Label();</code></pre> | <pre lang="csharp"><code>listView.SetMakeHeader(() =&gt; new Label());</code></pre> |
+| <pre lang="csharp"><code>listView.makeNoneElement =&#10;    () =&gt; new Label("No abilities");</code></pre> | <pre lang="csharp"><code>listView.SetMakeNoneElement(&#10;    () =&gt; new Label("No abilities"));</code></pre> |
+| <pre lang="csharp"><code>listView.itemsAdded += OnItemsAdded;&#10;listView.itemsAdded -= OnItemsAdded;</code></pre> | <pre lang="csharp"><code>listView.AddItemsAdded(OnItemsAdded);&#10;listView.RemoveItemsAdded(OnItemsAdded);</code></pre> |
+| <pre lang="csharp"><code>listView.itemsRemoved += OnItemsRemoved;&#10;listView.itemsRemoved -= OnItemsRemoved;</code></pre> | <pre lang="csharp"><code>listView.AddItemsRemoved(OnItemsRemoved);&#10;listView.RemoveItemsRemoved(OnItemsRemoved);</code></pre> |
 
 #### BaseTreeView configuration
 
-| Method | Description |
-|-------|----------|
-| `SetAutoExpand(bool)` | Auto-expand new nodes |
-| `AddItemExpandedChanged(Action<TreeViewExpansionChangedArgs>)` / `RemoveItemExpandedChanged` | Subscribe to expansion changes |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>treeView.autoExpand = true;</code></pre> | <pre lang="csharp"><code>treeView.SetAutoExpand(true);</code></pre> |
+| <pre lang="csharp"><code>treeView.itemExpandedChanged += OnExpanded;&#10;treeView.itemExpandedChanged -= OnExpanded;</code></pre> | <pre lang="csharp"><code>treeView.AddItemExpandedChanged(OnExpanded);&#10;treeView.RemoveItemExpandedChanged(OnExpanded);</code></pre> |
 
 #### Creating ListView and TreeView items
 
 These methods exist in both `ListViewExtensions` and `TreeViewExtensions`, each targeting its own view type.
 
-| Method | Description |
-|-------|----------|
-| `SetMakeItem(Func<VisualElement>)` · `AddMakeItem` · `RemoveMakeItem` | Item factory |
-| `SetBindItem(Action<VisualElement, int>)` · `AddBindItem` · `RemoveBindItem` | Item binding |
-| `SetUnbindItem(Action<VisualElement, int>)` · `AddUnbindItem` · `RemoveUnbindItem` | Item unbinding |
-| `SetDestroyItem(Action<VisualElement>)` · `AddDestroyItem` · `RemoveDestroyItem` | Item teardown |
-| `SetItemTemplate(VisualTreeAsset)` | UXML template used to build items |
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>listView.makeItem = () =&gt; new Label();</code></pre> | <pre lang="csharp"><code>listView.SetMakeItem(() =&gt; new Label());</code></pre> |
+| <pre lang="csharp"><code>listView.bindItem = BindRow;&#10;listView.bindItem += BindRow;&#10;listView.bindItem -= BindRow;</code></pre> | <pre lang="csharp"><code>listView.SetBindItem(BindRow);&#10;listView.AddBindItem(BindRow);&#10;listView.RemoveBindItem(BindRow);</code></pre> |
+| <pre lang="csharp"><code>listView.unbindItem = UnbindRow;&#10;listView.unbindItem += UnbindRow;&#10;listView.unbindItem -= UnbindRow;</code></pre> | <pre lang="csharp"><code>listView.SetUnbindItem(UnbindRow);&#10;listView.AddUnbindItem(UnbindRow);&#10;listView.RemoveUnbindItem(UnbindRow);</code></pre> |
+| <pre lang="csharp"><code>listView.destroyItem = DestroyRow;&#10;listView.destroyItem += DestroyRow;&#10;listView.destroyItem -= DestroyRow;</code></pre> | <pre lang="csharp"><code>listView.SetDestroyItem(DestroyRow);&#10;listView.AddDestroyItem(DestroyRow);&#10;listView.RemoveDestroyItem(DestroyRow);</code></pre> |
+| <pre lang="csharp"><code>listView.itemTemplate = rowTemplate;</code></pre> | <pre lang="csharp"><code>listView.SetItemTemplate(rowTemplate);</code></pre> |
 
 #### `MultiColumnListView` / `MultiColumnTreeView`
 
-| Method | Description |
-|-------|----------|
-| `SetSortingMode(ColumnSortingMode)` | Built-in sorting mode for the column header |
-
-</details>
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>listView.sortingMode = ColumnSortingMode.Default;</code></pre> | <pre lang="csharp"><code>listView.SetSortingMode(ColumnSortingMode.Default);</code></pre> |
+| <pre lang="csharp"><code>listView.columnSortingChanged += OnSortingChanged;&#10;listView.columnSortingChanged -= OnSortingChanged;</code></pre> | <pre lang="csharp"><code>listView.AddColumnSortingChanged(OnSortingChanged);&#10;listView.RemoveColumnSortingChanged(OnSortingChanged);</code></pre> |
 
 <a id="editor-commands-editor-only"></a>
 
@@ -843,32 +708,12 @@ The extensions above work in the editor and at runtime. `SerializedObject` bindi
 
 ### SerializedObject binding
 
-The `_manaCost` field belongs to the `AbilityBook` component from [SerializedProperty Extensions](08-serialized-property-extensions.md#quick-start):
-
-```csharp
-var field = new IntegerField("Mana cost");
-```
-
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>field.bindingPath = "_manaCost";&#10;field.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>field.BindTo(&#10;    serializedObject, "_manaCost");</code></pre> |
 | <pre lang="csharp"><code>var property = serializedObject&#10;    .FindProperty("_manaCost");&#10;field.BindProperty(property);</code></pre> | <pre lang="csharp"><code>var property = serializedObject&#10;    .FindProperty("_manaCost");&#10;field.BindPropertyTo(property);</code></pre> |
 | <pre lang="csharp"><code>root.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);</code></pre> |
-| <pre lang="csharp"><code>// Unbind&#10;root.Unbind();</code></pre> | <pre lang="csharp"><code>// Unbind&#10;root.UnbindFrom();</code></pre> |
-
-For a `root` tree, first set field paths with `SetBindingPath`, then call `BindTo` on the root.
-
-In `CreateInspectorGUI()`, [Unity automatically binds the returned tree](https://docs.unity3d.com/6000.0/Documentation/Manual/UIE-Binding.html) to `serializedObject`. Setting the path is sufficient in that Inspector:
-
-```csharp
-public override VisualElement CreateInspectorGUI()
-{
-    return new IntegerField("Mana cost")
-        .SetBindingPath("_manaCost");
-}
-```
-
-`SetDataSource`, `SetDataSourceType`, and `SetDataSourcePath` configure UI Toolkit runtime data binding sources. They do not create a `SerializedObject` binding by themselves.
+| <pre lang="csharp"><code>root.Unbind();</code></pre> | <pre lang="csharp"><code>root.UnbindFrom();</code></pre> |
 
 ### PropertyField
 
@@ -882,60 +727,31 @@ var field = new PropertyField(manaCost)
         Debug.Log(evt.changedProperty.intValue));
 ```
 
-`RemoveValueChanged` removes the same delegate's subscription. To write properties from your own code, see [SerializedProperty Extensions](08-serialized-property-extensions.md).
+To write properties from your own code, see [SerializedProperty Extensions](08-serialized-property-extensions.md).
 
 ### Opening scripts and finding the owner window
 
+Double-clicking the element opens the script of `target`, a `MonoBehaviour` or `ScriptableObject`, in the IDE.
+
 ```csharp
 image.AddOpenScriptCommand(target);
-// Double-click opens the target's script in the IDE
-
-var window = image.GetOwnerWindow();
 ```
 
-`target` is the `MonoBehaviour` or `ScriptableObject` whose script should open. `GetOwnerWindow()` looks up the window through the element's panel. If none is found, it falls back to the focused window, then the window under the cursor; the result can be `null`. This helps position a popup when a click has arrived but focus has not switched yet.
+`GetOwnerWindow()` looks up the window through the element's panel. If none is found, it falls back to the focused window, then the window under the cursor; the result can be `null`. This helps position a popup when a click has arrived but focus has not switched yet.
+
+```csharp
+var window = image.GetOwnerWindow();
+```
 
 <a id="uss-custom-style-helpers-icustomstyle"></a>
 
 ## Custom USS properties
 
-`TryGetByEnum` reads a string USS property and parses it as an enum, ignoring case. For example, with this rule in an attached USS file:
+Reading a string USS property as an enum inside `CustomStyleResolvedEvent`:
 
-```css
-.ability-panel {
-    --ability-theme: dark;
-}
-```
-
-Create an element that responds when custom styles are resolved:
-
-```csharp
-using UnityEngine;
-using UnityEngine.UIElements;
-using Aspid.FastTools.UIElements;
-
-public sealed class AbilityPanel : VisualElement
-{
-    private enum PanelTheme { Dark, Light }
-
-    private static readonly CustomStyleProperty<string> ThemeProperty =
-        new("--ability-theme");
-
-    public AbilityPanel()
-    {
-        this.AddClass("ability-panel");
-        RegisterCallback<CustomStyleResolvedEvent>(evt =>
-        {
-            if (evt.customStyle.TryGetByEnum(ThemeProperty, out PanelTheme theme))
-                this.SetBackgroundColor(theme == PanelTheme.Dark
-                    ? new Color(0.15f, 0.15f, 0.15f)
-                    : new Color(0.9f, 0.9f, 0.9f));
-        });
-    }
-}
-```
-
-Add `AbilityPanel` to a tree with the USS attached. Both `dark` and `Dark` parse as `PanelTheme.Dark`. The method returns `false` if the property is missing or the string cannot be parsed.
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>if (evt.customStyle.TryGetValue(ThemeProperty, out var raw)&#10;    &amp;&amp; Enum.TryParse(raw, ignoreCase: true, out PanelTheme theme))&#10;    ApplyTheme(theme);</code></pre> | <pre lang="csharp"><code>if (evt.customStyle.TryGetByEnum(ThemeProperty, out PanelTheme theme))&#10;    ApplyTheme(theme);</code></pre> |
 
 ## Practical example
 
@@ -945,8 +761,3 @@ Add `AbilityPanel` to a tree with the USS attached. Both `dark` and `Dark` parse
 
 Halve cooldown, +5 MP updates both the fields and effect description; Undo restores them.
 
-## Next steps
-
-- [EditorTools](../Samples~/EditorTools/Documentation/README.md) — a complete window with search, a list, and asset editing.
-- [SerializedProperty Extensions](08-serialized-property-extensions.md) — changing data through Unity serialization.
-- [Editor Helpers](09-editor-helpers.md) — object and component labels.
