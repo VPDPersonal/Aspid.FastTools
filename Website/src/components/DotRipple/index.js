@@ -33,7 +33,7 @@ const radiusAt = (elapsed) => elapsed * (SPEED + ACCEL * elapsed);
 
 function readColors() {
   const style = getComputedStyle(document.documentElement);
-  const hex = style.getPropertyValue('--venom-accent').trim();
+  const hex = (style.getPropertyValue('--venom-ripple').trim() || style.getPropertyValue('--venom-accent').trim());
   const value = parseInt(hex.slice(1), 16);
   return {
     accent: [(value >> 16) & 255, (value >> 8) & 255, value & 255],

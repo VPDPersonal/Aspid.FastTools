@@ -1,10 +1,10 @@
 /** Prism themes in the Ayu palette (Light and Dark), Dark uses the Ayu editor background as in Rider. */
 
 const light = {
-  plain: { color: '#4b463d', backgroundColor: '#e1d8c8' },
+  plain: { color: '#2a2c31', backgroundColor: '#eef0f3' },
   styles: [
-    { types: ['comment', 'prolog', 'doctype', 'cdata'], style: { color: '#62594e' } },
-    { types: ['punctuation'], style: { color: '#4b463d' } },
+    { types: ['comment', 'prolog', 'doctype', 'cdata'], style: { color: '#6b7079' } },
+    { types: ['punctuation'], style: { color: '#2a2c31' } },
     { types: ['keyword', 'operator', 'important'], style: { color: '#9b4209' } },
     { types: ['builtin', 'class-name', 'namespace', 'maybe-class-name', 'return-type'], style: { color: '#1e6091' } },
     { types: ['function'], style: { color: '#805200' } },

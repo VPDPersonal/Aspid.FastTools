@@ -1,6 +1,6 @@
 /*
  * Aspid.FastTools docs theme "Venom": acid green on near-black. Dark is the primary mode;
- * light mode is pastel beige with the same green, deepened for contrast on cream.
+ * light mode is neutral paper (cool grey canvas, white surfaces) with the same green, deepened for contrast.
  */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
@@ -38,36 +38,36 @@
 }
 
 :root {
-  /* Venom Light: pastel beige */
-  --venom-bg: #f6f1e8;
-  --venom-panel: #ede6d9;
-  --venom-reading-surface: #f0e5d0;
-  --venom-line: #e1d8c8;
-  --venom-line-strong: #d1c5b0;
-  --venom-divider: #b7aa95;
-  --venom-fg: #4b463d;
-  --venom-fg-strong: #201d18;
-  --venom-muted: #746b5d;
-  --venom-dot-pattern: radial-gradient(circle, color-mix(in srgb, var(--venom-muted) 12%, transparent) 1px, transparent 1.2px);
-  --venom-accent: #357a42;
-  --venom-accent-2: #357a42;
-  --venom-accent-deep: #2f6b39;
+  /* Venom Light: neutral paper. Same system as dark, inverted: cool grey canvas, white surfaces, the green stays green. */
+  --venom-bg: #f7f7f8;
+  --venom-panel: #ffffff;
+  --venom-reading-surface: #ffffff;
+  --venom-line: #e3e4e8;
+  --venom-line-strong: #d3d5db;
+  --venom-divider: #b4b7c0;
+  --venom-fg: #2a2c31;
+  --venom-fg-strong: #121316;
+  --venom-muted: #5f636b;
+  --venom-dot-pattern: radial-gradient(circle, color-mix(in srgb, var(--venom-muted) 14%, transparent) 1px, transparent 1.2px);
+  --venom-accent: #2f8a45;
+  --venom-accent-2: #2a7c3e;
+  --venom-accent-deep: #26733a;
   --venom-accent-ink: #ffffff;
   --venom-sapphire: #2369b4;
   --venom-ruby: #c23a52;
   --venom-amber: #a8720f;
   --venom-purple: #7a4fd0;
-  --venom-glow: rgba(63, 138, 75, 0.16);
-  --venom-glow-2: rgba(168, 114, 15, 0.12);
-  --venom-glow-soft: rgba(63, 138, 75, 0.09);
+  --venom-glow: rgba(47, 138, 69, 0.18);
+  --venom-glow-2: rgba(38, 115, 58, 0.14);
+  --venom-glow-soft: rgba(47, 138, 69, 0.09);
 
-  --ifm-color-primary: #3f8a4b;
-  --ifm-color-primary-dark: #397c44;
-  --ifm-color-primary-darker: #367540;
-  --ifm-color-primary-darkest: #2c6135;
-  --ifm-color-primary-light: #459852;
-  --ifm-color-primary-lighter: #499f56;
-  --ifm-color-primary-lightest: #58b065;
+  --ifm-color-primary: #2f8a45;
+  --ifm-color-primary-dark: #2a7c3e;
+  --ifm-color-primary-darker: #28753a;
+  --ifm-color-primary-darkest: #216030;
+  --ifm-color-primary-light: #34984c;
+  --ifm-color-primary-lighter: #379f50;
+  --ifm-color-primary-lightest: #4ab060;
 
   --ifm-background-color: var(--venom-bg);
   --ifm-background-surface-color: var(--venom-panel);
@@ -86,11 +86,11 @@
   --ifm-menu-color: var(--venom-fg);
   --ifm-menu-color-active: var(--venom-accent);
   --ifm-menu-color-background-active: var(--venom-glow-soft);
-  --ifm-menu-color-background-hover: rgba(60, 40, 10, 0.05);
-  --ifm-navbar-background-color: rgba(246, 241, 232, 0.85);
+  --ifm-menu-color-background-hover: rgba(18, 19, 22, 0.05);
+  --ifm-navbar-background-color: rgba(247, 247, 248, 0.85);
   --ifm-navbar-shadow: 0 1px 0 var(--venom-line);
   --ifm-footer-background-color: var(--venom-panel);
-  --ifm-code-background: #e1d8c8;
+  --ifm-code-background: #eef0f3;
   --ifm-pre-background: var(--ifm-code-background);
 
   --ifm-font-family-base: 'iA Writer Quattro', 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
@@ -150,6 +150,7 @@ html[data-theme='dark'] {
   --venom-glow: rgba(92, 180, 107, 0.2);
   --venom-glow-2: rgba(53, 122, 66, 0.22);
   --venom-glow-soft: rgba(92, 180, 107, 0.1);
+  --venom-ripple: #5cb46b;
 
   --ifm-color-primary: #5cb46b;
   --ifm-color-primary-dark: #4fa35d;
@@ -430,12 +431,16 @@ pre {
 .theme-doc-markdown details.alert [class*='collapsibleContent_'] > :last-child { margin-bottom: 0; }
 
 .theme-admonition,
-.theme-admonition .admonition-heading,
 .theme-admonition a {
   --ifm-alert-foreground-color: var(--venom-fg);
 }
 
-.theme-admonition .admonition-icon svg {
+/* The heading and its icon carry the block's colour; the body stays in the text colour. */
+.theme-admonition [class*='admonitionHeading_'] {
+  color: var(--ifm-alert-border-color);
+}
+
+.theme-admonition [class*='admonitionIcon_'] svg {
   fill: var(--ifm-alert-border-color);
 }
 
@@ -499,9 +504,20 @@ html.docs-doc-page {
 }
 
 html[data-theme='light'].docs-doc-page {
-  --venom-canvas: #d4c8b5;
-  --venom-accent: #285c31;
-  --venom-muted: #595247;
+  --venom-canvas: #e6e7eb;
+  --venom-accent: #26733a;
+  --venom-muted: #5a5e66;
+  /* Ripple crests: a lighter green than the text accent, so risen dots read as a highlight, not dark specks on grey. */
+  --venom-ripple: #5cb46b;
+  /* Admonition windows: a mostly-opaque white tint over the canvas, so the dots stay faint and the fill reads as paper. */
+  --ifm-color-success-contrast-background: color-mix(in srgb, var(--venom-accent) 9%, rgb(255 255 255 / 0.85));
+  --ifm-color-info-contrast-background: color-mix(in srgb, var(--venom-sapphire) 9%, rgb(255 255 255 / 0.85));
+  --ifm-color-warning-contrast-background: color-mix(in srgb, var(--venom-amber) 10%, rgb(255 255 255 / 0.85));
+  --ifm-color-danger-contrast-background: color-mix(in srgb, var(--venom-ruby) 9%, rgb(255 255 255 / 0.85));
+}
+/* Inline code inside a light admonition: an opaque chip tinted by the block's colour instead of Infima's translucent wash. */
+html[data-theme='light'] .theme-admonition {
+  --ifm-alert-background-color-highlight: color-mix(in srgb, var(--ifm-alert-border-color) 12%, var(--venom-panel));
 }
 
 /* The root paints the full canvas even when body is only one viewport tall. */
@@ -947,14 +963,15 @@ html.docs-background-windows.docs-doc-page {
 }
 /* Notices tint the real canvas visible through the article's cutout. */
 @media (min-width: 997px) {
+  /* Light: a translucent paper tint, so the ripple dots still show through and the fill does not turn grey-blue over the canvas. */
   .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
-    background: color-mix(in srgb, var(--venom-sapphire) 12%, transparent);
+    background: color-mix(in srgb, var(--venom-sapphire) 9%, rgb(255 255 255 / 55%));
   }
   html[data-theme='dark'] .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
     background: rgb(15 45 85 / 45%);
   }
   .doc-column-with-windows .theme-admonition-warning {
-    background: color-mix(in srgb, var(--venom-amber) 12%, transparent);
+    background: color-mix(in srgb, var(--venom-amber) 10%, rgb(255 255 255 / 55%));
   }
   html[data-theme='dark'] .doc-column-with-windows .theme-admonition-warning {
     background: rgb(90 62 7 / 45%);
