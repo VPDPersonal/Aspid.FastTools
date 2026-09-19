@@ -4,7 +4,7 @@ An enum-keyed table configured in the Inspector: damage multipliers, colours, so
 
 ## Quick start
 
-Add `using Aspid.FastTools.Enums;` to a script that imports `UnityEngine`. The examples use this enum:
+The examples use this enum:
 
 ```csharp
 public enum DamageType
@@ -13,95 +13,59 @@ public enum DamageType
 }
 ```
 
-One table replaces a set of serialized fields and a `switch`:
+Add `using Aspid.FastTools.Enums;` to a script that imports `UnityEngine`. One table replaces a set of serialized fields and a `switch`:
 
 | Before — separate fields and switch | After — EnumValues |
 |---|---|
 | <pre lang="csharp"><code>[SerializeField]&#10;private float _defaultMultiplier = 1f;&#10;[SerializeField]&#10;private float _fireMultiplier = 1.5f;&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt; type switch&#10;&#123;&#10;    DamageType.Fire =&gt; _fireMultiplier,&#10;    _ =&gt; _defaultMultiplier&#10;&#125;;</code></pre> | <pre lang="csharp"><code>[SerializeField]&#10;private EnumValues&lt;DamageType, float&gt;&#10;    _multipliers;&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt;&#10;    _multipliers.GetValue(type);</code></pre> |
 
-In the Inspector, set `Multipliers` to **Default Value = 1** and add a **Fire = 1.5** row:
+![Fire uses a multiplier of 1.5; other damage types use Default Value 1](Images/enum-values-multipliers-quick-start.png)
+
+Fire uses a multiplier of 1.5; other damage types use Default Value 1
 
 | Call | Result |
 |---|---|
 | `_multipliers.GetValue(DamageType.Fire)` | `1.5` — the `Fire` row's value |
 | `_multipliers.GetValue(DamageType.Ice)` | `1` — no `Ice` row, so `Default Value` is returned |
 
-<details>
-<summary>Complete example: a damage multiplier component</summary>
-
-Create `DamageDealer.cs` and add the component to a GameObject:
-
-```csharp
-using UnityEngine;
-using Aspid.FastTools.Enums;
-
-public enum DamageType
-{
-    Physical, Fire, Ice, Poison
-}
-
-public sealed class DamageDealer : MonoBehaviour
-{
-    [SerializeField] private EnumValues<DamageType, float> _multipliers;
-
-    public float CalculateDamage(DamageType type, float baseDamage) =>
-        baseDamage * _multipliers.GetValue(type);
-
-    [ContextMenu("Log Fire Damage")]
-    private void LogFireDamage() =>
-        Debug.Log(CalculateDamage(DamageType.Fire, 10f), this);
-}
-```
-
-Set **Default Value = 1**, add a **Fire = 1.5** row and choose **Log Fire Damage** from the component's context menu. The Console prints `15`. If `DamageType` already exists in your project, use the existing enum.
-
-</details>
-
 ## Inspector setup
-
-Two `EnumValues<SurfaceType, Color>` tables from the [EnumValues sample](../Samples~/EnumValues/Documentation/README.md) look like this:
-
-![Surface and footprint colour tables with separate Default Values](../Samples~/EnumValues/Documentation/Images/surface-tables.png)
-
-Surface and footprint colour tables with separate Default Values
 
 1. Expand the table and set **Default Value** — keys without a row of their own receive it.
 2. Add rows by hand, or right-click the property and choose **Populate Missing Enum Members**.
 3. Configure the values of the added rows.
 
-Filling in every enum member is optional: a table with only the differing values works.
+Only keys whose value differs from `Default Value` need a row.
 
 ### Populate Missing Enum Members
 
-The command appends the members **declared in the enum** that the table lacks and writes the current `Default Value` into the new rows. Existing rows stay untouched, and the operation is undoable. When no members are missing, the menu item is disabled.
+Appends the missing enum members to the table with the current `Default Value` as their value.
+
+![Populate Missing Enum Members adds rows with a value of 1, preserving Fire = 1.5; Undo reverts the operation](Images/enum-values-multipliers-populate.gif)
+
+Populate Missing Enum Members adds rows with a value of 1, preserving Fire = 1.5; Undo reverts the operation
 
 For `[Flags]` it adds only declared members, including named combinations. It does not generate every possible bit combination.
 
-> [!NOTE]
-> `Default Value` is copied into the rows once, when they are populated. If you later change it to `2`, an `Ice` row created with `1` keeps returning `1`.
-
 ## Choosing a variant
 
-| Task | Field type | Enum choice in the Inspector |
-|---|---|---|
-| The enum is known in code | `EnumValues<TEnum, TValue>` | Fixed by the `TEnum` argument; the type field is read-only |
-| The asset author picks the enum | `EnumValues<TValue>` | Available in the table header |
+| Task | Field type | Enum choice in the Inspector | Key in `GetValue` |
+|---|---|---|---|
+| The enum is known in code | `EnumValues<TEnum, TValue>` | Fixed by the `TEnum` argument; the type field is read-only | `TEnum`: checked by the compiler, no boxing to `object` |
+| The asset author picks the enum | `EnumValues<TValue>` | Available in the table header | `System.Enum`: the key is boxed, and a foreign enum compiles and returns `Default Value` |
 
 Both variants support `Default Value`, `[Flags]` and row enumeration. `TValue` is any type Unity serializes: `float`, `Color`, `AudioClip`, your own `[Serializable]` class.
 
 ### EnumValues\<TEnum, TValue\>
 
-The typed variant for tables that are always accessed with one known enum. The compiler checks the key type, and `GetValue` does not box the key:
-
 ```csharp
-[SerializeField] private EnumValues<DamageType, Color> _colors;
-
-public Color GetColor(DamageType type) => _colors.GetValue(type);
+[SerializeField] private EnumValues<DamageType, float> _multipliers;
 ```
+
+The enum is fixed in code and the compiler checks the key type. The full example is in the [quick start](#quick-start).
 
 ### EnumValues\<TValue\>
 
-Only the value type is fixed in code; the enum is chosen in the Inspector:
+The same field without `DamageType` in the declaration; the enum is chosen in the Inspector:
 
 ```csharp
 [SerializeField] private EnumValues<float> _multipliers;
@@ -109,10 +73,14 @@ Only the value type is fixed in code; the enum is chosen in the Inspector:
 public float GetMultiplier(DamageType type) => _multipliers.GetValue(type);
 ```
 
-For this example, select **DamageType** in the table header. `GetValue` accepts `System.Enum`, so the compiler lets a key from another enum through — it returns `Default Value` even when the numeric value happens to match.
+For this example, select **DamageType** in the table header. A key from another enum returns `Default Value` even when the numeric value happens to match.
+
+![Open the type selector in the Multipliers header and search for DamageType](Images/enum-values-type-selector.png)
+
+Open the type selector in the Multipliers header and search for DamageType
 
 > [!IMPORTANT]
-> When no enum is selected, the table returns `Default Value` and logs a warning to the Console once. When the stored type is no longer found in the project, for example after a rename, it logs an error instead.
+> When no enum is selected, the table returns `Default Value` and logs a warning to the Console on the first access. When the stored type is no longer found in the project, for example after a rename, it logs an error instead.
 
 ## Lookup rules
 
@@ -127,16 +95,12 @@ The table is scanned top to bottom. For a regular enum the first row with the sa
 
 ### Flags
 
-For a `[Flags]` enum, a second pass follows the exact search:
-
-1. **Exact match** with the whole requested value.
-2. Otherwise — the **first row whose bits are all contained** in the request.
-3. Otherwise — `Default Value`.
+For `[Flags]`, lookup checks for an exact match before checking flag containment.
 
 Zero matches only zero; it is not an "empty mask" that matches the other flags. Example:
 
 ```csharp
-[System.Flags]
+[Flags]
 public enum StatusEffect
 {
     None = 0,
@@ -157,16 +121,31 @@ public enum StatusEffect
 | `Burning \| Slowed` | `0.3` |
 | `None` | `1` |
 
-| GetValue argument | Result | Reason |
-|---|---|---|
-| `Burning \| Slowed` | `0.3` | The exact row wins even though it sits below the single flags |
-| `Burning \| Frozen` | `0.9` | No exact row; the first matching row is `Burning` |
-| `Burning \| Slowed \| Frozen` | `0.9` | No exact row; `Burning` sits above `Burning \| Slowed` |
-| `Frozen` | `1` | No matching row |
-| `None` | `1` | The exact zero row |
+<ol className="enum-lookup-flow">
+  <li>
+    <strong>Exact match</strong>
+    <span>Look for the entire requested set of flags.</span>
+    <code>Burning | Slowed → 0.3</code>
+    <small>The exact row wins, even when it is farther down.</small>
+    <em>No exact row →</em>
+  </li>
+  <li>
+    <strong>First matching row</strong>
+    <span>All of its flags must be present in the request.</span>
+    <code>Burning | Frozen → 0.9</code>
+    <small>Burning wins; row order matters.</small>
+    <em>No matching row →</em>
+  </li>
+  <li>
+    <strong>Default Value</strong>
+    <span>Return the configured fallback.</span>
+    <code>Frozen → 1</code>
+    <small>There is no exact or matching row.</small>
+  </li>
+</ol>
 
 > [!NOTE]
-> The lookup returns **one** value and does not combine matching rows. If `Burning | Slowed | Frozen` should yield `0.3`, move the `Burning | Slowed` row above `Burning`.
+> The second pass takes the first matching row, not the most complete one. For `Burning | Slowed | Frozen` both `Burning` and `Burning | Slowed` match, but `Burning` wins because it sits higher: the result is `0.9`. To let a combination win, place combined rows above single flags.
 
 ## Checking keys with Equals
 
@@ -200,14 +179,21 @@ The typed table yields `TEnum` keys, the generic one `System.Enum`. A direct `fo
 
 The public API only reads the table: there is no `Add`, `Remove` or writable indexer, and values are set through Unity serialization.
 
-Keys are stored by member **name**, so reordering members and changing their numeric values is safe. A new member returns `Default Value` until a row is added — **Populate Missing Enum Members** fills such gaps. A renamed or deleted member is no longer recognised: its row is skipped by lookup and enumeration, so review such keys in the Inspector.
+Keys are stored by member **name**:
 
-## Practical example
+| Enum change | Result |
+|---|---|
+| Members reordered or their numeric values changed | The table works as before |
+| Member added | Returns `Default Value` until a row is added; **Populate Missing Enum Members** fills the gap |
+| Member renamed or deleted | Its row is no longer recognised: initialization logs an error to the Console, and lookup and enumeration skip it |
 
-In the [EnumValues sample](../Samples~/EnumValues/Documentation/README.md), the surface type sets tile and footprint colours through `EnumValues<SurfaceType, Color>`, while terrain flags set the character's speed multiplier through an `EnumValues<float>` with `TerrainFlags` selected in the Inspector:
+> [!WARNING]
+> As soon as such a row is drawn in the Inspector, its key is silently replaced with the first enum member. Rename members before opening the asset in the Inspector, or review the rows right after.
+
+## Package sample
+
+Tiles and footprints take their colour from `EnumValues<SurfaceType, Color>`, and the speed multiplier from an `EnumValues<float>` with a `[Flags]` enum selected in the Inspector: [EnumValues](../Samples~/EnumValues/Documentation/README.md).
 
 ![The character walks across different surfaces and leaves a continuous coloured trail.](../Samples~/EnumValues/Documentation/Images/demo.gif)
 
 The character walks across different surfaces and leaves a continuous coloured trail.
-
-Import the sample and open `Scenes/EnumValues.unity`. Change the `Grass` colour in `Data/SurfacePalette.asset` — the tiles recolour without Play Mode. Remove the `Stone` row from **Footprint Colors** to see `Default Value` in action. Flag and enumeration experiments are described in the [sample documentation](../Samples~/EnumValues/Documentation/README.md#try).

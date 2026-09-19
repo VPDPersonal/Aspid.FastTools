@@ -12,9 +12,16 @@ The examples on this page work with the `FlockSimulation` class from the [Profil
 
 Works in `MonoBehaviour` and ordinary C# classes. The generator ships with the package; the extension is in the global namespace — no extra `using`, attributes, or `partial` declaration needed.
 
-## Scope and names
+## Marker()
 
-`Marker()` returns a `ProfilerMarker.AutoScope`. `.WithName("Steering")` replaces the method part of the name; the type and line number remain.
+Returns the `ProfilerMarker.AutoScope` of the `Type.Method (line)` marker for the current call site.
+
+> [!IMPORTANT]
+> Do not call `this.Marker()` without `using`: the measurement will not end automatically. A scope must not cross `await` or `yield`; measure synchronous sections separately ([Unity limitation](https://docs.unity3d.com/6000.0/Documentation/Manual/profiler-add-markers-code.html)).
+
+## WithName()
+
+`.WithName("Steering")` replaces the method part of the name; the type and line number remain.
 
 ```csharp
 public void Step()
@@ -69,14 +76,11 @@ internal static class __FlockSimulationProfilerMarkerExtensions
 
 The tree in **CPU Usage → Hierarchy** mirrors the `using` nesting, and a marker inside a loop stays a single row with a `Calls` count. Deep Profile is not needed.
 
-![FlockSimulation markers in CPU Usage: Steering and Integrate nested under Step, Steering.Agent with 120 calls](../Samples~/ProfilerMarkers/Documentation/Images/profiler-markers.png)
+![FlockSimulation marker diagram: Steering and Integrate nested under Step, Steering.Agent with 120 calls. Timings are illustrative.](Images/profiler-markers-hierarchy.svg)
 
-FlockSimulation markers in CPU Usage: Steering and Integrate nested under Step, Steering.Agent with 120 calls
+FlockSimulation marker diagram: Steering and Integrate nested under Step, Steering.Agent with 120 calls. Timings are illustrative.
 
 `WithName` accepts only a string literal: `"Steering"`, `@"Steering"`, or `$"Steering"` without substitutions. Variables, `const`, `nameof`, concatenation, and `$"Agent {index}"` keep the original method name — the generator reads the source text and does not evaluate expressions. The argument is still evaluated at runtime.
-
-> [!IMPORTANT]
-> Do not call `this.Marker()` without `using`: the measurement will not end automatically. A scope must not cross `await` or `yield`; measure synchronous sections separately ([Unity limitation](https://docs.unity3d.com/6000.0/Documentation/Manual/profiler-add-markers-code.html)).
 
 ## Generation details
 

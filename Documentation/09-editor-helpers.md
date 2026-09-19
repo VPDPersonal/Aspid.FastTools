@@ -28,7 +28,7 @@ abilityConfig.GetDisplayNameWithIndex(); // "Ability Config (2)"
 > [!NOTE]
 > These methods are editor-only. Place calling code in an `Editor` folder or an assembly restricted to the Editor platform.
 
-## Object display name
+## GetDisplayName()
 
 `GetDisplayName()` extends `UnityEngine.Object`. When the type has an `[AddComponentMenu]` attribute, it uses `ObjectNames.GetInspectorTitle`. Otherwise, it formats the type name with `ObjectNames.NicifyVariableName`. A null or destroyed object returns `string.Empty`.
 
@@ -37,7 +37,7 @@ abilityConfig.GetDisplayNameWithIndex(); // "Ability Config (2)"
 | `FireAbility`, with the attribute | `Fire Ability` | `Fire Ability` |
 | `AbilityConfig`, without it | `Ability Config` | `Ability Config (Script)` |
 
-## Component index
+## GetDisplayNameWithIndex()
 
 `GetDisplayNameWithIndex()` extends `Component` and counts components of the **exact same type** on the same GameObject. The suffix follows component order, starting at one. A null or destroyed component returns `string.Empty`.
 
