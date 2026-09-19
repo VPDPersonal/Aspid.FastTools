@@ -41,7 +41,12 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
   return (tree) => {
     // Two-column tables made entirely of code are before/after comparisons.
     // Keep portable HTML in package Markdown and use native code blocks on the site.
-    for (const table of tree.children.filter((node) => node.type === 'table')) {
+    const tables = [];
+    (function collect(node) {
+      if (node.type === 'table') tables.push(node);
+      else node.children?.forEach(collect);
+    })(tree);
+    for (const table of tables) {
       const [header, ...rows] = table.children;
       if (header.children.length !== 2 || rows.length === 0
         || !header.children.every((cell) => cell.children.every((part) => part.type === 'text'))

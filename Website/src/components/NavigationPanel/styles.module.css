@@ -8,7 +8,7 @@
 .tools > :first-child { flex: 1 1 auto; min-width: 0; }
 .tools > button { flex: none; width: 2.5rem; justify-content: center; border-radius: 10px; }
 .brandRow { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-.close { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; margin-right: -0.5rem; color: var(--venom-fg); border-radius: 10px; }
+.close { display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; color: var(--venom-fg); border-radius: 10px; }
 .close:hover { color: var(--venom-accent); background: var(--venom-glow-soft); }
 .close svg { width: 22px; height: 22px; }
 .brandLink { display: flex; align-items: center; gap: 0.6rem; min-width: 0; padding: 0.25rem 0; color: var(--venom-fg-strong); }

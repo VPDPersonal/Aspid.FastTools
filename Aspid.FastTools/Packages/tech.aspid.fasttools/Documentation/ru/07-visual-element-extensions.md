@@ -10,42 +10,6 @@
 |---|---|
 | <pre lang="csharp"><code>var title = new Label("Stats");&#10;title.style.fontSize = 18;&#10;&#10;var panel = new VisualElement();&#10;panel.style.paddingLeft = 12;&#10;panel.style.paddingRight = 12;&#10;panel.style.paddingTop = 8;&#10;panel.style.paddingBottom = 8;&#10;panel.Add(title);</code></pre> | <pre lang="csharp"><code>var panel = new VisualElement()&#10;    .SetPaddingX(12)&#10;    .SetPaddingY(8)&#10;    .AddChild(new Label("Stats")&#10;        .SetFontSize(18));</code></pre> |
 
-Добавьте `panel` в `rootVisualElement` окна редактора или в `UIDocument.rootVisualElement` игрового интерфейса.
-
-<details>
-<summary>Полный пример: окно Stats с кнопкой</summary>
-
-Создайте `StatsWindow.cs` в папке `Editor`:
-
-```csharp
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.UIElements;
-using Aspid.FastTools.UIElements;
-
-public sealed class StatsWindow : EditorWindow
-{
-    [MenuItem("Tools/Stats")]
-    private static void Open() => GetWindow<StatsWindow>("Stats");
-
-    public void CreateGUI()
-    {
-        rootVisualElement
-            .SetPadding(12)
-            .AddChild(new Label("Stats").SetFontSize(18))
-            .AddChild(new Button(() => Debug.Log("Refresh"))
-                .SetText("Refresh")
-                .SetMarginTop(8));
-    }
-}
-```
-
-Откройте **Tools → Stats**. Кнопка **Refresh** выведет сообщение в Console.
-
-</details>
-
-### Как читать цепочки
-
 Сеттеры сохраняют тип: `new Button().SetText("Refresh")` возвращает `Button`. Операции с дочерними узлами возвращают **родителя** — следующий вызов продолжает настраивать его:
 
 ```csharp
@@ -53,10 +17,6 @@ var panel = new VisualElement()
     .AddChild(new Label("Health").SetFontSize(14))
     .SetMarginTop(12); // отступ у panel
 ```
-
-Цепочки на `element.style`, `textField.textEdition` и `textField.textSelection` возвращают соответствующий интерфейс. Методы-запросы `IsFocused()`, `GetOwnerWindow()` и `TryGetByEnum(...)` цепочку не продолжают: они возвращают `bool` или найденное окно.
-
-Основные расширения работают в редакторе и в игре. Для привязки к `SerializedObject` и редакторских команд дополнительно нужен `Aspid.FastTools.UIElements.Editors`; такой код размещайте в editor-сборке, например в папке `Editor`.
 
 ## Найти нужное расширение
 
@@ -89,32 +49,35 @@ var panel = new VisualElement()
 <details>
 <summary>Все методы элемента и операции с дочерними узлами</summary>
 
-| Метод | Описание |
-|-------|----------|
-| `SetName(string)` | Устанавливает `element.name` |
-| `SetVisible(bool)` | Устанавливает `element.visible` |
-| `SetTooltip(string)` | Устанавливает `element.tooltip` |
-| `SetUserData(object)` | Устанавливает `element.userData` |
-| `SetEnabledSelf(bool)` | Вызывает `element.SetEnabled`, управляя доступностью элемента |
-| `SetPickingMode(PickingMode)` | Устанавливает `element.pickingMode` |
-| `SetUsageHints(UsageHints)` | Устанавливает `element.usageHints`; задайте до подключения элемента к панели |
-| `SetViewDataKey(string)` | Устанавливает `element.viewDataKey` |
-| `SetLanguageDirection(LanguageDirection)` | Устанавливает `element.languageDirection` |
-| `SetDisablePlayModeTint(bool)` | Устанавливает `element.disablePlayModeTint` |
-| `SetDataSource(object)` | Устанавливает `element.dataSource` |
-| `SetDataSourceType(Type)` | Устанавливает `element.dataSourceType` |
-| `SetDataSourcePath(PropertyPath)` | Устанавливает `element.dataSourcePath` |
-| `AddChild(VisualElement)` | Добавляет дочерний элемент, возвращает родителя |
-| `AddChildren(params VisualElement[])` | Добавляет несколько дочерних элементов |
-| `InsertChild(int, VisualElement)` | Вставляет дочерний элемент по указанному индексу |
-| `InsertChildren(int, params VisualElement[])` | Вставляет несколько дочерних элементов начиная с индекса |
-| `RemoveChild(VisualElement)` | Удаляет дочерний элемент, возвращает родителя |
-| `RemoveChildAt(int)` | Удаляет дочерний элемент по указанному индексу |
-| `ClearChildren()` | Удаляет все дочерние элементы |
+Свойства элемента (`SetUsageHints` задайте до подключения элемента к панели):
 
-`AddChildren` и `InsertChildren` принимают `params VisualElement[]`, `IEnumerable<VisualElement>`, `List<VisualElement>`, `Span<VisualElement>` и `ReadOnlySpan<VisualElement>`.
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>element.name = name;</code></pre> | <pre lang="csharp"><code>element.SetName(name);</code></pre> |
+| <pre lang="csharp"><code>element.visible = visible;</code></pre> | <pre lang="csharp"><code>element.SetVisible(visible);</code></pre> |
+| <pre lang="csharp"><code>element.tooltip = tooltip;</code></pre> | <pre lang="csharp"><code>element.SetTooltip(tooltip);</code></pre> |
+| <pre lang="csharp"><code>element.userData = data;</code></pre> | <pre lang="csharp"><code>element.SetUserData(data);</code></pre> |
+| <pre lang="csharp"><code>element.SetEnabled(enabled);</code></pre> | <pre lang="csharp"><code>element.SetEnabledSelf(enabled);</code></pre> |
+| <pre lang="csharp"><code>element.pickingMode = mode;</code></pre> | <pre lang="csharp"><code>element.SetPickingMode(mode);</code></pre> |
+| <pre lang="csharp"><code>element.usageHints = hints;</code></pre> | <pre lang="csharp"><code>element.SetUsageHints(hints);</code></pre> |
+| <pre lang="csharp"><code>element.viewDataKey = key;</code></pre> | <pre lang="csharp"><code>element.SetViewDataKey(key);</code></pre> |
+| <pre lang="csharp"><code>element.languageDirection = direction;</code></pre> | <pre lang="csharp"><code>element.SetLanguageDirection(direction);</code></pre> |
+| <pre lang="csharp"><code>element.disablePlayModeTint = disable;</code></pre> | <pre lang="csharp"><code>element.SetDisablePlayModeTint(disable);</code></pre> |
+| <pre lang="csharp"><code>element.dataSource = source;</code></pre> | <pre lang="csharp"><code>element.SetDataSource(source);</code></pre> |
+| <pre lang="csharp"><code>element.dataSourceType = type;</code></pre> | <pre lang="csharp"><code>element.SetDataSourceType(type);</code></pre> |
+| <pre lang="csharp"><code>element.dataSourcePath = path;</code></pre> | <pre lang="csharp"><code>element.SetDataSourcePath(path);</code></pre> |
 
-> У каждой операции с дочерними элементами есть `*If`-вариант (`AddChildIf`, `AddChildrenIf`, `InsertChildIf`, `InsertChildrenIf`, `RemoveChildIf`, `RemoveChildAtIf`, `ClearChildrenIf`) с ведущим параметром `bool condition` — операция выполняется только при `condition == true`.
+Операции с дочерними элементами возвращают родителя; `*If`-вариант принимает ведущий параметр `bool condition`:
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.Add(child);</code></pre> | <pre lang="csharp"><code>panel.AddChild(child);&#10;panel.AddChildIf(condition, child);</code></pre> |
+| <pre lang="csharp"><code>foreach (var child in children)&#10;    panel.Add(child);</code></pre> | <pre lang="csharp"><code>panel.AddChildren(a, b, c);&#10;panel.AddChildren(enumerable);&#10;panel.AddChildren(list);&#10;panel.AddChildren(span);&#10;panel.AddChildren(readOnlySpan);&#10;panel.AddChildrenIf(condition, …);</code></pre> |
+| <pre lang="csharp"><code>panel.Insert(index, child);</code></pre> | <pre lang="csharp"><code>panel.InsertChild(index, child);&#10;panel.InsertChildIf(condition, index, child);</code></pre> |
+| <pre lang="csharp"><code>foreach (var child in children)&#10;    panel.Insert(index++, child);</code></pre> | <pre lang="csharp"><code>panel.InsertChildren(index, a, b, c);&#10;panel.InsertChildren(index, enumerable);&#10;panel.InsertChildren(index, list);&#10;panel.InsertChildren(index, span);&#10;panel.InsertChildren(index, readOnlySpan);&#10;panel.InsertChildrenIf(condition, index, …);</code></pre> |
+| <pre lang="csharp"><code>panel.Remove(child);</code></pre> | <pre lang="csharp"><code>panel.RemoveChild(child);&#10;panel.RemoveChildIf(condition, child);</code></pre> |
+| <pre lang="csharp"><code>panel.RemoveAt(index);</code></pre> | <pre lang="csharp"><code>panel.RemoveChildAt(index);&#10;panel.RemoveChildAtIf(condition, index);</code></pre> |
+| <pre lang="csharp"><code>panel.Clear();</code></pre> | <pre lang="csharp"><code>panel.ClearChildren();&#10;panel.ClearChildrenIf(condition);</code></pre> |
 
 </details>
 
@@ -127,8 +90,6 @@ var panel = new VisualElement()
 | <pre lang="csharp"><code>// Скрыть, сохранив место в раскладке&#10;element.visible = false;</code></pre> | <pre lang="csharp"><code>// Скрыть, сохранив место в раскладке&#10;element.SetVisible(false);</code></pre> |
 | <pre lang="csharp"><code>// Убрать элемент и потомков из раскладки&#10;element.style.display =&#10;    DisplayStyle.None;</code></pre> | <pre lang="csharp"><code>// Убрать элемент и потомков из раскладки&#10;element.SetDisplay(DisplayStyle.None);</code></pre> |
 | <pre lang="csharp"><code>// Отключить взаимодействие с элементом и потомками&#10;element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>// Отключить взаимодействие с элементом и потомками&#10;element.SetEnabledSelf(false);</code></pre> |
-
-Чтобы вернуть элемент, используйте `SetVisible(true)`, `SetDisplay(DisplayStyle.Flex)` или `SetEnabledSelf(true)` соответственно. Доступность дочернего элемента также зависит от доступности его родителей.
 
 ## Фокус
 
@@ -860,7 +821,7 @@ var listView = new ListView();
 
 ## Расширения редактора
 
-Добавьте `using Aspid.FastTools.UIElements.Editors;` и `using UnityEditor.UIElements;` в editor-скрипт.
+Расширения выше работают в редакторе и в игре. Привязка к `SerializedObject` и редакторские команды лежат в сборке `Aspid.FastTools.UIElements.Editors`, поэтому такой код размещайте в editor-сборке, например в папке `Editor`. Добавьте в этот скрипт `using Aspid.FastTools.UIElements.Editors;` и `using UnityEditor.UIElements;`.
 
 ### Привязка к SerializedObject
 
