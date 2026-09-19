@@ -28,7 +28,7 @@ abilityConfig.GetDisplayNameWithIndex(); // "Ability Config (2)"
 > [!NOTE]
 > Методы доступны только в редакторе. Размещайте использующий их код в папке `Editor` или в сборке, ограниченной платформой Editor.
 
-## Имя объекта
+## GetDisplayName()
 
 `GetDisplayName()` работает с `UnityEngine.Object`. Если у типа есть `[AddComponentMenu]`, метод берёт заголовок через `ObjectNames.GetInspectorTitle`. В остальных случаях он преобразует имя типа через `ObjectNames.NicifyVariableName`. Для `null` или уничтоженного объекта метод возвращает `string.Empty`.
 
@@ -37,7 +37,7 @@ abilityConfig.GetDisplayNameWithIndex(); // "Ability Config (2)"
 | `FireAbility`, с атрибутом | `Fire Ability` | `Fire Ability` |
 | `AbilityConfig`, без атрибута | `Ability Config` | `Ability Config (Script)` |
 
-## Номер компонента
+## GetDisplayNameWithIndex()
 
 `GetDisplayNameWithIndex()` работает с `Component` и учитывает только компоненты **точно того же типа** на том же GameObject. Суффикс соответствует порядку компонентов, начиная с единицы. Для `null` или уничтоженного компонента метод возвращает `string.Empty`.
 

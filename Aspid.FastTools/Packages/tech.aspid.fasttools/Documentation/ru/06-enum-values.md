@@ -4,7 +4,7 @@
 
 ## Быстрый старт
 
-Добавьте `using Aspid.FastTools.Enums;` к скрипту с `using UnityEngine;`. В примерах используется перечисление:
+В примерах используется перечисление:
 
 ```csharp
 public enum DamageType
@@ -13,95 +13,59 @@ public enum DamageType
 }
 ```
 
-Одна таблица заменяет набор сериализованных полей и `switch`:
+Добавьте `using Aspid.FastTools.Enums;` к скрипту с `using UnityEngine;`. Одна таблица заменяет набор сериализованных полей и `switch`:
 
 | До — отдельные поля и switch | После — EnumValues |
 |---|---|
 | <pre lang="csharp"><code>[SerializeField]&#10;private float _defaultMultiplier = 1f;&#10;[SerializeField]&#10;private float _fireMultiplier = 1.5f;&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt; type switch&#10;&#123;&#10;    DamageType.Fire =&gt; _fireMultiplier,&#10;    _ =&gt; _defaultMultiplier&#10;&#125;;</code></pre> | <pre lang="csharp"><code>[SerializeField]&#10;private EnumValues&lt;DamageType, float&gt;&#10;    _multipliers;&#10;&#10;public float GetMultiplier(&#10;    DamageType type) =&gt;&#10;    _multipliers.GetValue(type);</code></pre> |
 
-В инспекторе задайте у `Multipliers` **Default Value = 1** и добавьте строку **Fire = 1.5**:
+![Fire использует множитель 1.5, остальные типы урона — Default Value 1](../Images/enum-values-multipliers-quick-start.png)
+
+Fire использует множитель 1.5, остальные типы урона — Default Value 1
 
 | Вызов | Результат |
 |---|---|
 | `_multipliers.GetValue(DamageType.Fire)` | `1.5` — значение строки `Fire` |
 | `_multipliers.GetValue(DamageType.Ice)` | `1` — строки `Ice` нет, возвращается `Default Value` |
 
-<details>
-<summary>Полный пример: компонент с множителями урона</summary>
-
-Создайте `DamageDealer.cs` и добавьте компонент на GameObject:
-
-```csharp
-using UnityEngine;
-using Aspid.FastTools.Enums;
-
-public enum DamageType
-{
-    Physical, Fire, Ice, Poison
-}
-
-public sealed class DamageDealer : MonoBehaviour
-{
-    [SerializeField] private EnumValues<DamageType, float> _multipliers;
-
-    public float CalculateDamage(DamageType type, float baseDamage) =>
-        baseDamage * _multipliers.GetValue(type);
-
-    [ContextMenu("Log Fire Damage")]
-    private void LogFireDamage() =>
-        Debug.Log(CalculateDamage(DamageType.Fire, 10f), this);
-}
-```
-
-Установите **Default Value = 1**, добавьте строку **Fire = 1.5** и выберите **Log Fire Damage** в контекстном меню компонента. В Console появится `15`. Если `DamageType` уже объявлен в проекте, используйте существующее перечисление.
-
-</details>
-
 ## Настройка в инспекторе
-
-Так выглядят две таблицы `EnumValues<SurfaceType, Color>` из [примера EnumValues](../../Samples~/EnumValues/Documentation/README.ru.md):
-
-![Таблицы цветов поверхностей и следов с отдельным Default Value](../../Samples~/EnumValues/Documentation/Images/surface-tables.png)
-
-Таблицы цветов поверхностей и следов с отдельным Default Value
 
 1. Раскройте таблицу и задайте **Default Value** — его получат ключи без собственной строки.
 2. Добавьте строки вручную или нажмите правой кнопкой по свойству и выберите **Populate Missing Enum Members**.
 3. Настройте значения добавленных строк.
 
-Заполнять все члены перечисления необязательно: таблица только с отличающимися значениями остаётся рабочей.
+Строки нужны только ключам, чьё значение отличается от `Default Value`.
 
 ### Populate Missing Enum Members
 
-Команда добавляет в конец списка члены, **объявленные в enum**, но отсутствующие в таблице, и записывает в новые строки текущее `Default Value`. Существующие строки не меняются, операция отменяется через Undo. Если отсутствующих членов нет, пункт меню недоступен.
+Добавляет в конец таблицы недостающие члены enum со значением, равным текущему `Default Value`.
+
+![Populate Missing Enum Members добавляет строки со значением 1, сохраняя Fire = 1.5; Undo отменяет заполнение](../Images/enum-values-multipliers-populate.gif)
+
+Populate Missing Enum Members добавляет строки со значением 1, сохраняя Fire = 1.5; Undo отменяет заполнение
 
 Для `[Flags]` добавляются только объявленные члены, включая именованные комбинации. Все возможные сочетания битов не создаются.
 
-> [!NOTE]
-> `Default Value` копируется в строки один раз, при заполнении. Если позже изменить его на `2`, строка `Ice`, созданная со значением `1`, продолжит возвращать `1`.
-
 ## Какой вариант выбрать
 
-| Задача | Тип поля | Выбор enum в инспекторе |
-|---|---|---|
-| Перечисление известно в коде | `EnumValues<TEnum, TValue>` | Задан аргументом `TEnum`; поле типа только для чтения |
-| Перечисление выбирает автор ассета | `EnumValues<TValue>` | Доступен в заголовке таблицы |
+| Задача | Тип поля | Выбор enum в инспекторе | Ключ в `GetValue` |
+|---|---|---|---|
+| Перечисление известно в коде | `EnumValues<TEnum, TValue>` | Задан аргументом `TEnum`; поле типа только для чтения | `TEnum`: проверяется компилятором, без упаковки в `object` |
+| Перечисление выбирает автор ассета | `EnumValues<TValue>` | Доступен в заголовке таблицы | `System.Enum`: ключ упаковывается, а чужой enum проходит компиляцию и возвращает `Default Value` |
 
 Оба варианта поддерживают `Default Value`, `[Flags]` и перебор строк. `TValue` — любой тип, который сериализует Unity: `float`, `Color`, `AudioClip`, ваш `[Serializable]`-класс.
 
 ### EnumValues\<TEnum, TValue\>
 
-Типизированный вариант для случаев, когда все обращения идут по одному известному enum. Компилятор проверяет тип ключа, а `GetValue` не упаковывает его в `object`:
-
 ```csharp
-[SerializeField] private EnumValues<DamageType, Color> _colors;
-
-public Color GetColor(DamageType type) => _colors.GetValue(type);
+[SerializeField] private EnumValues<DamageType, float> _multipliers;
 ```
+
+Enum задан в коде, тип ключа проверяет компилятор. Полный пример — в [быстром старте](#быстрый-старт).
 
 ### EnumValues\<TValue\>
 
-В коде задан только тип значения, enum выбирается в инспекторе:
+То же поле без `DamageType` в объявлении; enum выбирается в инспекторе:
 
 ```csharp
 [SerializeField] private EnumValues<float> _multipliers;
@@ -109,10 +73,14 @@ public Color GetColor(DamageType type) => _colors.GetValue(type);
 public float GetMultiplier(DamageType type) => _multipliers.GetValue(type);
 ```
 
-Для этого примера выберите **DamageType** в заголовке таблицы. `GetValue` принимает `System.Enum`, поэтому компилятор пропустит ключ другого перечисления — он вернёт `Default Value`, даже если числовое значение совпало.
+Для этого примера выберите **DamageType** в заголовке таблицы. Ключ другого перечисления вернёт `Default Value`, даже если числовое значение совпало.
+
+![Откройте выбор типа в заголовке Multipliers и найдите DamageType](../Images/enum-values-type-selector.png)
+
+Откройте выбор типа в заголовке Multipliers и найдите DamageType
 
 > [!IMPORTANT]
-> Если enum не выбран, таблица возвращает `Default Value` и один раз пишет предупреждение в Console. Если сохранённый тип не найден в проекте, например после переименования, вместо предупреждения будет ошибка.
+> Если enum не выбран, таблица возвращает `Default Value` и при первом обращении пишет предупреждение в Console. Если сохранённый тип не найден в проекте, например после переименования, вместо предупреждения будет ошибка.
 
 ## Правила поиска
 
@@ -127,16 +95,12 @@ public float GetMultiplier(DamageType type) => _multipliers.GetValue(type);
 
 ### Флаги
 
-Для `[Flags]`-enum после точного поиска добавляется второй проход:
-
-1. **Точное совпадение** со всем запрошенным значением.
-2. Иначе — **первая строка, все биты которой входят в запрос**.
-3. Иначе — `Default Value`.
+Для `[Flags]` сначала ищется точное совпадение, затем проверяется вхождение флагов.
 
 Значение `0` совпадает только с `0` и не подходит к остальным флагам как «пустая маска». Пример:
 
 ```csharp
-[System.Flags]
+[Flags]
 public enum StatusEffect
 {
     None = 0,
@@ -157,16 +121,31 @@ public enum StatusEffect
 | `Burning \| Slowed` | `0.3` |
 | `None` | `1` |
 
-| Аргумент GetValue | Результат | Причина |
-|---|---|---|
-| `Burning \| Slowed` | `0.3` | Точная строка побеждает, хотя стоит ниже отдельных флагов |
-| `Burning \| Frozen` | `0.9` | Точной строки нет; первая подходящая — `Burning` |
-| `Burning \| Slowed \| Frozen` | `0.9` | Точной строки нет; `Burning` стоит выше `Burning \| Slowed` |
-| `Frozen` | `1` | Подходящей строки нет |
-| `None` | `1` | Точная строка с нулём |
+<ol className="enum-lookup-flow">
+  <li>
+    <strong>Точное совпадение</strong>
+    <span>Ищем весь запрошенный набор флагов.</span>
+    <code>Burning | Slowed → 0.3</code>
+    <small>Точная строка побеждает, даже если стоит ниже.</small>
+    <em>Нет точной строки →</em>
+  </li>
+  <li>
+    <strong>Первая подходящая строка</strong>
+    <span>Все её флаги должны входить в запрос.</span>
+    <code>Burning | Frozen → 0.9</code>
+    <small>Выбирается Burning; порядок строк важен.</small>
+    <em>Нет подходящей строки →</em>
+  </li>
+  <li>
+    <strong>Default Value</strong>
+    <span>Возвращаем значение по умолчанию.</span>
+    <code>Frozen → 1</code>
+    <small>Ни точной, ни подходящей строки нет.</small>
+  </li>
+</ol>
 
 > [!NOTE]
-> Поиск возвращает **одно** значение и не объединяет подходящие строки. Если для `Burning | Slowed | Frozen` нужен результат `0.3`, переместите строку `Burning | Slowed` выше `Burning`.
+> Второй проход берёт первую подходящую строку, а не самую полную. Для `Burning | Slowed | Frozen` подходят и `Burning`, и `Burning | Slowed`, но побеждает `Burning`, потому что стоит выше: результат `0.9`. Чтобы побеждала комбинация, ставьте составные строки выше одиночных флагов.
 
 ## Проверка ключей через Equals
 
@@ -200,14 +179,21 @@ foreach (var (type, multiplier) in _multipliers)
 
 Публичный API только читает таблицу: методов `Add`, `Remove` и индексатора для записи нет, значения задаются через сериализацию Unity.
 
-Ключи хранятся по **именам** членов enum, поэтому переставлять члены и менять их числовые значения безопасно. Новый член возвращает `Default Value`, пока для него не добавлена строка — команда **Populate Missing Enum Members** заполняет такие пропуски. Переименованный или удалённый член перестаёт распознаваться: его строка пропускается при поиске и переборе, проверьте такие ключи в инспекторе.
+Ключи хранятся по **именам** членов enum:
 
-## Практический пример
+| Изменение enum | Результат |
+|---|---|
+| Члены переставлены или изменены их числовые значения | Таблица работает как раньше |
+| Добавлен член | Возвращает `Default Value`, пока не добавлена строка; **Populate Missing Enum Members** заполняет пропуск |
+| Член переименован или удалён | Его строка не распознаётся: при инициализации в Console появляется ошибка, поиск и перебор её пропускают |
 
-В [примере EnumValues](../../Samples~/EnumValues/Documentation/README.ru.md) тип поверхности задаёт цвет плитки и следа через `EnumValues<SurfaceType, Color>`, а флаги рельефа — множитель скорости персонажа через `EnumValues<float>` с выбранным в инспекторе `TerrainFlags`:
+> [!WARNING]
+> Как только такая строка отрисовывается в инспекторе, её ключ молча заменяется на первый член enum. Переименовывайте члены до открытия ассета в инспекторе или проверьте строки сразу после.
+
+## Пример в пакете
+
+Плитки и следы получают цвет из `EnumValues<SurfaceType, Color>`, а множитель скорости — из `EnumValues<float>` с выбранным в инспекторе `[Flags]`-enum: [EnumValues](../../Samples~/EnumValues/Documentation/README.ru.md).
 
 ![Персонаж проходит по разным поверхностям и оставляет непрерывную цветную линию.](../../Samples~/EnumValues/Documentation/Images/demo.gif)
 
 Персонаж проходит по разным поверхностям и оставляет непрерывную цветную линию.
-
-Импортируйте пример и откройте `Scenes/EnumValues.unity`. Измените цвет `Grass` в `Data/SurfacePalette.asset` — плитки перекрасятся без Play Mode. Удалите строку `Stone` из **Footprint Colors**, чтобы увидеть `Default Value` в действии. Эксперименты с флагами и перебором описаны в [документации примера](../../Samples~/EnumValues/Documentation/README.ru.md#попробуйте).

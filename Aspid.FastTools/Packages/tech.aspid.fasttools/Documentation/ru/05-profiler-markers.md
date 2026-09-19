@@ -12,9 +12,16 @@
 
 Работает в `MonoBehaviour` и обычных C#-классах. Генератор входит в пакет; расширение находится в глобальном пространстве имён — дополнительные `using`, атрибуты и `partial` не нужны.
 
-## Область и имя
+## Marker()
 
-`Marker()` возвращает `ProfilerMarker.AutoScope`. `.WithName("Steering")` заменяет часть имени с методом; тип и номер строки остаются.
+Возвращает `ProfilerMarker.AutoScope` маркера `Тип.Метод (строка)` для текущей точки вызова.
+
+> [!IMPORTANT]
+> Не вызывайте `this.Marker()` без `using`: замер не завершится автоматически. Область не должна пересекать `await` или `yield`; измеряйте синхронные участки отдельно ([ограничение Unity](https://docs.unity3d.com/6000.0/Documentation/Manual/profiler-add-markers-code.html)).
+
+## WithName()
+
+`.WithName("Steering")` заменяет часть имени с методом; тип и номер строки остаются.
 
 ```csharp
 public void Step()
@@ -69,14 +76,11 @@ internal static class __FlockSimulationProfilerMarkerExtensions
 
 Дерево в **CPU Usage → Hierarchy** повторяет вложенность `using`, а маркер внутри цикла остаётся одной строкой со счётчиком `Calls`. Deep Profile не нужен.
 
-![Маркеры FlockSimulation в CPU Usage: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов](../../Samples~/ProfilerMarkers/Documentation/Images/profiler-markers.png)
+![Схема маркеров FlockSimulation: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов. Время приведено для примера.](../Images/profiler-markers-hierarchy.svg)
 
-Маркеры FlockSimulation в CPU Usage: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов
+Схема маркеров FlockSimulation: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов. Время приведено для примера.
 
 `WithName` принимает только строковый литерал: `"Steering"`, `@"Steering"` или `$"Steering"` без подстановок. Переменные, `const`, `nameof`, конкатенация и `$"Agent {index}"` оставляют исходное имя метода — генератор читает текст исходника и не вычисляет выражения. Сам аргумент во время выполнения всё равно вычисляется.
-
-> [!IMPORTANT]
-> Не вызывайте `this.Marker()` без `using`: замер не завершится автоматически. Область не должна пересекать `await` или `yield`; измеряйте синхронные участки отдельно ([ограничение Unity](https://docs.unity3d.com/6000.0/Documentation/Manual/profiler-add-markers-code.html)).
 
 ## Особенности генерации
 

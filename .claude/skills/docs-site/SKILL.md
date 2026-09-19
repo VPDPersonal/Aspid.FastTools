@@ -110,8 +110,9 @@ to every main doc page, always to the English file and its `ru/` twin together.
   between quick start and a later section (`AndApply` is explained once).
 - **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`").
   Never stack two admonitions. A pitfall that silently loses data gets a `> [!WARNING]` (boxed struct copy).
-- **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence and the
-  link to the sample README — no GIF, no extra buttons described. The GIF lives on the sample's own page.
+- **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
+  link to the sample README and, when the sample has one, its `demo.gif` with the caption paragraph — no
+  "how to open" steps or experiments, those live on the sample's own page.
 
 ## Adding a main doc page
 
