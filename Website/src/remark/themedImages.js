@@ -19,7 +19,7 @@ export default function remarkThemedImages() {
       if ((node.type === 'paragraph' || node.type === 'tableCell') && node.children?.length === 1) {
         const image = node.children[0];
         if (image.type === 'image' && !/^(?:[a-z]+:|\/|#)/i.test(image.url)) {
-          const lightUrl = image.url.replace(/(?<!-light)(\.(?:png|gif|jpe?g|webp))$/i, '-light$1');
+          const lightUrl = image.url.replace(/(?<!-light)(\.(?:png|gif|jpe?g|webp|svg))$/i, '-light$1');
           if (lightUrl !== image.url && existsSync(path.resolve(path.dirname(file.path), decodeURIComponent(lightUrl)))) {
             const sceneSample = /[/\\](?:enum-?values|types|serialize-?references|profiler-?markers)[/\\]/i.test(file.path)
               && /(?:^|\/)(?:demo|scene)\.(?:gif|png)$/i.test(image.url);

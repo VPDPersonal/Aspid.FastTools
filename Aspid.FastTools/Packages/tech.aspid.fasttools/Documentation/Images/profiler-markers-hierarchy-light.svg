@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="352" viewBox="0 0 1120 352" fill="none">
+  <title>FlockSimulation marker hierarchy</title>
+  <desc>Step (3) contains Steering (5) and Integrate (14). Steering contains Steering.Agent (9), called 120 times. The other markers are called once. All allocate 0 B. Example times: Step 0.38 ms, Steering 0.37 ms, Steering.Agent 0.36 ms, Integrate 0.01 ms.</desc>
+  <rect x="1" y="1" width="1118" height="350" rx="12" fill="#ffffff"/>
+  <path d="M13 1H1107A12 12 0 0 1 1119 13V72H1V13A12 12 0 0 1 13 1Z" fill="#f7f7f8"/>
+  <path d="M1 72H1119M1 126H1119M660 72V351M800 72V351M960 72V351" stroke="#e3e4e8"/>
+  <path d="M28 39H35L41 27L49 49L56 35H66" stroke="#2f8a45" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <g font-family="'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace">
+    <text x="84" y="45" font-size="23" fill="#2a2c31">CPU Usage</text>
+    <path d="M236 31L243 38L236 45" stroke="#5f636b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="264" y="45" font-size="23" fill="#5f636b">Hierarchy</text>
+    <text x="30" y="106" font-size="18" fill="#5f636b">Marker</text>
+    <text x="730" y="106" font-size="18" text-anchor="middle" fill="#5f636b">Calls</text>
+    <text x="880" y="106" font-size="18" text-anchor="middle" fill="#5f636b">GC Alloc</text>
+    <text x="1040" y="106" font-size="18" text-anchor="middle" fill="#5f636b">Time ms</text>
+    <rect x="15" y="239" width="1090" height="52" rx="7" fill="#edf6ef"/>
+    <path d="M43 177V317H72M43 209H72M83 226V265H112" stroke="#e3e4e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <g font-size="23" fill="#2a2c31">
+      <text x="63" y="166">FlockSimulation.Step <tspan fill="#5f636b">(3)</tspan></text>
+      <text x="103" y="220">FlockSimulation.Steering <tspan fill="#5f636b">(5)</tspan></text>
+      <text x="143" y="274" fill="#2f8a45">FlockSimulation.Steering.Agent <tspan fill="#5f636b">(9)</tspan></text>
+      <text x="103" y="328">FlockSimulation.Integrate <tspan fill="#5f636b">(14)</tspan></text>
+      <text x="730" y="166" text-anchor="middle">1</text>
+      <text x="730" y="220" text-anchor="middle">1</text>
+      <text x="730" y="274" text-anchor="middle" fill="#2f8a45" font-weight="600">120</text>
+      <text x="730" y="328" text-anchor="middle">1</text>
+      <text x="880" y="166" text-anchor="middle">0 B</text>
+      <text x="1040" y="166" text-anchor="middle">0.38</text>
+      <text x="880" y="220" text-anchor="middle">0 B</text>
+      <text x="1040" y="220" text-anchor="middle">0.37</text>
+      <text x="880" y="274" text-anchor="middle">0 B</text>
+      <text x="1040" y="274" text-anchor="middle">0.36</text>
+      <text x="880" y="328" text-anchor="middle">0 B</text>
+      <text x="1040" y="328" text-anchor="middle">0.01</text>
+    </g>
+  </g>
+  <g fill="#2f8a45">
+    <path d="M36 154H50L43 162Z"/>
+    <path d="M76 208H90L83 216Z"/>
+    <circle cx="123" cy="266" r="4"/>
+    <circle cx="83" cy="320" r="4"/>
+  </g>
+  <rect x="1" y="1" width="1118" height="350" rx="12" stroke="#e3e4e8" stroke-width="2"/>
+</svg>
