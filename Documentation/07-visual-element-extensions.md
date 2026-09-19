@@ -12,42 +12,6 @@ Add `using Aspid.FastTools.UIElements;` to a script that imports `UnityEngine.UI
 |---|---|
 | <pre lang="csharp"><code>var title = new Label("Stats");&#10;title.style.fontSize = 18;&#10;&#10;var panel = new VisualElement();&#10;panel.style.paddingLeft = 12;&#10;panel.style.paddingRight = 12;&#10;panel.style.paddingTop = 8;&#10;panel.style.paddingBottom = 8;&#10;panel.Add(title);</code></pre> | <pre lang="csharp"><code>var panel = new VisualElement()&#10;    .SetPaddingX(12)&#10;    .SetPaddingY(8)&#10;    .AddChild(new Label("Stats")&#10;        .SetFontSize(18));</code></pre> |
 
-Add `panel` to an editor window's `rootVisualElement` or a runtime UI's `UIDocument.rootVisualElement`.
-
-<details>
-<summary>Complete example: a Stats window with a button</summary>
-
-Create `StatsWindow.cs` in an `Editor` folder:
-
-```csharp
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.UIElements;
-using Aspid.FastTools.UIElements;
-
-public sealed class StatsWindow : EditorWindow
-{
-    [MenuItem("Tools/Stats")]
-    private static void Open() => GetWindow<StatsWindow>("Stats");
-
-    public void CreateGUI()
-    {
-        rootVisualElement
-            .SetPadding(12)
-            .AddChild(new Label("Stats").SetFontSize(18))
-            .AddChild(new Button(() => Debug.Log("Refresh"))
-                .SetText("Refresh")
-                .SetMarginTop(8));
-    }
-}
-```
-
-Open **Tools → Stats**. The **Refresh** button prints a message to the Console.
-
-</details>
-
-### Reading a chain
-
 Setters preserve the type: `new Button().SetText("Refresh")` returns a `Button`. Child operations return the **parent**, so the next call continues configuring it:
 
 ```csharp
@@ -55,10 +19,6 @@ var panel = new VisualElement()
     .AddChild(new Label("Health").SetFontSize(14))
     .SetMarginTop(12); // margin on panel
 ```
-
-Chains on `element.style`, `textField.textEdition`, and `textField.textSelection` return their respective interfaces. Query methods such as `IsFocused()`, `GetOwnerWindow()`, and `TryGetByEnum(...)` do not continue the chain: they return a `bool` or the resolved window.
-
-Core extensions work in both the editor and the game. `SerializedObject` binding and editor commands also require `Aspid.FastTools.UIElements.Editors`; put that code in an editor assembly, such as an `Editor` folder.
 
 ## Find an extension
 
@@ -93,32 +53,35 @@ These methods return the parent element, so they can be chained. `AddChildren` a
 <details>
 <summary>All element and child operations</summary>
 
-| Method | Description |
-|-------|----------|
-| `SetName(string)` | Sets `element.name` |
-| `SetVisible(bool)` | Sets `element.visible` |
-| `SetTooltip(string)` | Sets `element.tooltip` |
-| `SetUserData(object)` | Sets `element.userData` |
-| `SetEnabledSelf(bool)` | Calls `element.SetEnabled` to control interaction |
-| `SetPickingMode(PickingMode)` | Sets `element.pickingMode` |
-| `SetUsageHints(UsageHints)` | Sets `element.usageHints`; configure before attaching the element to a panel |
-| `SetViewDataKey(string)` | Sets `element.viewDataKey` |
-| `SetLanguageDirection(LanguageDirection)` | Sets `element.languageDirection` |
-| `SetDisablePlayModeTint(bool)` | Sets `element.disablePlayModeTint` |
-| `SetDataSource(object)` | Sets `element.dataSource` |
-| `SetDataSourceType(Type)` | Sets `element.dataSourceType` |
-| `SetDataSourcePath(PropertyPath)` | Sets `element.dataSourcePath` |
-| `AddChild(VisualElement)` | Appends a child, returns the parent |
-| `AddChildren(params VisualElement[])` | Appends multiple children |
-| `InsertChild(int, VisualElement)` | Inserts a child at the specified index |
-| `InsertChildren(int, params VisualElement[])` | Inserts multiple children starting at an index |
-| `RemoveChild(VisualElement)` | Removes a child, returns the parent |
-| `RemoveChildAt(int)` | Removes the child at the specified index |
-| `ClearChildren()` | Removes all children |
+Element properties (`SetUsageHints` must be configured before attaching the element to a panel):
 
-`AddChildren` and `InsertChildren` accept `params VisualElement[]`, `IEnumerable<VisualElement>`, `List<VisualElement>`, `Span<VisualElement>`, and `ReadOnlySpan<VisualElement>`.
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>element.name = name;</code></pre> | <pre lang="csharp"><code>element.SetName(name);</code></pre> |
+| <pre lang="csharp"><code>element.visible = visible;</code></pre> | <pre lang="csharp"><code>element.SetVisible(visible);</code></pre> |
+| <pre lang="csharp"><code>element.tooltip = tooltip;</code></pre> | <pre lang="csharp"><code>element.SetTooltip(tooltip);</code></pre> |
+| <pre lang="csharp"><code>element.userData = data;</code></pre> | <pre lang="csharp"><code>element.SetUserData(data);</code></pre> |
+| <pre lang="csharp"><code>element.SetEnabled(enabled);</code></pre> | <pre lang="csharp"><code>element.SetEnabledSelf(enabled);</code></pre> |
+| <pre lang="csharp"><code>element.pickingMode = mode;</code></pre> | <pre lang="csharp"><code>element.SetPickingMode(mode);</code></pre> |
+| <pre lang="csharp"><code>element.usageHints = hints;</code></pre> | <pre lang="csharp"><code>element.SetUsageHints(hints);</code></pre> |
+| <pre lang="csharp"><code>element.viewDataKey = key;</code></pre> | <pre lang="csharp"><code>element.SetViewDataKey(key);</code></pre> |
+| <pre lang="csharp"><code>element.languageDirection = direction;</code></pre> | <pre lang="csharp"><code>element.SetLanguageDirection(direction);</code></pre> |
+| <pre lang="csharp"><code>element.disablePlayModeTint = disable;</code></pre> | <pre lang="csharp"><code>element.SetDisablePlayModeTint(disable);</code></pre> |
+| <pre lang="csharp"><code>element.dataSource = source;</code></pre> | <pre lang="csharp"><code>element.SetDataSource(source);</code></pre> |
+| <pre lang="csharp"><code>element.dataSourceType = type;</code></pre> | <pre lang="csharp"><code>element.SetDataSourceType(type);</code></pre> |
+| <pre lang="csharp"><code>element.dataSourcePath = path;</code></pre> | <pre lang="csharp"><code>element.SetDataSourcePath(path);</code></pre> |
 
-> Every child operation has an `*If` variant (`AddChildIf`, `AddChildrenIf`, `InsertChildIf`, `InsertChildrenIf`, `RemoveChildIf`, `RemoveChildAtIf`, `ClearChildrenIf`) with a leading `bool condition`. It runs only when `condition == true`.
+Child operations return the parent; the `*If` variant takes a leading `bool condition`:
+
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>panel.Add(child);</code></pre> | <pre lang="csharp"><code>panel.AddChild(child);&#10;panel.AddChildIf(condition, child);</code></pre> |
+| <pre lang="csharp"><code>foreach (var child in children)&#10;    panel.Add(child);</code></pre> | <pre lang="csharp"><code>panel.AddChildren(a, b, c);&#10;panel.AddChildren(enumerable);&#10;panel.AddChildren(list);&#10;panel.AddChildren(span);&#10;panel.AddChildren(readOnlySpan);&#10;panel.AddChildrenIf(condition, …);</code></pre> |
+| <pre lang="csharp"><code>panel.Insert(index, child);</code></pre> | <pre lang="csharp"><code>panel.InsertChild(index, child);&#10;panel.InsertChildIf(condition, index, child);</code></pre> |
+| <pre lang="csharp"><code>foreach (var child in children)&#10;    panel.Insert(index++, child);</code></pre> | <pre lang="csharp"><code>panel.InsertChildren(index, a, b, c);&#10;panel.InsertChildren(index, enumerable);&#10;panel.InsertChildren(index, list);&#10;panel.InsertChildren(index, span);&#10;panel.InsertChildren(index, readOnlySpan);&#10;panel.InsertChildrenIf(condition, index, …);</code></pre> |
+| <pre lang="csharp"><code>panel.Remove(child);</code></pre> | <pre lang="csharp"><code>panel.RemoveChild(child);&#10;panel.RemoveChildIf(condition, child);</code></pre> |
+| <pre lang="csharp"><code>panel.RemoveAt(index);</code></pre> | <pre lang="csharp"><code>panel.RemoveChildAt(index);&#10;panel.RemoveChildAtIf(condition, index);</code></pre> |
+| <pre lang="csharp"><code>panel.Clear();</code></pre> | <pre lang="csharp"><code>panel.ClearChildren();&#10;panel.ClearChildrenIf(condition);</code></pre> |
 
 </details>
 
@@ -131,8 +94,6 @@ Choose how hiding or disabling should behave:
 | <pre lang="csharp"><code>// Hide while retaining layout space&#10;element.visible = false;</code></pre> | <pre lang="csharp"><code>// Hide while retaining layout space&#10;element.SetVisible(false);</code></pre> |
 | <pre lang="csharp"><code>// Remove the element and descendants from layout&#10;element.style.display =&#10;    DisplayStyle.None;</code></pre> | <pre lang="csharp"><code>// Remove the element and descendants from layout&#10;element.SetDisplay(DisplayStyle.None);</code></pre> |
 | <pre lang="csharp"><code>// Disable interaction with the element and descendants&#10;element.SetEnabled(false);</code></pre> | <pre lang="csharp"><code>// Disable interaction with the element and descendants&#10;element.SetEnabledSelf(false);</code></pre> |
-
-Restore the element with `SetVisible(true)`, `SetDisplay(DisplayStyle.Flex)`, or `SetEnabledSelf(true)`, respectively. A child's enabled state also depends on its parents.
 
 <a id="focusable"></a>
 
@@ -878,7 +839,7 @@ These methods exist in both `ListViewExtensions` and `TreeViewExtensions`, each 
 
 ## Editor extensions
 
-Add `using Aspid.FastTools.UIElements.Editors;` and `using UnityEditor.UIElements;` to your editor script.
+The extensions above work in the editor and at runtime. `SerializedObject` binding and editor commands live in the `Aspid.FastTools.UIElements.Editors` assembly, so this code belongs in an editor assembly such as an `Editor` folder. Add `using Aspid.FastTools.UIElements.Editors;` and `using UnityEditor.UIElements;` to that script.
 
 ### SerializedObject binding
 

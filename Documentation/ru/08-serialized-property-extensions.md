@@ -13,6 +13,11 @@ using UnityEngine;
 
 public interface IAbilityEffect { }
 
+public enum Targeting { Single, Area }
+
+[Flags]
+public enum DamageTypes { Fire = 1, Ice = 2, Poison = 4 }
+
 [Serializable]
 public class BurnEffect : IAbilityEffect
 {
@@ -29,6 +34,9 @@ public class AbilityBook : MonoBehaviour
 {
     [SerializeField] private int _manaCost = 10;
     [SerializeField] private float _cooldown = 1f;
+    [SerializeField] private Sprite _icon;
+    [SerializeField] private Targeting _targeting;
+    [SerializeField] private DamageTypes _damageTypes;
     [SerializeField] private List<Ability> _abilities = new() { new Ability() };
     [SerializeReference] private IAbilityEffect _effect = new BurnEffect();
 }
@@ -84,7 +92,7 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 | Значения | Сеттеры |
 |---|---|
 | Числа | `SetInt`, `SetUint`, `SetLong`, `SetUlong`, `SetFloat`, `SetDouble` |
-| Текст и флаги | `SetString`, `SetBool`, `SetHash128` |
+| Текст, bool и хэш | `SetString`, `SetBool`, `SetHash128` |
 | Векторы | `SetVector2`, `SetVector2Int`, `SetVector3`, `SetVector3Int`, `SetVector4`, `SetQuaternion` |
 | Области | `SetRect`, `SetRectInt`, `SetBounds`, `SetBoundsInt` |
 | Типы Unity | `SetColor`, `SetGradient`, `SetAnimationCurve` |
@@ -92,10 +100,12 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 
 ### Перечисления
 
+Для свойств `_targeting` и `_damageTypes`:
+
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Второе значение enum&#10;mode.enumValueIndex = 1;</code></pre> | <pre lang="csharp"><code>// Второе значение enum&#10;mode.SetEnumIndex(1);</code></pre> |
-| <pre lang="csharp"><code>// Битовая маска [Flags]&#10;flags.enumValueFlag = mask;</code></pre> | <pre lang="csharp"><code>// Битовая маска [Flags]&#10;flags.SetEnumFlag(mask);</code></pre> |
+| <pre lang="csharp"><code>// Targeting.Area&#10;targeting.enumValueIndex = 1;</code></pre> | <pre lang="csharp"><code>// Targeting.Area&#10;targeting.SetEnumIndex(1);</code></pre> |
+| <pre lang="csharp"><code>// Fire &#124; Ice&#10;damageTypes.enumValueFlag = 3;</code></pre> | <pre lang="csharp"><code>// Fire &#124; Ice&#10;damageTypes.SetEnumFlag(3);</code></pre> |
 
 ### Массивы и списки
 
@@ -114,7 +124,7 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>// [SerializeReference]&#10;effect.managedReferenceValue = instance;</code></pre> | <pre lang="csharp"><code>// [SerializeReference]&#10;effect.SetManagedReference(instance);</code></pre> |
-| <pre lang="csharp"><code>// UnityEngine.Object&#10;property.objectReferenceValue = asset;</code></pre> | <pre lang="csharp"><code>// UnityEngine.Object&#10;property.SetObjectReference(asset);</code></pre> |
+| <pre lang="csharp"><code>// UnityEngine.Object&#10;icon.objectReferenceValue = sprite;</code></pre> | <pre lang="csharp"><code>// UnityEngine.Object&#10;icon.SetObjectReference(sprite);</code></pre> |
 | <pre lang="csharp"><code>// ExposedReference&lt;T&gt;&#10;property.exposedReferenceValue = target;</code></pre> | <pre lang="csharp"><code>// ExposedReference&lt;T&gt;&#10;property.SetExposedReference(target);</code></pre> |
 | <pre lang="csharp"><code>// boxedValue&#10;property.boxedValue = value;</code></pre> | <pre lang="csharp"><code>// boxedValue&#10;property.SetBoxed(value);</code></pre> |
 
