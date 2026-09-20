@@ -1,0 +1,107 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.UIElements;
+using UnityEditor.UIElements;
+using Aspid.FastTools.Enums;
+
+namespace DocumentationMedia
+{
+    public enum DamageType { Physical, Fire, Ice, Poison }
+    public class TypedTable : ScriptableObject
+    {
+        [SerializeField] private EnumValues<DamageType, float> _multipliers = new();
+    }
+    public class UntypedTable : ScriptableObject
+    {
+        [SerializeField] private EnumValues<float> _multipliers = new();
+    }
+    public class CaptureMenuManager : ContextualMenuManager
+    {
+        public GenericDropdownMenu Popup;
+        public DropdownMenuAction Action;
+        public VisualElement Target;
+        public override void DisplayMenuIfEventMatches(EventBase evt, IEventHandler target) { DisplayMenu(evt, target); }
+        protected override void DoDisplayMenu(DropdownMenu menu, EventBase triggerEvent)
+        {
+            menu.PrepareForDisplay(triggerEvent);
+            Popup = new GenericDropdownMenu();
+            foreach(var item in menu.MenuItems().OfType<DropdownMenuAction>())
+            {
+                Action = item;
+                Popup.AddItem(item.name, false, () => item.Execute());
+            }
+            Popup.DropDown(new Rect(260, 82, 510, 0), Target, false);
+            Popup.contentContainer.Query<Label>().ForEach(label => label.style.fontSize = 24);
+            Popup.contentContainer.style.minWidth = 485;
+            Popup.contentContainer.Query<VisualElement>(className: "unity-base-dropdown__item").ForEach(row => { row.style.height = 46; row.style.paddingLeft = 18; row.style.paddingRight = 18; });
+        }
+    }
+    public static class EnumMedia
+    {
+        public static EditorWindow Window;
+        public static ScriptableObject Target;
+        public static SerializedObject Data;
+        public static CaptureMenuManager Manager;
+        public static object Main()
+        {
+            Window = ScriptableObject.CreateInstance<EditorWindow>();
+            Window.titleContent = new GUIContent("EnumValues — documentation");
+            Window.minSize = Window.maxSize = new Vector2(1200,700);
+            Window.position = new Rect(140,100,1200,700);
+            Create(false);
+            Window.ShowUtility();
+            return new {window=Window.GetInstanceID(), target=Target.GetInstanceID()};
+        }
+        public static void Create(bool untyped)
+        {
+            if(Target != null) { Undo.ClearUndo(Target); UnityEngine.Object.DestroyImmediate(Target); }
+            Target = untyped ? ScriptableObject.CreateInstance<UntypedTable>() : ScriptableObject.CreateInstance<TypedTable>();
+            Target.hideFlags = HideFlags.DontSave;
+            Data = new SerializedObject(Target);
+            var p=Data.FindProperty("_multipliers");
+            p.FindPropertyRelative("_enumType").stringValue=typeof(DamageType).AssemblyQualifiedName;
+            p.FindPropertyRelative("_defaultValue").floatValue=1;
+            var rows=p.FindPropertyRelative("_values"); rows.arraySize=1; rows.isExpanded=true;
+            var row=rows.GetArrayElementAtIndex(0);
+            row.FindPropertyRelative("_key").stringValue="Fire";
+            row.FindPropertyRelative("_enumType").stringValue=typeof(DamageType).AssemblyQualifiedName;
+            row.FindPropertyRelative("_value").floatValue=1.5f;
+            Data.ApplyModifiedPropertiesWithoutUndo();
+            var root=Window.rootVisualElement; root.Clear();
+            root.style.paddingTop=16; root.style.paddingLeft=20; root.style.paddingRight=20;
+            var field=new PropertyField(p); field.style.width=464;
+            field.style.transformOrigin=new TransformOrigin(0,0);
+            field.style.scale=new Scale(new Vector3(2.5f,2.5f,1));
+            root.Add(field); root.Bind(Data);
+        }
+        public static void Menu()
+        {
+            var target=Window.rootVisualElement.Q("enum-values-multipliers");
+            Manager=new CaptureMenuManager { Target=target };
+            using(var mouse=MouseDownEvent.GetPooled(new Event {type=EventType.MouseDown,button=1,mousePosition=new Vector2(260,82)}))
+                Manager.DisplayMenu(mouse,target);
+        }
+        public static void Populate()
+        {
+            Undo.IncrementCurrentGroup(); Undo.SetCurrentGroupName("Populate Missing Enum Members");
+            Manager.Action.Execute();
+            CloseMenu();
+        }
+        public static void CloseMenu()
+        {
+            var element=Manager.Popup.contentContainer;
+            while(element.parent != null && element.parent != Window.rootVisualElement) element=element.parent;
+            if(element.parent==Window.rootVisualElement) element.RemoveFromHierarchy();
+            Window.rootVisualElement.focusController.focusedElement?.Blur();
+        }
+        public static void UndoStep() { Undo.FlushUndoRecordObjects(); Undo.PerformUndo(); }
+        public static void Untyped() { Create(true); }
+        public static void Cleanup()
+        {
+            Undo.ClearUndo(Target); Window.Close(); UnityEngine.Object.DestroyImmediate(Target);
+        }
+    }
+}

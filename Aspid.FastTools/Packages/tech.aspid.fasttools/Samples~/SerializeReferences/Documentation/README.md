@@ -16,6 +16,8 @@ Weapons, a nested burn effect, and modifiers in the Loadout Inspector.
 1. Import the sample and open `Scenes/SerializeReferences.unity`.
 2. Select **Loadout**. Enter Play Mode: the primary weapon and the sidearms take turns hitting the dummy once a second; it shrinks, tints while burning or frozen, and resets when destroyed. The Console shows each hit.
 
+For recording, use **Light / Dark / Authored** in `Tools → Aspid 🐍 → FastTools → Sample Themes`.
+
 ![The dummy changes color and shrinks as the configured weapons and effects deal damage.](Images/demo.gif)
 
 The dummy changes color and shrinks as the configured weapons and effects deal damage.

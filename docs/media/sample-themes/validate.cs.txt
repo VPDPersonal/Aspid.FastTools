@@ -1,0 +1,36 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
+public static class ValidateSampleThemes
+{
+ static readonly Type Preview=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("Aspid.FastTools.Editors.Internal.SampleThemePreview")).First(t=>t!=null);
+ static void Mode(int mode) {var m=Preview.GetMethod("SetMode",BindingFlags.Static|BindingFlags.NonPublic);m.Invoke(null,new[]{Enum.ToObject(m.GetParameters()[0].ParameterType,mode)});}
+ public static object Main() {
+  var original=SceneManager.GetActiveScene();if(original.isDirty)throw new Exception("Refusing to replace dirty scene");var originalPath=original.path;
+  var results=new System.Collections.Generic.List<string>();
+  try {
+   foreach(var name in new[]{"EnumValues","Types","SerializeReferences","ProfilerMarkers"}) {
+    Mode(0);
+    var scene=EditorSceneManager.OpenScene("Assets/Samples/Aspid.FastTools/1.0.0-rc.8/"+name+"/Scenes/"+name+".unity");
+    var camera=Camera.main;var originalBackground=camera.backgroundColor;
+    var renderers=scene.GetRootGameObjects().SelectMany(r=>r.GetComponentsInChildren<Renderer>(true)).ToArray();
+    var materials=renderers.Select(r=>r.sharedMaterial).Where(m=>m!=null&&m.HasProperty("_Color")).Distinct().ToDictionary(m=>m,m=>m.GetColor("_Color"));
+    Mode(2);
+    if(ColorUtility.ToHtmlStringRGB(camera.backgroundColor)!="EEF0F3")throw new Exception(name+": wrong light background");
+    if(!renderers.Any(r=>r.HasPropertyBlock()))throw new Exception(name+": no themed renderer");
+    Mode(1);
+    if(ColorUtility.ToHtmlStringRGB(camera.backgroundColor)!="0E1015")throw new Exception(name+": wrong dark background");
+    Mode(0);
+    if(camera.backgroundColor!=originalBackground)throw new Exception(name+": camera not restored");
+    if(materials.Any(p=>p.Key.GetColor("_Color")!=p.Value))throw new Exception(name+": asset changed");
+    if(scene.isDirty)throw new Exception(name+": preview dirtied scene");
+    results.Add(name+": light/dark/authored, no dirty scene or modified material assets");
+   }
+  } finally {Mode(0);EditorSceneManager.OpenScene(originalPath);}
+  return results;
+ }
+}

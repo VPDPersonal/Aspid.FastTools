@@ -16,6 +16,8 @@ rootVisualElement
 1. Импортируйте пример. Сцены нет.
 2. Откройте **Tools → Aspid 🐍 → FastTools → Samples → Ability Catalog**. Левая панель перечисляет четыре ассета `AbilityConfig` из `Data/`; выберите один.
 
+Выберите **Theme → Editor / Dark / Light** в заголовке окна, чтобы сменить палитру для записи. **Editor** использует тему редактора Unity.
+
 ![Halve cooldown, +5 MP обновляет поля и описание эффекта; Undo возвращает прежние значения.](Images/demo.gif)
 
 Halve cooldown, +5 MP обновляет поля и описание эффекта; Undo возвращает прежние значения.

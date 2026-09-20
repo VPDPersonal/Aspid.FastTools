@@ -18,6 +18,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
     // UI Toolkit binding, so Undo and dirty tracking work as in the Inspector.
     internal sealed class AbilityCatalogWindow : EditorWindow
     {
+        private enum PreviewTheme { Editor, Dark, Light }
+        private const string ThemeKey = "Aspid.FastTools.AbilityCatalog.Theme";
         private readonly List<AbilityConfig> _all = new();
         private readonly List<AbilityConfig> _filtered = new();
 
@@ -33,7 +35,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
         {
             rootVisualElement.Clear();
             rootVisualElement.AddToClassList("ability-catalog");
-            rootVisualElement.EnableInClassList("ability-catalog--light", !EditorGUIUtility.isProSkin);
+            var theme = (PreviewTheme)SessionState.GetInt(ThemeKey, 0);
+            ApplyTheme(theme);
             var scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
             var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
                 System.IO.Path.GetDirectoryName(scriptPath) + "/AbilityCatalog.uss");
@@ -101,6 +104,20 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             header.AddToClassList("ability-header");
             header.Add(new Label("Ability catalog") { name = "catalogTitle" });
             header.Add(new Label("Tune your abilities. See every change.") { name = "catalogSubtitle" });
+            var themeField = new EnumField("Theme", theme);
+            themeField.style.position = Position.Absolute;
+            themeField.style.right = 20;
+            themeField.style.top = 20;
+            themeField.style.width = 190;
+            themeField.labelElement.style.minWidth = 44;
+            themeField.labelElement.style.width = 44;
+            themeField.RegisterValueChangedCallback(evt =>
+            {
+                var selected = (PreviewTheme)evt.newValue;
+                SessionState.SetInt(ThemeKey, (int)selected);
+                ApplyTheme(selected);
+            });
+            header.Add(themeField);
             rootVisualElement.Add(header);
             rootVisualElement.Add(new VisualElement()
                 .SetFlexDirection(FlexDirection.Row)
@@ -242,6 +259,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 effectLabel.SetText(type is null ? "<None>" : $"{type.Name} — {description}");
             }
         }
+
+        private void ApplyTheme(PreviewTheme theme) => rootVisualElement.EnableInClassList(
+            "ability-catalog--light", theme == PreviewTheme.Light || (theme == PreviewTheme.Editor && !EditorGUIUtility.isProSkin));
 
         private void CreateAsset()
         {

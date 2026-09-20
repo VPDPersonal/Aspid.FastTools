@@ -1,0 +1,8 @@
+ffconcat version 1.0
+file dark-01.png
+duration 2
+file dark-03.png
+duration 3
+file dark-04-undo.png
+duration 2
+file dark-04-undo.png

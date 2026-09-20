@@ -1,0 +1,30 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Collections;
+using UnityEngine;
+using UnityEditor;
+using UnityEngine.UIElements;
+public static class CaptureCatalog {
+ const BindingFlags Flags=BindingFlags.Instance|BindingFlags.Static|BindingFlags.Public|BindingFlags.NonPublic;
+ public static object Main() {
+  var type=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("Aspid.FastTools.Samples.EditorTools.Editors.AbilityCatalogWindow")).First(t=>t!=null);
+  SessionState.SetInt("CaptureCatalog.OldTheme",SessionState.GetInt("Aspid.FastTools.AbilityCatalog.Theme",0));
+  SessionState.SetInt("Aspid.FastTools.AbilityCatalog.Theme",2);
+  var window=(EditorWindow)ScriptableObject.CreateInstance(type);
+  window.titleContent=new GUIContent("Ability Catalog");
+  window.position=new Rect(100,70,1080,660);
+  window.ShowUtility();
+  SessionState.SetInt("CaptureCatalog.Window",window.GetInstanceID());
+  var all=(IList)type.GetField("_all",Flags).GetValue(window);
+  var filtered=(IList)type.GetField("_filtered",Flags).GetValue(window);
+  var original=(UnityEngine.Object)all.Cast<UnityEngine.Object>().First(a=>a.name=="Ward");
+  var copy=UnityEngine.Object.Instantiate(original);copy.name=original.name;copy.hideFlags=HideFlags.DontSave;
+  SessionState.SetInt("CaptureCatalog.Asset",copy.GetInstanceID());
+  var index=filtered.IndexOf(original);all[all.IndexOf(original)]=copy;filtered[index]=copy;
+  var list=(ListView)type.GetField("_list",Flags).GetValue(window);list.Rebuild();list.SetSelection(index);
+  type.GetMethod("ShowDetails",Flags).Invoke(window,new object[]{copy});
+  window.Repaint();
+  return new{window=window.GetInstanceID(),asset=copy.name,position=window.position};
+ }
+}

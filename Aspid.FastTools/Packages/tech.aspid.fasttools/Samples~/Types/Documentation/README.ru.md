@@ -15,6 +15,8 @@
 3. В окне Project откройте папку `Assets/Samples/Aspid.FastTools/<версия>/Types`, затем сцену `Scenes/Types.unity` и выберите **Enemy Spawner**.
 4. Войдите в Play Mode: каждые шесть секунд по кругу появляются восемь капсул, каждая четвёртая — `ArmoredGrunt`, и идут к центру.
 
+Для записи переключайте **Light / Dark / Authored** в `Tools → Aspid 🐍 → FastTools → Sample Themes`.
+
 ![Волна обычных и элитных врагов движется к центру.](Images/demo.gif)
 
 Волна обычных и элитных врагов движется к центру.

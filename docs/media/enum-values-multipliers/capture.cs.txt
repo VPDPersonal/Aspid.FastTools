@@ -1,0 +1,48 @@
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine.UIElements;
+using Aspid.FastTools.Enums;
+
+public enum DamageType { Physical, Fire, Ice, Poison }
+public class DamageMultipliersCapture : ScriptableObject
+{
+    [SerializeField] private EnumValues<DamageType, float> _multipliers = new();
+}
+public static class EnumValuesCapture
+{
+    public static object Main()
+    {
+        var obj = ScriptableObject.CreateInstance<DamageMultipliersCapture>();
+        obj.name = "Damage Multipliers";
+        obj.hideFlags = HideFlags.DontSave;
+        var so = new SerializedObject(obj);
+        var p = so.FindProperty("_multipliers");
+        p.FindPropertyRelative("_defaultValue").floatValue = 1f;
+        var values = p.FindPropertyRelative("_values");
+        values.arraySize = 1;
+        var row = values.GetArrayElementAtIndex(0);
+        row.FindPropertyRelative("_key").stringValue = "Fire";
+        row.FindPropertyRelative("_value").floatValue = 1.5f;
+        p.isExpanded = true;
+        values.isExpanded = true;
+        so.ApplyModifiedPropertiesWithoutUndo();
+        var w = ScriptableObject.CreateInstance<EditorWindow>();
+        w.titleContent = new GUIContent("Damage Multipliers");
+        w.minSize = w.maxSize = new Vector2(1200, 700);
+        w.position = new Rect(180, 120, 1200, 700);
+        var root = w.rootVisualElement;
+        root.style.paddingTop = 16;
+        root.style.paddingLeft = 20;
+        root.style.paddingRight = 20;
+        var field = new PropertyField(p);
+        field.style.width = 464;
+        field.style.transformOrigin = new TransformOrigin(0, 0);
+        field.style.scale = new Scale(new Vector3(2.5f, 2.5f, 1));
+        root.Add(field);
+        root.Bind(so);
+        w.ShowUtility();
+        w.Focus();
+        return new { window = w.GetInstanceID(), target = obj.GetInstanceID() };
+    }
+}
