@@ -18,6 +18,8 @@ The Flock tree shows how generated markers nest. Steering.Agent has 120 calls fo
 2. Open **Window → Analysis → Profiler**, enter Play Mode and select a frame in the CPU module.
 3. In **Hierarchy** view, expand `PlayerLoop → Update.ScriptRunBehaviourUpdate → Flock.Update (…)`.
 
+For recording, use **Light / Dark / Authored** in `Tools → Aspid 🐍 → FastTools → Sample Themes`.
+
 ![The flock simulation whose phases are measured by the markers above.](Images/demo.gif)
 
 The flock simulation whose phases are measured by the markers above.

@@ -15,6 +15,8 @@ Enemy types and spawn pattern in the Inspector.
 3. In the Project window, open `Assets/Samples/Aspid.FastTools/<version>/Types`, then open `Scenes/Types.unity` and select **Enemy Spawner**.
 4. Enter Play Mode: a wave of eight capsules spawns in a circle every six seconds, every fourth one an `ArmoredGrunt`, and walks to the center.
 
+For recording, use **Light / Dark / Authored** in `Tools → Aspid 🐍 → FastTools → Sample Themes`.
+
 ![A wave of regular and elite enemies moves toward the center.](Images/demo.gif)
 
 A wave of regular and elite enemies moves toward the center.

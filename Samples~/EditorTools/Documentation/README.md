@@ -16,6 +16,8 @@ Select an ability to edit its properties and view its effect description.
 1. Import the sample. There is no scene.
 2. Open **Tools → Aspid 🐍 → FastTools → Samples → Ability Catalog**. The left pane lists the four `AbilityConfig` assets from `Data/`; select one.
 
+Use **Theme → Editor / Dark / Light** in the window header to choose the recording palette. **Editor** follows the Unity editor theme.
+
 ![Halve cooldown, +5 MP updates both the fields and effect description; Undo restores them.](Images/demo.gif)
 
 Halve cooldown, +5 MP updates both the fields and effect description; Undo restores them.

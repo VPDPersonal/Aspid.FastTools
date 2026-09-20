@@ -24,27 +24,27 @@
   --catalog-input-border: #3b4d59;
 }
 .ability-catalog--light {
-  --catalog-bg: #f6f1e8;
-  --catalog-fg: #33372e;
-  --catalog-header: #eae5d8;
-  --catalog-line: #cec8b9;
-  --catalog-accent: #41784a;
-  --catalog-title: #25291f;
-  --catalog-muted: #646958;
-  --catalog-sidebar: #eee9dd;
-  --catalog-button: #e5e0d3;
-  --catalog-border: #b5b29f;
-  --catalog-button-text: #303a2c;
-  --catalog-hover: #d6dfcc;
-  --catalog-accent-ink: #ffffff;
-  --catalog-accent-hover: #315f39;
-  --catalog-row-line: #d8d1c1;
-  --catalog-row-title: #343e2c;
-  --catalog-secondary: #636d58;
-  --catalog-selected: #d8e4cc;
-  --catalog-field-label: #515c46;
-  --catalog-input: #fffdf7;
-  --catalog-input-border: #b6b8a6;
+  --catalog-bg: #eef0f3;
+  --catalog-fg: #2a2c31;
+  --catalog-header: #e4e7ec;
+  --catalog-line: #cdd2da;
+  --catalog-accent: #8dbf9b;
+  --catalog-title: #2a2c31;
+  --catalog-muted: #5f636b;
+  --catalog-sidebar: #e7eaf0;
+  --catalog-button: #e0e4eb;
+  --catalog-border: #b4bdc8;
+  --catalog-button-text: #303740;
+  --catalog-hover: #d4e3d9;
+  --catalog-accent-ink: #233d2c;
+  --catalog-accent-hover: #a6d8a8;
+  --catalog-row-line: #d2d7df;
+  --catalog-row-title: #303740;
+  --catalog-secondary: #656d78;
+  --catalog-selected: #d4e6d9;
+  --catalog-field-label: #505b69;
+  --catalog-input: #ffffff;
+  --catalog-input-border: #bdc5d0;
 }
 .ability-catalog { background-color: var(--catalog-bg); color: var(--catalog-fg); }
 .ability-header { padding: 24px 24px 22px; border-bottom-width: 1px; border-bottom-color: var(--catalog-line); background-color: var(--catalog-header); }
@@ -75,3 +75,9 @@
 .ability-catalog .ability-action { width: 196px; height: 30px; margin: 0 0 6px; }
 
 .ability-effect-row { margin-left: 3px; }
+
+.ability-catalog .unity-enum-field__input { background-color: var(--catalog-input); border-color: var(--catalog-input-border); color: var(--catalog-button-text); }
+.ability-catalog .unity-enum-field__text { color: var(--catalog-button-text); }
+.ability-header .unity-base-field__label { color: var(--catalog-muted); }
+
+.ability-catalog .unity-enum-field__arrow { -unity-background-image-tint-color: var(--catalog-muted); }
