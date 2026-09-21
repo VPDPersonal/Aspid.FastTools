@@ -2,6 +2,10 @@
 
 `GetDisplayName()` turns an object’s type name into a readable label: `FireAbility` → “Fire Ability”. `GetDisplayNameWithIndex()` adds a number when a GameObject holds several components of that type: “Fire Ability (2)”.
 
+![Method results in a custom Unity window. These methods do not change the standard Inspector headers.](Images/editor-display-names.png)
+
+Method results in a custom Unity window. These methods do not change the standard Inspector headers.
+
 ## Quick start
 
 Two components carry the examples: one names itself through `[AddComponentMenu]`, the other does not.

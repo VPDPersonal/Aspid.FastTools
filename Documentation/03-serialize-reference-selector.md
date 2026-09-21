@@ -14,49 +14,6 @@ Add `[TypeSelector]` next to `[SerializeReference]` to choose implementations in
 
 The selector stores an **instance with data**. To store only a class name and create the object later from code, use [Serializable Type System](02-serializable-types.md).
 
-### Example: Pistol → Shotgun
-
-Save this code as `Loadout.cs`. Both implementations declare `_damage`; the shotgun also has `_pellets`.
-
-```csharp
-using System;
-using UnityEngine;
-using Aspid.FastTools.Types;
-
-public interface IWeapon
-{
-    void Fire();
-}
-
-[Serializable]
-public sealed class Pistol : IWeapon
-{
-    [SerializeField, Min(0)] private int _damage = 10;
-
-    public void Fire() => Debug.Log($"Pistol: {_damage} dmg");
-}
-
-[Serializable]
-public sealed class Shotgun : IWeapon
-{
-    [SerializeField, Min(0)] private int _damage = 20;
-    [SerializeField, Min(1)] private int _pellets = 6;
-
-    public void Fire() => Debug.Log($"Shotgun: {_damage} dmg, {_pellets} pellets");
-}
-
-public sealed class Loadout : MonoBehaviour
-{
-    [TypeSelector]
-    [SerializeReference] private IWeapon _primary;
-}
-```
-
-1. Add `Loadout` to a GameObject and open the type dropdown beside **Primary**.
-2. Choose **Pistol**, expand the field, and set **Damage = 37**.
-3. Switch to **Shotgun**: **Damage** stays `37`, and **Pellets = 6** appears.
-4. Choose `<None>` to assign `null`, or undo the type switch with Undo.
-
 ![Switching from Pistol to Shotgun preserves Damage = 37 and adds Pellets](Images/aspid_fasttools_serialize_reference_selector.gif)
 
 Switching from Pistol to Shotgun preserves Damage = 37 and adds Pellets

@@ -38,7 +38,13 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 Хранение и выбор `System.Type` в инспекторе.
 
-<img src="../Images/aspid_fasttools_serializable_type.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
+<img src="../Images/serializable-type-quick-start.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
+
+### [ComponentTypeSelector](11-component-type-selector.md)
+
+Смена типа существующего компонента с сохранением общих полей.
+
+<img src="../Images/component-type-selector.gif" alt="Смена типа компонента в инспекторе" width="640" />
 
 ### [SerializeReference Selector](03-serialize-reference-selector.md)
 
