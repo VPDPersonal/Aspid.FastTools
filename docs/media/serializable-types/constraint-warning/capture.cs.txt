@@ -1,0 +1,23 @@
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
+public static class NativeConstraintInspector {
+ public static object Main() {
+  var scene=EditorSceneManager.NewPreviewScene();
+  var go=new GameObject("Type Selection Example");
+  SceneManager.MoveGameObjectToScene(go,scene);
+  var script=AssetDatabase.LoadAssetAtPath<MonoScript>("Assets/__DocsConstraintCapture/TypeSelectionExample.cs");
+  go.AddComponent(script.GetClass());
+  var inspectorType=typeof(Editor).Assembly.GetType("UnityEditor.InspectorWindow");
+  var window=(EditorWindow)ScriptableObject.CreateInstance(inspectorType);
+  window.titleContent=new GUIContent("Inspector");
+  window.position=new Rect(100,100,640,430);
+  window.ShowUtility();
+  Selection.activeGameObject=go;
+  window.Focus();
+  SessionState.SetInt("Docs.NativeConstraint.Scene",scene.handle);
+  SessionState.SetInt("Docs.NativeConstraint.Window",window.GetInstanceID());
+  return new {window=window.GetInstanceID(),scene=scene.handle};
+ }
+}

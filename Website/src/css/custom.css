@@ -990,6 +990,10 @@ html.docs-background-windows.docs-doc-page {
   border-radius: 4px;
   box-shadow: 0 10px 24px #0003, 0 2px 6px #0002;
 }
+/* Match the quick-start capture to the surrounding content corners. */
+.theme-doc-markdown .doc-image-panel > img.doc-zoom-image[src*='serializable-type-quick-start'] {
+  border-radius: var(--ifm-pre-border-radius);
+}
 /* SVG artwork supplies its own outline, including when Docusaurus inlines it as a data URL. */
 .theme-doc-markdown .doc-image-panel > img.doc-zoom-image:is([src^='data:image/svg+xml'], [src$='.svg']) {
   border: 0;

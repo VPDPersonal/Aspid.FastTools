@@ -154,7 +154,9 @@ export default function DotRipple() {
       if (event.button !== 0) return;
       if (!document.documentElement.classList.contains('docs-doc-page')) return;
       if (!(event.target instanceof Element)) return;
-      const backgroundWindow = event.target.closest(BACKGROUND_WINDOWS);
+      // Only windows the article surface is actually cut out for: below 997px the mask is dropped, so notices and image
+      // panels are opaque content again and a wave under them would be invisible.
+      const backgroundWindow = event.target.closest(`.doc-column-with-windows :is(${BACKGROUND_WINDOWS})`);
       if (backgroundWindow) {
         if (event.target.closest('a, button, [role="button"]')) return;
       } else if (event.target.closest(CONTENT)) return;

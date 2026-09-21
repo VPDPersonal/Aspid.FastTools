@@ -14,49 +14,6 @@
 
 Селектор хранит **экземпляр с данными**. Если нужно сохранить только имя класса и создать объект позже из кода, используйте [Serializable Type System](02-serializable-types.md).
 
-### Пример: Pistol → Shotgun
-
-Сохраните код в `Loadout.cs`. Обе реализации объявляют `_damage`, а у дробовика есть дополнительное поле `_pellets`.
-
-```csharp
-using System;
-using UnityEngine;
-using Aspid.FastTools.Types;
-
-public interface IWeapon
-{
-    void Fire();
-}
-
-[Serializable]
-public sealed class Pistol : IWeapon
-{
-    [SerializeField, Min(0)] private int _damage = 10;
-
-    public void Fire() => Debug.Log($"Pistol: {_damage} dmg");
-}
-
-[Serializable]
-public sealed class Shotgun : IWeapon
-{
-    [SerializeField, Min(0)] private int _damage = 20;
-    [SerializeField, Min(1)] private int _pellets = 6;
-
-    public void Fire() => Debug.Log($"Shotgun: {_damage} dmg, {_pellets} pellets");
-}
-
-public sealed class Loadout : MonoBehaviour
-{
-    [TypeSelector]
-    [SerializeReference] private IWeapon _primary;
-}
-```
-
-1. Добавьте `Loadout` на GameObject и откройте список типов у **Primary**.
-2. Выберите **Pistol**, разверните поле и задайте **Damage = 37**.
-3. Переключите тип на **Shotgun**: **Damage** останется `37`, появится **Pellets = 6**.
-4. Выберите `<None>`, чтобы установить `null`, или отмените смену типа через Undo.
-
 ![Смена Pistol на Shotgun сохраняет Damage = 37 и добавляет поле Pellets](../Images/aspid_fasttools_serialize_reference_selector.gif)
 
 Смена Pistol на Shotgun сохраняет Damage = 37 и добавляет поле Pellets

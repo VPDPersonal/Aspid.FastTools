@@ -77,6 +77,27 @@ function stampLastUpdate(source, destination) {
 }
 
 /**
+ * Docusaurus translates the sidebar label of `{ type: 'doc', id: 'README', label: 'Introduction' }` in the
+ * sidebar itself but reuses the untranslated label for the previous/next pagination links. The README has
+ * no title of its own, so the translated label from `translations/<locale>/…/current.json` is written to
+ * `pagination_label` of the copied page.
+ */
+function translatePaginationLabel(locale, destination) {
+  if (!fs.existsSync(destination)) return;
+  const translations = path.join(siteDir, 'translations', locale, 'docusaurus-plugin-content-docs', 'current.json');
+  if (!fs.existsSync(translations)) return;
+  const label = JSON.parse(fs.readFileSync(translations, 'utf8'))['sidebar.docs.doc.Introduction']?.message;
+  if (!label) return;
+  const body = fs.readFileSync(destination, 'utf8');
+  const frontMatter = /^---\r?\n([\s\S]*?)\r?\n---\r?\n/.exec(body);
+  const line = `pagination_label: ${JSON.stringify(label)}\n`;
+  const updated = frontMatter
+    ? `---\n${frontMatter[1]}\n${line}---\n${body.slice(frontMatter[0].length)}`
+    : `---\n${line}---\n\n${body}`;
+  fs.writeFileSync(destination, updated);
+}
+
+/**
  * The changelog is served at /changelog. The language-switch line at its top (`> Русская версия: …`)
  * exists for GitHub readers; the site has a locale dropdown, so it is dropped.
  */
@@ -133,6 +154,7 @@ for (const locale of locales) {
   }
 
   copy(path.join(docsDir, locale), path.join(i18nDir, locale, 'docusaurus-plugin-content-docs', 'current'));
+  translatePaginationLabel(locale, path.join(i18nDir, locale, 'docusaurus-plugin-content-docs', 'current', 'README.md'));
   // Translated main docs reference `../Images/…`; mirror the folder so those file paths resolve in i18n.
   copy(path.join(docsDir, 'Images'), path.join(i18nDir, locale, 'docusaurus-plugin-content-docs', 'Images'));
   copy(path.join(docsDir, 'Images'), path.join(i18nDir, locale, 'docusaurus-plugin-content-docs-tutorials', 'Documentation', 'Images'));

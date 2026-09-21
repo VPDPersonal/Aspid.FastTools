@@ -38,7 +38,13 @@ This installs the latest preview, and updating the package brings in a newer one
 
 Store and pick a `System.Type` in the Inspector.
 
-<img src="Images/aspid_fasttools_serializable_type.gif" alt="Select a serializable type in the Inspector" width="640" />
+<img src="Images/serializable-type-quick-start.gif" alt="Select a serializable type in the Inspector" width="640" />
+
+### [ComponentTypeSelector](11-component-type-selector.md)
+
+Switch an existing component's type while preserving shared fields.
+
+<img src="Images/component-type-selector.gif" alt="Switch a component type in the Inspector" width="640" />
 
 ### [SerializeReference Selector](03-serialize-reference-selector.md)
 

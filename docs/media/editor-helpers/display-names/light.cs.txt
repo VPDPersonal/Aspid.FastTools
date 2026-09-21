@@ -1,0 +1,10 @@
+using System.Linq;
+using UnityEditor;
+using UnityEngine.UIElements;
+public static class LightCapture { public static object Main() {
+var window = (EditorWindow)EditorUtility.InstanceIDToObject(SessionState.GetInt("Docs.DisplayNames.Window", 0));
+var values = window.rootVisualElement.Query<Label>().ToList().Select(label => label.text).Where(text => text.StartsWith("Ability Config")).ToArray();
+var type = System.AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("DocumentationCapture.DisplayNames")).Last(t => t != null);
+type.GetMethod("Paint").Invoke(null, new object[] { window, true, values });
+return values;
+}}
