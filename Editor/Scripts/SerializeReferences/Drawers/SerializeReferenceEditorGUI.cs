@@ -20,7 +20,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         /// <param name="property">A managed-reference property of the editor's <see cref="SerializedObject"/>.</param>
         /// <param name="label"><paramref name="property"/> label; <see langword="null"/> uses its display name.</param>
-        /// <param name="baseTypes">Additional picker constraints; <see langword="null"/> or an empty array adds no constraints.</param>
+        /// <param name="baseTypes">Extra base types every candidate must be assignable to besides the field type; <see langword="null"/> or an empty array adds none.</param>
         /// <returns>The field to add to the inspector's visual tree.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="property"/> is not a managed reference.</exception>
@@ -39,7 +39,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// </summary>
         /// <param name="property">An array/list property whose elements are managed references.</param>
         /// <param name="label"><paramref name="property"/> header label; <see langword="null"/> uses its display name.</param>
-        /// <param name="baseTypes">Additional element-type constraints; <see langword="null"/> or an empty array adds no constraints.</param>
+        /// <param name="baseTypes">Extra base types every element type must be assignable to besides the declared one; <see langword="null"/> or an empty array adds none.</param>
         /// <returns>The list to add to the inspector's visual tree.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="property"/> is not a managed-reference array.</exception>
@@ -62,7 +62,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <remarks>Lists use <see cref="SerializeReferenceIMGUIList.Draw"/>.</remarks>
         /// <param name="property">A managed-reference property of the editor's <see cref="SerializedObject"/>.</param>
         /// <param name="label"><paramref name="property"/> label; <see langword="null"/> uses its display name.</param>
-        /// <param name="baseTypes">Additional picker constraints; <see langword="null"/> or an empty array adds no constraints.</param>
+        /// <param name="baseTypes">Extra base types every candidate must be assignable to besides the field type; <see langword="null"/> or an empty array adds none.</param>
         /// <exception cref="ArgumentNullException"><paramref name="property"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentException"><paramref name="property"/> is not a managed reference.</exception>
         public static void DrawFieldLayout(SerializedProperty property, GUIContent label = null, params Type[] baseTypes)

@@ -107,16 +107,16 @@ var empty = new SerializableType<Collider>(null);
 [SerializeField] private SerializableType<Collider>[] _colliderTypes;
 ```
 
-`IDamageable` здесь — ваш интерфейс. В поле `_damageableType` предлагаются компоненты, которые одновременно наследуют `MonoBehaviour` и реализуют `IDamageable`. Все ограничения на строке или обёртке действуют одновременно (**И**). Массивы и списки получают выбор для каждого элемента.
+`IDamageable` здесь — ваш интерфейс. В поле `_damageableType` предлагаются компоненты, которые одновременно наследуют `MonoBehaviour` и реализуют `IDamageable`. Ограничения действуют одновременно (**И**) на полях любого вида. Массивы и списки получают выбор для каждого элемента.
 
-У `[SerializeReference]` типы в атрибуте задают **альтернативы**. Допустим, `Pistol` и `Rifle` — сериализуемые классы, реализующие `IWeapon`:
+У `[SerializeReference]` первым ограничением служит тип поля. Допустим, `Sword` реализует `IWeapon` и `IMelee`, а `Glaive` — `IWeapon`, `IMelee` и `IRanged`:
 
 ```csharp
-[TypeSelector(typeof(Pistol), typeof(Rifle))]
+[TypeSelector(typeof(IMelee), typeof(IRanged))]
 [SerializeReference] private IWeapon _weapon;
 ```
 
-В поле можно выбрать `Pistol` **или** `Rifle`; соответствовать обоим типам одновременно не требуется. Другой класс `Sword : IWeapon` не попадёт в список: одного соответствия типу поля недостаточно. Подробнее — [настройка селектора экземпляров](03-serialize-reference-selector.md#настройка-выбора).
+В поле можно выбрать только `Glaive`: `Sword` не реализует `IRanged`. Чтобы разрешить определённый набор классов, дайте им общий интерфейс и укажите его: перечисление самих классов (`typeof(Pistol), typeof(Rifle)`) оставит список пустым, и анализатор `AFT0009` об этом предупредит. Подробнее — [настройка селектора экземпляров](03-serialize-reference-selector.md#настройка-выбора).
 
 ### Конструкторы и свойства
 
