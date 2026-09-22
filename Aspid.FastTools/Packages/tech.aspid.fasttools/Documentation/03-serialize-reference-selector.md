@@ -261,6 +261,6 @@ Add any other fields to the editor as needed. To create controls without `[TypeS
 
 Check that the class is concrete, compatible with the field and its additional constraints, does not inherit `UnityEngine.Object`, and is not marked `Hidden = true`. A generic candidate must have valid arguments. After compilation errors, wait for scripts to compile successfully.
 
-Analyzer `AFT0004` reports incompatibility with `UnityEngine.Object`; `AFT0005` warns about a potentially empty selector. `Allow` does not broaden the set of instantiable managed references.
+Analyzer `AFT0004` reports incompatibility with `UnityEngine.Object`; `AFT0003` and `AFT0009` report constraints no type can meet together; `AFT0005` warns about a potentially empty selector. `Allow` does not broaden the set of instantiable managed references.
 
 `[TypeSelector]` and `[TypeSelectorDisplay]` attributes apply only in the editor. Implementations and their serialized data remain part of the game.

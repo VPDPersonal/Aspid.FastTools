@@ -107,16 +107,16 @@ The attribute configures field selection. Wrappers already have a picker without
 [SerializeField] private SerializableType<Collider>[] _colliderTypes;
 ```
 
-`IDamageable` is your interface. `_damageableType` offers components that both inherit `MonoBehaviour` and implement `IDamageable`. All constraints on a string or wrapper apply together (**AND**). Arrays and lists get a picker for each entry.
+`IDamageable` is your interface. `_damageableType` offers components that both inherit `MonoBehaviour` and implement `IDamageable`. All constraints apply together (**AND**) on every kind of field. Arrays and lists get a picker for each entry.
 
-For `[SerializeReference]`, the types in the attribute are **alternatives**. Suppose `Pistol` and `Rifle` are serializable classes implementing `IWeapon`:
+On `[SerializeReference]`, the field type is the first constraint. Suppose `Sword` implements `IWeapon` and `IMelee`, and `Glaive` implements `IWeapon`, `IMelee` and `IRanged`:
 
 ```csharp
-[TypeSelector(typeof(Pistol), typeof(Rifle))]
+[TypeSelector(typeof(IMelee), typeof(IRanged))]
 [SerializeReference] private IWeapon _weapon;
 ```
 
-The field offers `Pistol` **or** `Rifle`; a candidate does not have to match both types. Another class, `Sword : IWeapon`, is excluded: matching the field type alone is not enough. See [instance selector configuration](03-serialize-reference-selector.md#configuring-selection).
+The field offers only `Glaive`: `Sword` does not implement `IRanged`. To allow a fixed set of classes, give them a common interface and pass it: listing the classes themselves (`typeof(Pistol), typeof(Rifle)`) leaves the picker empty, and analyzer `AFT0009` reports it. See [instance selector configuration](03-serialize-reference-selector.md#configuring-selection).
 
 ### Constructors and properties
 

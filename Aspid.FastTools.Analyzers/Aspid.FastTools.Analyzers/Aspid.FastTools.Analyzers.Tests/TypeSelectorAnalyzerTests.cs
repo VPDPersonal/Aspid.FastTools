@@ -178,6 +178,53 @@ interface IWeapon { }
 sealed class Unrelated { }
 class C { [SerializeReference, TypeSelector({|AFT0003:typeof(Unrelated)|})] private IWeapon _value; }");
 
+    // AFT0009 — base types that share no type: the picker needs a candidate assignable to every one of them
+
+    [Fact]
+    public Task UnrelatedClassBases_OnManagedReference_ReportsAFT0009Only() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IWeapon { }
+class Pistol : IWeapon { }
+class Rifle : IWeapon { }
+class C { [SerializeReference, TypeSelector(typeof(Pistol), {|AFT0009:typeof(Rifle)|})] private IWeapon _weapon; }");
+
+    [Fact]
+    public Task UnrelatedClassBases_OnStringField_ReportsAFT0009() => Verify(@"
+using Aspid.FastTools.Types;
+class Pistol { }
+class Rifle { }
+class C { [TypeSelector(typeof(Pistol), {|AFT0009:typeof(Rifle)|})] private string _type; }");
+
+    [Fact]
+    public Task SealedClassAndUnimplementedInterface_OnSerializableType_ReportsAFT0009() => Verify(@"
+using Aspid.FastTools.Types;
+interface IMarker { }
+sealed class Leaf { }
+class C { [TypeSelector(typeof(IMarker), {|AFT0009:typeof(Leaf)|})] private SerializableType _type; }");
+
+    [Fact]
+    public Task SeveralUnrelatedBases_ReportEachConflictingArgumentOnce() => Verify(@"
+using Aspid.FastTools.Types;
+class A { }
+class B { }
+class D { }
+class C { [TypeSelector(typeof(A), {|AFT0009:typeof(B)|}, {|AFT0009:typeof(D)|})] private string _type; }");
+
+    [Fact]
+    public Task TwoInterfaceBases_NoAFT0009() => Verify(@"
+using Aspid.FastTools.Types;
+interface IMelee { }
+interface IRanged { }
+class C { [TypeSelector(typeof(IMelee), typeof(IRanged))] private string _type; }");
+
+    [Fact]
+    public Task ClassAndItsSubclass_NoAFT0009() => Verify(@"
+using Aspid.FastTools.Types;
+class Base { }
+class Derived : Base { }
+class C { [TypeSelector(typeof(Base), typeof(Derived))] private string _type; }");
+
     // AFT0004 — managed reference to a UnityEngine.Object-derived type
 
     [Fact]
@@ -235,6 +282,29 @@ interface IBase { }
 interface IDerived : IBase { }
 class DerivedImpl : IDerived { }
 class C { [SerializeReference, TypeSelector(typeof(IDerived))] private IBase _value; }");
+
+    // Each base has an implementation, but none implements both — the intersection the picker lists is empty.
+    [Fact]
+    public Task BasesImplementedOnlySeparately_ReportsAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IWeapon { }
+interface IMelee { }
+interface IRanged { }
+class Sword : IWeapon, IMelee { }
+class Bow : IWeapon, IRanged { }
+class C { [SerializeReference, {|AFT0005:TypeSelector(typeof(IMelee), typeof(IRanged))|}] private IWeapon _weapon; }");
+
+    [Fact]
+    public Task ClassImplementingEveryBase_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IWeapon { }
+interface IMelee { }
+interface IRanged { }
+class Sword : IWeapon, IMelee { }
+class Glaive : IWeapon, IMelee, IRanged { }
+class C { [SerializeReference, TypeSelector(typeof(IMelee), typeof(IRanged))] private IWeapon _weapon; }");
 
     // The candidate search only scans assemblies that can see the constraint types (perf: a Unity compilation
     // references hundreds of assemblies). These tests pin the reference-assembly path: a candidate living in a

@@ -264,7 +264,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (narrowing is null) return IsAssignableManagedReference;
 
             return type => IsAssignableManagedReference(type) &&
-                           Array.Exists(narrowing, baseType => baseType.IsAssignableFrom(type));
+                           Array.TrueForAll(narrowing, baseType => baseType.IsAssignableFrom(type));
         }
 
         // Return null when no constraint narrows the candidates to avoid allocating a predicate.
