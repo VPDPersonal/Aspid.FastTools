@@ -34,37 +34,41 @@ https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 
 ## Возможности
 
-### [Serializable Type System](02-serializable-types.md)
+### Сериализация
+
+#### [Serializable Type System](02-serializable-types.md)
 
 Хранение и выбор `System.Type` в инспекторе.
 
 <img src="../Images/serializable-type-quick-start.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
 
-### [ComponentTypeSelector](11-component-type-selector.md)
+#### [ComponentTypeSelector](11-component-type-selector.md)
 
 Смена типа существующего компонента с сохранением общих полей.
 
 <img src="../Images/component-type-selector.gif" alt="Смена типа компонента в инспекторе" width="640" />
 
-### [SerializeReference Selector](03-serialize-reference-selector.md)
+#### [SerializeReference Selector](03-serialize-reference-selector.md)
 
 Выбор класса для поля `SerializeReference` прямо в инспекторе.
 
 <img src="../Images/aspid_fasttools_serialize_reference_selector.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
 
-### [SerializeReference Tooling](04-serialize-reference-tooling.md)
+#### [SerializeReference Tooling](04-serialize-reference-tooling.md)
 
 Аудит и восстановление ссылок по всему проекту, в том числе перед сборкой и в CI.
 
 <img src="../Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Восстановление потерянного типа оружия с сохранением данных" width="640" />
 
-### [EnumValues](06-enum-values.md)
+#### [EnumValues](06-enum-values.md)
 
 Редактирование таблиц enum → значение в инспекторе, включая флаги.
 
 <img src="../../Samples~/EnumValues/Documentation/Images/surface-tables.png" alt="Редактирование enum-ключей и значений в инспекторе" width="640" />
 
-### [ProfilerMarkers](05-profiler-markers.md)
+### Редактор и инструменты
+
+#### [ProfilerMarkers](05-profiler-markers.md)
 
 Уникальный маркер профилирования для каждого места вызова через `this.Marker()`.
 
@@ -75,18 +79,18 @@ using (this.Marker())
 }
 ```
 
-### [VisualElement Extensions](07-visual-element-extensions.md)
+#### [VisualElement Extensions](07-visual-element-extensions.md)
 
 Построение деревьев UI Toolkit fluent-цепочками.
 
 ```csharp
 new VisualElement()
-  .SetPadding(8)
+  .SetPaddingX(12)
   .AddChild(
     new Label("Stats"));
 ```
 
-### [SerializedProperty Extensions](08-serialized-property-extensions.md)
+#### [SerializedProperty Extensions](08-serialized-property-extensions.md)
 
 Запись значений, изменение размера массивов, получение типа поля и объекта-владельца.
 
@@ -96,17 +100,17 @@ property
   .SetIntAndApply(42);
 ```
 
-### [Editor Helpers](09-editor-helpers.md)
+#### [Editor Helpers](09-editor-helpers.md)
 
 Читаемые подписи объектов и компонентов для редакторских инструментов.
 
 ```csharp
-audio.GetDisplayName();
-// "Audio Source"
+fireAbility.GetDisplayName();
+// "Fire Ability"
 
-secondAudio
+abilityConfig
   .GetDisplayNameWithIndex();
-// "Audio Source (2)"
+// "Ability Config (1)"
 ```
 
 ## Быстрый старт
@@ -121,6 +125,29 @@ secondAudio
 - [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools) — публичные типы и члены. Ссылки в разделе возможностей выше ведут к руководствам по их использованию.
 - [Плагин Claude Code](10-claude-code-plugin.md) — дополнительные скиллы для работы с пакетом в Claude Code.
 - [Журнал изменений](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.ru.md) — история релизов.
+
+## Вопросы и ответы
+
+<details>
+<summary>Может ли CI падать на сломанных ссылках?</summary>
+
+Да. Выберите `Fail` для **Build / CI gate** в **Project Settings → Aspid FastTools → SerializeReference** или запустите `SerializeReferenceCiGate.RunCheck` в batch-режиме с `-srGateFail`: команда создаёт отчёт и завершается с кодом `1` при нарушениях. Подробнее — в разделе [Запуск в CI](04-serialize-reference-tooling.md#запуск-в-ci).
+
+</details>
+
+<details>
+<summary>Почему сканирование пропускает часть ассетов?</summary>
+
+Сканирование читает текстовый YAML с диска. Выберите **Asset Serialization → Mode → Force Text**, пересохраните двоичные ассеты и сохраните изменённые сцены перед сканированием. Подробнее — в [SerializeReference Tooling](04-serialize-reference-tooling.md#быстрый-старт).
+
+</details>
+
+<details>
+<summary>Нужны ли для <code>this.Marker()</code> partial-классы или атрибуты?</summary>
+
+Нет. Генератор входит в пакет, а расширение находится в глобальном пространстве имён; оно работает в `MonoBehaviour` и обычных C#-классах. Вызывайте его всегда с `using` и не давайте области пересекать `await` или `yield`. Подробнее — в разделе [Marker()](05-profiler-markers.md#marker).
+
+</details>
 
 ## Помощь и поддержка
 

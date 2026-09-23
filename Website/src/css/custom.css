@@ -526,6 +526,22 @@ html.docs-doc-page body { background: transparent; }
 /* A click on the empty canvas sends a ripple through the dot texture: src/components/DotRipple redraws the touched
    dots on this fixed canvas — lifted, pushed outwards and accent-coloured at the crests, sunk in the troughs. */
 .dot-ripple-canvas { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+/* Around the pointer the dots take the accent colour (src/components/DotSpotlight): the same texture in green, masked
+   to a circle at --spot-x/--spot-y, shown only while the pointer is over the empty canvas. It sits under the ripples. */
+.dot-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(circle, var(--venom-ripple, var(--venom-accent)) 1.3px, transparent 1.6px);
+  background-size: 20px 20px;
+  -webkit-mask-image: radial-gradient(circle 150px at var(--spot-x, -999px) var(--spot-y, -999px), #000, transparent);
+  mask-image: radial-gradient(circle 150px at var(--spot-x, -999px) var(--spot-y, -999px), #000, transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.dot-spotlight[data-on] { opacity: 0.85; }
+html[data-theme='light'] .dot-spotlight[data-on] { opacity: 0.6; }
 
 html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 
@@ -1006,16 +1022,25 @@ html.docs-background-windows.docs-doc-page {
   .theme-doc-markdown .doc-image-panel > img.doc-zoom-image { border: 0; box-shadow: none; }
 }
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
-/* Feature cards: the intro's feature table rendered like the samples overview. */
+/* Feature groups: Serialization / Editor & tooling labels above each card grid. */
+.theme-doc-markdown h3.feature-group {
+  margin: 1.75rem 0 1rem;
+  font: 500 0.78rem/1.4 var(--ifm-font-family-monospace);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--venom-muted);
+}
+/* Feature cards: the intro's feature sections as one column of wide cards. */
 .theme-doc-markdown .feature-cards {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 22px;
   margin-bottom: 2.5rem;
 }
+/* Wide cards: the preview on the left, the title and summary on the right. */
 .theme-doc-markdown .feature-card {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   background: var(--ifm-code-background);
   border: 2px solid var(--venom-line-strong);
   border-radius: 12px;
@@ -1026,11 +1051,12 @@ html.docs-background-windows.docs-doc-page {
 /* Equal preview boxes align the card bodies; captures retain their full proportions inside. */
 .theme-doc-markdown .feature-card__preview {
   display: flex;
+  flex: 0 0 56%;
   flex-direction: column;
   aspect-ratio: 4 / 3;
   overflow: hidden;
   background: var(--venom-panel);
-  border-bottom: 1px solid var(--venom-line-strong);
+  border-right: 1px solid var(--venom-line-strong);
 }
 /* Beats the generic `p:has(.doc-zoom-image)` margins without cropping wider captures. */
 .theme-doc-markdown .feature-card__preview > p:has(.doc-zoom-image) { display: flex; flex: 1; width: 100%; max-width: none; margin: 0; }
@@ -1057,17 +1083,26 @@ html.docs-background-windows.docs-doc-page {
 .theme-doc-markdown .feature-card__preview img.doc-zoom-image[src*='/aspid_fasttools_serialize_reference_selector'] {
   transform: scaleX(1.0053);
 }
-.theme-doc-markdown .feature-card__preview:has(img[src*='/aspid_fasttools_serializable_type']) { background: #2f2f2f; }
-.theme-doc-markdown .feature-card__preview > p:has(img[src*='/aspid_fasttools_serializable_type']) { position: relative; }
-/* Fill the card with the Inspector content, excluding its title, tab and thin window border. */
-.theme-doc-markdown .feature-card__preview img.doc-zoom-image[src*='/aspid_fasttools_serializable_type'] {
+/* The Inspector captures (1418×1058) bake a macOS title bar, the Inspector tab strip and a 4px window frame:
+   the card shows rows 110–1038 of columns 4–1414 only, so its box takes that 1410×928 shape. */
+.theme-doc-markdown .feature-card__preview:has(img:is([src*='/serializable-type-quick-start'], [src*='/component-type-selector'])) {
+  aspect-ratio: 1410 / 928;
+  background: #323232;
+}
+.theme-doc-markdown .feature-card__preview > p:has(img:is([src*='/serializable-type-quick-start'], [src*='/component-type-selector'])) { position: relative; }
+.theme-doc-markdown .feature-card__preview img.doc-zoom-image:is([src*='/serializable-type-quick-start'], [src*='/component-type-selector']) {
   position: absolute;
-  left: -0.35%;
-  top: -11.9%;
-  width: 100.7%;
-  height: 114%;
+  left: calc(-4 / 1410 * 100%);
+  top: calc(-110 / 928 * 100%);
+  width: calc(1418 / 1410 * 100%);
+  height: calc(1058 / 928 * 100%);
   object-fit: fill;
 }
+/* Animated previews (src/components/FeaturePreview): code above, its effect below. */
+.theme-doc-markdown .feature-card__preview:has(> .feature-card__live) { aspect-ratio: auto; }
+.theme-doc-markdown .feature-card__live { display: flex; flex: 1; flex-direction: column; }
+.theme-doc-markdown .feature-card__live > div { flex: 1; }
+.theme-doc-markdown .feature-card__live pre { margin: 0; }
 /* Code previews need less height than captures: a few lines sit in a shorter box. */
 .theme-doc-markdown .feature-card__preview:has(> .theme-code-block) { aspect-ratio: 16 / 9; min-height: max-content; }
 /* Code previews are the code block itself, edge to edge. */
@@ -1086,22 +1121,24 @@ html.docs-background-windows.docs-doc-page {
 .theme-doc-markdown .feature-card__preview .theme-code-block [class*='buttonGroup'] { display: none; }
 .theme-doc-markdown .feature-card__preview .theme-code-block > div:first-child,
 .theme-doc-markdown .feature-card__preview .theme-code-block pre { padding: 0; font-size: 0.95rem; line-height: 1.6; }
-.theme-doc-markdown .feature-card__body { display: flex; flex: 1; flex-direction: column; padding: 22px 26px 24px; }
+.theme-doc-markdown .feature-card__body { display: flex; flex: 1; flex-direction: column; justify-content: center; min-width: 0; padding: 22px 26px 24px; }
 .theme-doc-markdown .feature-card__title {
   display: flex;
   align-items: baseline;
   gap: 10px;
   max-width: none;
   margin-bottom: 10px;
-  font: 500 clamp(1.15rem, 2vw, 1.4rem)/1.25 var(--ifm-heading-font-family);
+  font: 500 clamp(1.1rem, 1.6vw, 1.3rem)/1.25 var(--ifm-heading-font-family);
   letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
 }
 .theme-doc-markdown .feature-card__index { flex-shrink: 0; color: var(--venom-accent); }
 .markdown .feature-card__title a { color: var(--venom-fg-strong); text-decoration: none; }
 .markdown .feature-card__title a:hover { color: var(--venom-accent); text-decoration: none; }
 .theme-doc-markdown .feature-card__text { max-width: none; margin-bottom: 0; font-size: 0.95rem; line-height: 1.65; color: var(--venom-fg); }
 @media (max-width: 700px) {
-  .theme-doc-markdown .feature-cards { grid-template-columns: 1fr; gap: 22px; }
+  .theme-doc-markdown .feature-card { flex-direction: column; }
+  .theme-doc-markdown .feature-card__preview { border-right: 0; border-bottom: 1px solid var(--venom-line-strong); }
   .theme-doc-markdown .feature-card__body { padding: 20px 22px 22px; }
 }
 @media (prefers-reduced-motion: reduce) {

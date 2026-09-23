@@ -162,6 +162,8 @@ const config = {
     /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
       colorMode: { defaultMode: 'dark', respectPrefersColorScheme: false },
+      // Link previews (og:image, twitter:image) for every page.
+      image: 'img/social-card.png',
       navbar: {
         title: 'Aspid.FastTools',
         logo: { alt: 'Aspid.FastTools', src: 'img/logo.png', width: 28, height: 28 },

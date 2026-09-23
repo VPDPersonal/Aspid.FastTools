@@ -14,6 +14,16 @@ const CONTENT = [
   'dialog', '[role="dialog"]', '[role="menu"]',
 ].join(', ');
 
+/** True when `target` is the empty canvas of a docs page: the dots show there, and a click or the pointer may light them. */
+export function isCanvas(target) {
+  if (!document.documentElement.classList.contains('docs-doc-page')) return false;
+  if (!(target instanceof Element)) return false;
+  // Only windows the article surface is actually cut out for: below 997px the mask is dropped, so notices and image
+  // panels are opaque content again and the dots under them are hidden.
+  if (target.closest(`.doc-column-with-windows :is(${BACKGROUND_WINDOWS})`)) return !target.closest('a, button, [role="button"]');
+  return !target.closest(CONTENT);
+}
+
 const GRID = 20;          // px, must match the CSS dot texture (background-size)
 const BASE_DOT = 1;       // px, radius of the resting CSS dot
 const SPEED = 0.42;       // px per ms at the start — the same pace on every screen size
@@ -151,15 +161,7 @@ export default function DotRipple() {
     };
 
     const onPointerDown = (event) => {
-      if (event.button !== 0) return;
-      if (!document.documentElement.classList.contains('docs-doc-page')) return;
-      if (!(event.target instanceof Element)) return;
-      // Only windows the article surface is actually cut out for: below 997px the mask is dropped, so notices and image
-      // panels are opaque content again and a wave under them would be invisible.
-      const backgroundWindow = event.target.closest(`.doc-column-with-windows :is(${BACKGROUND_WINDOWS})`);
-      if (backgroundWindow) {
-        if (event.target.closest('a, button, [role="button"]')) return;
-      } else if (event.target.closest(CONTENT)) return;
+      if (event.button !== 0 || !isCanvas(event.target)) return;
       colors = readColors();
       waves.push({x: event.clientX, y: event.clientY, start: performance.now()});
       if (waves.length > MAX_WAVES) waves.shift();

@@ -6,6 +6,8 @@ import {prepareIndex, searchEntries} from '../../components/search';
 import styles from './styles.module.css';
 
 let indexPromise;
+// Several bars can be mounted at once (panel, hidden navbar); only one may answer the shortcut.
+const instances = [];
 const loadIndex = () => indexPromise ??= import('@fasttools-search-index').then((module) => prepareIndex(module.default));
 
 function SearchIcon() {
@@ -35,13 +37,20 @@ export default function SearchBar() {
   useEffect(() => {
     setMounted(true);
     if (/Mac|iPhone|iPad/.test(navigator.platform)) setShortcut('⌘ K');
+    const self = {trigger};
+    instances.push(self);
     const onKey = (event) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault(); setOpen((value) => !value);
-      }
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'k') return;
+      // The first bar whose button is laid out owns the shortcut; a hidden one answers only when no bar is visible.
+      const owner = instances.find((instance) => instance.trigger.current?.getClientRects().length) ?? instances[0];
+      if (owner !== self) return;
+      event.preventDefault(); setOpen((value) => !value);
     };
     document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
+    return () => {
+      instances.splice(instances.indexOf(self), 1);
+      document.removeEventListener('keydown', onKey);
+    };
   }, []);
   useEffect(() => { setOpen(false); }, [location.pathname]);
   useEffect(() => {
@@ -87,6 +96,8 @@ export default function SearchBar() {
                 if (results.length) setActive((value) => (value + (event.key === 'ArrowDown' ? 1 : -1) + results.length) % results.length);
               }
               if (event.key === 'Enter' && results[active]) { event.preventDefault(); select(results[active]); }
+              // The dialog's own cancel covers Esc in most browsers; this also covers synthetic key events.
+              if (event.key === 'Escape') { event.preventDefault(); close(); }
             }} />
           <button type="button" className={styles.close} onClick={close} aria-label={ru ? 'Закрыть поиск' : 'Close search'}>Esc</button>
         </div>

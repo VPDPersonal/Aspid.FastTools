@@ -34,37 +34,41 @@ This installs the latest preview, and updating the package brings in a newer one
 
 ## Features
 
-### [Serializable Type System](02-serializable-types.md)
+### Serialization
+
+#### [Serializable Type System](02-serializable-types.md)
 
 Store and pick a `System.Type` in the Inspector.
 
 <img src="Images/serializable-type-quick-start.gif" alt="Select a serializable type in the Inspector" width="640" />
 
-### [ComponentTypeSelector](11-component-type-selector.md)
+#### [ComponentTypeSelector](11-component-type-selector.md)
 
 Switch an existing component's type while preserving shared fields.
 
 <img src="Images/component-type-selector.gif" alt="Switch a component type in the Inspector" width="640" />
 
-### [SerializeReference Selector](03-serialize-reference-selector.md)
+#### [SerializeReference Selector](03-serialize-reference-selector.md)
 
 Pick which class a `SerializeReference` field holds, straight from the Inspector.
 
 <img src="Images/aspid_fasttools_serialize_reference_selector.gif" alt="Switch Pistol to Shotgun while keeping Damage at 37" width="640" />
 
-### [SerializeReference Tooling](04-serialize-reference-tooling.md)
+#### [SerializeReference Tooling](04-serialize-reference-tooling.md)
 
 Audit and repair references across the whole project, before builds and in CI.
 
 <img src="Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Repair a missing weapon type without losing its data" width="640" />
 
-### [EnumValues](06-enum-values.md)
+#### [EnumValues](06-enum-values.md)
 
 Edit enum → value tables in the Inspector, including flags.
 
 <img src="../Samples~/EnumValues/Documentation/Images/surface-tables.png" alt="Edit enum keys and their values in the Inspector" width="640" />
 
-### [ProfilerMarkers](05-profiler-markers.md)
+### Editor & tooling
+
+#### [ProfilerMarkers](05-profiler-markers.md)
 
 Generate a unique profiler marker per call site with `this.Marker()`.
 
@@ -75,18 +79,18 @@ using (this.Marker())
 }
 ```
 
-### [VisualElement Extensions](07-visual-element-extensions.md)
+#### [VisualElement Extensions](07-visual-element-extensions.md)
 
 Build UI Toolkit trees with fluent chains.
 
 ```csharp
 new VisualElement()
-  .SetPadding(8)
+  .SetPaddingX(12)
   .AddChild(
     new Label("Stats"));
 ```
 
-### [SerializedProperty Extensions](08-serialized-property-extensions.md)
+#### [SerializedProperty Extensions](08-serialized-property-extensions.md)
 
 Set values, resize arrays, and inspect the field type and owning object.
 
@@ -96,17 +100,17 @@ property
   .SetIntAndApply(42);
 ```
 
-### [Editor Helpers](09-editor-helpers.md)
+#### [Editor Helpers](09-editor-helpers.md)
 
 Get readable object and component display names for custom editors.
 
 ```csharp
-audio.GetDisplayName();
-// "Audio Source"
+fireAbility.GetDisplayName();
+// "Fire Ability"
 
-secondAudio
+abilityConfig
   .GetDisplayNameWithIndex();
-// "Audio Source (2)"
+// "Ability Config (1)"
 ```
 
 ## Quick start
@@ -121,6 +125,29 @@ secondAudio
 - [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools) — public types and members. The feature links above explain how to use them.
 - [Claude Code plugin](10-claude-code-plugin.md) — optional skills for working with this package in Claude Code.
 - [Changelog](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md) — release history.
+
+## FAQ
+
+<details>
+<summary>Can CI fail on broken references?</summary>
+
+Yes. Set **Build / CI gate** to `Fail` in **Project Settings → Aspid FastTools → SerializeReference**, or run `SerializeReferenceCiGate.RunCheck` in batch mode with `-srGateFail`: it writes a report and exits with code `1` on violations. See [Running in CI](04-serialize-reference-tooling.md#running-in-ci).
+
+</details>
+
+<details>
+<summary>Why does the project scan skip some assets?</summary>
+
+Scanning reads text YAML from disk. Select **Asset Serialization → Mode → Force Text**, save binary assets again, and save modified scenes before you scan. See [SerializeReference Tooling](04-serialize-reference-tooling.md#quick-start).
+
+</details>
+
+<details>
+<summary>Does <code>this.Marker()</code> need partial classes or attributes?</summary>
+
+No. The generator ships with the package and the extension is in the global namespace; it works in `MonoBehaviour` and ordinary C# classes. Always call it with `using`, and keep a scope from crossing `await` or `yield`. See [Marker()](05-profiler-markers.md#marker).
+
+</details>
 
 ## Help and support
 

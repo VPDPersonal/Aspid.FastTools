@@ -85,18 +85,35 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           tree.children.splice(badges + 2, 1);
         }
       }
-      // On GitHub the features are plain sections: a linked heading, a sentence and a preview.
-      // The site shows the same sections as a card grid, like the samples overview.
+      // On GitHub the features are grouped sections: a linked heading, a sentence and a preview.
+      // The site shows each group as a card grid, like the samples overview.
       const features = tree.children.findIndex((node, index) => node.type === 'heading' && node.depth === 2
-        && tree.children[index + 1]?.type === 'heading' && tree.children[index + 1].depth === 3);
+        && tree.children[index + 1]?.type === 'heading' && tree.children[index + 1].depth === 3
+        && tree.children[index + 2]?.type === 'heading' && tree.children[index + 2].depth === 4);
       if (features !== -1) {
         let end = features + 1;
         while (end < tree.children.length && !(tree.children[end].type === 'heading' && tree.children[end].depth === 2)) end++;
         const section = tree.children.slice(features + 1, end);
-        const cards = [];
+        const jsx = (name, className, children) => ({
+          type: 'mdxJsxFlowElement',
+          name,
+          attributes: [{type: 'mdxJsxAttribute', name: 'className', value: className}],
+          children,
+        });
+        const paragraph = (className, children) => ({type: 'paragraph', data: {hProperties: {className}}, children});
+        const result = [];
+        let list;
+        let index = 0;
         for (let i = 0; i < section.length; i++) {
-          const heading = section[i];
-          if (heading.type !== 'heading' || heading.depth !== 3) continue;
+          const node = section[i];
+          if (node.type === 'heading' && node.depth === 3) {
+            node.data = {...node.data, hProperties: {...node.data?.hProperties, className: 'feature-group'}};
+            result.push(node);
+            list = jsx('div', 'feature-cards', []);
+            result.push(list);
+            continue;
+          }
+          if (!list || node.type !== 'heading' || node.depth !== 4) continue;
           const summary = section[i + 1];
           let preview = section[i + 2];
           // GitHub reads a sized <img>; the site lays the same capture out as a Markdown image.
@@ -106,33 +123,28 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           }
           if (summary?.type !== 'paragraph' || !preview
             || !(preview.type === 'code' || (preview.type === 'paragraph' && preview.children[0]?.type === 'image'))) continue;
-          const jsx = (name, className, children) => ({
-            type: 'mdxJsxFlowElement',
-            name,
-            attributes: [{type: 'mdxJsxAttribute', name: 'className', value: className}],
-            children,
-          });
-          cards.push(jsx('article', 'feature-card', [
-            jsx('div', 'feature-card__preview', [preview]),
+          index++;
+          // `05-profiler-markers.md` → `profiler-markers`: the site component picks a live preview by page.
+          const url = node.children.find((part) => part.type === 'link')?.url ?? '';
+          const doc = url.replace(/^.*\//, '').replace(/^\d+-/, '').replace(/\.md$/, '');
+          const livePreview = {...jsx('FeaturePreview', undefined, [preview]),
+            attributes: [{type: 'mdxJsxAttribute', name: 'doc', value: doc}]};
+          list.children.push(jsx('article', 'feature-card', [
+            jsx('div', 'feature-card__preview', [livePreview]),
             jsx('div', 'feature-card__body', [
-              {type: 'paragraph', data: {hProperties: {className: 'feature-card__title'}}, children: [
+              paragraph('feature-card__title', [
                 {type: 'mdxJsxTextElement', name: 'span', attributes: [{type: 'mdxJsxAttribute', name: 'className', value: 'feature-card__index'}],
-                  children: [{type: 'text', value: `${String(cards.length + 1).padStart(2, '0')} /`}]},
+                  children: [{type: 'text', value: `${String(index).padStart(2, '0')} /`}]},
                 {type: 'text', value: ' '},
-                ...heading.children,
-              ]},
-              {type: 'paragraph', data: {hProperties: {className: 'feature-card__text'}}, children: summary.children},
+                ...node.children,
+              ]),
+              paragraph('feature-card__text', summary.children),
             ]),
           ]));
           i += 2;
         }
-        if (cards.length > 0) {
-          tree.children.splice(features + 1, end - features - 1, {
-            type: 'mdxJsxFlowElement',
-            name: 'div',
-            attributes: [{type: 'mdxJsxAttribute', name: 'className', value: 'feature-cards'}],
-            children: cards,
-          });
+        if (result.some((node) => node.children?.length && node.name === 'div')) {
+          tree.children.splice(features + 1, end - features - 1, ...result);
         }
       }
       // Keep absolute site links on GitHub, and native local links on the site.

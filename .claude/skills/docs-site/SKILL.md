@@ -231,24 +231,13 @@ The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as
 `Website/src/css/custom.css`), IBM Plex Serif/Mono from Google Fonts, iA Writer Quattro body self-hosted in
 `src/fonts/` (OFL, keep the licence file), Ayu-based Prism themes in `src/prism/venom.js`.
 
-### Landing page
+### Introduction feature cards
 
-`/` (and `/ru/`) is the landing in `src/components/Landing/` (`src/pages/index.js` only renders it). It brings its
-own header and footer: `html.landing-page` hides the Docusaurus navbar, `noFooter` drops the site footer.
-
-- **Copy and data** live in `Landing/content.js` as `{en, ru}` pairs — every claim and code line is taken from a
-  guide's quick start; edit both languages together and keep links to real routes (`onBrokenLinks: 'throw'`).
-- **Hero code morph** (`CodeMorph.js`): each example is one unified listing of `' '`/`'-'`/`'+'` lines; `'-'` lines
-  collapse, `'+'` lines expand. The code area is 11 lines tall — a longer "before" listing gets clipped.
-- **Media**: the serialization cards import GIFs straight from the package `Documentation/Images/`; the two
-  Inspector captures with a baked macOS title bar are cropped in CSS (`data-media='type' | 'component'`).
-  Sample previews come from `SamplesGallery`'s exported `samples`.
-- **Effects**: the dot canvas is shared with the docs — `DotRipple` also runs on the landing (a click on anything
-  outside `[data-landing-solid]`, plus one `RIPPLE_EVENT` wave on load); a pointer spotlight lights the dots; cards
-  with `[data-glow]` light their borders near the pointer; `[data-reveal]` blocks fade in on scroll. Everything
-  honours `prefers-reduced-motion`.
-- **Search** in the header is the same `SearchBar` (`wide` variant). Several bars can be mounted at once; only
-  the first visible one answers ⌘K/Ctrl K.
+There is no landing page: `/` redirects to `/docs`. On the introduction, `src/remark/introBanner.js` turns the README's
+Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
+the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
+there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`.
+The Inspector GIFs of the first two cards are cropped in `custom.css` to hide the baked title bar and tab strip.
 
 `static/img/logo.png` and `favicon.png` are copies of the package icon
 `Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`; re-copy them if the icon changes.
