@@ -112,7 +112,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 /* ---------- Editor Helpers ---------- */
 
 .namesBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
-.names { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 0; padding: 12px; list-style: none; }
+.names { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 0; padding: 12px; background: var(--ifm-code-background); list-style: none; }
 .names li {
   display: flex;
   align-items: center;
