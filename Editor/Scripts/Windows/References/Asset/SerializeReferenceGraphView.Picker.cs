@@ -63,6 +63,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!TypeSelectorRequiredGate.TryGetRequired(property, out var selector)) return default;
 
             var types = new List<Type>();
+            var owner = property.GetDeclaringInstance();
 
             var path = property.propertyPath;
             var lastDotIndex = path.LastIndexOf('.');
@@ -71,13 +72,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 using var parentProperty = serializedObject.FindProperty(path[..lastDotIndex]);
                 var parentField = parentProperty?.GetFieldInfo();
                 if (parentField is not null &&
-                    SerializableTypeUtility.TryGetBaseType(parentField.FieldType, out var wrapperBase) &&
-                    wrapperBase is not null && wrapperBase != typeof(object))
-                    types.Add(wrapperBase);
+                    SerializableTypeUtility.TryGetBaseType(parentField.FieldType, out var wrapperBase))
+                {
+                    // The attribute sits on the wrapper field, so its members belong to the wrapper's owner.
+                    owner = parentProperty.GetDeclaringInstance();
+
+                    if (wrapperBase is not null && wrapperBase != typeof(object))
+                        types.Add(wrapperBase);
+                }
             }
 
             types.AddRange(TypeSelectorConstraintResolver.Resolve(
-                serializedObject.targetObject, selector.AssemblyQualifiedNames).Types);
+                owner ?? serializedObject.targetObject, selector.AssemblyQualifiedNames).Types);
 
             return new TypeSelectorFilter
             {

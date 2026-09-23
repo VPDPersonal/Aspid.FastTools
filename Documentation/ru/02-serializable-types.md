@@ -1,16 +1,30 @@
 # Serializable Type System
 
-Выбор типа в инспекторе. Тип сохраняется вместе с компонентом или ассетом и читается в коде как `System.Type`. Обёртки хранят только сам тип — экземпляр создаёт ваш код. Для экземпляра с редактируемыми данными есть [SerializeReference Selector](03-serialize-reference-selector.md).
+Поле `SerializableType<T>` показывает в инспекторе типы, совместимые с `T`, сохраняет выбранный тип вместе с компонентом или ассетом и возвращает его в коде как `System.Type`. Экземпляр по этому типу создаёт ваш код.
 
 ## Быстрый старт
 
-Unity не сериализует поле `System.Type` напрямую. Вместо строки, которую нужно заполнять и разрешать вручную, объявите `SerializableType<T>`. Аргумент `T` ограничивает выбор совместимыми типами. Для примера используем `Collider`:
+Примеры на этой странице добавляют поля в компонент `WeaponMount` и используют иерархию оружия:
+
+```csharp
+public interface ITwoHanded { }
+
+public abstract class Weapon { }
+public abstract class MeleeWeapon : Weapon { }
+public abstract class RangedWeapon : Weapon { }
+
+public sealed class Sword : MeleeWeapon { }
+public sealed class Axe : MeleeWeapon, ITwoHanded { }
+public sealed class Bow : RangedWeapon, ITwoHanded { }
+
+public sealed class WeaponMount : MonoBehaviour { }
+```
 
 | До — строка с именем типа | После — SerializableType |
 |---|---|
-| <pre lang="csharp"><code>[SerializeField]&#10;private string _colliderTypeName;&#10;&#10;public System.Type ColliderType =&gt;&#10;    string.IsNullOrEmpty(_colliderTypeName)&#10;        ? null&#10;        : System.Type.GetType(&#10;            _colliderTypeName, false);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;Collider&gt;&#10;    _colliderType;&#10;&#10;public System.Type ColliderType =&gt;&#10;    _colliderType?.Type;</code></pre> |
+| <pre lang="csharp"><code>[SerializeField]&#10;private string _primaryWeaponName;&#10;&#10;public System.Type PrimaryWeapon =&gt;&#10;    string.IsNullOrEmpty(&#10;        _primaryWeaponName)&#10;        ? null&#10;        : System.Type.GetType(&#10;            _primaryWeaponName, false);</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;Weapon&gt;&#10;    _primaryWeapon;&#10;&#10;public System.Type PrimaryWeapon =&gt;&#10;    _primaryWeapon?.Type;</code></pre> |
 
-Сама обёртка уже имеет селектор; атрибут здесь исключает абстрактные классы и интерфейсы.
+Обёртка показывает селектор и без атрибута; `Allow = TypeAllow.None` убирает из списка абстрактные `Weapon`, `MeleeWeapon` и `RangedWeapon`.
 
 ![Выбор сериализуемого типа в инспекторе](../Images/serializable-type-quick-start.gif)
 
@@ -39,24 +53,22 @@ Unity не сериализует поле `System.Type` напрямую. Вм�
 Оба варианта неявно преобразуются в `System.Type` и имеют публичный конструктор с аргументом `Type`:
 
 ```csharp
-var selected = new SerializableType<Collider>(typeof(BoxCollider));
-System.Type type = selected;
+var primary = new SerializableType<Weapon>(typeof(Sword));
+System.Type type = primary;
 
-var empty = new SerializableType<Collider>(null);
+var empty = new SerializableType<Weapon>(null);
 ```
 
 Тип должен быть совместим с `T`, иначе конструктор выбросит `ArgumentException`. Для пустой обёртки передайте `null`; публичного конструктора без аргументов нет.
 
-| Свойство или вызов | Результат |
-|---|---|
-| `Type` | Разрешённый `System.Type`; `null`, если выбор пуст или имя больше не разрешается |
-| `AssemblyQualifiedName` | Сохранённое имя, даже если тип потерян; пустая строка для пустого выбора |
-| `BaseType` | `typeof(object)` либо `typeof(T)` у generic-варианта |
-| `ToString()` | Короткое имя найденного типа; иначе сохранённое имя |
+| Свойство или вызов | `primary` | `empty` | Потерянный тип |
+|---|---|---|---|
+| `Type` | `typeof(Sword)` | `null` | `null` |
+| `AssemblyQualifiedName` | Имя `Sword` со сборкой | `""` | Сохранённое имя |
+| `BaseType` | `typeof(Weapon)` | `typeof(Weapon)` | `typeof(Weapon)` |
+| `ToString()` | `"Sword"` | `""` | Сохранённое имя |
 
-### Пустое значение и переименование
-
-После переименования класса, namespace или сборки сохранённое имя может перестать разрешаться. Тогда инспектор покажет `<Missing>`; перед использованием проверяйте `.Type` на `null`.
+Потерянный тип — сохранённое имя, которое перестало разрешаться после переименования класса, namespace или сборки; инспектор показывает его как `<Missing …>` с этим именем. У `SerializableType` без `T` свойство `BaseType` равно `typeof(object)`. Для найденного типа `ToString()` возвращает `Type.Name`, поэтому у generic-типа это ``Amplify`1``, а не подпись из окна выбора.
 
 > [!NOTE]
 > Unity сериализует обёртку по объявленному типу поля. Если присвоить `SerializableType<T>` в поле `SerializableType`, выбранный тип переживёт загрузку, а ограничение `T` — нет. Объявляйте generic-вариант непосредственно у поля. Это же правило относится к `SerializableMonoScript<T>`.
@@ -67,26 +79,23 @@ var empty = new SerializableType<Collider>(null);
 
 | Хранение имени | Связь с ассетом скрипта |
 |---|---|
-| <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;MonoBehaviour&gt;&#10;    _componentType;</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableMonoScript&lt;MonoBehaviour&gt;&#10;    _componentType;</code></pre> |
+| <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableType&lt;Weapon&gt;&#10;    _primaryWeapon;</code></pre> | <pre lang="csharp"><code>[TypeSelector(Allow = TypeAllow.None)]&#10;[SerializeField]&#10;private SerializableMonoScript&lt;Weapon&gt;&#10;    _primaryWeapon;</code></pre> |
 
 | Возможность | SerializableType | SerializableMonoScript |
 |---|---|---|
-| Выбор через окно поиска | Да | Да, только типы с подходящим MonoScript |
+| Выбор через окно поиска | Да | Да, только типы с подходящим скриптом |
 | Generic-типы и типы, объявленные внутри другого класса | Да | Нет |
-| Встроенные типы Unity без ассета `MonoScript`, например `BoxCollider` | Да | Нет |
+| Типы без своего `.cs` в проекте: из DLL и модулей Unity | Да | Нет |
 | Обновление имени после переименования скрипта | Вручную | Из сохранённого MonoScript при сериализации |
 | Создание из кода с `Type` | Публичный конструктор | Публичного конструктора нет |
-| В плеере | Имя типа | Имя типа; ссылка на MonoScript только в редакторе |
 
-`BoxCollider` поставляется в сборке `UnityEngine.PhysicsModule`, поэтому в проекте нет связанного с ним ассета скрипта.
+Подходящий скрипт — файл runtime-сборки с классом верхнего уровня, не generic, чьё имя совпадает с именем файла: для `Sword` это `Sword.cs`. При переименовании сохраняйте ассет и его `.meta`. Если Unity перестаёт распознавать класс, обёртка оставляет последнее известное имя.
 
-Скрипт должен содержать класс верхнего уровня, не generic, в файле с соответствующим именем; `MonoScript.GetClass()` должен возвращать этот класс. При переименовании сохраняйте ассет и его `.meta`. Если Unity перестаёт распознавать класс, обёртка оставляет последнее известное имя.
-
-Читайте выбранный тип через `.Type` или неявное преобразование в `System.Type`, как у `SerializableType`.
+Выбранный тип читается через `.Type` или неявное преобразование в `System.Type`, как у `SerializableType`. В плеере обёртка тоже хранит только имя типа.
 
 ## TypeSelectorAttribute
 
-Атрибут настраивает выбор у поля. Обёртки имеют встроенный селектор и без атрибута; для обычной строки атрибут добавляет его.
+Атрибут настраивает выбор у поля и добавляет селектор обычной строке.
 
 | Поле | Результат выбора |
 |---|---|
@@ -97,26 +106,26 @@ var empty = new SerializableType<Collider>(null);
 ### Ограничения и коллекции
 
 ```csharp
-[TypeSelector(typeof(MonoBehaviour), Allow = TypeAllow.None)]
-[SerializeField] private string _componentTypeName;
+[TypeSelector(typeof(Weapon), Allow = TypeAllow.None)]
+[SerializeField] private string _backupWeaponName;
 
-[TypeSelector(typeof(IDamageable), Allow = TypeAllow.None)]
-[SerializeField] private SerializableType<MonoBehaviour> _damageableType;
+[TypeSelector(typeof(ITwoHanded), Allow = TypeAllow.None)]
+[SerializeField] private SerializableType<MeleeWeapon> _heavyWeapon;
 
 [TypeSelector(Allow = TypeAllow.None)]
-[SerializeField] private SerializableType<Collider>[] _colliderTypes;
+[SerializeField] private SerializableType<Weapon>[] _loadout;
 ```
 
-`IDamageable` здесь — ваш интерфейс. В поле `_damageableType` предлагаются компоненты, которые одновременно наследуют `MonoBehaviour` и реализуют `IDamageable`. Ограничения действуют одновременно (**И**) на полях любого вида. Массивы и списки получают выбор для каждого элемента.
+`_heavyWeapon` предлагает только `Axe`: `Sword` не реализует `ITwoHanded`, а `Bow` не наследует `MeleeWeapon`. Ограничения действуют одновременно (**И**) на полях любого вида. Массивы и списки получают выбор для каждого элемента.
 
-У `[SerializeReference]` первым ограничением служит тип поля. Допустим, `Sword` реализует `IWeapon` и `IMelee`, а `Glaive` — `IWeapon`, `IMelee` и `IRanged`:
+У `[SerializeReference]` первым ограничением служит тип поля, поэтому и здесь доступен только `Axe`:
 
 ```csharp
-[TypeSelector(typeof(IMelee), typeof(IRanged))]
-[SerializeReference] private IWeapon _weapon;
+[TypeSelector(typeof(ITwoHanded))]
+[SerializeReference] private MeleeWeapon _heldWeapon;
 ```
 
-В поле можно выбрать только `Glaive`: `Sword` не реализует `IRanged`. Чтобы разрешить определённый набор классов, дайте им общий интерфейс и укажите его: перечисление самих классов (`typeof(Pistol), typeof(Rifle)`) оставит список пустым, и анализатор `AFT0009` об этом предупредит. Подробнее — [настройка селектора экземпляров](03-serialize-reference-selector.md#настройка-выбора).
+Чтобы разрешить определённый набор классов, дайте им общий интерфейс или базовый класс и укажите его: перечисление самих классов (`typeof(Sword), typeof(Axe)`) оставит список пустым, и анализатор `AFT0009` об этом предупредит. Подробнее — [настройка селектора экземпляров](03-serialize-reference-selector.md#настройка-выбора).
 
 ### Конструкторы и свойства
 
@@ -132,28 +141,28 @@ var empty = new SerializableType<Collider>(null);
 
 ```csharp
 [TypeSelector]
-[TypeSelector(typeof(MonoBehaviour))]
-[TypeSelector(typeof(MonoBehaviour), typeof(IDamageable))]
+[TypeSelector(typeof(Weapon))]
+[TypeSelector(typeof(MeleeWeapon), typeof(ITwoHanded))]
 [TypeSelector("Namespace.TypeName, AssemblyName")]
-[TypeSelector(nameof(_category))]
+[TypeSelector(nameof(_weaponClass))]
 ```
 
-На поле можно поставить один `[TypeSelector]`. Он принимает аргументы `Type` или `string`: один, несколько через запятую (`params`) либо массив. Без аргументов атрибут не добавляет ограничений. Строка сначала ищется как имя поля или свойства; если такой член не найден — как имя типа.
+На поле можно поставить один `[TypeSelector]`. Он принимает аргументы `Type` или `string`: один, несколько через запятую (`params`) либо массив; `Type` и `string` в одном атрибуте не смешиваются. Без аргументов атрибут не добавляет ограничений. Строка сначала ищется как член класса, где объявлено поле; если такого члена нет — как имя типа.
 
 </details>
 
 ### Обязательное поле
 
 ```csharp
-[TypeSelector(Required = true, Allow = TypeAllow.None)]
-[SerializeField] private SerializableType<Collider> _requiredType;
+[TypeSelector(typeof(Weapon), Required = true)]
+[SerializeField] private string _secondaryWeapon;
 ```
 
-![Пустое обязательное поле показывает предупреждение рядом с селектором](../Images/type-selector-required.png)
+![Пустое обязательное поле показывает предупреждение под селектором](../Images/type-selector-required.png)
 
-Пустое обязательное поле показывает предупреждение рядом с селектором
+Пустое обязательное поле показывает предупреждение под селектором
 
-С `Required = true` пункт `<None>` остаётся доступным: можно очистить поле, и рядом появится предупреждение. У строки или обёртки проверяется пустое сохранённое имя; потерянный тип с непустым именем эту проверку проходит.
+С `Required = true` пункт `<None>` остаётся доступным. У строки или обёртки проверяется пустое сохранённое имя; потерянный тип с непустым именем эту проверку проходит.
 
 Настройка проверки по всему проекту и в CI описана в разделе [проверки обязательных полей](04-serialize-reference-tooling.md#где-проверяются-обязательные-поля).
 
@@ -161,45 +170,47 @@ var empty = new SerializableType<Collider>(null);
 
 ## Ограничение из другого поля
 
-Передайте `nameof(...)`, чтобы текущее значение поля или свойства управляло списком кандидатов. Например, базовая категория и зависящий от неё выбор:
+Передайте `nameof(...)`, чтобы текущее значение поля или свойства управляло списком кандидатов:
 
 ```csharp
-[SerializeField] private SerializableType<MonoBehaviour> _category;
+[SerializeField] private SerializableType<Weapon> _weaponClass;
 
-[TypeSelector(nameof(_category), Allow = TypeAllow.None)]
-[SerializeField] private string _componentTypeName;
+[TypeSelector(nameof(_weaponClass), Allow = TypeAllow.None)]
+[SerializeField] private string _weaponName;
 ```
 
-Измените **Category**, затем откройте **Component Type Name**: список будет ограничен выбранным типом и его наследниками. Смена ограничения сама по себе не очищает ранее выбранное имя — проверьте зависимое поле и при необходимости выберите тип заново.
+Выберите `MeleeWeapon` в **Weapon Class** — **Weapon Name** предложит `Sword` и `Axe`. Смена ограничения не очищает ранее выбранное имя: проверьте зависимое поле и при необходимости выберите тип заново.
 
 | Источник ограничения | Поддержка |
 |---|---|
 | `System.Type` | Один тип |
 | `string` | Имя типа, разрешаемое через `Type.GetType` |
 | `SerializableType`, `SerializableMonoScript` и их generic-варианты | Разрешённое значение `.Type` |
-| Массив этих значений | Несколько ограничений одновременно |
+| Массив этих значений | Несколько ограничений одновременно; `List<T>` не поддерживается |
 
-Источник — нестатическое поле или читаемое свойство объекта, который редактирует инспектор. Подходят и унаследованные члены; индексаторы не поддерживаются. Пустой источник не добавляет ограничения. У generic-обёртки её собственный `T` продолжает ограничивать выбор.
+Источник — нестатическое поле или читаемое свойство класса, где объявлено поле с атрибутом, включая унаследованные; индексаторы не поддерживаются. У поля внутри `[Serializable]`-класса или элемента списка источник читается из того же экземпляра. Пустой или неразрешённый источник не добавляет ограничения. У generic-обёртки её собственный `T` продолжает ограничивать выбор.
 
-Для типа используйте `typeof`, для поля или свойства — `nameof`. Если строка не указывает ни на член объекта, ни на доступный тип, инспектор показывает предупреждение.
+Ошибки в строковых аргументах находят анализаторы: `AFT0006` — строка не указывает ни на член, ни на тип; `AFT0007` — член не может задать базовые типы; `AFT0008` — строка не похожа на имя типа. Если имя типа записано верно, но такой тип не загружен, предупреждение показывает инспектор.
 
-![Опечатка _categroy вместо _category вызывает предупреждение. nameof(_category) помогает избежать такой ошибки.](../Images/type-selector-constraint-warning.png)
+![Ограничение не разрешилось — инспектор показывает предупреждение под полем](../Images/type-selector-constraint-warning.png)
 
-Опечатка _categroy вместо _category вызывает предупреждение. nameof(_category) помогает избежать такой ошибки.
+Ограничение не разрешилось — инспектор показывает предупреждение под полем
 
 ## TypeSelectorDisplay
 
-`TypeSelectorDisplay` задаёт подпись, группу, иконку и подсказку типа в окне выбора:
+`TypeSelectorDisplay` задаёт подпись, группу, иконку и подсказку типа в окне выбора. Добавим в `WeaponMount` поле `SerializableType<CombatModifier> _modifier` и настроим, как в нём выглядит `DamageModifier`:
 
 ```csharp
 using Aspid.FastTools.Types;
+
+public abstract class CombatModifier { }
 
 [TypeSelectorDisplay(
     Name = "Damage ×",
     Group = "Combat/Modifiers",
     Tooltip = "Scales incoming damage",
     Icon = "d_ScriptableObject Icon")]
-public sealed class DamageModifier { }
+public sealed class DamageModifier : CombatModifier { }
 ```
 
 ![Имя Damage ×, иконка и группа Combat/Modifiers в окне выбора](../Images/type-selector-display.png)
@@ -209,13 +220,13 @@ public sealed class DamageModifier { }
 | Свойство | Результат |
 |---|---|
 | `Name` | Подпись в списке и закрытом поле. Поиск продолжает находить настоящее имя типа |
-| `Group` | Группировка вместо namespace; `/` разделяет уровни, например `Combat/Melee` |
+| `Group` | Группировка вместо namespace; `/` разделяет уровни |
 | `Tooltip` | Текст подсказки при наведении |
-| `Icon` | Имя `EditorGUIUtility.IconContent`, путь к ассету с расширением или путь в `Resources` без расширения |
+| `Icon` | Имя `EditorGUIUtility.IconContent`, путь к ассету от `Assets/` или `Packages/` с расширением либо путь в `Resources` без расширения |
 | `Hidden` | При `true` скрывает тип из обычного выбора. Не наследуется и не мешает присваиванию из кода или отображению сохранённого значения |
 
 > [!NOTE]
-> `TypeSelectorDisplay` зависит от `UNITY_EDITOR` в сборке, где атрибут применён. Если класс собран во внешнюю DLL без этого символа, настройки атрибута, включая `Hidden`, в неё не попадут.
+> `[TypeSelector]` и `[TypeSelectorDisplay]` помечены `[Conditional("UNITY_EDITOR")]`. В классах из внешней DLL, собранной без этого символа, их настроек нет, включая `Hidden`.
 
 ## TypeSelectorWindow
 
@@ -227,46 +238,51 @@ public sealed class DamageModifier { }
 
 | Действие | Управление |
 |---|---|
-| Перемещение / выбор / закрытие | Стрелки / Enter / Escape |
-| Возврат в родительскую группу | Стрелка влево или хлебные крошки |
+| Перемещение / выбор | Стрелки вверх и вниз / Enter |
+| Вход в группу / возврат | Стрелка вправо / стрелка влево или хлебные крошки |
+| Поиск | Начните печатать |
 | Переключение избранного | Space или звёздочка при наведении |
 | Очистка значения | `<None>` |
+| Закрытие | Escape; при открытом поиске первые нажатия очищают и сворачивают его |
 
-Отображение **Favorites**, **Recent** и ёмкость истории настраиваются во вкладке **Settings** окна FastTools.
+Раздел **Favorites** и длина истории **Recent** (0 скрывает её) настраиваются во вкладке **Settings** окна FastTools, там же оба списка очищаются. Шестерёнка в окне выбора открывает эту вкладку.
 
 ### Generic-типы
 
-При выборе открытого generic-типа окно предлагает выбрать аргументы, а затем возвращает сконструированный закрытый тип. Например, для `Container<T>` после выбора `int` результатом будет `Container<int>`. Generic-аргумент тоже может быть generic-типом: сначала окно попросит задать его собственные аргументы.
+При выборе открытого generic-типа окно предлагает выбрать аргументы, а затем возвращает сконструированный закрытый тип. Например, для `Amplify<T> : CombatModifier` с ограничением `where T : StatusEffect` окно предложит наследников `StatusEffect`, и после выбора `Burning` в `_modifier` запишется `Amplify<Burning>`. Generic-аргумент тоже может быть generic-типом: сначала окно попросит задать его собственные аргументы. Если все аргументы выводятся из типа поля, закрытый тип возвращается сразу.
 
 ![Выбор аргумента generic-типа в селекторе](../Images/type-selector-generic.gif)
 
 Выбор аргумента generic-типа в селекторе
 
-Аргумент должен удовлетворять ограничениям generic-параметра; `[Serializable]` не требуется. Для `[SerializeReference]` действуют дополнительные [правила сериализуемости и вывода аргументов](03-serialize-reference-selector.md#generic-типы).
+Аргумент должен удовлетворять ограничениям generic-параметра; интерфейсы, абстрактные классы и скрытые типы в аргументах не предлагаются, `[Serializable]` не требуется. Для `[SerializeReference]` действуют дополнительные [правила сериализуемости и вывода аргументов](03-serialize-reference-selector.md#generic-типы).
 
 ### Открытие из кода
 
-В editor-скрипте используйте `Aspid.FastTools.Types.Editors`. `screenRect` — прямоугольник кнопки в **экранных координатах**, `selectedTypeName` — строка текущего выбора:
+`screenRect` — прямоугольник кнопки в **экранных координатах**, `selectedTypeName` — строка текущего выбора:
 
 ```csharp
+using Aspid.FastTools.Types;
+using Aspid.FastTools.Types.Editors;
+
 TypeSelectorWindow.Show(
     screenRect,
     new TypeSelectorFilter
     {
-        Types = new[] { typeof(MonoBehaviour) },
+        Types = new[] { typeof(Weapon) },
         Allow = TypeAllow.None
     },
     currentAqn: selectedTypeName,
     onSelected: aqn => selectedTypeName = aqn);
 ```
 
-Обработчик получает assembly-qualified name или `null` при выборе `<None>`. Закрытие окна без выбора не присваивает значение. Если результат хранится в ассете, записывайте его через `SerializedProperty` и применяйте изменения.
+Обработчик получает assembly-qualified name или `null` при выборе `<None>`. Закрытие окна без выбора обработчик не вызывает.
 
-`currentAqn` задаёт текущую отметку; пустая строка отмечает `<None>`, а `null` оставляет выбор без отметки.
+`currentAqn` задаёт текущую отметку: пустая строка (значение по умолчанию) отмечает `<None>`, а `null` оставляет выбор без отметки.
 
 ### Фильтры окна
 
-`TypeSelectorFilter` — структура. У `default` значение `Allow` равно `None`, в отличие от атрибута `[TypeSelector]`, где по умолчанию `All`. Задавайте режим явно, когда нужны абстрактные классы или интерфейсы.
+`TypeSelectorFilter` — структура. У `default` пустой `Types` пропускает любые типы, а `Allow` равен `None` — в отличие от атрибута `[TypeSelector]`, где по умолчанию `All`. Задавайте `Allow` явно, когда нужны абстрактные классы или интерфейсы.
 
 <details>
 <summary>Свойства фильтра окна</summary>
@@ -282,26 +298,11 @@ TypeSelectorWindow.Show(
 | `IncludeHidden` | Показывать типы с `Hidden = true` |
 | `HideNoneOption` | Скрыть `<None>` на корневой странице |
 
-Для сужения списка используйте `Predicate`; `AdditionalTypes` добавляет кандидатов в обход ограничений.
-
 </details>
-
-Пример окна, работающего с ассетами, есть в [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md).
-
-## Если выбор не работает
-
-| Симптом | Что проверить |
-|---|---|
-| Нужный класс отсутствует | Совместимость с базой и всеми ограничениями, `Allow`, `Hidden` и ошибки компиляции |
-| В SerializableMonoScript нет типа, который есть в SerializableType | Есть ли отдельный файл скрипта и возвращает ли `MonoScript.GetClass()` нужный класс |
-| После смены Category осталось старое значение | Ограничение меняет список кандидатов, а не переписывает зависимое поле |
-| `<Missing>` при непустом имени | Не изменились ли класс, namespace или сборка; выберите существующий тип заново |
-| Required не предупреждает о потерянном типе | Для строк и обёрток проверяется пустое имя, а не успешность его разрешения |
-| Type выбран, но объект не появился | Хранение типа не создаёт экземпляр; используйте свой код создания или [SerializeReference Selector](03-serialize-reference-selector.md) |
 
 ## Пример в пакете
 
-Выбор типов врагов и паттерна расстановки в инспекторе показан в примере [Types](../../Samples~/Types/Documentation/README.ru.md).
+Выбор типов врагов и паттерна расстановки в инспекторе показан в примере [Types](../../Samples~/Types/Documentation/README.ru.md), а окно выбора, открытое из редакторского кода, — в [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md).
 
 ![Волна обычных и элитных врагов движется к центру.](../../Samples~/Types/Documentation/Images/demo.gif)
 
