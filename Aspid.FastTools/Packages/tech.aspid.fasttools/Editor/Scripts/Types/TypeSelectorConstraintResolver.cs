@@ -1,6 +1,8 @@
 using System;
+using UnityEditor;
 using System.Linq;
 using System.Reflection;
+using Aspid.FastTools.Editors;
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
@@ -8,6 +10,14 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class TypeSelectorConstraintResolver
     {
+        // Members are looked up on the instance that declares the attributed field — for a field inside a
+        // [Serializable] class or a list element that is the nested instance, not the inspected root object —
+        // matching the declaring type analyzer rules AFT0006–AFT0008 check against.
+        internal static Result Resolve(SerializedProperty attributedProperty, IReadOnlyList<string> assemblyQualifiedNames) =>
+            Resolve(
+                attributedProperty.GetDeclaringInstance() ?? attributedProperty.serializedObject.targetObject,
+                assemblyQualifiedNames);
+
         internal static Result Resolve(object targetObject, IReadOnlyList<string> assemblyQualifiedNames)
         {
             var types = new List<Type>();

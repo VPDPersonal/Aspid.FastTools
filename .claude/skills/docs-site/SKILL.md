@@ -78,8 +78,10 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 - Main docs use `Documentation/Images/`; each sample keeps its own in `Samples~/<Sample>/Documentation/Images/`
   and references them as `Images/x.png`. A main doc may point at a sample image by path
   (`../Samples~/EnumValues/Documentation/Images/demo.gif`); `sync-i18n.mjs` mirrors those folders for i18n.
-- **Every capture needs a light-theme sibling**: `x.png` plus `x-light.png` in the same folder.
-  `src/remark/themedImages.js` swaps them per theme; without the sibling, light mode shows the dark capture.
+- **Scene footage and diagrams need a light-theme sibling**: `x.png` plus `x-light.png` in the same folder
+  (`demo`/`scene` captures, SVG diagrams, gallery previews). `src/remark/themedImages.js` swaps them per theme.
+  **Editor UI captures (Inspector, windows, pickers) do not** — they stay in the dark editor theme in both site
+  themes; never report a missing `-light` for them.
 - **Editor captures are framed automatically.** In `/docs` and `/tutorials` an image renders inside the
   window frame (`doc-image-panel`, `src/theme/MDXComponents/Img`). The exception is `demo`/`scene`
   (`.gif`/`.png`) on a *tutorial* page, which keeps the bare scene look; the same file on a doc page is framed.
@@ -124,7 +126,7 @@ to refresh the root `README.md`.
 ## Adding a sample
 
 1. `Samples~/<Name>/Documentation/README.md` (+ `README.ru.md`), with `.meta` files. Images go in that
-   sample's `Documentation/Images/`, each with its `-light` sibling.
+   sample's `Documentation/Images/`; `demo`/`scene` captures get a `-light` sibling.
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
    description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png`.
@@ -227,8 +229,26 @@ installed, which this project does not.
 
 The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as accent (`--venom-*` tokens in
 `Website/src/css/custom.css`), IBM Plex Serif/Mono from Google Fonts, iA Writer Quattro body self-hosted in
-`src/fonts/` (OFL, keep the licence file), Ayu-based Prism themes in `src/prism/venom.js`. `src/pages/index.js`
-redirects `/` to `/docs` — there is no landing page yet.
+`src/fonts/` (OFL, keep the licence file), Ayu-based Prism themes in `src/prism/venom.js`.
+
+### Landing page
+
+`/` (and `/ru/`) is the landing in `src/components/Landing/` (`src/pages/index.js` only renders it). It brings its
+own header and footer: `html.landing-page` hides the Docusaurus navbar, `noFooter` drops the site footer.
+
+- **Copy and data** live in `Landing/content.js` as `{en, ru}` pairs — every claim and code line is taken from a
+  guide's quick start; edit both languages together and keep links to real routes (`onBrokenLinks: 'throw'`).
+- **Hero code morph** (`CodeMorph.js`): each example is one unified listing of `' '`/`'-'`/`'+'` lines; `'-'` lines
+  collapse, `'+'` lines expand. The code area is 11 lines tall — a longer "before" listing gets clipped.
+- **Media**: the serialization cards import GIFs straight from the package `Documentation/Images/`; the two
+  Inspector captures with a baked macOS title bar are cropped in CSS (`data-media='type' | 'component'`).
+  Sample previews come from `SamplesGallery`'s exported `samples`.
+- **Effects**: the dot canvas is shared with the docs — `DotRipple` also runs on the landing (a click on anything
+  outside `[data-landing-solid]`, plus one `RIPPLE_EVENT` wave on load); a pointer spotlight lights the dots; cards
+  with `[data-glow]` light their borders near the pointer; `[data-reveal]` blocks fade in on scroll. Everything
+  honours `prefers-reduced-motion`.
+- **Search** in the header is the same `SearchBar` (`wide` variant). Several bars can be mounted at once; only
+  the first visible one answers ⌘K/Ctrl K.
 
 `static/img/logo.png` and `favicon.png` are copies of the package icon
 `Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`; re-copy them if the icon changes.

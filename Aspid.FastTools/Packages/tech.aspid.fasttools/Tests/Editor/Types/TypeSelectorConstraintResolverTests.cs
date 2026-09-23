@@ -1,5 +1,8 @@
 using System;
+using UnityEditor;
+using UnityEngine;
 using NUnit.Framework;
+using System.Collections.Generic;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {
@@ -211,5 +214,49 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             public Type Constraint { get; set; }
         }
+
+        // The drawer passes the attributed property, so a member reference inside a [Serializable] class or a
+        // list element resolves on that nested instance — the declaring type the analyzer checks — not on the
+        // inspected root object, which has no such member.
+        [TestCase("_loadout._weaponName", typeof(int))]
+        [TestCase("_loadouts.Array.data[0]._weaponName", typeof(long))]
+        public void PropertyOverload_ResolvesMembersOnTheDeclaringInstance(string path, Type expected)
+        {
+            var host = ScriptableObject.CreateInstance<NestedHost>();
+
+            try
+            {
+                using var serializedObject = new SerializedObject(host);
+                using var property = serializedObject.FindProperty(path);
+                var result = TypeSelectorConstraintResolver.Resolve(property, new[] { "_category" });
+
+                CollectionAssert.AreEquivalent(new[] { expected }, result.Types);
+                Assert.AreEqual(0, result.Warnings.Count);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(host);
+            }
+        }
+
+#pragma warning disable CS0414, CS0649
+        private sealed class NestedHost : ScriptableObject
+        {
+            [SerializeField] private Loadout _loadout = new(typeof(int));
+            [SerializeField] private List<Loadout> _loadouts = new() { new Loadout(typeof(long)) };
+        }
+
+        [Serializable]
+        private sealed class Loadout
+        {
+            [SerializeField] private string _category;
+
+            [TypeSelector(nameof(_category))]
+            [SerializeField] private string _weaponName;
+
+            public Loadout(Type category) =>
+                _category = category.AssemblyQualifiedName;
+        }
+#pragma warning restore CS0414, CS0649
     }
 }
