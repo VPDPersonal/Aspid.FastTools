@@ -1,5 +1,5 @@
+using System;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -92,17 +92,33 @@ namespace Aspid.FastTools.Editors.Tests
             Assert.AreEqual(derived.GetDisplayName(), derived.GetDisplayNameWithIndex());
         }
 
-        [Test]
-        public void InheritedComponentMenu_UsesInspectorTitle()
+        [TestCase(typeof(DisplayNameTestComponent), "Ability")]
+        [TestCase(typeof(DerivedDisplayNameTestComponent), "Derived Display Name Test Component")]
+        [TestCase(typeof(EmptyMenuDisplayNameTestComponent), "Empty Menu Display Name Test Component")]
+        [TestCase(typeof(TrailingSlashDisplayNameTestComponent), "Trailing Slash Display Name Test Component")]
+#pragma warning disable CS0618
+        [TestCase(typeof(ObsoleteDisplayNameTestComponent), "Obsolete Ability")]
+#pragma warning restore CS0618
+        public void ComponentMenu_UsesOwnMenuTitleWithoutInspectorSuffixes(Type componentType, string expected)
         {
-            var component = _gameObject.AddComponent<DerivedDisplayNameTestComponent>();
+            var component = _gameObject.AddComponent(componentType);
 
-            Assert.AreEqual(ObjectNames.GetInspectorTitle(component), component.GetDisplayName());
+            Assert.AreEqual(expected, component.GetDisplayName());
         }
 
-        [AddComponentMenu("FastTools Tests/Display Name")]
+        [AddComponentMenu("Gameplay/Ability")]
         private class DisplayNameTestComponent : MonoBehaviour { }
 
         private sealed class DerivedDisplayNameTestComponent : DisplayNameTestComponent { }
+
+        [AddComponentMenu("")]
+        private sealed class EmptyMenuDisplayNameTestComponent : MonoBehaviour { }
+
+        [AddComponentMenu("Gameplay/")]
+        private sealed class TrailingSlashDisplayNameTestComponent : MonoBehaviour { }
+
+        [Obsolete("Display name test.")]
+        [AddComponentMenu("Gameplay/Obsolete Ability")]
+        private sealed class ObsoleteDisplayNameTestComponent : MonoBehaviour { }
     }
 }

@@ -13,8 +13,12 @@ namespace Aspid.FastTools.Editors
     public static class EditorExtensions
     {
         /// <summary>
-        /// Returns the inspector title when an inherited <see cref="AddComponentMenu"/> exists, or the nicified type name.
+        /// Returns the last segment of the <see cref="AddComponentMenu"/> path declared on the object's own type, or the nicified type name.
         /// </summary>
+        /// <remarks>
+        /// An attribute inherited from a base class, an empty path or a path ending with <c>/</c> falls back to the type name.
+        /// Unlike <see cref="ObjectNames.GetInspectorTitle(Object)"/>, the result never carries the <c>(Script)</c> or <c>(Deprecated)</c> suffix.
+        /// </remarks>
         /// <param name="obj">The object whose display name to resolve.</param>
         /// <returns>The display name; otherwise, <see cref="string.Empty"/> if <paramref name="obj"/> is <see langword="null"/> or destroyed.</returns>
         public static string GetDisplayName(this Object obj)
@@ -22,8 +26,8 @@ namespace Aspid.FastTools.Editors
             if (!obj) return string.Empty;
 
             var targetType = obj.GetType();
-            return Attribute.IsDefined(targetType, typeof(AddComponentMenu), inherit: true)
-                ? ObjectNames.GetInspectorTitle(obj)
+            return TryGetComponentMenuTitle(targetType, out var title)
+                ? title
                 : ObjectNames.NicifyVariableName(targetType.Name);
         }
 
@@ -56,6 +60,20 @@ namespace Aspid.FastTools.Editors
             return count > 1 && index > 0
                 ? $"{displayName} ({index})"
                 : displayName;
+        }
+
+        // Mirrors the title rule of ObjectNames.GetInspectorTitle, which reads only the attribute declared on the type itself.
+        private static bool TryGetComponentMenuTitle(Type type, out string title)
+        {
+            var attribute = (AddComponentMenu)Attribute.GetCustomAttribute(type, typeof(AddComponentMenu), inherit: false);
+            title = attribute?.componentMenu?.Trim();
+            if (string.IsNullOrEmpty(title)) return false;
+
+            var separatorIndex = title.LastIndexOf('/');
+            if (separatorIndex == title.Length - 1) return false;
+
+            title = title[(separatorIndex + 1)..];
+            return true;
         }
     }
 }
