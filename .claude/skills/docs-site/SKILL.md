@@ -119,7 +119,19 @@ to every main doc page, always to the English file and its `ru/` twin together.
   Never stack two admonitions. A pitfall that silently loses data gets a `> [!WARNING]` (boxed struct copy).
 - **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
   link to the sample README and, when the sample has one, its `demo.gif` with the caption paragraph — no
-  "how to open" steps or experiments, those live on the sample's own page.
+  "how to open" steps or experiments, those live on the sample's own page. The sentence must match what the
+  sample code really does — check the sample scripts, and fix its README (en + ru) when it disagrees.
+- **The Introduction (`Documentation/README.md`) is the ideal** for tone, density and visuals; ProfilerMarkers and
+  Editor Helpers were reworked from it. Only FastTools-specific behaviour: never explain Unity or UI Toolkit.
+- **Check Unity's behaviour by decompiling, not from memory**:
+  `~/.dotnet/tools/ilspycmd -t UnityEditor.ObjectNames /Applications/Unity/Hub/Editor/6000.0.64f1/Unity.app/Contents/Managed/UnityEngine/UnityEditor.CoreModule.dll`.
+- **Code blocks fit the article width** without horizontal scrolling. Site table columns are equal and fixed, so
+  long code in a cell breaks mid-word: keep cells short, move a long attribute into the column header.
+- **A picture must show something the text does not.** A capture that repeats the lead or a table goes. Diagrams
+  and previews follow the Introduction's feature cards: site tokens, one frame, no shadow, no frame in a frame.
+- Text stays left-aligned (never justified) and fills the article width.
+- A bug found in package code while writing docs is not fixed on the docs branch: report it and offer a separate
+  task in its own worktree.
 
 ## Adding a main doc page
 
@@ -164,6 +176,11 @@ Website/scripts/serve-all.sh --stop
 - If port 3001 is already answering when you start, another agent's build is up — rerun the script anyway after
   your edits; it replaces the server safely. Do not run `npm run build` or a dev server from `Website/` while the
   script is building (they share `.docusaurus/`, `build/` and `i18n/`).
+- A session in another git worktree that runs the script replaces the shared build with its own checkout, without
+  your uncommitted edits. If a page suddenly shows old content, check where the server runs
+  (`lsof -a -p $(lsof -tiTCP:3001 -sTCP:LISTEN) -d cwd`) and rebuild from your checkout. Sessions in a worktree
+  check pages on a dev server (3100/3101), not on 3001.
+- Open the page with a fresh query (`?v=N`) after a rebuild: the browser otherwise shows the cached version.
 
 Dev servers serve one locale at a time and are only for quick hot-reload iteration on a single page — they
 don't reload config or remark plugins, and the user does not look at them: `npm start` / `npm run start:ru`, or
