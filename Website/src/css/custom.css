@@ -1022,14 +1022,6 @@ html.docs-background-windows.docs-doc-page {
   .theme-doc-markdown .doc-image-panel > img.doc-zoom-image { border: 0; box-shadow: none; }
 }
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
-/* Feature groups: Serialization / Editor & tooling labels above each card grid. */
-.theme-doc-markdown h3.feature-group {
-  margin: 1.75rem 0 1rem;
-  font: 500 0.78rem/1.4 var(--ifm-font-family-monospace);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--venom-muted);
-}
 /* Feature cards: the intro's feature sections as one column of wide cards. */
 .theme-doc-markdown .feature-cards {
   display: grid;
@@ -1047,7 +1039,7 @@ html.docs-background-windows.docs-doc-page {
   overflow: hidden;
   transition: border-color 0.18s ease;
 }
-.theme-doc-markdown .feature-card:has(.feature-card__title a:hover) { border-color: var(--venom-accent); }
+.theme-doc-markdown .feature-card:has(:is(.feature-card__title, .feature-card__more) a:hover) { border-color: var(--venom-accent); }
 /* Equal preview boxes align the card bodies; captures retain their full proportions inside. */
 .theme-doc-markdown .feature-card__preview {
   display: flex;
@@ -1132,17 +1124,31 @@ html.docs-background-windows.docs-doc-page {
   letter-spacing: -0.02em;
   overflow-wrap: anywhere;
 }
-.theme-doc-markdown .feature-card__index { flex-shrink: 0; color: var(--venom-accent); }
 .markdown .feature-card__title a { color: var(--venom-fg-strong); text-decoration: none; }
 .markdown .feature-card__title a:hover { color: var(--venom-accent); text-decoration: none; }
 .theme-doc-markdown .feature-card__text { max-width: none; margin-bottom: 0; font-size: 0.95rem; line-height: 1.65; color: var(--venom-fg); }
+/* The title and summary stay centred in the space above the link. */
+.theme-doc-markdown .feature-card__title { margin-top: auto; }
+.theme-doc-markdown .feature-card__more {
+  max-width: none;
+  margin: auto 0 0;
+  padding-top: 20px;
+  font: 500 0.78rem/1.4 var(--ifm-font-family-monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+/* Outranks the accent colour of `.markdown a:not(...)`. */
+.markdown .feature-card__more a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link) { color: var(--venom-muted); text-decoration: none; transition: color 0.15s; }
+.markdown .feature-card__more a::after { content: '→'; display: inline-block; margin-left: 0.5em; transition: transform 0.15s; }
+.markdown .feature-card__more a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):hover { color: var(--venom-accent); text-decoration: none; }
+.markdown .feature-card__more a:hover::after { transform: translateX(3px); }
 @media (max-width: 700px) {
   .theme-doc-markdown .feature-card { flex-direction: column; }
   .theme-doc-markdown .feature-card__preview { border-right: 0; border-bottom: 1px solid var(--venom-line-strong); }
   .theme-doc-markdown .feature-card__body { padding: 20px 22px 22px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .theme-doc-markdown .feature-card { transition: none; }
+  .theme-doc-markdown .feature-card, .markdown .feature-card__more a, .markdown .feature-card__more a::after { transition: none; }
 }
 .theme-doc-markdown p:has(.doc-zoom-image) { max-width: none; margin-block: 1.75rem 0.75rem; }
 .theme-doc-markdown .doc-media-caption { max-width: none; text-align: center; color: var(--venom-muted); font-size: 0.8125rem; line-height: 1.6; margin-bottom: 2rem; }

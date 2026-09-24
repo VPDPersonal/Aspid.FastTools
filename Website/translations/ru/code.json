@@ -1,3 +1,4 @@
 {
-  "theme.TOCCollapsible.toggleButtonLabel": {"message": "Содержание"}
+  "theme.TOCCollapsible.toggleButtonLabel": {"message": "Содержание"},
+  "featureCard.more": {"message": "Подробнее"}
 }

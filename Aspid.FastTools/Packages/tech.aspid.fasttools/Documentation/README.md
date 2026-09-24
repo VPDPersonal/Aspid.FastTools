@@ -16,21 +16,7 @@ In **Window → Package Manager**, choose **+ → Install package from git URL�
 https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
 ```
 
-This installs the latest preview, and updating the package brings in a newer one. Git must be installed for UPM Git URLs.
-
-<details>
-<summary>Other installation options</summary>
-
-- **Another version:** copy its UPM tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases), for example:
-
-  ```text
-  https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/1.0.0-rc.7
-  ```
-
-- **Unity Asset Store:** the package is not yet available in the store. For now, install it using the Git URL above.
-- **`upm` branch:** still holds the older `com.aspid.fasttools` package (`1.0.0-rc.2`). Use the URLs above for `tech.aspid.fasttools` and the features described here.
-
-</details>
+The URL points to the latest preview; **Update** in the Package Manager brings in the next one. To pin a version, add its tag from [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases): `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/<version>`.
 
 ## Features
 
@@ -113,41 +99,12 @@ abilityConfig
 // "Ability Config (1)"
 ```
 
-## Quick start
-
-1. After installation the **Welcome** window opens on its own. Reopen it any time from **Tools → Aspid 🐍 → FastTools → Welcome**.
-2. Press **Import** on a sample; it lands in `Assets/Samples`.
-3. Open its scene and read the sample's README.
-
 ## Documentation and samples
 
-- [Samples overview](../Samples~/README.md) — scenes and editor tools for serialization, enum tables, profiling and editor UI.
+- [Samples overview](../Samples~/README.md) — scenes and editor tools for serialization, enum tables, profiling and editor UI. Import them from the **Welcome** window (**Tools → Aspid 🐍 → FastTools → Welcome**), which opens after installation.
 - [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools) — public types and members. The feature links above explain how to use them.
 - [Claude Code plugin](10-claude-code-plugin.md) — optional skills for working with this package in Claude Code.
 - [Changelog](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md) — release history.
-
-## FAQ
-
-<details>
-<summary>Can CI fail on broken references?</summary>
-
-Yes. Set **Build / CI gate** to `Fail` in **Project Settings → Aspid FastTools → SerializeReference**, or run `SerializeReferenceCiGate.RunCheck` in batch mode with `-srGateFail`: it writes a report and exits with code `1` on violations. See [Running in CI](04-serialize-reference-tooling.md#running-in-ci).
-
-</details>
-
-<details>
-<summary>Why does the project scan skip some assets?</summary>
-
-Scanning reads text YAML from disk. Select **Asset Serialization → Mode → Force Text**, save binary assets again, and save modified scenes before you scan. See [SerializeReference Tooling](04-serialize-reference-tooling.md#quick-start).
-
-</details>
-
-<details>
-<summary>Does <code>this.Marker()</code> need partial classes or attributes?</summary>
-
-No. The generator ships with the package and the extension is in the global namespace; it works in `MonoBehaviour` and ordinary C# classes. Always call it with `using`, and keep a scope from crossing `await` or `yield`. See [Marker()](05-profiler-markers.md#marker).
-
-</details>
 
 ## Help and support
 

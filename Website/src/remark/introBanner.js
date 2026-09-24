@@ -85,8 +85,17 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           tree.children.splice(badges + 2, 1);
         }
       }
+      // The install section — the steps, the URL block and the note on versions — becomes one interactive panel.
+      const install = tree.children.findIndex((node, index) => node.type === 'heading' && node.depth === 2
+        && tree.children[index + 1]?.type === 'paragraph'
+        && tree.children[index + 2]?.type === 'code' && /\.git#upm/.test(tree.children[index + 2].value)
+        && tree.children[index + 3]?.type === 'paragraph');
+      if (install !== -1) {
+        tree.children.splice(install + 1, 3, {type: 'mdxJsxFlowElement', name: 'InstallPanel',
+          attributes: [{type: 'mdxJsxAttribute', name: 'url', value: tree.children[install + 2].value.trim()}], children: []});
+      }
       // On GitHub the features are grouped sections: a linked heading, a sentence and a preview.
-      // The site shows each group as a card grid, like the samples overview.
+      // The site drops the group headings and shows every feature in one card grid, like the samples overview.
       const features = tree.children.findIndex((node, index) => node.type === 'heading' && node.depth === 2
         && tree.children[index + 1]?.type === 'heading' && tree.children[index + 1].depth === 3
         && tree.children[index + 2]?.type === 'heading' && tree.children[index + 2].depth === 4);
@@ -103,14 +112,13 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
         const paragraph = (className, children) => ({type: 'paragraph', data: {hProperties: {className}}, children});
         const result = [];
         let list;
-        let index = 0;
         for (let i = 0; i < section.length; i++) {
           const node = section[i];
           if (node.type === 'heading' && node.depth === 3) {
-            node.data = {...node.data, hProperties: {...node.data?.hProperties, className: 'feature-group'}};
-            result.push(node);
-            list = jsx('div', 'feature-cards', []);
-            result.push(list);
+            if (!list) {
+              list = jsx('div', 'feature-cards', []);
+              result.push(list);
+            }
             continue;
           }
           if (!list || node.type !== 'heading' || node.depth !== 4) continue;
@@ -123,22 +131,19 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           }
           if (summary?.type !== 'paragraph' || !preview
             || !(preview.type === 'code' || (preview.type === 'paragraph' && preview.children[0]?.type === 'image'))) continue;
-          index++;
           // `05-profiler-markers.md` → `profiler-markers`: the site component picks a live preview by page.
-          const url = node.children.find((part) => part.type === 'link')?.url ?? '';
+          const link = node.children.find((part) => part.type === 'link');
+          const url = link?.url ?? '';
           const doc = url.replace(/^.*\//, '').replace(/^\d+-/, '').replace(/\.md$/, '');
           const livePreview = {...jsx('FeaturePreview', undefined, [preview]),
             attributes: [{type: 'mdxJsxAttribute', name: 'doc', value: doc}]};
           list.children.push(jsx('article', 'feature-card', [
             jsx('div', 'feature-card__preview', [livePreview]),
             jsx('div', 'feature-card__body', [
-              paragraph('feature-card__title', [
-                {type: 'mdxJsxTextElement', name: 'span', attributes: [{type: 'mdxJsxAttribute', name: 'className', value: 'feature-card__index'}],
-                  children: [{type: 'text', value: `${String(index).padStart(2, '0')} /`}]},
-                {type: 'text', value: ' '},
-                ...node.children,
-              ]),
+              paragraph('feature-card__title', node.children),
               paragraph('feature-card__text', summary.children),
+              ...(link ? [paragraph('feature-card__more', [{...structuredClone(link),
+                children: [{type: 'mdxJsxTextElement', name: 'FeatureCardMore', attributes: [], children: []}]}])] : []),
             ]),
           ]));
           i += 2;

@@ -39,7 +39,7 @@ const PROFILER_CODE = `public void Step()
 }`;
 
 // Per frame: Steering and Integrate as fractions of Step, so consecutive frames differ like real captures.
-const FRAMES = [[0.58, 0.36], [0.63, 0.31], [0.55, 0.4], [0.61, 0.33], [0.66, 0.29]];
+const FRAMES = [[0.56, 0.2], [0.59, 0.17], [0.55, 0.21], [0.57, 0.19], [0.6, 0.16]];
 
 function Frame({steering, integrate}) {
   return (
@@ -53,13 +53,41 @@ function Frame({steering, integrate}) {
   );
 }
 
-// Each marker's line in PROFILER_CODE, in the order the preview points them out.
-const MARKERS = [['step', 2], ['steer', 3], ['integrate', 5]];
+// Each marker's line in PROFILER_CODE.
+const MARKER_LINES = {step: 2, steer: 3, integrate: 5};
+
+/** The innermost marker under the playhead; Step alone where no child bar covers it. The 4px gap between children
+    counts as the bar before it, so Step does not flash between them. */
+function useMarkerAtPlayhead(ref, active) {
+  const [marker, setMarker] = useState('step');
+  useEffect(() => {
+    const root = ref.current;
+    if (!root) return undefined;
+    const playhead = root.querySelector(`.${styles.playhead}`);
+    const bars = root.querySelectorAll('[data-marker="steer"], [data-marker="integrate"]');
+    const measure = () => {
+      const x = playhead.getBoundingClientRect().left;
+      const hit = [...bars].find((bar) => {
+        const {left, right} = bar.getBoundingClientRect();
+        return left <= x && x < right + 4;
+      });
+      setMarker(hit ? hit.dataset.marker : 'step');
+    };
+    measure();
+    if (!active || prefersReducedMotion()) return undefined;
+    let frame = requestAnimationFrame(function tick() {
+      measure();
+      frame = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [ref, active]);
+  return marker;
+}
 
 function ProfilerPreview() {
   const ref = useRef(null);
-  const focus = useLoop(MARKERS.length, 1700, useInView(ref));
-  const [marker, line] = MARKERS[focus];
+  const marker = useMarkerAtPlayhead(ref, useInView(ref));
+  const line = MARKER_LINES[marker];
   return (
     <div ref={ref} className={styles.profilerBody}>
       <Code code={PROFILER_CODE} active={line} />

@@ -239,6 +239,11 @@ the Editor & tooling features) shows that animated preview instead of the README
 there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`.
 The Inspector GIFs of the first two cards are cropped in `custom.css` to hide the baked title bar and tab strip.
 
+The same plugin replaces the Installation section's instruction, URL block and version note with
+`src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with a toggle
+between the latest preview and `#upm-preview/<packageVersion>` (`customFields.packageVersion` from `package.json`).
+Its text is written in the component per locale, so update it when the README's install steps change.
+
 `static/img/logo.png` and `favicon.png` are copies of the package icon
 `Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`; re-copy them if the icon changes.
 

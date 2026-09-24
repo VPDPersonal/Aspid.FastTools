@@ -1,8 +1,10 @@
 import React from 'react';
 import MDXComponents from '@theme-original/MDXComponents';
 import Link from '@docusaurus/Link';
+import Translate from '@docusaurus/Translate';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import AnimatedPreview from '@site/src/components/FeaturePreview';
+import InstallPanel from '@site/src/components/InstallPanel';
 import banner from '@site/../docs/images/aspid_fasttools_readme_banner.gif';
 
 function ReadmeLink(props) {
@@ -25,4 +27,8 @@ function FeaturePreview(props) {
   return <AnimatedPreview {...props} ru={i18n.currentLocale === 'ru'} />;
 }
 
-export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview};
+function FeatureCardMore() {
+  return <Translate id="featureCard.more">Read more</Translate>;
+}
+
+export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InstallPanel};

@@ -40,10 +40,10 @@ html[data-theme='light'] .featurePreview {
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
 }
-.timelineStrip { display: flex; width: max-content; animation: ticker 18s linear infinite; }
+.timelineStrip { display: flex; width: max-content; animation: ticker 22s linear infinite; }
 @keyframes ticker { to { transform: translateX(-50%); } }
-.frame { display: flex; flex-direction: column; gap: 4px; width: 340px; margin-right: 12px; }
-.frameRow { display: flex; gap: 4px; }
+.frame { display: flex; flex-direction: column; gap: 4px; width: 420px; margin-right: 12px; }
+.frameRow { display: flex; gap: 4px; padding-left: 10%; }
 .bar { display: block; min-width: 0; overflow: hidden; padding: 5px 8px; color: #0c0e11; border-radius: 4px; font: 600 0.68rem/1.3 var(--ifm-font-family-monospace); text-overflow: ellipsis; white-space: nowrap; transition: opacity 0.4s ease, filter 0.4s ease, box-shadow 0.4s ease; }
 /* The marker whose line the snippet highlights stays lit; the rest dim. */
 .timeline[data-focus] .bar { opacity: 0.32; filter: saturate(0.6); }
@@ -138,9 +138,10 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 
 /* ---------- EnumValues ---------- */
 
-/* The clip is cropped to rows 184–918 of 1080: every frame's content (216–886) plus the clip's own 32px side margin. */
+/* The clip is cropped to rows 184–918 of 1080: every frame's content (216–886) plus the clip's own 32px side margin.
+   The crop's centre (row 551) sits at the box's centre, so a card taller than the crop only adds background around it. */
 .enumPreview { position: relative; flex: 1; aspect-ratio: 1576 / 734; overflow: hidden; background: #333; }
-.enumPreview video { position: absolute; top: calc(-184 / 734 * 100%); left: 0; width: 100%; height: auto; }
+.enumPreview video { position: absolute; top: 50%; left: 0; width: 100%; height: auto; transform: translateY(calc(-551 / 1080 * 100%)); }
 
 @media (prefers-reduced-motion: reduce) {
   .featurePreview *, .featurePreview *::before, .featurePreview *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }

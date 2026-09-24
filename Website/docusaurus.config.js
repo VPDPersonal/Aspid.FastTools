@@ -1,4 +1,5 @@
 // @ts-check
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import venom from './src/prism/venom.js';
 import remarkGithubAdmonitionsToDirectives from 'remark-github-admonitions-to-directives';
@@ -15,6 +16,37 @@ const REPO = 'https://github.com/VPDPersonal/Aspid.FastTools';
 const ASSET_STORE = 'https://assetstore.unity.com/packages/slug/365584';
 /** The docs in the working tree describe the package version in the working tree. */
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL(`${PACKAGE}/package.json`, import.meta.url), 'utf8')).version;
+/** The UPM branch the install URL points at; each release tags it `<branch>/<version>`. */
+const UPM_BRANCH = 'upm-preview';
+
+/** Orders `1.0.0-rc.10` after `1.0.0-rc.9`, and a release after its prereleases. */
+function compareVersions(a, b) {
+  const parse = (value) => value.split('-');
+  const [coreA, preA] = parse(a);
+  const [coreB, preB] = parse(b);
+  const core = coreA.localeCompare(coreB, 'en', {numeric: true});
+  if (core !== 0) return core;
+  if (!preA || !preB) return preA ? -1 : preB ? 1 : 0;
+  return preA.localeCompare(preB, 'en', {numeric: true});
+}
+
+/**
+ * The versions the install panel can pin, newest first: the UPM branch's tags on GitHub, or the local ones when offline.
+ * The working-tree version is always offered, since its tag may be pushed after the docs are built.
+ */
+function readPackageVersions() {
+  const read = (args) => {
+    try {
+      return execFileSync('git', args, {encoding: 'utf8', timeout: 15000, stdio: ['ignore', 'pipe', 'ignore']});
+    } catch {
+      return '';
+    }
+  };
+  const prefix = `${UPM_BRANCH}/`;
+  const tags = read(['ls-remote', '--tags', '--refs', `${REPO}.git`, `${prefix}*`]) || read(['tag', '-l', `${prefix}*`]);
+  const versions = tags.split('\n').map((line) => line.split(prefix)[1]?.trim()).filter(Boolean);
+  return [...new Set([PACKAGE_VERSION, ...versions])].sort(compareVersions).reverse();
+}
 
 /**
  * Turns a sample folder name into a slug: `SerializeReferences` → `serialize-references`,
@@ -49,7 +81,7 @@ const config = {
 
   url: 'https://vpdpersonal.github.io',
   baseUrl: '/Aspid.FastTools/',
-  customFields: { assetStore: ASSET_STORE },
+  customFields: { assetStore: ASSET_STORE, packageVersion: PACKAGE_VERSION, packageVersions: readPackageVersions() },
   organizationName: 'VPDPersonal',
   projectName: 'Aspid.FastTools',
   trailingSlash: false,

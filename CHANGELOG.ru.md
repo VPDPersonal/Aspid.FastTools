@@ -117,7 +117,7 @@
 
 - Документация на английском и русском в `Documentation/`, публикуется на https://vpdpersonal.github.io/Aspid.FastTools/.
 - Плагин `aspid-fasttools` для Claude Code в [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins).
-- `upm` / `upm/<version>` для стабильных релизов, `upm-preview` для предрелизов.
+- `upm` / `upm/<version>` для стабильных релизов, `upm-preview` для предрелизов. До первого стабильного релиза в ветке `upm` остаётся старый пакет `com.aspid.fasttools` (`1.0.0-rc.2`).
 - EditMode-тесты для YAML-редактора и сканирования CI gate.
 
 [1.0.0-rc.8]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8
