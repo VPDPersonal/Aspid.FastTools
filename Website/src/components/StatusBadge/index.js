@@ -29,8 +29,11 @@ const ICONS = {
   ),
   license: (
     <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="m12 2 9 3v7c0 5-4 8-9 10-5-2-9-5-9-10V5Z" />
-      <path className={styles.check} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" pathLength="1" d="M8 12l3 3 5-6" />
+      <circle className={styles.ring} cx="12" cy="12.5" r="10" fill="none" stroke="currentColor" strokeWidth="1" />
+      <g className={styles.stamp}>
+        <path fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" d="m12 2 9 3v7c0 5-4 8-9 10-5-2-9-5-9-10V5Z" />
+        <path className={styles.check} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" pathLength="1" d="M8 12l3 3 5-6" />
+      </g>
     </svg>
   ),
 };

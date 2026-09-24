@@ -81,10 +81,17 @@ html[data-theme='light'] .badge {
   90%, 100% { opacity: 0; transform: scale(4); }
 }
 
-/* MIT: the shield's tick draws itself again. */
-.license .icon { transition: transform 0.3s ease; }
-.license:hover .icon { transform: scale(1.1); }
-.license:hover .check { animation: tick 0.5s ease-out; }
+/* MIT: the shield is pressed down in place like a stamp, springs back, the impact rings out and the tick is set. */
+.ring { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.license:hover .stamp { animation: stamp 0.55s; transform-origin: 50% 60%; }
+.license:hover .ring { animation: ring 0.6s ease-out 0.18s; }
+.license:hover .check { animation: tick 0.45s ease-out 0.22s both; }
+@keyframes stamp {
+  0% { transform: none; animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45); }
+  32% { transform: scale(0.8); animation-timing-function: cubic-bezier(0.3, 1.6, 0.5, 1); }
+  100% { transform: none; }
+}
+@keyframes ring { 0% { opacity: 0.8; transform: scale(0.6); } 100% { opacity: 0; transform: scale(1.6); } }
 @keyframes tick { from { stroke-dasharray: 1; stroke-dashoffset: 1; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
