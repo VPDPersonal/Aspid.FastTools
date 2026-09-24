@@ -21,13 +21,16 @@ export default function remarkThemedImages() {
         if (image.type === 'image' && !/^(?:[a-z]+:|\/|#)/i.test(image.url)) {
           const lightUrl = image.url.replace(/(?<!-light)(\.(?:png|gif|jpe?g|webp|svg))$/i, '-light$1');
           if (lightUrl !== image.url && existsSync(path.resolve(path.dirname(file.path), decodeURIComponent(lightUrl)))) {
-            const sceneSample = /[/\\](?:enum-?values|types|serialize-?references|profiler-?markers)[/\\]/i.test(file.path)
-              && /(?:^|\/)(?:demo|scene)\.(?:gif|png)$/i.test(image.url);
+            const sceneCapture = /(?:^|\/)(?:demo|scene)\.(?:gif|png)$/i.test(image.url);
+            const sceneSample = sceneCapture && /[/\\](?:enum-?values|types|serialize-?references|profiler-?markers)[/\\]/i.test(file.path);
+            // A scene sample's footage linked from a doc page keeps its own background, which matches the article.
+            const sceneFootage = sceneCapture && /Samples~\/(?:EnumValues|Types|SerializeReferences|ProfilerMarkers)\//.test(image.url);
+            const sceneClass = sceneSample ? ' sample-scene' : sceneFootage ? ' scene-footage' : '';
             // Docusaurus replaces image nodes; put the theme class on a stable wrapper.
             const wrap = (child, theme) => ({
               type: 'mdxJsxTextElement',
               name: 'span',
-              attributes: [{type: 'mdxJsxAttribute', name: 'className', value: `theme-image--${theme}${sceneSample ? ' sample-scene' : ''}`}],
+              attributes: [{type: 'mdxJsxAttribute', name: 'className', value: `theme-image--${theme}${sceneClass}`}],
               children: [child],
             });
             node.children = [wrap(image, 'dark'), wrap({...image, url: lightUrl}, 'light')];

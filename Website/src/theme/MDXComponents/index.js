@@ -5,6 +5,7 @@ import Translate from '@docusaurus/Translate';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import AnimatedPreview from '@site/src/components/FeaturePreview';
 import InstallPanel from '@site/src/components/InstallPanel';
+import ProfilerHierarchy from '@site/src/components/ProfilerHierarchy';
 import SupportPanel from '@site/src/components/SupportPanel';
 import StatusBadge from '@site/src/components/StatusBadge';
 import banner from '@site/../docs/images/aspid_fasttools_readme_banner.gif';
@@ -33,4 +34,4 @@ function FeatureCardMore() {
   return <Translate id="featureCard.more">Read more</Translate>;
 }
 
-export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InstallPanel, SupportPanel, StatusBadge};
+export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy};

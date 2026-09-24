@@ -98,10 +98,12 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 Rules the user confirmed while reworking `08-serialized-property-extensions.md` and `09-editor-helpers.md`; apply them
 to every main doc page, always to the English file and its `ru/` twin together.
 
-- **Lead paragraph = what the feature does, not a table of contents.** One or two sentences a reader understands
-  without knowing the API, ideally with the visible result (`FireAbility` → "Fire Ability"). No "for X, Y and Z"
-  enumerations of sections, no "use it for titles and lists" purpose sentence, no abstract wording
-  ("resolves the property back to its owner").
+- **Lead paragraph = problem → solution → result, not a table of contents.** Two or three sentences a reader
+  understands without knowing the API: the pain the feature removes (what the Unity way costs), what the feature
+  does, ideally with the visible result (`FireAbility` → "Fire Ability", `FlockSimulation.Step (3)`), and what the
+  reader gains. Every claim must be checkable against the code or Unity's behaviour — no "powerful", "easy",
+  "seamless". No "for X, Y and Z" enumerations of sections, no abstract wording ("resolves the property back to its
+  owner"). The ProfilerMarkers page is the reference.
 - **One concrete example type per page**, declared in the quick start ("The examples on this page work with the
   `AbilityBook` component:") and reused by every section. Extend that type rather than inventing a second one.
 - **Verify every claim against the source** (`Editor/Scripts/...`) before writing it; drop anything the code does

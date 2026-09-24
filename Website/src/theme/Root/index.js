@@ -6,9 +6,9 @@ import DotSpotlight from '../../components/DotSpotlight';
 const channelMask = (channel, tolerance = 1) => Array.from({length: 256}, (_, value) =>
   Math.abs(value - channel) <= tolerance ? 1 : 0).join(' ');
 
-function SceneBackgroundFilter({theme, color}) {
+function SceneBackgroundFilter({id, color, surface = 'var(--ifm-code-background)'}) {
   return (
-    <filter id={`sample-scene-background-${theme}`} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+    <filter id={id} x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
       <feComponentTransfer in="SourceGraphic" result="channels">
         <feFuncR type="discrete" tableValues={channelMask(color[0])} />
         <feFuncG type="discrete" tableValues={channelMask(color[1])} />
@@ -26,7 +26,7 @@ function SceneBackgroundFilter({theme, color}) {
       <feMorphology in="backgroundMask" operator="dilate" radius="1" result="expandedBackground" />
       <feGaussianBlur in="expandedBackground" stdDeviation="0.35" edgeMode="duplicate" result="softEdge" />
       <feComposite in="softEdge" in2="fringeMask" operator="in" result="softBackground" />
-      <feFlood floodColor="var(--ifm-code-background)" result="surface" />
+      <feFlood floodColor={surface} result="surface" />
       <feComposite in="surface" in2="softBackground" operator="in" result="background" />
       <feComposite in="SourceGraphic" in2="softBackground" operator="out" result="scene" />
       {/* Add complementary masks without making the softened edge translucent. */}
@@ -40,8 +40,11 @@ export default function Root({children}) {
     <>
       <svg aria-hidden="true" width="0" height="0" style={{position: 'absolute', pointerEvents: 'none'}}>
         <defs>
-          <SceneBackgroundFilter theme="light" color={[246, 241, 232]} />
-          <SceneBackgroundFilter theme="dark" color={[6, 10, 15]} />
+          <SceneBackgroundFilter id="sample-scene-background-light" color={[246, 241, 232]} />
+          <SceneBackgroundFilter id="sample-scene-background-dark" color={[6, 10, 15]} />
+          {/* Scene footage on a doc page sits on the article itself, without a frame. */}
+          <SceneBackgroundFilter id="scene-footage-background-light" color={[238, 240, 243]} surface="var(--venom-reading-surface)" />
+          <SceneBackgroundFilter id="scene-footage-background-dark" color={[6, 10, 15]} surface="var(--venom-reading-surface)" />
         </defs>
       </svg>
       <DotSpotlight />

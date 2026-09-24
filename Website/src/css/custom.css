@@ -1022,6 +1022,19 @@ html.docs-background-windows.docs-doc-page {
   .theme-doc-markdown .doc-image-panel > img.doc-zoom-image { border: 0; box-shadow: none; }
 }
 .theme-doc-markdown .sample-scene img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; }
+/* Scene footage on a doc page: the background is recoloured to the article surface, so no window frame. */
+.scene-footage img { filter: url('#scene-footage-background-dark'); }
+html[data-theme='light'] .scene-footage img { filter: url('#scene-footage-background-light'); }
+.theme-doc-markdown .scene-footage > .doc-image-panel { padding: 0; border: 0; }
+/* The filter blurs its mask against the transparent outside, so the outermost pixels keep the old background. */
+.theme-doc-markdown .scene-footage > .doc-image-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 3px var(--venom-reading-surface);
+  pointer-events: none;
+}
+.theme-doc-markdown .scene-footage img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
 /* Feature cards: the intro's feature sections as one column of wide cards. */
 .theme-doc-markdown .feature-cards {
   display: grid;

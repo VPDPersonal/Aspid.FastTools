@@ -16,8 +16,9 @@ export default function useBackgroundWindows(ref, documentKey) {
       document.documentElement.classList.remove('docs-background-windows');
     };
     const update = () => {
+      // Frameless scene footage sits on the article surface, so it cuts no window into it.
       const windows = [...column.querySelectorAll(BACKGROUND_WINDOWS)]
-        .filter((window) => !window.closest('details:not([open])'));
+        .filter((window) => !window.closest('details:not([open]), .scene-footage'));
       for (const window of observedWindows) {
         if (!windows.includes(window)) {
           observer.unobserve(window);

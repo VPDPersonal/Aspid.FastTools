@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1120" height="352" viewBox="0 0 1120 352" fill="none">
   <title>FlockSimulation marker hierarchy</title>
-  <desc>Step (3) contains Steering (5) and Integrate (14). Steering contains Steering.Agent (9), called 120 times. The other markers are called once. All allocate 0 B. Example times: Step 0.38 ms, Steering 0.37 ms, Steering.Agent 0.36 ms, Integrate 0.01 ms.</desc>
+  <desc>Step (3) contains Steering (5) and Integrate (10). Steering contains Steering.Agent (7), called 120 times. The other markers are called once. All allocate 0 B. Example times: Step 0.38 ms, Steering 0.37 ms, Steering.Agent 0.36 ms, Integrate 0.01 ms.</desc>
   <rect x="1" y="1" width="1118" height="350" rx="12" fill="#0e1015"/>
   <path d="M13 1H1107A12 12 0 0 1 1119 13V72H1V13A12 12 0 0 1 13 1Z" fill="#14171e"/>
   <path d="M1 72H1119M1 126H1119M660 72V351M800 72V351M960 72V351" stroke="#272b35"/>
@@ -18,8 +18,8 @@
     <g font-size="23" fill="#e1e2e6">
       <text x="63" y="166">FlockSimulation.Step <tspan fill="#92959f">(3)</tspan></text>
       <text x="103" y="220">FlockSimulation.Steering <tspan fill="#92959f">(5)</tspan></text>
-      <text x="143" y="274" fill="#75c584">FlockSimulation.Steering.Agent <tspan fill="#92959f">(9)</tspan></text>
-      <text x="103" y="328">FlockSimulation.Integrate <tspan fill="#92959f">(14)</tspan></text>
+      <text x="143" y="274" fill="#75c584">FlockSimulation.Steering.Agent <tspan fill="#92959f">(7)</tspan></text>
+      <text x="103" y="328">FlockSimulation.Integrate <tspan fill="#92959f">(10)</tspan></text>
       <text x="730" y="166" text-anchor="middle">1</text>
       <text x="730" y="220" text-anchor="middle">1</text>
       <text x="730" y="274" text-anchor="middle" fill="#75c584" font-weight="600">120</text>

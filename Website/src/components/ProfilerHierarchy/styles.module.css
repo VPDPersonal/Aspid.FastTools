@@ -1,0 +1,171 @@
+/* The Profiler's Hierarchy view, drawn like the introduction's feature previews: site tokens, no shadow, flat strip. */
+.panel {
+  container-type: inline-size;
+  margin-bottom: var(--ifm-leading);
+}
+.window {
+  --ph-bg: var(--ifm-code-background);
+  --ph-line: var(--venom-line);
+  --ph-fg: var(--venom-fg);
+  --ph-muted: var(--venom-muted);
+  --ph-accent: var(--venom-accent);
+  /* Opaque, so sticky cells on narrow screens hide the names scrolling under them. */
+  --ph-selected: color-mix(in srgb, var(--venom-accent) 12%, var(--ifm-code-background));
+  --ph-indent: 1.35rem;
+  --ph-pad: 0.9rem;
+  --ph-row: 2.35rem;
+  position: relative;
+  overflow: hidden;
+  color: var(--ph-fg);
+  background: var(--ph-bg);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: var(--ifm-pre-border-radius);
+  font: 400 0.8125rem/1 var(--ifm-font-family-monospace);
+}
+
+/* The same strip as the introduction's Timeline preview. */
+.titleBar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 7px 8px 7px 12px;
+  color: var(--ph-muted);
+  border-bottom: 1px solid var(--ph-line);
+  font: 500 0.66rem/1 var(--ifm-font-family-monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.frame { margin-left: auto; white-space: nowrap; }
+.frame b { display: inline-block; min-width: 4ch; font-weight: 500; animation: tick 0.3s ease-out; }
+.replay {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  color: var(--ph-muted);
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: color 0.2s, opacity 0.2s;
+}
+.replay:hover, .replay:focus-visible { color: var(--ph-fg); opacity: 1; }
+.replay svg { width: 0.75rem; height: 0.75rem; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.table {
+  display: grid;
+  grid-template-columns: minmax(max-content, 1fr) 5rem 6rem 5.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  scrollbar-width: thin;
+}
+/* Rows share the table's tracks, so a long marker name widens its column in every row. */
+.row {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  align-items: stretch;
+  height: var(--ph-row);
+  background: var(--row-bg, var(--ph-bg));
+  transition: background-color 0.4s, box-shadow 0.4s;
+}
+.row > span { display: flex; align-items: center; }
+.row > span + span { justify-content: center; border-left: 1px solid var(--ph-line); }
+.head {
+  height: 2.4rem;
+  color: var(--ph-muted);
+  border-bottom: 1px solid var(--ph-line);
+  font-size: 0.75rem;
+}
+.head > span:first-child { padding-left: var(--ph-pad); }
+.head + .row { margin-top: 0.35rem; }
+
+/* Rows appear as their `using` scope opens and fold away with their parent. The states share one selector base and
+   grow in specificity: the minifier merges rules across files and may reorder them. */
+.row:not(.head) {
+  opacity: 0;
+  transform: translateY(-5px);
+  cursor: pointer;
+  transition: opacity 0.35s, transform 0.35s, height 0.3s ease, background-color 0.25s, box-shadow 0.25s;
+}
+.row:not(.head)[data-shown] { opacity: 1; transform: none; }
+/* Clipping only while folded: a first child's tree guide reaches up into its parent's row. */
+.row:not(.head)[data-shown][data-folded] { overflow: hidden; height: 0; opacity: 0; pointer-events: none; }
+.row:not(.head):not(.selected):hover { --row-bg: color-mix(in srgb, var(--ph-fg) 5%, var(--ph-bg)); }
+.row:not(.head):focus-visible { outline: 2px solid var(--ph-accent); outline-offset: -2px; }
+/* Like the active line of the introduction's code snippets: a soft fill and an accent rule on the left. */
+.row.selected { --row-bg: var(--ph-selected); box-shadow: inset 2px 0 0 var(--ph-accent); }
+
+.marker {
+  position: relative;
+  padding: 0 1.25rem 0 calc(var(--ph-pad) + var(--depth) * var(--ph-indent));
+  white-space: nowrap;
+}
+.caret, .leaf { flex: none; display: inline-grid; place-items: center; width: 0.7rem; margin-right: 0.55rem; }
+.caret::before {
+  content: '';
+  width: 0;
+  height: 0;
+  border: 0.3rem solid transparent;
+  border-top: 0.4rem solid var(--ph-accent);
+  border-bottom: 0;
+  transform: rotate(-90deg);
+  transition: transform 0.3s;
+}
+.caret[data-open]::before { transform: none; }
+/* A wider hit area than the drawn triangle. */
+.caret { position: relative; }
+.caret::after { content: ''; position: absolute; inset: -0.6rem -0.4rem; }
+.swatch { flex: none; width: 0.55rem; height: 0.55rem; margin-right: 0.55rem; border-radius: 2px; }
+.swatch[data-marker='step'] { background: #86cf91; }
+.swatch[data-marker='steer'] { background: #86b9ec; }
+.swatch[data-marker='integrate'] { background: #ecc676; }
+.name { transition: color 0.4s; }
+.line { margin-left: 0.5ch; color: var(--ph-muted); }
+.row.selected .name { color: var(--ph-accent); }
+
+/* Tree guides under each ancestor's caret: a line passing by, a branch, the last branch. A first child's guide
+   lifts up to its parent's caret. */
+.pass, .tee, .elbow {
+  --lift: 0px;
+  position: absolute;
+  top: calc(var(--lift) * -1);
+  left: calc(var(--ph-pad) + var(--level) * var(--ph-indent) + 0.35rem - 0.5px);
+  border-left: 1px solid var(--ph-line);
+}
+.first { --lift: calc(var(--ph-row) / 2 - 0.45rem); }
+.pass, .tee { bottom: 0; }
+.elbow { bottom: 50%; }
+.tee::after, .elbow::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: calc(var(--ph-indent) - 0.55rem);
+  border-top: 1px solid var(--ph-line);
+}
+.tee::after { top: calc(var(--lift) + var(--ph-row) / 2); }
+.elbow::after { bottom: 0; }
+
+.num { font-variant-numeric: tabular-nums; }
+.calls { transition: color 0.3s, text-shadow 0.3s; }
+.calls[data-counting] { color: var(--ph-accent); text-shadow: 0 0 12px color-mix(in srgb, var(--ph-accent) 55%, transparent); }
+.row.selected .calls { color: var(--ph-accent); font-weight: 600; }
+.flash { animation: tick 0.3s ease-out; }
+@keyframes tick { from { color: var(--venom-fg-strong); text-shadow: 0 0 8px color-mix(in srgb, var(--venom-fg-strong) 35%, transparent); } }
+
+@container (max-width: 560px) {
+  .window { --ph-indent: 1rem; --ph-pad: 0.6rem; font-size: 0.75rem; }
+  .table { grid-template-columns: minmax(max-content, 1fr) 3.5rem 4.25rem; }
+  .alloc { display: none !important; }
+  /* Long names scroll under the numbers, which stay in view. */
+  .row > span + span { position: sticky; right: 0; z-index: 1; background: var(--row-bg, var(--ph-bg)); }
+  .row > span:nth-child(2) { right: 4.25rem; }
+  .head > span + span { background: var(--ph-bg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row:not(.head), .caret::before, .name, .calls { transition: none; }
+  .flash, .frame b { animation: none; }
+}
