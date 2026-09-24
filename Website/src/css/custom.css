@@ -1126,6 +1126,20 @@ html.docs-background-windows.docs-doc-page {
 }
 .markdown .feature-card__title a { color: var(--venom-fg-strong); text-decoration: none; }
 .markdown .feature-card__title a:hover { color: var(--venom-accent); text-decoration: none; }
+/* The Claude Code plugin is in alpha (its page says so): the card carries the same mark beside its title. */
+.theme-doc-markdown .feature-card__title:has(a[href$='/claude-code-plugin'])::after {
+  content: 'Alpha';
+  display: inline-block;
+  margin-left: 10px;
+  padding: 3px 7px;
+  color: var(--venom-amber);
+  border: 1px solid color-mix(in srgb, var(--venom-amber) 45%, transparent);
+  border-radius: 6px;
+  font: 500 0.62rem/1 var(--ifm-font-family-monospace);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: 0.3em;
+}
 .theme-doc-markdown .feature-card__text { max-width: none; margin-bottom: 0; font-size: 0.95rem; line-height: 1.65; color: var(--venom-fg); }
 /* The title and summary stay centred in the space above the link. */
 .theme-doc-markdown .feature-card__title { margin-top: auto; }
