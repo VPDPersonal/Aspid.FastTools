@@ -161,13 +161,13 @@ function PropertyPreview({ru}) {
 
 /* ---------- Editor Helpers: one component, its label with and without the index ---------- */
 
-const NAMES_CODE = `fireAbility.GetDisplayName();
-fireAbility.GetDisplayNameWithIndex();`;
+const NAMES_CODE = `config.GetDisplayName();
+config.GetDisplayNameWithIndex();`;
 
-// `fireAbility` is the second FireAbility on its GameObject, hence the (2).
+// `config` is the second AbilityConfig on its GameObject, hence the (2).
 const NAMES = [
-  ['GetDisplayName()', 'Fire Ability'],
-  ['GetDisplayNameWithIndex()', 'Fire Ability (2)'],
+  ['GetDisplayName()', 'Ability Config'],
+  ['GetDisplayNameWithIndex()', 'Ability Config (2)'],
 ];
 
 function NamesPreview() {

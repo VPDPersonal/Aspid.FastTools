@@ -92,6 +92,9 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 - Click or Enter opens the image in a modal (Esc closes). Unframed images are capped at 640×520;
   framed and `.sample-scene` media fill the article.
 - Status badges (`Images/status-badge-*.svg`) are links, not captures: they keep their size and do not zoom.
+- A static picture can have a live site version: `src/remark/liveDiagrams.js` maps the file name to a component
+  (`profiler-markers-hierarchy.svg` → `ProfilerHierarchy`). Markdown
+  keeps the picture for GitHub and Unity; the caption paragraph must still repeat the alt text as plain text.
 
 ## Writing a feature page (docs/)
 

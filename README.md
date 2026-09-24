@@ -93,12 +93,12 @@ property
 Get readable object and component display names for custom editors.
 
 ```csharp
-fireAbility.GetDisplayName();
-// "Fire Ability"
+config.GetDisplayName();
+// "Ability Config"
 
-fireAbility
+config
   .GetDisplayNameWithIndex();
-// "Fire Ability (2)"
+// "Ability Config (2)"
 ```
 
 #### [Claude Code Plugin](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-claude-code-plugin.md)

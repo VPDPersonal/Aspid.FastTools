@@ -883,7 +883,6 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .api-overloads > .menu__list { margin: 0.1rem 0 0.4rem 0.75rem; padding-left: 0.5rem; border-left: 1px solid var(--venom-line-strong); }
 .table-of-contents { font-size: 0.875rem; line-height: 1.6; }
 .table-of-contents li { margin-block: 0.65rem; }
-.markdown > :is(p, ul, ol, blockquote) { max-width: 76ch; }
 .markdown > h1 { margin-bottom: 1.5rem; }
 .markdown > h1 + p { color: var(--venom-fg); font-size: 1.025rem; }
 .markdown li + li { margin-top: 0.6rem; }
