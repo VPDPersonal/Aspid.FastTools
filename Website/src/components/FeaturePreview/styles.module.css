@@ -1,6 +1,7 @@
 /*
  * Animated previews inside the docs introduction's feature cards, edge to edge: the code on top and its effect below,
- * split by one rule. Editor UI mock-ups (Inspector, Profiler) stay dark in both themes, like the captures.
+ * split by one rule. Unity mock-ups (Inspector) stay dark in both themes, like the captures; the Profiler timeline and the
+ * Claude Code session follow the site theme.
  */
 
 .featurePreview {
@@ -30,14 +31,14 @@ html[data-theme='light'] .featurePreview {
 /* ---------- ProfilerMarkers ---------- */
 
 .profilerBody { display: grid; height: 100%; }
-/* The Profiler and the Claude Code session are tool mock-ups: the dark code surface in both themes. */
-.timeline { overflow: hidden; background: #0e1015; }
-.timelineBar { display: flex; justify-content: space-between; padding: 7px 12px; color: #8d919b; border-bottom: 1px solid #22252d; font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
+.timeline { --timeline-grid: rgb(255 255 255 / 0.05); --timeline-ring: rgb(255 255 255 / 0.5); --timeline-glow: rgb(255 255 255 / 0.18); overflow: hidden; background: var(--ifm-code-background); }
+html[data-theme='light'] .timeline { --timeline-grid: rgb(0 0 0 / 0.07); --timeline-ring: rgb(0 0 0 / 0.35); --timeline-glow: rgb(0 0 0 / 0.1); }
+.timelineBar { display: flex; justify-content: space-between; padding: 7px 12px; color: var(--venom-muted); border-bottom: 1px solid var(--venom-line); font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
 .timelineTrack {
   position: relative;
   padding: 12px 0;
   overflow: hidden;
-  background-image: repeating-linear-gradient(90deg, transparent 0 79px, rgb(255 255 255 / 0.05) 79px 80px);
+  background-image: repeating-linear-gradient(90deg, transparent 0 79px, var(--timeline-grid) 79px 80px);
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
 }
@@ -50,7 +51,7 @@ html[data-theme='light'] .featurePreview {
 .timeline[data-focus] .bar { opacity: 0.32; filter: saturate(0.6); }
 .timeline[data-focus='step'] .bar[data-marker='step'],
 .timeline[data-focus='steer'] .bar[data-marker='steer'],
-.timeline[data-focus='integrate'] .bar[data-marker='integrate'] { opacity: 1; filter: none; box-shadow: 0 0 0 1px rgb(255 255 255 / 0.5), 0 0 14px rgb(255 255 255 / 0.18); }
+.timeline[data-focus='integrate'] .bar[data-marker='integrate'] { opacity: 1; filter: none; box-shadow: 0 0 0 1px var(--timeline-ring), 0 0 14px var(--timeline-glow); }
 .barStep { background: #86cf91; }
 .barSteer { background: #86b9ec; }
 .barIntegrate { background: #ecc676; }
@@ -145,20 +146,20 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 /* ---------- Claude Code Plugin ---------- */
 
 .pluginBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
-.session { color: #c9ccd3; background: #0e1015; border-bottom: 1px solid var(--venom-line-strong); font: 400 0.7rem/1.6 var(--ifm-font-family-monospace); }
-.sessionBar { display: flex; justify-content: space-between; padding: 7px 12px; color: #8d919b; border-bottom: 1px solid #22252d; font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
+.session { color: var(--venom-fg); background: var(--ifm-code-background); border-bottom: 1px solid var(--venom-line-strong); font: 400 0.7rem/1.6 var(--ifm-font-family-monospace); }
+.sessionBar { display: flex; justify-content: space-between; padding: 7px 12px; color: var(--venom-muted); border-bottom: 1px solid var(--venom-line); font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
 .sessionLog { display: grid; gap: 4px; padding: 10px 12px 12px; }
-.prompt { display: flex; align-items: center; min-width: 0; padding: 4px 8px; border: 1px solid #2b2f38; border-radius: 6px; }
+.prompt { display: flex; align-items: center; min-width: 0; padding: 4px 8px; border: 1px solid var(--venom-line-strong); border-radius: 6px; }
 .promptSign { flex: none; margin-right: 8px; color: #d97757; font-weight: 600; }
 /* The request types in: its width grows in character steps. */
-.promptTyped { flex: none; max-width: 0; overflow: hidden; color: #eceef2; white-space: nowrap; }
+.promptTyped { flex: none; max-width: 0; overflow: hidden; color: var(--venom-fg-strong); white-space: nowrap; }
 .promptTyped[data-typed] { max-width: 100%; transition: max-width 1s steps(40); }
-.caret { flex: none; width: 6px; height: 1.1em; margin-left: 1px; background: #c9ccd3; animation: blink 1s steps(1) infinite; }
+.caret { flex: none; width: 6px; height: 1.1em; margin-left: 1px; background: var(--venom-fg); animation: blink 1s steps(1) infinite; }
 .caret[data-hide] { visibility: hidden; }
 @keyframes blink { 50% { opacity: 0; } }
 .event { display: flex; align-items: center; gap: 8px; padding-left: 9px; opacity: 0; transform: translateY(4px); transition: opacity 0.3s ease, transform 0.3s var(--preview-ease); }
 .event[data-show] { opacity: 1; transform: none; }
-.event b { color: #eceef2; font-weight: 600; }
+.event b { color: var(--venom-fg-strong); font-weight: 600; }
 .eventDot { flex: none; width: 7px; height: 7px; background: #d97757; border-radius: 50%; animation: pulse 0.9s ease-in-out infinite alternate; }
 .eventDot[data-done] { background: var(--venom-accent); animation: none; }
 @keyframes pulse { to { opacity: 0.35; } }
