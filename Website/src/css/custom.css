@@ -1126,10 +1126,12 @@ html.docs-background-windows.docs-doc-page {
 }
 .markdown .feature-card__title a { color: var(--venom-fg-strong); text-decoration: none; }
 .markdown .feature-card__title a:hover { color: var(--venom-accent); text-decoration: none; }
-/* The Claude Code plugin is in alpha (its page says so): the card carries the same mark beside its title. */
-.theme-doc-markdown .feature-card__title:has(a[href$='/claude-code-plugin'])::after {
+/* The Claude Code plugin is in alpha (its page says so): its feature card and its sidebar entry carry the mark. */
+.theme-doc-markdown .feature-card__title:has(a[href$='/claude-code-plugin'])::after,
+.doc-menu-alpha > .menu__link::after {
   content: 'Alpha';
   display: inline-block;
+  flex: none;
   margin-left: 10px;
   padding: 3px 7px;
   color: var(--venom-amber);
@@ -1140,6 +1142,7 @@ html.docs-background-windows.docs-doc-page {
   text-transform: uppercase;
   vertical-align: 0.3em;
 }
+.doc-menu-alpha > .menu__link::after { margin-left: 8px; padding: 2px 6px; font-size: 0.58rem; }
 .theme-doc-markdown .feature-card__text { max-width: none; margin-bottom: 0; font-size: 0.95rem; line-height: 1.65; color: var(--venom-fg); }
 /* The title and summary stay centred in the space above the link. */
 .theme-doc-markdown .feature-card__title { margin-top: auto; }
