@@ -21,7 +21,7 @@ var title = new Label(config.GetDisplayNameWithIndex());
 
 ## GetDisplayName()
 
-Extends `UnityEngine.Object`. When the type has `[AddComponentMenu]`, it returns the Inspector title — the last segment of the menu path; otherwise, the type name split into words. A null or destroyed object returns `string.Empty`.
+Extends `UnityEngine.Object`. When the type itself declares `[AddComponentMenu]`, it returns the last segment of the menu path; otherwise, the type name split into words. A null or destroyed object returns `string.Empty`.
 
 | `[AddComponentMenu]` on `AbilityConfig` | `GetInspectorTitle()` | `GetDisplayName()` |
 |---|---|---|
