@@ -90,6 +90,8 @@ html[data-theme='light'] .install { --install-accent-soft: rgb(47 138 69 / 0.1);
 /* The pinned tab opens its version list upwards: the card clips anything below the URL. */
 .versionTab { position: relative; display: flex; }
 .segmented .versionTab > button { display: inline-flex; align-items: center; gap: 7px; }
+/* The tab label is upper-case, the tag it names is not: `1.0.0-rc.8`, never `1.0.0-RC.8`. */
+.versionName { text-transform: none; }
 .caret { width: 0; height: 0; border-inline: 4px solid transparent; border-top: 5px solid currentcolor; opacity: 0.7; transition: transform 0.2s ease; }
 .versionTab > button[aria-expanded='true'] .caret { transform: rotate(180deg); }
 .versionMenu {

@@ -2,11 +2,11 @@
 
 <img src="https://raw.githubusercontent.com/VPDPersonal/Aspid.FastTools/main/docs/images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
-[![Unity 6.0+](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/slug/365584)
-[![Preview 1.0.0-rc.8](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+![Unity 6.0+](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-unity.svg)
+[![Preview 1.0.0-rc.8](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Aspid.FastTools is a Unity package that fills the gaps Unity leaves in serialization and editor tooling. Serialized types and polymorphic references stay valid through renames, or get repaired without data loss when they break. The Inspector shows what a `SerializeReference` field holds and lets you swap it. Editor and profiling helpers take a line where Unity needs a class.
+Aspid.FastTools is a Unity package that fills the gaps Unity leaves in serialization and editor tooling. Serialized types and polymorphic references stay valid through renames, or get repaired without data loss when they break. The Inspector shows what a `SerializeReference` field holds and lets you swap it. Editor and profiling helpers replace with a single line what Unity needs a separate class for.
 
 [Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
@@ -101,17 +101,25 @@ abilityConfig
 // "Ability Config (1)"
 ```
 
-## Documentation and samples
+#### [Claude Code Plugin](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-claude-code-plugin.md)
 
-- [Samples overview](Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.md) — scenes and editor tools for serialization, enum tables, profiling and editor UI. Import them from the **Welcome** window (**Tools → Aspid 🐍 → FastTools → Welcome**), which opens after installation.
-- [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools) — public types and members. The feature links above explain how to use them.
-- [Claude Code plugin](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-claude-code-plugin.md) — optional skills for working with this package in Claude Code.
-- [Changelog](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md) — release history.
+Claude Code skills for `this.Marker()` and the fluent `VisualElement` extensions.
+
+```text
+Add a marker for the whole Simulate method
+and a separate one for the neighbour search.
+```
+
+## Resources
+
+- [Samples overview](Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.md) — scenes and editor tools for serialization, enum tables, profiling and editor UI.
+- [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools) — signatures and descriptions of every public type and member.
+- [Changelog](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md)
 
 ## Help and support
 
 Report bugs or ask questions in [GitHub Issues](https://github.com/VPDPersonal/Aspid.FastTools/issues). Include your Unity version, package version and steps to reproduce a problem.
 
-Once the package is available on the [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584), you can support development by purchasing it.
+If the package helps you, star it on [GitHub](https://github.com/VPDPersonal/Aspid.FastTools).
 
 Distributed under the [MIT License](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE).

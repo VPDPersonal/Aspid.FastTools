@@ -1142,6 +1142,40 @@ html.docs-background-windows.docs-doc-page {
 .markdown .feature-card__more a::after { content: '→'; display: inline-block; margin-left: 0.5em; transition: transform 0.15s; }
 .markdown .feature-card__more a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):hover { color: var(--venom-accent); text-decoration: none; }
 .markdown .feature-card__more a:hover::after { transform: translateX(3px); }
+/* Resource tiles: the intro's list of further links as a grid; the title link covers the whole tile. */
+.theme-doc-markdown .resource-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-bottom: 2.5rem;
+}
+.theme-doc-markdown .resource-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px 20px 20px;
+  background: var(--ifm-code-background);
+  border: 2px solid var(--venom-line-strong);
+  border-radius: 12px;
+  transition: border-color 0.18s ease;
+}
+.theme-doc-markdown .resource-card:has(.resource-card__title a:hover) { border-color: var(--venom-accent); }
+.theme-doc-markdown .resource-card__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  max-width: none;
+  margin: 0;
+  font: 500 1.1rem/1.3 var(--ifm-heading-font-family);
+  letter-spacing: -0.02em;
+}
+.theme-doc-markdown .resource-card__title::after { content: '→'; color: var(--venom-muted); font-family: var(--ifm-font-family-monospace); font-size: 0.9rem; transition: transform 0.15s, color 0.15s; }
+.theme-doc-markdown .resource-card:has(.resource-card__title a:hover) .resource-card__title::after { color: var(--venom-accent); transform: translateX(3px); }
+.markdown .resource-card__title a { text-decoration: none; }
+.markdown .resource-card__title a::after { content: ''; position: absolute; inset: 0; border-radius: 10px; }
+.theme-doc-markdown .resource-card__text { max-width: none; margin: 0; color: var(--venom-muted); font-size: 0.9rem; line-height: 1.55; }
 @media (max-width: 700px) {
   .theme-doc-markdown .feature-card { flex-direction: column; }
   .theme-doc-markdown .feature-card__preview { border-right: 0; border-bottom: 1px solid var(--venom-line-strong); }

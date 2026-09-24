@@ -136,6 +136,35 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .namesLabel { flex: 1; min-width: 0; max-width: 100%; overflow: hidden; color: var(--venom-fg-strong); font: 500 0.85rem/1.3 var(--ifm-heading-font-family); text-align: right; text-overflow: ellipsis; white-space: nowrap; opacity: 0.32; transform: translateX(-6px); transition: opacity 0.45s ease, transform 0.45s var(--preview-ease); }
 .names li[data-done] .namesLabel { opacity: 1; transform: none; }
 
+/* ---------- Claude Code Plugin ---------- */
+
+.pluginBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
+.session { color: #c9ccd3; background: #14161b; border-bottom: 1px solid var(--venom-line-strong); font: 400 0.7rem/1.6 var(--ifm-font-family-monospace); }
+.sessionBar { display: flex; justify-content: space-between; padding: 7px 12px; color: #8d919b; border-bottom: 1px solid #22252d; font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
+.sessionLog { display: grid; gap: 4px; padding: 10px 12px 12px; }
+.prompt { display: flex; align-items: center; min-width: 0; padding: 4px 8px; border: 1px solid #2b2f38; border-radius: 6px; }
+.promptSign { flex: none; margin-right: 8px; color: #d97757; font-weight: 600; }
+/* The request types in: its width grows in character steps. */
+.promptTyped { flex: none; max-width: 0; overflow: hidden; color: #eceef2; white-space: nowrap; }
+.promptTyped[data-typed] { max-width: 100%; transition: max-width 1s steps(40); }
+.caret { flex: none; width: 6px; height: 1.1em; margin-left: 1px; background: #c9ccd3; animation: blink 1s steps(1) infinite; }
+.caret[data-hide] { visibility: hidden; }
+@keyframes blink { 50% { opacity: 0; } }
+.event { display: flex; align-items: center; gap: 8px; padding-left: 9px; opacity: 0; transform: translateY(4px); transition: opacity 0.3s ease, transform 0.3s var(--preview-ease); }
+.event[data-show] { opacity: 1; transform: none; }
+.event b { color: #eceef2; font-weight: 600; }
+.eventDot { flex: none; width: 7px; height: 7px; background: #d97757; border-radius: 50%; animation: pulse 0.9s ease-in-out infinite alternate; }
+.eventDot[data-done] { background: var(--venom-accent); animation: none; }
+@keyframes pulse { to { opacity: 0.35; } }
+.eventDiff { color: var(--venom-accent); }
+/* The edit: new lines open up in the diff colour and the body shifts into the new block. */
+/* Keeps the edited method's eight lines of room throughout, so the card does not grow when the edit lands. */
+.diff { min-height: calc(7 * 1.75em + 28px); border-bottom: 0; }
+.diff .snippetLine[data-added] { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.45s var(--preview-ease), opacity 0.35s ease, background-color 0.35s ease; }
+.diff[data-edited] .snippetLine[data-added] { max-height: 2em; opacity: 1; background: var(--preview-accent-soft); border-left-color: var(--venom-accent); }
+.diff .snippetLine[data-indented] { transition: padding 0.45s var(--preview-ease); }
+.diff[data-edited] .snippetLine[data-indented] { padding-left: calc(12px + 4ch); }
+
 /* ---------- EnumValues ---------- */
 
 /* The clip is cropped to rows 184–918 of 1080: every frame's content (216–886) plus the clip's own 32px side margin.

@@ -77,6 +77,18 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
         node.data = {...node.data, hProperties: {...node.data?.hProperties, className}};
       };
       if (badges !== -1) {
+        // The badge images become chips whose icons can move; `status-badge-<kind>.svg` names the icon.
+        const row = tree.children[badges];
+        row.children = row.children.map((part) => {
+          const image = part.type === 'link' ? part.children.find((child) => child.type === 'image') : part.type === 'image' ? part : undefined;
+          const kind = image?.url.match(/status-badge-(\w+)\.svg$/)?.[1];
+          if (!kind) return part;
+          return {type: 'mdxJsxTextElement', name: 'StatusBadge', children: [], attributes: [
+            {type: 'mdxJsxAttribute', name: 'kind', value: kind},
+            {type: 'mdxJsxAttribute', name: 'label', value: image.alt ?? ''},
+            ...(part.type === 'link' ? [{type: 'mdxJsxAttribute', name: 'href', value: part.url}] : []),
+          ]};
+        });
         addClass(tree.children[badges + 1], 'readme-lede');
         // The link row repeats the navigation the site already has, and points at this very page.
         const links = tree.children[badges + 2];
@@ -95,7 +107,7 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
           attributes: [{type: 'mdxJsxAttribute', name: 'url', value: tree.children[install + 2].value.trim()}], children: []});
       }
       // On GitHub the features are grouped sections: a linked heading, a sentence and a preview.
-      // The site drops the group headings and shows every feature in one card grid, like the samples overview.
+      // The site keeps the group headings and turns each group's features into its own card grid.
       const features = tree.children.findIndex((node, index) => node.type === 'heading' && node.depth === 2
         && tree.children[index + 1]?.type === 'heading' && tree.children[index + 1].depth === 3
         && tree.children[index + 2]?.type === 'heading' && tree.children[index + 2].depth === 4);
@@ -115,10 +127,8 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
         for (let i = 0; i < section.length; i++) {
           const node = section[i];
           if (node.type === 'heading' && node.depth === 3) {
-            if (!list) {
-              list = jsx('div', 'feature-cards', []);
-              result.push(list);
-            }
+            list = jsx('div', 'feature-cards', []);
+            result.push({...node, data: {...node.data, hProperties: {...node.data?.hProperties, className: 'feature-group'}}}, list);
             continue;
           }
           if (!list || node.type !== 'heading' || node.depth !== 4) continue;
@@ -151,6 +161,47 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
         if (result.some((node) => node.children?.length && node.name === 'div')) {
           tree.children.splice(features + 1, end - features - 1, ...result);
         }
+      }
+      // A section that is only a list of `[Link](…) — summary` items becomes a grid of link tiles.
+      tree.children.forEach((node, index) => {
+        const list = tree.children[index + 1];
+        if (node.type !== 'heading' || node.depth !== 2 || list?.type !== 'list' || list.ordered) return;
+        const items = list.children.map((item) => item.children.length === 1 && item.children[0].type === 'paragraph'
+          ? item.children[0].children : null);
+        if (!items.every((parts) => parts?.[0]?.type === 'link'
+          && parts.slice(1).every((part, at) => at > 0 || (part.type === 'text' && /^\s*—\s*/.test(part.value))))) return;
+        const block = (className, children) => ({type: 'paragraph', data: {hProperties: {className}}, children});
+        tree.children[index + 1] = {
+          type: 'mdxJsxFlowElement',
+          name: 'div',
+          attributes: [{type: 'mdxJsxAttribute', name: 'className', value: 'resource-cards'}],
+          children: items.map(([link, ...rest]) => {
+            // The text after the dash starts lower-case; on its own line in a tile it starts a sentence.
+            const lead = rest[0]?.value.replace(/^\s*—\s*/, '');
+            const summary = rest.length ? [{...rest[0], value: lead.charAt(0).toUpperCase() + lead.slice(1)}, ...rest.slice(1)] : [];
+            return {
+              type: 'mdxJsxFlowElement',
+              name: 'div',
+              attributes: [{type: 'mdxJsxAttribute', name: 'className', value: 'resource-card'}],
+              children: [block('resource-card__title', [link]), ...(summary.length ? [block('resource-card__text', summary)] : [])],
+            };
+          }),
+        };
+      });
+      // The help section — the issues paragraph and the star paragraph — becomes one call-to-action card; the licence
+      // line goes, since the status badges and the footer already name the licence.
+      const linkIn = (node, test) => node?.type === 'paragraph' && node.children.find((part) => part.type === 'link' && test(part.url));
+      const help = tree.children.findIndex((node, index) => node.type === 'heading' && node.depth === 2
+        && linkIn(tree.children[index + 1], (url) => /\/issues\/?$/.test(url))
+        && linkIn(tree.children[index + 2], (url) => /^https:\/\/github\.com\/[^/]+\/[^/]+\/?$/.test(url)));
+      if (help !== -1) {
+        const issues = linkIn(tree.children[help + 1], (url) => /\/issues\/?$/.test(url)).url;
+        const repo = linkIn(tree.children[help + 2], (url) => /^https:\/\/github\.com\/[^/]+\/[^/]+\/?$/.test(url)).url;
+        const licence = linkIn(tree.children[help + 3], (url) => /\/LICENSE$/.test(url));
+        tree.children.splice(help + 1, licence ? 3 : 2, {type: 'mdxJsxFlowElement', name: 'SupportPanel', children: [], attributes: [
+          {type: 'mdxJsxAttribute', name: 'issues', value: issues},
+          {type: 'mdxJsxAttribute', name: 'repo', value: repo},
+        ]});
       }
       // Keep absolute site links on GitHub, and native local links on the site.
       function visit(node) {

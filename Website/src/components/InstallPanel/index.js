@@ -14,7 +14,7 @@ const TEXT = {
       <>Paste the URL and press <b>Install</b></>,
     ],
     latest: 'Latest preview',
-    pinned: (version) => `Pin ${version}`,
+    pinned: 'Pin',
     pick: 'Choose a version',
     versions: 'All versions',
     installed: 'Installed from Git',
@@ -25,8 +25,8 @@ const TEXT = {
       <>Выберите <b>+ → Install package from git URL…</b></>,
       <>Вставьте URL и нажмите <b>Install</b></>,
     ],
-    latest: 'Последняя preview',
-    pinned: (version) => `Версия ${version}`,
+    latest: 'Последняя',
+    pinned: 'Версия',
     pick: 'Выберите версию',
     versions: 'Все версии',
     installed: 'Установлен из Git',
@@ -143,7 +143,8 @@ function VersionTab({versions, value, active, text, onChoose}) {
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => (active ? setOpen(!open) : choose(value))}>
-        {text.pinned(value)}
+        {text.pinned}
+        <span className={styles.versionName}>{value}</span>
         <span className={styles.caret} aria-hidden="true" />
       </button>
       <ul className={styles.versionMenu} role="listbox" aria-label={text.pick} data-open={open || undefined}>

@@ -1,0 +1,60 @@
+/* The README badge chips on the site: colours from the badge SVGs, following the site theme instead of the OS. */
+
+.badge {
+  --badge-outline: #363d38;
+  --badge-text: #e5e9e5;
+  --badge-unity: #89c99a;
+  --badge-gold: #d7bd77;
+  --badge-shield: #85add4;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  height: 32px;
+  padding: 0 12px 0 11px;
+  color: var(--badge-text);
+  border: 1px solid var(--badge-outline);
+  border-radius: 8px;
+  font: 500 13px/1 -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  white-space: nowrap;
+  transition: border-color 0.15s ease;
+}
+html[data-theme='light'] .badge {
+  --badge-outline: #cfd5cf;
+  --badge-text: #222925;
+  --badge-unity: #397649;
+  --badge-gold: #7c5b12;
+  --badge-shield: #487aa8;
+}
+.icon { flex: none; width: 16px; height: 16px; overflow: visible; }
+.unity .icon { color: var(--badge-unity); }
+.preview .icon, .accent { color: var(--badge-gold); }
+.license .icon { width: 18px; height: 18px; color: var(--badge-shield); }
+
+/* Outranks the accent colour and hover underline of the global `.markdown a:not(...)` rule. */
+:global(.markdown) a.badge:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
+  color: var(--badge-text);
+  text-decoration: none;
+}
+:global(.markdown) a.badge:hover { border-color: var(--venom-accent); }
+
+/* Unity: the mark turns a third, onto itself. */
+.unity .icon { transition: transform 0.6s cubic-bezier(0.3, 1.4, 0.5, 1); }
+.unity:hover .icon { transform: rotate(120deg); }
+
+/* Preview: the flask sways and its bubbles rise. */
+.preview:hover .icon { animation: sway 0.7s ease-in-out; transform-origin: 50% 20%; }
+@keyframes sway { 25% { transform: rotate(-14deg); } 60% { transform: rotate(10deg); } 100% { transform: none; } }
+.bubble { opacity: 0; }
+.preview:hover .bubble { animation: rise 0.9s ease-out; }
+.preview:hover .bubble + .bubble { animation-delay: 0.2s; }
+@keyframes rise { 0% { opacity: 0; transform: none; } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
+
+/* MIT: the shield's tick draws itself again. */
+.license .icon { transition: transform 0.3s ease; }
+.license:hover .icon { transform: scale(1.1); }
+.license:hover .check { animation: tick 0.5s ease-out; }
+@keyframes tick { from { stroke-dasharray: 1; stroke-dashoffset: 1; } to { stroke-dasharray: 1; stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .badge *, .badge:hover * { animation: none !important; transition: none !important; transform: none !important; }
+}

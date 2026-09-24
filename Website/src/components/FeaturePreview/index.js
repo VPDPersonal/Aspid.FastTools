@@ -218,12 +218,77 @@ function EnumPreview({ru}) {
   );
 }
 
+/* ---------- Claude Code Plugin: a request in the session, the skill's edit in the method ---------- */
+
+// The edited method, as the skill writes it: the same idioms as the ProfilerMarkers card. The neighbour search keeps its
+// old indent until the edit lands, then shifts under its new `using`.
+const PLUGIN_CODE = `public void Simulate()
+{
+    using var _ = this.Marker();
+    using (this.Marker().WithName("Neighbours"))
+    FindNeighbours();
+    Integrate();
+}`;
+const PLUGIN_ADDED = [2, 3];
+const PLUGIN_INDENTED = [4];
+
+function PluginPreview({ru}) {
+  const ref = useRef(null);
+  const theme = usePrismTheme();
+  // 0 an empty prompt, 1 the request is typed, 2 the skill loads, 3 the edit lands, 4–5 the result holds.
+  const step = useLoop(6, 1300, useInView(ref), 4);
+  const edited = step >= 3;
+  return (
+    <div ref={ref} className={styles.pluginBody}>
+      <div className={styles.session} aria-hidden="true">
+        <div className={styles.sessionBar}><span>Claude Code</span><span>FlockSimulation.cs</span></div>
+        <div className={styles.sessionLog}>
+          <div className={styles.prompt}>
+            <span className={styles.promptSign}>&gt;</span>
+            <span className={styles.promptTyped} data-typed={step >= 1 || undefined}>
+              {ru ? 'Замерь Simulate и отдельно поиск соседей' : 'Profile Simulate and the neighbour search'}
+            </span>
+            <span className={styles.caret} data-hide={step >= 2 || undefined} />
+          </div>
+          <div className={styles.event} data-show={step >= 2 || undefined}>
+            <span className={styles.eventDot} data-done={edited || undefined} />
+            Skill <b>aspid-profiler-marker</b>
+          </div>
+          <div className={styles.event} data-show={edited || undefined}>
+            <span className={styles.eventDot} data-done />
+            Update <b>FlockSimulation.cs</b> <span className={styles.eventDiff}>+2</span>
+          </div>
+        </div>
+      </div>
+      <Highlight theme={theme} code={PLUGIN_CODE} language="csharp">
+        {({tokens, getTokenProps}) => (
+          <pre className={clsx(styles.snippet, styles.diff)} style={{color: theme.plain.color}} data-edited={edited || undefined}>
+            {tokens.map((line, index) => (
+              <span
+                key={index}
+                className={styles.snippetLine}
+                data-added={PLUGIN_ADDED.includes(index) || undefined}
+                data-indented={PLUGIN_INDENTED.includes(index) || undefined}>
+                {line.map((token, tokenIndex) => {
+                  const {key, ...props} = getTokenProps({token});
+                  return <span key={tokenIndex} {...props} />;
+                })}
+              </span>
+            ))}
+          </pre>
+        )}
+      </Highlight>
+    </div>
+  );
+}
+
 const PREVIEWS = {
   'enum-values': EnumPreview,
   'profiler-markers': ProfilerPreview,
   'visual-element-extensions': UiPreview,
   'serialized-property-extensions': PropertyPreview,
   'editor-helpers': NamesPreview,
+  'claude-code-plugin': PluginPreview,
 };
 
 /** An animated preview for a docs introduction feature card; features without one keep their README capture (`children`). */
