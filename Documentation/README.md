@@ -81,7 +81,7 @@ new VisualElement()
 Set values, resize arrays, and inspect the field type and owning object.
 
 ```csharp
-property
+manaCost
   .Update()
   .SetIntAndApply(42);
 ```
