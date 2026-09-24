@@ -2,6 +2,10 @@ import React from 'react';
 import clsx from 'clsx';
 import styles from './styles.module.css';
 
+// Preview flask: the bubbles boil up from the bottom (cx, r, delay in s), then the brew bursts out of the neck (dx, dy).
+const BUBBLES = [[15.6, 0.7, 0], [18.2, 0.9, 0.14], [20.6, 0.6, 0.07], [22.6, 0.75, 0.21]];
+const SPARKS = [[0, -11], [-8, -8], [8, -8], [-11, -2], [11, -2], [-4, -12], [4, -12]];
+
 // The marks from the README badge SVGs (`Documentation/Images/status-badge-*.svg`), drawn inline so they can move.
 const ICONS = {
   // Unity mark: https://github.com/simple-icons/simple-icons/blob/develop/icons/unity.svg
@@ -12,9 +16,15 @@ const ICONS = {
   ),
   preview: (
     <svg className={styles.icon} viewBox="10 6 18 20" aria-hidden="true">
+      <path className={styles.liquid} fill="currentColor" d="M13.9 19h10.2l1.9 3a1.3 1.3 0 0 1-1.1 2H13.1a1.3 1.3 0 0 1-1.1-2Z" />
       <path fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" d="M16 8h6 M17 8v6l-5 8a1.3 1.3 0 0 0 1.1 2h11.8a1.3 1.3 0 0 0 1.1-2l-5-8V8 M15 19h8" />
-      <circle className={styles.bubble} cx="18" cy="21.5" r="0.9" fill="currentColor" />
-      <circle className={styles.bubble} cx="20.5" cy="21" r="0.7" fill="currentColor" />
+      {BUBBLES.map(([cx, r, delay]) => (
+        <circle key={cx} className={styles.bubble} cx={cx} cy="22.6" r={r} fill="none" stroke="currentColor" strokeWidth="0.5" style={{animationDelay: `${delay}s`}} />
+      ))}
+      <circle className={styles.flash} cx="19" cy="7" r="1.5" fill="none" stroke="currentColor" strokeWidth="0.6" />
+      {SPARKS.map(([dx, dy]) => (
+        <circle key={`${dx},${dy}`} className={styles.spark} cx="19" cy="7.5" r="1.1" fill="currentColor" style={{'--dx': `${dx}px`, '--dy': `${dy}px`}} />
+      ))}
     </svg>
   ),
   license: (

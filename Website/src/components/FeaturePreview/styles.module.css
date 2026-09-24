@@ -30,7 +30,8 @@ html[data-theme='light'] .featurePreview {
 /* ---------- ProfilerMarkers ---------- */
 
 .profilerBody { display: grid; height: 100%; }
-.timeline { overflow: hidden; background: #14161b; }
+/* The Profiler and the Claude Code session are tool mock-ups: the dark code surface in both themes. */
+.timeline { overflow: hidden; background: #0e1015; }
 .timelineBar { display: flex; justify-content: space-between; padding: 7px 12px; color: #8d919b; border-bottom: 1px solid #22252d; font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
 .timelineTrack {
   position: relative;
@@ -139,7 +140,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 /* ---------- Claude Code Plugin ---------- */
 
 .pluginBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
-.session { color: #c9ccd3; background: #14161b; border-bottom: 1px solid var(--venom-line-strong); font: 400 0.7rem/1.6 var(--ifm-font-family-monospace); }
+.session { color: #c9ccd3; background: #0e1015; border-bottom: 1px solid var(--venom-line-strong); font: 400 0.7rem/1.6 var(--ifm-font-family-monospace); }
 .sessionBar { display: flex; justify-content: space-between; padding: 7px 12px; color: #8d919b; border-bottom: 1px solid #22252d; font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
 .sessionLog { display: grid; gap: 4px; padding: 10px 12px 12px; }
 .prompt { display: flex; align-items: center; min-width: 0; padding: 4px 8px; border: 1px solid #2b2f38; border-radius: 6px; }

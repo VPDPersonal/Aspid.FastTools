@@ -41,13 +41,45 @@ html[data-theme='light'] .badge {
 .unity .icon { transition: transform 0.6s cubic-bezier(0.3, 1.4, 0.5, 1); }
 .unity:hover .icon { transform: rotate(120deg); }
 
-/* Preview: the flask sways and its bubbles rise. */
-.preview:hover .icon { animation: sway 0.7s ease-in-out; transform-origin: 50% 20%; }
-@keyframes sway { 25% { transform: rotate(-14deg); } 60% { transform: rotate(10deg); } 100% { transform: none; } }
-.bubble { opacity: 0; }
-.preview:hover .bubble { animation: rise 0.9s ease-out; }
-.preview:hover .bubble + .bubble { animation-delay: 0.2s; }
-@keyframes rise { 0% { opacity: 0; transform: none; } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
+/* Preview: the brew heats up, boils, the flask shudders and the brew bursts out of the neck. All parts share one clock. */
+.preview { --brew: 1.5s; }
+.liquid { opacity: 0.22; transform-box: fill-box; transform-origin: 50% 100%; }
+.bubble, .spark, .flash { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.preview:hover .icon { animation: shudder var(--brew) ease-out; transform-origin: 50% 80%; }
+.preview:hover .liquid { animation: boil var(--brew) ease-in-out; }
+.preview:hover .bubble { animation: rise 0.42s ease-in 3; }
+.preview:hover .spark { animation: burst var(--brew) cubic-bezier(0.2, 0.7, 0.3, 1); }
+.preview:hover .flash { animation: flash var(--brew) ease-out; }
+@keyframes shudder {
+  0%, 44% { transform: none; }
+  48% { transform: translate(-0.6px, 0) rotate(-4deg); }
+  52% { transform: translate(0.6px, 0) rotate(4deg); }
+  56% { transform: translate(-0.6px, 0) rotate(-5deg); }
+  60% { transform: translate(0.6px, 0) rotate(5deg); }
+  66% { transform: scale(1.25); }
+  78% { transform: scale(0.94); }
+  100% { transform: none; }
+}
+@keyframes boil {
+  0% { opacity: 0.22; transform: none; }
+  20% { opacity: 0.35; transform: scaleY(1.05); }
+  35% { transform: scaleY(0.97); }
+  50% { opacity: 0.4; transform: scaleY(1.12); }
+  64% { opacity: 0.5; transform: scaleY(1.2); }
+  70% { opacity: 0.08; transform: scaleY(0.35); }
+  100% { opacity: 0.22; transform: none; }
+}
+@keyframes rise { 0% { opacity: 0; transform: scale(0.5); } 25% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(-3.4px) scale(1.2); } }
+@keyframes burst {
+  0%, 63% { opacity: 0; transform: none; }
+  67% { opacity: 1; transform: scale(1.2); }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
+}
+@keyframes flash {
+  0%, 63% { opacity: 0; transform: scale(0.4); }
+  67% { opacity: 1; }
+  90%, 100% { opacity: 0; transform: scale(4); }
+}
 
 /* MIT: the shield's tick draws itself again. */
 .license .icon { transition: transform 0.3s ease; }

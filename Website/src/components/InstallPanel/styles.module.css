@@ -152,7 +152,7 @@ html[data-theme='light'] .install { --install-accent-soft: rgb(47 138 69 / 0.1);
 .pm[data-frame='0'] { animation: pmOpen 0.5s var(--install-ease); }
 @keyframes pmOpen { from { opacity: 0; transform: scale(0.97); } }
 .pmTitle { display: flex; background: #282828; border-bottom: 1px solid #1f1f1f; }
-.pmTitle span { padding: 5px 12px; background: #383838; border-top: 2px solid #3a79bb; font-weight: 600; }
+.pmTitle span { padding: 6px 12px; background: #383838; font-weight: 600; }
 .pmToolbar { display: flex; align-items: center; gap: 10px; padding: 5px 8px; background: #3c3c3c; border-bottom: 1px solid #242424; }
 .pmPlus { padding: 1px 7px; background: #585858; border: 1px solid #2a2a2a; border-radius: 3px; transition: background-color 0.2s ease; }
 .pmPlus[data-press] { background: #4a6f9a; }
