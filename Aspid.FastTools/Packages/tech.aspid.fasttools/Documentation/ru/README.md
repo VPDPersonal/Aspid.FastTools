@@ -81,7 +81,7 @@ new VisualElement()
 Запись значений, изменение размера массивов, получение типа поля и объекта-владельца.
 
 ```csharp
-property
+manaCost
   .Update()
   .SetIntAndApply(42);
 ```

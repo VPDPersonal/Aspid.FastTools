@@ -1,6 +1,6 @@
 # SerializedProperty Extensions
 
-Chainable extension methods that let a `SerializedProperty` write and apply its own value in one call, without going through its `SerializedObject`. A second group of methods tells which C# field and which object stand behind a property.
+Unity writes a field from an editor through the `SerializedObject`: `Update()`, the assignment and `ApplyModifiedProperties()` are three separate statements. With FastTools the property does it in one chain — `manaCost.Update().SetIntAndApply(42)` — and records Undo. Three more methods return what `SerializedProperty` itself does not expose: the C# field type, its `FieldInfo` and the object that owns it.
 
 ## Quick start
 
@@ -48,9 +48,9 @@ In its custom `Editor`, add `using Aspid.FastTools.Editors;` and write a field v
 |---|---|
 | <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;serializedObject.Update();&#10;manaCost.intValue = 42;&#10;serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;manaCost&#10;    .Update()&#10;    .SetIntAndApply(42);</code></pre> |
 
-Setters, `Update()` and both `Apply…()` methods return the original property, so calls chain. Every setter has `AndApply` (with Undo) and `AndApplyWithoutUndo` variants.
+`Update()`, `UpdateIfRequiredOrScript()`, `ApplyModifiedProperties()` and `ApplyModifiedPropertiesWithoutUndo()` call the same methods of `serializedObject`. They and every setter return the property, so calls chain.
 
-**Multiple fields:** update once, write the values, then apply them together:
+**Multiple fields:** update once and write the values — `…AndApply` on the last one applies every pending write of the `SerializedObject`:
 
 ```csharp
 serializedObject.Update();
@@ -58,36 +58,21 @@ serializedObject.FindProperty("_cooldown").SetFloat(0.5f);
 serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 ```
 
-> [!IMPORTANT]
-> Applying affects **all pending changes** on the associated `SerializedObject`.
-> `Update()` discards unapplied writes — call it before changing fields.
-
-## Update / Apply
-
-The same Unity operations, called on a property:
-
-| Before — Unity API | After — FastTools |
-|---|---|
-| <pre lang="csharp"><code>property.serializedObject&#10;    .Update();</code></pre> | <pre lang="csharp"><code>property.Update();</code></pre> |
-| <pre lang="csharp"><code>property.serializedObject&#10;    .UpdateIfRequiredOrScript();</code></pre> | <pre lang="csharp"><code>property&#10;    .UpdateIfRequiredOrScript();</code></pre> |
-| <pre lang="csharp"><code>property.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>property&#10;    .ApplyModifiedProperties();</code></pre> |
-| <pre lang="csharp"><code>property.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>property&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> |
-
 ## Writing values
 
-Choose when to apply the write:
-
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Apply later&#10;manaCost.intValue = 42;</code></pre> | <pre lang="csharp"><code>// Apply later&#10;manaCost.SetInt(42);</code></pre> |
-| <pre lang="csharp"><code>// With Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>// With Undo&#10;manaCost.SetIntAndApply(42);</code></pre> |
-| <pre lang="csharp"><code>// Without Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>// Without Undo&#10;manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
+| <pre lang="csharp"><code>manaCost.intValue = 42;</code></pre> | <pre lang="csharp"><code>manaCost.SetInt(42);</code></pre> |
+| <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>manaCost.SetIntAndApply(42);</code></pre> |
+| <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
 
-`SetValue` is an alternative to the explicit setter: `SetValue(42)` is equivalent to `SetInt(42)`, and `SetValue(0.5f)` to `SetFloat(0.5f)`. The overload is selected **by the argument’s type**, which must match the field.
+Every setter on this page comes in these three forms.
+
+`SetValue(42)` is the same as `SetInt(42)`: the overload is chosen **by the argument's type**, which must match the field.
 
 ### Supported types
 
-Every `SerializedProperty` value type has an explicit setter and a `SetValue` overload:
+Each of these setters also has a `SetValue` overload:
 
 | Values | Setters |
 |---|---|
@@ -96,41 +81,37 @@ Every `SerializedProperty` value type has an explicit setter and a `SetValue` ov
 | Vectors | `SetVector2`, `SetVector2Int`, `SetVector3`, `SetVector3Int`, `SetVector4`, `SetQuaternion` |
 | Areas | `SetRect`, `SetRectInt`, `SetBounds`, `SetBoundsInt` |
 | Unity types | `SetColor`, `SetGradient`, `SetAnimationCurve` |
-| Unity 6.2 and newer | `SetEntityId` for `UnityEngine.EntityId` |
+| Unity 6.2 and newer | `SetEntityId` |
 
 ### Enums
 
-For the `_targeting` and `_damageTypes` properties:
-
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Targeting.Area&#10;targeting.enumValueIndex = 1;</code></pre> | <pre lang="csharp"><code>// Targeting.Area&#10;targeting.SetEnumIndex(1);</code></pre> |
-| <pre lang="csharp"><code>// Fire &#124; Ice&#10;damageTypes.enumValueFlag = 3;</code></pre> | <pre lang="csharp"><code>// Fire &#124; Ice&#10;damageTypes.SetEnumFlag(3);</code></pre> |
+| <pre lang="csharp"><code>targeting.enumValueIndex = 1;</code></pre> | <pre lang="csharp"><code>targeting.SetEnumIndex(1);</code></pre> |
+| <pre lang="csharp"><code>damageTypes.enumValueFlag = (int)&#10;    (DamageTypes.Fire &#124; DamageTypes.Ice);</code></pre> | <pre lang="csharp"><code>damageTypes.SetEnumFlag((int)&#10;    (DamageTypes.Fire &#124; DamageTypes.Ice));</code></pre> |
 
 ### Arrays and lists
 
-For the `_abilities` collection property:
-
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>abilities.arraySize = 5;&#10;abilities.arraySize += 1;&#10;abilities.arraySize += 2;&#10;abilities.arraySize -= 2;&#10;abilities.arraySize -= 1;</code></pre> | <pre lang="csharp"><code>abilities.SetArraySize(5);&#10;abilities.AddArraySize();     // +1&#10;abilities.AddArraySize(2);    // +2&#10;abilities.RemoveArraySize(2); // -2&#10;abilities.RemoveArraySize();  // -1</code></pre> |
-
-These methods only change the collection size. `RemoveArraySize` removes elements from the end; initialize new elements separately via `GetArrayElementAtIndex()`.
+| <pre lang="csharp"><code>abilities.arraySize = 5;&#10;abilities.arraySize += 1;&#10;abilities.arraySize += 2;&#10;abilities.arraySize -= 2;&#10;abilities.arraySize -= 1;</code></pre> | <pre lang="csharp"><code>abilities.SetArraySize(5);&#10;abilities.AddArraySize();&#10;abilities.AddArraySize(2);&#10;abilities.RemoveArraySize(2);&#10;abilities.RemoveArraySize();</code></pre> |
 
 ### References and boxed values
 
-Choose the setter by how the field is serialized:
-
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// [SerializeReference]&#10;effect.managedReferenceValue = instance;</code></pre> | <pre lang="csharp"><code>// [SerializeReference]&#10;effect.SetManagedReference(instance);</code></pre> |
-| <pre lang="csharp"><code>// UnityEngine.Object&#10;icon.objectReferenceValue = sprite;</code></pre> | <pre lang="csharp"><code>// UnityEngine.Object&#10;icon.SetObjectReference(sprite);</code></pre> |
-| <pre lang="csharp"><code>// ExposedReference&lt;T&gt;&#10;property.exposedReferenceValue = target;</code></pre> | <pre lang="csharp"><code>// ExposedReference&lt;T&gt;&#10;property.SetExposedReference(target);</code></pre> |
-| <pre lang="csharp"><code>// boxedValue&#10;property.boxedValue = value;</code></pre> | <pre lang="csharp"><code>// boxedValue&#10;property.SetBoxed(value);</code></pre> |
+| <pre lang="csharp"><code>effect.managedReferenceValue = instance;</code></pre> | <pre lang="csharp"><code>effect.SetManagedReference(instance);</code></pre> |
+| <pre lang="csharp"><code>icon.objectReferenceValue = sprite;</code></pre> | <pre lang="csharp"><code>icon.SetObjectReference(sprite);</code></pre> |
+| <pre lang="csharp"><code>ability.boxedValue =&#10;    new Ability &#123; Name = "Frostbolt" &#125;;</code></pre> | <pre lang="csharp"><code>ability.SetBoxed(&#10;    new Ability &#123; Name = "Frostbolt" &#125;);</code></pre> |
+
+`SetExposedReference` sets `exposedReferenceValue` of an `ExposedReference<T>` field.
+
+> [!NOTE]
+> Without an `IExposedPropertyTable` context, Unity's setter applies the write itself, with Undo: `SetExposedReference` does not wait for an apply, and `SetExposedReferenceAndApplyWithoutUndo` still records Undo.
 
 ## Field type and owner
 
-Three methods find the C# field behind a property through reflection. For the `AbilityBook` from the quick start:
+Three methods find the C# field behind a property through reflection:
 
 ```csharp
 var abilities    = serializedObject.FindProperty("_abilities");
@@ -148,40 +129,38 @@ var effectDamage = effect.FindPropertyRelative("Damage");
 | `effect` | `IAbilityEffect` | `AbilityBook._effect` | the `AbilityBook` |
 | `effectDamage` | `float` | `BurnEffect.Damage` | the `BurnEffect` instance |
 
-- `GetPropertyType()` returns the **declared** field type: for `[SerializeReference]` the interface or base class, not the instance type; for a collection element, the element type.
-- `GetFieldInfo()` looks the field up on the owner’s actual type, including private fields of base classes.
-- `GetDeclaringInstance()` returns the object that owns the field; for a collection element, the collection’s owner.
+`GetFieldInfo()` also finds private fields declared in base classes.
 
 All three methods return `null` when resolution fails: a missing field, a `null` reference on the path or an index outside the list. They read the **first** target object (`targetObject`) and see applied values only, so apply pending writes first.
 
 > [!WARNING]
-> When the field’s owner is a struct, `GetDeclaringInstance()` returns a boxed copy. Changes to that copy never reach the original; write values through the `SerializedProperty` instead.
+> When the field's owner is a struct, `GetDeclaringInstance()` returns a boxed copy. Changes to that copy never reach the original; write values through the `SerializedProperty` instead.
 
 ## Member name and property checks
 
-For the same properties:
-
 | Call | Result |
 |---|---|
-| `ability.GetMemberName()` | `"_abilities"` — the collection name without the index |
+| `ability.GetMemberName()` | `"_abilities"` |
 | `abilityName.GetMemberName()` | `"Name"` |
 | `ability.IsArrayElement()` | `true` |
-| `abilityName.IsArrayElement()` | `false` — a field inside the element |
+| `abilityName.IsArrayElement()` | `false` |
 | `ability.HasFoldout()` | `true` |
-| `abilityName.HasFoldout()` | `false` |
-| `effect.HasFoldout()` | `false` — `[SerializeReference]` |
+| `effect.HasFoldout()` | `false` |
 
-`HasFoldout()` is `true` only for a `Generic` property with visible child properties, as in the default Inspector. `[SerializeReference]` and custom `PropertyDrawer` layouts are not considered.
+`HasFoldout()` is `true` for a `Generic` property with visible child properties.
 
-## Independent property
+> [!NOTE]
+> A `[SerializeReference]` field returns `false`, although the Inspector draws it with a foldout. Custom `PropertyDrawer` layouts are not considered.
 
-An inspector’s `SerializedObject` lives only while the inspector is open, so its properties cannot be kept for a deferred call. `Persistent()` returns the same property on a new `SerializedObject` for the same target objects:
+## Persistent()
+
+An inspector's `SerializedObject` lives only while the inspector is open, so its properties cannot be kept for a deferred call. `Persistent()` returns the same property on a new `SerializedObject` for the same target objects:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(property&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(property.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = property.Persistent();</code></pre> |
+| <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(manaCost&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(manaCost.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = manaCost.Persistent();</code></pre> |
 
-The caller owns the new object: dispose it and the property after the write.
+The caller owns the new object:
 
 ```csharp
 var independent = manaCost.Persistent();
@@ -195,7 +174,7 @@ EditorApplication.delayCall += () =>
 };
 ```
 
-`Persistent()` returns `null` when the property path no longer exists. Pending writes on the source object are not copied; the source view sees the changes after `Update()`. The target objects must stay alive until the deferred call.
+`Persistent()` returns `null` when the property path no longer exists. Pending writes on the source object are not copied.
 
 ## Package sample
 

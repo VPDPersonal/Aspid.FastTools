@@ -86,6 +86,8 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   window frame (`doc-image-panel`, `src/theme/MDXComponents/Img`). The exception is `demo`/`scene`
   (`.gif`/`.png`) on a *tutorial* page, which keeps the bare scene look; the same file on a doc page is framed.
   So name inspector captures anything but `demo`/`scene`, and name scene footage exactly that.
+  A sample's `demo`/`scene` linked from a doc page is never framed either: a scene sample's gets `.scene-footage`,
+  any other sample's (an editor window, e.g. EditorTools) gets `.window-footage` — the capture is the only frame.
 - `.sample-scene` (the background-recolouring filter) is applied by `themedImages.js` only to `demo`/`scene`
   files inside a **hardcoded list of sample folders** — a new sample must be added to that regex.
 - A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
@@ -118,8 +120,10 @@ to every main doc page, always to the English file and its `ru/` twin together.
 - **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`").
   Never stack two admonitions. A pitfall that silently loses data gets a `> [!WARNING]` (boxed struct copy).
 - **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
-  link to the sample README and, when the sample has one, its `demo.gif` with the caption paragraph — no
-  "how to open" steps or experiments, those live on the sample's own page. The sentence must match what the
+  link to the sample README and, when the sample's `demo.gif` shows this page's feature, that gif with the caption
+  paragraph — no "how to open" steps or experiments, those live on the sample's own page. Footage of a sample
+  several pages share (EditorTools) stays on the sample's page unless it shows what the text cannot (it does
+  for VisualElement Extensions, not for SerializedProperty Extensions or Editor Helpers). The sentence must match what the
   sample code really does — check the sample scripts, and fix its README (en + ru) when it disagrees.
 - **The Introduction (`Documentation/README.md`) is the ideal** for tone, density and visuals; ProfilerMarkers and
   Editor Helpers were reworked from it. Only FastTools-specific behaviour: never explain Unity or UI Toolkit.

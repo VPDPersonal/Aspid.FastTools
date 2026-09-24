@@ -1,6 +1,6 @@
 # SerializedProperty Extensions
 
-Цепочечные методы расширения, с которыми `SerializedProperty` записывает и применяет своё значение одним вызовом, не обращаясь к своему `SerializedObject`. Вторая группа методов отвечает, какое поле C# и какой объект стоят за свойством.
+В Unity запись поля из редактора идёт через `SerializedObject`: `Update()`, присваивание и `ApplyModifiedProperties()` — три отдельные инструкции. С FastTools свойство делает это одной цепочкой — `manaCost.Update().SetIntAndApply(42)` — и записывает шаг Undo. Ещё три метода возвращают то, чего нет у самого `SerializedProperty`: тип поля C#, его `FieldInfo` и объект-владелец.
 
 ## Быстрый старт
 
@@ -42,15 +42,15 @@ public class AbilityBook : MonoBehaviour
 }
 ```
 
-В его пользовательском `Editor` добавьте `using Aspid.FastTools.Editors;` и запишите значение поля:
+В его кастомном `Editor` добавьте `using Aspid.FastTools.Editors;` и запишите значение поля:
 
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;serializedObject.Update();&#10;manaCost.intValue = 42;&#10;serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>var manaCost = serializedObject&#10;    .FindProperty("_manaCost");&#10;&#10;manaCost&#10;    .Update()&#10;    .SetIntAndApply(42);</code></pre> |
 
-Сеттеры, `Update()` и оба `Apply…()` возвращают исходное свойство, поэтому вызовы выстраиваются в цепочку. У каждого сеттера есть варианты `AndApply` (с Undo) и `AndApplyWithoutUndo`.
+`Update()`, `UpdateIfRequiredOrScript()`, `ApplyModifiedProperties()` и `ApplyModifiedPropertiesWithoutUndo()` вызывают одноимённые методы `serializedObject`. Они и все сеттеры возвращают свойство, поэтому вызовы выстраиваются в цепочку.
 
-**Несколько полей:** обновите объект один раз, запишите значения и примените их вместе:
+**Несколько полей:** обновите объект один раз и запишите значения — `…AndApply` на последнем применит все накопленные записи `SerializedObject`:
 
 ```csharp
 serializedObject.Update();
@@ -58,36 +58,21 @@ serializedObject.FindProperty("_cooldown").SetFloat(0.5f);
 serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 ```
 
-> [!IMPORTANT]
-> Применение затрагивает **все накопленные изменения** связанного `SerializedObject`.
-> `Update()` сбрасывает неприменённые записи — вызывайте его до изменения полей.
-
-## Обновление и применение
-
-Те же операции Unity, но с вызовом на свойстве:
-
-| До — Unity API | После — FastTools |
-|---|---|
-| <pre lang="csharp"><code>property.serializedObject&#10;    .Update();</code></pre> | <pre lang="csharp"><code>property.Update();</code></pre> |
-| <pre lang="csharp"><code>property.serializedObject&#10;    .UpdateIfRequiredOrScript();</code></pre> | <pre lang="csharp"><code>property&#10;    .UpdateIfRequiredOrScript();</code></pre> |
-| <pre lang="csharp"><code>property.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>property&#10;    .ApplyModifiedProperties();</code></pre> |
-| <pre lang="csharp"><code>property.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>property&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> |
-
 ## Запись значений
 
-Выберите, когда применять запись:
-
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Применить позже&#10;manaCost.intValue = 42;</code></pre> | <pre lang="csharp"><code>// Применить позже&#10;manaCost.SetInt(42);</code></pre> |
-| <pre lang="csharp"><code>// С Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>// С Undo&#10;manaCost.SetIntAndApply(42);</code></pre> |
-| <pre lang="csharp"><code>// Без Undo&#10;manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>// Без Undo&#10;manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
+| <pre lang="csharp"><code>manaCost.intValue = 42;</code></pre> | <pre lang="csharp"><code>manaCost.SetInt(42);</code></pre> |
+| <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>manaCost.SetIntAndApply(42);</code></pre> |
+| <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
 
-`SetValue` — альтернатива явному сеттеру: `SetValue(42)` эквивалентен `SetInt(42)`, а `SetValue(0.5f)` — `SetFloat(0.5f)`. Перегрузка выбирается **по типу аргумента**, который должен соответствовать типу поля.
+Каждый сеттер на этой странице есть в этих трёх формах.
+
+`SetValue(42)` — то же, что `SetInt(42)`: перегрузка выбирается **по типу аргумента**, который должен совпадать с типом поля.
 
 ### Поддерживаемые типы
 
-Явный сеттер и перегрузка `SetValue` есть для каждого типа значения `SerializedProperty`:
+У каждого из этих сеттеров есть перегрузка `SetValue`:
 
 | Значения | Сеттеры |
 |---|---|
@@ -96,41 +81,37 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 | Векторы | `SetVector2`, `SetVector2Int`, `SetVector3`, `SetVector3Int`, `SetVector4`, `SetQuaternion` |
 | Области | `SetRect`, `SetRectInt`, `SetBounds`, `SetBoundsInt` |
 | Типы Unity | `SetColor`, `SetGradient`, `SetAnimationCurve` |
-| Unity 6.2 и новее | `SetEntityId` для `UnityEngine.EntityId` |
+| Unity 6.2 и новее | `SetEntityId` |
 
 ### Перечисления
 
-Для свойств `_targeting` и `_damageTypes`:
-
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// Targeting.Area&#10;targeting.enumValueIndex = 1;</code></pre> | <pre lang="csharp"><code>// Targeting.Area&#10;targeting.SetEnumIndex(1);</code></pre> |
-| <pre lang="csharp"><code>// Fire &#124; Ice&#10;damageTypes.enumValueFlag = 3;</code></pre> | <pre lang="csharp"><code>// Fire &#124; Ice&#10;damageTypes.SetEnumFlag(3);</code></pre> |
+| <pre lang="csharp"><code>targeting.enumValueIndex = 1;</code></pre> | <pre lang="csharp"><code>targeting.SetEnumIndex(1);</code></pre> |
+| <pre lang="csharp"><code>damageTypes.enumValueFlag = (int)&#10;    (DamageTypes.Fire &#124; DamageTypes.Ice);</code></pre> | <pre lang="csharp"><code>damageTypes.SetEnumFlag((int)&#10;    (DamageTypes.Fire &#124; DamageTypes.Ice));</code></pre> |
 
 ### Массивы и списки
 
-Для свойства коллекции `_abilities`:
-
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>abilities.arraySize = 5;&#10;abilities.arraySize += 1;&#10;abilities.arraySize += 2;&#10;abilities.arraySize -= 2;&#10;abilities.arraySize -= 1;</code></pre> | <pre lang="csharp"><code>abilities.SetArraySize(5);&#10;abilities.AddArraySize();     // +1&#10;abilities.AddArraySize(2);    // +2&#10;abilities.RemoveArraySize(2); // -2&#10;abilities.RemoveArraySize();  // -1</code></pre> |
-
-Методы меняют только размер коллекции. `RemoveArraySize` убирает элементы с конца; новые элементы инициализируйте отдельно через `GetArrayElementAtIndex()`.
+| <pre lang="csharp"><code>abilities.arraySize = 5;&#10;abilities.arraySize += 1;&#10;abilities.arraySize += 2;&#10;abilities.arraySize -= 2;&#10;abilities.arraySize -= 1;</code></pre> | <pre lang="csharp"><code>abilities.SetArraySize(5);&#10;abilities.AddArraySize();&#10;abilities.AddArraySize(2);&#10;abilities.RemoveArraySize(2);&#10;abilities.RemoveArraySize();</code></pre> |
 
 ### Ссылки и boxed-значения
 
-Выберите сеттер по способу сериализации поля:
-
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>// [SerializeReference]&#10;effect.managedReferenceValue = instance;</code></pre> | <pre lang="csharp"><code>// [SerializeReference]&#10;effect.SetManagedReference(instance);</code></pre> |
-| <pre lang="csharp"><code>// UnityEngine.Object&#10;icon.objectReferenceValue = sprite;</code></pre> | <pre lang="csharp"><code>// UnityEngine.Object&#10;icon.SetObjectReference(sprite);</code></pre> |
-| <pre lang="csharp"><code>// ExposedReference&lt;T&gt;&#10;property.exposedReferenceValue = target;</code></pre> | <pre lang="csharp"><code>// ExposedReference&lt;T&gt;&#10;property.SetExposedReference(target);</code></pre> |
-| <pre lang="csharp"><code>// boxedValue&#10;property.boxedValue = value;</code></pre> | <pre lang="csharp"><code>// boxedValue&#10;property.SetBoxed(value);</code></pre> |
+| <pre lang="csharp"><code>effect.managedReferenceValue = instance;</code></pre> | <pre lang="csharp"><code>effect.SetManagedReference(instance);</code></pre> |
+| <pre lang="csharp"><code>icon.objectReferenceValue = sprite;</code></pre> | <pre lang="csharp"><code>icon.SetObjectReference(sprite);</code></pre> |
+| <pre lang="csharp"><code>ability.boxedValue =&#10;    new Ability &#123; Name = "Frostbolt" &#125;;</code></pre> | <pre lang="csharp"><code>ability.SetBoxed(&#10;    new Ability &#123; Name = "Frostbolt" &#125;);</code></pre> |
+
+`SetExposedReference` задаёт `exposedReferenceValue` поля `ExposedReference<T>`.
+
+> [!NOTE]
+> Без контекста `IExposedPropertyTable` сеттер Unity сам применяет запись с Undo: `SetExposedReference` не ждёт применения, а `SetExposedReferenceAndApplyWithoutUndo` всё равно записывает Undo.
 
 ## Тип поля и объект-владелец
 
-Три метода через рефлексию находят поле C#, стоящее за свойством. Для `AbilityBook` из быстрого старта:
+Три метода через рефлексию находят поле C#, стоящее за свойством:
 
 ```csharp
 var abilities    = serializedObject.FindProperty("_abilities");
@@ -148,9 +129,7 @@ var effectDamage = effect.FindPropertyRelative("Damage");
 | `effect` | `IAbilityEffect` | `AbilityBook._effect` | экземпляр `AbilityBook` |
 | `effectDamage` | `float` | `BurnEffect.Damage` | экземпляр `BurnEffect` |
 
-- `GetPropertyType()` возвращает **объявленный** тип поля: для `[SerializeReference]` — интерфейс или базовый класс, а не тип экземпляра; для элемента коллекции — тип элемента.
-- `GetFieldInfo()` ищет поле по фактическому типу владельца, включая приватные поля базовых классов.
-- `GetDeclaringInstance()` возвращает объект, которому принадлежит поле; для элемента коллекции — владельца коллекции.
+`GetFieldInfo()` находит и приватные поля базовых классов.
 
 Все три метода возвращают `null`, если поиск не удался: поле не найдено, на пути встретилась `null`-ссылка или индекс вышел за границы списка. Они читают **первый** целевой объект (`targetObject`) и видят только применённые значения, поэтому сначала примените накопленные записи.
 
@@ -159,29 +138,29 @@ var effectDamage = effect.FindPropertyRelative("Damage");
 
 ## Имя поля и проверка свойства
 
-Для тех же свойств:
-
 | Вызов | Результат |
 |---|---|
-| `ability.GetMemberName()` | `"_abilities"` — имя коллекции без индекса |
+| `ability.GetMemberName()` | `"_abilities"` |
 | `abilityName.GetMemberName()` | `"Name"` |
 | `ability.IsArrayElement()` | `true` |
-| `abilityName.IsArrayElement()` | `false` — поле внутри элемента |
+| `abilityName.IsArrayElement()` | `false` |
 | `ability.HasFoldout()` | `true` |
-| `abilityName.HasFoldout()` | `false` |
-| `effect.HasFoldout()` | `false` — `[SerializeReference]` |
+| `effect.HasFoldout()` | `false` |
 
-`HasFoldout()` — это `true` только для свойства `Generic` с видимыми дочерними свойствами, как у стандартного инспектора. `[SerializeReference]` и пользовательские `PropertyDrawer` не учитываются.
+`HasFoldout()` возвращает `true` для свойства `Generic` с видимыми дочерними свойствами.
 
-## Независимое свойство
+> [!NOTE]
+> Для поля `[SerializeReference]` метод возвращает `false`, хотя инспектор рисует его с foldout. Кастомные `PropertyDrawer` не учитываются.
+
+## Persistent()
 
 `SerializedObject` инспектора живёт, пока открыт инспектор, поэтому свойство нельзя сохранить для отложенного вызова. `Persistent()` возвращает то же свойство на новом `SerializedObject` для тех же целевых объектов:
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(property&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(property.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = property.Persistent();</code></pre> |
+| <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(manaCost&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(manaCost.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = manaCost.Persistent();</code></pre> |
 
-Новый объект принадлежит вызывающему коду: освободите его и свойство после записи.
+Новый объект принадлежит вызывающему коду:
 
 ```csharp
 var independent = manaCost.Persistent();
@@ -195,7 +174,7 @@ EditorApplication.delayCall += () =>
 };
 ```
 
-`Persistent()` возвращает `null`, если путь свойства больше не существует. Неприменённые записи исходного объекта не копируются; исходное представление увидит изменения после `Update()`. Целевые объекты должны существовать до момента отложенного вызова.
+`Persistent()` возвращает `null`, если путь свойства больше не существует. Неприменённые записи исходного объекта не копируются.
 
 ## Пример в пакете
 

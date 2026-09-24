@@ -519,6 +519,17 @@ html[data-theme='light'].docs-doc-page {
 html[data-theme='light'] .theme-admonition {
   --ifm-alert-background-color-highlight: color-mix(in srgb, var(--ifm-alert-border-color) 12%, var(--venom-panel));
 }
+/* Dark: the same idea, a wash of the block's colour instead of Infima's fixed yellow. */
+html[data-theme='dark'] .theme-admonition {
+  --ifm-alert-background-color-highlight: color-mix(in srgb, var(--ifm-alert-border-color) 26%, transparent);
+}
+/* The chip's outline follows the block too, not the neutral article line. */
+.markdown .theme-admonition :not(pre) > code {
+  border-color: color-mix(in srgb, var(--ifm-alert-border-color) 35%, transparent);
+}
+html[data-theme='dark'] .markdown .theme-admonition :not(pre) > code {
+  border-color: color-mix(in srgb, var(--ifm-alert-border-color) 60%, transparent);
+}
 
 /* The root paints the full canvas even when body is only one viewport tall. */
 html.docs-doc-page body { background: transparent; }
@@ -1034,6 +1045,15 @@ html[data-theme='light'] .scene-footage img { filter: url('#scene-footage-backgr
   pointer-events: none;
 }
 .theme-doc-markdown .scene-footage img.doc-zoom-image[role='button'] { max-width: 100%; max-height: none; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+/* Editor-window footage on a doc page: the capture itself is the only frame. */
+.theme-doc-markdown .window-footage > .doc-image-panel { padding: 0; border: 0; }
+.theme-doc-markdown .window-footage img.doc-zoom-image[role='button'] {
+  max-width: 100%;
+  max-height: none;
+  border: 1px solid var(--venom-line-strong);
+  border-radius: var(--ifm-pre-border-radius);
+  box-shadow: none;
+}
 /* Feature cards: the intro's feature sections as one column of wide cards. */
 .theme-doc-markdown .feature-cards {
   display: grid;

@@ -25,7 +25,9 @@ export default function remarkThemedImages() {
             const sceneSample = sceneCapture && /[/\\](?:enum-?values|types|serialize-?references|profiler-?markers)[/\\]/i.test(file.path);
             // A scene sample's footage linked from a doc page keeps its own background, which matches the article.
             const sceneFootage = sceneCapture && /Samples~\/(?:EnumValues|Types|SerializeReferences|ProfilerMarkers)\//.test(image.url);
-            const sceneClass = sceneSample ? ' sample-scene' : sceneFootage ? ' scene-footage' : '';
+            // Any other sample's footage linked from a doc page is an editor window with its own edge: no frame around it.
+            const windowFootage = sceneCapture && !sceneFootage && /Samples~\//.test(image.url);
+            const sceneClass = sceneSample ? ' sample-scene' : sceneFootage ? ' scene-footage' : windowFootage ? ' window-footage' : '';
             // Docusaurus replaces image nodes; put the theme class on a stable wrapper.
             const wrap = (child, theme) => ({
               type: 'mdxJsxTextElement',
