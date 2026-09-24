@@ -1,49 +1,36 @@
 # Editor Helpers
 
-`GetDisplayName()` превращает имя типа объекта в читаемую подпись: `FireAbility` → «Fire Ability». `GetDisplayNameWithIndex()` добавляет номер, когда на GameObject несколько одинаковых компонентов: «Fire Ability (2)».
-
-![Результаты методов в пользовательском окне Unity. Заголовки стандартного Inspector эти методы не меняют.](../Images/editor-display-names.png)
-
-Результаты методов в пользовательском окне Unity. Заголовки стандартного Inspector эти методы не меняют.
+Для подписи объекта в своём окне редактора у Unity есть `ObjectNames.GetInspectorTitle`, но он дописывает «(Script)» к скриптам без `[AddComponentMenu]` и не различает два одинаковых компонента на одном GameObject. `GetDisplayName()` возвращает читаемое имя типа (`AbilityConfig` → «Ability Config»), а `GetDisplayNameWithIndex()` нумерует дубликаты: «Ability Config (1)», «Ability Config (2)».
 
 ## Быстрый старт
 
-Примеры построены на двух компонентах: один задаёт себе имя через `[AddComponentMenu]`, другой — нет.
+Примеры на этой странице работают с компонентом `AbilityConfig`:
 
 ```csharp
-using UnityEngine;
-
-[AddComponentMenu("Gameplay/Fire Ability")]
-public sealed class FireAbility : MonoBehaviour { }
-
 public sealed class AbilityConfig : MonoBehaviour { }
 ```
 
 ```csharp
 using Aspid.FastTools.Editors;
 
-fireAbility.GetDisplayName();       // "Fire Ability"
-abilityConfig.GetDisplayName();     // "Ability Config"
-
-// Второй AbilityConfig на том же GameObject
-abilityConfig.GetDisplayNameWithIndex(); // "Ability Config (2)"
+var title = new Label(config.GetDisplayNameWithIndex());
 ```
 
 > [!NOTE]
-> Методы доступны только в редакторе. Размещайте использующий их код в папке `Editor` или в сборке, ограниченной платформой Editor.
+> Методы доступны только в редакторе: вызывайте их из папки `Editor` или из Assembly Definition только для Editor, который ссылается на `Aspid.FastTools.Editor`.
 
 ## GetDisplayName()
 
-`GetDisplayName()` работает с `UnityEngine.Object`. Если у типа есть `[AddComponentMenu]`, метод берёт заголовок через `ObjectNames.GetInspectorTitle`. В остальных случаях он преобразует имя типа через `ObjectNames.NicifyVariableName`. Для `null` или уничтоженного объекта метод возвращает `string.Empty`.
+Расширяет `UnityEngine.Object`. Если у типа есть `[AddComponentMenu]`, возвращает заголовок Inspector — последний сегмент пути меню; иначе — имя типа, разбитое на слова. Для `null` или уничтоженного объекта возвращает `string.Empty`.
 
-| Компонент | `GetDisplayName()` | `ObjectNames.GetInspectorTitle()` |
+| `[AddComponentMenu]` на `AbilityConfig` | `GetInspectorTitle()` | `GetDisplayName()` |
 |---|---|---|
-| `FireAbility`, с атрибутом | `Fire Ability` | `Fire Ability` |
-| `AbilityConfig`, без атрибута | `Ability Config` | `Ability Config (Script)` |
+| Нет | `Ability Config (Script)` | `Ability Config` |
+| `"Gameplay/Ability"` | `Ability` | `Ability` |
 
 ## GetDisplayNameWithIndex()
 
-`GetDisplayNameWithIndex()` работает с `Component` и учитывает только компоненты **точно того же типа** на том же GameObject. Суффикс соответствует порядку компонентов, начиная с единицы. Для `null` или уничтоженного компонента метод возвращает `string.Empty`.
+Расширяет `Component`. Считает компоненты **точно того же типа** на GameObject и добавляет позицию компонента среди них, начиная с единицы. Номер вычисляется при каждом вызове, поэтому после удаления или перестановки компонентов вызовите метод заново. Для `null` или уничтоженного компонента возвращает `string.Empty`.
 
 | Компоненты на GameObject | Подписи |
 |---|---|
@@ -52,4 +39,4 @@ abilityConfig.GetDisplayNameWithIndex(); // "Ability Config (2)"
 
 ## Пример в пакете
 
-В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) метод `GetDisplayName()` формирует заголовок панели выбранной способности.
+В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) `GetDisplayName()` задаёт заголовок кастомного инспектора ассета `AbilityConfig`.
