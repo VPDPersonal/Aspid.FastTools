@@ -47,9 +47,10 @@
 }
 :global(.markdown) a.secondary:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)):hover {
   color: var(--venom-fg-strong);
-  border-color: var(--venom-accent);
+  border-color: #e3b341;
 }
-/* Every few seconds the star twinkles and a sheen crosses the button; hovering spins the star. */
+/* Every few seconds a sheen crosses the button; hovering spins the star and keeps the sheen running. The button is gold
+   throughout, apart from the green primary action beside it. */
 :global(.markdown) a.secondary { position: relative; overflow: hidden; }
 :global(.markdown) a.secondary::before {
   content: '';
@@ -61,14 +62,10 @@
   pointer-events: none;
 }
 @keyframes sheen { 0%, 70% { transform: translateX(-100%); } 90%, 100% { transform: translateX(100%); } }
-.star { flex: none; width: 17px; height: 17px; fill: #e3b341; filter: drop-shadow(0 0 0 rgb(227 179 65 / 0)); animation: twinkle 5s ease-in-out infinite; transition: transform 0.5s var(--ifm-transition-timing-default, ease); }
-@keyframes twinkle {
-  0%, 72%, 100% { transform: none; filter: drop-shadow(0 0 0 rgb(227 179 65 / 0)); }
-  80% { transform: scale(1.3) rotate(36deg); filter: drop-shadow(0 0 6px rgb(227 179 65 / 0.7)); }
-  88% { transform: scale(0.95) rotate(72deg); }
-}
-:global(.markdown) a.secondary:hover .star { animation: none; transform: scale(1.2) rotate(144deg); filter: drop-shadow(0 0 6px rgb(227 179 65 / 0.6)); }
-:global(.markdown) a.secondary:hover::before { animation: none; }
+.star { flex: none; width: 17px; height: 17px; fill: #e3b341; transition: transform 0.5s var(--ifm-transition-timing-default, ease), filter 0.5s ease; }
+:global(.markdown) a.secondary:hover .star { transform: scale(1.2) rotate(144deg); filter: drop-shadow(0 0 6px rgb(227 179 65 / 0.6)); }
+:global(.markdown) a.secondary:hover::before { animation: sweep 1.3s ease-in-out infinite; }
+@keyframes sweep { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 
 @media (max-width: 700px) {
   .support { flex-direction: column; align-items: stretch; padding: 20px 22px; }

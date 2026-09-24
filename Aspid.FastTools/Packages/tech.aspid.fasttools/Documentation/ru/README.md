@@ -4,7 +4,7 @@
 [![Preview 1.0.0-rc.8](../Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](../Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Aspid.FastTools — пакет для Unity, закрывающий пробелы в сериализации и редакторских инструментах. Сериализованные типы и полиморфные ссылки переживают переименования, а если ломаются, восстанавливаются без потери данных. Инспектор показывает, что лежит в поле `SerializeReference`, и позволяет это заменить. Редакторские и профилировочные хелперы заменяют одной строкой то, для чего Unity требует отдельный класс.
+Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации и редакторского кода. Ссылки на типы и `[SerializeReference]` переживают переименование классов, а сломанные восстанавливаются без потери данных. Класс для поля `SerializeReference` и таблицы enum → значение настраиваются прямо в инспекторе. Маркеры профилировщика, деревья UI Toolkit и запись в `SerializedProperty` занимают одну строку или цепочку вместо шаблонного кода.
 
 [Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
@@ -94,9 +94,9 @@ property
 fireAbility.GetDisplayName();
 // "Fire Ability"
 
-abilityConfig
+fireAbility
   .GetDisplayNameWithIndex();
-// "Ability Config (1)"
+// "Fire Ability (2)"
 ```
 
 #### [Claude Code Plugin](10-claude-code-plugin.md)

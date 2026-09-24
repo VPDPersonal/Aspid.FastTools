@@ -159,27 +159,28 @@ function PropertyPreview({ru}) {
   );
 }
 
-/* ---------- Editor Helpers: type names become labels ---------- */
+/* ---------- Editor Helpers: one component, its label with and without the index ---------- */
 
 const NAMES_CODE = `fireAbility.GetDisplayName();
-abilityConfig.GetDisplayNameWithIndex();`;
+fireAbility.GetDisplayNameWithIndex();`;
 
+// `fireAbility` is the second FireAbility on its GameObject, hence the (2).
 const NAMES = [
-  ['FireAbility', 'Fire Ability'],
-  ['AbilityConfig', 'Ability Config (1)'],
-  ['AbilityConfig', 'Ability Config (2)'],
+  ['GetDisplayName()', 'Fire Ability'],
+  ['GetDisplayNameWithIndex()', 'Fire Ability (2)'],
 ];
 
 function NamesPreview() {
   const ref = useRef(null);
+  // 0 nothing resolved, 1 the plain label, 2 the indexed one, 3–4 both hold.
   const step = useLoop(5, 950, useInView(ref));
   return (
     <div ref={ref} className={styles.namesBody}>
-      <Code code={NAMES_CODE} active={step === 1 ? 0 : step >= 2 && step <= 3 ? 1 : -1} />
+      <Code code={NAMES_CODE} active={step <= 2 ? step - 1 : -1} />
       <ul className={styles.names} aria-label="Editor Helpers">
-        {NAMES.map(([type, label], index) => (
-          <li key={index} data-done={step > index || undefined}>
-            <code><span className={styles.namesIcon} aria-hidden="true">#</span>{type}</code>
+        {NAMES.map(([method, label], index) => (
+          <li key={method} data-done={step > index || undefined} data-active={step - 1 === index || undefined}>
+            <code>{method}</code>
             <span className={styles.namesArrow} aria-hidden="true">↓</span>
             <span className={styles.namesLabel}>“{label}”</span>
           </li>

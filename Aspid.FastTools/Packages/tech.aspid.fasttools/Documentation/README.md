@@ -4,7 +4,7 @@
 [![Preview 1.0.0-rc.8](Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Aspid.FastTools is a Unity package that fills the gaps Unity leaves in serialization and editor tooling. Serialized types and polymorphic references stay valid through renames, or get repaired without data loss when they break. The Inspector shows what a `SerializeReference` field holds and lets you swap it. Editor and profiling helpers replace with a single line what Unity needs a separate class for.
+Aspid.FastTools is a Unity package that takes the routine out of serialization and editor code. Type references and `[SerializeReference]` fields survive class renames, and broken ones are repaired without data loss. The class behind a `SerializeReference` field and enum → value tables are set up right in the Inspector. Profiler markers, UI Toolkit trees and `SerializedProperty` writes take a single line or chain instead of boilerplate.
 
 [Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
@@ -94,9 +94,9 @@ Get readable object and component display names for custom editors.
 fireAbility.GetDisplayName();
 // "Fire Ability"
 
-abilityConfig
+fireAbility
   .GetDisplayNameWithIndex();
-// "Ability Config (1)"
+// "Fire Ability (2)"
 ```
 
 #### [Claude Code Plugin](10-claude-code-plugin.md)
