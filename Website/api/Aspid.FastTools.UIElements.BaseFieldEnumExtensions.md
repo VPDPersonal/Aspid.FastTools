@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldEnumExtensions.SetLabel%60<T>`](Aspid.FastTools.UIElements.BaseFieldEnumExtensions.md) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Enum`](https://learn.microsoft.com/dotnet/api/system.enum).
+Provides [`BaseFieldEnumExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldEnumExtensions.md#Aspid_FastTools_UIElements_BaseFieldEnumExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Enum`](https://learn.microsoft.com/dotnet/api/system.enum).
 
 ```csharp
 public static class BaseFieldEnumExtensions
@@ -22,10 +22,6 @@ public static class BaseFieldEnumExtensions
 [object](https://learn.microsoft.com/dotnet/api/system.object) ← 
 [BaseFieldEnumExtensions](Aspid.FastTools.UIElements.BaseFieldEnumExtensions.md)
 
-
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
 
 ## Methods
 
