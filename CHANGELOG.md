@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A generic struct marked `[BurstCompile]` no longer fails the Burst build (BC1025/BC1360).
 - A type deriving from a type of another assembly that shares its namespace through `InternalsVisibleTo` now gets markers of its own; its calls used to bind to the base type's overload and open nothing.
 - `WithName($"Br{{ace}}")` gives `Br{ace}`, `WithName` text with U+2028, U+2029 or U+0085 compiles, and a user's own `WithName` extension no longer renames the marker.
-
+- `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
 
 ## [1.0.0-rc.8] — 2026-09-06
 
