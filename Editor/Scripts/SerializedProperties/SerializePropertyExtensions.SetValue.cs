@@ -1694,37 +1694,15 @@ namespace Aspid.FastTools.Editors
         /// <param name="property">Target property.</param>
         /// <param name="value"><see cref="UnityEngine.Object"/> exposed reference to assign.</param>
         /// <returns>The same <paramref name="property"/> instance.</returns>
+        /// <remarks>
+        /// Without an <see cref="IExposedPropertyTable"/> context, Unity's setter applies the write itself and records Undo,
+        /// so there are no <c>AndApply</c> or <c>AndApplyWithoutUndo</c> variants.
+        /// </remarks>
         public static T SetExposedReference<T>(this T property, Object value)
             where T : SerializedProperty
         {
             property.exposedReferenceValue = value;
             return property;
-        }
-
-        /// <summary>
-        /// Sets <see cref="SerializedProperty.exposedReferenceValue"/> then applies modified properties.
-        /// </summary>
-        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
-        /// <param name="property">Target property.</param>
-        /// <param name="value"><see cref="UnityEngine.Object"/> exposed reference to assign.</param>
-        /// <returns>The same <paramref name="property"/> instance.</returns>
-        public static T SetExposedReferenceAndApply<T>(this T property, Object value)
-            where T : SerializedProperty
-        {
-            return property.SetExposedReference(value).ApplyModifiedProperties();
-        }
-
-        /// <summary>
-        /// Sets <see cref="SerializedProperty.exposedReferenceValue"/> then applies modified properties without recording Undo.
-        /// </summary>
-        /// <typeparam name="T">Concrete <see cref="SerializedProperty"/> type.</typeparam>
-        /// <param name="property">Target property.</param>
-        /// <param name="value"><see cref="UnityEngine.Object"/> exposed reference to assign.</param>
-        /// <returns>The same <paramref name="property"/> instance.</returns>
-        public static T SetExposedReferenceAndApplyWithoutUndo<T>(this T property, Object value)
-            where T : SerializedProperty
-        {
-            return property.SetExposedReference(value).ApplyModifiedPropertiesWithoutUndo();
         }
         #endregion
 
