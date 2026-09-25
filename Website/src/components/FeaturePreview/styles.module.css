@@ -143,7 +143,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .names li { flex-wrap: wrap; row-gap: 4px; }
 .names li .namesLabel { flex: 1 0 auto; }
 
-/* ---------- Claude Code Plugin ---------- */
+/* ---------- Agent Skills ---------- */
 
 .pluginBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
 .session { color: var(--venom-fg); background: var(--ifm-code-background); border-bottom: 1px solid var(--venom-line-strong); font: 400 0.7rem/1.6 var(--ifm-font-family-monospace); }

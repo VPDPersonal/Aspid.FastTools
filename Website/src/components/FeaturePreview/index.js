@@ -219,7 +219,7 @@ function EnumPreview({ru}) {
   );
 }
 
-/* ---------- Claude Code Plugin: a request in the session, the skill's edit in the method ---------- */
+/* ---------- Agent Skills: a request in the session, the skill's edit in the method ---------- */
 
 // The edited method, as the skill writes it: the same idioms as the ProfilerMarkers card. The neighbour search keeps its
 // old indent until the edit lands, then shifts under its new `using`.
@@ -242,7 +242,7 @@ function PluginPreview({ru}) {
   return (
     <div ref={ref} className={styles.pluginBody}>
       <div className={styles.session} aria-hidden="true">
-        <div className={styles.sessionBar}><span>Claude Code</span><span>FlockSimulation.cs</span></div>
+        <div className={styles.sessionBar}><span>Agent</span><span>FlockSimulation.cs</span></div>
         <div className={styles.sessionLog}>
           <div className={styles.prompt}>
             <span className={styles.promptSign}>&gt;</span>
@@ -289,7 +289,7 @@ const PREVIEWS = {
   'visual-element-extensions': UiPreview,
   'serialized-property-extensions': PropertyPreview,
   'editor-helpers': NamesPreview,
-  'claude-code-plugin': PluginPreview,
+  'agent-skills': PluginPreview,
 };
 
 /** An animated preview for a docs introduction feature card; features without one keep their README capture (`children`). */

@@ -1,43 +1,39 @@
-# Claude Code Plugin
+# Agent Skills
 
-`aspid-fasttools` adds skills to [Claude Code](https://docs.claude.com/en/docs/claude-code) for profiling methods and building UI with the package’s fluent `VisualElement` extensions.
+A coding agent does not know the Aspid.FastTools API, so it writes a manual `ProfilerMarker`, a run of `style` assignments or an enum `switch` where the package has a shorter answer. The package skills teach it that API: one command installs them into Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI and other agents, and the agent uses `this.Marker()`, the fluent `VisualElement` extensions, `SerializableType` and `EnumValues` where they fit.
 
 ## Quick start
 
-[Install Aspid.FastTools](README.md#installation) in your Unity project and open the project in Claude Code. Add the marketplace, then install the plugin in the Claude Code session:
+[Install Aspid.FastTools](README.md#installation) in your Unity project, then run in the project root:
 
-```text
-/plugin marketplace add VPDPersonal/Aspid.Claude.Plugins
+```bash
+npx skills add VPDPersonal/Aspid.FastTools
 ```
 
-```text
-/plugin install aspid-fasttools@aspid-claude-plugins
-```
+The skills land in the agents' folders inside the project, such as `.claude/skills` or `.agents/skills`. Commit those folders and the whole team gets the skills. `-y` installs without prompts, `-a claude-code` limits the install to one agent, `-s <skill>` to one skill, and `--list` shows the skills without installing them.
 
-The plugin is installed separately from the Unity package. Open `/plugin` to check that `aspid-fasttools` is installed.
+To pull newer versions of the skills later:
+
+```bash
+npx skills update
+```
 
 ## Skills
 
-Skills activate automatically for matching requests. These two cover features documented in this package:
+Skills activate automatically for matching requests:
 
 | Skill | Task | API guide |
 |---|---|---|
-| `aspid-profiler-marker` | Add method and block scopes with `this.Marker()` | [ProfilerMarkers](05-profiler-markers.md) |
+| `aspid-profiler-marker` | Profile a method or a section with `this.Marker()` | [ProfilerMarkers](05-profiler-markers.md) |
 | `aspid-visual-element-fluent` | Build and style UI Toolkit elements in C# | [VisualElement Extensions](07-visual-element-extensions.md) |
+| `aspid-serializable-type` | Store a `System.Type` and pick types in the Inspector | [Serializable Type System](02-serializable-types.md), [SerializeReference Selector](03-serialize-reference-selector.md), [ComponentTypeSelector](11-component-type-selector.md) |
+| `aspid-enum-values` | Map enum members to values | [EnumValues](06-enum-values.md) |
 
 For example, select a method and ask:
 
 ```text
 Add a marker for the entire Simulate method and a separate
 named marker for the neighbour search.
-Use this.Marker() from Aspid.FastTools.
 ```
 
 Check compilation and inspect the markers in Unity Profiler after applying the changes.
-
-## Compatibility
-
-> [!IMPORTANT]
-> The plugin is in alpha. Its [documentation](https://github.com/VPDPersonal/Aspid.Claude.Plugins/blob/main/plugins/aspid-fasttools/README.md) targets the earlier `com.aspid.fasttools` package; these guides describe `tech.aspid.fasttools`. Check suggested code against the installed package’s API.
-
-The plugin also includes `aspid-id-struct` for the earlier package’s `IId` and `[UniqueId]` APIs, which are outside this documentation. The plugin is released independently; see [releases and updates](https://github.com/VPDPersonal/Aspid.Claude.Plugins/releases).
