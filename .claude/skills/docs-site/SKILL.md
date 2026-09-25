@@ -65,8 +65,9 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 - **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
   on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`).
 - **Highlighted inline code**: `<code lang="csharp">void Run&lt;T&gt;()</code>` is plain inline code on GitHub and is
-  highlighted on the site (`introBanner.js` → `src/components/InlineCode`). Use it only for C# in a table column of
-  declarations or calls — never for paths or flags — and escape `<`, `>`, `{`, `}` as in `<pre>` cells.
+  highlighted on the site (`introBanner.js` → `src/components/InlineCode`). Use it for every inline C# snippet, in prose
+  and in tables — never for paths, flags, diagnostic IDs (`AFT0010`) or Profiler column names (`Calls`) — and escape
+  `<`, `>`, `{`, `}` as in `<pre>` cells.
   `<code lang="string">`, `<code lang="class-name">` and `<code lang="function">` paint the whole text in that token's
   colour: Profiler marker names in a result column, a lone type (`T`; in `System.Type` only `Type`), a bare method
   name (`Update`).
@@ -108,7 +109,8 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 
 ## Writing a feature page (docs/)
 
-Rules the user confirmed while reworking `08-serialized-property-extensions.md` and `09-editor-helpers.md`; apply them
+Rules the user confirmed while reworking `05-profiler-markers.md`, `07-visual-element-extensions.md`,
+`08-serialized-property-extensions.md` and `09-editor-helpers.md`; apply them
 to every main doc page, always to the English file and its `ru/` twin together.
 
 - **Lead = one short sentence that makes the reader interested**, not an explanation. No API names, code,
@@ -120,21 +122,37 @@ to every main doc page, always to the English file and its `ru/` twin together.
 - **One concrete example type per page**, reused by every section; extend that type rather than inventing a second
   one. Do not announce it with a sentence ("The examples on this page work with…") — the before/after table
   already shows it, and the link to the sample lives only in the closing `## Package sample`.
+- **Quick start is the before/after table**, plus at most one sentence on what the calls return. No `using` line, no
+  type declaration, no "in your custom `Editor`, add…". A declaration the results cannot be read without goes into the
+  section that needs it (SerializedProperty Extensions: `AbilityBook` sits above the reflection table).
+- **A plain rename is a two-column `Unity | FastTools` table of inline code** (`AddToClassList` → `AddClass`). Keep
+  `<pre>` before/after cells for calls where FastTools removes code (`AddChildIf`, a hex colour, `TryGetByEnum`).
 - **Verify every claim against the source** (`Editor/Scripts/...`) before writing it; drop anything the code does
   not back (e.g. the "inherited attribute" note was removed from `GetDisplayName`).
 - **Results go in tables**: property × method result tables and Unity-API-vs-FastTools before/after tables replace
   runs of small code blocks. Long method lists (setters) become a grouped table, not a comma list.
 - **Say each fact once.** No repeat between a table's cell comments and the paragraph under it, and no repeat
   between quick start and a later section (`AndApply` is explained once).
-- **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`"),
-  and do not list what is *not* required ("no attributes or `partial`") — a requirement would be stated.
-  Never stack two admonitions. A pitfall that silently loses data gets a `> [!WARNING]` (boxed struct copy).
+- **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`",
+  no Assembly Definition reference note), do not list what is *not* required ("no attributes or `partial`") — a
+  requirement would be stated — and do not state expected behaviour ("keeps the order", "finds private fields too",
+  "call it again — the string does not update", "timings are illustrative").
+- **Unity's own behaviour stays out**, even when it explains a FastTools detail: version limits of Unity types
+  ("Unity 6.2+"), Unity applying a write with Undo itself, how long an inspector's `SerializedObject` lives, ordinary
+  `SerializedObject` patterns (several writes before one apply).
+- **Admonitions:** `> [!NOTE]` for a non-obvious mismatch that loses nothing (`HasFoldout()` vs the Inspector);
+  `> [!WARNING]` only when data or measurements are lost silently (boxed struct copy, `partial` calls on one line).
+  A mistake an analyzer reports is a plain bullet with its ID (`AFT0010`, `AFT0011`), not a warning. Never stack two.
+- **Headings and labels name what the reader gets**: «Поле C# за свойством», not «Тип поля и объект-владелец»; a table
+  row names the value type («Идентификаторы объектов»), never a constraint («Unity 6.2 и новее»).
 - **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
   link to the sample README and, when the sample's `demo.gif` shows this page's feature, that gif with the caption
   paragraph — no "how to open" steps or experiments, those live on the sample's own page. Footage of a sample
   several pages share (EditorTools) stays on the sample's page unless it shows what the text cannot (it does
   for VisualElement Extensions, not for SerializedProperty Extensions or Editor Helpers). The sentence must match what the
-  sample code really does — check the sample scripts, and fix its README (en + ru) when it disagrees.
+  sample code really does — check the sample scripts, and fix its README (en + ru) when it disagrees; never promise
+  more than the scene has («Все маркеры с этой страницы…» was wrong). A caption must be about this page's feature —
+  otherwise drop it and keep a neutral alt text (the shared EditorTools gif on VisualElement Extensions).
 - **The Introduction (`Documentation/README.md`) is the ideal** for tone, density and visuals; ProfilerMarkers and
   Editor Helpers were reworked from it. Only FastTools-specific behaviour: never explain Unity or UI Toolkit.
 - **Check Unity's behaviour by decompiling, not from memory**:
@@ -192,8 +210,7 @@ Website/scripts/serve-all.sh --stop
   script is building (they share `.docusaurus/`, `build/` and `i18n/`).
 - A session in another git worktree that runs the script replaces the shared build with its own checkout, without
   your uncommitted edits. If a page suddenly shows old content, check where the server runs
-  (`lsof -a -p $(lsof -tiTCP:3001 -sTCP:LISTEN) -d cwd`) and rebuild from your checkout. Sessions in a worktree
-  check pages on a dev server (3100/3101), not on 3001.
+  (`lsof -a -p $(lsof -tiTCP:3001 -sTCP:LISTEN) -d cwd`) and rebuild from your checkout.
 - Open the page with a fresh query (`?v=N`) after a rebuild: the browser otherwise shows the cached version.
 
 Dev servers serve one locale at a time and are only for quick hot-reload iteration on a single page — they
@@ -291,6 +308,10 @@ below 997px the navigation uses Docusaurus' mobile menu. On desktop (≥997px) t
 `src/theme/DocSidebar/Desktop` wraps the sidebar into a full-height panel: pinned header (brand, section
 switcher built from the navbar's left items, search), scrolling document list, pinned footer (GitHub,
 language, theme).
+
+Admonitions are outline-only: a coloured border and heading on the article surface, inline code in the neutral chip.
+`src/components/BackgroundWindows` cuts windows into the reading surface only for framed images
+(`.doc-background-window`); `DotRipple` draws the click ripple in the accent colour everywhere.
 
 `src/plugins/search` builds a locale-specific index from Docusaurus' resolved document sources and permalinks.
 `src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow
