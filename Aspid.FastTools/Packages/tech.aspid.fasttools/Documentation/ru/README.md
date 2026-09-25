@@ -1,33 +1,123 @@
 <img src="https://raw.githubusercontent.com/VPDPersonal/Aspid.FastTools/main/docs/images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
-# Введение
+![Unity 6.0+](../Images/status-badge-unity.svg)
+[![Preview 1.0.0-rc.8](../Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
+[![MIT License](../Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-**Aspid.FastTools** — набор инструментов для Unity, избавляющий от рутинного бойлерплейта. Внутри — удобная работа с `SerializeReference` (выбор типа в инспекторе и окно аудита ссылок по всему проекту), Roslyn-генераторы и анализаторы, а также runtime- и editor-утилиты: от сериализуемого `System.Type` до fluent-расширений UI Toolkit.
+Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации и редакторского кода. Ссылки на типы и `[SerializeReference]` переживают переименование классов, а сломанные восстанавливаются без потери данных. Класс для поля `SerializeReference` и таблицы enum → значение настраиваются прямо в инспекторе. Маркеры профилировщика, деревья UI Toolkit и запись в `SerializedProperty` занимают одну строку или цепочку вместо шаблонного кода.
 
-[Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
+[Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
-## Начало работы
+## Установка
 
-[Установка](01-getting-started.md) — UPM git URL, `.unitypackage`, Asset Store и примеры, поставляемые с пакетом.
+В **Window → Package Manager** выберите **+ → Install package from git URL…** и вставьте:
+
+```text
+https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview
+```
+
+URL указывает на последнюю preview-версию; кнопка **Update** в Package Manager подтянет следующую. Чтобы закрепить версию, добавьте её тег со страницы [релизов](https://github.com/VPDPersonal/Aspid.FastTools/releases): `https://github.com/VPDPersonal/Aspid.FastTools.git#upm-preview/<версия>`.
 
 ## Возможности
 
-| Возможность | Что даёт |
-|---|---|
-| [Serializable Type System](02-serializable-types.md) | `System.Type` как сериализуемое поле, `[TypeSelector]`, окно выбора типа с поиском, `ComponentTypeSelector` |
-| [SerializeReference Selector](03-serialize-reference-selector.md) | Выпадающий выбор типа для полей `[SerializeReference]`, вложенные инспекторы, generics, точечная починка битых ссылок |
-| [SerializeReference Tooling](04-serialize-reference-tooling.md) | Аудит и массовая починка по всему проекту, настройки проекта, build/CI-гейт |
-| [ProfilerMarkers](05-profiler-markers.md) | Source-generated `ProfilerMarker`, уникальные для каждого места вызова, через `this.Marker()` |
-| [EnumValues](06-enum-values.md) | Сериализуемые отображения enum → значение с поддержкой `[Flags]`, без boxing |
-| [VisualElement Extensions](07-visual-element-extensions.md) | Fluent-построение UI Toolkit-деревьев в коде |
-| [SerializedProperty Extensions](08-serialized-property-extensions.md) | Типизированные сеттеры с fluent-цепочками и рефлексионные хелперы |
-| [Editor Helpers](09-editor-helpers.md) | Отображаемые имена скриптов для кастомных редакторов |
-| [Claude Code Plugin](10-claude-code-plugin.md) | Скиллы, обучающие Claude Code этому пакету |
+### Сериализация
 
-## Поддержать проект
+#### [Serializable Type System](02-serializable-types.md)
 
-Этот проект разрабатывается на добровольной основе. Если он оказался для вас полезным, поддержать его развитие можно покупкой пакета в [Unity Asset Store](https://assetstore.unity.com/packages/slug/365584) — это помогает уделять больше времени улучшению и сопровождению **Aspid.FastTools**.
+Хранение и выбор `System.Type` в инспекторе.
 
-## Лицензия
+<img src="../Images/serializable-type-quick-start.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
 
-**Aspid.FastTools** распространяется по [лицензии MIT](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE). История релизов — в [CHANGELOG](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.ru.md).
+#### [ComponentTypeSelector](11-component-type-selector.md)
+
+Смена типа существующего компонента с сохранением общих полей.
+
+<img src="../Images/component-type-selector.gif" alt="Смена типа компонента в инспекторе" width="640" />
+
+#### [SerializeReference Selector](03-serialize-reference-selector.md)
+
+Выбор класса для поля `SerializeReference` прямо в инспекторе.
+
+<img src="../Images/aspid_fasttools_serialize_reference_selector.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
+
+#### [SerializeReference Tooling](04-serialize-reference-tooling.md)
+
+Аудит и восстановление ссылок по всему проекту, в том числе перед сборкой и в CI.
+
+<img src="../Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Восстановление потерянного типа оружия с сохранением данных" width="640" />
+
+#### [EnumValues](06-enum-values.md)
+
+Редактирование таблиц enum → значение в инспекторе, включая флаги.
+
+<img src="../../Samples~/EnumValues/Documentation/Images/surface-tables.png" alt="Редактирование enum-ключей и значений в инспекторе" width="640" />
+
+### Редактор и инструменты
+
+#### [ProfilerMarkers](05-profiler-markers.md)
+
+Уникальный маркер профилирования для каждого места вызова через `this.Marker()`.
+
+```csharp
+using (this.Marker())
+{
+    Simulate();
+}
+```
+
+#### [VisualElement Extensions](07-visual-element-extensions.md)
+
+Построение деревьев UI Toolkit fluent-цепочками.
+
+```csharp
+new VisualElement()
+  .SetPaddingX(12)
+  .AddChild(
+    new Label("Ability Config"));
+```
+
+#### [SerializedProperty Extensions](08-serialized-property-extensions.md)
+
+Запись значений, изменение размера массивов, получение типа поля и объекта-владельца.
+
+```csharp
+manaCost
+  .Update()
+  .SetIntAndApply(42);
+```
+
+#### [Editor Helpers](09-editor-helpers.md)
+
+Читаемые подписи объектов и компонентов для редакторских инструментов.
+
+```csharp
+config.GetDisplayName();
+// "Ability Config"
+
+config
+  .GetDisplayNameWithIndex();
+// "Ability Config (2)"
+```
+
+#### [Claude Code Plugin](10-claude-code-plugin.md)
+
+Скиллы Claude Code для `this.Marker()` и fluent-расширений `VisualElement`.
+
+```text
+Добавь маркер на весь метод Simulate
+и отдельный на поиск соседей.
+```
+
+## Ресурсы
+
+- [Обзор примеров](../../Samples~/README.ru.md) — сцены и инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
+- [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors) — сигнатуры и описания всех публичных типов и членов.
+- [Журнал изменений](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.ru.md)
+
+## Помощь и поддержка
+
+Сообщайте об ошибках и задавайте вопросы в [GitHub Issues](https://github.com/VPDPersonal/Aspid.FastTools/issues). Для ошибки укажите версию Unity, версию пакета и шаги воспроизведения.
+
+Если пакет пригодился, поставьте ему звезду на [GitHub](https://github.com/VPDPersonal/Aspid.FastTools).
+
+Распространяется по [лицензии MIT](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE).

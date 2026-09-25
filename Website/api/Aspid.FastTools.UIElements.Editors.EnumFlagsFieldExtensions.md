@@ -56,11 +56,11 @@ When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/built
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`EnumFlagsField`](https://docs.unity3d.com/ScriptReference/UIElements-EnumFlagsField.html) element to configure.
 

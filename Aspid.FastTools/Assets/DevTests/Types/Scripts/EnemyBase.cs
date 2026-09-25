@@ -8,12 +8,12 @@ namespace Aspid.FastTools.DevTests.Types
     // EnemyBaseEditor (editorForChildClasses: true) forces IMGUI for this class and every subtype,
     // so the subtype dropdown renders through ComponentTypeSelectorPropertyDrawer.OnGUI. Selecting a
     // subtype rewrites m_Script in place — fields with matching names (_health) persist across the swap.
-    public abstract class EnemyBase : MonoBehaviour
+    public abstract class EnemyBase : MonoBehaviour, IEnemy
     {
         [SerializeField] private ComponentTypeSelector _enemyType;
 
         [SerializeField] [Min(0)] private float _health = 100f;
 
-        protected float Health => _health;
+        public float Health => _health;
     }
 }

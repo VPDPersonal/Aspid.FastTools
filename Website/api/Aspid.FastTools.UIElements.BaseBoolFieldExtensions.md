@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`BaseBoolField`](https://docs.unity3d.com/ScriptReference/UIElements-BaseBoolField.html).
+
 ```csharp
 public static class BaseBoolFieldExtensions
 ```
@@ -29,7 +31,7 @@ public static class BaseBoolFieldExtensions
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseBoolFieldExtensions_SetLabel__1___0_System_String_}
 
-Sets the [`label`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField-label.html) property and returns the element for chaining.
+Sets [`label`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField-label.html).
 
 ```csharp
 public static T SetLabel<T>(this T element, string value) where T : BaseBoolField
@@ -55,9 +57,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetText\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseBoolFieldExtensions_SetText__1___0_System_String_}
 
-Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-BaseBoolField-text.html) and returns the element for chaining.
+Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-BaseBoolField-text.html).
 
 ```csharp
 public static T SetText<T>(this T element, string value) where T : BaseBoolField
@@ -83,13 +87,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Optional text that appears after the BaseBoolField.
+The element type.
 
 ### SetToggleOnLabelClick\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseBoolFieldExtensions_SetToggleOnLabelClick__1___0_System_Boolean_}
 
-Sets [`toggleOnLabelClick`](https://docs.unity3d.com/ScriptReference/UIElements-BaseBoolField-toggleOnLabelClick.html) and returns the element for chaining.
+Sets [`toggleOnLabelClick`](https://docs.unity3d.com/ScriptReference/UIElements-BaseBoolField-toggleOnLabelClick.html).
 
 ```csharp
 public static T SetToggleOnLabelClick<T>(this T element, bool value) where T : BaseBoolField
@@ -103,7 +105,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether clicking the label activates the toggle.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, clicking the label toggles the value.
 
 #### Returns
 
@@ -115,7 +117,5 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Whether to activate the toggle when the user clicks the label.
+The element type.
 

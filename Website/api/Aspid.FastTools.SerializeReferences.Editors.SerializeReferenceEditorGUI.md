@@ -11,8 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.SerializeReferences.Editors](Aspid.FastTools.SerializeReferences.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Provides utility methods for drawing <code>[SerializeReference]</code> properties with the package's type-dropdown
-UI from a custom editor's own code, with no <code>[TypeSelector]</code> attribute.
+Provides utility methods for drawing managed-reference type pickers in custom inspectors.
 
 ```csharp
 public static class SerializeReferenceEditorGUI
@@ -28,32 +27,16 @@ public static class SerializeReferenceEditorGUI
 
 [ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
 
-## Examples
-
-
-```csharp
-public override VisualElement CreateInspectorGUI()
-{
-    var root = new VisualElement();
-    root.Add(SerializeReferenceEditorGUI.CreateField(serializedObject.FindProperty("_weapon")));
-    root.Add(SerializeReferenceEditorGUI.CreateList(serializedObject.FindProperty("_modifiers")));
-    return root;
-}
-```
-
-
 ## Remarks
 
-Call [`SerializeReferenceEditorGUI.CreateField`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) and [`SerializeReferenceEditorGUI.CreateList`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) from <code>CreateInspectorGUI</code>, and
-[`SerializeReferenceEditorGUI.DrawFieldLayout`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) from an IMGUI <code>OnInspectorGUI</code>; IMGUI lists go through
-[`SerializeReferenceIMGUIList.Draw`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList.md).
+Use [`SerializeReferenceEditorGUI.CreateField`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) and [`SerializeReferenceEditorGUI.CreateList`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) in [`CreateInspectorGUI`](https://docs.unity3d.com/ScriptReference/Editor-CreateInspectorGUI.html),
+and [`SerializeReferenceEditorGUI.DrawFieldLayout`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md) in [`OnInspectorGUI`](https://docs.unity3d.com/ScriptReference/Editor-OnInspectorGUI.html).
 
 ## Methods
 
 ### CreateField\(SerializedProperty, string, params Type\[\]\) {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceEditorGUI_CreateField_UnityEditor_SerializedProperty_System_String_System_Type___}
 
-Builds the dropdown field for one <code>[SerializeReference]</code> property: a foldout whose header carries the
-type dropdown and whose content hosts the instance's fields, with the package's usual notices.
+Creates a UI Toolkit type picker with nested fields and managed-reference notices.
 
 ```csharp
 public static VisualElement CreateField(SerializedProperty property, string label = null, params Type[] baseTypes)
@@ -67,11 +50,11 @@ A managed-reference property of the editor's [`SerializedObject`](https://docs.u
 
 `label` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-Field label; the property's display name when omitted.
+<code class="paramref">property</code> label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> uses its display name.
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Base types narrowing the picker below the field's declared type.
+Extra base types every candidate must be assignable to besides the field type; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
 
 #### Returns
 
@@ -83,16 +66,15 @@ The field to add to the inspector's visual tree.
 
  [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
 
-Thrown when <code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
  [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
 
-Thrown when the property is not a managed reference.
+<code class="paramref">property</code> is not a managed reference.
 
 ### CreateList\(SerializedProperty, string, params Type\[\]\) {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceEditorGUI_CreateList_UnityEditor_SerializedProperty_System_String_System_Type___}
 
-Builds the list for a <code>[SerializeReference]</code> array: every element renders as the dropdown field and
-the "+" opens the type picker, appending a fresh instance instead of a rid-aliased duplicate.
+Creates a UI Toolkit managed-reference list whose add button selects a type and appends an independent instance.
 
 ```csharp
 public static VisualElement CreateList(SerializedProperty property, string label = null, params Type[] baseTypes)
@@ -106,11 +88,11 @@ An array/list property whose elements are managed references.
 
 `label` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-Header label; the property's display name when omitted.
+<code class="paramref">property</code> header label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> uses its display name.
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Base types narrowing the picker below the declared element type.
+Extra base types every element type must be assignable to besides the declared one; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
 
 #### Returns
 
@@ -122,15 +104,15 @@ The list to add to the inspector's visual tree.
 
  [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
 
-Thrown when <code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
  [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
 
-Thrown when the property is not a managed-reference array.
+<code class="paramref">property</code> is not a managed-reference array.
 
 ### DrawFieldLayout\(SerializedProperty, GUIContent, params Type\[\]\) {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceEditorGUI_DrawFieldLayout_UnityEditor_SerializedProperty_UnityEngine_GUIContent_System_Type___}
 
-Reserves a layout rect and draws into it the same dropdown field as [`SerializeReferenceEditorGUI.CreateField`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md).
+Draws a managed-reference type picker and its nested fields in an IMGUI layout.
 
 ```csharp
 public static void DrawFieldLayout(SerializedProperty property, GUIContent label = null, params Type[] baseTypes)
@@ -144,11 +126,11 @@ A managed-reference property of the editor's [`SerializedObject`](https://docs.u
 
 `label` GUIContent
 
-Field label; the property's display name when omitted.
+<code class="paramref">property</code> label; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> uses its display name.
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Base types narrowing the picker below the field's declared type.
+Extra base types every candidate must be assignable to besides the field type; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
 
 #### Remarks
 
@@ -158,9 +140,9 @@ Lists use [`SerializeReferenceIMGUIList.Draw`](Aspid.FastTools.SerializeReferenc
 
  [ArgumentNullException](https://learn.microsoft.com/dotnet/api/system.argumentnullexception)
 
-Thrown when <code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+<code class="paramref">property</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
  [ArgumentException](https://learn.microsoft.com/dotnet/api/system.argumentexception)
 
-Thrown when the property is not a managed reference.
+<code class="paramref">property</code> is not a managed reference.
 

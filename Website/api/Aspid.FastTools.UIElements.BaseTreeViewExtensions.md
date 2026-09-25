@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`BaseTreeView`](https://docs.unity3d.com/ScriptReference/UIElements-BaseTreeView.html).
+
 ```csharp
 public static class BaseTreeViewExtensions
 ```
@@ -55,6 +57,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveItemExpandedChanged\<T\>\(T, Action\<TreeViewExpansionChangedArgs\>\) {#Aspid_FastTools_UIElements_BaseTreeViewExtensions_RemoveItemExpandedChanged__1___0_System_Action_UnityEngine_UIElements_TreeViewExpansionChangedArgs__}
 
 Unsubscribes from the [`itemExpandedChanged`](https://docs.unity3d.com/ScriptReference/UIElements-BaseTreeView-itemExpandedChanged.html) event.
@@ -83,9 +87,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetAutoExpand\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseTreeViewExtensions_SetAutoExpand__1___0_System_Boolean_}
 
-Sets the [`autoExpand`](https://docs.unity3d.com/ScriptReference/UIElements-BaseTreeView-autoExpand.html) property and returns the element for chaining.
+Sets [`autoExpand`](https://docs.unity3d.com/ScriptReference/UIElements-BaseTreeView-autoExpand.html).
 
 ```csharp
 public static T SetAutoExpand<T>(this T element, bool value) where T : BaseTreeView
@@ -99,7 +105,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to auto-expand tree items.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, items are expanded automatically.
 
 #### Returns
 
@@ -110,4 +116,6 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 

@@ -1,0 +1,18 @@
+var w=(UnityEditor.EditorWindow)UnityEditor.EditorUtility.InstanceIDToObject(-67900);
+UnityEngine.UIElements.VisualElement Find(UnityEngine.UIElements.VisualElement e) {
+ if(e.GetType().Name=="SerializeReferenceField") {
+  var prop=(UnityEditor.SerializedProperty)e.GetType().GetField("_property",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).GetValue(e);
+  if(prop.propertyPath=="_primary") return e;
+ }
+ foreach(var child in e.Children()) { var match=Find(child);if(match!=null)return match; }
+ return null;
+}
+var field=Find(w.rootVisualElement);
+var evt=UnityEngine.UIElements.PointerDownEvent.GetPooled(new UnityEngine.Event{type=UnityEngine.EventType.MouseDown,button=0});
+field.GetType().GetMethod("OnDropdownClicked",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(field,new object[]{evt});evt.Dispose();
+var popup=UnityEngine.Resources.FindObjectsOfTypeAll<Aspid.FastTools.Types.Editors.TypeSelectorWindow>().Last();
+var view=popup.rootVisualElement[0];view.RemoveFromHierarchy();
+view.GetType().GetField("_onDismiss",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).SetValue(view,(System.Action)(()=>view.RemoveFromHierarchy()));
+popup.Close();
+view.style.position=UnityEngine.UIElements.Position.Absolute;view.style.left=138;view.style.top=213;view.style.width=402;view.style.height=150;view.style.backgroundColor=new UnityEngine.Color(.18f,.18f,.18f);
+w.rootVisualElement.Add(view);w.Focus();return field.GetType().FullName;

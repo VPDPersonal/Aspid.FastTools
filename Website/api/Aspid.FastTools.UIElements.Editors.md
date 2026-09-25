@@ -16,7 +16,7 @@ Provides extension methods for [`EnumFlagsField`](https://docs.unity3d.com/Scrip
 
  [IBindableExtensions](Aspid.FastTools.UIElements.Editors.IBindableExtensions.md)
 
-Provides binding extension methods for [`IBindable`](https://docs.unity3d.com/ScriptReference/UIElements-IBindable.html) elements.
+Provides extension methods for binding [`IBindable`](https://docs.unity3d.com/ScriptReference/UIElements-IBindable.html) elements.
 
  [PropertyFieldExtensions](Aspid.FastTools.UIElements.Editors.PropertyFieldExtensions.md)
 

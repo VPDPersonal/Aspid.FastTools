@@ -16,5 +16,9 @@ namespace Aspid.FastTools.DevTests.Enums
         [SerializeField] private EnumValues<EnumValuesIMGUITest.Element, EnumValuesIMGUITest.Profile> _typedFoldout;
 
         [SerializeField] private EnumValues<EnumValuesIMGUITest.Modifier, float> _typedFlags;
+
+        [SerializeField] private EnumValues<EnumValuesIMGUITest.Element, AudioClip> _typedObjectValues;
+
+        [SerializeField] private EnumValues<EnumValuesIMGUITest.Element, Color>[] _typedArray;
     }
 }

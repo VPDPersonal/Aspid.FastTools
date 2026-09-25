@@ -1,648 +1,180 @@
 # VisualElement Extensions
 
-Fluent-методы расширения для построения UIToolkit-деревьев в коде. Все методы возвращают `T` (сам элемент) для цепочки вызовов.
+В UI Toolkit каждое свойство элемента — отдельная инструкция: четыре строки на отступы, переменная на каждый дочерний элемент и `Add` в конце. FastTools превращает свойства, стили и события в методы, которые возвращают сам элемент, поэтому заголовок инспектора собирается одним выражением, а `SetPaddingX(12)` заменяет пару `style.paddingLeft` и `style.paddingRight`.
+
+## Быстрый старт
+
+Примеры на этой странице собирают инспектор ассета `AbilityConfig` из [примера EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md). Добавьте `using Aspid.FastTools.UIElements;`:
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>var title = new Label("Ability Config");&#10;title.style.fontSize = 14;&#10;&#10;var header = new VisualElement();&#10;header.style.paddingLeft = 12;&#10;header.style.paddingRight = 12;&#10;header.style.paddingTop = 10;&#10;header.style.paddingBottom = 10;&#10;header.Add(title);</code></pre> | <pre lang="csharp"><code>var header = new VisualElement()&#10;    .SetPaddingX(12)&#10;    .SetPaddingY(10)&#10;    .AddChild(new Label("Ability Config")&#10;        .SetFontSize(14));</code></pre> |
+
+Сеттер возвращает тот же тип: `new Button().SetText("Create")` — это `Button`. `AddChild` и другие операции с дочерними элементами возвращают родителя. Методы на `style`, `textEdition` и `textSelection` возвращают этот объект, а не элемент.
+
+## Имена методов
+
+Имена методов строятся по одному правилу:
+
+| Unity | FastTools | Примеры |
+|---|---|---|
+| свойство `x` | `SetX(value)` | `tooltip` → `SetTooltip` |
+| свойство `isX` | `SetX(value)`, без `is` | `isDelayed` → `SetDelayed` |
+| свойство стиля `style.x` | `SetX(value)` на элементе и на `style` | `style.fontSize` → `SetFontSize` |
+| событие `x` | `AddX` / `RemoveX` | `clicked` → `AddClicked` |
+| свойство-делегат `x` | `SetX`; у `Action` ещё `AddX` / `RemoveX` | `bindItem` → `SetBindItem`, `AddBindItem` |
+| метод `M()` | `MSelf()` | `Focus()` → `FocusSelf()` |
+
+Правило покрывает свойства и события всех элементов — от `VisualElement` до `MultiColumnTreeView`; полный список — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements). Исключения:
+
+- `EnumField` и `EnumFlagsField` (в редакторе) получают `Initialize` вместо `Init`;
+- `Button.SetClickable` принимает и `Clickable`, и `Action`;
+- `IMGUIContainer.MarkDirtyLayout` сохраняет своё имя.
+
+`IsFocused()` проверяет фокус:
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>bool focused = search.focusController?&#10;    .focusedElement == search;</code></pre> | <pre lang="csharp"><code>bool focused = search.IsFocused();</code></pre> |
+
+## Дочерние элементы
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>header.Add(title);</code></pre> | <pre lang="csharp"><code>header.AddChild(title);</code></pre> |
+| <pre lang="csharp"><code>header.Add(title);&#10;header.Add(badge);</code></pre> | <pre lang="csharp"><code>header.AddChildren(title, badge);</code></pre> |
+| <pre lang="csharp"><code>header.Insert(0, badge);</code></pre> | <pre lang="csharp"><code>header.InsertChild(0, badge);</code></pre> |
+| <pre lang="csharp"><code>header.Insert(0, title);&#10;header.Insert(1, badge);</code></pre> | <pre lang="csharp"><code>header.InsertChildren(0, title, badge);</code></pre> |
+| <pre lang="csharp"><code>header.Remove(badge);</code></pre> | <pre lang="csharp"><code>header.RemoveChild(badge);</code></pre> |
+| <pre lang="csharp"><code>header.RemoveAt(0);</code></pre> | <pre lang="csharp"><code>header.RemoveChildAt(0);</code></pre> |
+| <pre lang="csharp"><code>header.Clear();</code></pre> | <pre lang="csharp"><code>header.ClearChildren();</code></pre> |
+| <pre lang="csharp"><code>if (isFree)&#10;    body.Add(helpBox);</code></pre> | <pre lang="csharp"><code>body.AddChildIf(isFree, helpBox);</code></pre> |
+
+У каждого метода есть вариант `…If(condition, …)`. `AddChildren` и `InsertChildren` принимают `params`, `IEnumerable`, `List`, `Span` или `ReadOnlySpan`, сохраняют порядок элементов и пропускают `null`-коллекцию.
+
+## Стили
+
+Одно значение задаёт все стороны, `X` — левую и правую, `Y` — верхнюю и нижнюю. Пропущенные именованные параметры оставляют прежнее значение:
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>header.style.paddingLeft = 12;&#10;header.style.paddingRight = 12;&#10;header.style.borderBottomWidth = 1;</code></pre> | <pre lang="csharp"><code>header&#10;    .SetPaddingX(12)&#10;    .SetBorderWidth(bottom: 1);</code></pre> |
+
+| Метод | Задаёт | Варианты |
+|---|---|---|
+| `SetMargin`, `SetPadding` | `margin…`, `padding…` | `X`, `Y`, `Top`, `Right`, `Bottom`, `Left` |
+| `SetBorderWidth`, `SetBorderColor` | `border…Width`, `border…Color` | `X`, `Y`, `Top`, `Right`, `Bottom`, `Left` |
+| `SetUnitySlice` | `unitySlice…` | `X`, `Y`, `Top`, `Right`, `Bottom`, `Left` |
+| `SetDistance` | `top`, `right`, `bottom`, `left` | `X`, `Y`; одна сторона: `SetTop`, `SetRight`, `SetBottom`, `SetLeft` |
+| `SetBorderRadius` | `border…Radius` | `Top`, `Bottom`, `Left`, `Right`, `TopLeft`, `TopRight`, `BottomRight`, `BottomLeft` |
+| `SetSize`, `SetMinSize`, `SetMaxSize` | `width` и `height`, `min…`, `max…` | одно значение, два или одно именованное |
+| `SetBackgroundPosition` | `backgroundPositionX`, `backgroundPositionY` | `X`, `Y` |
+
+Сеттеры цвета принимают и строку hex, а сеттеры ассетов — путь в `Resources`:
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>if (ColorUtility.TryParseHtmlString(&#10;        "#FFC24D", out var color))&#10;    badge.style.color = color;</code></pre> | <pre lang="csharp"><code>badge.SetColor("#FFC24D");</code></pre> |
+| <pre lang="csharp"><code>root.style.backgroundImage = Resources&#10;    .Load&lt;Texture2D&gt;("UI/Card");</code></pre> | <pre lang="csharp"><code>root.SetBackgroundImageFromResources(&#10;    "UI/Card");</code></pre> |
+
+Если строка не разбирается как цвет или по пути нет ассета, метод пишет предупреждение в консоль и оставляет элемент без изменений. Путь в `Resources` принимают также `SetImageFromResources`, `SetSpriteFromResources`, `SetVectorImageFromResources` и `AddStyleSheetFromResources`.
+
+### Bold и italic
+
+`SetNormalUnityFontStyleAndWeight()` сбрасывает оба флага; остальные пресеты меняют один флаг и сохраняют второй:
+
+| Метод | Меняет |
+|---|---|
+| `AddBold…` | `Normal` → `Bold`, `Italic` → `BoldAndItalic` |
+| `RemoveBold…` | `Bold` → `Normal`, `BoldAndItalic` → `Italic` |
+| `AddItalic…` | `Normal` → `Italic`, `Bold` → `BoldAndItalic` |
+| `RemoveItalic…` | `Italic` → `Normal`, `BoldAndItalic` → `Bold` |
+
+Остальные значения не меняются.
+
+> [!NOTE]
+> Пресеты читают текущее значение из `style` элемента, а не итоговый стиль: начертание, заданное в USS, считается `Normal`.
+
+## USS-классы и таблицы стилей
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>badge.AddToClassList("free");</code></pre> | <pre lang="csharp"><code>badge.AddClass("free");</code></pre> |
+| <pre lang="csharp"><code>badge.RemoveFromClassList("free");</code></pre> | <pre lang="csharp"><code>badge.RemoveClass("free");</code></pre> |
+| <pre lang="csharp"><code>badge.ToggleInClassList("free");</code></pre> | <pre lang="csharp"><code>badge.ToggleClass("free");</code></pre> |
+| <pre lang="csharp"><code>badge.EnableInClassList(&#10;    "free", isFree);</code></pre> | <pre lang="csharp"><code>badge.EnableClass("free", isFree);</code></pre> |
+| <pre lang="csharp"><code>badge.ClearClassList();</code></pre> | <pre lang="csharp"><code>badge.ClearClasses();</code></pre> |
+| <pre lang="csharp"><code>root.styleSheets.Add(styleSheet);</code></pre> | <pre lang="csharp"><code>root.AddStyleSheet(styleSheet);</code></pre> |
+| <pre lang="csharp"><code>root.styleSheets.Remove(styleSheet);</code></pre> | <pre lang="csharp"><code>root.RemoveStyleSheet(styleSheet);</code></pre> |
+| <pre lang="csharp"><code>root.styleSheets.Remove(Resources&#10;    .Load&lt;StyleSheet&gt;("UI/Ability"));</code></pre> | <pre lang="csharp"><code>root.RemoveStyleSheetFromResources(&#10;    "UI/Ability");</code></pre> |
+
+## Значения и события
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>manaCost.value = 10;</code></pre> | <pre lang="csharp"><code>manaCost.SetValue(10);</code></pre> |
+| <pre lang="csharp"><code>manaCost.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>manaCost.SetValue(10, notify: false);</code></pre> |
+| <pre lang="csharp"><code>manaCost.RegisterValueChangedCallback(&#10;    OnManaCostChanged);</code></pre> | <pre lang="csharp"><code>manaCost.AddValueChanged(&#10;    OnManaCostChanged);</code></pre> |
+| <pre lang="csharp"><code>manaCost.UnregisterValueChangedCallback(&#10;    OnManaCostChanged);</code></pre> | <pre lang="csharp"><code>manaCost.RemoveValueChanged(&#10;    OnManaCostChanged);</code></pre> |
+
+Типизированные перегрузки покрывают числа, `string`, `bool`, векторы, типы Unity вроде `Color` и `Gradient`, а при установленном `com.unity.mathematics` — его векторы, матрицы и `quaternion`, поэтому `AddValueChanged(evt => …)` не требует аргументов типа. Для остальных типов — `SetValue<TField, TValue>` и `AddValueChanged<TField, TValue>`.
+
+## Манипуляторы
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>title.AddManipulator(&#10;    new Clickable(Refresh));</code></pre> | <pre lang="csharp"><code>title.AddClickable(Refresh);</code></pre> |
+| <pre lang="csharp"><code>var clickable = new Clickable(Refresh);&#10;title.AddManipulator(clickable);</code></pre> | <pre lang="csharp"><code>title.AddClickable(&#10;    Refresh, out var clickable);</code></pre> |
+| <pre lang="csharp"><code>title.AddManipulator(&#10;    new KeyboardNavigationManipulator(&#10;        OnNavigate));</code></pre> | <pre lang="csharp"><code>title.AddKeyboardNavigationManipulator(&#10;    OnNavigate);</code></pre> |
+| <pre lang="csharp"><code>title.AddManipulator(&#10;    new ContextualMenuManipulator(&#10;        BuildMenu));</code></pre> | <pre lang="csharp"><code>title.AddContextualMenuManipulator(&#10;    BuildMenu);</code></pre> |
+
+У `AddClickable` и методов `Add…Manipulator` есть перегрузка с `out`, которая сохраняет манипулятор для `RemoveManipulatorSelf`. `AddClickable` принимает и `Action<EventBase>`, и `Action` с `delay` и `interval`.
+
+## Расширения редактора
+
+Эти методы лежат в сборке `Aspid.FastTools.Editor` и работают только в редакторе. Добавьте `using Aspid.FastTools.UIElements.Editors;`:
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>title.bindingPath = "_abilityName";&#10;title.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>title.BindTo(&#10;    serializedObject, "_abilityName");</code></pre> |
+| <pre lang="csharp"><code>title.bindingPath = "_abilityName";</code></pre> | <pre lang="csharp"><code>title.SetBindingPath("_abilityName");</code></pre> |
+| <pre lang="csharp"><code>title.BindProperty(abilityName);</code></pre> | <pre lang="csharp"><code>title.BindPropertyTo(abilityName);</code></pre> |
+| <pre lang="csharp"><code>root.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);</code></pre> |
+| <pre lang="csharp"><code>root.Unbind();</code></pre> | <pre lang="csharp"><code>root.UnbindFrom();</code></pre> |
+
+У `PropertyField` есть `SetLabel` и `AddValueChanged` / `RemoveValueChanged` с `SerializedPropertyChangeEvent`:
 
 ```csharp
-using Aspid.FastTools.UIElements;         // runtime-расширения
-using Aspid.FastTools.UIElements.Editors; // editor-only расширения (например, AddOpenScriptCommand)
+var manaCost = new PropertyField(
+        serializedObject.FindProperty("_manaCost"))
+    .SetLabel("Mana cost")
+    .AddValueChanged(_ => Refresh());
 ```
 
-## Пример
+Для записи в свойство из собственного кода используйте [SerializedProperty Extensions](08-serialized-property-extensions.md).
 
-Реактивный редактор для `ScriptableObject` `AbilityConfig` — заголовок и статус-пилла в шапке и Warning `HelpBox`, который переключается в зависимости от `ManaCost`.
+### Скрипт и окно-владелец
+
+`AddOpenScriptCommand` открывает в IDE скрипт `MonoBehaviour` или `ScriptableObject` по двойному клику левой кнопкой; для других объектов ничего не добавляет:
 
 ```csharp
-[CustomEditor(typeof(AbilityConfig))]
-internal sealed class AbilityConfigEditor : Editor
-{
-    public override VisualElement CreateInspectorGUI()
-    {
-        var config = (AbilityConfig)target;
-
-        var badge = new Label()
-            .SetFontSize(10).SetUnityFontStyleAndWeight(FontStyle.Bold)
-            .SetPaddingX(10).SetPaddingY(3).SetBorderRadius(10).SetBorderWidth(1);
-
-        var helpBox = new HelpBox("This ability costs no mana — is that intentional?", HelpBoxMessageType.Warning)
-            .SetMarginTop(8).SetBorderRadius(6);
-
-        Refresh();
-        return new VisualElement()
-            .SetBorderRadius(10).SetBorderWidth(1).SetPaddingX(14).SetPaddingY(12)
-            .AddChild(new VisualElement()
-                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
-                .AddChild(new Label(target.GetScriptName()).SetFlexGrow(1).SetFontSize(15))
-                .AddChild(badge))
-            .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost")).AddValueChanged(_ => Refresh()))
-            .AddChild(helpBox);
-
-        void Refresh()
-        {
-            var isFree = config.ManaCost is 0;
-            badge.SetText(isFree ? "FREE" : $"{config.ManaCost} MP");
-            helpBox.SetDisplay(isFree ? DisplayStyle.Flex : DisplayStyle.None);
-        }
-    }
-}
+title.AddOpenScriptCommand(target);
 ```
 
-![Инспектор AbilityConfig, собранный fluent-расширениями](../Images/aspid_fasttools_visual_element.gif)
+`GetOwnerWindow()` возвращает окно, на панели которого лежит элемент; иначе — окно в фокусе, затем окно под курсором или `null`.
 
-## Core element operations
+## Собственные свойства USS
 
-```csharp
-element
-    .SetName("MyElement")
-    .SetVisible(true)
-    .SetTooltip("Текст подсказки")
-    .AddChild(new Label("Hello"))
-    .AddChildren(child1, child2, child3);
-```
+`TryGetByEnum` читает строковое свойство USS и разбирает его как enum без учёта регистра:
 
-| Метод | Описание |
-|-------|----------|
-| `SetName(string)` | Устанавливает `element.name` |
-| `SetVisible(bool)` | Устанавливает `element.visible` |
-| `SetTooltip(string)` | Устанавливает `element.tooltip` |
-| `SetUserData(object)` | Устанавливает `element.userData` |
-| `SetEnabledSelf(bool)` | Устанавливает `element.enabledSelf` |
-| `SetPickingMode(PickingMode)` | Устанавливает `element.pickingMode` |
-| `SetUsageHints(UsageHints)` | Устанавливает `element.usageHints` |
-| `SetViewDataKey(string)` | Устанавливает `element.viewDataKey` |
-| `SetLanguageDirection(LanguageDirection)` | Устанавливает `element.languageDirection` |
-| `SetDisablePlayModeTint(bool)` | Устанавливает `element.disablePlayModeTint` |
-| `SetDataSource(object)` | Устанавливает `element.dataSource` |
-| `SetDataSourceType(Type)` | Устанавливает `element.dataSourceType` |
-| `SetDataSourcePath(PropertyPath)` | Устанавливает `element.dataSourcePath` |
-| `AddChild(VisualElement)` | Добавляет дочерний элемент, возвращает родителя |
-| `AddChildren(params VisualElement[])` | Добавляет несколько дочерних элементов |
-| `AddChildren(IEnumerable<VisualElement>)` | Добавляет из последовательности |
-| `AddChildren(List<VisualElement>)` | Добавляет из списка |
-| `AddChildren(Span<VisualElement>)` | Добавляет из span |
-| `AddChildren(ReadOnlySpan<VisualElement>)` | Добавляет из read-only span |
-| `InsertChild(int, VisualElement)` | Вставляет дочерний элемент по указанному индексу |
-| `InsertChildren(int, params VisualElement[])` | Вставляет несколько дочерних элементов начиная с индекса |
-| `InsertChildren(int, IEnumerable<VisualElement>)` | Вставляет из последовательности |
-| `InsertChildren(int, List<VisualElement>)` | Вставляет из списка |
-| `InsertChildren(int, Span<VisualElement>)` | Вставляет из span |
-| `InsertChildren(int, ReadOnlySpan<VisualElement>)` | Вставляет из read-only span |
-| `RemoveChild(VisualElement)` | Удаляет дочерний элемент, возвращает родителя |
-| `RemoveChildAt(int)` | Удаляет дочерний элемент по указанному индексу |
-| `ClearChildren()` | Удаляет все дочерние элементы |
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>if (evt.customStyle.TryGetValue(&#10;        ThemeProperty, out var raw)&#10;    &amp;&amp; Enum.TryParse(raw,&#10;        ignoreCase: true,&#10;        out PreviewTheme theme))&#10;    ApplyTheme(theme);</code></pre> | <pre lang="csharp"><code>if (evt.customStyle.TryGetByEnum(&#10;        ThemeProperty,&#10;        out PreviewTheme theme))&#10;    ApplyTheme(theme);</code></pre> |
 
-> У каждой операции с дочерними элементами есть `*If`-вариант (`AddChildIf`, `AddChildrenIf`, `InsertChildIf`, `InsertChildrenIf`, `RemoveChildIf`, `RemoveChildAtIf`, `ClearChildrenIf`) с ведущим параметром `bool condition` — операция выполняется только при `condition == true`.
+## Пример в пакете
 
-> `RegisterCallbackOnce<TEventType>` и `RegisterCallbackOnce<TEventType, TUserArgsType>` доступны на всех версиях Unity (пакет содержит polyfill для версий до 2023.1).
+В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) окно каталога и инспектор `AbilityConfig` собраны на этих расширениях: `ListView` одной цепочкой, `BindTo` для полей, `AddOpenScriptCommand` на заголовке.
 
-## Focusable
+![Halve cooldown, +5 MP обновляет поля и описание эффекта; Undo возвращает прежние значения.](../../Samples~/EditorTools/Documentation/Images/demo.gif)
 
-| Метод | Описание |
-|-------|----------|
-| `FocusSelf()` | Устанавливает фокус на элемент |
-| `BlurSelf()` | Снимает фокус с элемента |
-| `IsFocused()` | Возвращает, находится ли элемент в фокусе |
-| `SetTabIndex(int)` | Устанавливает `element.tabIndex` |
-| `SetFocusable(bool)` | Устанавливает `element.focusable` |
-| `SetDelegatesFocus(bool)` | Устанавливает `element.delegatesFocus` |
-
-## USS & class operations
-
-| Метод | Описание |
-|-------|----------|
-| `AddClass(string)` | Добавляет USS-класс |
-| `RemoveClass(string)` | Удаляет USS-класс |
-| `ClearClasses()` | Удаляет все USS-классы |
-| `ToggleClass(string)` | Переключает USS-класс вкл/выкл |
-| `EnableClass(string, bool)` | Добавляет или удаляет USS-класс по условию |
-| `AddStyleSheet(StyleSheet)` | Добавляет `StyleSheet` |
-| `RemoveStyleSheet(StyleSheet)` | Удаляет `StyleSheet` |
-| `AddStyleSheetFromResources(string)` | Добавляет таблицу стилей через `Resources.Load` |
-| `RemoveStyleSheetFromResources(string)` | Удаляет таблицу стилей, загруженную через `Resources.Load` |
-
-## Style extensions — by category
-
-Все методы стилей также доступны напрямую на `IStyle` (те же имена методов, работают с объектом стиля).
-
-### Layout
-
-| Метод | Свойство стиля |
-|-------|----------------|
-| `SetFlexBasis(StyleLength)` | `flexBasis` |
-| `SetFlexGrow(StyleFloat)` | `flexGrow` |
-| `SetFlexShrink(StyleFloat)` | `flexShrink` |
-| `SetFlexWrap(StyleEnum<Wrap>)` | `flexWrap` |
-| `SetFlexDirection(FlexDirection)` | `flexDirection` |
-| `SetAlignSelf(StyleEnum<Align>)` | `alignSelf` |
-| `SetAlignItems(StyleEnum<Align>)` | `alignItems` |
-| `SetAlignContent(StyleEnum<Align>)` | `alignContent` |
-| `SetJustifyContent(StyleEnum<Justify>)` | `justifyContent` |
-| `SetPosition(StyleEnum<Position>)` | `position` |
-
-### Size
-
-| Метод | Описание |
-|-------|----------|
-| `SetSize(StyleLength)` | Устанавливает ширину и высоту одновременно |
-| `SetSize(width?, height?)` | Устанавливает ширину и/или высоту независимо |
-| `SetMinSize(StyleLength)` | Устанавливает minWidth и minHeight одновременно |
-| `SetMinSize(width?, height?)` | |
-| `SetMaxSize(StyleLength)` | Устанавливает maxWidth и maxHeight одновременно |
-| `SetMaxSize(width?, height?)` | |
-| `SetWidth(StyleLength)` | `width` |
-| `SetMinWidth(StyleLength)` | `minWidth` |
-| `SetMaxWidth(StyleLength)` | `maxWidth` |
-| `SetHeight(StyleLength)` | `height` |
-| `SetMinHeight(StyleLength)` | `minHeight` |
-| `SetMaxHeight(StyleLength)` | `maxHeight` |
-
-### Spacing
-
-Все методы отступов имеют перегрузку с единым значением, перегрузку по сторонам (`top`, `right`, `bottom`, `left`), сеттеры по одной стороне и сеттеры по парам осей X/Y.
-
-| Метод | Свойства стиля |
-|-------|----------------|
-| `SetMargin(…)` / `SetPadding(…)` / `SetDistance(…)` | `Top/Right/Bottom/Left` (общее значение или per-side) |
-| `SetMarginX/Y` · `SetPaddingX/Y` · `SetDistanceX/Y` | Устанавливает горизонтальную (X = `Left`+`Right`) или вертикальную (Y = `Top`+`Bottom`) пару |
-| `SetMarginTop/Right/Bottom/Left` | Margin одной стороны |
-| `SetPaddingTop/Right/Bottom/Left` | Padding одной стороны |
-| `SetDistanceTop/Right/Bottom/Left` *(через `SetTop` / `SetRight` / `SetBottom` / `SetLeft`)* | Смещение одной стороны для абсолютного позиционирования (свойства `top` / `right` / `bottom` / `left`) |
-
-> `SetDistance` — обёртка для четырёх свойств `top`/`right`/`bottom`/`left`, используемых при абсолютном позиционировании. `SetTop`, `SetRight`, `SetBottom`, `SetLeft` — это прямые алиасы для одного свойства.
-
-### Font
-
-| Метод | Свойство стиля |
-|-------|----------------|
-| `SetUnityFont(StyleFont)` | `unityFont` |
-| `SetFontSize(StyleLength)` | `fontSize` |
-| `SetUnityFontDefinition(StyleFontDefinition)` | `unityFontDefinition` |
-| `SetUnityFontStyleAndWeight(StyleEnum<FontStyle>)` | `unityFontStyleAndWeight` |
-
-### Font style presets
-
-Удобные методы для переключения bold / italic без перезаписи другого флага:
-
-| Метод | Описание |
-|-------|----------|
-| `SetNormalUnityFontStyleAndWeight()` | Сбрасывает в `FontStyle.Normal` |
-| `AddBoldUnityFontStyleAndWeight()` | Добавляет bold, сохраняя italic |
-| `RemoveBoldUnityFontStyleAndWeight()` | Убирает bold, сохраняя italic |
-| `AddItalicUnityFontStyleAndWeight()` | Добавляет italic, сохраняя bold |
-| `RemoveItalicUnityFontStyleAndWeight()` | Убирает italic, сохраняя bold |
-
-### Text
-
-| Метод | Свойство стиля | Примечания |
-|-------|---------------|------------|
-| `SetWordSpacing(StyleLength)` | `wordSpacing` | |
-| `SetLetterSpacing(StyleLength)` | `letterSpacing` | |
-| `SetUnityTextAlign(TextAnchor)` | `unityTextAlign` | |
-| `SetTextShadow(StyleTextShadow)` | `textShadow` | |
-| `SetUnityTextOutlineColor(StyleColor)` | `unityTextOutlineColor` | |
-| `SetUnityTextOutlineWidth(StyleFloat)` | `unityTextOutlineWidth` | |
-| `SetUnityParagraphSpacing(StyleLength)` | `unityParagraphSpacing` | |
-| `SetTextOverflow(StyleEnum<TextOverflow>)` | `textOverflow` | |
-| `SetUnityTextOverflowPosition(TextOverflowPosition)` | `unityTextOverflowPosition` | |
-| `SetUnityTextGenerator(TextGeneratorType)` | `unityTextGenerator` | Unity 6+ |
-| `SetUnityEditorTextRenderingMode(EditorTextRenderingMode)` | `unityEditorTextRenderingMode` | Unity 6+ |
-| `SetUnityTextAutoSize(StyleTextAutoSize)` | `unityTextAutoSize` | Unity 6.2+ |
-| `SetWhiteSpace(StyleEnum<WhiteSpace>)` | `whiteSpace` | |
-
-### Color & Opacity
-
-| Метод | Свойство стиля |
-|-------|----------------|
-| `SetColor(StyleColor)` | `color` |
-| `SetColor(string)` | `color`, разобранный из HTML-строки (`"#RRGGBB"` или именованный цвет) |
-| `SetOpacity(StyleFloat)` | `opacity` |
-
-### Border
-
-| Метод | Описание |
-|-------|----------|
-| `SetBorderColor(StyleColor)` | Все стороны |
-| `SetBorderColor(top?, right?, bottom?, left?)` | По стороне |
-| `SetBorderColorX(StyleColor)` · `SetBorderColorY(StyleColor)` | Горизонтальная (left + right) или вертикальная (top + bottom) пара |
-| `SetBorderColorTop/Right/Bottom/Left(StyleColor)` | Одна сторона |
-| `SetBorderRadius(StyleLength)` | Все углы |
-| `SetBorderRadius(topLeft?, topRight?, bottomLeft?, bottomRight?)` | По углу |
-| `SetBorderRadiusTop(StyleLength)` · `SetBorderRadiusBottom(StyleLength)` | Пара верхних или нижних углов |
-| `SetBorderRadiusTopLeft/TopRight/BottomLeft/BottomRight(StyleLength)` | Один угол |
-| `SetBorderWidth(StyleFloat)` | Все стороны |
-| `SetBorderWidth(top?, right?, bottom?, left?)` | По стороне |
-| `SetBorderWidthX(StyleFloat)` · `SetBorderWidthY(StyleFloat)` | Горизонтальная или вертикальная пара |
-| `SetBorderWidthTop/Right/Bottom/Left(StyleFloat)` | Одна сторона |
-
-### Background
-
-| Метод | Свойство стиля |
-|-------|----------------|
-| `SetBackgroundColor(StyleColor)` | `backgroundColor` |
-| `SetBackgroundColor(string)` | `backgroundColor`, разобранный из HTML-строки (`"#RRGGBB"` или именованный цвет) |
-| `SetBackgroundImage(StyleBackground)` | `backgroundImage` |
-| `SetBackgroundImageFromResources(string)` | Загружает `Texture2D` через `Resources.Load` и присваивает его в `backgroundImage` |
-| `SetBackgroundSize(StyleBackgroundSize)` | `backgroundSize` |
-| `SetBackgroundRepeat(StyleBackgroundRepeat)` | `backgroundRepeat` |
-| `SetBackgroundPosition(StyleBackgroundPosition)` | X и Y одновременно |
-| `SetBackgroundPosition(x?, y?)` | Независимо |
-| `SetBackgroundPositionX(StyleBackgroundPosition)` | `backgroundPositionX` |
-| `SetBackgroundPositionY(StyleBackgroundPosition)` | `backgroundPositionY` |
-| `SetUnityBackgroundImageTintColor(StyleColor)` | `unityBackgroundImageTintColor` |
-
-### Transform
-
-| Метод | Свойство стиля |
-|-------|----------------|
-| `SetScale(StyleScale)` | `scale` |
-| `SetRotate(StyleRotate)` | `rotate` |
-| `SetTranslate(StyleTranslate)` | `translate` |
-| `SetTransformOrigin(StyleTransformOrigin)` | `transformOrigin` |
-
-### Aspect, Filter & Material
-
-Доступно начиная с Unity 6000.3+.
-
-| Метод | Свойство стиля |
-|-------|----------------|
-| `SetAspectRatio(StyleRatio)` | `aspectRatio` |
-| `SetFilter(StyleList<FilterFunction>)` | `filter` |
-| `SetUnityMaterial(StyleMaterialDefinition)` | `unityMaterial` |
-
-### Transition
-
-| Метод | Свойство стиля |
-|-------|----------------|
-| `SetTransitionDelay(StyleList<TimeValue>)` | `transitionDelay` |
-| `SetTransitionDuration(StyleList<TimeValue>)` | `transitionDuration` |
-| `SetTransitionProperty(StyleList<StylePropertyName>)` | `transitionProperty` |
-| `SetTransitionTimingFunction(StyleList<EasingFunction>)` | `transitionTimingFunction` |
-
-### Overflow & Visibility
-
-| Метод | Свойство стиля |
-|-------|----------------|
-| `SetOverflow(StyleEnum<Overflow>)` | `overflow` |
-| `SetUnityOverflowClipBox(StyleEnum<OverflowClipBox>)` | `unityOverflowClipBox` |
-| `SetVisibility(StyleEnum<Visibility>)` | `visibility` |
-| `SetDisplay(DisplayStyle)` | `display` |
-
-### Unity Slice
-
-| Метод | Описание |
-|-------|----------|
-| `SetUnitySlice(StyleInt)` | Все стороны |
-| `SetUnitySlice(top?, right?, bottom?, left?)` | По стороне |
-| `SetUnitySliceX(StyleInt)` · `SetUnitySliceY(StyleInt)` | Горизонтальная (left + right) или вертикальная (top + bottom) пара |
-| `SetUnitySliceTop/Right/Bottom/Left(StyleInt)` | Одна сторона |
-| `SetUnitySliceScale(StyleFloat)` | `unitySliceScale` |
-| `SetUnitySliceType(StyleEnum<SliceType>)` | Unity 6+ |
-
-### Cursor
-
-| Метод | Свойство стиля |
-|-------|----------------|
-| `SetCursor(StyleCursor)` | `cursor` |
-
-## Specialized element extensions
-
-### TextElement
-
-```csharp
-label
-    .SetText("Hello World")
-    .SetEnableRichText(true)
-    .SetParseEscapeSequences(true);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `SetText(string)` | Устанавливает отображаемый текст |
-| `SetEnableRichText(bool)` | Включает разбор тегов rich-text |
-| `SetEmojiFallbackSupport(bool)` | Включает emoji-fallback при рендеринге |
-| `SetParseEscapeSequences(bool)` | Обрабатывать ли escape-последовательности (например, `\n`) |
-| `SetDisplayTooltipWhenElided(bool)` | Показывать обрезанный текст в подсказке при наведении |
-
-### ITextEdition (TextField, IntegerField, …)
-
-```csharp
-textField
-    .SetPlaceholder("Поиск…")
-    .SetMaxLength(64)
-    .SetDelayed(true);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `SetMaxLength(int)` | Максимальное число символов |
-| `SetMaskChar(char)` | Символ для маскировки пароля |
-| `SetDelayed(bool)` | Откладывает изменение значения до потери фокуса / Enter |
-| `SetReadOnly(bool)` | Запрещает редактирование |
-| `SetPassword(bool)` | Включает password-режим (использует mask char) |
-| `SetPlaceholder(string)` | Текст-плейсхолдер для пустого поля |
-| `SetAutoCorrection(bool)` | Включает автокоррекцию (mobile) |
-| `SetHideMobileInput(bool)` | Скрывает мобильный soft input |
-| `SetHideSoftKeyboard(bool)` | Скрывает экранную клавиатуру |
-| `SetHidePlaceholderOnFocus(bool)` | Убирает плейсхолдер при фокусе |
-| `SetKeyboardType(TouchScreenKeyboardType)` | Тип touch-screen клавиатуры |
-
-### ITextSelection
-
-```csharp
-textField
-    .SetSelectable(true)
-    .SetSelectAllOnFocus(true)
-    .AddOnCursorIndexChange(() => Debug.Log(textField.cursorIndex));
-```
-
-| Метод | Описание |
-|-------|----------|
-| `AddOnCursorIndexChange(Action)` / `RemoveOnCursorIndexChange(Action)` | Подписка на изменение позиции курсора |
-| `AddOnSelectIndexChange(Action)` / `RemoveOnSelectIndexChange(Action)` | Подписка на изменение якоря выделения |
-| `SetCursorIndex(int)` | Текущая позиция курсора |
-| `SetSelectIndex(int)` | Текущий якорь выделения |
-| `SetSelectable(bool)` | Можно ли выделять текст |
-| `SetSelectAllOnFocus(bool)` | Выделять весь текст при фокусе |
-| `SetSelectAllOnMouseUp(bool)` | Выделять весь текст при отпускании мыши |
-| `SetDoubleClickSelectsWord(bool)` | Двойной клик выделяет слово |
-| `SetTripleClickSelectsLine(bool)` | Тройной клик выделяет строку |
-
-### BaseField\<TValueType\>
-
-```csharp
-field.SetLabel("My Field");
-field.SetValue(42);
-```
-
-### BaseBoolField (Toggle)
-
-```csharp
-toggle
-    .SetLabel("Включено")
-    .SetText("Показать расширенные настройки")
-    .SetToggleOnLabelClick(true);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `SetText(string)` | Устанавливает текст рядом с чекбоксом |
-| `SetLabel(string)` | Устанавливает label поля |
-| `SetToggleOnLabelClick(bool)` | Переключать ли значение по клику на label |
-
-### INotifyValueChanged\<T\>
-
-```csharp
-field.SetValue(42, notify: false); // устанавливает значение без генерации ChangeEvent
-field.AddValueChanged(evt => Debug.Log(evt.newValue));
-field.RemoveValueChanged(myCallback);
-```
-
-Типизированные перегрузки доступны для `int`, `uint`, `nint`, `nuint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal`, `char`, `string`, `bool`, `Color`, `Vector2/3/4`, `Vector2Int/3Int`, `Rect/RectInt`, `Bounds/BoundsInt`, `Hash128`, `GUID`, `Quaternion`, `Matrix4x4`, `Gradient`, `AnimationCurve`, `Delegate`, `Enum`, `Object`, `object`, плюс обобщённый fallback `SetValue<T, TValue>`.
-
-> При установленном пакете `com.unity.mathematics` автоматически выставляется define `ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION` и добавляются перегрузки `SetValue` / `AddValueChanged` / `RemoveValueChanged` для `int2/3/4` (и `intMxN`), `float2/3/4` (и `floatMxN`), `half`/`half2/3/4`, `bool2/3/4` (и `boolMxN`), а также `quaternion`.
-
-### IMixedValueSupport
-
-```csharp
-field.SetShowMixedValue(true); // показывает индикатор смешанного значения
-```
-
-### Button
-
-```csharp
-button
-    .AddClicked(() => Debug.Log("Clicked"))
-    .SetClickable(new Clickable(() => { }))
-    .SetIconImage(myBackground);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `AddClicked(Action)` | Подписка на `Button.clicked` |
-| `RemoveClicked(Action)` | Отписка от `Button.clicked` |
-| `SetClickable(Clickable)` | Устанавливает `Button.clickable` |
-| `SetIconImage(Background)` | Устанавливает `Button.iconImage` |
-
-### Slider / BaseSlider\<TValue\>
-
-```csharp
-slider
-    .SetLowValue(0f)
-    .SetHighValue(100f)
-    .SetShowInputField(true);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `SetLowValue(TValue)` | Устанавливает минимальное значение слайдера |
-| `SetHighValue(TValue)` | Устанавливает максимальное значение слайдера |
-| `SetFill(bool)` | Заполнение трека до текущего значения |
-| `SetInverted(bool)` | Инвертирует направление слайдера |
-| `SetPageSize(float)` | Шаг изменения значения при постраничной навигации |
-| `SetShowInputField(bool)` | Показывает числовое поле ввода рядом со слайдером |
-| `SetDirection(SliderDirection)` | Устанавливает ориентацию слайдера |
-
-### ProgressBar
-
-```csharp
-progressBar.SetTitle("Загрузка...").SetLowValue(0f).SetHighValue(100f);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `SetTitle(string)` | Устанавливает заголовок, отображаемый в центре |
-| `SetLowValue(float)` | Устанавливает минимальное значение |
-| `SetHighValue(float)` | Устанавливает максимальное значение |
-
-### HelpBox
-
-```csharp
-helpBox
-    .SetText("Что-то пошло не так")
-    .SetMessageType(HelpBoxMessageType.Warning);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `SetText(string)` | Текст сообщения help-box |
-| `SetMessageType(HelpBoxMessageType)` | Иконка / уровень (`None` / `Info` / `Warning` / `Error`) |
-
-### Foldout
-
-```csharp
-foldout
-    .SetText("Section Title")
-    .SetToggleOnLabelClick(true)
-    .SetValue(true);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `SetText(string)` | Заголовок foldout |
-| `SetToggleOnLabelClick(bool)` | Переключать ли раскрытие по клику на заголовок |
-
-### Image
-
-```csharp
-image
-    .SetImage(myTexture)
-    .SetTintColor(Color.white)
-    .SetScaleMode(ScaleMode.ScaleToFit);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `SetImage(Texture)` | Устанавливает `Image.image` |
-| `SetImageFromResources(string)` | Загружает текстуру через `Resources.Load<Texture2D>` |
-| `SetSprite(Sprite)` | Устанавливает `Image.sprite` |
-| `SetSpriteFromResources(string)` | Загружает sprite через `Resources.Load<Sprite>` |
-| `SetVectorImage(VectorImage)` | Устанавливает `Image.vectorImage` |
-| `SetVectorImageFromResources(string)` | Загружает vector image через `Resources.Load<VectorImage>` |
-| `SetUv(Rect)` | Устанавливает UV-rect |
-| `SetSourceRect(Rect)` | Устанавливает source rect |
-| `SetTintColor(Color)` | Цветовой tint изображения |
-| `SetScaleMode(ScaleMode)` | Режим масштабирования |
-
-### IMGUIContainer
-
-```csharp
-container
-    .SetOnGUIHandler(() => GUILayout.Label("IMGUI"))
-    .SetCullingEnabled(true);
-```
-
-| Метод | Описание |
-|-------|----------|
-| `SetOnGUIHandler(Action)` | Заменяет коллбэк `onGUIHandler` |
-| `AddOnGUIHandler(Action)` | Подписка на `onGUIHandler` |
-| `RemoveOnGUIHandler(Action)` | Отписка от `onGUIHandler` |
-| `SetCullingEnabled(bool)` | Пропускает `onGUIHandler`, когда элемент за пределами экрана |
-| `SetContextType(ContextType)` | Устанавливает тип контекста IMGUI |
-| `MarkDirtyLayout()` | Помечает IMGUI-layout как «грязный» для пересчёта |
-
-### Collection views (ListView, TreeView, MultiColumn variants)
-
-Общие методы распределены по нескольким специализированным расширениям:
-
-- `BaseVerticalCollectionViewExtensions` — применяется ко **всем** collection-views (ListView, TreeView, MultiColumn-варианты).
-- `BaseListViewExtensions` — применяется к ListView и MultiColumnListView.
-- `BaseTreeViewExtensions` — применяется к TreeView и MultiColumnTreeView.
-- `ListViewExtensions` / `TreeViewExtensions` — фабрики `MakeItem`/`BindItem`/`UnbindItem`/`DestroyItem` для своего вью.
-- `MultiColumnListViewExtensions` / `MultiColumnTreeViewExtensions` — хелперы для multi-column-вариантов.
-
-```csharp
-listView
-    .SetItemsSource(items)
-    .SetMakeItem(() => new Label())
-    .SetBindItem((el, i) => ((Label)el).SetText(items[i]))
-    .SetSelectionType(SelectionType.Single)
-    .AddSelectionChanged(selected => Debug.Log(selected));
-```
-
-#### Source, layout and behavior — `BaseVerticalCollectionView`
-
-| Метод | Описание |
-|-------|----------|
-| `SetItemsSource(IList)` | Источник данных |
-| `SetReorderable(bool)` | Включает drag-reorder |
-| `SetSelectedIndex(int)` | Выбирает элемент по индексу |
-| `SetSelectionType(SelectionType)` | None / Single / Multiple |
-| `SetFixedItemHeight(float)` | Фиксированная высота элемента (для виртуализации `FixedHeight`) |
-| `SetVirtualizationMethod(CollectionVirtualizationMethod)` | `FixedHeight` или `DynamicHeight` |
-| `SetHorizontalScrollingEnabled(bool)` | Включает горизонтальную прокрутку |
-| `SetShowAlternatingRowBackgrounds(AlternatingRowBackground)` | Режим зебра-полос |
-
-#### Events — `BaseVerticalCollectionView`
-
-| Метод | Описание |
-|-------|----------|
-| `AddItemsChosen(Action<IEnumerable<object>>)` / `RemoveItemsChosen` | Подтверждение элементов (двойной клик / Enter) |
-| `AddSelectionChanged(Action<IEnumerable<object>>)` / `RemoveSelectionChanged` | Изменение выделения (объекты) |
-| `AddSelectedIndicesChanged(Action<IEnumerable<int>>)` / `RemoveSelectedIndicesChanged` | Изменение выделения (индексы) |
-| `AddItemIndexChanged(Action<int, int>)` / `RemoveItemIndexChanged` | Перемещение элемента (drag-reorder) |
-| `AddItemsSourceChanged(Action)` / `RemoveItemsSourceChanged` | Смена ссылки `itemsSource` |
-| `AddCanStartDrag(Func<CanStartDragArgs, bool>)` / `RemoveCanStartDrag` | Кастомный gating старта drag |
-| `AddSetupDragAndDrop(Func<SetupDragAndDropArgs, StartDragArgs>)` / `RemoveSetupDragAndDrop` | Подготовка drag-and-drop |
-| `AddDragAndDropUpdate(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveDragAndDropUpdate` | Визуальный режим drag-and-drop |
-| `AddHandleDrop(Func<HandleDragAndDropArgs, DragVisualMode>)` / `RemoveHandleDrop` | Обработка drop |
-
-#### `BaseListView`-specific
-
-| Метод | Описание |
-|-------|----------|
-| `SetAllowAdd(bool)` · `SetAllowRemove(bool)` | Включают встроенные кнопки add/remove |
-| `SetHeaderTitle(string)` | Заголовок при включённом foldout-header |
-| `SetShowFoldoutHeader(bool)` | Оборачивает список в `Foldout` |
-| `SetShowAddRemoveFooter(bool)` | Показывает footer с add/remove |
-| `SetShowBoundCollectionSize(bool)` | Поле размера коллекции |
-| `SetReorderMode(ListViewReorderMode)` | `Simple` или `Animated` |
-| `SetBindingSourceSelectionMode(BindingSourceSelectionMode)` | Auto-assign / manual |
-| `SetOnAdd(Action<BaseListView>)` · `AddOnAdd` · `RemoveOnAdd` | Кастомный коллбэк add-кнопки |
-| `SetOnRemove(Action<BaseListView>)` · `AddOnRemove` · `RemoveOnRemove` | Кастомный коллбэк remove-кнопки |
-| `SetOverridingAddButtonBehavior(Action<BaseListView, Button>)` · `AddOverridingAddButtonBehavior` · `RemoveOverridingAddButtonBehavior` | Подменяет дефолтное поведение add |
-| `SetMakeFooter(Func<VisualElement>)` · `AddMakeFooter` · `RemoveMakeFooter` | Фабрика подвала (Unity 6+) |
-| `SetMakeHeader(Func<VisualElement>)` · `AddMakeHeader` · `RemoveMakeHeader` | Фабрика заголовка (Unity 6+) |
-| `SetMakeNoneElement(Func<VisualElement>)` · `AddMakeNoneElement` · `RemoveMakeNoneElement` | Фабрика empty-state (Unity 6+) |
-| `AddItemsAdded(Action<IEnumerable<int>>)` / `RemoveItemsAdded` | Добавление элементов по индексам |
-| `AddItemsRemoved(Action<IEnumerable<int>>)` / `RemoveItemsRemoved` | Удаление элементов по индексам |
-
-#### `BaseTreeView`-specific
-
-| Метод | Описание |
-|-------|----------|
-| `SetAutoExpand(bool)` | Авто-разворачивание новых узлов |
-| `AddItemExpandedChanged(Action<TreeViewExpansionChangedArgs>)` / `RemoveItemExpandedChanged` | Подписка на изменение раскрытия |
-
-#### `ListView` / `TreeView` item factories
-
-Эти методы дублируются в `ListViewExtensions` и `TreeViewExtensions` (каждое работает со своим типом view).
-
-| Метод | Описание |
-|-------|----------|
-| `SetMakeItem(Func<VisualElement>)` · `AddMakeItem` · `RemoveMakeItem` | Фабрика элементов |
-| `SetBindItem(Action<VisualElement, int>)` · `AddBindItem` · `RemoveBindItem` | Привязка элемента |
-| `SetUnbindItem(Action<VisualElement, int>)` · `AddUnbindItem` · `RemoveUnbindItem` | Отвязка элемента |
-| `SetDestroyItem(Action<VisualElement>)` · `AddDestroyItem` · `RemoveDestroyItem` | Уничтожение элемента |
-| `SetItemTemplate(VisualTreeAsset)` | UXML-шаблон, по которому строятся элементы |
-
-#### `MultiColumnListView` / `MultiColumnTreeView`
-
-| Метод | Описание |
-|-------|----------|
-| `SetSortingMode(ColumnSortingMode)` | Встроенный режим сортировки заголовка колонки |
-
-## Editor commands (editor-only)
-
-```csharp
-using Aspid.FastTools.UIElements.Editors;
-
-image.AddOpenScriptCommand(target);
-// Двойной клик на элемент открывает скрипт 'target' в IDE
-```
-
-| Метод | Цель | Описание |
-|-------|------|----------|
-| `AddOpenScriptCommand(Object)` | `VisualElement` | Регистрирует обработчик двойного клика, открывающий исходный скрипт `MonoBehaviour` / `ScriptableObject` в IDE. |
-| `GetOwnerWindow()` | `VisualElement` | Возвращает `EditorWindow`, чья панель содержит элемент (для отсоединённых элементов — откат на окно в фокусе / под курсором). Используйте вместо `EditorWindow.focusedWindow` при привязке попапов к элементу — pointer-события приходят до переключения фокуса на кликнутое окно. |
-| `BindTo(SerializedObject)` | `VisualElement` | Вызывает `BindingExtensions.Bind` на элементе. |
-| `BindTo(SerializedObject, string propertyPath)` | `IBindable` | Устанавливает `bindingPath` и привязывается к указанному `SerializedObject`. |
-| `BindPropertyTo(SerializedProperty)` | `IBindable` | Вызывает `BindingExtensions.BindProperty` для переданного property. |
-| `Initialize(Enum defaultValue, bool includeObsoleteValues = false)` | `EnumField` / `EnumFlagsField` | Инициализирует поле указанным значением enum по умолчанию. |
-| `AddValueChanged(EventCallback<SerializedPropertyChangeEvent>)` / `RemoveValueChanged(...)` | `PropertyField` | Подписка / отписка от уведомлений об изменении свойства. |
-
-## USS custom-style helpers (`ICustomStyle`)
-
-```csharp
-using Aspid.FastTools.UIElements;
-
-private static readonly CustomStyleProperty<string> ThemeProperty = new("--aspid-fasttools-prop-theme");
-
-void OnCustomStyleResolved(CustomStyleResolvedEvent evt)
-{
-    if (evt.customStyle.TryGetByEnum(ThemeProperty, out ThemeStyle.Type theme))
-        ApplyTheme(theme);
-}
-```
-
-| Метод | Описание |
-|-------|----------|
-| `ICustomStyle.TryGetByEnum<T>(CustomStyleProperty<string>, out T)` | Резолвит USS custom-property со строковым значением и парсит её регистронезависимо как enum `T`. Используется во всех `*Style`-структурах с USS-driven enum (`ThemeStyle`, `StatusStyle`, `AspidLabelSizeStyle` и т. д.). |
+Halve cooldown, +5 MP обновляет поля и описание эффекта; Undo возвращает прежние значения.

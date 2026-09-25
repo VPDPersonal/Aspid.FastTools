@@ -1,0 +1,22 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using UnityEngine.UIElements;
+using UnityEditor;
+using Aspid.FastTools.Types.Editors;
+public static class NativeSelectorCapture {
+ public static object Main() {
+  var t=AppDomain.CurrentDomain.GetAssemblies().Select(a=>a.GetType("DocumentationMedia.EnumMedia")).First(t=>t!=null);
+  var w=(EditorWindow)t.GetField("Window").GetValue(null);
+  w.ShowUtility(); w.Focus();
+  var field=w.rootVisualElement.Q<Aspid.FastTools.Types.Editors.TypeField>();
+  using(var evt=PointerDownEvent.GetPooled(new Event {type=EventType.MouseDown,button=0}))
+   typeof(Aspid.FastTools.Types.Editors.TypeField).GetMethod("OnDropdownClicked",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(field,new object[]{evt});
+  var popup=Resources.FindObjectsOfTypeAll<TypeSelectorWindow>().First();
+  var view=popup.rootVisualElement[0];
+  view.GetType().GetMethod("OpenSearch",BindingFlags.Instance|BindingFlags.NonPublic).Invoke(view,new object[]{"DamageType"});
+  view.schedule.Execute(()=> {var list=view.Q<ListView>();list.selectedIndex=0;list.Focus();}).StartingIn(250);
+  return true;
+ }
+}

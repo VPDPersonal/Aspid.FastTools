@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`BaseListView`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView.html).
+
 ```csharp
 public static class BaseListViewExtensions
 ```
@@ -55,6 +57,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddItemsRemoved\<T\>\(T, Action\<IEnumerable\<int\>\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddItemsRemoved__1___0_System_Action_System_Collections_Generic_IEnumerable_System_Int32___}
 
 Subscribes to the [`itemsRemoved`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-itemsRemoved.html) event.
@@ -83,101 +87,7 @@ The element, for chaining.
 
 `T` 
 
-### AddMakeFooter\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddMakeFooter__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
-
-Subscribes to the [`makeFooter`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeFooter.html) callback.
-
-```csharp
-public static T AddMakeFooter<T>(this T element, Func<VisualElement> value) where T : BaseListView
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [Func](https://learn.microsoft.com/dotnet/api/system.func-1)\<VisualElement\>
-
-The callback to add.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-This callback allows the user to make their own footer for this control.
-
-### AddMakeHeader\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddMakeHeader__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
-
-Subscribes to the [`makeHeader`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeHeader.html) callback.
-
-```csharp
-public static T AddMakeHeader<T>(this T element, Func<VisualElement> value) where T : BaseListView
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [Func](https://learn.microsoft.com/dotnet/api/system.func-1)\<VisualElement\>
-
-The callback to add.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-This callback allows the user to make their own header for this control.
-
-### AddMakeNoneElement\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddMakeNoneElement__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
-
-Subscribes to the [`makeNoneElement`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeNoneElement.html) callback.
-
-```csharp
-public static T AddMakeNoneElement<T>(this T element, Func<VisualElement> value) where T : BaseListView
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [Func](https://learn.microsoft.com/dotnet/api/system.func-1)\<VisualElement\>
-
-The callback to add.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-This callback allows the user to set a Visual Element to replace the "List is empty" Label shown when the ListView is empty.
+The element type.
 
 ### AddOnAdd\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddOnAdd__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
@@ -207,9 +117,7 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to implement their own code to be executed when the Add Button is clicked.
+The element type.
 
 ### AddOnRemove\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddOnRemove__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
@@ -239,9 +147,7 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to implement their own code to be executed when the Remove Button is clicked.
+The element type.
 
 ### AddOverridingAddButtonBehavior\<T\>\(T, Action\<BaseListView, Button\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddOverridingAddButtonBehavior__1___0_System_Action_UnityEngine_UIElements_BaseListView_UnityEngine_UIElements_Button__}
 
@@ -271,9 +177,7 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to implement a DropdownMenu when the Add Button is clicked.
+The element type.
 
 ### RemoveItemsAdded\<T\>\(T, Action\<IEnumerable\<int\>\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveItemsAdded__1___0_System_Action_System_Collections_Generic_IEnumerable_System_Int32___}
 
@@ -303,6 +207,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveItemsRemoved\<T\>\(T, Action\<IEnumerable\<int\>\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveItemsRemoved__1___0_System_Action_System_Collections_Generic_IEnumerable_System_Int32___}
 
 Unsubscribes from the [`itemsRemoved`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-itemsRemoved.html) event.
@@ -331,101 +237,7 @@ The element, for chaining.
 
 `T` 
 
-### RemoveMakeFooter\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveMakeFooter__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
-
-Unsubscribes from the [`makeFooter`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeFooter.html) callback.
-
-```csharp
-public static T RemoveMakeFooter<T>(this T element, Func<VisualElement> value) where T : BaseListView
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [Func](https://learn.microsoft.com/dotnet/api/system.func-1)\<VisualElement\>
-
-The callback to remove.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-This callback allows the user to make their own footer for this control.
-
-### RemoveMakeHeader\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveMakeHeader__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
-
-Unsubscribes from the [`makeHeader`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeHeader.html) callback.
-
-```csharp
-public static T RemoveMakeHeader<T>(this T element, Func<VisualElement> value) where T : BaseListView
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [Func](https://learn.microsoft.com/dotnet/api/system.func-1)\<VisualElement\>
-
-The callback to remove.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-This callback allows the user to make their own header for this control.
-
-### RemoveMakeNoneElement\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveMakeNoneElement__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
-
-Unsubscribes from the [`makeNoneElement`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeNoneElement.html) callback.
-
-```csharp
-public static T RemoveMakeNoneElement<T>(this T element, Func<VisualElement> value) where T : BaseListView
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [Func](https://learn.microsoft.com/dotnet/api/system.func-1)\<VisualElement\>
-
-The callback to remove.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-This callback allows the user to set a Visual Element to replace the "List is empty" Label shown when the ListView is empty.
+The element type.
 
 ### RemoveOnAdd\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveOnAdd__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
@@ -455,9 +267,7 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to implement their own code to be executed when the Add Button is clicked.
+The element type.
 
 ### RemoveOnRemove\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveOnRemove__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
@@ -487,9 +297,7 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to implement their own code to be executed when the Remove Button is clicked.
+The element type.
 
 ### RemoveOverridingAddButtonBehavior\<T\>\(T, Action\<BaseListView, Button\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_RemoveOverridingAddButtonBehavior__1___0_System_Action_UnityEngine_UIElements_BaseListView_UnityEngine_UIElements_Button__}
 
@@ -519,13 +327,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to implement a DropdownMenu when the Add Button is clicked.
+The element type.
 
 ### SetAllowAdd\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetAllowAdd__1___0_System_Boolean_}
 
-Sets [`allowAdd`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-allowAdd.html) and returns the element for chaining.
+Sets [`allowAdd`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-allowAdd.html).
 
 ```csharp
 public static T SetAllowAdd<T>(this T element, bool value) where T : BaseListView
@@ -539,7 +345,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether item addition is allowed.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the Add button adds an item.
 
 #### Returns
 
@@ -551,13 +357,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This property allows the user to allow or block the addition of an item when clicking on the Add Button. It must return true or false.
+The element type.
 
 ### SetAllowRemove\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetAllowRemove__1___0_System_Boolean_}
 
-Sets [`allowRemove`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-allowRemove.html) and returns the element for chaining.
+Sets [`allowRemove`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-allowRemove.html).
 
 ```csharp
 public static T SetAllowRemove<T>(this T element, bool value) where T : BaseListView
@@ -571,7 +375,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether item removal is allowed.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the Remove button removes an item.
 
 #### Returns
 
@@ -583,13 +387,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This property allows the user to allow or block the removal of an item when clicking on the Remove Button. It must return true or false.
+The element type.
 
 ### SetBindingSourceSelectionMode\<T\>\(T, BindingSourceSelectionMode\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetBindingSourceSelectionMode__1___0_UnityEngine_UIElements_BindingSourceSelectionMode_}
 
-Sets [`bindingSourceSelectionMode`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-bindingSourceSelectionMode.html) and returns the element for chaining.
+Sets [`bindingSourceSelectionMode`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-bindingSourceSelectionMode.html).
 
 ```csharp
 public static T SetBindingSourceSelectionMode<T>(this T element, BindingSourceSelectionMode value) where T : BaseListView
@@ -615,13 +417,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This property controls whether every element in the element will get its data source setup automatically to the correct item in the collection's source.
+The element type.
 
 ### SetHeaderTitle\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetHeaderTitle__1___0_System_String_}
 
-Sets [`headerTitle`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-headerTitle.html) and returns the element for chaining.
+Sets [`headerTitle`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-headerTitle.html).
 
 ```csharp
 public static T SetHeaderTitle<T>(this T element, string value) where T : BaseListView
@@ -647,13 +447,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This property controls the text of the foldout header when using showFoldoutHeader.
+The element type.
 
 ### SetMakeFooter\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetMakeFooter__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
 
-Sets [`makeFooter`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeFooter.html), replacing any existing callback, and returns the element for chaining.
+Sets [`makeFooter`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeFooter.html), replacing any existing callback.
 
 ```csharp
 public static T SetMakeFooter<T>(this T element, Func<VisualElement> value) where T : BaseListView
@@ -679,13 +477,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to make their own footer for this control.
+The element type.
 
 ### SetMakeHeader\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetMakeHeader__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
 
-Sets [`makeHeader`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeHeader.html), replacing any existing callback, and returns the element for chaining.
+Sets [`makeHeader`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeHeader.html), replacing any existing callback.
 
 ```csharp
 public static T SetMakeHeader<T>(this T element, Func<VisualElement> value) where T : BaseListView
@@ -711,13 +507,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to make their own header for this control.
+The element type.
 
 ### SetMakeNoneElement\<T\>\(T, Func\<VisualElement\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetMakeNoneElement__1___0_System_Func_UnityEngine_UIElements_VisualElement__}
 
-Sets [`makeNoneElement`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeNoneElement.html), replacing any existing callback, and returns the element for chaining.
+Sets [`makeNoneElement`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-makeNoneElement.html), replacing any existing callback.
 
 ```csharp
 public static T SetMakeNoneElement<T>(this T element, Func<VisualElement> value) where T : BaseListView
@@ -743,13 +537,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to set a Visual Element to replace the "List is empty" Label shown when the ListView is empty.
+The element type.
 
 ### SetOnAdd\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetOnAdd__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
-Sets [`onAdd`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onAdd.html), replacing any existing callback, and returns the element for chaining.
+Sets [`onAdd`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onAdd.html), replacing any existing callback.
 
 ```csharp
 public static T SetOnAdd<T>(this T element, Action<BaseListView> value) where T : BaseListView
@@ -775,13 +567,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to implement their own code to be executed when the Add Button is clicked.
+The element type.
 
 ### SetOnRemove\<T\>\(T, Action\<BaseListView\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetOnRemove__1___0_System_Action_UnityEngine_UIElements_BaseListView__}
 
-Sets [`onRemove`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onRemove.html), replacing any existing callback, and returns the element for chaining.
+Sets [`onRemove`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-onRemove.html), replacing any existing callback.
 
 ```csharp
 public static T SetOnRemove<T>(this T element, Action<BaseListView> value) where T : BaseListView
@@ -807,13 +597,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to implement their own code to be executed when the Remove Button is clicked.
+The element type.
 
 ### SetOverridingAddButtonBehavior\<T\>\(T, Action\<BaseListView, Button\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetOverridingAddButtonBehavior__1___0_System_Action_UnityEngine_UIElements_BaseListView_UnityEngine_UIElements_Button__}
 
-Sets [`overridingAddButtonBehavior`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-overridingAddButtonBehavior.html), replacing any existing callback, and returns the element for chaining.
+Sets [`overridingAddButtonBehavior`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-overridingAddButtonBehavior.html), replacing any existing callback.
 
 ```csharp
 public static T SetOverridingAddButtonBehavior<T>(this T element, Action<BaseListView, Button> value) where T : BaseListView
@@ -839,13 +627,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This callback allows the user to implement a DropdownMenu when the Add Button is clicked.
+The element type.
 
 ### SetReorderMode\<T\>\(T, ListViewReorderMode\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetReorderMode__1___0_UnityEngine_UIElements_ListViewReorderMode_}
 
-Sets [`reorderMode`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-reorderMode.html) and returns the element for chaining.
+Sets [`reorderMode`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-reorderMode.html).
 
 ```csharp
 public static T SetReorderMode<T>(this T element, ListViewReorderMode value) where T : BaseListView
@@ -871,13 +657,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This property controls the drag and drop mode for the element view.
+The element type.
 
 ### SetShowAddRemoveFooter\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetShowAddRemoveFooter__1___0_System_Boolean_}
 
-Sets [`showAddRemoveFooter`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-showAddRemoveFooter.html) and returns the element for chaining.
+Sets [`showAddRemoveFooter`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-showAddRemoveFooter.html).
 
 ```csharp
 public static T SetShowAddRemoveFooter<T>(this T element, bool value) where T : BaseListView
@@ -891,7 +675,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to show the add/remove footer.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the footer with the Add and Remove buttons is shown.
 
 #### Returns
 
@@ -903,13 +687,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This property controls whether a footer will be added to the list view.
+The element type.
 
 ### SetShowBoundCollectionSize\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetShowBoundCollectionSize__1___0_System_Boolean_}
 
-Sets [`showBoundCollectionSize`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-showBoundCollectionSize.html) and returns the element for chaining.
+Sets [`showBoundCollectionSize`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-showBoundCollectionSize.html).
 
 ```csharp
 public static T SetShowBoundCollectionSize<T>(this T element, bool value) where T : BaseListView
@@ -923,7 +705,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to show the bound collection size.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the size of the bound collection is shown.
 
 #### Returns
 
@@ -935,13 +717,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This property controls whether the element view displays the collection size (number of items).
+The element type.
 
 ### SetShowFoldoutHeader\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_SetShowFoldoutHeader__1___0_System_Boolean_}
 
-Sets [`showFoldoutHeader`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-showFoldoutHeader.html) and returns the element for chaining.
+Sets [`showFoldoutHeader`](https://docs.unity3d.com/ScriptReference/UIElements-BaseListView-showFoldoutHeader.html).
 
 ```csharp
 public static T SetShowFoldoutHeader<T>(this T element, bool value) where T : BaseListView
@@ -955,7 +735,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to show the foldout header.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the list is wrapped in a foldout header.
 
 #### Returns
 
@@ -967,7 +747,5 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This property controls whether the element view displays a header, in the form of a foldout that can be expanded or collapsed.
+The element type.
 

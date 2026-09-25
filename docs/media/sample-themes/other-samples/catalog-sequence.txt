@@ -1,0 +1,7 @@
+file 'catalog-before.jpg'
+duration 1.2
+file 'catalog-after.jpg'
+duration 1.2
+file 'catalog-undo.jpg'
+duration 1.2
+file 'catalog-undo.jpg'

@@ -51,13 +51,13 @@ The object whose script is opened.
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html) element to configure.
 
 #### Remarks
 
@@ -86,18 +86,17 @@ The serialized object to bind to.
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html) element to configure.
 
 ### GetOwnerWindow\(VisualElement\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_GetOwnerWindow_UnityEngine_UIElements_VisualElement_}
 
-Returns the [`EditorWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow.html) whose panel hosts <code class="paramref">element</code>, falling back to the
-focused or hovered window when no panel matches.
+Returns the window hosting <code class="paramref">element</code> or the current focus or hover fallback.
 
 ```csharp
 public static EditorWindow GetOwnerWindow(this VisualElement element)
@@ -107,19 +106,17 @@ public static EditorWindow GetOwnerWindow(this VisualElement element)
 
 `element` VisualElement
 
-The element whose hosting window is wanted.
+The element to locate, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> to use the fallback windows.
 
 #### Returns
 
  EditorWindow
 
-The hosting window, or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when none can be resolved.
+The hosting window, then the focused or hovered window; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
 
 #### Remarks
 
-Use it instead of [`focusedWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow-focusedWindow.html) when anchoring a dropdown to an element: a
-click into an unfocused floating window dispatches its pointer event before focus moves, so a rect built
-from the focused window's position lands in the wrong coordinate space.
+A pointer event can arrive in a floating window before focus moves, so the panel is checked first.
 
 ### UnbindFrom\<T\>\(T\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_UnbindFrom__1___0_}
 
@@ -139,11 +136,11 @@ The element to unbind.
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html) element to configure.
 

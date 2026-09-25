@@ -6,8 +6,8 @@ using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
 using Aspid.FastTools.UIElements;
-using Aspid.FastTools.Types.Editors;
 using System.Collections.Generic;
+using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.UIElements.Editors;
 
 // ReSharper disable once CheckNamespace
@@ -18,6 +18,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
     // UI Toolkit binding, so Undo and dirty tracking work as in the Inspector.
     internal sealed class AbilityCatalogWindow : EditorWindow
     {
+        private enum PreviewTheme { Editor, Dark, Light }
+        private const string ThemeKey = "Aspid.FastTools.AbilityCatalog.Theme";
         private readonly List<AbilityConfig> _all = new();
         private readonly List<AbilityConfig> _filtered = new();
 
@@ -27,10 +29,20 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
         [MenuItem("Tools/Aspid 🐍/FastTools/Samples/Ability Catalog")]
         private static void Open() =>
-            GetWindow<AbilityCatalogWindow>("Ability Catalog").minSize = new Vector2(560, 320);
+            GetWindow<AbilityCatalogWindow>("Ability Catalog").minSize = new Vector2(680, 440);
 
         private void CreateGUI()
         {
+            rootVisualElement.Clear();
+            rootVisualElement.AddToClassList("ability-catalog");
+            var theme = (PreviewTheme)SessionState.GetInt(ThemeKey, 0);
+            ApplyTheme(theme);
+            var scriptPath = AssetDatabase.GetAssetPath(MonoScript.FromScriptableObject(this));
+            var stylesheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(
+                System.IO.Path.GetDirectoryName(scriptPath) + "/AbilityCatalog.uss");
+            if (stylesheet != null)
+                rootVisualElement.styleSheets.Add(stylesheet);
+
             Reload();
 
             var search = new TextField()
@@ -45,35 +57,78 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddClicked(CreateAsset);
 
             var toolbar = new VisualElement()
-                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center)
-                .SetPaddingX(6).SetPaddingY(4)
+                .SetFlexDirection(FlexDirection.Row)
+                .SetAlignItems(Align.Center)
+                .SetPaddingX(6)
+                .SetPaddingY(4)
                 .AddChild(search)
                 .AddChild(create);
 
             _list = new ListView()
                 .SetItemsSource(_filtered)
-                .SetFixedItemHeight(22)
+                .SetFixedItemHeight(64)
                 .SetSelectionType(SelectionType.Single)
-                .SetShowAlternatingRowBackgrounds(AlternatingRowBackground.ContentOnly)
-                .SetMakeItem(() => new Label().SetPaddingX(6).SetUnityTextAlign(TextAnchor.MiddleLeft))
-                .SetBindItem((element, index) => ((Label)element).SetText(_filtered[index].AbilityName))
+                .SetShowAlternatingRowBackgrounds(AlternatingRowBackground.None)
+                .SetMakeItem(() =>
+                {
+                    var row = new VisualElement();
+                    row.AddToClassList("ability-row");
+                    row.Add(new Label { name = "abilityName" });
+                    row.Add(new Label { name = "abilityStats" });
+                    return row;
+                })
+                .SetBindItem((element, index) =>
+                {
+                    var ability = _filtered[index];
+                    element.Q<Label>("abilityName").text = ability.AbilityName;
+                    element.Q<Label>("abilityStats").text = $"{ability.ManaCost} MP   /   {ability.Cooldown:0.##} s cooldown";
+                })
                 .AddSelectionChanged(selection => ShowDetails(selection.FirstOrDefault() as AbilityConfig))
                 .SetFlexGrow(1);
 
             var left = new VisualElement()
-                .SetWidth(200)
-                .SetBorderColor(new Color(0.2f, 0.2f, 0.2f)).SetBorderWidth(right: 1)
+                .SetWidth(248)
+                .SetBorderColor(new Color(0.2f, 0.2f, 0.2f))
+                .SetBorderWidth(right: 1)
                 .AddChild(toolbar)
                 .AddChild(_list);
 
-            _details = new VisualElement().SetFlexGrow(1).SetPaddingX(12).SetPaddingY(8);
+            _details = new ScrollView()
+                .SetFlexGrow(1);
+            _details.AddToClassList("ability-details");
+            left.AddToClassList("ability-sidebar");
+            create.AddToClassList("ability-primary");
+            toolbar.AddToClassList("ability-toolbar");
 
-            rootVisualElement
+            var header = new VisualElement();
+            header.AddToClassList("ability-header");
+            header.Add(new Label("Ability catalog") { name = "catalogTitle" });
+            header.Add(new Label("Tune your abilities. See every change.") { name = "catalogSubtitle" });
+            var themeField = new EnumField("Theme", theme);
+            themeField.style.position = Position.Absolute;
+            themeField.style.right = 20;
+            themeField.style.top = 20;
+            themeField.style.width = 190;
+            themeField.labelElement.style.minWidth = 44;
+            themeField.labelElement.style.width = 44;
+            themeField.RegisterValueChangedCallback(evt =>
+            {
+                var selected = (PreviewTheme)evt.newValue;
+                SessionState.SetInt(ThemeKey, (int)selected);
+                ApplyTheme(selected);
+            });
+            header.Add(themeField);
+            rootVisualElement.Add(header);
+            rootVisualElement.Add(new VisualElement()
                 .SetFlexDirection(FlexDirection.Row)
+                .SetFlexGrow(1)
                 .AddChild(left)
-                .AddChild(_details);
+                .AddChild(_details));
 
-            ShowDetails(null);
+            if (_filtered.Count > 0)
+                _list.SetSelection(0);
+            else
+                ShowDetails(null);
         }
 
         private void Reload()
@@ -107,8 +162,12 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var serializedObject = new SerializedObject(config);
             var effectType = serializedObject.FindProperty("_effectType");
 
-            var effectLabel = new Label().SetFlexGrow(1);
-            var effectButton = new Button().SetText("Change…");
+            var effectLabel = new Label()
+                .SetFlexGrow(1)
+                .SetWhiteSpace(WhiteSpace.Normal);
+            effectLabel.TrackSerializedObjectValue(serializedObject, _ => RefreshEffect());
+            var effectButton = new Button()
+                .SetText("Change…");
 
             // The same picker the [TypeSelector] attribute opens, driven from code: anchor it to the button,
             // constrain it to IAbilityEffect implementations and write the result into the string property.
@@ -123,10 +182,15 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 }));
 
             var effectRow = new VisualElement()
-                .SetFlexDirection(FlexDirection.Row).SetAlignItems(Align.Center).SetMarginTop(8)
-                .AddChild(new Label("Effect").SetWidth(120))
+                .SetFlexDirection(FlexDirection.Row)
+                .SetAlignItems(Align.Center)
+                .SetMarginTop(8)
+                .AddChild(new Label("Effect")
+                    .SetWidth(120))
                 .AddChild(effectLabel)
                 .AddChild(effectButton);
+
+            effectRow.AddToClassList("ability-effect-row");
 
             // A one-click balance pass: chainable typed setters, Undo included, applied once at the end.
             var halveCooldown = new Button()
@@ -140,23 +204,52 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                     manaCost.SetIntAndApply(manaCost.intValue + 5);
                 });
 
+            halveCooldown.AddToClassList("ability-action");
+            var selectAsset = new Button()
+                .SetText("Select asset")
+                .AddClicked(() => Selection.activeObject = config);
+            selectAsset.AddToClassList("ability-action");
+            var actions = new VisualElement();
+            actions.AddToClassList("ability-actions");
+            actions.Add(halveCooldown);
+            actions.Add(selectAsset);
+
+            var description = new TextField("Description")
+            {
+                multiline = true,
+                bindingPath = "_description"
+            };
+            description.AddToClassList("ability-description");
+
+            var title = new Label(config.AbilityName)
+                .SetFontSize(24)
+                .AddBoldUnityFontStyleAndWeight()
+                .SetMarginBottom(18)
+                .SetTooltip("Double-click to open the script")
+                .AddOpenScriptCommand(config);
+            title.AddToClassList("ability-detail-title");
+            title.TrackSerializedObjectValue(serializedObject, _ =>
+            {
+                title.SetText(config.AbilityName);
+                _list.RefreshItems();
+            });
+
             _details
-                .AddChild(new Label(config.GetScriptName())
-                    .SetFontSize(15).AddBoldUnityFontStyleAndWeight().SetMarginBottom(6)
-                    .SetTooltip("Double-click to open the script")
-                    .AddOpenScriptCommand(config))
+                .AddChild(title)
                 // BindTo(SerializedObject) binds every PropertyField below in one call.
                 .AddChild(new VisualElement()
-                    .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName")).AddValueChanged(_ => _list.RefreshItems()))
-                    .AddChild(new PropertyField(serializedObject.FindProperty("_description")))
+                    .AddChild(new PropertyField(serializedObject.FindProperty("_abilityName"))
+                        .AddValueChanged(_ => _list.RefreshItems()))
+                    .AddChild(description)
                     .AddChild(new PropertyField(serializedObject.FindProperty("_manaCost")))
                     .AddChild(new PropertyField(serializedObject.FindProperty("_cooldown")))
                     .BindTo(serializedObject))
                 .AddChild(effectRow)
-                .AddChild(halveCooldown.SetMarginTop(12).SetAlignSelf(Align.FlexStart))
-                .AddChild(new Button().SetText("Select asset").SetAlignSelf(Align.FlexStart)
-                    .AddClicked(() => Selection.activeObject = config));
+                .AddChild(actions);
 
+            var hint = new Label("Changes are saved to the asset. Use Undo to restore previous values.");
+            hint.AddToClassList("ability-hint");
+            _details.Add(hint);
             RefreshEffect();
 
             void RefreshEffect()
@@ -166,6 +259,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 effectLabel.SetText(type is null ? "<None>" : $"{type.Name} — {description}");
             }
         }
+
+        private void ApplyTheme(PreviewTheme theme) => rootVisualElement.EnableInClassList(
+            "ability-catalog--light", theme == PreviewTheme.Light || (theme == PreviewTheme.Editor && !EditorGUIUtility.isProSkin));
 
         private void CreateAsset()
         {

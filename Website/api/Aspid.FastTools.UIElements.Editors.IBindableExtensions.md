@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements.Editors](Aspid.FastTools.UIElements.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Provides binding extension methods for [`IBindable`](https://docs.unity3d.com/ScriptReference/UIElements-IBindable.html) elements.
+Provides extension methods for binding [`IBindable`](https://docs.unity3d.com/ScriptReference/UIElements-IBindable.html) elements.
 
 ```csharp
 public static class IBindableExtensions
@@ -51,13 +51,13 @@ The property to bind to.
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html) element to configure.
 
 ### BindTo\<T\>\(T, SerializedObject, string\) {#Aspid_FastTools_UIElements_Editors_IBindableExtensions_BindTo__1___0_UnityEditor_SerializedObject_System_String_}
 
@@ -85,13 +85,13 @@ The property path to bind to.
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html) element to configure.
 
 ### SetBindingPath\<T\>\(T, string\) {#Aspid_FastTools_UIElements_Editors_IBindableExtensions_SetBindingPath__1___0_System_String_}
 
@@ -115,11 +115,11 @@ The binding path to set.
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html) element to configure.
 

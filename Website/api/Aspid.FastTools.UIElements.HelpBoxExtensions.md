@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`HelpBox`](https://docs.unity3d.com/ScriptReference/UIElements-HelpBox.html).
+
 ```csharp
 public static class HelpBoxExtensions
 ```
@@ -29,7 +31,7 @@ public static class HelpBoxExtensions
 
 ### SetMessageType\<T\>\(T, HelpBoxMessageType\) {#Aspid_FastTools_UIElements_HelpBoxExtensions_SetMessageType__1___0_UnityEngine_UIElements_HelpBoxMessageType_}
 
-Sets [`messageType`](https://docs.unity3d.com/ScriptReference/UIElements-HelpBox-messageType.html) and returns the element for chaining.
+Sets [`messageType`](https://docs.unity3d.com/ScriptReference/UIElements-HelpBox-messageType.html).
 
 ```csharp
 public static T SetMessageType<T>(this T element, HelpBoxMessageType value) where T : HelpBox
@@ -55,13 +57,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-The type of message.
+The element type.
 
 ### SetText\<T\>\(T, string\) {#Aspid_FastTools_UIElements_HelpBoxExtensions_SetText__1___0_System_String_}
 
-Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-HelpBox-text.html) and returns the element for chaining.
+Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-HelpBox-text.html).
 
 ```csharp
 public static T SetText<T>(this T element, string value) where T : HelpBox
@@ -87,7 +87,5 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-The message text.
+The element type.
 

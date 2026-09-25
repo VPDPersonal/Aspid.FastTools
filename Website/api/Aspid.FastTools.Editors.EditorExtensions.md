@@ -11,8 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Editors](Aspid.FastTools.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Editor-side extension methods for [`Object`](https://docs.unity3d.com/ScriptReference/Object.html) and its subclass [`Component`](https://docs.unity3d.com/ScriptReference/Component.html)
-that resolve human-readable script names, respecting the [`AddComponentMenu`](https://docs.unity3d.com/ScriptReference/AddComponentMenu.html) attribute.
+Provides extension methods for resolving Unity object display names.
 
 ```csharp
 public static class EditorExtensions
@@ -30,53 +29,48 @@ public static class EditorExtensions
 
 ## Methods
 
-### GetScriptName\(Object\) {#Aspid_FastTools_Editors_EditorExtensions_GetScriptName_UnityEngine_Object_}
+### GetDisplayName\(Object\) {#Aspid_FastTools_Editors_EditorExtensions_GetDisplayName_UnityEngine_Object_}
 
-Returns a human-readable display name for the given Unity object.
-If the object's type (or any of its base types) is decorated with [`AddComponentMenu`](https://docs.unity3d.com/ScriptReference/AddComponentMenu.html),
-the name is taken from [`GetInspectorTitle`](https://docs.unity3d.com/ScriptReference/ObjectNames-GetInspectorTitle.html), which honours the menu name;
-otherwise it falls back to [`NicifyVariableName`](https://docs.unity3d.com/ScriptReference/ObjectNames-NicifyVariableName.html) applied to the type name.
+Returns the last segment of the [`AddComponentMenu`](https://docs.unity3d.com/ScriptReference/AddComponentMenu.html) path declared on the object's own type, or the nicified type name.
 
 ```csharp
-public static string GetScriptName(this Object obj)
+public static string GetDisplayName(this Object obj)
 ```
 
 #### Parameters
 
 `obj` Object
 
-The object whose display name should be resolved.
+The object whose display name to resolve.
 
 #### Returns
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-The display name string, or [`Empty`](https://learn.microsoft.com/dotnet/api/system.string.empty) if <code class="paramref">obj</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
-or has been destroyed.
+The display name; otherwise, [`Empty`](https://learn.microsoft.com/dotnet/api/system.string.empty) if <code class="paramref">obj</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or destroyed.
 
-### GetScriptNameWithIndex\(Component\) {#Aspid_FastTools_Editors_EditorExtensions_GetScriptNameWithIndex_UnityEngine_Component_}
+#### Remarks
 
-Returns the display name of a component with a 1-based numeric suffix appended when multiple
-components of the exact same type exist on the same [`GameObject`](https://docs.unity3d.com/ScriptReference/GameObject.html). The index reflects
-the order returned by [`GetComponents`](https://docs.unity3d.com/ScriptReference/Component-GetComponents.html).
-For example, the second <code>AudioSource</code> on the object is returned as <code>"Audio Source (2)"</code>.
+An attribute inherited from a base class, an empty path or a path ending with <code>/</code> falls back to the type name.
+Unlike [`GetInspectorTitle`](https://docs.unity3d.com/ScriptReference/ObjectNames-GetInspectorTitle.html), the result never carries the <code>(Script)</code> or <code>(Deprecated)</code> suffix.
+
+### GetDisplayNameWithIndex\(Component\) {#Aspid_FastTools_Editors_EditorExtensions_GetDisplayNameWithIndex_UnityEngine_Component_}
+
+Returns the component display name with a one-based suffix when its object has multiple components of the exact same type.
 
 ```csharp
-public static string GetScriptNameWithIndex(this Component targetComponent)
+public static string GetDisplayNameWithIndex(this Component targetComponent)
 ```
 
 #### Parameters
 
 `targetComponent` Component
 
-The component whose indexed display name should be resolved.
+The component whose indexed display name to resolve.
 
 #### Returns
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-The display name with an index suffix if duplicates exist on the same object,
-the plain display name if there is only one such component,
-or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if <code class="paramref">targetComponent</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>
-or has been destroyed.
+The display name, indexed in component order when duplicates exist; otherwise, [`Empty`](https://learn.microsoft.com/dotnet/api/system.string.empty) if <code class="paramref">targetComponent</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or destroyed.
 

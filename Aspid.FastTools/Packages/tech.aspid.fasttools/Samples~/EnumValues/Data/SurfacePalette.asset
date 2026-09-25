@@ -43,14 +43,22 @@ MonoBehaviour:
     _defaultValue: {r: 0.2, g: 0.2, b: 0.2, a: 1}
     _values:
     - _key: Grass
-      _value: {r: 0.2, g: 0.35, b: 0.15, a: 1}
+      _value: {r: 0.38431373, g: 0.9019608, b: 0.3529412, a: 1}
       _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-    - _key: Sand
-      _value: {r: 0.6, g: 0.5, b: 0.3, a: 1}
+    - _key: Stone
+      _value: {r: 0.70980394, g: 0.5411765, b: 1, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Metal
+      _value: {r: 1, g: 0.3882353, b: 0.48235294, a: 1}
       _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - _key: Water
-      _value: {r: 0.8, g: 0.9, b: 1, a: 1}
+      _value: {r: 0.31764707, g: 0.8627451, b: 1, a: 1}
+      _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
+        Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
+    - _key: Sand
+      _value: {r: 1, g: 0.6745098, b: 0.21960784, a: 1}
       _enumType: Aspid.FastTools.Samples.EnumValues.SurfaceType, Aspid.FastTools.Samples.EnumValues,
         Version=0.0.0.0, Culture=neutral, PublicKeyToken=null

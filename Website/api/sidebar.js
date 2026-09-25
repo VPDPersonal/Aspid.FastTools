@@ -2,36 +2,6 @@
 export default { api: [
   {
     "type": "category",
-    "key": "Aspid.FastTools",
-    "label": "Aspid.FastTools",
-    "collapsed": true,
-    "link": {
-      "type": "doc",
-      "id": "Aspid.FastTools"
-    },
-    "items": [
-      {
-        "type": "category",
-        "key": "Aspid.FastTools.Classes",
-        "label": "Classes",
-        "collapsed": true,
-        "items": [
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.StringExtensions",
-            "label": "StringExtensions"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.TypeExtensions",
-            "label": "TypeExtensions (FastTools)"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "type": "category",
     "key": "Aspid.FastTools.Editors",
     "label": "Aspid.FastTools.Editors",
     "collapsed": true,
@@ -256,7 +226,7 @@ export default { api: [
           {
             "type": "doc",
             "id": "Aspid.FastTools.Types.Editors.TypeExtensions",
-            "label": "TypeExtensions (Editors)"
+            "label": "TypeExtensions"
           },
           {
             "type": "doc",
@@ -321,8 +291,63 @@ export default { api: [
         "items": [
           {
             "type": "doc",
+            "id": "Aspid.FastTools.UIElements.AbstractProgressBarExtensions",
+            "label": "AbstractProgressBarExtensions"
+          },
+          {
+            "type": "doc",
             "id": "Aspid.FastTools.UIElements.BaseBoolFieldExtensions",
             "label": "BaseBoolFieldExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldAnimationCurveExtensions",
+            "label": "BaseFieldAnimationCurveExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldBoundsExtensions",
+            "label": "BaseFieldBoundsExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldBoundsIntExtensions",
+            "label": "BaseFieldBoundsIntExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldByteExtensions",
+            "label": "BaseFieldByteExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldCharExtensions",
+            "label": "BaseFieldCharExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldColor32Extensions",
+            "label": "BaseFieldColor32Extensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldColorExtensions",
+            "label": "BaseFieldColorExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldDecimalExtensions",
+            "label": "BaseFieldDecimalExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldDoubleExtensions",
+            "label": "BaseFieldDoubleExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.BaseFieldEnumExtensions",
+            "label": "BaseFieldEnumExtensions"
           },
           {
             "type": "doc",
@@ -331,148 +356,98 @@ export default { api: [
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelAnimationCurve",
-            "label": "BaseFieldExtensionsSetLabelAnimationCurve"
+            "id": "Aspid.FastTools.UIElements.BaseFieldFloatExtensions",
+            "label": "BaseFieldFloatExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelBounds",
-            "label": "BaseFieldExtensionsSetLabelBounds"
+            "id": "Aspid.FastTools.UIElements.BaseFieldGradientExtensions",
+            "label": "BaseFieldGradientExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelBoundsInt",
-            "label": "BaseFieldExtensionsSetLabelBoundsInt"
+            "id": "Aspid.FastTools.UIElements.BaseFieldHash128Extensions",
+            "label": "BaseFieldHash128Extensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelByte",
-            "label": "BaseFieldExtensionsSetLabelByte"
+            "id": "Aspid.FastTools.UIElements.BaseFieldIntExtensions",
+            "label": "BaseFieldIntExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelChar",
-            "label": "BaseFieldExtensionsSetLabelChar"
+            "id": "Aspid.FastTools.UIElements.BaseFieldLongExtensions",
+            "label": "BaseFieldLongExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelColor",
-            "label": "BaseFieldExtensionsSetLabelColor"
+            "id": "Aspid.FastTools.UIElements.BaseFieldObjectExtensions",
+            "label": "BaseFieldObjectExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelColor32",
-            "label": "BaseFieldExtensionsSetLabelColor32"
+            "id": "Aspid.FastTools.UIElements.BaseFieldQuaternionExtensions",
+            "label": "BaseFieldQuaternionExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelDecimal",
-            "label": "BaseFieldExtensionsSetLabelDecimal"
+            "id": "Aspid.FastTools.UIElements.BaseFieldRectExtensions",
+            "label": "BaseFieldRectExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelDouble",
-            "label": "BaseFieldExtensionsSetLabelDouble"
+            "id": "Aspid.FastTools.UIElements.BaseFieldSbyteExtensions",
+            "label": "BaseFieldSbyteExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelEnum",
-            "label": "BaseFieldExtensionsSetLabelEnum"
+            "id": "Aspid.FastTools.UIElements.BaseFieldShortExtensions",
+            "label": "BaseFieldShortExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelFloat",
-            "label": "BaseFieldExtensionsSetLabelFloat"
+            "id": "Aspid.FastTools.UIElements.BaseFieldStringExtensions",
+            "label": "BaseFieldStringExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelGradient",
-            "label": "BaseFieldExtensionsSetLabelGradient"
+            "id": "Aspid.FastTools.UIElements.BaseFieldUintExtensions",
+            "label": "BaseFieldUintExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelHash128",
-            "label": "BaseFieldExtensionsSetLabelHash128"
+            "id": "Aspid.FastTools.UIElements.BaseFieldUlongExtensions",
+            "label": "BaseFieldUlongExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelInt",
-            "label": "BaseFieldExtensionsSetLabelInt"
+            "id": "Aspid.FastTools.UIElements.BaseFieldUshortExtensions",
+            "label": "BaseFieldUshortExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelLong",
-            "label": "BaseFieldExtensionsSetLabelLong"
+            "id": "Aspid.FastTools.UIElements.BaseFieldVector2Extensions",
+            "label": "BaseFieldVector2Extensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelObject",
-            "label": "BaseFieldExtensionsSetLabelObject"
+            "id": "Aspid.FastTools.UIElements.BaseFieldVector2IntExtensions",
+            "label": "BaseFieldVector2IntExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelQuaternion",
-            "label": "BaseFieldExtensionsSetLabelQuaternion"
+            "id": "Aspid.FastTools.UIElements.BaseFieldVector3Extensions",
+            "label": "BaseFieldVector3Extensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelRect",
-            "label": "BaseFieldExtensionsSetLabelRect"
+            "id": "Aspid.FastTools.UIElements.BaseFieldVector3IntExtensions",
+            "label": "BaseFieldVector3IntExtensions"
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelSbyte",
-            "label": "BaseFieldExtensionsSetLabelSbyte"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelShort",
-            "label": "BaseFieldExtensionsSetLabelShort"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelString",
-            "label": "BaseFieldExtensionsSetLabelString"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelUint",
-            "label": "BaseFieldExtensionsSetLabelUint"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelUlong",
-            "label": "BaseFieldExtensionsSetLabelUlong"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelUshort",
-            "label": "BaseFieldExtensionsSetLabelUshort"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelVector2",
-            "label": "BaseFieldExtensionsSetLabelVector2"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelVector2Int",
-            "label": "BaseFieldExtensionsSetLabelVector2Int"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelVector3",
-            "label": "BaseFieldExtensionsSetLabelVector3"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelVector3Int",
-            "label": "BaseFieldExtensionsSetLabelVector3Int"
-          },
-          {
-            "type": "doc",
-            "id": "Aspid.FastTools.UIElements.BaseFieldExtensionsSetLabelVector4",
-            "label": "BaseFieldExtensionsSetLabelVector4"
+            "id": "Aspid.FastTools.UIElements.BaseFieldVector4Extensions",
+            "label": "BaseFieldVector4Extensions"
           },
           {
             "type": "doc",
@@ -576,18 +551,108 @@ export default { api: [
           },
           {
             "type": "doc",
-            "id": "Aspid.FastTools.UIElements.ProgressBarExtensions",
-            "label": "ProgressBarExtensions"
-          },
-          {
-            "type": "doc",
             "id": "Aspid.FastTools.UIElements.SliderExtensions",
             "label": "SliderExtensions"
           },
           {
             "type": "doc",
+            "id": "Aspid.FastTools.UIElements.SliderIntExtensions",
+            "label": "SliderIntExtensions"
+          },
+          {
+            "type": "doc",
             "id": "Aspid.FastTools.UIElements.TextElementExtensions",
             "label": "TextElementExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldDoubleExtensions",
+            "label": "TextInputBaseFieldDoubleExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldDoubleTextSelectionExtensions",
+            "label": "TextInputBaseFieldDoubleTextSelectionExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldExtensions",
+            "label": "TextInputBaseFieldExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldFloatExtensions",
+            "label": "TextInputBaseFieldFloatExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldFloatTextSelectionExtensions",
+            "label": "TextInputBaseFieldFloatTextSelectionExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldHash128Extensions",
+            "label": "TextInputBaseFieldHash128Extensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldHash128TextSelectionExtensions",
+            "label": "TextInputBaseFieldHash128TextSelectionExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldIntExtensions",
+            "label": "TextInputBaseFieldIntExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldIntTextSelectionExtensions",
+            "label": "TextInputBaseFieldIntTextSelectionExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldLongExtensions",
+            "label": "TextInputBaseFieldLongExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldLongTextSelectionExtensions",
+            "label": "TextInputBaseFieldLongTextSelectionExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldStringExtensions",
+            "label": "TextInputBaseFieldStringExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldStringTextSelectionExtensions",
+            "label": "TextInputBaseFieldStringTextSelectionExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions",
+            "label": "TextInputBaseFieldTextSelectionExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldUintExtensions",
+            "label": "TextInputBaseFieldUintExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldUintTextSelectionExtensions",
+            "label": "TextInputBaseFieldUintTextSelectionExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldUlongExtensions",
+            "label": "TextInputBaseFieldUlongExtensions"
+          },
+          {
+            "type": "doc",
+            "id": "Aspid.FastTools.UIElements.TextInputBaseFieldUlongTextSelectionExtensions",
+            "label": "TextInputBaseFieldUlongTextSelectionExtensions"
           },
           {
             "type": "doc",

@@ -1,0 +1,6 @@
+var w=(UnityEditor.EditorWindow)UnityEditor.EditorUtility.InstanceIDToObject(-70256);
+var search=UnityEngine.UIElements.UQueryExtensions.Q<UnityEditor.UIElements.ToolbarSearchField>(w.rootVisualElement);
+search.value="Pistol";
+search.Blur();
+w.Focus();
+return true;

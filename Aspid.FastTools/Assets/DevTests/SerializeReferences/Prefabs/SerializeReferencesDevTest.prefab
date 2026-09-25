@@ -1,0 +1,123 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7412330891455062001
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7412330891455062002}
+  - component: {fileID: 7412330891455062003}
+  - component: {fileID: 7412330891455062004}
+  m_Layer: 0
+  m_Name: SerializeReferencesDevTest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7412330891455062002
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7412330891455062001}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7412330891455062003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7412330891455062001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b420f95844b84734b4a50fffdc0a01e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aspid.FastTools.DevTests.SerializeReferences.SerializeReferencesIMGUITest
+  _required:
+    rid: -2
+  _sharedLeft:
+    rid: 7412330891455063000
+  _sharedRight:
+    rid: 7412330891455063000
+  _missing:
+    rid: 7412330891455063001
+  _missingInList:
+  - rid: 7412330891455063002
+  - rid: 7412330891455063003
+  references:
+    version: 2
+    RefIds:
+    - rid: 7412330891455063000
+      type: {class: Pistol, ns: Game.Gear, asm: Assembly-CSharp}
+      data:
+        _damage: 12
+    - rid: 7412330891455063001
+      type: {class: Pistoll, ns: Game.Gear, asm: Assembly-CSharp}
+      data:
+        _damage: 37
+    - rid: 7412330891455063002
+      type: {class: Shotgun, ns: Game.Gear, asm: Assembly-CSharp}
+      data:
+        _damage: 20
+        _pellets: 6
+    - rid: 7412330891455063003
+      type: {class: Shotgunn, ns: Game.Gear, asm: Assembly-CSharp}
+      data:
+        _damage: 44
+        _pellets: 8
+--- !u!114 &7412330891455062004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7412330891455062001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19ed43d7d91a47a7b0ed8f22852b914d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Aspid.FastTools.DevTests.SerializeReferences.SerializeReferencesUIToolkitTest
+  _required:
+    rid: -2
+  _sharedLeft:
+    rid: 7412330891455064000
+  _sharedRight:
+    rid: 7412330891455064000
+  _missing:
+    rid: 7412330891455064001
+  _missingInList:
+  - rid: 7412330891455064002
+  - rid: 7412330891455064003
+  references:
+    version: 2
+    RefIds:
+    - rid: 7412330891455064000
+      type: {class: Pistol, ns: Game.Gear, asm: Assembly-CSharp}
+      data:
+        _damage: 12
+    - rid: 7412330891455064001
+      type: {class: Pistoll, ns: Game.Gear, asm: Assembly-CSharp}
+      data:
+        _damage: 37
+    - rid: 7412330891455064002
+      type: {class: Shotgun, ns: Game.Gear, asm: Assembly-CSharp}
+      data:
+        _damage: 20
+        _pellets: 6
+    - rid: 7412330891455064003
+      type: {class: Shotgunn, ns: Game.Gear, asm: Assembly-CSharp}
+      data:
+        _damage: 44
+        _pellets: 8

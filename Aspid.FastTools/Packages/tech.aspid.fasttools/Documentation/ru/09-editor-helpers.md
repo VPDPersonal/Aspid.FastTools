@@ -1,27 +1,42 @@
 # Editor Helpers
 
-Хелперы отображаемых имён объектов Unity для кастомных редакторов:
+Для подписи объекта в своём окне редактора у Unity есть `ObjectNames.GetInspectorTitle`, но он дописывает «(Script)» к скриптам без `[AddComponentMenu]` и не различает два одинаковых компонента на одном GameObject. `GetDisplayName()` возвращает читаемое имя типа (`AbilityConfig` → «Ability Config»), а `GetDisplayNameWithIndex()` нумерует дубликаты: «Ability Config (1)», «Ability Config (2)».
 
-| Метод | Возвращает |
-|---|---|
-| `GetScriptName()` | Отображаемое имя объекта — `ObjectNames.GetInspectorTitle`, если у типа есть `[AddComponentMenu]`, иначе «очеловеченное» имя типа |
-| `GetScriptNameWithIndex()` | То же имя с числовым суффиксом, когда на GameObject несколько компонентов одного типа — например `"Audio Source (2)"` |
+## Быстрый старт
+
+Примеры на этой странице работают с компонентом `AbilityConfig`:
+
+```csharp
+public sealed class AbilityConfig : MonoBehaviour { }
+```
 
 ```csharp
 using Aspid.FastTools.Editors;
 
-[CustomEditor(typeof(MyBehaviour))]
-public class MyBehaviourEditor : Editor
-{
-    public override VisualElement CreateInspectorGUI()
-    {
-        // "My Behaviour" — или "Custom Name", если присутствует [AddComponentMenu("Custom Name")]
-        var name = target.GetScriptName();
-
-        // "My Behaviour (2)" при наличии второго компонента того же типа
-        var nameWithIndex = ((Component)target).GetScriptNameWithIndex();
-
-        return new Label(name);
-    }
-}
+var title = new Label(config.GetDisplayNameWithIndex());
 ```
+
+> [!NOTE]
+> Методы доступны только в редакторе: вызывайте их из папки `Editor` или из Assembly Definition только для Editor, который ссылается на `Aspid.FastTools.Editor`.
+
+## GetDisplayName()
+
+Расширяет `UnityEngine.Object`. Если `[AddComponentMenu]` объявлен на самом типе, возвращает последний сегмент пути меню; иначе — имя типа, разбитое на слова. Для `null` или уничтоженного объекта возвращает `string.Empty`.
+
+| `[AddComponentMenu]` на `AbilityConfig` | `GetInspectorTitle()` | `GetDisplayName()` |
+|---|---|---|
+| Нет | `Ability Config (Script)` | `Ability Config` |
+| `"Gameplay/Ability"` | `Ability` | `Ability` |
+
+## GetDisplayNameWithIndex()
+
+Расширяет `Component`. Считает компоненты **точно того же типа** на GameObject и добавляет позицию компонента среди них, начиная с единицы. Номер вычисляется при каждом вызове, поэтому после удаления или перестановки компонентов вызовите метод заново. Для `null` или уничтоженного компонента возвращает `string.Empty`.
+
+| Компоненты на GameObject | Подписи |
+|---|---|
+| `AbilityConfig` | `Ability Config` |
+| `AbilityConfig`, `AbilityConfig` | `Ability Config (1)`, `Ability Config (2)` |
+
+## Пример в пакете
+
+В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) `GetDisplayName()` задаёт заголовок кастомного инспектора ассета `AbilityConfig`.

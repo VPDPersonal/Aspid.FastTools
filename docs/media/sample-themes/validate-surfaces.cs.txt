@@ -1,0 +1,51 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
+public static class PrepareSoftTheme {
+ const BindingFlags Flags=BindingFlags.NonPublic|BindingFlags.Public|BindingFlags.Static|BindingFlags.Instance;
+ public static object Main() {
+  var scene=SceneManager.GetActiveScene();
+  if(scene.isDirty||EditorApplication.isPlaying)throw new Exception("Scene must be clean and stopped");
+  File.WriteAllText("/Users/vladislavpanin/Documents/Codex/2026-09-20/localhost-3001-aspid-fasttools-ru-docs/work/sample-themes-brighter/original-scene.txt",scene.path);
+  var assembly=AppDomain.CurrentDomain.GetAssemblies().First(a=>a.GetName().Name=="Aspid.FastTools.Editor");
+  var settingsType=assembly.GetType("Aspid.FastTools.Editors.Internal.SampleThemeSettings");
+  var settings=(UnityEngine.Object)settingsType.BaseType.GetProperty("instance",Flags).GetValue(null);
+  var serialized=new SerializedObject(settings);
+  ColorUtility.TryParseHtmlString("#A6D8A8",out var accent);
+  serialized.FindProperty("_light.Accent").colorValue=accent;
+  var names=new[]{"Grass","Stone","Metal","Water","Sand"};
+  var values=new[]{"78B795","B29BD4","D998A8","61B4CE","D4A662"};
+  for(int i=0;i<names.Length;i++) {
+   ColorUtility.TryParseHtmlString("#"+values[i],out var color);
+   serialized.FindProperty("_enumValuesLight.Trails."+names[i]).colorValue=color;
+  }
+  serialized.ApplyModifiedPropertiesWithoutUndo();
+  settingsType.GetMethod("Persist",Flags).Invoke(settings,null);
+  var preview=assembly.GetType("Aspid.FastTools.Editors.Internal.SampleThemePreview");
+  var mode=preview.GetMethod("SetMode",Flags);
+  Action<int> set=m=>mode.Invoke(null,new[]{Enum.ToObject(mode.GetParameters()[0].ParameterType,m)});
+  set(0);
+  scene=EditorSceneManager.OpenScene("Assets/Samples/Aspid.FastTools/1.0.0-rc.8/EnumValues/Scenes/EnumValues.unity");
+  var walker=GameObject.Find("Walker").GetComponent("Walker");
+  var field=walker.GetType().GetField("_palette",Flags);
+  var original=field.GetValue(walker);
+  set(2);
+  var clone=field.GetValue(walker);
+  if(ReferenceEquals(original,clone))throw new Exception("Palette was not cloned");
+  var get=clone.GetType().GetMethod("GetTileColor");
+  var grass=Enum.Parse(get.GetParameters()[0].ParameterType,"Grass");
+  if(ColorUtility.ToHtmlStringRGB((Color)get.Invoke(clone,new[]{grass}))!="9ABD9F")throw new Exception("Tile lookup not themed");
+  var trail=clone.GetType().GetMethod("GetFootprintColor");
+  if(ColorUtility.ToHtmlStringRGB((Color)trail.Invoke(clone,new[]{grass}))!="78B795")throw new Exception("Trail lookup not themed");
+  set(0);
+  if(!ReferenceEquals(original,field.GetValue(walker)))throw new Exception("Original reference not restored");
+  if(scene.isDirty)throw new Exception("Scene dirtied");
+  set(2);
+  return "Verified themed tile/trail lookups, original palette restoration and clean scene. Ready to record.";
+ }
+}

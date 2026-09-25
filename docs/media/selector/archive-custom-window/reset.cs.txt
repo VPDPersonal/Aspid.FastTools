@@ -1,0 +1,10 @@
+var w=(UnityEditor.EditorWindow)UnityEditor.EditorUtility.InstanceIDToObject(-67644);
+var so=new UnityEditor.SerializedObject(UnityEditor.EditorUtility.InstanceIDToObject(-67642));
+var p=so.FindProperty("_primary");
+p.managedReferenceValue=new Aspid.FastTools.Samples.SerializeReferences.Pistol();
+so.ApplyModifiedPropertiesWithoutUndo(); p.FindPropertyRelative("_damage").intValue=37; p.isExpanded=true; so.ApplyModifiedPropertiesWithoutUndo();
+var r=w.rootVisualElement;
+UnityEditor.UIElements.BindingExtensions.Unbind(r);
+while(r.childCount>1) r.RemoveAt(1);
+r.Add(new UnityEditor.UIElements.PropertyField(p));r.Add(new UnityEditor.UIElements.PropertyField(so.FindProperty("_sidearms")));
+UnityEditor.UIElements.BindingExtensions.Bind(r,so);w.Focus();return true;

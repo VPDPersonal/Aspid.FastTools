@@ -11,8 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.Editors](Aspid.FastTools.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Fluent extension methods for [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) providing chainable wrappers
-around [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html) synchronization and typed value setters.
+Provides extension methods for synchronizing and assigning [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) values.
 
 ```csharp
 public static class SerializePropertyExtensions
@@ -66,6 +65,36 @@ Increases [`arraySize`](https://docs.unity3d.com/ScriptReference/SerializedPrope
 
 ```csharp
 public static T AddArraySizeAndApply<T>(this T property, int value = 1) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target array property.
+
+`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Amount to add to the current array size.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### AddArraySizeAndApplyWithoutUndo\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_AddArraySizeAndApplyWithoutUndo__1___0_System_Int32_}
+
+Increases [`arraySize`](https://docs.unity3d.com/ScriptReference/SerializedProperty-arraySize.html) by <code class="paramref">value</code> then applies modified properties without recording Undo.
+
+```csharp
+public static T AddArraySizeAndApplyWithoutUndo<T>(this T property, int value = 1) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -144,9 +173,7 @@ Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/Seriali
 
 ### GetDeclaringInstance\(SerializedProperty\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_GetDeclaringInstance_UnityEditor_SerializedProperty_}
 
-Traverses the [`propertyPath`](https://docs.unity3d.com/ScriptReference/SerializedProperty-propertyPath.html) to return the runtime object on which the
-property's backing field is declared — the direct container, not the root <code>targetObject</code>.
-For an array/list element property the instance owning the collection field is returned.
+Returns the instance declaring the backing field, including the collection owner for array or list elements.
 
 ```csharp
 public static object GetDeclaringInstance(this SerializedProperty property)
@@ -156,36 +183,21 @@ public static object GetDeclaringInstance(this SerializedProperty property)
 
 `property` SerializedProperty
 
-The property whose declaring instance should be resolved.
+The property whose declaring instance to resolve.
 
 #### Returns
 
  [object](https://learn.microsoft.com/dotnet/api/system.object)
 
-The instance declaring the property's backing field (the root <code>targetObject</code> for a top-level property),
-or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if the path cannot be resolved.
-
-#### Examples
-
-For <code>_inventory._slots.Array.data[2]._weapon</code> the returned instance is the slot element
-<code>_slots[2]</code> — the object whose class declares the <code>_weapon</code> field:
-
-
-```csharp
-var slot = property.GetDeclaringInstance() as InventorySlot;
-```
-
+The declaring instance; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if the path cannot be resolved.
 
 #### Remarks
 
-When the declaring instance is a struct, the returned object is a boxed <b>copy</b> — mutating it does not
-affect the serialized object. Any resolution failure (missing field, a <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> value
-or an out-of-range element index along the path) returns <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a>.
+A struct instance is a boxed copy; modifying it does not update the serialized object.
 
 ### GetFieldInfo\(SerializedProperty\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_GetFieldInfo_UnityEditor_SerializedProperty_}
 
-Resolves the [`FieldInfo`](https://learn.microsoft.com/dotnet/api/system.reflection.fieldinfo) that backs this [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html),
-looked up on the runtime type of the property's declaring instance (see [`SerializePropertyExtensions.GetDeclaringInstance`](Aspid.FastTools.Editors.SerializePropertyExtensions.md#Aspid_FastTools_Editors_SerializePropertyExtensions_GetDeclaringInstance_UnityEditor_SerializedProperty_)).
+Resolves the backing field on the runtime type of the declaring instance or its base classes.
 
 ```csharp
 public static FieldInfo GetFieldInfo(this SerializedProperty property)
@@ -195,23 +207,21 @@ public static FieldInfo GetFieldInfo(this SerializedProperty property)
 
 `property` SerializedProperty
 
-The property whose backing field should be located.
+The property whose backing field to locate.
 
 #### Returns
 
  [FieldInfo](https://learn.microsoft.com/dotnet/api/system.reflection.fieldinfo)
 
-The resolved [`FieldInfo`](https://learn.microsoft.com/dotnet/api/system.reflection.fieldinfo), or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if it cannot be found.
+The backing field; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if it cannot be resolved.
 
 #### Remarks
 
-Base classes are searched too. For a list/array element the collection field itself is returned
-(matching <code>PropertyDrawer.fieldInfo</code>); a <code>[SerializeReference]</code> segment resolves naturally
-through the live managed reference's runtime type.
+For an array or list element, returns the collection field.
 
 ### GetMemberName\(SerializedProperty\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_GetMemberName_UnityEditor_SerializedProperty_}
 
-The name of the member that backs <code class="paramref">property</code>.
+Returns the backing field name, including the collection field for an array or list element.
 
 ```csharp
 public static string GetMemberName(this SerializedProperty property)
@@ -221,20 +231,17 @@ public static string GetMemberName(this SerializedProperty property)
 
 `property` SerializedProperty
 
+The property to inspect.
+
 #### Returns
 
  [string](https://learn.microsoft.com/dotnet/api/system.string)
 
-#### Remarks
-
-Equals [`name`](https://docs.unity3d.com/ScriptReference/SerializedProperty-name.html) for a regular field, but differs for an array/list element:
-its path ends with <code>Array.data[i]</code>, so <code>name</code> is just <code>data</code> — here <code>_slots.Array.data[0]</code>
-yields the collection field's name <code>_slots</code> instead.
+The backing field name without collection indices.
 
 ### GetPropertyType\(SerializedProperty\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_GetPropertyType_UnityEditor_SerializedProperty_}
 
-Returns the [`Type`](https://learn.microsoft.com/dotnet/api/system.type) of the field that backs this [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html).
-For an array/list element property the element type is returned.
+Returns the backing field type or, for an array or list element, its element type.
 
 ```csharp
 public static Type GetPropertyType(this SerializedProperty serializedProperty)
@@ -250,15 +257,11 @@ The property to inspect.
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)
 
-The [`FieldType`](https://learn.microsoft.com/dotnet/api/system.reflection.fieldinfo.fieldtype) of the backing field
-(the element type when the property is an array/list element),
-or <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if the field cannot be resolved.
+The declared type; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if the backing field cannot be resolved.
 
 ### HasFoldout\(SerializedProperty\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_HasFoldout_UnityEditor_SerializedProperty_}
 
-Returns <code>true</code> when the property is a [`Generic`](https://docs.unity3d.com/ScriptReference/SerializedPropertyType-Generic.html)
-value (a plain serializable struct/class) with visible children — i.e. draws as an
-expandable foldout. Single-line values return <code>false</code>.
+Determines whether a generic serialized value has visible children.
 
 ```csharp
 public static bool HasFoldout(this SerializedProperty property)
@@ -268,24 +271,21 @@ public static bool HasFoldout(this SerializedProperty property)
 
 `property` SerializedProperty
 
-The property whose drawing shape is being queried.
+The property to inspect.
 
 #### Returns
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-<code>true</code> if the property draws with a foldout arrow; otherwise <code>false</code>.
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> for a generic value with visible children; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 
 #### Remarks
 
-Managed references ([`ManagedReference`](https://docs.unity3d.com/ScriptReference/SerializedPropertyType-ManagedReference.html)) also render
-with a foldout but are not covered by this check.
+Managed references and custom drawer layouts are not covered by this check.
 
 ### IsArrayElement\(SerializedProperty\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_IsArrayElement_UnityEditor_SerializedProperty_}
 
-True when <code class="paramref">property</code> is an element of an array or [`List<T>`](https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1)
-— its [`propertyPath`](https://docs.unity3d.com/ScriptReference/SerializedProperty-propertyPath.html) ends with an <code>Array.data[i]</code>
-segment, e.g. <code>_slots.Array.data[0]</code>.
+Determines whether <code class="paramref">property</code> represents an array or list element.
 
 ```csharp
 public static bool IsArrayElement(this SerializedProperty property)
@@ -295,19 +295,17 @@ public static bool IsArrayElement(this SerializedProperty property)
 
 `property` SerializedProperty
 
+The property to inspect.
+
 #### Returns
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-#### Remarks
-
-Not to be confused with [`isArray`](https://docs.unity3d.com/ScriptReference/SerializedProperty-isArray.html), which is true for the
-collection itself (<code>_slots</code>), not for a single element inside it.
+<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the path ends with an element index; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 
 ### Persistent\(SerializedProperty\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_Persistent_UnityEditor_SerializedProperty_}
 
-Returns a copy of the property backed by its own new [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html),
-independent of the source and safe to store.
+Returns the property at the same path on an independent [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html).
 
 ```csharp
 public static SerializedProperty Persistent(this SerializedProperty property)
@@ -317,21 +315,18 @@ public static SerializedProperty Persistent(this SerializedProperty property)
 
 `property` SerializedProperty
 
-Source property — its [`propertyPath`](https://docs.unity3d.com/ScriptReference/SerializedProperty-propertyPath.html) is reused.
+The source property.
 
 #### Returns
 
  SerializedProperty
 
-A new [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) at the same path on a new [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html).
+The independent property; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> if the path no longer exists on the targets.
 
 #### Remarks
 
-Use when the property must outlive the original [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html),
-e.g. cached on a long-lived UIToolkit element or captured in a deferred callback.
-The new [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html) is owned by the caller and is never disposed by this method.
-The copy reads the target's current serialized state: changes pending on the source
-without [`ApplyModifiedProperties`](https://docs.unity3d.com/ScriptReference/SerializedObject-ApplyModifiedProperties.html) are not visible to it.
+The caller owns the new serialized object and must dispose it when finished.
+Pending changes on the source are not copied until they have been applied to its targets.
 
 ### RemoveArraySize\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_RemoveArraySize__1___0_System_Int32_}
 
@@ -369,6 +364,36 @@ Decreases [`arraySize`](https://docs.unity3d.com/ScriptReference/SerializedPrope
 
 ```csharp
 public static T RemoveArraySizeAndApply<T>(this T property, int value = 1) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target array property.
+
+`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Amount to subtract from the current array size.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### RemoveArraySizeAndApplyWithoutUndo\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_RemoveArraySizeAndApplyWithoutUndo__1___0_System_Int32_}
+
+Decreases [`arraySize`](https://docs.unity3d.com/ScriptReference/SerializedProperty-arraySize.html) by <code class="paramref">value</code> then applies modified properties without recording Undo.
+
+```csharp
+public static T RemoveArraySizeAndApplyWithoutUndo<T>(this T property, int value = 1) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -453,6 +478,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetAnimationCurveAndApplyWithoutUndo\<T\>\(T, AnimationCurve\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetAnimationCurveAndApplyWithoutUndo__1___0_UnityEngine_AnimationCurve_}
+
+Sets [`animationCurveValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-animationCurveValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetAnimationCurveAndApplyWithoutUndo<T>(this T property, AnimationCurve value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` AnimationCurve
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetArraySize\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetArraySize__1___0_System_Int32_}
 
 Sets [`arraySize`](https://docs.unity3d.com/ScriptReference/SerializedProperty-arraySize.html) and returns the property for chaining.
@@ -489,6 +544,36 @@ Sets [`arraySize`](https://docs.unity3d.com/ScriptReference/SerializedProperty-a
 
 ```csharp
 public static T SetArraySizeAndApply<T>(this T property, int size) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target array property.
+
+`size` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+New array size.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetArraySizeAndApplyWithoutUndo\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetArraySizeAndApplyWithoutUndo__1___0_System_Int32_}
+
+Sets [`arraySize`](https://docs.unity3d.com/ScriptReference/SerializedProperty-arraySize.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetArraySizeAndApplyWithoutUndo<T>(this T property, int size) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -573,6 +658,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetBoolAndApplyWithoutUndo\<T\>\(T, bool\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetBoolAndApplyWithoutUndo__1___0_System_Boolean_}
+
+Sets [`boolValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-boolValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetBoolAndApplyWithoutUndo<T>(this T property, bool value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetBounds\<T\>\(T, Bounds\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetBounds__1___0_UnityEngine_Bounds_}
 
 Sets [`boundsValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-boundsValue.html) and returns the property for chaining.
@@ -609,6 +724,36 @@ Sets [`boundsValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty
 
 ```csharp
 public static T SetBoundsAndApply<T>(this T property, Bounds value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Bounds
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetBoundsAndApplyWithoutUndo\<T\>\(T, Bounds\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetBoundsAndApplyWithoutUndo__1___0_UnityEngine_Bounds_}
+
+Sets [`boundsValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-boundsValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetBoundsAndApplyWithoutUndo<T>(this T property, Bounds value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -693,6 +838,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetBoundsIntAndApplyWithoutUndo\<T\>\(T, BoundsInt\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetBoundsIntAndApplyWithoutUndo__1___0_UnityEngine_BoundsInt_}
+
+Sets [`boundsIntValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-boundsIntValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetBoundsIntAndApplyWithoutUndo<T>(this T property, BoundsInt value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` BoundsInt
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetBoxed\<T\>\(T, object\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetBoxed__1___0_System_Object_}
 
 Sets [`boxedValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-boxedValue.html) and returns the property for chaining.
@@ -729,6 +904,36 @@ Sets [`boxedValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-
 
 ```csharp
 public static T SetBoxedAndApply<T>(this T property, object value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [object](https://learn.microsoft.com/dotnet/api/system.object)
+
+Boxed value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetBoxedAndApplyWithoutUndo\<T\>\(T, object\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetBoxedAndApplyWithoutUndo__1___0_System_Object_}
+
+Sets [`boxedValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-boxedValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetBoxedAndApplyWithoutUndo<T>(this T property, object value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -813,6 +1018,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetColorAndApplyWithoutUndo\<T\>\(T, Color\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetColorAndApplyWithoutUndo__1___0_UnityEngine_Color_}
+
+Sets [`colorValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-colorValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetColorAndApplyWithoutUndo<T>(this T property, Color value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Color
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetDouble\<T\>\(T, double\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetDouble__1___0_System_Double_}
 
 Sets [`doubleValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-doubleValue.html) and returns the property for chaining.
@@ -873,6 +1108,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetDoubleAndApplyWithoutUndo\<T\>\(T, double\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetDoubleAndApplyWithoutUndo__1___0_System_Double_}
+
+Sets [`doubleValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-doubleValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetDoubleAndApplyWithoutUndo<T>(this T property, double value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [double](https://learn.microsoft.com/dotnet/api/system.double)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetEntityId\<T\>\(T, EntityId\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEntityId__1___0_UnityEngine_EntityId_}
 
 Sets [`entityIdValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-entityIdValue.html) and returns the property for chaining.
@@ -909,6 +1174,36 @@ Sets [`entityIdValue`](https://docs.unity3d.com/ScriptReference/SerializedProper
 
 ```csharp
 public static T SetEntityIdAndApply<T>(this T property, EntityId value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` EntityId
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetEntityIdAndApplyWithoutUndo\<T\>\(T, EntityId\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEntityIdAndApplyWithoutUndo__1___0_UnityEngine_EntityId_}
+
+Sets [`entityIdValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-entityIdValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetEntityIdAndApplyWithoutUndo<T>(this T property, EntityId value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -998,10 +1293,35 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
-#### Remarks
+### SetEnumFlagAndApplyWithoutUndo\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumFlagAndApplyWithoutUndo__1___0_System_Int32_}
 
-There is no <code>SetValue&lt;T&gt;(int)</code> alias for enum flags because it would conflict with
-[`SerializePropertyExtensions.SetInt%60<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md). Call [`SerializePropertyExtensions.SetEnumFlag%60<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md) explicitly.
+Sets [`enumValueFlag`](https://docs.unity3d.com/ScriptReference/SerializedProperty-enumValueFlag.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetEnumFlagAndApplyWithoutUndo<T>(this T property, int value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Flag value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
 ### SetEnumIndex\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumIndex__1___0_System_Int32_}
 
@@ -1068,10 +1388,35 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
-#### Remarks
+### SetEnumIndexAndApplyWithoutUndo\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumIndexAndApplyWithoutUndo__1___0_System_Int32_}
 
-There is no <code>SetValue&lt;T&gt;(int)</code> alias for enum index because it would conflict with
-[`SerializePropertyExtensions.SetInt%60<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md). Call [`SerializePropertyExtensions.SetEnumIndex%60<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md) explicitly.
+Sets [`enumValueIndex`](https://docs.unity3d.com/ScriptReference/SerializedProperty-enumValueIndex.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetEnumIndexAndApplyWithoutUndo<T>(this T property, int value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Index value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
 ### SetExposedReference\<T\>\(T, Object\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetExposedReference__1___0_UnityEngine_Object_}
 
@@ -1109,6 +1454,36 @@ Sets [`exposedReferenceValue`](https://docs.unity3d.com/ScriptReference/Serializ
 
 ```csharp
 public static T SetExposedReferenceAndApply<T>(this T property, Object value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Object
+
+[`Object`](https://docs.unity3d.com/ScriptReference/Object.html) exposed reference to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetExposedReferenceAndApplyWithoutUndo\<T\>\(T, Object\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetExposedReferenceAndApplyWithoutUndo__1___0_UnityEngine_Object_}
+
+Sets [`exposedReferenceValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-exposedReferenceValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetExposedReferenceAndApplyWithoutUndo<T>(this T property, Object value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -1193,6 +1568,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetFloatAndApplyWithoutUndo\<T\>\(T, float\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetFloatAndApplyWithoutUndo__1___0_System_Single_}
+
+Sets [`floatValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-floatValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetFloatAndApplyWithoutUndo<T>(this T property, float value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetGradient\<T\>\(T, Gradient\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetGradient__1___0_UnityEngine_Gradient_}
 
 Sets [`gradientValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-gradientValue.html) and returns the property for chaining.
@@ -1229,6 +1634,36 @@ Sets [`gradientValue`](https://docs.unity3d.com/ScriptReference/SerializedProper
 
 ```csharp
 public static T SetGradientAndApply<T>(this T property, Gradient value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Gradient
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetGradientAndApplyWithoutUndo\<T\>\(T, Gradient\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetGradientAndApplyWithoutUndo__1___0_UnityEngine_Gradient_}
+
+Sets [`gradientValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-gradientValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetGradientAndApplyWithoutUndo<T>(this T property, Gradient value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -1313,6 +1748,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetHash128AndApplyWithoutUndo\<T\>\(T, Hash128\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetHash128AndApplyWithoutUndo__1___0_UnityEngine_Hash128_}
+
+Sets [`hash128Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-hash128Value.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetHash128AndApplyWithoutUndo<T>(this T property, Hash128 value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Hash128
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetInt\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetInt__1___0_System_Int32_}
 
 Sets [`intValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-intValue.html) and returns the property for chaining.
@@ -1349,6 +1814,36 @@ Sets [`intValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-in
 
 ```csharp
 public static T SetIntAndApply<T>(this T property, int value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetIntAndApplyWithoutUndo\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetIntAndApplyWithoutUndo__1___0_System_Int32_}
+
+Sets [`intValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-intValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetIntAndApplyWithoutUndo<T>(this T property, int value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -1433,6 +1928,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetLongAndApplyWithoutUndo\<T\>\(T, long\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetLongAndApplyWithoutUndo__1___0_System_Int64_}
+
+Sets [`longValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-longValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetLongAndApplyWithoutUndo<T>(this T property, long value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetManagedReference\<T\>\(T, object\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetManagedReference__1___0_System_Object_}
 
 Sets [`managedReferenceValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-managedReferenceValue.html) and returns the property for chaining.
@@ -1469,6 +1994,36 @@ Sets [`managedReferenceValue`](https://docs.unity3d.com/ScriptReference/Serializ
 
 ```csharp
 public static T SetManagedReferenceAndApply<T>(this T property, object value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property (must be a <code>[SerializeReference]</code> field).
+
+`value` [object](https://learn.microsoft.com/dotnet/api/system.object)
+
+Managed reference value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetManagedReferenceAndApplyWithoutUndo\<T\>\(T, object\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetManagedReferenceAndApplyWithoutUndo__1___0_System_Object_}
+
+Sets [`managedReferenceValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-managedReferenceValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetManagedReferenceAndApplyWithoutUndo<T>(this T property, object value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -1553,6 +2108,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetObjectReferenceAndApplyWithoutUndo\<T\>\(T, Object\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetObjectReferenceAndApplyWithoutUndo__1___0_UnityEngine_Object_}
+
+Sets [`objectReferenceValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-objectReferenceValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetObjectReferenceAndApplyWithoutUndo<T>(this T property, Object value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Object
+
+[`Object`](https://docs.unity3d.com/ScriptReference/Object.html) reference to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetQuaternion\<T\>\(T, Quaternion\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetQuaternion__1___0_UnityEngine_Quaternion_}
 
 Sets [`quaternionValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-quaternionValue.html) and returns the property for chaining.
@@ -1589,6 +2174,36 @@ Sets [`quaternionValue`](https://docs.unity3d.com/ScriptReference/SerializedProp
 
 ```csharp
 public static T SetQuaternionAndApply<T>(this T property, Quaternion value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Quaternion
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetQuaternionAndApplyWithoutUndo\<T\>\(T, Quaternion\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetQuaternionAndApplyWithoutUndo__1___0_UnityEngine_Quaternion_}
+
+Sets [`quaternionValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-quaternionValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetQuaternionAndApplyWithoutUndo<T>(this T property, Quaternion value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -1673,6 +2288,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetRectAndApplyWithoutUndo\<T\>\(T, Rect\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetRectAndApplyWithoutUndo__1___0_UnityEngine_Rect_}
+
+Sets [`rectValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-rectValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetRectAndApplyWithoutUndo<T>(this T property, Rect value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Rect
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetRectInt\<T\>\(T, RectInt\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetRectInt__1___0_UnityEngine_RectInt_}
 
 Sets [`rectIntValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-rectIntValue.html) and returns the property for chaining.
@@ -1709,6 +2354,36 @@ Sets [`rectIntValue`](https://docs.unity3d.com/ScriptReference/SerializedPropert
 
 ```csharp
 public static T SetRectIntAndApply<T>(this T property, RectInt value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` RectInt
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetRectIntAndApplyWithoutUndo\<T\>\(T, RectInt\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetRectIntAndApplyWithoutUndo__1___0_UnityEngine_RectInt_}
+
+Sets [`rectIntValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-rectIntValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetRectIntAndApplyWithoutUndo<T>(this T property, RectInt value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -1793,6 +2468,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetStringAndApplyWithoutUndo\<T\>\(T, string\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetStringAndApplyWithoutUndo__1___0_System_String_}
+
+Sets [`stringValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-stringValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetStringAndApplyWithoutUndo<T>(this T property, string value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetUint\<T\>\(T, uint\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetUint__1___0_System_UInt32_}
 
 Sets [`uintValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-uintValue.html) and returns the property for chaining.
@@ -1853,6 +2558,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetUintAndApplyWithoutUndo\<T\>\(T, uint\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetUintAndApplyWithoutUndo__1___0_System_UInt32_}
+
+Sets [`uintValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-uintValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetUintAndApplyWithoutUndo<T>(this T property, uint value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetUlong\<T\>\(T, ulong\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetUlong__1___0_System_UInt64_}
 
 Sets [`ulongValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-ulongValue.html) and returns the property for chaining.
@@ -1889,6 +2624,36 @@ Sets [`ulongValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-
 
 ```csharp
 public static T SetUlongAndApply<T>(this T property, ulong value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetUlongAndApplyWithoutUndo\<T\>\(T, ulong\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetUlongAndApplyWithoutUndo__1___0_System_UInt64_}
+
+Sets [`ulongValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-ulongValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetUlongAndApplyWithoutUndo<T>(this T property, ulong value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -3293,6 +4058,696 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetValueAndApplyWithoutUndo\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_System_Int32_}
+
+Sets [`intValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-intValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, int value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, uint\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_System_UInt32_}
+
+Sets [`uintValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-uintValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, uint value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, long\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_System_Int64_}
+
+Sets [`longValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-longValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, long value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, ulong\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_System_UInt64_}
+
+Sets [`ulongValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-ulongValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, ulong value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, float\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_System_Single_}
+
+Sets [`floatValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-floatValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, float value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, double\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_System_Double_}
+
+Sets [`doubleValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-doubleValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, double value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [double](https://learn.microsoft.com/dotnet/api/system.double)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, bool\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_System_Boolean_}
+
+Sets [`boolValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-boolValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, bool value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Rect\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Rect_}
+
+Sets [`rectValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-rectValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Rect value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Rect
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, RectInt\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_RectInt_}
+
+Sets [`rectIntValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-rectIntValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, RectInt value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` RectInt
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Bounds\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Bounds_}
+
+Sets [`boundsValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-boundsValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Bounds value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Bounds
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, BoundsInt\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_BoundsInt_}
+
+Sets [`boundsIntValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-boundsIntValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, BoundsInt value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` BoundsInt
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Color\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Color_}
+
+Sets [`colorValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-colorValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Color value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Color
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Gradient\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Gradient_}
+
+Sets [`gradientValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-gradientValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Gradient value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Gradient
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Hash128\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Hash128_}
+
+Sets [`hash128Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-hash128Value.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Hash128 value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Hash128
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Vector4\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Vector4_}
+
+Sets [`vector4Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector4Value.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector4 value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector4
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Vector3\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Vector3_}
+
+Sets [`vector3Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector3Value.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector3 value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector3
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Vector3Int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Vector3Int_}
+
+Sets [`vector3IntValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector3IntValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector3Int value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector3Int
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Vector2\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Vector2_}
+
+Sets [`vector2Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector2Value.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector2 value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector2
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Vector2Int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Vector2Int_}
+
+Sets [`vector2IntValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector2IntValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Vector2Int value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector2Int
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, Quaternion\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_Quaternion_}
+
+Sets [`quaternionValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-quaternionValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, Quaternion value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Quaternion
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, string\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_System_String_}
+
+Sets [`stringValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-stringValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, string value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` [string](https://learn.microsoft.com/dotnet/api/system.string)
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, AnimationCurve\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_AnimationCurve_}
+
+Sets [`animationCurveValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-animationCurveValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, AnimationCurve value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` AnimationCurve
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetValueAndApplyWithoutUndo\<T\>\(T, EntityId\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetValueAndApplyWithoutUndo__1___0_UnityEngine_EntityId_}
+
+Sets [`entityIdValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-entityIdValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetValueAndApplyWithoutUndo<T>(this T property, EntityId value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` EntityId
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetVector2\<T\>\(T, Vector2\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetVector2__1___0_UnityEngine_Vector2_}
 
 Sets [`vector2Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector2Value.html) and returns the property for chaining.
@@ -3329,6 +4784,36 @@ Sets [`vector2Value`](https://docs.unity3d.com/ScriptReference/SerializedPropert
 
 ```csharp
 public static T SetVector2AndApply<T>(this T property, Vector2 value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector2
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetVector2AndApplyWithoutUndo\<T\>\(T, Vector2\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetVector2AndApplyWithoutUndo__1___0_UnityEngine_Vector2_}
+
+Sets [`vector2Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector2Value.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetVector2AndApplyWithoutUndo<T>(this T property, Vector2 value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -3413,6 +4898,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetVector2IntAndApplyWithoutUndo\<T\>\(T, Vector2Int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetVector2IntAndApplyWithoutUndo__1___0_UnityEngine_Vector2Int_}
+
+Sets [`vector2IntValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector2IntValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetVector2IntAndApplyWithoutUndo<T>(this T property, Vector2Int value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector2Int
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetVector3\<T\>\(T, Vector3\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetVector3__1___0_UnityEngine_Vector3_}
 
 Sets [`vector3Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector3Value.html) and returns the property for chaining.
@@ -3449,6 +4964,36 @@ Sets [`vector3Value`](https://docs.unity3d.com/ScriptReference/SerializedPropert
 
 ```csharp
 public static T SetVector3AndApply<T>(this T property, Vector3 value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector3
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetVector3AndApplyWithoutUndo\<T\>\(T, Vector3\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetVector3AndApplyWithoutUndo__1___0_UnityEngine_Vector3_}
+
+Sets [`vector3Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector3Value.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetVector3AndApplyWithoutUndo<T>(this T property, Vector3 value) where T : SerializedProperty
 ```
 
 #### Parameters
@@ -3533,6 +5078,36 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
+### SetVector3IntAndApplyWithoutUndo\<T\>\(T, Vector3Int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetVector3IntAndApplyWithoutUndo__1___0_UnityEngine_Vector3Int_}
+
+Sets [`vector3IntValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector3IntValue.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetVector3IntAndApplyWithoutUndo<T>(this T property, Vector3Int value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector3Int
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
 ### SetVector4\<T\>\(T, Vector4\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetVector4__1___0_UnityEngine_Vector4_}
 
 Sets [`vector4Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector4Value.html) and returns the property for chaining.
@@ -3569,6 +5144,36 @@ Sets [`vector4Value`](https://docs.unity3d.com/ScriptReference/SerializedPropert
 
 ```csharp
 public static T SetVector4AndApply<T>(this T property, Vector4 value) where T : SerializedProperty
+```
+
+#### Parameters
+
+`property` T
+
+Target property.
+
+`value` Vector4
+
+Value to assign.
+
+#### Returns
+
+ T
+
+The same <code class="paramref">property</code> instance.
+
+#### Type Parameters
+
+`T` 
+
+Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+
+### SetVector4AndApplyWithoutUndo\<T\>\(T, Vector4\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetVector4AndApplyWithoutUndo__1___0_UnityEngine_Vector4_}
+
+Sets [`vector4Value`](https://docs.unity3d.com/ScriptReference/SerializedProperty-vector4Value.html) then applies modified properties without recording Undo.
+
+```csharp
+public static T SetVector4AndApplyWithoutUndo<T>(this T property, Vector4 value) where T : SerializedProperty
 ```
 
 #### Parameters

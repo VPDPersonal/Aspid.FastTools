@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`ITextEdition`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition.html).
+
 ```csharp
 public static class ITextEditionExtensions
 ```
@@ -29,7 +31,7 @@ public static class ITextEditionExtensions
 
 ### SetAutoCorrection\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetAutoCorrection__1___0_System_Boolean_}
 
-Sets [`autoCorrection`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-autoCorrection.html) and returns the element for chaining.
+Sets [`autoCorrection`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-autoCorrection.html).
 
 ```csharp
 public static T SetAutoCorrection<T>(this T element, bool value) where T : ITextEdition
@@ -43,7 +45,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether auto correction is enabled.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the soft keyboard auto-corrects input.
 
 #### Returns
 
@@ -55,13 +57,41 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
+The element type.
 
-Determines if the soft keyboard auto correction is turned on or off.
+### SetDelayed\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetDelayed__1___0_System_Boolean_}
+
+Sets [`isDelayed`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-isDelayed.html).
+
+```csharp
+public static T SetDelayed<T>(this T element, bool value) where T : ITextEdition
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the value is committed only on Enter or when the element loses focus.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
 
 ### SetHideMobileInput\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetHideMobileInput__1___0_System_Boolean_}
 
-Sets [`hideMobileInput`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-hideMobileInput.html) and returns the element for chaining.
+Sets [`hideMobileInput`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-hideMobileInput.html).
 
 ```csharp
 public static T SetHideMobileInput<T>(this T element, bool value) where T : ITextEdition
@@ -75,7 +105,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to hide the mobile input field.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the mobile input field is hidden.
 
 #### Returns
 
@@ -87,13 +117,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Hides or shows the mobile input field.
+The element type.
 
 ### SetHidePlaceholderOnFocus\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetHidePlaceholderOnFocus__1___0_System_Boolean_}
 
-Sets [`hidePlaceholderOnFocus`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-hidePlaceholderOnFocus.html) and returns the element for chaining.
+Sets [`hidePlaceholderOnFocus`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-hidePlaceholderOnFocus.html).
 
 ```csharp
 public static T SetHidePlaceholderOnFocus<T>(this T element, bool value) where T : ITextEdition
@@ -107,7 +135,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to hide the placeholder when the field is focused.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the placeholder is hidden while the field has focus.
 
 #### Returns
 
@@ -119,13 +147,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Hides the placeholder on focus.
+The element type.
 
 ### SetHideSoftKeyboard\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetHideSoftKeyboard__1___0_System_Boolean_}
 
-Sets [`hideSoftKeyboard`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-hideSoftKeyboard.html) and returns the element for chaining.
+Sets [`hideSoftKeyboard`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-hideSoftKeyboard.html).
 
 ```csharp
 public static T SetHideSoftKeyboard<T>(this T element, bool value) where T : ITextEdition
@@ -139,7 +165,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to hide the soft keyboard.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the soft keyboard is not shown.
 
 #### Returns
 
@@ -151,109 +177,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Should hide soft / virtual keyboard.
-
-### SetIsDelayed\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetIsDelayed__1___0_System_Boolean_}
-
-Sets [`isDelayed`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-isDelayed.html) and returns the element for chaining.
-
-```csharp
-public static T SetIsDelayed<T>(this T element, bool value) where T : ITextEdition
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-Whether the element update is delayed.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-If set to true, the value property isn't updated until either the user presses Enter or the element loses focus.
-
-### SetIsPassword\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetIsPassword__1___0_System_Boolean_}
-
-Sets [`isPassword`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-isPassword.html) and returns the element for chaining.
-
-```csharp
-public static T SetIsPassword<T>(this T element, bool value) where T : ITextEdition
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-Whether the field is in password mode.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-When set to true, the field is used to edit a password and masks input characters.
-
-### SetIsReadOnly\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetIsReadOnly__1___0_System_Boolean_}
-
-Sets [`isReadOnly`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-isReadOnly.html) and returns the element for chaining.
-
-```csharp
-public static T SetIsReadOnly<T>(this T element, bool value) where T : ITextEdition
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-Whether the element is read-only.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-When set to true, the element becomes read-only.
+The element type.
 
 ### SetKeyboardType\<T\>\(T, TouchScreenKeyboardType\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetKeyboardType__1___0_UnityEngine_TouchScreenKeyboardType_}
 
-Sets [`keyboardType`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-keyboardType.html) and returns the element for chaining.
+Sets [`keyboardType`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-keyboardType.html).
 
 ```csharp
 public static T SetKeyboardType<T>(this T element, TouchScreenKeyboardType value) where T : ITextEdition
@@ -279,13 +207,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-The type of mobile keyboard that will be used.
+The element type.
 
 ### SetMaskChar\<T\>\(T, char\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetMaskChar__1___0_System_Char_}
 
-Sets [`maskChar`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-maskChar.html) and returns the element for chaining.
+Sets [`maskChar`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-maskChar.html).
 
 ```csharp
 public static T SetMaskChar<T>(this T element, char value) where T : ITextEdition
@@ -311,13 +237,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-The character used for masking when in password mode.
+The element type.
 
 ### SetMaxLength\<T\>\(T, int\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetMaxLength__1___0_System_Int32_}
 
-Sets [`maxLength`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-maxLength.html) and returns the element for chaining.
+Sets [`maxLength`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-maxLength.html).
 
 ```csharp
 public static T SetMaxLength<T>(this T element, int value) where T : ITextEdition
@@ -343,13 +267,41 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
+The element type.
 
-Maximum number of characters for that element.
+### SetPassword\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetPassword__1___0_System_Boolean_}
+
+Sets [`isPassword`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-isPassword.html).
+
+```csharp
+public static T SetPassword<T>(this T element, bool value) where T : ITextEdition
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, input characters are masked.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
 
 ### SetPlaceholder\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetPlaceholder__1___0_System_String_}
 
-Sets [`placeholder`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-placeholder.html) and returns the element for chaining.
+Sets [`placeholder`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-placeholder.html).
 
 ```csharp
 public static T SetPlaceholder<T>(this T element, string value) where T : ITextEdition
@@ -375,7 +327,35 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
+The element type.
 
-A short hint to help users understand what to enter in the field.
+### SetReadOnly\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetReadOnly__1___0_System_Boolean_}
+
+Sets [`isReadOnly`](https://docs.unity3d.com/ScriptReference/UIElements-ITextEdition-isReadOnly.html).
+
+```csharp
+public static T SetReadOnly<T>(this T element, bool value) where T : ITextEdition
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the element is read-only.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
 

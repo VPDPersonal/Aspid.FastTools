@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`Image`](https://docs.unity3d.com/ScriptReference/UIElements-Image.html).
+
 ```csharp
 public static class ImageExtensions
 ```
@@ -29,7 +31,7 @@ public static class ImageExtensions
 
 ### SetImage\<T\>\(T, Texture\) {#Aspid_FastTools_UIElements_ImageExtensions_SetImage__1___0_UnityEngine_Texture_}
 
-Sets [`image`](https://docs.unity3d.com/ScriptReference/UIElements-Image-image.html) and returns the element for chaining.
+Sets [`image`](https://docs.unity3d.com/ScriptReference/UIElements-Image-image.html).
 
 ```csharp
 public static T SetImage<T>(this T element, Texture value) where T : Image
@@ -55,16 +57,14 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
+The element type.
 
-The texture to display in this image. If you assign a Texture, the Image element will resize and show the assigned texture.
-
-### SetImageFromResource\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ImageExtensions_SetImageFromResource__1___0_System_String_}
+### SetImageFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ImageExtensions_SetImageFromResources__1___0_System_String_}
 
 Loads a [`Texture`](https://docs.unity3d.com/ScriptReference/Texture.html) from Resources and sets the [`image`](https://docs.unity3d.com/ScriptReference/UIElements-Image-image.html) property.
 
 ```csharp
-public static T SetImageFromResource<T>(this T element, string path) where T : Image
+public static T SetImageFromResources<T>(this T element, string path) where T : Image
 ```
 
 #### Parameters
@@ -87,9 +87,15 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
+#### Remarks
+
+Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.
+
 ### SetScaleMode\<T\>\(T, ScaleMode\) {#Aspid_FastTools_UIElements_ImageExtensions_SetScaleMode__1___0_UnityEngine_ScaleMode_}
 
-Sets [`scaleMode`](https://docs.unity3d.com/ScriptReference/UIElements-Image-scaleMode.html) and returns the element for chaining.
+Sets [`scaleMode`](https://docs.unity3d.com/ScriptReference/UIElements-Image-scaleMode.html).
 
 ```csharp
 public static T SetScaleMode<T>(this T element, ScaleMode value) where T : Image
@@ -115,13 +121,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-ScaleMode used to display the Image.
+The element type.
 
 ### SetSourceRect\<T\>\(T, Rect\) {#Aspid_FastTools_UIElements_ImageExtensions_SetSourceRect__1___0_UnityEngine_Rect_}
 
-Sets [`sourceRect`](https://docs.unity3d.com/ScriptReference/UIElements-Image-sourceRect.html) and returns the element for chaining.
+Sets [`sourceRect`](https://docs.unity3d.com/ScriptReference/UIElements-Image-sourceRect.html).
 
 ```csharp
 public static T SetSourceRect<T>(this T element, Rect value) where T : Image
@@ -147,13 +151,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-The source rectangle inside the texture relative to the top left corner.
+The element type.
 
 ### SetSprite\<T\>\(T, Sprite\) {#Aspid_FastTools_UIElements_ImageExtensions_SetSprite__1___0_UnityEngine_Sprite_}
 
-Sets [`sprite`](https://docs.unity3d.com/ScriptReference/UIElements-Image-sprite.html) and returns the element for chaining.
+Sets [`sprite`](https://docs.unity3d.com/ScriptReference/UIElements-Image-sprite.html).
 
 ```csharp
 public static T SetSprite<T>(this T element, Sprite value) where T : Image
@@ -179,16 +181,14 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
+The element type.
 
-The sprite to display in this image.
-
-### SetSpriteFromResource\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ImageExtensions_SetSpriteFromResource__1___0_System_String_}
+### SetSpriteFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ImageExtensions_SetSpriteFromResources__1___0_System_String_}
 
 Loads a [`Sprite`](https://docs.unity3d.com/ScriptReference/Sprite.html) from Resources and sets the [`sprite`](https://docs.unity3d.com/ScriptReference/UIElements-Image-sprite.html) property.
 
 ```csharp
-public static T SetSpriteFromResource<T>(this T element, string path) where T : Image
+public static T SetSpriteFromResources<T>(this T element, string path) where T : Image
 ```
 
 #### Parameters
@@ -211,9 +211,15 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
+#### Remarks
+
+Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.
+
 ### SetTintColor\<T\>\(T, Color\) {#Aspid_FastTools_UIElements_ImageExtensions_SetTintColor__1___0_UnityEngine_Color_}
 
-Sets [`tintColor`](https://docs.unity3d.com/ScriptReference/UIElements-Image-tintColor.html) and returns the element for chaining.
+Sets [`tintColor`](https://docs.unity3d.com/ScriptReference/UIElements-Image-tintColor.html).
 
 ```csharp
 public static T SetTintColor<T>(this T element, Color value) where T : Image
@@ -239,13 +245,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Tinting color for this Image.
+The element type.
 
 ### SetUv\<T\>\(T, Rect\) {#Aspid_FastTools_UIElements_ImageExtensions_SetUv__1___0_UnityEngine_Rect_}
 
-Sets [`uv`](https://docs.unity3d.com/ScriptReference/UIElements-Image-uv.html) and returns the element for chaining.
+Sets [`uv`](https://docs.unity3d.com/ScriptReference/UIElements-Image-uv.html).
 
 ```csharp
 public static T SetUv<T>(this T element, Rect value) where T : Image
@@ -271,13 +275,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-The base texture coordinates of the Image relative to the bottom left corner.
+The element type.
 
 ### SetVectorImage\<T\>\(T, VectorImage\) {#Aspid_FastTools_UIElements_ImageExtensions_SetVectorImage__1___0_UnityEngine_UIElements_VectorImage_}
 
-Sets [`vectorImage`](https://docs.unity3d.com/ScriptReference/UIElements-Image-vectorImage.html) and returns the element for chaining.
+Sets [`vectorImage`](https://docs.unity3d.com/ScriptReference/UIElements-Image-vectorImage.html).
 
 ```csharp
 public static T SetVectorImage<T>(this T element, VectorImage value) where T : Image
@@ -303,16 +305,14 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
+The element type.
 
-The VectorImage to display in this image.
-
-### SetVectorImageFromResource\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ImageExtensions_SetVectorImageFromResource__1___0_System_String_}
+### SetVectorImageFromResources\<T\>\(T, string\) {#Aspid_FastTools_UIElements_ImageExtensions_SetVectorImageFromResources__1___0_System_String_}
 
 Loads a [`VectorImage`](https://docs.unity3d.com/ScriptReference/UIElements-VectorImage.html) from Resources and sets the [`vectorImage`](https://docs.unity3d.com/ScriptReference/UIElements-Image-vectorImage.html) property.
 
 ```csharp
-public static T SetVectorImageFromResource<T>(this T element, string path) where T : Image
+public static T SetVectorImageFromResources<T>(this T element, string path) where T : Image
 ```
 
 #### Parameters
@@ -334,4 +334,10 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
+
+#### Remarks
+
+Logs a warning and leaves the element unchanged when no asset is found at <code class="paramref">path</code>.
 

@@ -12,11 +12,9 @@ pagination_next: null
 
  [EditorExtensions](Aspid.FastTools.Editors.EditorExtensions.md)
 
-Editor-side extension methods for [`Object`](https://docs.unity3d.com/ScriptReference/Object.html) and its subclass [`Component`](https://docs.unity3d.com/ScriptReference/Component.html)
-that resolve human-readable script names, respecting the [`AddComponentMenu`](https://docs.unity3d.com/ScriptReference/AddComponentMenu.html) attribute.
+Provides extension methods for resolving Unity object display names.
 
  [SerializePropertyExtensions](Aspid.FastTools.Editors.SerializePropertyExtensions.md)
 
-Fluent extension methods for [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) providing chainable wrappers
-around [`SerializedObject`](https://docs.unity3d.com/ScriptReference/SerializedObject.html) synchronization and typed value setters.
+Provides extension methods for synchronizing and assigning [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) values.
 

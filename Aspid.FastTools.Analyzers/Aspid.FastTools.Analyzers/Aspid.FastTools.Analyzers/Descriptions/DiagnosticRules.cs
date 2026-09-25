@@ -42,7 +42,7 @@ public static class DiagnosticRules
     public static readonly Descriptor TypeSelectorNoConcreteImplementationRule = new(
         id: "AFT0005",
         title: "[TypeSelector] base type has no visible concrete implementation",
-        messageFormat: "[TypeSelector] with [SerializeReference] on '{0}': no concrete, non-UnityEngine.Object class implementing '{1}' is visible in the compilation — the selector may be empty (implementations in downstream assemblies are not checked)",
+        messageFormat: "[TypeSelector] with [SerializeReference] on '{0}': no concrete, non-UnityEngine.Object class implementing {1} is visible in the compilation — the selector may be empty (implementations in downstream assemblies are not checked)",
         category: UsageCategory,
         defaultSeverity: Severity.Warning,
         isEnabledByDefault: true);
@@ -67,6 +67,14 @@ public static class DiagnosticRules
         id: "AFT0008",
         title: "[TypeSelector] string argument is not a valid type name",
         messageFormat: "[TypeSelector] on '{0}': '{1}' is not a valid assembly-qualified type name",
+        category: UsageCategory,
+        defaultSeverity: Severity.Warning,
+        isEnabledByDefault: true);
+
+    public static readonly Descriptor TypeSelectorDisjointBaseTypesRule = new(
+        id: "AFT0009",
+        title: "[TypeSelector] base types have no type in common",
+        messageFormat: "[TypeSelector] base types '{0}' and '{1}' have no type in common — a candidate must be assignable to every base type, so the selector will be empty",
         category: UsageCategory,
         defaultSeverity: Severity.Warning,
         isEnabledByDefault: true);

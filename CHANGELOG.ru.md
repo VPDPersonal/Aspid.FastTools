@@ -7,6 +7,23 @@
 Формат основан на [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 проект следует [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Добавлено
+
+- Добавлены варианты `AndApplyWithoutUndo` для всех сеттеров `SerializedProperty` с немедленным применением, включая перегрузки `SetValue`, ссылки, перечисления и методы изменения размера массивов.
+- Анализатор `AFT0009` (предупреждение) — два базовых типа `[TypeSelector]` не имеют общего типа, поэтому селектор пуст.
+
+### Изменено
+
+- `GetScriptName()` переименован в `GetDisplayName()`, а `GetScriptNameWithIndex()` — в `GetDisplayNameWithIndex()`; замените старые вызовы новыми именами. Оба метода возвращают `string.Empty` для null и уничтоженных объектов. Поиск индекса компонента использует список из пула вместо временных массивов и LINQ.
+- `[TypeSelector]` на поле `[SerializeReference]` теперь предлагает только типы, совместимые со всеми типами атрибута, — по тому же правилу, что уже действовало для полей `string` и `SerializableType`; раньше достаточно было совпасть с одним из них. То же относится к `baseTypes` у `SerializeReferenceEditorGUI.CreateField`, `CreateList` и `DrawFieldLayout`. Список альтернатив вроде `typeof(Pistol), typeof(Rifle)` теперь оставляет селектор пустым и вызывает `AFT0009`: дайте разрешённым классам общий интерфейс или базовый класс и укажите его. `AFT0005` теперь проверяет все типы атрибута вместе.
+
+### Исправлено
+
+- `GetDisplayName()` и `GetDisplayNameWithIndex()` больше не добавляют « (Script)», когда `[AddComponentMenu]` унаследован от базового класса или его путь пуст либо заканчивается на `/`; такие типы получают «очеловеченное» имя типа. Заголовок теперь берётся из атрибута, объявленного на самом типе, а тип с `[Obsolete]` больше не получает « (Deprecated)».
+- Ссылка на член `[TypeSelector(nameof(...))]` у поля внутри `[Serializable]`-класса или элемента списка теперь разрешается на экземпляре, который объявляет поле, — так её уже проверяют анализаторы `AFT0006`–`AFT0008`. Раньше член искался на инспектируемом компоненте или ассете, и инспектор показывал предупреждение. То же относится к селектору окна Asset References.
+
 ## [1.0.0-rc.8] — 2026-09-06
 
 Первый релиз. Unity **6000.0**, сборки `Aspid.FastTools` / `Aspid.FastTools.Editor`, предсобранные Roslyn-DLL `Aspid.FastTools.Generators` / `Aspid.FastTools.Analyzers`. Все инспекторные возможности работают и в IMGUI, и в UI Toolkit.
@@ -101,7 +118,7 @@
 
 - Документация на английском и русском в `Documentation/`, публикуется на https://vpdpersonal.github.io/Aspid.FastTools/.
 - Плагин `aspid-fasttools` для Claude Code в [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins).
-- `upm` / `upm/<version>` для стабильных релизов, `upm-preview` для предрелизов.
+- `upm` / `upm/<version>` для стабильных релизов, `upm-preview` для предрелизов. До первого стабильного релиза в ветке `upm` остаётся старый пакет `com.aspid.fasttools` (`1.0.0-rc.2`).
 - EditMode-тесты для YAML-редактора и сканирования CI gate.
 
 [1.0.0-rc.8]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8

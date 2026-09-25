@@ -58,5 +58,5 @@ MonoBehaviour:
     - rid: 2339642446330462276
       type: {class: Shotgun, ns: Game.Gear, asm: Assembly-CSharp}
       data:
+        _damage: 37
         _pellets: 8
-        _spread: 12

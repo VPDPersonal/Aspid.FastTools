@@ -20,20 +20,41 @@ public struct TypeSelectorFilter
 
 #### Extension Methods
 
-[INotifyValueChangedExtensions.AddValueChanged\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___), 
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_), 
-[INotifyValueChangedExtensions.RemoveValueChanged\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___), 
-[SliderExtensions.SetHighValue\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_), 
-[BaseFieldExtensions.SetLabel\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, string\)](Aspid.FastTools.UIElements.BaseFieldExtensions.md#Aspid_FastTools_UIElements_BaseFieldExtensions_SetLabel__2___0_System_String_), 
-[SliderExtensions.SetLowValue\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_), 
+[TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
+[TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
+[INotifyValueChangedExtensions.AddValueChanged\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_),
+[TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
+[TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
+[INotifyValueChangedExtensions.RemoveValueChanged\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
+[TextInputBaseFieldExtensions.SetAutoCorrection\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetAutoCorrection__2___0_System_Boolean_),
+[TextInputBaseFieldTextSelectionExtensions.SetCursorIndex\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetCursorIndex__2___0_System_Int32_),
+[TextInputBaseFieldExtensions.SetDelayed\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetDelayed__2___0_System_Boolean_),
+[TextInputBaseFieldTextSelectionExtensions.SetDoubleClickSelectsWord\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetDoubleClickSelectsWord__2___0_System_Boolean_),
+[TextInputBaseFieldExtensions.SetHideMobileInput\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideMobileInput__2___0_System_Boolean_),
+[TextInputBaseFieldExtensions.SetHidePlaceholderOnFocus\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHidePlaceholderOnFocus__2___0_System_Boolean_),
+[TextInputBaseFieldExtensions.SetHideSoftKeyboard\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetHideSoftKeyboard__2___0_System_Boolean_),
+[SliderExtensions.SetHighValue\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_),
+[TextInputBaseFieldExtensions.SetKeyboardType\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, TouchScreenKeyboardType\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetKeyboardType__2___0_UnityEngine_TouchScreenKeyboardType_),
+[BaseFieldExtensions.SetLabel\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, string\)](Aspid.FastTools.UIElements.BaseFieldExtensions.md#Aspid_FastTools_UIElements_BaseFieldExtensions_SetLabel__2___0_System_String_),
+[SliderExtensions.SetLowValue\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, TValue\)](Aspid.FastTools.UIElements.SliderExtensions.md#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_),
+[TextInputBaseFieldExtensions.SetMaskChar\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, char\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaskChar__2___0_System_Char_),
+[TextInputBaseFieldExtensions.SetMaxLength\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetMaxLength__2___0_System_Int32_),
+[TextInputBaseFieldExtensions.SetPassword\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPassword__2___0_System_Boolean_),
+[TextInputBaseFieldExtensions.SetPlaceholder\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, string\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetPlaceholder__2___0_System_String_),
+[TextInputBaseFieldExtensions.SetReadOnly\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldExtensions_SetReadOnly__2___0_System_Boolean_),
+[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnFocus\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnFocus__2___0_System_Boolean_),
+[TextInputBaseFieldTextSelectionExtensions.SetSelectAllOnMouseUp\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectAllOnMouseUp__2___0_System_Boolean_),
+[TextInputBaseFieldTextSelectionExtensions.SetSelectIndex\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, int\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectIndex__2___0_System_Int32_),
+[TextInputBaseFieldTextSelectionExtensions.SetSelectable\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetSelectable__2___0_System_Boolean_),
+[TextInputBaseFieldTextSelectionExtensions.SetTripleClickSelectsLine\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, bool\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_SetTripleClickSelectsLine__2___0_System_Boolean_),
 [INotifyValueChangedExtensions.SetValue\<TypeSelectorFilter, TValue\>\(TypeSelectorFilter, TValue, bool\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__2___0___1_System_Boolean_)
 
 ## Properties
 
 ### AdditionalTypes {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_AdditionalTypes}
 
-Gets or sets extra types appended verbatim, bypassing the base-type and [`TypeSelectorFilter.Allow`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Allow) checks — for
-entries the assignability scan cannot match, such as open generic definitions.
+Gets or sets extra candidates that bypass the base-type and kind checks.
 
 ```csharp
 public IEnumerable<Type> AdditionalTypes { readonly get; set; }
@@ -42,6 +63,10 @@ public IEnumerable<Type> AdditionalTypes { readonly get; set; }
 #### Property Value
 
  [IEnumerable](https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1)\<[Type](https://learn.microsoft.com/dotnet/api/system.type)\>
+
+#### Remarks
+
+These candidates also bypass [`TypeSelectorFilter.Predicate`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Predicate); the hidden-type filter still applies.
 
 ### Allow {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Allow}
 
@@ -57,8 +82,7 @@ public TypeAllow Allow { readonly get; set; }
 
 ### ArgumentFilter {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_ArgumentFilter}
 
-Gets or sets the predicate applied to the types offered for an open generic's arguments, on top of the
-parameter's own constraints. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> accepts any constraint-satisfying type.
+Gets or sets the additional predicate for manually selected generic arguments.
 
 ```csharp
 public Func<Type, bool> ArgumentFilter { readonly get; set; }
@@ -68,9 +92,13 @@ public Func<Type, bool> ArgumentFilter { readonly get; set; }
 
  [Func](https://learn.microsoft.com/dotnet/api/system.func-2)\<[Type](https://learn.microsoft.com/dotnet/api/system.type), [bool](https://learn.microsoft.com/dotnet/api/system.boolean)\>
 
+#### Remarks
+
+A <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> predicate accepts every argument satisfying its parameter constraints.
+
 ### HideNoneOption {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_HideNoneOption}
 
-Gets or sets a value indicating whether the <code>&lt;None&gt;</code> row is left out of the root page.
+Gets or sets a value indicating whether the empty selection is hidden on the root page.
 
 ```csharp
 public bool HideNoneOption { readonly get; set; }
@@ -80,15 +108,9 @@ public bool HideNoneOption { readonly get; set; }
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-#### Remarks
-
-Set it on a picker whose target must always hold a type, such as one swapping a component's script. By
-default the row is offered and reports <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> when selected.
-
 ### IncludeHidden {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_IncludeHidden}
 
-Gets or sets a value indicating whether types marked <code>[TypeSelectorDisplay(Hidden = true)]</code> are
-offered.
+Gets or sets a value indicating whether types with [`TypeSelectorDisplayAttribute.Hidden`](Aspid.FastTools.Types.TypeSelectorDisplayAttribute.md#Aspid_FastTools_Types_TypeSelectorDisplayAttribute_Hidden) are offered.
 
 ```csharp
 public bool IncludeHidden { readonly get; set; }
@@ -98,15 +120,9 @@ public bool IncludeHidden { readonly get; set; }
 
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-#### Remarks
-
-Set it only on a picker that repairs a reference: hiding a type means "do not offer this for new work",
-not "make existing data holding it unfixable".
-
 ### InferredArgumentFilter {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_InferredArgumentFilter}
 
-Gets or sets the filter applied to an argument the selector infers from the field instead of asking for
-it. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> accepts whatever the field determines.
+Gets or sets the predicate for generic arguments inferred from the field type.
 
 ```csharp
 public GenericArgumentFilter InferredArgumentFilter { readonly get; set; }
@@ -118,14 +134,11 @@ public GenericArgumentFilter InferredArgumentFilter { readonly get; set; }
 
 #### Remarks
 
-Separate from [`TypeSelectorFilter.ArgumentFilter`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_ArgumentFilter), which curates a page a human reads and must stay a finite
-list. This one judges a single argument the field has already fixed, so it can ask the exact question per
-parameter and admit an argument the page would not have offered.
+A <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> predicate accepts every inferred argument satisfying its parameter constraints.
 
 ### Predicate {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Predicate}
 
-Gets or sets the predicate applied to each candidate after the base-type and [`TypeSelectorFilter.Allow`](Aspid.FastTools.Types.Editors.TypeSelectorFilter.md#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Allow) checks,
-returning <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a> to hide a type. <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> keeps every matching type.
+Gets or sets the predicate that rejects candidates after the base-type and kind checks.
 
 ```csharp
 public Func<Type, bool> Predicate { readonly get; set; }
@@ -135,10 +148,13 @@ public Func<Type, bool> Predicate { readonly get; set; }
 
  [Func](https://learn.microsoft.com/dotnet/api/system.func-2)\<[Type](https://learn.microsoft.com/dotnet/api/system.type), [bool](https://learn.microsoft.com/dotnet/api/system.boolean)\>
 
+#### Remarks
+
+A <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> predicate accepts every matching type.
+
 ### Types {#Aspid_FastTools_Types_Editors_TypeSelectorFilter_Types}
 
-Gets or sets the base types the candidates must all be assignable to.
-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> stands for [`Object`](https://learn.microsoft.com/dotnet/api/system.object).
+Gets or sets the base types that every candidate must be assignable to.
 
 ```csharp
 public Type[] Types { readonly get; set; }
@@ -147,4 +163,8 @@ public Type[] Types { readonly get; set; }
 #### Property Value
 
  [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
+
+#### Remarks
+
+A <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> array applies no base-type constraint.
 

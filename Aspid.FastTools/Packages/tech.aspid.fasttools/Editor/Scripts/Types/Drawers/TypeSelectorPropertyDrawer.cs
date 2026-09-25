@@ -289,8 +289,7 @@ namespace Aspid.FastTools.Types.Editors
                 return Array.Empty<Type>();
             }
 
-            var resolution = TypeSelectorConstraintResolver.Resolve(
-                property.serializedObject.targetObject, TypeSelector.AssemblyQualifiedNames);
+            var resolution = TypeSelectorConstraintResolver.Resolve(property, TypeSelector.AssemblyQualifiedNames);
 
             // Overwrite (never ??=): a member-referenced constraint re-resolves while the inspector is
             // open, and the warnings must follow the latest resolution rather than freeze on the first.

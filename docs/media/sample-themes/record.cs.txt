@@ -1,0 +1,41 @@
+using System;
+using System.IO;
+using System.Reflection;
+using UnityEngine;
+using UnityEditor;
+[DefaultExecutionOrder(10000)]
+public sealed class SampleThemeRecorder : MonoBehaviour
+{
+ private const string Output="/Users/vladislavpanin/Documents/Codex/2026-09-20/localhost-3001-aspid-fasttools-ru-docs/work/sample-themes-brighter/frames";
+ private Camera _camera;
+ private RenderTexture _target;
+ private Texture2D _image;
+ private int _frame=-60;
+ private int _previousRate;
+ public static object Main() {
+  if(!EditorApplication.isPlaying)throw new Exception("Play Mode required");
+  Directory.CreateDirectory(Output);
+  var walker=GameObject.Find("Walker");
+  walker.transform.position=new Vector3(-8,1,0);
+  var behaviour=walker.GetComponent("Walker");
+  behaviour.GetType().GetField("_direction",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(behaviour,1);
+  new GameObject("Temporary sample recorder").AddComponent<SampleThemeRecorder>();
+  return Output;
+ }
+ private void Awake() {
+  _camera=Camera.main;_previousRate=Time.captureFramerate;Time.captureFramerate=20;
+  _target=new RenderTexture(1440,810,24,RenderTextureFormat.ARGB32){antiAliasing=4};_target.Create();
+  _image=new Texture2D(1440,810,TextureFormat.RGB24,false);
+ }
+ private void LateUpdate() {
+  if(_frame++<0)return;
+  var active=RenderTexture.active;var target=_camera.targetTexture;
+  try {
+   _camera.targetTexture=_target;_camera.Render();RenderTexture.active=_target;
+   _image.ReadPixels(new Rect(0,0,1440,810),0,0);_image.Apply();
+   File.WriteAllBytes(Path.Combine(Output,$"frame-{_frame:000}.png"),_image.EncodeToPNG());
+  } finally {_camera.targetTexture=target;RenderTexture.active=active;}
+  if(_frame==100){File.WriteAllText(Path.Combine(Output,"done.txt"),"100 frames at 20 fps");Destroy(gameObject);}
+ }
+ private void OnDestroy(){Time.captureFramerate=_previousRate;if(_target!=null){_target.Release();Destroy(_target);}if(_image!=null)Destroy(_image);}
+}

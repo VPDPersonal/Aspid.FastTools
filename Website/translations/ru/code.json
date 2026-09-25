@@ -1,0 +1,5 @@
+{
+  "theme.TOCCollapsible.toggleButtonLabel": {"message": "Содержание"},
+  "featureCard.more": {"message": "Подробнее"},
+  "theme.admonition.warning": {"message": "внимание", "description": "Docusaurus ships the ru label untranslated"}
+}

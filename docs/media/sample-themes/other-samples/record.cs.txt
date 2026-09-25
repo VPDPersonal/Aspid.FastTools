@@ -1,0 +1,67 @@
+using System;
+using System.IO;
+using System.Reflection;
+using System.Linq;
+using UnityEngine;
+using UnityEditor;
+[DefaultExecutionOrder(10000)]
+public sealed class SampleThemeRecorder : MonoBehaviour
+{
+ private static string Output="/Users/vladislavpanin/Documents/Codex/2026-09-20/localhost-3001-aspid-fasttools-ru-docs/work/other-samples/clean-frames";
+ private Camera _camera;
+ private RenderTexture _target;
+ private Texture2D _image;
+ private int _frame=-5;
+ private int _previousRate;
+ private Renderer[] _labels;
+ private int _length;
+ public static object Main() {
+  if(!EditorApplication.isPlaying)throw new Exception("Play Mode required");
+  Output=Path.Combine(Output,UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+  Directory.CreateDirectory(Output);
+  var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+  if(scene=="Types") {
+   foreach(var m in UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None))
+    if(m.transform.parent!=null&&m.transform.parent.GetComponent("EnemySpawner")!=null&&m.GetType().Namespace=="Aspid.FastTools.Samples.Types"&&m.GetType().GetProperty("Tint",BindingFlags.Instance|BindingFlags.NonPublic)!=null)DestroyImmediate(m.gameObject);
+   var spawner=UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).First(m=>m.GetType().Name=="EnemySpawner");
+   spawner.StopAllCoroutines();
+   spawner.GetType().GetField("_spawned",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(spawner,0);
+   spawner.StartCoroutine((System.Collections.IEnumerator)spawner.GetType().GetMethod("Start",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(spawner,null));
+  }
+  if(scene=="ProfilerMarkers") {
+   UnityEngine.Random.InitState(42);
+   var flock=UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).First(m=>m.GetType().Name=="Flock");
+   flock.GetType().GetMethod("InitializeAgents",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(flock,null);
+  }
+  if(scene=="SerializeReferences") {
+   var dummy=UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).First(m=>m.GetType().Name=="TrainingDummy");
+   dummy.GetType().GetMethod("Awake",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(dummy,null);
+   foreach(var field in new[]{"_burnUntil","_freezeUntil","_burnAccumulator"})dummy.GetType().GetField(field,BindingFlags.NonPublic|BindingFlags.Instance).SetValue(dummy,0f);
+   var loadout=UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None).First(m=>m.GetType().Name=="Loadout");
+   loadout.StopAllCoroutines();
+   loadout.GetType().GetField("_sidearmIndex",BindingFlags.NonPublic|BindingFlags.Instance).SetValue(loadout,0);
+   loadout.StartCoroutine((System.Collections.IEnumerator)loadout.GetType().GetMethod("Start",BindingFlags.NonPublic|BindingFlags.Instance).Invoke(loadout,null));
+  }
+  new GameObject("Temporary sample recorder").AddComponent<SampleThemeRecorder>();
+  return Output;
+ }
+ private void Awake() {
+  _length=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name=="Types"?60:120;
+  _labels=UnityEngine.Object.FindObjectsByType<TextMesh>(FindObjectsSortMode.None).Select(t=>t.GetComponent<Renderer>()).Where(r=>r!=null&&r.enabled).ToArray();
+  _camera=Camera.main;_previousRate=Time.captureFramerate;Time.captureFramerate=20;
+  _target=new RenderTexture(1440,810,24,RenderTextureFormat.ARGB32){antiAliasing=4};_target.Create();
+  _image=new Texture2D(1440,810,TextureFormat.RGB24,false);
+ }
+ private void LateUpdate() {
+  if(_frame++<0)return;
+  var active=RenderTexture.active;var target=_camera.targetTexture;
+  try {
+   foreach(var label in _labels)label.enabled=false;
+   _camera.targetTexture=_target;_camera.Render();RenderTexture.active=_target;
+   _image.ReadPixels(new Rect(0,0,1440,810),0,0);_image.Apply();
+   File.WriteAllBytes(Path.Combine(Output,$"frame-{_frame:000}.png"),_image.EncodeToPNG());
+  } finally {_camera.targetTexture=target;RenderTexture.active=active;foreach(var label in _labels)label.enabled=true;}
+  if(_frame==_length){File.WriteAllText(Path.Combine(Output,"done.txt"),_length+" frames at 20 fps");Destroy(gameObject);}
+ }
+ private void OnDestroy(){Time.captureFramerate=_previousRate;if(_target!=null){_target.Release();Destroy(_target);}if(_image!=null)Destroy(_image);}
+}

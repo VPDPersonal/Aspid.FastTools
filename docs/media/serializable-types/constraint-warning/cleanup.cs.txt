@@ -1,0 +1,20 @@
+using UnityEngine;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
+public static class CleanupNativeConstraint {
+    public static object Main() {
+        var window = EditorUtility.InstanceIDToObject(SessionState.GetInt("Docs.NativeConstraint.Window", 0)) as EditorWindow;
+        if (window != null) window.Close();
+        Selection.activeInstanceID = SessionState.GetInt("Docs.NativeConstraint.PreviousSelection", 0);
+        foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>()) {
+            if (go.name == "Type Selection Example" && go.scene.IsValid() && EditorSceneManager.IsPreviewScene(go.scene)) {
+                EditorSceneManager.ClosePreviewScene(go.scene);
+                break;
+            }
+        }
+        var deleted = AssetDatabase.DeleteAsset("Assets/__DocsConstraintCapture");
+        var active = SceneManager.GetActiveScene();
+        return new { deleted, scene = active.path, dirty = active.isDirty, playing = EditorApplication.isPlaying };
+    }
+}

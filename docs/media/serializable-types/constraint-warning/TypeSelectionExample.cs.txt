@@ -1,0 +1,12 @@
+using UnityEngine;
+using Aspid.FastTools.Types;
+
+// Deliberate typo for documenting the Inspector warning.
+#pragma warning disable AFT0006, AFT0007, AFT0008
+public sealed class TypeSelectionExample : MonoBehaviour
+{
+    [SerializeField] private SerializableType<MonoBehaviour> _category = new SerializableType<MonoBehaviour>(typeof(MonoBehaviour));
+
+    [TypeSelector("_categroy", Allow = TypeAllow.None)]
+    [SerializeField] private string _componentTypeName;
+}

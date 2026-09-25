@@ -11,8 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.SerializeReferences.Editors](Aspid.FastTools.SerializeReferences.Editors.md)  
 Assembly: Aspid.FastTools.Editor.dll  
 
-Provides utility methods for drawing an IMGUI <code>[SerializeReference]</code> list whose add button opens the type
-picker and appends a fresh instance.
+Provides utility methods for drawing managed-reference lists with a type picker for new elements in IMGUI.
 
 ```csharp
 public static class SerializeReferenceIMGUIList
@@ -30,17 +29,13 @@ public static class SerializeReferenceIMGUIList
 
 ## Remarks
 
-In IMGUI a <code>[TypeSelector]</code> drawer is applied to array elements and can never reach the list's own "+", so
-an editor that overrides <code>OnInspectorGUI</code> gets Unity's default add — which duplicates the last element and
-leaves it rid-aliased. Call [`SerializeReferenceIMGUIList.Draw`](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList.md) for those lists instead. Elements still go through
-[`PropertyField`](https://docs.unity3d.com/ScriptReference/EditorGUI-PropertyField.html), so the per-element drawer
-applies exactly as it would by default.
+The add button creates an independent instance; element fields retain their registered property drawers.
 
 ## Methods
 
 ### Draw\(SerializedProperty, GUIContent, Type, params Type\[\]\) {#Aspid_FastTools_SerializeReferences_Editors_SerializeReferenceIMGUIList_Draw_UnityEditor_SerializedProperty_UnityEngine_GUIContent_System_Type_System_Type___}
 
-Draws a <code>[SerializeReference]</code> list with a picker-backed "+".
+Draws a managed-reference list whose add button selects a type and appends an independent instance.
 
 ```csharp
 public static void Draw(SerializedProperty listProperty, GUIContent label, Type elementType, params Type[] baseTypes)
@@ -50,18 +45,17 @@ public static void Draw(SerializedProperty listProperty, GUIContent label, Type 
 
 `listProperty` SerializedProperty
 
-The array/list property to draw. Its elements must be managed references.
+The array or list of managed references; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or a non-array property draws nothing.
 
 `label` GUIContent
 
-Header label for the list.
+The list header; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> displays no label.
 
 `elementType` [Type](https://learn.microsoft.com/dotnet/api/system.type)
 
-Declared element type constraining the picker; needed up front because an empty
-    list has no element to read it from.
+The declared element type constraining the picker, supplied even when the list is empty.
 
 `baseTypes` [Type](https://learn.microsoft.com/dotnet/api/system.type)\[\]
 
-Base types narrowing the candidates below <code class="paramref">elementType</code>.
+Additional constraints below <code class="paramref">elementType</code>; <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> or an empty array adds none.
 

@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`Foldout`](https://docs.unity3d.com/ScriptReference/UIElements-Foldout.html).
+
 ```csharp
 public static class FoldoutExtensions
 ```
@@ -29,7 +31,7 @@ public static class FoldoutExtensions
 
 ### SetText\<T\>\(T, string\) {#Aspid_FastTools_UIElements_FoldoutExtensions_SetText__1___0_System_String_}
 
-Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-Foldout-text.html) and returns the element for chaining.
+Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-Foldout-text.html).
 
 ```csharp
 public static T SetText<T>(this T element, string value) where T : Foldout
@@ -55,13 +57,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-The label text for the toggle.
+The element type.
 
 ### SetToggleOnLabelClick\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_FoldoutExtensions_SetToggleOnLabelClick__1___0_System_Boolean_}
 
-Sets [`toggleOnLabelClick`](https://docs.unity3d.com/ScriptReference/UIElements-Foldout-toggleOnLabelClick.html) and returns the element for chaining.
+Sets [`toggleOnLabelClick`](https://docs.unity3d.com/ScriptReference/UIElements-Foldout-toggleOnLabelClick.html).
 
 ```csharp
 public static T SetToggleOnLabelClick<T>(this T element, bool value) where T : Foldout
@@ -75,7 +75,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether clicking the label toggles the foldout.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, clicking the label toggles the foldout.
 
 #### Returns
 
@@ -87,7 +87,5 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Whether to toggle the element state when the user clicks the label.
+The element type.
 
