@@ -1,16 +1,14 @@
 # VisualElement Extensions
 
-In UI Toolkit every element property is a separate statement: four lines for padding, a variable for each child and an `Add` at the end. FastTools turns properties, styles and events into methods that return the element itself, so an inspector header is one expression and `SetPaddingX(12)` replaces the `style.paddingLeft` and `style.paddingRight` pair.
+UI Toolkit interfaces in one call chain — no separate line per property and style.
 
 ## Quick start
-
-The examples on this page build the inspector of the `AbilityConfig` asset from the [EditorTools sample](../Samples~/EditorTools/Documentation/README.md). Add `using Aspid.FastTools.UIElements;`:
 
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>var title = new Label("Ability Config");&#10;title.style.fontSize = 14;&#10;&#10;var header = new VisualElement();&#10;header.style.paddingLeft = 12;&#10;header.style.paddingRight = 12;&#10;header.style.paddingTop = 10;&#10;header.style.paddingBottom = 10;&#10;header.Add(title);</code></pre> | <pre lang="csharp"><code>var header = new VisualElement()&#10;    .SetPaddingX(12)&#10;    .SetPaddingY(10)&#10;    .AddChild(new Label("Ability Config")&#10;        .SetFontSize(14));</code></pre> |
 
-A setter returns the same type: `new Button().SetText("Create")` is a `Button`. `AddChild` and the other child operations return the parent. Methods on `style`, `textEdition` and `textSelection` return that object, not the element.
+A setter returns the same type: <code lang="csharp">new Button().SetText("Create")</code> is a <code lang="class-name">Button</code>. <code lang="function">AddChild</code> and the other child operations return the parent. Methods on <code lang="csharp">style</code>, <code lang="csharp">textEdition</code> and <code lang="csharp">textSelection</code> return that object, not the element.
 
 ## Method names
 
@@ -18,42 +16,40 @@ Method names follow one rule:
 
 | Unity | FastTools | Examples |
 |---|---|---|
-| property `x` | `SetX(value)` | `tooltip` → `SetTooltip` |
-| property `isX` | `SetX(value)`, without `is` | `isDelayed` → `SetDelayed` |
-| style property `style.x` | `SetX(value)` on the element and on `style` | `style.fontSize` → `SetFontSize` |
-| event `x` | `AddX` / `RemoveX` | `clicked` → `AddClicked` |
-| delegate property `x` | `SetX`; an `Action` also gets `AddX` / `RemoveX` | `bindItem` → `SetBindItem`, `AddBindItem` |
-| method `M()` | `MSelf()` | `Focus()` → `FocusSelf()` |
+| property <code lang="csharp">x</code> | <code lang="csharp">SetX(value)</code> | <code lang="csharp">tooltip</code> → <code lang="function">SetTooltip</code> |
+| property <code lang="csharp">isX</code> | <code lang="csharp">SetX(value)</code>, without <code lang="csharp">is</code> | <code lang="csharp">isDelayed</code> → <code lang="function">SetDelayed</code> |
+| style property <code lang="csharp">style.x</code> | <code lang="csharp">SetX(value)</code> on the element and on <code lang="csharp">style</code> | <code lang="csharp">style.fontSize</code> → <code lang="function">SetFontSize</code> |
+| event <code lang="csharp">x</code> | <code lang="function">AddX</code> / <code lang="function">RemoveX</code> | <code lang="csharp">clicked</code> → <code lang="function">AddClicked</code> |
+| delegate property <code lang="csharp">x</code> | <code lang="function">SetX</code>; an <code lang="class-name">Action&lt;…&gt;</code> also gets <code lang="function">AddX</code> / <code lang="function">RemoveX</code> | <code lang="csharp">bindItem</code> → <code lang="function">SetBindItem</code>, <code lang="function">AddBindItem</code> |
+| method <code lang="csharp">M()</code> | <code lang="csharp">MSelf()</code> | <code lang="csharp">Focus()</code> → <code lang="csharp">FocusSelf()</code> |
 
-The rule covers the properties and events of every element, from `VisualElement` to `MultiColumnTreeView`; the full list is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements). Exceptions:
+The rule covers the properties and events of every element, from <code lang="class-name">VisualElement</code> to <code lang="class-name">MultiColumnTreeView</code>; the full list is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements). Children and USS classes are renamed separately — see the sections below. Exceptions:
 
-- `EnumField` and `EnumFlagsField` (in the editor) get `Initialize` in place of `Init`;
-- `Button.SetClickable` takes a `Clickable` or an `Action`.
-
-`IsFocused()` checks focus:
-
-| Before — Unity API | After — FastTools |
-|---|---|
-| <pre lang="csharp"><code>bool focused = search.focusController?&#10;    .focusedElement == search;</code></pre> | <pre lang="csharp"><code>bool focused = search.IsFocused();</code></pre> |
+- <code lang="class-name">EnumField</code> and <code lang="class-name">EnumFlagsField</code> get <code lang="function">Initialize</code> in place of <code lang="function">Init</code>;
+- <code lang="csharp">Button.SetClickable</code> takes a <code lang="class-name">Clickable</code> or an <code lang="class-name">Action</code>;
+- <code lang="csharp">IsFocused()</code> checks focus: <code lang="csharp">search.IsFocused()</code> instead of <code lang="csharp">search.focusController?.focusedElement == search</code>.
 
 ## Children
 
+| Unity | FastTools |
+|---|---|
+| <code lang="function">Add</code> | <code lang="function">AddChild</code> |
+| several <code lang="function">Add</code> calls | <code lang="function">AddChildren</code> |
+| <code lang="function">Insert</code> | <code lang="function">InsertChild</code> |
+| several <code lang="function">Insert</code> calls | <code lang="function">InsertChildren</code> |
+| <code lang="function">Remove</code> | <code lang="function">RemoveChild</code> |
+| <code lang="function">RemoveAt</code> | <code lang="function">RemoveChildAt</code> |
+| <code lang="function">Clear</code> | <code lang="function">ClearChildren</code> |
+
+Every method has an <code lang="csharp">…If(condition, …)</code> variant; <code lang="function">AddChildren</code> and <code lang="function">InsertChildren</code> take both <code lang="csharp">params</code> and collections:
+
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>header.Add(title);</code></pre> | <pre lang="csharp"><code>header.AddChild(title);</code></pre> |
-| <pre lang="csharp"><code>header.Add(title);&#10;header.Add(badge);</code></pre> | <pre lang="csharp"><code>header.AddChildren(title, badge);</code></pre> |
-| <pre lang="csharp"><code>header.Insert(0, badge);</code></pre> | <pre lang="csharp"><code>header.InsertChild(0, badge);</code></pre> |
-| <pre lang="csharp"><code>header.Insert(0, title);&#10;header.Insert(1, badge);</code></pre> | <pre lang="csharp"><code>header.InsertChildren(0, title, badge);</code></pre> |
-| <pre lang="csharp"><code>header.Remove(badge);</code></pre> | <pre lang="csharp"><code>header.RemoveChild(badge);</code></pre> |
-| <pre lang="csharp"><code>header.RemoveAt(0);</code></pre> | <pre lang="csharp"><code>header.RemoveChildAt(0);</code></pre> |
-| <pre lang="csharp"><code>header.Clear();</code></pre> | <pre lang="csharp"><code>header.ClearChildren();</code></pre> |
 | <pre lang="csharp"><code>if (isFree)&#10;    body.Add(helpBox);</code></pre> | <pre lang="csharp"><code>body.AddChildIf(isFree, helpBox);</code></pre> |
-
-Every method has an `…If(condition, …)` variant. `AddChildren` and `InsertChildren` take `params`, `IEnumerable`, `List`, `Span` or `ReadOnlySpan`, keep the order of the elements and skip a `null` collection.
 
 ## Styles
 
-One value sets every side, `X` sets left and right, `Y` top and bottom. Omitted named parameters keep the previous value:
+One value sets every side, <code lang="csharp">X</code> sets left and right, <code lang="csharp">Y</code> top and bottom. Omitted named parameters keep the previous value:
 
 | Before — Unity API | After — FastTools |
 |---|---|
@@ -61,51 +57,50 @@ One value sets every side, `X` sets left and right, `Y` top and bottom. Omitted 
 
 | Method | Sets | Variants |
 |---|---|---|
-| `SetMargin`, `SetPadding` | `margin…`, `padding…` | `X`, `Y`, `Top`, `Right`, `Bottom`, `Left` |
-| `SetBorderWidth`, `SetBorderColor` | `border…Width`, `border…Color` | `X`, `Y`, `Top`, `Right`, `Bottom`, `Left` |
-| `SetUnitySlice` | `unitySlice…` | `X`, `Y`, `Top`, `Right`, `Bottom`, `Left` |
-| `SetDistance` | `top`, `right`, `bottom`, `left` | `X`, `Y`; one side: `SetTop`, `SetRight`, `SetBottom`, `SetLeft` |
-| `SetBorderRadius` | `border…Radius` | `Top`, `Bottom`, `Left`, `Right`, `TopLeft`, `TopRight`, `BottomRight`, `BottomLeft` |
-| `SetSize`, `SetMinSize`, `SetMaxSize` | `width` and `height`, `min…`, `max…` | one value, two values or one named |
-| `SetBackgroundPosition` | `backgroundPositionX`, `backgroundPositionY` | `X`, `Y` |
+| <code lang="function">SetMargin</code>, <code lang="function">SetPadding</code> | <code lang="csharp">margin…</code>, <code lang="csharp">padding…</code> | <code lang="csharp">X</code>, <code lang="csharp">Y</code>, <code lang="csharp">Top</code>, <code lang="csharp">Right</code>, <code lang="csharp">Bottom</code>, <code lang="csharp">Left</code> |
+| <code lang="function">SetBorderWidth</code>, <code lang="function">SetBorderColor</code> | <code lang="csharp">border…Width</code>, <code lang="csharp">border…Color</code> | <code lang="csharp">X</code>, <code lang="csharp">Y</code>, <code lang="csharp">Top</code>, <code lang="csharp">Right</code>, <code lang="csharp">Bottom</code>, <code lang="csharp">Left</code> |
+| <code lang="function">SetUnitySlice</code> | <code lang="csharp">unitySlice…</code> | <code lang="csharp">X</code>, <code lang="csharp">Y</code>, <code lang="csharp">Top</code>, <code lang="csharp">Right</code>, <code lang="csharp">Bottom</code>, <code lang="csharp">Left</code> |
+| <code lang="function">SetDistance</code> | <code lang="csharp">top</code>, <code lang="csharp">right</code>, <code lang="csharp">bottom</code>, <code lang="csharp">left</code> | <code lang="csharp">X</code>, <code lang="csharp">Y</code>; one side: <code lang="function">SetTop</code>, <code lang="function">SetRight</code>, <code lang="function">SetBottom</code>, <code lang="function">SetLeft</code> |
+| <code lang="function">SetBorderRadius</code> | <code lang="csharp">border…Radius</code> | <code lang="csharp">Top</code>, <code lang="csharp">Bottom</code>, <code lang="csharp">Left</code>, <code lang="csharp">Right</code>, <code lang="csharp">TopLeft</code>, <code lang="csharp">TopRight</code>, <code lang="csharp">BottomRight</code>, <code lang="csharp">BottomLeft</code> |
+| <code lang="function">SetSize</code>, <code lang="function">SetMinSize</code>, <code lang="function">SetMaxSize</code> | <code lang="csharp">width</code> and <code lang="csharp">height</code>, <code lang="csharp">min…</code>, <code lang="csharp">max…</code> | one value, two values or one named |
+| <code lang="function">SetBackgroundPosition</code> | <code lang="csharp">backgroundPositionX</code>, <code lang="csharp">backgroundPositionY</code> | <code lang="csharp">X</code>, <code lang="csharp">Y</code> |
 
-Colour setters also take a hex string, and asset setters take a `Resources` path:
+The side always comes after the property: <code lang="csharp">borderTopWidth</code> → <code lang="function">SetBorderWidthTop</code>, <code lang="csharp">borderTopLeftRadius</code> → <code lang="function">SetBorderRadiusTopLeft</code>.
+
+Colour setters also take an HTML string (<code lang="csharp">"#FFC24D"</code>, <code lang="csharp">"red"</code>), and asset setters a <code lang="csharp">Resources</code> path:
 
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>if (ColorUtility.TryParseHtmlString(&#10;        "#FFC24D", out var color))&#10;    badge.style.color = color;</code></pre> | <pre lang="csharp"><code>badge.SetColor("#FFC24D");</code></pre> |
 | <pre lang="csharp"><code>root.style.backgroundImage = Resources&#10;    .Load&lt;Texture2D&gt;("UI/Card");</code></pre> | <pre lang="csharp"><code>root.SetBackgroundImageFromResources(&#10;    "UI/Card");</code></pre> |
 
-If the string does not parse as a colour or no asset exists at the path, the method logs a warning and leaves the element unchanged. `SetImageFromResources`, `SetSpriteFromResources`, `SetVectorImageFromResources` and `AddStyleSheetFromResources` take a `Resources` path too.
+If the string does not parse as a colour or no asset exists at the path, the method logs a warning and leaves the element unchanged. <code lang="function">SetImageFromResources</code>, <code lang="function">SetSpriteFromResources</code>, <code lang="function">SetVectorImageFromResources</code>, <code lang="function">AddStyleSheetFromResources</code> and <code lang="function">RemoveStyleSheetFromResources</code> take a <code lang="csharp">Resources</code> path too.
 
 ### Bold and italic
 
-`SetNormalUnityFontStyleAndWeight()` resets both flags; the other presets change one flag and keep the other:
+<code lang="csharp">SetNormalUnityFontStyleAndWeight()</code> resets both flags; the other presets change one flag and keep the other:
 
 | Method | Changes |
 |---|---|
-| `AddBold…` | `Normal` → `Bold`, `Italic` → `BoldAndItalic` |
-| `RemoveBold…` | `Bold` → `Normal`, `BoldAndItalic` → `Italic` |
-| `AddItalic…` | `Normal` → `Italic`, `Bold` → `BoldAndItalic` |
-| `RemoveItalic…` | `Italic` → `Normal`, `BoldAndItalic` → `Bold` |
-
-Other values stay as they are.
+| <code lang="function">AddBold…</code> | <code lang="csharp">Normal</code> → <code lang="csharp">Bold</code>, <code lang="csharp">Italic</code> → <code lang="csharp">BoldAndItalic</code> |
+| <code lang="function">RemoveBold…</code> | <code lang="csharp">Bold</code> → <code lang="csharp">Normal</code>, <code lang="csharp">BoldAndItalic</code> → <code lang="csharp">Italic</code> |
+| <code lang="function">AddItalic…</code> | <code lang="csharp">Normal</code> → <code lang="csharp">Italic</code>, <code lang="csharp">Bold</code> → <code lang="csharp">BoldAndItalic</code> |
+| <code lang="function">RemoveItalic…</code> | <code lang="csharp">Italic</code> → <code lang="csharp">Normal</code>, <code lang="csharp">BoldAndItalic</code> → <code lang="csharp">Bold</code> |
 
 > [!NOTE]
-> The presets read the current value from the element's `style`, not the resolved style: a weight set in USS counts as `Normal`.
+> The presets read the current value from the element's <code lang="csharp">style</code>, not the resolved style: a weight set in USS counts as <code lang="csharp">Normal</code>.
 
 ## USS classes and style sheets
 
-| Before — Unity API | After — FastTools |
+| Unity | FastTools |
 |---|---|
-| <pre lang="csharp"><code>badge.AddToClassList("free");</code></pre> | <pre lang="csharp"><code>badge.AddClass("free");</code></pre> |
-| <pre lang="csharp"><code>badge.RemoveFromClassList("free");</code></pre> | <pre lang="csharp"><code>badge.RemoveClass("free");</code></pre> |
-| <pre lang="csharp"><code>badge.ToggleInClassList("free");</code></pre> | <pre lang="csharp"><code>badge.ToggleClass("free");</code></pre> |
-| <pre lang="csharp"><code>badge.EnableInClassList(&#10;    "free", isFree);</code></pre> | <pre lang="csharp"><code>badge.EnableClass("free", isFree);</code></pre> |
-| <pre lang="csharp"><code>badge.ClearClassList();</code></pre> | <pre lang="csharp"><code>badge.ClearClasses();</code></pre> |
-| <pre lang="csharp"><code>root.styleSheets.Add(styleSheet);</code></pre> | <pre lang="csharp"><code>root.AddStyleSheet(styleSheet);</code></pre> |
-| <pre lang="csharp"><code>root.styleSheets.Remove(styleSheet);</code></pre> | <pre lang="csharp"><code>root.RemoveStyleSheet(styleSheet);</code></pre> |
-| <pre lang="csharp"><code>root.styleSheets.Remove(Resources&#10;    .Load&lt;StyleSheet&gt;("UI/Ability"));</code></pre> | <pre lang="csharp"><code>root.RemoveStyleSheetFromResources(&#10;    "UI/Ability");</code></pre> |
+| <code lang="function">AddToClassList</code> | <code lang="function">AddClass</code> |
+| <code lang="function">RemoveFromClassList</code> | <code lang="function">RemoveClass</code> |
+| <code lang="function">ToggleInClassList</code> | <code lang="function">ToggleClass</code> |
+| <code lang="function">EnableInClassList</code> | <code lang="function">EnableClass</code> |
+| <code lang="function">ClearClassList</code> | <code lang="function">ClearClasses</code> |
+| <code lang="csharp">styleSheets.Add</code> | <code lang="function">AddStyleSheet</code> |
+| <code lang="csharp">styleSheets.Remove</code> | <code lang="function">RemoveStyleSheet</code> |
 
 ## Values and events
 
@@ -116,7 +111,7 @@ Other values stay as they are.
 | <pre lang="csharp"><code>manaCost.RegisterValueChangedCallback(&#10;    OnManaCostChanged);</code></pre> | <pre lang="csharp"><code>manaCost.AddValueChanged(&#10;    OnManaCostChanged);</code></pre> |
 | <pre lang="csharp"><code>manaCost.UnregisterValueChangedCallback(&#10;    OnManaCostChanged);</code></pre> | <pre lang="csharp"><code>manaCost.RemoveValueChanged(&#10;    OnManaCostChanged);</code></pre> |
 
-Typed overloads cover numbers, `string`, `bool`, vectors, Unity types such as `Color` and `Gradient` and, with `com.unity.mathematics` installed, its vectors, matrices and `quaternion`, so `AddValueChanged(evt => …)` needs no type arguments. Other types use `SetValue<TField, TValue>` and `AddValueChanged<TField, TValue>`.
+Typed overloads cover every Unity field and, with <code lang="csharp">com.unity.mathematics</code> installed, its types, so <code lang="csharp">AddValueChanged(evt =&gt; …)</code> needs no type arguments. For your own types — <code lang="csharp">SetValue&lt;T, TValue&gt;</code> and <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;</code>.
 
 ## Manipulators
 
@@ -127,21 +122,19 @@ Typed overloads cover numbers, `string`, `bool`, vectors, Unity types such as `C
 | <pre lang="csharp"><code>title.AddManipulator(&#10;    new KeyboardNavigationManipulator(&#10;        OnNavigate));</code></pre> | <pre lang="csharp"><code>title.AddKeyboardNavigationManipulator(&#10;    OnNavigate);</code></pre> |
 | <pre lang="csharp"><code>title.AddManipulator(&#10;    new ContextualMenuManipulator(&#10;        BuildMenu));</code></pre> | <pre lang="csharp"><code>title.AddContextualMenuManipulator(&#10;    BuildMenu);</code></pre> |
 
-`AddClickable` and the `Add…Manipulator` methods have an `out` overload that keeps the manipulator for `RemoveManipulatorSelf`. `AddClickable` also takes an `Action<EventBase>`, or an `Action` with `delay` and `interval`.
+<code lang="function">AddClickable</code> and the <code lang="csharp">Add…Manipulator</code> methods have an <code lang="csharp">out</code> overload that keeps the manipulator for <code lang="function">RemoveManipulatorSelf</code>. <code lang="function">AddClickable</code> also takes an <code lang="class-name">Action&lt;EventBase&gt;</code>, or an <code lang="class-name">Action</code> with <code lang="csharp">delay</code> and <code lang="csharp">interval</code>.
 
 ## Editor extensions
 
-These methods live in the `Aspid.FastTools.Editor` assembly and work only in the editor. Add `using Aspid.FastTools.UIElements.Editors;`:
-
-| Before — Unity API | After — FastTools |
+| Unity | FastTools |
 |---|---|
-| <pre lang="csharp"><code>title.bindingPath = "_abilityName";&#10;title.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>title.BindTo(&#10;    serializedObject, "_abilityName");</code></pre> |
-| <pre lang="csharp"><code>title.bindingPath = "_abilityName";</code></pre> | <pre lang="csharp"><code>title.SetBindingPath("_abilityName");</code></pre> |
-| <pre lang="csharp"><code>title.BindProperty(abilityName);</code></pre> | <pre lang="csharp"><code>title.BindPropertyTo(abilityName);</code></pre> |
-| <pre lang="csharp"><code>root.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);</code></pre> |
-| <pre lang="csharp"><code>root.Unbind();</code></pre> | <pre lang="csharp"><code>root.UnbindFrom();</code></pre> |
+| <code lang="csharp">bindingPath</code> + <code lang="csharp">Bind(serializedObject)</code> | <code lang="csharp">BindTo(serializedObject, path)</code> |
+| <code lang="csharp">bindingPath</code> | <code lang="function">SetBindingPath</code> |
+| <code lang="function">BindProperty</code> | <code lang="function">BindPropertyTo</code> |
+| <code lang="function">Bind</code> | <code lang="function">BindTo</code> |
+| <code lang="function">Unbind</code> | <code lang="function">UnbindFrom</code> |
 
-`PropertyField` gets `SetLabel` and `AddValueChanged` / `RemoveValueChanged` with a `SerializedPropertyChangeEvent`:
+<code lang="class-name">PropertyField</code> gets <code lang="function">SetLabel</code> and <code lang="function">AddValueChanged</code> / <code lang="function">RemoveValueChanged</code> with a <code lang="class-name">SerializedPropertyChangeEvent</code>:
 
 ```csharp
 var manaCost = new PropertyField(
@@ -154,17 +147,17 @@ To write a property from your own code, see [SerializedProperty Extensions](08-s
 
 ### Script and owner window
 
-`AddOpenScriptCommand` opens the script of a `MonoBehaviour` or `ScriptableObject` in the IDE on a left double-click; for any other object it adds nothing:
+<code lang="function">AddOpenScriptCommand</code> opens the script of a <code lang="class-name">MonoBehaviour</code> or <code lang="class-name">ScriptableObject</code> in the IDE on a left double-click; for any other object it adds nothing:
 
 ```csharp
 title.AddOpenScriptCommand(target);
 ```
 
-`GetOwnerWindow()` returns the window whose panel holds the element; otherwise the focused window, then the window under the cursor, or `null`.
+<code lang="csharp">GetOwnerWindow()</code> returns the window whose panel holds the element; otherwise the focused window, then the window under the cursor, or <code lang="csharp">null</code>.
 
 ## Custom USS properties
 
-`TryGetByEnum` reads a string USS property and parses it as an enum, ignoring case:
+<code lang="function">TryGetByEnum</code> reads a string USS property and parses it as an enum, ignoring case:
 
 | Before — Unity API | After — FastTools |
 |---|---|
@@ -172,8 +165,6 @@ title.AddOpenScriptCommand(target);
 
 ## Package sample
 
-In [EditorTools](../Samples~/EditorTools/Documentation/README.md) the catalogue window and the `AbilityConfig` inspector are built with these extensions: a `ListView` in one chain, `BindTo` for the fields, `AddOpenScriptCommand` on the title.
+In [EditorTools](../Samples~/EditorTools/Documentation/README.md) the catalogue window and the <code lang="class-name">AbilityConfig</code> inspector are built with these extensions: a <code lang="class-name">ListView</code> in one chain, <code lang="function">BindTo</code> for the fields, <code lang="function">AddOpenScriptCommand</code> on the title.
 
-![Halve cooldown, +5 MP updates both the fields and effect description; Undo restores them.](../Samples~/EditorTools/Documentation/Images/demo.gif)
-
-Halve cooldown, +5 MP updates both the fields and effect description; Undo restores them.
+![The Ability Catalog window from the EditorTools sample](../Samples~/EditorTools/Documentation/Images/demo.gif)
