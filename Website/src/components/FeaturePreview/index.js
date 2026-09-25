@@ -106,13 +106,13 @@ function ProfilerPreview() {
 
 /* ---------- VisualElement Extensions: each chained call builds the preview ---------- */
 
-const UI_CODE = `var panel = new VisualElement()
+const UI_CODE = `var header = new VisualElement()
     .SetPaddingX(12)
-    .SetPaddingY(8)
-    .AddChild(new Label("Stats")
-        .SetFontSize(18));`;
+    .SetPaddingY(10)
+    .AddChild(new Label("Ability Config")
+        .SetFontSize(14));`;
 
-const UI_STEPS = ['VisualElement', 'padding-left / right: 12', 'padding-top / bottom: 8', 'Label “Stats”', 'font-size: 18', 'VisualElement'];
+const UI_STEPS = ['VisualElement', 'padding-left / right: 12', 'padding-top / bottom: 10', 'Label “Ability Config”', 'font-size: 14', 'VisualElement'];
 
 function UiPreview() {
   const ref = useRef(null);
@@ -123,9 +123,9 @@ function UiPreview() {
       <div className={styles.uiStage} aria-hidden="true">
         <div className={styles.uiPanel} data-x={step >= 1 || undefined} data-y={step >= 2 || undefined}>
           <span className={styles.uiPadX}>12</span>
-          <span className={styles.uiPadY}>8</span>
+          <span className={styles.uiPadY}>10</span>
           <div className={styles.uiContent}>
-            <span className={styles.uiLabel} data-show={step >= 3 || undefined} data-big={step >= 4 || undefined}>Stats</span>
+            <span className={styles.uiLabel} data-show={step >= 3 || undefined} data-big={step >= 4 || undefined}>Ability Config</span>
           </div>
         </div>
         <span className={styles.uiCaption}>{UI_STEPS[step]}</span>

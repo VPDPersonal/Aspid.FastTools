@@ -75,7 +75,7 @@ Build UI Toolkit trees with fluent chains.
 new VisualElement()
   .SetPaddingX(12)
   .AddChild(
-    new Label("Stats"));
+    new Label("Ability Config"));
 ```
 
 #### [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-serialized-property-extensions.md)
