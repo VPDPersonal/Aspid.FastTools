@@ -1,40 +1,31 @@
 # ProfilerMarkers
 
-A hand-written `ProfilerMarker` needs a field and a name string for every measured section — and the name goes stale on the first rename. `this.Marker()` marks a section with one `using` line, and the generator takes the marker name from the code.
+Profiler markers in one line, with no fields or names to keep up by hand.
 
 ## Quick start
-
-The examples on this page work with the `FlockSimulation` class from the [ProfilerMarkers sample](../Samples~/ProfilerMarkers/Documentation/README.md):
 
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>private static readonly&#10;    ProfilerMarker _marker =&#10;    new("FlockSimulation.Step");&#10;&#10;public void Step()&#10;&#123;&#10;    using var _ = _marker.Auto();&#10;    Integrate();&#10;&#125;</code></pre> | <pre lang="csharp"><code>public void Step()&#10;&#123;&#10;    using var _ = this.Marker();&#10;    Integrate();&#10;&#125;</code></pre> |
 
-No attributes or `partial`: the call works in `MonoBehaviour` and ordinary C# classes.
-
-> [!NOTE]
-> If your scripts sit under their own Assembly Definition, add `Aspid.FastTools` to its **Assembly Definition References** — otherwise `this.Marker()` is not found.
-
 ## Marker()
 
-Returns the `ProfilerMarker.AutoScope` of the `Type.Method (line)` marker for the current call site: the measurement lasts until the end of the `using` block. The `Type` and `Method` parts depend on where the call is:
+The marker name is built from the type, the method and the call's line number:
 
-| Where `this.Marker()` is called | Marker name |
+| Where <code lang="csharp">this.Marker()</code> is called | Marker name |
 |---|---|
-| Method `Step()` | `FlockSimulation.Step (line)` |
-| Constructor | `FlockSimulation.Ctor (line)` |
-| Accessor of the `Speed` property | `FlockSimulation.Speed (line)` |
-| Accessor of an indexer | `FlockSimulation.Indexer (line)` |
-| Lambda or local function inside `Step()` | `FlockSimulation.Step (line)` |
-| Explicit implementation `IUpdatable.Tick()` | `FlockSimulation.Tick (line)` |
-| Method `Move()` of the nested type `FlockSimulation.Agent` | `Agent.Move (line)` |
-| Method `Run()` in `Worker<int>`, one marker per closed type | `Worker<Int32>.Run (line)` |
+| <code lang="csharp">void Step()</code> | <code lang="string">FlockSimulation.Step (line)</code> |
+| <code lang="csharp">FlockSimulation()</code> | <code lang="string">FlockSimulation.Ctor (line)</code> |
+| <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed (line)</code> |
+| <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer (line)</code> |
+| <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (line)</code> |
+| <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move (line)</code> |
+| <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run (line)</code><br /><code lang="string">Worker&lt;Single&gt;.Run (line)</code> |
+| <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run (line)</code> for any <code lang="class-name">T</code> |
 
 ## WithName()
 
-`.WithName("Steering")` swaps the method in the marker name for its own text: `FlockSimulation.Step (5)` → `FlockSimulation.Steering (5)`. The type and line stay.
-
-The name is read from the source text, so only a string literal works: `"Steering"`, `@"Steering"` or `$"Steering"` without holes. With a variable, `const`, `nameof`, concatenation or `$"Agent {index}"` the marker keeps the method name, and the argument is still evaluated on every call.
+<code lang="csharp">.WithName("Steering")</code> replaces the method in the marker name with its own text: <code lang="string">FlockSimulation.Step (5)</code> → <code lang="string">FlockSimulation.Steering (5)</code>.
 
 ```csharp
 public void Step()
@@ -42,70 +33,39 @@ public void Step()
     using var _ = this.Marker();
 
     using (this.Marker().WithName("Steering"))
+    {
         foreach (var agent in _agents)
+        {
             using (this.Marker().WithName("Steering.Agent"))
                 ComputeSteering(agent);
+        }
+    }
 
     using (this.Marker().WithName("Integrate"))
         Integrate();
 }
 ```
 
+> [!NOTE]
+> Only a string literal works: the generator reads the name from the source. With a variable, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> or <code lang="csharp">$"Agent &#123;index&#125;"</code> the method name stays, and the argument is still evaluated on every call.
+
 ## In the Profiler
 
-The tree in **CPU Usage → Hierarchy** mirrors the `using` nesting. A marker inside a loop stays a single row with a `Calls` count: each call site has one static field — see the generated code below. Timings on the diagram are illustrative.
+The generator creates one static field per call site, so measuring allocates nothing.
 
 ![FlockSimulation marker diagram: Steering and Integrate nested under Step, Steering.Agent with 120 calls. Timings are illustrative.](Images/profiler-markers-hierarchy.svg)
 
-<details>
-<summary>Generated code</summary>
-
-Abridged: without `global::` and the repeated attribute, with shortened field names — the generator writes `Step_Marker_Line_3`, not `Line_3`. Line numbers count from the top of the `Step()` example in `WithName()`; in a real file they are source-file lines.
-
-```csharp
-// <auto-generated>
-[GeneratedCode(
-    "Aspid.FastTools.Generators.ProfilerMarkersGenerator", "1.0.0")]
-internal static class __FlockSimulationProfilerMarkerExtensions
-{
-    private static readonly ProfilerMarker Line_3 =
-        new("FlockSimulation.Step (3)");
-    private static readonly ProfilerMarker Line_5 =
-        new("FlockSimulation.Steering (5)");
-    private static readonly ProfilerMarker Line_7 =
-        new("FlockSimulation.Steering.Agent (7)");
-    private static readonly ProfilerMarker Line_10 =
-        new("FlockSimulation.Integrate (10)");
-
-    public static ProfilerMarker.AutoScope Marker(
-        this FlockSimulation _, [CallerLineNumber] int line = -1)
-    {
-#if ENABLE_PROFILER
-        if (line is 3) return Line_3.Auto();
-        if (line is 5) return Line_5.Auto();
-        if (line is 7) return Line_7.Auto();
-        if (line is 10) return Line_10.Auto();
-#endif
-        return default;
-    }
-}
-```
-
-</details>
-
 ## Limitations
 
-- **Only `this`.** Markers are generated for the type the call is written in: `other.Marker()` on an object of another type measures nothing. Static methods have no `this`, so they cannot hold a marker.
-- **Line suffix.** The number in the name changes when the call moves to another line, so compare captures from before and after an edit by the name without the suffix.
-- **Private and protected nested types.** The generated overload cannot see a `private` or `protected` nested type, or a type nested in one: the call compiles but opens no marker, and analyzer `AFT0010` warns. Make the type `internal` or `public`.
+- **Only <code lang="csharp">this</code>.** The marker opens on an instance of its own type, so static methods cannot hold one.
+- **The line number in the name** changes when the call moves: compare captures from before and after an edit by the name without it.
+- **Private and protected nested types** get no marker — analyzer `AFT0010` warns about it.
 
 > [!WARNING]
-> `this.Marker()` calls on the same line of a type, including across `partial` files, share the first call's marker — the second one's measurements land in someone else's Profiler row.
+> A measurement can land in someone else's Profiler row when <code lang="csharp">this.Marker()</code> calls in different <code lang="csharp">partial</code> files of one type sit on the same line, or when the call is made on an object of another type — <code lang="csharp">other.Marker()</code>.
 
 ## Package sample
 
-Every marker on this page runs in the sample scene: [ProfilerMarkers](../Samples~/ProfilerMarkers/Documentation/README.md).
+The markers from [WithName()](#withname) run in the [ProfilerMarkers](../Samples~/ProfilerMarkers/Documentation/README.md) scene.
 
-![A flock of 120 agents — the 120 Steering.Agent calls.](../Samples~/ProfilerMarkers/Documentation/Images/demo.gif)
-
-A flock of 120 agents — the 120 Steering.Agent calls.
+![A flock of agents in the ProfilerMarkers scene](../Samples~/ProfilerMarkers/Documentation/Images/demo.gif)
