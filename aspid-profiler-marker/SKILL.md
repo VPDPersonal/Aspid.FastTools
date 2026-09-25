@@ -29,8 +29,8 @@ Profiler nesting follows `using` nesting. Markers in loops, lambdas and local fu
 
 `Type.Member (line)`, where `line` is the line of the `Marker()` call:
 
-- constructor -> `Ctor`; property or indexer accessor -> property name / `Indexer`; lambda or local function -> the
-  enclosing member; explicit interface implementation -> the interface member name;
+- constructor -> `Ctor`; property or indexer accessor -> property name / `Indexer`; event accessor -> event name;
+  lambda or local function -> the enclosing member; explicit interface implementation -> the interface member name;
 - nested type -> only the innermost type name (`Agent.Move (line)`);
 - generic type -> one marker per closed type (`Worker<Int32>.Run (line)`).
 
