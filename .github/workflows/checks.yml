@@ -1,0 +1,42 @@
+name: Checks
+
+# scripts/check-changes.mjs (changelog sync and translation, version, docs translations, PR title and changelog entry;
+# the pre-commit hook runs the same script) and scripts/check-skills.mjs.
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled]
+  push:
+    branches: [main]
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  repo:
+    name: Repo checks
+    runs-on: ubuntu-latest
+    steps:
+      # On a pull request HEAD is the merge commit and HEAD^1 the base branch tip.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Changelog, translations, version, PR title
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ',') }}
+        run: node scripts/check-changes.mjs ${{ github.event_name == 'pull_request' && '--base HEAD^1' || '' }}
+
+      - name: SKILL.md frontmatter
+        run: |
+          npm install --no-save --no-audit --no-fund js-yaml@4
+          node scripts/check-skills.mjs

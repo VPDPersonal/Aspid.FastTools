@@ -2,7 +2,8 @@ name: Docs
 
 # Builds the Docusaurus site in Website/ and publishes it to GitHub Pages.
 # Content comes from the package (Documentation/ and Samples~/*/Documentation/) and the root CHANGELOG*.md,
-# so any change there rebuilds the site.
+# so any change there rebuilds the site. On pull requests the job always runs, so it can be a required check,
+# and skips the build when none of these paths changed.
 
 on:
   push:
@@ -15,13 +16,6 @@ on:
       - 'CHANGELOG*.md'
       - '.github/workflows/docs.yml'
   pull_request:
-    paths:
-      - 'Website/**'
-      - 'README.md'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/**'
-      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/*/Documentation/**'
-      - 'CHANGELOG*.md'
-      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
@@ -30,24 +24,41 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('docs-{0}', github.ref) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
+    name: Docs build
     runs-on: ubuntu-latest
     steps:
+      # On a pull request HEAD is the merge commit and HEAD^1 the base branch tip.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 1 }}
+      - name: Detect docs changes
+        id: changes
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" != "pull_request" ]] || git diff --name-only HEAD^1 HEAD | grep -qE \
+             '^(Website/|README\.md$|CHANGELOG[^/]*\.md$|Aspid\.FastTools/Packages/tech\.aspid\.fasttools/(Documentation/|Samples~/[^/]+/Documentation/)|\.github/workflows/docs\.yml$)'; then
+            echo "build=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No docs changes; skipping the build."
+          fi
       - uses: actions/setup-node@v4
+        if: steps.changes.outputs.build
         with:
           node-version: 22
           cache: npm
           cache-dependency-path: Website/package-lock.json
       - run: npm ci
+        if: steps.changes.outputs.build
         working-directory: Website
       - run: npm run check-readme
+        if: steps.changes.outputs.build
         working-directory: Website
       - run: npm run build
+        if: steps.changes.outputs.build
         working-directory: Website
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'

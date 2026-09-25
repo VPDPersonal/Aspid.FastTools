@@ -1,0 +1,60 @@
+name: PR Labels
+
+# area: * from the changed paths (.github/labeler.yml), type: * and breaking-change from the Conventional Commits
+# title, status: * from the draft state. Never check out the PR head here: pull_request_target has a write token.
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened, ready_for_review, converted_to_draft, closed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Area labels
+        if: contains(fromJSON('["opened", "synchronize", "reopened"]'), github.event.action)
+        uses: actions/labeler@v5
+
+      - name: Type and status labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const TYPES = {
+              feat: 'type: feature', fix: 'type: fix', docs: 'type: documentation', perf: 'type: performance',
+              refactor: 'type: refactor', test: 'type: test', chore: 'type: chore', build: 'type: chore',
+              ci: 'type: ci', style: 'type: style',
+            };
+            const WIP = 'status: work-in-progress';
+            const REVIEW = 'status: needs-review';
+            const { action, pull_request: pr } = context.payload;
+            const has = new Set(pr.labels.map(l => l.name));
+            const add = [];
+            const remove = [];
+
+            if (['opened', 'edited', 'reopened'].includes(action)) {
+              const m = pr.title.match(/^(\w+)(?:\([^)]*\))?(!)?:/);
+              const type = m && TYPES[m[1]];
+              if (type) {
+                add.push(type);
+                remove.push(...[...has].filter(l => l.startsWith('type: ') && l !== type));
+              }
+              if (m?.[2]) add.push('breaking-change');
+            }
+            if (['opened', 'reopened'].includes(action) && ![...has].some(l => l.startsWith('status: '))) {
+              add.push(pr.draft ? WIP : REVIEW);
+            }
+            if (action === 'ready_for_review') { add.push(REVIEW); remove.push(WIP); }
+            if (action === 'converted_to_draft') { add.push(WIP); remove.push(REVIEW); }
+            if (action === 'closed') remove.push(REVIEW);
+
+            const { owner, repo } = context.repo;
+            const issue_number = pr.number;
+            for (const name of remove.filter(l => has.has(l))) {
+              await github.rest.issues.removeLabel({ owner, repo, issue_number, name });
+            }
+            const labels = add.filter(l => !has.has(l));
+            if (labels.length) await github.rest.issues.addLabels({ owner, repo, issue_number, labels });
