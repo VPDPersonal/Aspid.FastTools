@@ -14,6 +14,7 @@ AFT0006 | Usage | Error | [TypeSelector] string argument resolves to nothing
 AFT0007 | Usage | Error | [TypeSelector] member reference cannot supply base types
 AFT0008 | Usage | Warning | [TypeSelector] string argument is not a valid type name
 AFT0009 | Usage | Warning | [TypeSelector] base types have no type in common
+AFT0010 | Usage | Warning | this.Marker() in a type the profiler-marker generator cannot support
 
 
 

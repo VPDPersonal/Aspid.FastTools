@@ -441,6 +441,255 @@ public class ProfilerMarkersGeneratorTests
         Assert.Contains("_count_Marker_Line_", text);
     }
 
+    [Theory]
+    [InlineData("private")]
+    [InlineData("protected")]
+    [InlineData("private protected")]
+    public void InaccessibleNestedType_IsSkipped_AndCompiles(string accessibility)
+    {
+        var source = $$"""
+            namespace Sample
+            {
+                public class Outer
+                {
+                    {{accessibility}} class Inner
+                    {
+                        public void Run() { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+
+        // The generated class is top-level and cannot name the nested type, so no overload is emitted:
+        // the call binds to the object fallback, and AFT0010 reports the lost marker.
+        Assert.Empty(run.RunResult.Results[0].GeneratedSources);
+        GeneratorTestHost.AssertNoErrors(run);
+    }
+
+    [Fact]
+    public void PublicTypeNestedInPrivateType_IsSkipped_AndCompiles()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Outer
+                {
+                    private class Middle
+                    {
+                        public class Inner
+                        {
+                            public void Run() { this.Marker(); }
+                        }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+
+        Assert.Empty(run.RunResult.Results[0].GeneratedSources);
+        GeneratorTestHost.AssertNoErrors(run);
+    }
+
+    [Theory]
+    [InlineData("internal")]
+    [InlineData("protected internal")]
+    public void AssemblyVisibleNestedType_GeneratesExtensionClass(string accessibility)
+    {
+        var source = $$"""
+            namespace Sample
+            {
+                public class Outer
+                {
+                    {{accessibility}} class Inner
+                    {
+                        public void Run() { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+
+        Assert.Single(run.RunResult.Results[0].GeneratedSources);
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void NonGenericTypeNestedInGenericType_CarriesOuterTypeParameters()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Outer<T>
+                {
+                    public class Inner
+                    {
+                        public void Run() { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        Assert.Contains("Marker<T>(this global::Sample.Outer<T>.Inner", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void GenericTypeNestedInGenericType_CarriesAllTypeParametersAndConstraints()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Outer<T> where T : class
+                {
+                    public class Inner<U> where U : T
+                    {
+                        public void Run() { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        Assert.Contains("Marker<T, U>(this global::Sample.Outer<T>.Inner<U>", text);
+        // Only the nested type's own parameters appear in the label.
+        Assert.Contains("typeof(U).Name", text);
+        Assert.DoesNotContain("typeof(T).Name", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void SameNestedName_UnderGenericAndNonGenericOuter_NoCollision()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Outer { public class Inner { public void Run() { this.Marker(); } } }
+                public class Outer<T> { public class Inner { public void Run() { this.Marker(); } } }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var generated = run.RunResult.Results[0].GeneratedSources;
+
+        Assert.Equal(2, generated.Length);
+        Assert.NotEqual(generated[0].HintName, generated[1].HintName);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void NestedTypeParameterShadowingOuter_IsSkipped_AndCompiles()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Outer<T>
+                {
+            #pragma warning disable CS0693
+                    public class Inner<T>
+            #pragma warning restore CS0693
+                    {
+                        public void Run() { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+
+        // Marker<T, T> would be a duplicate type parameter — the type is skipped and AFT0010 reports it.
+        Assert.Empty(run.RunResult.Results[0].GeneratedSources);
+        GeneratorTestHost.AssertNoErrors(run);
+    }
+
+    [Fact]
+    public void IndexerAccessors_UseIndexerAsMarkerName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public int this[int index]
+                    {
+                        get { this.Marker(); return 0; }
+                        set { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        Assert.Contains("Indexer_Marker_Line_", text);
+        Assert.Contains("\"Foo.Indexer (", text);
+        Assert.DoesNotContain("this[]", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void ExplicitInterfaceIndexer_UsesIndexerAsMarkerName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public interface IList { int this[int index] { get; } }
+                public class Foo : IList
+                {
+                    int IList.this[int index] { get { this.Marker(); return 0; } }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        Assert.Contains("Indexer_Marker_Line_", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void StaticConstructor_UsesStaticCtorAsMarkerName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    static Foo() { new Foo().Marker(); }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        Assert.Contains("StaticCtor_Marker_Line_", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
     [Fact]
     public void UnrelatedMarkerExtension_IsNotProcessed()
     {
