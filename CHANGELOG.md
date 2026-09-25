@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".
 - A `[TypeSelector(nameof(...))]` member reference on a field inside a `[Serializable]` class or a list element now resolves on the instance that declares the field, as analyzers `AFT0006`–`AFT0008` already check it; it used to be looked up on the inspected component or asset and showed a warning. The same applies to the picker of the Asset References window.
 
 ## [1.0.0-rc.8] — 2026-09-06
