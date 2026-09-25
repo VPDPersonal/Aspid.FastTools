@@ -111,7 +111,7 @@ config
 ## Ресурсы
 
 - [Обзор примеров](../../Samples~/README.ru.md) — сцены и инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
-- [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools) — сигнатуры и описания всех публичных типов и членов.
+- [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors) — сигнатуры и описания всех публичных типов и членов.
 - [Журнал изменений](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.ru.md)
 
 ## Помощь и поддержка

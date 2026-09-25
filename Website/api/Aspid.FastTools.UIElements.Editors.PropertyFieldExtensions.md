@@ -51,13 +51,13 @@ The callback to subscribe.
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`PropertyField`](https://docs.unity3d.com/ScriptReference/UIElements-PropertyField.html) element to configure.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<SerializedPropertyChangeEvent\>\) {#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEditor_UIElements_SerializedPropertyChangeEvent__}
 
@@ -81,13 +81,13 @@ The callback to remove.
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`PropertyField`](https://docs.unity3d.com/ScriptReference/UIElements-PropertyField.html) element to configure.
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_SetLabel__1___0_System_String_}
 
@@ -111,11 +111,11 @@ The label text to set.
 
  T
 
-The element, for chaining.
+<code class="paramref">element</code> for chaining.
 
 #### Type Parameters
 
 `T` 
 
-The element type.
+A [`PropertyField`](https://docs.unity3d.com/ScriptReference/UIElements-PropertyField.html) element to configure.
 

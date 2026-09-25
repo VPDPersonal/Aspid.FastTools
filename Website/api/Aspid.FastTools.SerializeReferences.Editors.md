@@ -12,11 +12,9 @@ pagination_next: null
 
  [SerializeReferenceEditorGUI](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceEditorGUI.md)
 
-Provides utility methods for drawing <code>[SerializeReference]</code> properties with the package's type-dropdown
-UI from a custom editor's own code, with no <code>[TypeSelector]</code> attribute.
+Provides utility methods for drawing managed-reference type pickers in custom inspectors.
 
  [SerializeReferenceIMGUIList](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList.md)
 
-Provides utility methods for drawing an IMGUI <code>[SerializeReference]</code> list whose add button opens the type
-picker and appends a fresh instance.
+Provides utility methods for drawing managed-reference lists with a type picker for new elements in IMGUI.
 

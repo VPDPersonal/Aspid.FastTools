@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`INotifyValueChanged<T>`](https://docs.unity3d.com/ScriptReference/UIElements-INotifyValueChanged.html).
+
 ```csharp
 public static class INotifyValueChangedExtensions
 ```
@@ -55,6 +57,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_UInt32___}
 
 Subscribes to the value-changed event of the element.
@@ -82,6 +86,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<nint\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_IntPtr___}
 
@@ -111,6 +117,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<nuint\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_UIntPtr___}
 
 Subscribes to the value-changed event of the element.
@@ -138,6 +146,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<long\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Int64___}
 
@@ -167,6 +177,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<ulong\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_UInt64___}
 
 Subscribes to the value-changed event of the element.
@@ -194,6 +206,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<byte\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Byte___}
 
@@ -223,6 +237,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<sbyte\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_SByte___}
 
 Subscribes to the value-changed event of the element.
@@ -250,6 +266,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Boolean___}
 
@@ -279,6 +297,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<char\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Char___}
 
 Subscribes to the value-changed event of the element.
@@ -306,6 +326,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Rect\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Rect___}
 
@@ -335,6 +357,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<RectInt\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_RectInt___}
 
 Subscribes to the value-changed event of the element.
@@ -362,6 +386,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Enum\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Enum___}
 
@@ -391,6 +417,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<GUID\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_GUID___}
 
 Subscribes to the value-changed event of the element.
@@ -418,6 +446,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Color\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Color___}
 
@@ -447,6 +477,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<short\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Int16___}
 
 Subscribes to the value-changed event of the element.
@@ -474,6 +506,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<ushort\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_UInt16___}
 
@@ -503,6 +537,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Single___}
 
 Subscribes to the value-changed event of the element.
@@ -530,6 +566,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Double___}
 
@@ -559,6 +597,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<string\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_String___}
 
 Subscribes to the value-changed event of the element.
@@ -586,6 +626,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Bounds\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Bounds___}
 
@@ -615,6 +657,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<BoundsInt\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_BoundsInt___}
 
 Subscribes to the value-changed event of the element.
@@ -642,6 +686,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Hash128\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Hash128___}
 
@@ -671,6 +717,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<decimal\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Decimal___}
 
 Subscribes to the value-changed event of the element.
@@ -698,6 +746,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector2___}
 
@@ -727,6 +777,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector2Int\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector2Int___}
 
 Subscribes to the value-changed event of the element.
@@ -754,6 +806,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector3___}
 
@@ -783,6 +837,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector3Int\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector3Int___}
 
 Subscribes to the value-changed event of the element.
@@ -810,6 +866,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector4___}
 
@@ -839,6 +897,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Delegate\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Delegate___}
 
 Subscribes to the value-changed event of the element.
@@ -866,6 +926,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Gradient\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Gradient___}
 
@@ -895,6 +957,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Matrix4x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Matrix4x4___}
 
 Subscribes to the value-changed event of the element.
@@ -922,6 +986,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Quaternion\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Quaternion___}
 
@@ -951,6 +1017,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<object\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Object___}
 
 Subscribes to the value-changed event of the element.
@@ -978,6 +1046,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<AnimationCurve\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_AnimationCurve___}
 
@@ -1007,6 +1077,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Object\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Object___}
 
 Subscribes to the value-changed event of the element.
@@ -1034,6 +1106,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddValueChanged\<TField, TValue\>\(TField, EventCallback\<ChangeEvent\<TValue\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___}
 
@@ -1063,7 +1137,11 @@ The element, for chaining.
 
 `TField` 
 
+The field type.
+
 `TValue` 
+
+The value type of the element.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Int32___}
 
@@ -1093,6 +1171,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<uint\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_UInt32___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1120,6 +1200,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<nint\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_IntPtr___}
 
@@ -1149,6 +1231,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<nuint\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_UIntPtr___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1176,6 +1260,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<long\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Int64___}
 
@@ -1205,6 +1291,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<ulong\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_UInt64___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1232,6 +1320,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<byte\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Byte___}
 
@@ -1261,6 +1351,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<sbyte\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_SByte___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1288,6 +1380,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<bool\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Boolean___}
 
@@ -1317,6 +1411,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<char\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Char___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1344,6 +1440,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Rect\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Rect___}
 
@@ -1373,6 +1471,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<RectInt\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_RectInt___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1400,6 +1500,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Enum\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Enum___}
 
@@ -1429,6 +1531,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<GUID\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_GUID___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1456,6 +1560,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Color\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Color___}
 
@@ -1485,6 +1591,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<short\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Int16___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1512,6 +1620,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<ushort\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_UInt16___}
 
@@ -1541,6 +1651,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<float\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Single___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1568,6 +1680,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<double\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Double___}
 
@@ -1597,6 +1711,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<string\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_String___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1624,6 +1740,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Bounds\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Bounds___}
 
@@ -1653,6 +1771,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<BoundsInt\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_BoundsInt___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1680,6 +1800,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Hash128\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Hash128___}
 
@@ -1709,6 +1831,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<decimal\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Decimal___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1736,6 +1860,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector2\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector2___}
 
@@ -1765,6 +1891,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector2Int\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector2Int___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1792,6 +1920,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector3\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector3___}
 
@@ -1821,6 +1951,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector3Int\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector3Int___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1848,6 +1980,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Vector4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Vector4___}
 
@@ -1877,6 +2011,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Delegate\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Delegate___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1904,6 +2040,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Gradient\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Gradient___}
 
@@ -1933,6 +2071,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Matrix4x4\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Matrix4x4___}
 
 Unsubscribes from the value-changed event of the element.
@@ -1960,6 +2100,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Quaternion\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Quaternion___}
 
@@ -1989,6 +2131,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<object\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Object___}
 
 Unsubscribes from the value-changed event of the element.
@@ -2016,6 +2160,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<AnimationCurve\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_AnimationCurve___}
 
@@ -2045,6 +2191,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<Object\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_UnityEngine_Object___}
 
 Unsubscribes from the value-changed event of the element.
@@ -2072,6 +2220,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveValueChanged\<TField, TValue\>\(TField, EventCallback\<ChangeEvent\<TValue\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___}
 
@@ -2101,11 +2251,15 @@ The element, for chaining.
 
 `TField` 
 
+The field type.
+
 `TValue` 
+
+The value type of the element.
 
 ### SetValue\<T\>\(T, int, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Int32_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, int value, bool notify = true) where T : INotifyValueChanged<int>
@@ -2123,7 +2277,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2135,9 +2289,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, uint, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_UInt32_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, uint value, bool notify = true) where T : INotifyValueChanged<uint>
@@ -2155,7 +2311,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2167,9 +2323,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, nint, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_IntPtr_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, nint value, bool notify = true) where T : INotifyValueChanged<nint>
@@ -2187,7 +2345,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2199,9 +2357,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, nuint, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_UIntPtr_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, nuint value, bool notify = true) where T : INotifyValueChanged<nuint>
@@ -2219,7 +2379,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2231,9 +2391,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, long, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Int64_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, long value, bool notify = true) where T : INotifyValueChanged<long>
@@ -2251,7 +2413,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2263,9 +2425,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, ulong, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_UInt64_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, ulong value, bool notify = true) where T : INotifyValueChanged<ulong>
@@ -2283,7 +2447,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2295,9 +2459,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, byte, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Byte_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, byte value, bool notify = true) where T : INotifyValueChanged<byte>
@@ -2315,7 +2481,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2327,9 +2493,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, sbyte, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_SByte_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, sbyte value, bool notify = true) where T : INotifyValueChanged<sbyte>
@@ -2347,7 +2515,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2359,9 +2527,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, bool, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Boolean_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, bool value, bool notify = true) where T : INotifyValueChanged<bool>
@@ -2379,7 +2549,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2391,9 +2561,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, char, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Char_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, char value, bool notify = true) where T : INotifyValueChanged<char>
@@ -2411,7 +2583,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2423,9 +2595,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Rect, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Rect_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Rect value, bool notify = true) where T : INotifyValueChanged<Rect>
@@ -2443,7 +2617,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2455,9 +2629,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, RectInt, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_RectInt_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, RectInt value, bool notify = true) where T : INotifyValueChanged<RectInt>
@@ -2475,7 +2651,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2487,9 +2663,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Enum, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Enum_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Enum value, bool notify = true) where T : INotifyValueChanged<Enum>
@@ -2507,7 +2685,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2519,9 +2697,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, GUID, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_GUID_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, GUID value, bool notify = true) where T : INotifyValueChanged<GUID>
@@ -2539,7 +2719,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2551,9 +2731,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Color, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Color_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Color value, bool notify = true) where T : INotifyValueChanged<Color>
@@ -2571,7 +2753,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2583,9 +2765,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, short, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Int16_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, short value, bool notify = true) where T : INotifyValueChanged<short>
@@ -2603,7 +2787,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2615,9 +2799,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, ushort, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_UInt16_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, ushort value, bool notify = true) where T : INotifyValueChanged<ushort>
@@ -2635,7 +2821,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2647,9 +2833,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, float, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Single_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, float value, bool notify = true) where T : INotifyValueChanged<float>
@@ -2667,7 +2855,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2679,9 +2867,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, double, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Double_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, double value, bool notify = true) where T : INotifyValueChanged<double>
@@ -2699,7 +2889,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2711,9 +2901,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, string, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_String_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, string value, bool notify = true) where T : INotifyValueChanged<string>
@@ -2731,7 +2923,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2743,9 +2935,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Bounds, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Bounds_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Bounds value, bool notify = true) where T : INotifyValueChanged<Bounds>
@@ -2763,7 +2957,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2775,9 +2969,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, BoundsInt, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_BoundsInt_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, BoundsInt value, bool notify = true) where T : INotifyValueChanged<BoundsInt>
@@ -2795,7 +2991,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2807,9 +3003,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Hash128, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Hash128_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Hash128 value, bool notify = true) where T : INotifyValueChanged<Hash128>
@@ -2827,7 +3025,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2839,9 +3037,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, decimal, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Decimal_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, decimal value, bool notify = true) where T : INotifyValueChanged<decimal>
@@ -2859,7 +3059,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2871,9 +3071,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Vector2, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Vector2_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Vector2 value, bool notify = true) where T : INotifyValueChanged<Vector2>
@@ -2891,7 +3093,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2903,9 +3105,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Vector2Int, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Vector2Int_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Vector2Int value, bool notify = true) where T : INotifyValueChanged<Vector2Int>
@@ -2923,7 +3127,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2935,9 +3139,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Vector3, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Vector3_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Vector3 value, bool notify = true) where T : INotifyValueChanged<Vector3>
@@ -2955,7 +3161,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2967,9 +3173,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Vector3Int, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Vector3Int_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Vector3Int value, bool notify = true) where T : INotifyValueChanged<Vector3Int>
@@ -2987,7 +3195,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -2999,9 +3207,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Vector4, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Vector4_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Vector4 value, bool notify = true) where T : INotifyValueChanged<Vector4>
@@ -3019,7 +3229,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -3031,9 +3241,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Delegate, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Delegate_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Delegate value, bool notify = true) where T : INotifyValueChanged<Delegate>
@@ -3051,7 +3263,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -3063,9 +3275,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Gradient, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Gradient_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Gradient value, bool notify = true) where T : INotifyValueChanged<Gradient>
@@ -3083,7 +3297,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -3095,9 +3309,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Matrix4x4, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Matrix4x4_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Matrix4x4 value, bool notify = true) where T : INotifyValueChanged<Matrix4x4>
@@ -3115,7 +3331,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -3127,9 +3343,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Quaternion, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Quaternion_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Quaternion value, bool notify = true) where T : INotifyValueChanged<Quaternion>
@@ -3147,7 +3365,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -3159,9 +3377,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, object, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_System_Object_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, object value, bool notify = true) where T : INotifyValueChanged<object>
@@ -3179,7 +3399,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -3191,9 +3411,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, AnimationCurve, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_AnimationCurve_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, AnimationCurve value, bool notify = true) where T : INotifyValueChanged<AnimationCurve>
@@ -3211,7 +3433,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -3223,9 +3445,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T\>\(T, Object, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__1___0_UnityEngine_Object_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T>(this T element, Object value, bool notify = true) where T : INotifyValueChanged<Object>
@@ -3243,7 +3467,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -3255,9 +3479,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetValue\<T, TValue\>\(T, TValue, bool\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_SetValue__2___0___1_System_Boolean_}
 
-Sets the element's value. If <code class="paramref">notify</code> is <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
+Sets the value of the element.
 
 ```csharp
 public static T SetValue<T, TValue>(this T element, TValue value, bool notify = true) where T : INotifyValueChanged<TValue>
@@ -3275,7 +3501,7 @@ The value to set.
 
 `notify` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-If <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, raises a change notification.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a change notification is raised.
 
 #### Returns
 
@@ -3287,5 +3513,9 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 `TValue` 
+
+The value type of the element.
 

@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods that attach manipulators to a [`VisualElement`](https://docs.unity3d.com/ScriptReference/UIElements-VisualElement.html).
+
 ```csharp
 public static class ManipulatorExtensions
 ```
@@ -55,6 +57,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddClickable\<T\>\(T, Action, out Clickable\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddClickable__1___0_System_Action_UnityEngine_UIElements_Clickable__}
 
 Adds a new [`Clickable`](https://docs.unity3d.com/ScriptReference/UIElements-Clickable.html) manipulator that invokes the specified handler and outputs the created manipulator.
@@ -87,6 +91,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddClickable\<T\>\(T, Action\<EventBase\>\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddClickable__1___0_System_Action_UnityEngine_UIElements_EventBase__}
 
 Adds a new [`Clickable`](https://docs.unity3d.com/ScriptReference/UIElements-Clickable.html) manipulator that invokes the specified handler with the triggering [`EventBase`](https://docs.unity3d.com/ScriptReference/UIElements-EventBase.html).
@@ -114,6 +120,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddClickable\<T\>\(T, Action\<EventBase\>, out Clickable\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddClickable__1___0_System_Action_UnityEngine_UIElements_EventBase__UnityEngine_UIElements_Clickable__}
 
@@ -146,6 +154,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddClickable\<T\>\(T, Action, long, long\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddClickable__1___0_System_Action_System_Int64_System_Int64_}
 
@@ -182,6 +192,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddClickable\<T\>\(T, Action, long, long, out Clickable\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddClickable__1___0_System_Action_System_Int64_System_Int64_UnityEngine_UIElements_Clickable__}
 
@@ -223,6 +235,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddContextualMenuManipulator\<T\>\(T, Action\<ContextualMenuPopulateEvent\>\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddContextualMenuManipulator__1___0_System_Action_UnityEngine_UIElements_ContextualMenuPopulateEvent__}
 
 Adds a new [`ContextualMenuManipulator`](https://docs.unity3d.com/ScriptReference/UIElements-ContextualMenuManipulator.html) that uses the specified menu builder to populate the contextual menu.
@@ -250,6 +264,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddContextualMenuManipulator\<T\>\(T, Action\<ContextualMenuPopulateEvent\>, out ContextualMenuManipulator\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddContextualMenuManipulator__1___0_System_Action_UnityEngine_UIElements_ContextualMenuPopulateEvent__UnityEngine_UIElements_ContextualMenuManipulator__}
 
@@ -283,6 +299,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddKeyboardNavigationManipulator\<T\>\(T, Action\<KeyboardNavigationOperation, EventBase\>\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddKeyboardNavigationManipulator__1___0_System_Action_UnityEngine_UIElements_KeyboardNavigationOperation_UnityEngine_UIElements_EventBase__}
 
 Adds a new [`KeyboardNavigationManipulator`](https://docs.unity3d.com/ScriptReference/UIElements-KeyboardNavigationManipulator.html) that invokes the specified action for keyboard navigation operations.
@@ -310,6 +328,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### AddKeyboardNavigationManipulator\<T\>\(T, Action\<KeyboardNavigationOperation, EventBase\>, out KeyboardNavigationManipulator\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddKeyboardNavigationManipulator__1___0_System_Action_UnityEngine_UIElements_KeyboardNavigationOperation_UnityEngine_UIElements_EventBase__UnityEngine_UIElements_KeyboardNavigationManipulator__}
 
@@ -343,9 +363,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddManipulatorSelf\<T\>\(T, IManipulator\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddManipulatorSelf__1___0_UnityEngine_UIElements_IManipulator_}
 
-Adds an [`IManipulator`](https://docs.unity3d.com/ScriptReference/UIElements-IManipulator.html) to the element and returns the element for chaining.
+Adds an [`IManipulator`](https://docs.unity3d.com/ScriptReference/UIElements-IManipulator.html) to the element.
 
 ```csharp
 public static T AddManipulatorSelf<T>(this T element, IManipulator manipulator) where T : VisualElement
@@ -371,9 +393,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveManipulatorSelf\<T\>\(T, IManipulator\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_RemoveManipulatorSelf__1___0_UnityEngine_UIElements_IManipulator_}
 
-Removes an [`IManipulator`](https://docs.unity3d.com/ScriptReference/UIElements-IManipulator.html) from the element and returns the element for chaining.
+Removes an [`IManipulator`](https://docs.unity3d.com/ScriptReference/UIElements-IManipulator.html) from the element.
 
 ```csharp
 public static T RemoveManipulatorSelf<T>(this T element, IManipulator manipulator) where T : VisualElement
@@ -398,4 +422,6 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 

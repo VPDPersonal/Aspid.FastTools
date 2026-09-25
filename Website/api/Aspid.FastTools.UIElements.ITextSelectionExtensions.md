@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`ITextSelection`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection.html).
+
 ```csharp
 public static class ITextSelectionExtensions
 ```
@@ -55,6 +57,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### AddOnSelectIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_AddOnSelectIndexChange__1___0_System_Action_}
 
 Subscribes to the [`OnSelectIndexChange`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-OnSelectIndexChange.html) event.
@@ -82,6 +86,8 @@ The element, for chaining.
 #### Type Parameters
 
 `T` 
+
+The element type.
 
 ### RemoveOnCursorIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_RemoveOnCursorIndexChange__1___0_System_Action_}
 
@@ -111,6 +117,8 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### RemoveOnSelectIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_RemoveOnSelectIndexChange__1___0_System_Action_}
 
 Unsubscribes from the [`OnSelectIndexChange`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-OnSelectIndexChange.html) event.
@@ -139,9 +147,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetCursorIndex\<T\>\(T, int\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetCursorIndex__1___0_System_Int32_}
 
-Sets [`cursorIndex`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-cursorIndex.html) and returns the element for chaining.
+Sets [`cursorIndex`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-cursorIndex.html).
 
 ```csharp
 public static T SetCursorIndex<T>(this T element, int value) where T : ITextSelection
@@ -167,13 +177,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-This is the cursor index in the text presented.
+The element type.
 
 ### SetDoubleClickSelectsWord\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetDoubleClickSelectsWord__1___0_System_Boolean_}
 
-Sets [`doubleClickSelectsWord`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-doubleClickSelectsWord.html) and returns the element for chaining.
+Sets [`doubleClickSelectsWord`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-doubleClickSelectsWord.html).
 
 ```csharp
 public static T SetDoubleClickSelectsWord<T>(this T element, bool value) where T : ITextSelection
@@ -187,7 +195,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether double-clicking selects a word.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a double click selects the word under the pointer.
 
 #### Returns
 
@@ -199,45 +207,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Controls whether double-clicking selects the word under the mouse pointer.
-
-### SetIsSelectable\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetIsSelectable__1___0_System_Boolean_}
-
-Sets [`isSelectable`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-isSelectable.html) and returns the element for chaining.
-
-```csharp
-public static T SetIsSelectable<T>(this T element, bool value) where T : ITextSelection
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
-
-Whether the field is selectable.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-#### Remarks
-
-When set to true, the field becomes selectable.
+The element type.
 
 ### SetSelectAllOnFocus\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetSelectAllOnFocus__1___0_System_Boolean_}
 
-Sets [`selectAllOnFocus`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-selectAllOnFocus.html) and returns the element for chaining.
+Sets [`selectAllOnFocus`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-selectAllOnFocus.html).
 
 ```csharp
 public static T SetSelectAllOnFocus<T>(this T element, bool value) where T : ITextSelection
@@ -251,7 +225,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to select all content on focus.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the whole text is selected when the element receives focus.
 
 #### Returns
 
@@ -263,13 +237,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Controls whether the element's content is selected upon receiving focus.
+The element type.
 
 ### SetSelectAllOnMouseUp\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetSelectAllOnMouseUp__1___0_System_Boolean_}
 
-Sets [`selectAllOnMouseUp`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-selectAllOnMouseUp.html) and returns the element for chaining.
+Sets [`selectAllOnMouseUp`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-selectAllOnMouseUp.html).
 
 ```csharp
 public static T SetSelectAllOnMouseUp<T>(this T element, bool value) where T : ITextSelection
@@ -283,7 +255,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to select all content on the first mouse up.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the whole text is selected on the first mouse up.
 
 #### Returns
 
@@ -295,13 +267,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Controls whether the element's content is selected when you mouse up for the first time.
+The element type.
 
 ### SetSelectIndex\<T\>\(T, int\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetSelectIndex__1___0_System_Int32_}
 
-Sets [`selectIndex`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-selectIndex.html) and returns the element for chaining.
+Sets [`selectIndex`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-selectIndex.html).
 
 ```csharp
 public static T SetSelectIndex<T>(this T element, int value) where T : ITextSelection
@@ -327,13 +297,41 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
+The element type.
 
-This is the selection index in the text presented.
+### SetSelectable\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetSelectable__1___0_System_Boolean_}
+
+Sets [`isSelectable`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-isSelectable.html).
+
+```csharp
+public static T SetSelectable<T>(this T element, bool value) where T : ITextSelection
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
+
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the text can be selected.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
 
 ### SetTripleClickSelectsLine\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextSelectionExtensions_SetTripleClickSelectsLine__1___0_System_Boolean_}
 
-Sets [`tripleClickSelectsLine`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-tripleClickSelectsLine.html) and returns the element for chaining.
+Sets [`tripleClickSelectsLine`](https://docs.unity3d.com/ScriptReference/UIElements-ITextSelection-tripleClickSelectsLine.html).
 
 ```csharp
 public static T SetTripleClickSelectsLine<T>(this T element, bool value) where T : ITextSelection
@@ -347,7 +345,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether triple-clicking selects a line.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a triple click selects the line under the pointer.
 
 #### Returns
 
@@ -359,7 +357,5 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Controls whether triple-clicking selects the entire line under the mouse pointer.
+The element type.
 

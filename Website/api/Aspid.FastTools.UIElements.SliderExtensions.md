@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`BaseSlider<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider.html).
+
 ```csharp
 public static class SliderExtensions
 ```
@@ -27,17 +29,17 @@ public static class SliderExtensions
 
 ## Methods
 
-### SetDirection\<TValue\>\(BaseSlider\<TValue\>, SliderDirection\) {#Aspid_FastTools_UIElements_SliderExtensions_SetDirection__1_UnityEngine_UIElements_BaseSlider___0__UnityEngine_UIElements_SliderDirection_}
+### SetDirection\<T\>\(T, SliderDirection\) {#Aspid_FastTools_UIElements_SliderExtensions_SetDirection__1___0_UnityEngine_UIElements_SliderDirection_}
 
-Sets the [`direction`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-direction.html) property controlling the orientation of the element and returns the element for chaining.
+Sets [`direction`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-direction.html) controlling the orientation of the element.
 
 ```csharp
-public static BaseSlider<TValue> SetDirection<TValue>(this BaseSlider<TValue> element, SliderDirection value) where TValue : IComparable<TValue>
+public static T SetDirection<T>(this T element, SliderDirection value) where T : BaseSlider<float>
 ```
 
 #### Parameters
 
-`element` BaseSlider\<TValue\>
+`element` T
 
 The element to modify.
 
@@ -47,59 +49,33 @@ The slider direction to set.
 
 #### Returns
 
- BaseSlider\<TValue\>
+ T
 
 The element, for chaining.
 
 #### Type Parameters
 
-`TValue` 
+`T` 
 
-### SetFill\<TValue\>\(BaseSlider\<TValue\>, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetFill__1_UnityEngine_UIElements_BaseSlider___0__System_Boolean_}
+The element type.
 
-Sets the [`fill`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-fill.html) property controlling whether the track is filled up to the current value and returns the element for chaining.
+### SetFill\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetFill__1___0_System_Boolean_}
+
+Sets [`fill`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-fill.html) controlling whether the track is filled up to the current value.
 
 ```csharp
-public static BaseSlider<TValue> SetFill<TValue>(this BaseSlider<TValue> element, bool value) where TValue : IComparable<TValue>
+public static T SetFill<T>(this T element, bool value) where T : BaseSlider<float>
 ```
 
 #### Parameters
 
-`element` BaseSlider\<TValue\>
+`element` T
 
 The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether the track is filled up to the current value.
-
-#### Returns
-
- BaseSlider\<TValue\>
-
-The element, for chaining.
-
-#### Type Parameters
-
-`TValue` 
-
-### SetHighValue\<T\>\(T, int\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int32_}
-
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetHighValue<T>(this T element, int value) where T : BaseSlider<int>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
-
-The high value to set.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the track is filled up to the current value.
 
 #### Returns
 
@@ -111,93 +87,11 @@ The element, for chaining.
 
 `T` 
 
-### SetHighValue\<T\>\(T, uint\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt32_}
-
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetHighValue<T>(this T element, uint value) where T : BaseSlider<uint>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
-
-The high value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-### SetHighValue\<T\>\(T, long\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int64_}
-
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetHighValue<T>(this T element, long value) where T : BaseSlider<long>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [long](https://learn.microsoft.com/dotnet/api/system.int64)
-
-The high value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-### SetHighValue\<T\>\(T, ulong\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt64_}
-
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetHighValue<T>(this T element, ulong value) where T : BaseSlider<ulong>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
-
-The high value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
+The element type.
 
 ### SetHighValue\<T\>\(T, byte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Byte_}
 
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, byte value) where T : BaseSlider<byte>
@@ -223,9 +117,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetHighValue\<T\>\(T, sbyte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_SByte_}
 
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, sbyte value) where T : BaseSlider<sbyte>
@@ -251,93 +147,11 @@ The element, for chaining.
 
 `T` 
 
-### SetHighValue\<T\>\(T, short\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int16_}
-
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetHighValue<T>(this T element, short value) where T : BaseSlider<short>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [short](https://learn.microsoft.com/dotnet/api/system.int16)
-
-The high value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-### SetHighValue\<T\>\(T, ushort\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt16_}
-
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetHighValue<T>(this T element, ushort value) where T : BaseSlider<ushort>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [ushort](https://learn.microsoft.com/dotnet/api/system.uint16)
-
-The high value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-### SetHighValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Single_}
-
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetHighValue<T>(this T element, float value) where T : BaseSlider<float>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-The high value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
+The element type.
 
 ### SetHighValue\<T\>\(T, double\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Double_}
 
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
 
 ```csharp
 public static T SetHighValue<T>(this T element, double value) where T : BaseSlider<double>
@@ -363,9 +177,221 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
+### SetHighValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Single_}
+
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+
+```csharp
+public static T SetHighValue<T>(this T element, float value) where T : BaseSlider<float>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The high value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetHighValue\<T\>\(T, int\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int32_}
+
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+
+```csharp
+public static T SetHighValue<T>(this T element, int value) where T : BaseSlider<int>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The high value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetHighValue\<T\>\(T, uint\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt32_}
+
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+
+```csharp
+public static T SetHighValue<T>(this T element, uint value) where T : BaseSlider<uint>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+The high value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetHighValue\<T\>\(T, long\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int64_}
+
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+
+```csharp
+public static T SetHighValue<T>(this T element, long value) where T : BaseSlider<long>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
+The high value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetHighValue\<T\>\(T, ulong\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt64_}
+
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+
+```csharp
+public static T SetHighValue<T>(this T element, ulong value) where T : BaseSlider<ulong>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
+
+The high value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetHighValue\<T\>\(T, short\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_Int16_}
+
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+
+```csharp
+public static T SetHighValue<T>(this T element, short value) where T : BaseSlider<short>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [short](https://learn.microsoft.com/dotnet/api/system.int16)
+
+The high value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetHighValue\<T\>\(T, ushort\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__1___0_System_UInt16_}
+
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
+
+```csharp
+public static T SetHighValue<T>(this T element, ushort value) where T : BaseSlider<ushort>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [ushort](https://learn.microsoft.com/dotnet/api/system.uint16)
+
+The high value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
 ### SetHighValue\<T, TValue\>\(T, TValue\) {#Aspid_FastTools_UIElements_SliderExtensions_SetHighValue__2___0___1_}
 
-Sets the [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html) property and returns the element for chaining.
+Sets [`highValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-highValue.html).
 
 ```csharp
 public static T SetHighValue<T, TValue>(this T element, TValue value) where T : BaseSlider<TValue> where TValue : IComparable<TValue>
@@ -391,53 +417,29 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 `TValue` 
 
-### SetInverted\<TValue\>\(BaseSlider\<TValue\>, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetInverted__1_UnityEngine_UIElements_BaseSlider___0__System_Boolean_}
+The value type of the element.
 
-Sets the [`inverted`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-inverted.html) property reversing the direction of the element and returns the element for chaining.
+### SetInverted\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetInverted__1___0_System_Boolean_}
+
+Sets [`inverted`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-inverted.html) reversing the direction of the element.
 
 ```csharp
-public static BaseSlider<TValue> SetInverted<TValue>(this BaseSlider<TValue> element, bool value) where TValue : IComparable<TValue>
+public static T SetInverted<T>(this T element, bool value) where T : BaseSlider<float>
 ```
 
 #### Parameters
 
-`element` BaseSlider\<TValue\>
+`element` T
 
 The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether the slider direction is inverted.
-
-#### Returns
-
- BaseSlider\<TValue\>
-
-The element, for chaining.
-
-#### Type Parameters
-
-`TValue` 
-
-### SetLowValue\<T\>\(T, int\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int32_}
-
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetLowValue<T>(this T element, int value) where T : BaseSlider<int>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
-
-The low value to set.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the slider direction is reversed.
 
 #### Returns
 
@@ -449,93 +451,11 @@ The element, for chaining.
 
 `T` 
 
-### SetLowValue\<T\>\(T, uint\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt32_}
-
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetLowValue<T>(this T element, uint value) where T : BaseSlider<uint>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
-
-The low value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-### SetLowValue\<T\>\(T, long\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int64_}
-
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetLowValue<T>(this T element, long value) where T : BaseSlider<long>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [long](https://learn.microsoft.com/dotnet/api/system.int64)
-
-The low value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-### SetLowValue\<T\>\(T, ulong\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt64_}
-
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetLowValue<T>(this T element, ulong value) where T : BaseSlider<ulong>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
-
-The low value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
+The element type.
 
 ### SetLowValue\<T\>\(T, byte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Byte_}
 
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, byte value) where T : BaseSlider<byte>
@@ -561,9 +481,11 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 ### SetLowValue\<T\>\(T, sbyte\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_SByte_}
 
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, sbyte value) where T : BaseSlider<sbyte>
@@ -589,93 +511,11 @@ The element, for chaining.
 
 `T` 
 
-### SetLowValue\<T\>\(T, short\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int16_}
-
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetLowValue<T>(this T element, short value) where T : BaseSlider<short>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [short](https://learn.microsoft.com/dotnet/api/system.int16)
-
-The low value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-### SetLowValue\<T\>\(T, ushort\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt16_}
-
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetLowValue<T>(this T element, ushort value) where T : BaseSlider<ushort>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [ushort](https://learn.microsoft.com/dotnet/api/system.uint16)
-
-The low value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
-
-### SetLowValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Single_}
-
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
-
-```csharp
-public static T SetLowValue<T>(this T element, float value) where T : BaseSlider<float>
-```
-
-#### Parameters
-
-`element` T
-
-The element to modify.
-
-`value` [float](https://learn.microsoft.com/dotnet/api/system.single)
-
-The low value to set.
-
-#### Returns
-
- T
-
-The element, for chaining.
-
-#### Type Parameters
-
-`T` 
+The element type.
 
 ### SetLowValue\<T\>\(T, double\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Double_}
 
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T>(this T element, double value) where T : BaseSlider<double>
@@ -701,9 +541,221 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
+### SetLowValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Single_}
+
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+
+```csharp
+public static T SetLowValue<T>(this T element, float value) where T : BaseSlider<float>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [float](https://learn.microsoft.com/dotnet/api/system.single)
+
+The low value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetLowValue\<T\>\(T, int\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int32_}
+
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+
+```csharp
+public static T SetLowValue<T>(this T element, int value) where T : BaseSlider<int>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [int](https://learn.microsoft.com/dotnet/api/system.int32)
+
+The low value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetLowValue\<T\>\(T, uint\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt32_}
+
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+
+```csharp
+public static T SetLowValue<T>(this T element, uint value) where T : BaseSlider<uint>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [uint](https://learn.microsoft.com/dotnet/api/system.uint32)
+
+The low value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetLowValue\<T\>\(T, long\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int64_}
+
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+
+```csharp
+public static T SetLowValue<T>(this T element, long value) where T : BaseSlider<long>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [long](https://learn.microsoft.com/dotnet/api/system.int64)
+
+The low value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetLowValue\<T\>\(T, ulong\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt64_}
+
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+
+```csharp
+public static T SetLowValue<T>(this T element, ulong value) where T : BaseSlider<ulong>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [ulong](https://learn.microsoft.com/dotnet/api/system.uint64)
+
+The low value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetLowValue\<T\>\(T, short\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_Int16_}
+
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+
+```csharp
+public static T SetLowValue<T>(this T element, short value) where T : BaseSlider<short>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [short](https://learn.microsoft.com/dotnet/api/system.int16)
+
+The low value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
+### SetLowValue\<T\>\(T, ushort\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__1___0_System_UInt16_}
+
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
+
+```csharp
+public static T SetLowValue<T>(this T element, ushort value) where T : BaseSlider<ushort>
+```
+
+#### Parameters
+
+`element` T
+
+The element to modify.
+
+`value` [ushort](https://learn.microsoft.com/dotnet/api/system.uint16)
+
+The low value to set.
+
+#### Returns
+
+ T
+
+The element, for chaining.
+
+#### Type Parameters
+
+`T` 
+
+The element type.
+
 ### SetLowValue\<T, TValue\>\(T, TValue\) {#Aspid_FastTools_UIElements_SliderExtensions_SetLowValue__2___0___1_}
 
-Sets the [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html) property and returns the element for chaining.
+Sets [`lowValue`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-lowValue.html).
 
 ```csharp
 public static T SetLowValue<T, TValue>(this T element, TValue value) where T : BaseSlider<TValue> where TValue : IComparable<TValue>
@@ -729,19 +781,23 @@ The element, for chaining.
 
 `T` 
 
+The element type.
+
 `TValue` 
 
-### SetPageSize\<TValue\>\(BaseSlider\<TValue\>, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetPageSize__1_UnityEngine_UIElements_BaseSlider___0__System_Single_}
+The value type of the element.
 
-Sets the [`pageSize`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-pageSize.html) property controlling how much the value changes per page step and returns the element for chaining.
+### SetPageSize\<T\>\(T, float\) {#Aspid_FastTools_UIElements_SliderExtensions_SetPageSize__1___0_System_Single_}
+
+Sets [`pageSize`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-pageSize.html) controlling how much the value changes per page step.
 
 ```csharp
-public static BaseSlider<TValue> SetPageSize<TValue>(this BaseSlider<TValue> element, float value) where TValue : IComparable<TValue>
+public static T SetPageSize<T>(this T element, float value) where T : BaseSlider<float>
 ```
 
 #### Parameters
 
-`element` BaseSlider\<TValue\>
+`element` T
 
 The element to modify.
 
@@ -751,39 +807,43 @@ The page size to set.
 
 #### Returns
 
- BaseSlider\<TValue\>
+ T
 
 The element, for chaining.
 
 #### Type Parameters
 
-`TValue` 
+`T` 
 
-### SetShowInputField\<TValue\>\(BaseSlider\<TValue\>, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetShowInputField__1_UnityEngine_UIElements_BaseSlider___0__System_Boolean_}
+The element type.
 
-Sets the [`showInputField`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-showInputField.html) property controlling whether a numeric input field is shown alongside the element and returns the element for chaining.
+### SetShowInputField\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_SliderExtensions_SetShowInputField__1___0_System_Boolean_}
+
+Sets [`showInputField`](https://docs.unity3d.com/ScriptReference/UIElements-BaseSlider-showInputField.html) controlling whether a numeric input field is shown alongside the element.
 
 ```csharp
-public static BaseSlider<TValue> SetShowInputField<TValue>(this BaseSlider<TValue> element, bool value) where TValue : IComparable<TValue>
+public static T SetShowInputField<T>(this T element, bool value) where T : BaseSlider<float>
 ```
 
 #### Parameters
 
-`element` BaseSlider\<TValue\>
+`element` T
 
 The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to show a numeric input field.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a numeric input field is shown next to the slider.
 
 #### Returns
 
- BaseSlider\<TValue\>
+ T
 
 The element, for chaining.
 
 #### Type Parameters
 
-`TValue` 
+`T` 
+
+The element type.
 

@@ -111,7 +111,7 @@ and a separate one for the neighbour search.
 ## Resources
 
 - [Samples overview](../Samples~/README.md) — scenes and editor tools for serialization, enum tables, profiling and editor UI.
-- [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools) — signatures and descriptions of every public type and member.
+- [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Editors) — signatures and descriptions of every public type and member.
 - [Changelog](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md)
 
 ## Help and support

@@ -60,7 +60,7 @@ When this method returns <a href="https://learn.microsoft.com/dotnet/csharp/lang
  [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
 <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a> if the property was resolved and successfully parsed
-    as <code class="typeparamref">T</code>; otherwise <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
+    as <code class="typeparamref">T</code>; otherwise, <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">false</a>.
 
 #### Type Parameters
 

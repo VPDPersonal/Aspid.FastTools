@@ -16,21 +16,20 @@ pagination_next: null
 
  [TypeExtensions](Aspid.FastTools.Types.Editors.TypeExtensions.md)
 
-Provides editor-side extension methods for locating and opening the [`MonoScript`](https://docs.unity3d.com/ScriptReference/MonoScript.html) defining a
+Provides extension methods for locating and opening the [`MonoScript`](https://docs.unity3d.com/ScriptReference/MonoScript.html) defining a
 [`Type`](https://learn.microsoft.com/dotnet/api/system.type).
 
  [TypeField](Aspid.FastTools.Types.Editors.TypeField.md)
 
-UIToolkit field showing a [`Type`](https://learn.microsoft.com/dotnet/api/system.type) as a dropdown backed by [`TypeSelectorWindow`](Aspid.FastTools.Types.Editors.TypeSelectorWindow.md),
-optionally bound to a string property holding the type's assembly-qualified name.
+[`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) for selecting a type and optionally storing its assembly-qualified name.
 
  [TypeSelectorWindow](Aspid.FastTools.Types.Editors.TypeSelectorWindow.md)
 
-Dropdown window for browsing and selecting a [`Type`](https://learn.microsoft.com/dotnet/api/system.type) from a filtered list.
-
- [TypeField.UxmlSerializedData](Aspid.FastTools.Types.Editors.TypeField.UxmlSerializedData.md)
+[`EditorWindow`](https://docs.unity3d.com/ScriptReference/EditorWindow.html) for selecting a type from a filtered hierarchy.
 
  [InspectorTypeField.UxmlSerializedData](Aspid.FastTools.Types.Editors.InspectorTypeField.UxmlSerializedData.md)
+
+ [TypeField.UxmlSerializedData](Aspid.FastTools.Types.Editors.TypeField.UxmlSerializedData.md)
 
 ### Structs
 

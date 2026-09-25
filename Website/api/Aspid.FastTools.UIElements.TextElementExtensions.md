@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`TextElement`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement.html).
+
 ```csharp
 public static class TextElementExtensions
 ```
@@ -29,7 +31,7 @@ public static class TextElementExtensions
 
 ### SetDisplayTooltipWhenElided\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetDisplayTooltipWhenElided__1___0_System_Boolean_}
 
-Sets [`displayTooltipWhenElided`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-displayTooltipWhenElided.html) and returns the element for chaining.
+Sets [`displayTooltipWhenElided`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-displayTooltipWhenElided.html).
 
 ```csharp
 public static T SetDisplayTooltipWhenElided<T>(this T element, bool value) where T : TextElement
@@ -43,7 +45,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to display a tooltip when text is elided.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, a tooltip shows the full text when it is elided.
 
 #### Returns
 
@@ -55,13 +57,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-When true, a tooltip displays the full version of elided text, and also if a tooltip had been previously provided, it will be overwritten.
+The element type.
 
 ### SetEmojiFallbackSupport\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetEmojiFallbackSupport__1___0_System_Boolean_}
 
-Sets [`emojiFallbackSupport`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-emojiFallbackSupport.html) and returns the element for chaining.
+Sets [`emojiFallbackSupport`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-emojiFallbackSupport.html).
 
 ```csharp
 public static T SetEmojiFallbackSupport<T>(this T element, bool value) where T : TextElement
@@ -75,7 +75,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether emoji fallback support is enabled.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the global emoji fallback list is searched first.
 
 #### Returns
 
@@ -87,14 +87,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Specifies the order in which the system should look for Emoji characters when rendering text.
-If this setting is enabled, the global Emoji Fallback list will be searched first for characters defined as Emoji in the Unicode 14.0 standard.
+The element type.
 
 ### SetEnableRichText\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetEnableRichText__1___0_System_Boolean_}
 
-Sets [`enableRichText`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-enableRichText.html) and returns the element for chaining.
+Sets [`enableRichText`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-enableRichText.html).
 
 ```csharp
 public static T SetEnableRichText<T>(this T element, bool value) where T : TextElement
@@ -108,7 +105,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether rich text parsing is enabled.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, rich text tags are parsed.
 
 #### Returns
 
@@ -120,13 +117,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-When false, rich text tags will not be parsed.
+The element type.
 
 ### SetParseEscapeSequences\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetParseEscapeSequences__1___0_System_Boolean_}
 
-Sets [`parseEscapeSequences`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-parseEscapeSequences.html) and returns the element for chaining.
+Sets [`parseEscapeSequences`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-parseEscapeSequences.html).
 
 ```csharp
 public static T SetParseEscapeSequences<T>(this T element, bool value) where T : TextElement
@@ -140,7 +135,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether escape sequences are parsed.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, escape sequences such as <code>\n</code> are parsed; otherwise, they are shown as raw text.
 
 #### Returns
 
@@ -152,14 +147,11 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Determines how escape sequences are displayed. When set to true, escape sequences (such as \n, \t) are parsed and transformed into their corresponding characters.
-For example, '\n' will insert a new line. When set to false, escape sequences are displayed as raw text (for example, \n is shown as the characters '\' followed by 'n').
+The element type.
 
 ### SetText\<T\>\(T, string\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetText__1___0_System_String_}
 
-Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-text.html) and returns the element for chaining.
+Sets [`text`](https://docs.unity3d.com/ScriptReference/UIElements-TextElement-text.html).
 
 ```csharp
 public static T SetText<T>(this T element, string value) where T : TextElement
@@ -185,7 +177,5 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-The text to be displayed.
+The element type.
 

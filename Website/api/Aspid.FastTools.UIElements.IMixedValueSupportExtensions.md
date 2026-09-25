@@ -11,6 +11,8 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
+Provides extension methods for [`IMixedValueSupport`](https://docs.unity3d.com/ScriptReference/UIElements-IMixedValueSupport.html).
+
 ```csharp
 public static class IMixedValueSupportExtensions
 ```
@@ -29,10 +31,10 @@ public static class IMixedValueSupportExtensions
 
 ### SetShowMixedValue\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_IMixedValueSupportExtensions_SetShowMixedValue__1___0_System_Boolean_}
 
-Sets [`showMixedValue`](https://docs.unity3d.com/ScriptReference/UIElements-IMixedValueSupport-showMixedValue.html) and returns the element for chaining.
+Sets [`showMixedValue`](https://docs.unity3d.com/ScriptReference/UIElements-IMixedValueSupport-showMixedValue.html).
 
 ```csharp
-public static T SetShowMixedValue<T>(this T element, bool value = true) where T : IMixedValueSupport
+public static T SetShowMixedValue<T>(this T element, bool value) where T : IMixedValueSupport
 ```
 
 #### Parameters
@@ -43,7 +45,7 @@ The element to modify.
 
 `value` [bool](https://learn.microsoft.com/dotnet/api/system.boolean)
 
-Whether to show the mixed value state.
+When <a href="https://learn.microsoft.com/dotnet/csharp/language-reference/builtin-types/bool">true</a>, the mixed value state is shown.
 
 #### Returns
 
@@ -55,7 +57,5 @@ The element, for chaining.
 
 `T` 
 
-#### Remarks
-
-Indicates whether to enable the mixed value state on the value field.
+The element type.
 
