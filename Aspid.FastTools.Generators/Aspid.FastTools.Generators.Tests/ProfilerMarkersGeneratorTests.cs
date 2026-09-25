@@ -1,6 +1,8 @@
 using Xunit;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Aspid.FastTools.Generators.Tests.Helpers;
 
 // ReSharper disable once CheckNamespace
@@ -62,7 +64,7 @@ public class ProfilerMarkersGeneratorTests
         var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
 
         // Two distinct fields, named after method + their line numbers.
-        var fieldDeclarations = System.Text.RegularExpressions.Regex.Matches(
+        var fieldDeclarations = Regex.Matches(
             text, @"static\s+readonly\s+global::Unity\.Profiling\.ProfilerMarker\s+(\w+)\s*=");
         Assert.Equal(2, fieldDeclarations.Count);
 
@@ -90,7 +92,7 @@ public class ProfilerMarkersGeneratorTests
         var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
 
         // Two distinct fields even though they're on the same source line.
-        var fieldDeclarations = System.Text.RegularExpressions.Regex.Matches(
+        var fieldDeclarations = Regex.Matches(
             text, @"static\s+readonly\s+global::Unity\.Profiling\.ProfilerMarker\s+(\w+)\s*=");
         Assert.Equal(2, fieldDeclarations.Count);
 
@@ -277,6 +279,105 @@ public class ProfilerMarkersGeneratorTests
         Assert.Contains("Value_Marker_Line_", text);
 
         GeneratorTestHost.AssertNoErrors(run);
+    }
+
+    [Fact]
+    public void EventAccessors_UseEventNameAsMarkerName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public event System.Action Changed
+                    {
+                        add { this.Marker(); }
+                        remove { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        // add and remove are on different lines, so they get distinct fields and markers.
+        var fields = Regex.Matches(text, @"\bChanged_Marker_Line_\d+\b")
+            .Select(m => m.Value).Distinct().ToArray();
+        var names = Regex.Matches(text, @"""Foo\.Changed \(\d+\)""")
+            .Select(m => m.Value).Distinct().ToArray();
+        Assert.Equal(2, fields.Length);
+        Assert.Equal(2, names.Length);
+        Assert.DoesNotContain("add_Changed", text);
+        Assert.DoesNotContain("remove_Changed", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void ExplicitInterfaceEvent_UsesEventNameAsMarkerName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public interface INotifier { event System.Action Changed; }
+                public class Foo : INotifier
+                {
+                    event System.Action INotifier.Changed
+                    {
+                        add { this.Marker(); }
+                        remove { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        Assert.Contains("Changed_Marker_Line_", text);
+        Assert.Contains("\"Foo.Changed (", text);
+        Assert.DoesNotContain("INotifier.Changed (", text);
+        Assert.DoesNotContain("add_Changed", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void MarkerFields_AreOnlyCompiledWithEnableProfiler()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public void Run() { this.Marker(); }
+                }
+
+                public class Bar<T>
+                {
+                    public void Run() { this.Marker(); }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source, enableProfiler: false);
+
+        foreach (var generated in run.RunResult.Results[0].GeneratedSources)
+        {
+            var root = generated.SyntaxTree.GetRoot();
+
+            // Without ENABLE_PROFILER the fields and Markers<T> are disabled text, not declarations.
+            Assert.Empty(root.DescendantNodes().OfType<FieldDeclarationSyntax>());
+            Assert.DoesNotContain(
+                root.DescendantNodes().OfType<ClassDeclarationSyntax>(),
+                c => c.Identifier.ValueText == "Markers");
+        }
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
     }
 
     [Fact]

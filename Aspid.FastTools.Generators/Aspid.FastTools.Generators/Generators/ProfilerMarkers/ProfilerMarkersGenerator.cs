@@ -242,6 +242,13 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
                 : property.Name;
         }
 
+        if (enclosing.AssociatedSymbol is IEventSymbol @event)
+        {
+            return @event.ExplicitInterfaceImplementations.Length > 0
+                ? @event.ExplicitInterfaceImplementations[0].Name
+                : @event.Name;
+        }
+
         if (enclosing.MethodKind is MethodKind.Constructor)
             return "Ctor";
 

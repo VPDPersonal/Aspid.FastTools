@@ -29,10 +29,15 @@ internal static class GeneratorTestHost
         }
         """;
 
-    public static GeneratorRun RunProfilerMarkers(string userSource)
+    // The generated code keeps its markers under ENABLE_PROFILER, which the Editor defines,
+    // so it is on by default: otherwise the compile checks would skip the marker fields entirely.
+    public static GeneratorRun RunProfilerMarkers(string userSource, bool enableProfiler = true)
     {
-        var compilation = BuildCompilation(new[] { userSource, ProfilerMarkerStubs });
-        return Run(compilation, new ProfilerMarkersGenerator());
+        var parseOptions = CSharpParseOptions.Default
+            .WithPreprocessorSymbols(enableProfiler ? new[] { "ENABLE_PROFILER" } : System.Array.Empty<string>());
+
+        var compilation = BuildCompilation(new[] { userSource, ProfilerMarkerStubs }, parseOptions);
+        return Run(compilation, new ProfilerMarkersGenerator(), parseOptions);
     }
 
     public static void AssertNoErrors(GeneratorRun run)
@@ -73,16 +78,18 @@ internal static class GeneratorTestHost
         }
     }
 
-    private static GeneratorRun Run(CSharpCompilation compilation, IIncrementalGenerator generator)
+    private static GeneratorRun Run(CSharpCompilation compilation, IIncrementalGenerator generator, CSharpParseOptions parseOptions)
     {
-        GeneratorDriver driver = CSharpGeneratorDriver.Create(generator);
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(
+            new[] { generator.AsSourceGenerator() },
+            parseOptions: parseOptions);
         driver = driver.RunGeneratorsAndUpdateCompilation(compilation, out var output, out _);
         return new GeneratorRun(driver, driver.GetRunResult(), output);
     }
 
-    private static CSharpCompilation BuildCompilation(IEnumerable<string> sources)
+    private static CSharpCompilation BuildCompilation(IEnumerable<string> sources, CSharpParseOptions parseOptions)
     {
-        var trees = sources.Select(s => CSharpSyntaxTree.ParseText(s));
+        var trees = sources.Select(s => CSharpSyntaxTree.ParseText(s, parseOptions));
         var references = new[]
         {
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
