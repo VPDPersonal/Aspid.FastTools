@@ -66,10 +66,16 @@ namespace Aspid.FastTools.Editors
         /// <param name="property">The source property.</param>
         /// <returns>The independent property; otherwise, <see langword="null"/> if the path no longer exists on the targets.</returns>
         /// <remarks>
-        /// The caller owns the new serialized object and must dispose it when finished.
+        /// The caller owns the serialized object of a non-<see langword="null"/> result and must dispose it when finished.
         /// Pending changes on the source are not copied until they have been applied to its targets.
         /// </remarks>
-        public static SerializedProperty Persistent(this SerializedProperty property) =>
-            new SerializedObject(property.serializedObject.targetObjects).FindProperty(property.propertyPath);
+        public static SerializedProperty Persistent(this SerializedProperty property)
+        {
+            var serializedObject = new SerializedObject(property.serializedObject.targetObjects);
+            var persistent = serializedObject.FindProperty(property.propertyPath);
+            if (persistent is null) serializedObject.Dispose();
+
+            return persistent;
+        }
     }
 }
