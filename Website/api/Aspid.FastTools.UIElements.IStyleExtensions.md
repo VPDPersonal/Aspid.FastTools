@@ -23,6 +23,10 @@ public static class IStyleExtensions
 [IStyleExtensions](Aspid.FastTools.UIElements.IStyleExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddBoldUnityFontStyleAndWeight\<T\>\(T\) {#Aspid_FastTools_UIElements_IStyleExtensions_AddBoldUnityFontStyleAndWeight__1___0_}

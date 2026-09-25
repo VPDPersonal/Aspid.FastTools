@@ -23,6 +23,10 @@ public static class TextElementExtensions
 [TextElementExtensions](Aspid.FastTools.UIElements.TextElementExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### SetDisplayTooltipWhenElided\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextElementExtensions_SetDisplayTooltipWhenElided__1___0_System_Boolean_}

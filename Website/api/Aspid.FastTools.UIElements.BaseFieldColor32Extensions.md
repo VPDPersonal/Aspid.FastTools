@@ -23,6 +23,10 @@ public static class BaseFieldColor32Extensions
 [BaseFieldColor32Extensions](Aspid.FastTools.UIElements.BaseFieldColor32Extensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseFieldColor32Extensions_SetLabel__1___0_System_String_}

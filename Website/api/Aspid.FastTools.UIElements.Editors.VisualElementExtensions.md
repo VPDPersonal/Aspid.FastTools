@@ -23,6 +23,10 @@ public static class VisualElementExtensions
 [VisualElementExtensions](Aspid.FastTools.UIElements.Editors.VisualElementExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddOpenScriptCommand\<T\>\(T, Object\) {#Aspid_FastTools_UIElements_Editors_VisualElementExtensions_AddOpenScriptCommand__1___0_UnityEngine_Object_}

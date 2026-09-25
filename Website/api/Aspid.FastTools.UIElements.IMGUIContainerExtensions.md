@@ -23,6 +23,10 @@ public static class IMGUIContainerExtensions
 [IMGUIContainerExtensions](Aspid.FastTools.UIElements.IMGUIContainerExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddOnGUIHandler\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_IMGUIContainerExtensions_AddOnGUIHandler__1___0_System_Action_}

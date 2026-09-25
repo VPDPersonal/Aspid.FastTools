@@ -23,6 +23,10 @@ public static class IBindableExtensions
 [IBindableExtensions](Aspid.FastTools.UIElements.Editors.IBindableExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### BindPropertyTo\<T\>\(T, SerializedProperty\) {#Aspid_FastTools_UIElements_Editors_IBindableExtensions_BindPropertyTo__1___0_UnityEditor_SerializedProperty_}

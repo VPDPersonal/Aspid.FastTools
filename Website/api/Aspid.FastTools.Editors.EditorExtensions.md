@@ -23,6 +23,10 @@ public static class EditorExtensions
 [EditorExtensions](Aspid.FastTools.Editors.EditorExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### GetDisplayName\(Object\) {#Aspid_FastTools_Editors_EditorExtensions_GetDisplayName_UnityEngine_Object_}

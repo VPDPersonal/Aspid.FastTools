@@ -23,6 +23,10 @@ public static class SliderExtensions
 [SliderExtensions](Aspid.FastTools.UIElements.SliderExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### SetDirection\<T\>\(T, SliderDirection\) {#Aspid_FastTools_UIElements_SliderExtensions_SetDirection__1___0_UnityEngine_UIElements_SliderDirection_}

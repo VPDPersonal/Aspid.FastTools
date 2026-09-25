@@ -24,6 +24,10 @@ public static class TypeExtensions
 [TypeExtensions](Aspid.FastTools.Types.Editors.TypeExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### FindMonoScript\(Type\) {#Aspid_FastTools_Types_Editors_TypeExtensions_FindMonoScript_System_Type_}

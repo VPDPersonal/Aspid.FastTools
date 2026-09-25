@@ -23,6 +23,10 @@ public static class EnumFieldExtensions
 [EnumFieldExtensions](Aspid.FastTools.UIElements.EnumFieldExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### Initialize\<T\>\(T, Enum, bool\) {#Aspid_FastTools_UIElements_EnumFieldExtensions_Initialize__1___0_System_Enum_System_Boolean_}

@@ -23,6 +23,10 @@ public static class AbstractProgressBarExtensions
 [AbstractProgressBarExtensions](Aspid.FastTools.UIElements.AbstractProgressBarExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### SetHighValue\<T\>\(T, float\) {#Aspid_FastTools_UIElements_AbstractProgressBarExtensions_SetHighValue__1___0_System_Single_}

@@ -23,6 +23,10 @@ public static class TextInputBaseFieldUintTextSelectionExtensions
 [TextInputBaseFieldUintTextSelectionExtensions](Aspid.FastTools.UIElements.TextInputBaseFieldUintTextSelectionExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddOnCursorIndexChange\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_TextInputBaseFieldUintTextSelectionExtensions_AddOnCursorIndexChange__1___0_System_Action_}

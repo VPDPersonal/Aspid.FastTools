@@ -23,6 +23,10 @@ public static class BaseListViewExtensions
 [BaseListViewExtensions](Aspid.FastTools.UIElements.BaseListViewExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddItemsAdded\<T\>\(T, Action\<IEnumerable\<int\>\>\) {#Aspid_FastTools_UIElements_BaseListViewExtensions_AddItemsAdded__1___0_System_Action_System_Collections_Generic_IEnumerable_System_Int32___}

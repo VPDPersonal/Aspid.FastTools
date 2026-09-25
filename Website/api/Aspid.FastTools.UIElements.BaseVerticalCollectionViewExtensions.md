@@ -23,6 +23,10 @@ public static class BaseVerticalCollectionViewExtensions
 [BaseVerticalCollectionViewExtensions](Aspid.FastTools.UIElements.BaseVerticalCollectionViewExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddCanStartDrag\<T\>\(T, Func\<CanStartDragArgs, bool\>\) {#Aspid_FastTools_UIElements_BaseVerticalCollectionViewExtensions_AddCanStartDrag__1___0_System_Func_UnityEngine_UIElements_CanStartDragArgs_System_Boolean__}

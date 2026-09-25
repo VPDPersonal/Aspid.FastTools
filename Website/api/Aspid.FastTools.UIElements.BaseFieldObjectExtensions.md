@@ -23,6 +23,10 @@ public static class BaseFieldObjectExtensions
 [BaseFieldObjectExtensions](Aspid.FastTools.UIElements.BaseFieldObjectExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseFieldObjectExtensions_SetLabel__1___0_System_String_}

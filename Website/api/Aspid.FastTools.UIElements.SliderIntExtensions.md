@@ -23,6 +23,10 @@ public static class SliderIntExtensions
 [SliderIntExtensions](Aspid.FastTools.UIElements.SliderIntExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Remarks
 
 Kept apart from [`SliderExtensions`](Aspid.FastTools.UIElements.SliderExtensions.md): overloads that differ only by the constraint on the element type

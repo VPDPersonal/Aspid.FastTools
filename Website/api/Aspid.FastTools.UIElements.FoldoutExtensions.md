@@ -23,6 +23,10 @@ public static class FoldoutExtensions
 [FoldoutExtensions](Aspid.FastTools.UIElements.FoldoutExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### SetText\<T\>\(T, string\) {#Aspid_FastTools_UIElements_FoldoutExtensions_SetText__1___0_System_String_}

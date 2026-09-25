@@ -23,6 +23,10 @@ public static class INotifyValueChangedExtensions
 [INotifyValueChangedExtensions](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddValueChanged\<T\>\(T, EventCallback\<ChangeEvent\<int\>\>\) {#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent_System_Int32___}

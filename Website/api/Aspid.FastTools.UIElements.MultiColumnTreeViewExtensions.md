@@ -23,6 +23,10 @@ public static class MultiColumnTreeViewExtensions
 [MultiColumnTreeViewExtensions](Aspid.FastTools.UIElements.MultiColumnTreeViewExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddColumnSortingChanged\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_MultiColumnTreeViewExtensions_AddColumnSortingChanged__1___0_System_Action_}

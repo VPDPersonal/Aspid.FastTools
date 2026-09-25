@@ -23,6 +23,10 @@ public static class IMixedValueSupportExtensions
 [IMixedValueSupportExtensions](Aspid.FastTools.UIElements.IMixedValueSupportExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### SetShowMixedValue\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_IMixedValueSupportExtensions_SetShowMixedValue__1___0_System_Boolean_}

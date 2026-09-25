@@ -23,6 +23,10 @@ public static class BaseTreeViewExtensions
 [BaseTreeViewExtensions](Aspid.FastTools.UIElements.BaseTreeViewExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddItemExpandedChanged\<T\>\(T, Action\<TreeViewExpansionChangedArgs\>\) {#Aspid_FastTools_UIElements_BaseTreeViewExtensions_AddItemExpandedChanged__1___0_System_Action_UnityEngine_UIElements_TreeViewExpansionChangedArgs__}

@@ -23,6 +23,10 @@ public static class VisualElementExtensions
 [VisualElementExtensions](Aspid.FastTools.UIElements.VisualElementExtensions.md)
 
 
+#### Extension Methods
+
+[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
+
 ## Methods
 
 ### AddBoldUnityFontStyleAndWeight\<T\>\(T\) {#Aspid_FastTools_UIElements_VisualElementExtensions_AddBoldUnityFontStyleAndWeight__1___0_}
