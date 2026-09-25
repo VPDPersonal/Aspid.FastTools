@@ -16,6 +16,7 @@
 
 ### Изменено
 
+- Agent Skills для пакета переехали из плагина `aspid-fasttools` для Claude Code в [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) в этот репозиторий (`skills/`). Устанавливайте их в Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI или другой агент командой `npx skills add VPDPersonal/Aspid.FastTools`; плагин больше не публикуется.
 - `GetScriptName()` переименован в `GetDisplayName()`, а `GetScriptNameWithIndex()` — в `GetDisplayNameWithIndex()`; замените старые вызовы новыми именами. Оба метода возвращают `string.Empty` для null и уничтоженных объектов. Поиск индекса компонента использует список из пула вместо временных массивов и LINQ.
 - `[TypeSelector]` на поле `[SerializeReference]` теперь предлагает только типы, совместимые со всеми типами атрибута, — по тому же правилу, что уже действовало для полей `string` и `SerializableType`; раньше достаточно было совпасть с одним из них. То же относится к `baseTypes` у `SerializeReferenceEditorGUI.CreateField`, `CreateList` и `DrawFieldLayout`. Список альтернатив вроде `typeof(Pistol), typeof(Rifle)` теперь оставляет селектор пустым и вызывает `AFT0009`: дайте разрешённым классам общий интерфейс или базовый класс и укажите его. `AFT0005` теперь проверяет все типы атрибута вместе.
 
