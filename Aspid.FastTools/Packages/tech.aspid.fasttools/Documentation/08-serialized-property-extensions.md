@@ -117,13 +117,13 @@ When the field cannot be resolved, all three methods return <code lang="csharp">
 
 ## Persistent()
 
-An inspector's <code lang="class-name">SerializedObject</code> lives only while the inspector is open, so its properties cannot be kept for a deferred call. <code lang="csharp">Persistent()</code> returns the same property on a new <code lang="class-name">SerializedObject</code> for the same target objects:
+<code lang="csharp">Persistent()</code> returns the same property on a new <code lang="class-name">SerializedObject</code> that can be kept for a deferred call, even after the inspector closes:
 
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(manaCost&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(manaCost.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = manaCost.Persistent();</code></pre> |
 
-The caller owns the new object:
+The caller owns the new object, and pending writes on the source are not copied into it:
 
 ```csharp
 var independent = manaCost.Persistent();
@@ -136,8 +136,6 @@ EditorApplication.delayCall += () =>
         independent.Update().SetIntAndApply(42);
 };
 ```
-
-<code lang="csharp">Persistent()</code> returns <code lang="csharp">null</code> when the property path no longer exists. Pending writes on the source object are not copied.
 
 ## Package sample
 
