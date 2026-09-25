@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `this.Marker()` in a type nested in a generic type (`Outer<T>.Inner`) now compiles; the generated overload used to miss the outer type parameters (CS0246).
 - `this.Marker()` in an indexer accessor or a static constructor now compiles; the generated field names were invalid. The markers are named `Type.Indexer (line)` and `Type.StaticCtor (line)`.
 - `this.Marker()` in an event accessor is now named after the event, like a property accessor: `Type.Changed (line)` instead of `Type.add_Changed (line)` / `Type.remove_Changed (line)`, including explicit interface implementations.
+- `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
 
 ## [1.0.0-rc.8] — 2026-09-06
 
