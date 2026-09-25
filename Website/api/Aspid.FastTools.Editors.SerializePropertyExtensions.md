@@ -23,10 +23,6 @@ public static class SerializePropertyExtensions
 [SerializePropertyExtensions](Aspid.FastTools.Editors.SerializePropertyExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### AddArraySize\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_AddArraySize__1___0_System_Int32_}
@@ -325,7 +321,7 @@ The independent property; otherwise, <a href="https://learn.microsoft.com/dotnet
 
 #### Remarks
 
-The caller owns the new serialized object and must dispose it when finished.
+The caller owns the serialized object of a non-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> result and must dispose it when finished.
 Pending changes on the source are not copied until they have been applied to its targets.
 
 ### RemoveArraySize\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_RemoveArraySize__1___0_System_Int32_}
@@ -1261,7 +1257,7 @@ Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/Seriali
 #### Remarks
 
 There is no <code>SetValue&lt;T&gt;(int)</code> alias for enum flags because it would conflict with
-[`SerializePropertyExtensions.SetInt%60<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md). Call [`SerializePropertyExtensions.SetEnumFlag%60<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md) explicitly.
+[`SerializePropertyExtensions.SetInt<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md#Aspid_FastTools_Editors_SerializePropertyExtensions_SetInt__1___0_System_Int32_). Call [`SerializePropertyExtensions.SetEnumFlag<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumFlag__1___0_System_Int32_) explicitly.
 
 ### SetEnumFlagAndApply\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumFlagAndApply__1___0_System_Int32_}
 
@@ -1356,7 +1352,7 @@ Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/Seriali
 #### Remarks
 
 There is no <code>SetValue&lt;T&gt;(int)</code> alias for enum index because it would conflict with
-[`SerializePropertyExtensions.SetInt%60<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md). Call [`SerializePropertyExtensions.SetEnumIndex%60<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md) explicitly.
+[`SerializePropertyExtensions.SetInt<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md#Aspid_FastTools_Editors_SerializePropertyExtensions_SetInt__1___0_System_Int32_). Call [`SerializePropertyExtensions.SetEnumIndex<T>`](Aspid.FastTools.Editors.SerializePropertyExtensions.md#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumIndex__1___0_System_Int32_) explicitly.
 
 ### SetEnumIndexAndApply\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetEnumIndexAndApply__1___0_System_Int32_}
 

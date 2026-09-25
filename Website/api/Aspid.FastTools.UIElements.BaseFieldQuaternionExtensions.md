@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldQuaternionExtensions.SetLabel%60<T>`](Aspid.FastTools.UIElements.BaseFieldQuaternionExtensions.md) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Quaternion`](https://docs.unity3d.com/ScriptReference/Quaternion.html).
+Provides [`BaseFieldQuaternionExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldQuaternionExtensions.md#Aspid_FastTools_UIElements_BaseFieldQuaternionExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Quaternion`](https://docs.unity3d.com/ScriptReference/Quaternion.html).
 
 ```csharp
 public static class BaseFieldQuaternionExtensions
@@ -22,10 +22,6 @@ public static class BaseFieldQuaternionExtensions
 [object](https://learn.microsoft.com/dotnet/api/system.object) ← 
 [BaseFieldQuaternionExtensions](Aspid.FastTools.UIElements.BaseFieldQuaternionExtensions.md)
 
-
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
 
 ## Methods
 

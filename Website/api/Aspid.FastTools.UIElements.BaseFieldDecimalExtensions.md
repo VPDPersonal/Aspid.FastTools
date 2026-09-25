@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldDecimalExtensions.SetLabel%60<T>`](Aspid.FastTools.UIElements.BaseFieldDecimalExtensions.md) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Decimal`](https://learn.microsoft.com/dotnet/api/system.decimal).
+Provides [`BaseFieldDecimalExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldDecimalExtensions.md#Aspid_FastTools_UIElements_BaseFieldDecimalExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Decimal`](https://learn.microsoft.com/dotnet/api/system.decimal).
 
 ```csharp
 public static class BaseFieldDecimalExtensions
@@ -22,10 +22,6 @@ public static class BaseFieldDecimalExtensions
 [object](https://learn.microsoft.com/dotnet/api/system.object) ← 
 [BaseFieldDecimalExtensions](Aspid.FastTools.UIElements.BaseFieldDecimalExtensions.md)
 
-
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
 
 ## Methods
 

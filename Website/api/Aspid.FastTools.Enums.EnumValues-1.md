@@ -42,7 +42,7 @@ ISerializationCallbackReceiver
 [TextInputBaseFieldTextSelectionExtensions.AddOnCursorIndexChange\<EnumValues\<TValue\>, TValue\>\(EnumValues\<TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.AddOnSelectIndexChange\<EnumValues\<TValue\>, TValue\>\(EnumValues\<TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_AddOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.AddValueChanged\<EnumValues\<TValue\>, TValue\>\(EnumValues\<TValue\>, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_AddValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_),
+[ProfilerMarkerExtensionsForGenerator.Marker\<EnumValues\<TValue\>\>\(EnumValues\<TValue\>\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnCursorIndexChange\<EnumValues\<TValue\>, TValue\>\(EnumValues\<TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnCursorIndexChange__2___0_System_Action_),
 [TextInputBaseFieldTextSelectionExtensions.RemoveOnSelectIndexChange\<EnumValues\<TValue\>, TValue\>\(EnumValues\<TValue\>, Action\)](Aspid.FastTools.UIElements.TextInputBaseFieldTextSelectionExtensions.md#Aspid_FastTools_UIElements_TextInputBaseFieldTextSelectionExtensions_RemoveOnSelectIndexChange__2___0_System_Action_),
 [INotifyValueChangedExtensions.RemoveValueChanged\<EnumValues\<TValue\>, TValue\>\(EnumValues\<TValue\>, EventCallback\<ChangeEvent\<TValue\>\>\)](Aspid.FastTools.UIElements.INotifyValueChangedExtensions.md#Aspid_FastTools_UIElements_INotifyValueChangedExtensions_RemoveValueChanged__2___0_UnityEngine_UIElements_EventCallback_UnityEngine_UIElements_ChangeEvent___1___),
@@ -94,7 +94,7 @@ When the enum type is already known at compile time, prefer
 [`EnumValues<T1, T2>`](Aspid.FastTools.Enums.EnumValues-2.md) — its Inspector type-picker is read-only.
 </p>
 <p>
-For <code>[Flags]</code> enums [`EnumValues<T>.Equals`](Aspid.FastTools.Enums.EnumValues-1.md) uses flag-containment semantics
+For <code>[Flags]</code> enums [`EnumValues<T>.Equals`](Aspid.FastTools.Enums.EnumValues-1.md#Aspid_FastTools_Enums_EnumValues_1_Equals_System_Enum_System_Enum_) uses flag-containment semantics
 with special handling for the zero (<code>None</code>) value — two values are considered equal
 only when both are zero or both are non-zero and one has all bits of the other set.
 </p>

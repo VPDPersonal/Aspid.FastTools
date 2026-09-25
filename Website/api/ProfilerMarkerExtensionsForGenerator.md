@@ -23,23 +23,19 @@ public static class ProfilerMarkerExtensionsForGenerator
 [ProfilerMarkerExtensionsForGenerator](ProfilerMarkerExtensionsForGenerator.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
-### Marker\(object\) {#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_}
+### Marker\<T\>\(T\) {#ProfilerMarkerExtensionsForGenerator_Marker__1___0_}
 
-Opens a `ProfilerMarker` scope unique to this call site.
+Opens the `ProfilerMarker` of this call site, named <code>Type.Member (line)</code>.
 
 ```csharp
-public static ProfilerMarker.AutoScope Marker(this object instance)
+public static ProfilerMarker.AutoScope Marker<T>(this T instance)
 ```
 
 #### Parameters
 
-`instance` [object](https://learn.microsoft.com/dotnet/api/system.object)
+`instance` T
 
 The instance the scope is opened on; its value is never read.
 
@@ -47,16 +43,23 @@ The instance the scope is opened on; its value is never read.
 
  ProfilerMarker.AutoScope
 
-An empty scope, since this body never runs.
+An empty scope: this overload runs only when the call gets no marker.
+
+#### Type Parameters
+
+`T` 
+
+The type of <code class="paramref">instance</code>; generic, so a struct is not boxed.
 
 #### Remarks
 
-For every type that calls this method the generator emits a closer overload that overload
-resolution picks instead, holding one `ProfilerMarker` per enclosing type, member and line.
+For every type that calls this method on its own instance the generator emits a closer overload that
+overload resolution picks instead, holding one `ProfilerMarker` per line of that type.
+This overload runs only for calls the generator cannot support; analyzer <code>AFT0010</code> reports them.
 
 ### WithName\(in AutoScope, string\) {#ProfilerMarkerExtensionsForGenerator_WithName_Unity_Profiling_ProfilerMarker_AutoScope__System_String_}
 
-Names the `ProfilerMarker` that the generator creates for the preceding [`ProfilerMarkerExtensionsForGenerator.Marker`](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_) call.
+Names the `ProfilerMarker` that the generator creates for the preceding [`ProfilerMarkerExtensionsForGenerator.Marker<T>`](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_) call.
 
 ```csharp
 public static ProfilerMarker.AutoScope WithName(this in ProfilerMarker.AutoScope marker, string name)
@@ -66,7 +69,7 @@ public static ProfilerMarker.AutoScope WithName(this in ProfilerMarker.AutoScope
 
 `marker` ProfilerMarker.AutoScope
 
-The scope returned by [`ProfilerMarkerExtensionsForGenerator.Marker`](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_).
+The scope returned by [`ProfilerMarkerExtensionsForGenerator.Marker<T>`](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker__1___0_).
 
 `name` [string](https://learn.microsoft.com/dotnet/api/system.string)
 
