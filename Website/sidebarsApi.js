@@ -4,31 +4,39 @@ import generated from './api/sidebar.js';
  * Reshapes the generated API sidebar for navigation without touching `api/sidebar.js`:
  * - a namespace is a section whose title links to the namespace page, with a separate caret that folds it;
  * - the Classes/Structs/… layer is dropped; types keep DocFX's order (classes, structs, interfaces, enums, delegates);
- * - the generated `BaseFieldExtensionsSetLabel*` family folds into one collapsed group;
+ * - the per-value-type classes (`BaseFieldIntExtensions`, `TextInputBaseFieldIntExtensions`, …) fold into a collapsed
+ *   group right after their generic class;
  * - types outside any namespace gather under "Global".
  */
 const PREFIX = /^Aspid\.FastTools\./;
-const SET_LABEL = /^BaseFieldExtensionsSetLabel/;
+// Each group follows its `anchor` class; `match` picks the per-value-type classes that repeat the anchor's members.
+const TYPED_GROUPS = [
+  { anchor: 'BaseFieldExtensions', match: /^BaseField(?!Extensions$)\w+Extensions$/, label: 'SetLabel by value type' },
+  { anchor: 'TextInputBaseFieldExtensions', match: /^TextInputBaseField(?!Extensions$)\w+(?<!TextSelection)Extensions$/, label: 'Setters by value type' },
+  { anchor: 'TextInputBaseFieldTextSelectionExtensions', match: /^TextInputBaseField(?!TextSelectionExtensions$)\w+TextSelectionExtensions$/, label: 'Text selection by value type' },
+];
 
-function foldSetLabel(items) {
-  const overloads = items.filter((item) => SET_LABEL.test(item.label ?? ''));
-  if (overloads.length < 2) return items;
-  const rest = items.filter((item) => !SET_LABEL.test(item.label ?? ''));
-  const anchor = Math.max(0, rest.findIndex((item) => item.label === 'BaseFieldExtensions') + 1);
-  rest.splice(anchor, 0, {
-    type: 'category',
-    label: `SetLabel overloads (${overloads.length})`,
-    collapsed: true,
-    className: 'api-overloads',
-    items: overloads,
-  });
-  return rest;
+function foldTypedGroups(items) {
+  return TYPED_GROUPS.reduce((list, { anchor, match, label }) => {
+    const typed = list.filter((item) => match.test(item.label ?? ''));
+    if (typed.length < 2) return list;
+    const rest = list.filter((item) => !match.test(item.label ?? ''));
+    const at = Math.max(0, rest.findIndex((item) => item.label === anchor) + 1);
+    rest.splice(at, 0, {
+      type: 'category',
+      label: `${label} (${typed.length})`,
+      collapsed: true,
+      className: 'api-overloads',
+      items: typed,
+    });
+    return rest;
+  }, items);
 }
 
 function namespaceSection(category) {
   const label = category.label.replace(PREFIX, '');
   const kinds = category.items.filter((item) => item.type === 'category');
-  const items = foldSetLabel(kinds.flatMap((kind) => kind.items));
+  const items = foldTypedGroups(kinds.flatMap((kind) => kind.items));
   return { type: 'category', label, collapsed: true, className: 'doc-menu-group api-namespace', link: category.link, items };
 }
 
