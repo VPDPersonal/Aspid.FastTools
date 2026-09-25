@@ -1,42 +1,31 @@
 # Editor Helpers
 
-For an object label in a custom editor window, Unity offers `ObjectNames.GetInspectorTitle`, but it appends “(Script)” to scripts without `[AddComponentMenu]` and gives two identical components on one GameObject the same title. `GetDisplayName()` returns the readable type name (`AbilityConfig` → “Ability Config”), and `GetDisplayNameWithIndex()` numbers the duplicates: “Ability Config (1)”, “Ability Config (2)”.
+Readable object labels for your own editor windows — without “(Script)”, and numbered for identical components.
 
 ## Quick start
 
-The examples on this page work with the `AbilityConfig` component:
-
-```csharp
-public sealed class AbilityConfig : MonoBehaviour { }
-```
-
-```csharp
-using Aspid.FastTools.Editors;
-
-var title = new Label(config.GetDisplayNameWithIndex());
-```
-
-> [!NOTE]
-> The methods are editor-only: call them from an `Editor` folder or from an Editor-only Assembly Definition that references `Aspid.FastTools.Editor`.
+| Before — Unity API | After — FastTools |
+|---|---|
+| <pre lang="csharp"><code>new Label(ObjectNames&#10;    .GetInspectorTitle(caster));</code></pre> | <pre lang="csharp"><code>new Label(caster&#10;    .GetDisplayNameWithIndex());</code></pre> |
 
 ## GetDisplayName()
 
-Extends `UnityEngine.Object`. When the type itself declares `[AddComponentMenu]`, it returns the last segment of the menu path; otherwise, the type name split into words. A null or destroyed object returns `string.Empty`.
+Works on any <code lang="class-name">UnityEngine.Object</code>. <code lang="csharp">[AddComponentMenu]</code> counts only when declared on the type itself, not on a base class; a null or destroyed object returns <code lang="csharp">string.Empty</code>.
 
-| `[AddComponentMenu]` on `AbilityConfig` | `GetInspectorTitle()` | `GetDisplayName()` |
+| <code lang="csharp">[AddComponentMenu]</code> on <code lang="class-name">AbilityCaster</code> | <code lang="csharp">GetInspectorTitle()</code> | <code lang="csharp">GetDisplayName()</code> |
 |---|---|---|
-| None | `Ability Config (Script)` | `Ability Config` |
-| `"Gameplay/Ability"` | `Ability` | `Ability` |
+| None | <code lang="string">Ability Caster (Script)</code> | <code lang="string">Ability Caster</code> |
+| <code lang="csharp">"Gameplay/Ability"</code> | <code lang="string">Ability</code> | <code lang="string">Ability</code> |
 
 ## GetDisplayNameWithIndex()
 
-Extends `Component`. It counts components of **exactly the same type** on the GameObject and adds the component's position among them, starting at one. The number is computed on every call, so after components are removed or reordered, call the method again. A null or destroyed component returns `string.Empty`.
+Works on <code lang="class-name">Component</code>. The number is the position among components of exactly the same type on the GameObject — subclasses do not count; a null or destroyed component returns <code lang="csharp">string.Empty</code>.
 
 | Components on the GameObject | Labels |
 |---|---|
-| `AbilityConfig` | `Ability Config` |
-| `AbilityConfig`, `AbilityConfig` | `Ability Config (1)`, `Ability Config (2)` |
+| <code lang="class-name">AbilityCaster</code> | <code lang="string">Ability Caster</code> |
+| <code lang="class-name">AbilityCaster</code>, <code lang="class-name">AbilityCaster</code> | <code lang="string">Ability Caster (1)</code>, <code lang="string">Ability Caster (2)</code> |
 
 ## Package sample
 
-In [EditorTools](../Samples~/EditorTools/Documentation/README.md), `GetDisplayName()` titles the custom inspector of the `AbilityConfig` asset.
+In [EditorTools](../Samples~/EditorTools/Documentation/README.md), <code lang="csharp">GetDisplayName()</code> titles the custom inspector of the <code lang="class-name">AbilityConfig</code> asset.

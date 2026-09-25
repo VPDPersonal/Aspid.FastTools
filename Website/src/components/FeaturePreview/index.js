@@ -161,13 +161,13 @@ function PropertyPreview({ru}) {
 
 /* ---------- Editor Helpers: one component, its label with and without the index ---------- */
 
-const NAMES_CODE = `config.GetDisplayName();
-config.GetDisplayNameWithIndex();`;
+const NAMES_CODE = `caster.GetDisplayName();
+caster.GetDisplayNameWithIndex();`;
 
-// `config` is the second AbilityConfig on its GameObject, hence the (2).
+// `caster` is the second AbilityCaster on its GameObject, hence the (2).
 const NAMES = [
-  ['GetDisplayName()', 'Ability Config'],
-  ['GetDisplayNameWithIndex()', 'Ability Config (2)'],
+  ['GetDisplayName()', 'Ability Caster'],
+  ['GetDisplayNameWithIndex()', 'Ability Caster (2)'],
 ];
 
 function NamesPreview() {
