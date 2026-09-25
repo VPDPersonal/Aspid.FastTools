@@ -21,6 +21,7 @@ The marker name is built from the type, the method and the call's line number:
 | <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (line)</code> |
 | <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move (line)</code> |
 | <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run (line)</code><br /><code lang="string">Worker&lt;Single&gt;.Run (line)</code> |
+| <code lang="csharp">struct Job&lt;T&gt; &#123; void Execute() &#125;</code> | <code lang="string">Job&lt;T&gt;.Execute (line)</code> for any <code lang="class-name">T</code> |
 | <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run (line)</code> for any <code lang="class-name">T</code> |
 
 ## WithName()
@@ -57,12 +58,12 @@ The generator creates one static field per call site, so measuring allocates not
 
 ## Limitations
 
-- **Only <code lang="csharp">this</code>.** The marker opens on an instance of its own type, so static methods cannot hold one.
 - **The line number in the name** changes when the call moves: compare captures from before and after an edit by the name without it.
-- **Private and protected nested types** get no marker — analyzer `AFT0010` warns about it.
+- **Calls without a marker.** When a call gets no marker — on an object of another type (<code lang="csharp">other.Marker()</code>), in a static class, in a <code lang="csharp">private</code> or <code lang="csharp">protected</code> nested type — analyzer `AFT0010` warns about it.
+- **A discarded scope.** <code lang="csharp">this.Marker();</code> without <code lang="csharp">using</code> begins a sample that never ends — analyzer `AFT0011` warns about it.
 
 > [!WARNING]
-> A measurement can land in someone else's Profiler row when <code lang="csharp">this.Marker()</code> calls in different <code lang="csharp">partial</code> files of one type sit on the same line, or when the call is made on an object of another type — <code lang="csharp">other.Marker()</code>.
+> <code lang="csharp">this.Marker()</code> calls in different <code lang="csharp">partial</code> files of one type that sit on the same line share the first one's marker — the second one's measurements land in someone else's Profiler row.
 
 ## Package sample
 
