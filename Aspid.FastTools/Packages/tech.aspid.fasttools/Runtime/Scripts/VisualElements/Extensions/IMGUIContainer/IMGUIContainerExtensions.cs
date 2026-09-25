@@ -90,7 +90,7 @@ namespace Aspid.FastTools.UIElements
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <returns>The element, for chaining.</returns>
-        public static T MarkDirtyLayout<T>(this T element)
+        public static T MarkDirtyLayoutSelf<T>(this T element)
             where T : IMGUIContainer
         {
             element.MarkDirtyLayout();
