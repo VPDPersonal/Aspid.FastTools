@@ -86,6 +86,10 @@ internal static class ExtensionClassBody
         List<ImmutableArray<RenamedCall>> members,
         bool isGeneric)
     {
+        // Marker() reads the fields only under ENABLE_PROFILER, so without it they would still
+        // create every marker in the static constructor for nothing.
+        code.AppendLine("#if ENABLE_PROFILER");
+
         if (isGeneric)
         {
             code.AppendLine($"private static class Markers{type.TypeParamList}{type.ConstraintsClause}")
@@ -94,24 +98,25 @@ internal static class ExtensionClassBody
 
         var fieldVisibility = isGeneric ? "public" : "private";
 
+        var isFirst = true;
         foreach (var member in members)
         {
             foreach (var renamed in member)
             {
-                var markerValueExpression = BuildMarkerValueExpression(type, renamed.Call);
-                code.AppendMultiline(
-                    $"""
-                    [{ProfilerMarkerGeneratedCode}]
-                    {fieldVisibility} static readonly {ProfilerMarker} {renamed.FieldName} = new({markerValueExpression});
+                if (!isFirst) code.AppendLine();
+                isFirst = false;
 
-                    """);
+                var markerValueExpression = BuildMarkerValueExpression(type, renamed.Call);
+                code.AppendLine($"[{ProfilerMarkerGeneratedCode}]")
+                    .AppendLine($"{fieldVisibility} static readonly {ProfilerMarker} {renamed.FieldName} = new({markerValueExpression});");
             }
         }
 
         if (isGeneric)
-            code.EndBlock().AppendLine();
+            code.EndBlock();
 
-        return code;
+        return code.AppendLine("#endif")
+            .AppendLine();
     }
 
     private static CodeWriter AppendWithoutMessage(
