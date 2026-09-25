@@ -24,6 +24,7 @@ Returns the `ProfilerMarker.AutoScope` of the `Type.Method (line)` marker for th
 | Method `Step()` | `FlockSimulation.Step (line)` |
 | Constructor | `FlockSimulation.Ctor (line)` |
 | Accessor of the `Speed` property | `FlockSimulation.Speed (line)` |
+| Accessor of an indexer | `FlockSimulation.Indexer (line)` |
 | Lambda or local function inside `Step()` | `FlockSimulation.Step (line)` |
 | Explicit implementation `IUpdatable.Tick()` | `FlockSimulation.Tick (line)` |
 | Method `Move()` of the nested type `FlockSimulation.Agent` | `Agent.Move (line)` |
@@ -96,6 +97,7 @@ internal static class __FlockSimulationProfilerMarkerExtensions
 
 - **Only `this`.** Markers are generated for the type the call is written in: `other.Marker()` on an object of another type measures nothing. Static methods have no `this`, so they cannot hold a marker.
 - **Line suffix.** The number in the name changes when the call moves to another line, so compare captures from before and after an edit by the name without the suffix.
+- **Private and protected nested types.** The generated overload cannot see a `private` or `protected` nested type, or a type nested in one: the call compiles but opens no marker, and analyzer `AFT0010` warns. Make the type `internal` or `public`.
 
 > [!WARNING]
 > `this.Marker()` calls on the same line of a type, including across `partial` files, share the first call's marker — the second one's measurements land in someone else's Profiler row.
