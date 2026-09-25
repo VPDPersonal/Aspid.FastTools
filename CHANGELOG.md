@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The Agent Skills for this package moved from the `aspid-fasttools` Claude Code plugin in [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) into this repository (`skills/`). Install them into Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI or another agent with `npx skills add VPDPersonal/Aspid.FastTools`; the plugin is no longer published.
 - Renamed `GetScriptName()` to `GetDisplayName()` and `GetScriptNameWithIndex()` to `GetDisplayNameWithIndex()`; update existing calls to the new names. Both methods now return `string.Empty` for null or destroyed objects. Component indexing uses a pooled list instead of temporary arrays and LINQ.
 - `[TypeSelector]` on a `[SerializeReference]` field now offers only types assignable to every attribute type — the rule `string` and `SerializableType` fields already follow; it used to offer types matching any one of them. The same applies to `baseTypes` of `SerializeReferenceEditorGUI.CreateField`, `CreateList` and `DrawFieldLayout`. A list of alternatives such as `typeof(Pistol), typeof(Rifle)` now leaves the selector empty and triggers `AFT0009`: give the allowed classes a common interface or base class and pass that instead. `AFT0005` now checks all attribute types together.
 
