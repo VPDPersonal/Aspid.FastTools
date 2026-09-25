@@ -34,9 +34,14 @@ const PUSH = 3.5;         // px, how far a dot is pushed outwards at a full-stre
 const FALLOFF = 700;      // px, distance at which a wave has lost half its energy
 const SWAY_CYCLES = 3;    // the crest swells and sinks this many times as it travels
 const SWAY = 0.4;         // relative amplitude of that swaying; it damps out with the wave
-const MAX_WAVES = 4;
+// Overlapping waves add up; the sum is clamped to what a single wave can reach, so a burst of clicks does not blow the dots up.
+const MIN_HEIGHT = -1;
+const MAX_HEIGHT = 1 + SWAY;
 // Trailing crests behind the main one: [delay in px behind the front, relative amplitude].
 const CRESTS = [[0, 1], [2.4 * WIDTH, 0.45], [4.6 * WIDTH, 0.18]];
+
+const COUNTER_KEY = 'aspid-dot-ripple-clicks';
+const COUNTER_IDLE = 2500; // ms after the last click before the counter fades out
 
 const gauss = (u) => Math.exp(-u * u);
 const radiusAt = (elapsed) => elapsed * (SPEED + ACCEL * elapsed);
@@ -72,7 +77,23 @@ function height(d, r) {
   return h;
 }
 
-/** Sends a wave through the dot background when the user clicks the empty canvas of a docs page. */
+function readClicks() {
+  try {
+    return Number(localStorage.getItem(COUNTER_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveClicks(clicks) {
+  try {
+    localStorage.setItem(COUNTER_KEY, String(clicks));
+  } catch {
+    // Storage may be blocked; the counter then only lasts for this page.
+  }
+}
+
+/** Sends a wave through the dot background when the user clicks the empty canvas of a docs page, and counts the clicks. */
 export default function DotRipple() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -82,6 +103,13 @@ export default function DotRipple() {
     canvas.setAttribute('aria-hidden', 'true');
     document.body.appendChild(canvas);
     const ctx = canvas.getContext('2d');
+
+    const counter = document.createElement('div');
+    counter.className = 'dot-ripple-counter';
+    counter.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(counter);
+    let clicks = readClicks();
+    let counterTimer = 0;
 
     let waves = [];
     let frame = 0;
@@ -101,58 +129,82 @@ export default function DotRipple() {
       waves = waves.filter((wave) => radiusAt(now - wave.start) < farthest);
       const tintedWindows = waves.length ? readTintedWindows() : [];
 
-      for (const wave of waves) {
+      // Per-frame state of every live wave: its front, how much it currently sways, and the ring of the grid it touches.
+      const live = waves.map((wave) => {
         const r = radiusAt(now - wave.start);
         const progress = r / farthest;
-        const sway = 1 + SWAY * (1 - progress) * Math.sin(progress * SWAY_CYCLES * 2 * Math.PI);
-        // Only the band of the grid the wave currently touches is visited.
-        const outer = r + WIDTH * 3;
-        const inner = Math.max(r - CRESTS[CRESTS.length - 1][0] - WIDTH * 3, 0);
-        const x0 = Math.max(Math.floor((wave.x - outer) / GRID), 0);
-        const x1 = Math.min(Math.ceil((wave.x + outer) / GRID), Math.ceil(innerWidth / GRID));
-        const y0 = Math.max(Math.floor((wave.y - outer) / GRID), 0);
-        const y1 = Math.min(Math.ceil((wave.y + outer) / GRID), Math.ceil(innerHeight / GRID));
+        return {
+          x: wave.x,
+          y: wave.y,
+          r,
+          sway: 1 + SWAY * (1 - progress) * Math.sin(progress * SWAY_CYCLES * 2 * Math.PI),
+          outer: r + WIDTH * 3,
+          inner: Math.max(r - CRESTS[CRESTS.length - 1][0] - WIDTH * 3, 0),
+        };
+      });
 
-        for (let gy = y0; gy <= y1; gy++) {
-          const cy = gy * GRID + GRID / 2;
-          for (let gx = x0; gx <= x1; gx++) {
-            const cx = gx * GRID + GRID / 2;
+      // Only the part of the grid some wave currently touches is visited.
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (const wave of live) {
+        x0 = Math.min(x0, Math.floor((wave.x - wave.outer) / GRID));
+        x1 = Math.max(x1, Math.ceil((wave.x + wave.outer) / GRID));
+        y0 = Math.min(y0, Math.floor((wave.y - wave.outer) / GRID));
+        y1 = Math.max(y1, Math.ceil((wave.y + wave.outer) / GRID));
+      }
+      x0 = Math.max(x0, 0);
+      x1 = Math.min(x1, Math.ceil(innerWidth / GRID));
+      y0 = Math.max(y0, 0);
+      y1 = Math.min(y1, Math.ceil(innerHeight / GRID));
+
+      for (let gy = y0; gy <= y1; gy++) {
+        const cy = gy * GRID + GRID / 2;
+        for (let gx = x0; gx <= x1; gx++) {
+          const cx = gx * GRID + GRID / 2;
+          // Every wave lifts the dot and pushes it away from its own origin; the dot is drawn once with the sum.
+          let h = 0;
+          let pushX = 0;
+          let pushY = 0;
+          for (const wave of live) {
             const dx = cx - wave.x;
             const dy = cy - wave.y;
             const d = Math.hypot(dx, dy);
-            if (d < inner || d > outer) continue;
-            const energy = sway / (1 + d / FALLOFF);
-            const h = height(d, r) * energy;
-            if (Math.abs(h) < 0.03) continue;
-
-            const nx = d > 0 ? dx / d : 0;
-            const ny = d > 0 ? dy / d : 0;
-            const px = cx + nx * PUSH * h;
-            const py = cy + ny * PUSH * h;
-            const tint = tintedWindows.find(({rect}) => px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom);
-
-            if (h > 0) {
-              // Crest: the dot rises — bigger, brighter, pushed outwards. The resting dot is hidden underneath it.
-              const [cr, cg, cb] = colors.accent;
-              ctx.fillStyle = tint?.color ?? `rgb(${cr}, ${cg}, ${cb})`;
-              ctx.globalAlpha = Math.min(0.15 + h * 0.75, 0.9);
-              ctx.beginPath();
-              ctx.arc(px, py, BASE_DOT + LIFT * h, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.globalAlpha = 1;
-            } else {
-              // Trough: the dot sinks — the resting dot is covered with the canvas colour and a fainter one drawn.
-              ctx.fillStyle = colors.canvas;
-              ctx.beginPath();
-              ctx.arc(cx, cy, BASE_DOT + 0.6, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.fillStyle = tint?.color ?? 'rgb(120, 128, 140)';
-              ctx.globalAlpha = Math.max(0.12 + h * 0.12, 0.02);
-              ctx.beginPath();
-              ctx.arc(px, py, Math.max(BASE_DOT + h * 0.6, 0.3), 0, Math.PI * 2);
-              ctx.fill();
-              ctx.globalAlpha = 1;
+            if (d < wave.inner || d > wave.outer) continue;
+            const waveHeight = height(d, wave.r) * wave.sway / (1 + d / FALLOFF);
+            h += waveHeight;
+            if (d > 0) {
+              pushX += dx / d * waveHeight;
+              pushY += dy / d * waveHeight;
             }
+          }
+          if (Math.abs(h) < 0.03) continue;
+
+          const scale = Math.min(Math.max(h, MIN_HEIGHT), MAX_HEIGHT) / h;
+          h *= scale;
+          const px = cx + PUSH * pushX * scale;
+          const py = cy + PUSH * pushY * scale;
+          const tint = tintedWindows.find(({rect}) => px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom);
+
+          if (h > 0) {
+            // Crest: the dot rises — bigger, brighter, pushed outwards. The resting dot is hidden underneath it.
+            const [cr, cg, cb] = colors.accent;
+            ctx.fillStyle = tint?.color ?? `rgb(${cr}, ${cg}, ${cb})`;
+            ctx.globalAlpha = Math.min(0.15 + h * 0.75, 0.9);
+            ctx.beginPath();
+            ctx.arc(px, py, BASE_DOT + LIFT * h, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+          } else {
+            // Trough: the dot sinks — the resting dot is covered with the canvas colour and a fainter one drawn.
+            ctx.fillStyle = colors.canvas;
+            ctx.beginPath();
+            ctx.arc(cx, cy, BASE_DOT + 0.6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = tint?.color ?? 'rgb(120, 128, 140)';
+            ctx.globalAlpha = Math.max(0.12 + h * 0.12, 0.02);
+            ctx.beginPath();
+            ctx.arc(px, py, Math.max(BASE_DOT + h * 0.6, 0.3), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
           }
         }
       }
@@ -164,7 +216,14 @@ export default function DotRipple() {
       if (event.button !== 0 || !isCanvas(event.target)) return;
       colors = readColors();
       waves.push({x: event.clientX, y: event.clientY, start: performance.now()});
-      if (waves.length > MAX_WAVES) waves.shift();
+
+      clicks += 1;
+      saveClicks(clicks);
+      counter.textContent = clicks.toLocaleString();
+      counter.toggleAttribute('data-on', true);
+      counter.animate([{transform: 'scale(1.25)'}, {transform: 'scale(1)'}], {duration: 250, easing: 'ease-out'});
+      clearTimeout(counterTimer);
+      counterTimer = setTimeout(() => counter.removeAttribute('data-on'), COUNTER_IDLE);
       if (!frame) frame = requestAnimationFrame(render);
     };
 
@@ -174,7 +233,9 @@ export default function DotRipple() {
       document.removeEventListener('pointerdown', onPointerDown);
       removeEventListener('resize', resize);
       if (frame) cancelAnimationFrame(frame);
+      clearTimeout(counterTimer);
       canvas.remove();
+      counter.remove();
     };
   }, []);
   return null;
