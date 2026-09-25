@@ -73,7 +73,7 @@ using (this.Marker())
 new VisualElement()
   .SetPaddingX(12)
   .AddChild(
-    new Label("Stats"));
+    new Label("Ability Config"));
 ```
 
 #### [SerializedProperty Extensions](08-serialized-property-extensions.md)
