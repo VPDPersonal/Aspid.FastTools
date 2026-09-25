@@ -57,6 +57,11 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         if (ResolveEnclosingMember(initialEnclosing) is not { } enclosingInfo) return null;
         var (namedTypeSymbol, markerName, methodKey) = enclosingInfo;
 
+        // Unsupported types get no overload: the call binds to the object fallback and compiles,
+        // and the analyzer (AFT0010) reports the missing marker instead.
+        if (!IsVisibleToGeneratedClass(namedTypeSymbol)) return null;
+        if (!HasUniqueTypeParameterNames(namedTypeSymbol)) return null;
+
         var markerValue = markerName;
 
         // Walk past any parentheses so `(this.Marker()).WithName("x")` is still recognised.
@@ -106,7 +111,7 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
 
                 case IPropertySymbol property:
                     if (property.ContainingType is null) return null;
-                    return (property.ContainingType, property.Name, property.ToDisplayString());
+                    return (property.ContainingType, property.IsIndexer ? "Indexer" : property.Name, property.ToDisplayString());
 
                 default:
                     enclosing = enclosing.ContainingSymbol;
@@ -117,6 +122,44 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         return null;
     }
 
+    // The generated extension class is top-level, so it can only name a type the whole assembly sees.
+    private static bool IsVisibleToGeneratedClass(INamedTypeSymbol symbol)
+    {
+        for (var t = symbol; t is not null; t = t.ContainingType)
+        {
+            if (t.DeclaredAccessibility is Accessibility.Private
+                or Accessibility.Protected
+                or Accessibility.ProtectedAndInternal)
+                return false;
+        }
+
+        return true;
+    }
+
+    // The generated Marker<...> method takes the type parameters of the whole containing chain,
+    // so a nested type parameter that shadows an outer one (CS0693) would be declared twice.
+    private static bool HasUniqueTypeParameterNames(INamedTypeSymbol symbol)
+    {
+        var names = new HashSet<string>();
+        foreach (var tp in GetChainTypeParameters(symbol))
+        {
+            if (!names.Add(tp.Name))
+                return false;
+        }
+
+        return true;
+    }
+
+    // Type parameters of the type and all its containing types, outermost first.
+    private static ImmutableArray<ITypeParameterSymbol> GetChainTypeParameters(INamedTypeSymbol symbol)
+    {
+        var stack = new Stack<INamedTypeSymbol>();
+        for (var t = symbol; t is not null; t = t.ContainingType)
+            stack.Push(t);
+
+        return stack.SelectMany(t => t.TypeParameters).ToImmutableArray();
+    }
+
     private static TypeData BuildTypeData(INamedTypeSymbol symbol)
     {
         var typeName = symbol.Name;
@@ -124,22 +167,27 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             ? null
             : symbol.ContainingNamespace.ToDisplayString();
 
+        // Arity is part of each containing type's name so Outer.Inner and Outer<T>.Inner stay distinct.
         var containingChain = string.Empty;
         if (symbol.ContainingType is not null)
         {
-            var stack = new Stack<string>();
+            var stack = new Stack<INamedTypeSymbol>();
             for (var t = symbol.ContainingType; t is not null; t = t.ContainingType)
-                stack.Push(t.Name);
+                stack.Push(t);
 
             var sb = new System.Text.StringBuilder();
-            foreach (var name in stack)
-                sb.Append(name).Append('.');
+            foreach (var t in stack)
+            {
+                sb.Append(t.Name);
+                if (t.Arity > 0) sb.Append('_').Append(t.Arity);
+                sb.Append('.');
+            }
             containingChain = sb.ToString();
         }
 
         var typeKey = (ns is null ? string.Empty : ns + ".") + containingChain + typeName;
 
-        var typeParameters = symbol.TypeParameters;
+        var typeParameters = GetChainTypeParameters(symbol);
         var isGeneric = typeParameters.Length > 0;
         var typeParamList = isGeneric
             ? "<" + string.Join(", ", typeParameters.Select(p => p.Name)) + ">"
@@ -185,6 +233,10 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
     {
         if (enclosing.AssociatedSymbol is IPropertySymbol property)
         {
+            // An indexer's name is "this[]", which is not a valid identifier for the generated field.
+            if (property.IsIndexer)
+                return "Indexer";
+
             return property.ExplicitInterfaceImplementations.Length > 0
                 ? property.ExplicitInterfaceImplementations[0].Name
                 : property.Name;
@@ -192,6 +244,9 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
 
         if (enclosing.MethodKind is MethodKind.Constructor)
             return "Ctor";
+
+        if (enclosing.MethodKind is MethodKind.StaticConstructor)
+            return "StaticCtor";
 
         return enclosing.ExplicitInterfaceImplementations.Length > 0
             ? enclosing.ExplicitInterfaceImplementations[0].Name

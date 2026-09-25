@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Aspid.FastTools.Generators.ProfilerMarkers;
 
 // ReSharper disable once CheckNamespace
@@ -49,6 +50,27 @@ internal static class GeneratorTestHost
         Assert.True(
             compileErrors.Length == 0,
             "Generated source has compile errors: " + string.Join("; ", compileErrors.Select(d => d.ToString())));
+    }
+
+    // Every Marker() call in the user source must bind to a generated overload; one left on the
+    // ProfilerMarkerExtensionsForGenerator fallback compiles but never opens a marker.
+    public static void AssertCallsBindToGenerated(GeneratorRun run)
+    {
+        var userTree = run.OutputCompilation.SyntaxTrees.First();
+        var model = run.OutputCompilation.GetSemanticModel(userTree);
+        var calls = userTree.GetRoot().DescendantNodes()
+            .OfType<InvocationExpressionSyntax>()
+            .Where(i => i.Expression is MemberAccessExpressionSyntax { Name.Identifier.ValueText: "Marker" })
+            .ToArray();
+
+        Assert.NotEmpty(calls);
+        foreach (var call in calls)
+        {
+            var method = model.GetSymbolInfo(call).Symbol as IMethodSymbol;
+            Assert.True(
+                method is not null && method.ContainingType.Name.EndsWith("ProfilerMarkerExtensions"),
+                $"'{call}' binds to '{method?.ContainingType.Name ?? "nothing"}', not to a generated overload");
+        }
     }
 
     private static GeneratorRun Run(CSharpCompilation compilation, IIncrementalGenerator generator)

@@ -78,4 +78,12 @@ public static class DiagnosticRules
         category: UsageCategory,
         defaultSeverity: Severity.Warning,
         isEnabledByDefault: true);
+
+    public static readonly Descriptor ProfilerMarkerUnsupportedTypeRule = new(
+        id: "AFT0010",
+        title: "this.Marker() in a type the profiler-marker generator cannot support",
+        messageFormat: "this.Marker() opens no profiler marker: '{0}' {1}",
+        category: UsageCategory,
+        defaultSeverity: Severity.Warning,
+        isEnabledByDefault: true);
 }
