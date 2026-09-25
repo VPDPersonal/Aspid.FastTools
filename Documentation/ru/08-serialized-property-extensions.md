@@ -117,13 +117,13 @@ var effectDamage = effect.FindPropertyRelative("Damage");
 
 ## Persistent()
 
-<code lang="class-name">SerializedObject</code> инспектора живёт, пока открыт инспектор, поэтому свойство нельзя сохранить для отложенного вызова. <code lang="csharp">Persistent()</code> возвращает то же свойство на новом <code lang="class-name">SerializedObject</code> для тех же целевых объектов:
+<code lang="csharp">Persistent()</code> возвращает то же свойство на новом <code lang="class-name">SerializedObject</code>, которое можно сохранить для отложенного вызова, даже когда инспектор уже закрыт:
 
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(manaCost&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(manaCost.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = manaCost.Persistent();</code></pre> |
 
-Новый объект принадлежит вызывающему коду:
+Новый объект принадлежит вызывающему коду, а неприменённые записи исходного в него не попадают:
 
 ```csharp
 var independent = manaCost.Persistent();
@@ -136,8 +136,6 @@ EditorApplication.delayCall += () =>
         independent.Update().SetIntAndApply(42);
 };
 ```
-
-<code lang="csharp">Persistent()</code> возвращает <code lang="csharp">null</code>, если путь свойства больше не существует. Неприменённые записи исходного объекта не копируются.
 
 ## Пример в пакете
 
