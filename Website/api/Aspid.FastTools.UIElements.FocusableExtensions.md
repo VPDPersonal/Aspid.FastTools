@@ -23,10 +23,6 @@ public static class FocusableExtensions
 [FocusableExtensions](Aspid.FastTools.UIElements.FocusableExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### BlurSelf\<T\>\(T\) {#Aspid_FastTools_UIElements_FocusableExtensions_BlurSelf__1___0_}

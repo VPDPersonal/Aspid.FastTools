@@ -23,10 +23,6 @@ public static class SerializePropertyExtensions
 [SerializePropertyExtensions](Aspid.FastTools.Editors.SerializePropertyExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### AddArraySize\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_AddArraySize__1___0_System_Int32_}
@@ -325,7 +321,7 @@ The independent property; otherwise, <a href="https://learn.microsoft.com/dotnet
 
 #### Remarks
 
-The caller owns the new serialized object and must dispose it when finished.
+The caller owns the serialized object of a non-<a href="https://learn.microsoft.com/dotnet/csharp/language-reference/keywords/null">null</a> result and must dispose it when finished.
 Pending changes on the source are not copied until they have been applied to its targets.
 
 ### RemoveArraySize\<T\>\(T, int\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_RemoveArraySize__1___0_System_Int32_}
@@ -1448,65 +1444,10 @@ The same <code class="paramref">property</code> instance.
 
 Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
 
-### SetExposedReferenceAndApply\<T\>\(T, Object\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetExposedReferenceAndApply__1___0_UnityEngine_Object_}
+#### Remarks
 
-Sets [`exposedReferenceValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-exposedReferenceValue.html) then applies modified properties.
-
-```csharp
-public static T SetExposedReferenceAndApply<T>(this T property, Object value) where T : SerializedProperty
-```
-
-#### Parameters
-
-`property` T
-
-Target property.
-
-`value` Object
-
-[`Object`](https://docs.unity3d.com/ScriptReference/Object.html) exposed reference to assign.
-
-#### Returns
-
- T
-
-The same <code class="paramref">property</code> instance.
-
-#### Type Parameters
-
-`T` 
-
-Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
-
-### SetExposedReferenceAndApplyWithoutUndo\<T\>\(T, Object\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetExposedReferenceAndApplyWithoutUndo__1___0_UnityEngine_Object_}
-
-Sets [`exposedReferenceValue`](https://docs.unity3d.com/ScriptReference/SerializedProperty-exposedReferenceValue.html) then applies modified properties without recording Undo.
-
-```csharp
-public static T SetExposedReferenceAndApplyWithoutUndo<T>(this T property, Object value) where T : SerializedProperty
-```
-
-#### Parameters
-
-`property` T
-
-Target property.
-
-`value` Object
-
-[`Object`](https://docs.unity3d.com/ScriptReference/Object.html) exposed reference to assign.
-
-#### Returns
-
- T
-
-The same <code class="paramref">property</code> instance.
-
-#### Type Parameters
-
-`T` 
-
-Concrete [`SerializedProperty`](https://docs.unity3d.com/ScriptReference/SerializedProperty.html) type.
+Without an [`IExposedPropertyTable`](https://docs.unity3d.com/ScriptReference/IExposedPropertyTable.html) context, Unity's setter applies the write itself and records Undo,
+so there are no <code>AndApply</code> or <code>AndApplyWithoutUndo</code> variants.
 
 ### SetFloat\<T\>\(T, float\) {#Aspid_FastTools_Editors_SerializePropertyExtensions_SetFloat__1___0_System_Single_}
 

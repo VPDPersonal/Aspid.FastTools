@@ -24,10 +24,6 @@ public static class ICustomStyleExtensions
 [ICustomStyleExtensions](Aspid.FastTools.UIElements.ICustomStyleExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### TryGetByEnum\<T\>\(ICustomStyle, CustomStyleProperty\<string\>, out T\) {#Aspid_FastTools_UIElements_ICustomStyleExtensions_TryGetByEnum__1_UnityEngine_UIElements_ICustomStyle_UnityEngine_UIElements_CustomStyleProperty_System_String____0__}

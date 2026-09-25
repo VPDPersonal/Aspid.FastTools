@@ -23,10 +23,6 @@ public static class TextInputBaseFieldUlongExtensions
 [TextInputBaseFieldUlongExtensions](Aspid.FastTools.UIElements.TextInputBaseFieldUlongExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### SetAutoCorrection\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldUlongExtensions_SetAutoCorrection__1___0_System_Boolean_}

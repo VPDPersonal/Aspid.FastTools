@@ -23,10 +23,6 @@ public static class BaseFieldHash128Extensions
 [BaseFieldHash128Extensions](Aspid.FastTools.UIElements.BaseFieldHash128Extensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### SetLabel\<T\>\(T, string\) {#Aspid_FastTools_UIElements_BaseFieldHash128Extensions_SetLabel__1___0_System_String_}
