@@ -47,9 +47,8 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
             var search = new TextField()
                 .SetFlexGrow(1)
+                .SetPlaceholder("Search abilities…")
                 .AddValueChanged<TextField, string>(evt => ApplyFilter(evt.newValue));
-            // TextField implements ITextEdition explicitly, so the edition setters go through textEdition.
-            search.textEdition.SetPlaceholder("Search abilities…");
 
             var create = new Button()
                 .SetText("Create")
