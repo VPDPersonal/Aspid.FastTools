@@ -29,17 +29,22 @@ internal static class MarkerCallRules
             && attribute.ConstructorArguments.Length > 0
             && attribute.ConstructorArguments[0].Value as string == GeneratorName);
 
-    // The package Marker() the call binds to. A ref struct cannot be a type argument of the generic fallback,
-    // so its call only has the fallback as a candidate; the generated overload is what makes it compile.
-    public static IMethodSymbol? GetPackageMarker(SymbolInfo symbolInfo, ITypeSymbol? receiverType)
+    // The Marker() the call binds to: the package fallback, or an overload another assembly generated —
+    // extension lookup stops at the nearest namespace, so a base type's overload in the caller's namespace
+    // hides the global fallback. A ref struct cannot be a type argument of the generic fallback, so its call
+    // only has the fallback as a candidate; the generated overload is what makes it compile.
+    public static IMethodSymbol? GetMarker(SymbolInfo symbolInfo, ITypeSymbol? receiverType)
     {
         if (symbolInfo.Symbol is IMethodSymbol method)
-            return IsPackageMethod(method) ? method : null;
+            return IsMarker(method) ? method : null;
 
         if (receiverType is not { IsRefLikeType: true }) return null;
 
-        return symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault(IsPackageMethod);
+        return symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault(IsMarker);
     }
+
+    public static bool IsMarker(IMethodSymbol? method) =>
+        method is { Name: "Marker" } && (IsPackageMethod(method) || IsGeneratedOverload(method));
 
     // The member that owns the call: lambdas and local functions belong to the member they are written in.
     public static ISymbol? FindEnclosingMember(ISymbol? enclosing)
@@ -66,6 +71,9 @@ internal static class MarkerCallRules
     public static int GetCallerLine(InvocationExpressionSyntax invocation) =>
         invocation.SyntaxTree.GetMappedLineSpan(invocation.ArgumentList.OpenParenToken.Span).StartLinePosition.Line + 1;
 
+    public static int GetCallerColumn(InvocationExpressionSyntax invocation) =>
+        invocation.SyntaxTree.GetMappedLineSpan(invocation.ArgumentList.OpenParenToken.Span).StartLinePosition.Character;
+
     // Why a Marker() call written in a member of type gets no marker, or null when it gets one.
     public static string? GetUnsupportedReason(
         InvocationExpressionSyntax invocation,
@@ -74,6 +82,12 @@ internal static class MarkerCallRules
         SemanticModel model,
         CancellationToken ct)
     {
+        if (model.GetSymbolInfo(access.Expression, ct).Symbol is ITypeSymbol)
+            return "it is called as a static method — call it as an extension method: this.Marker()";
+
+        if (access.Name is GenericNameSyntax)
+            return "it passes type arguments — call Marker() without them";
+
         if (invocation.ArgumentList.Arguments.Count > 0)
             return "it passes an argument, but the line must come from [CallerLineNumber] — call Marker() without arguments";
 

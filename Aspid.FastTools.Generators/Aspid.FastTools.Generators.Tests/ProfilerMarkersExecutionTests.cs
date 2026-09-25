@@ -273,7 +273,7 @@ public class ProfilerMarkersExecutionTests
                 public class Foo
                 {
                     public void A() { using var _ = this.Marker().WithName($"Br{{ace}}"); /*a*/ }
-                    public void B() { using var _ = this.Marker().WithName("Line\u2028Sep"); /*b*/ }
+                    public void B() { using var _ = this.Marker().WithName("Line\u2028Sep\u2029Par\u0085Next"); /*b*/ }
                 }
 
                 public static class Probe { public static void Run() { new Foo().A(); new Foo().B(); } }
@@ -283,7 +283,7 @@ public class ProfilerMarkersExecutionTests
         Assert.Equal(new[]
         {
             $"Foo.Br{{ace}} ({LineOf(source, "a")})",
-            $"Foo.Line\u2028Sep ({LineOf(source, "b")})",
+            $"Foo.Line\u2028Sep\u2029Par\u0085Next ({LineOf(source, "b")})",
         }, Run(source));
     }
 
@@ -356,7 +356,7 @@ public class ProfilerMarkersExecutionTests
     }
 
     [Fact]
-    public void PrivateNestedTypeDerivedFromMarkedBase_BindsToFallback()
+    public void PrivateNestedTypeDerivedFromMarkedBase_OpensNothing()
     {
         const string source = """
             namespace Sample
@@ -377,9 +377,128 @@ public class ProfilerMarkersExecutionTests
             }
             """;
 
-        // Popup gets no overload of its own; the generic fallback is a better match than ViewBase's,
-        // so Popup's call opens nothing instead of whatever ViewBase marker sits on its line.
+        // Popup gets no overload of its own, and extension lookup finds ViewBase's in the same namespace
+        // before the global fallback: the call opens nothing unless a ViewBase call shares its line (AFT0010 warns).
         Assert.Equal(new[] { $"ViewBase.Show ({LineOf(source, "base")})" }, Run(source));
+    }
+
+    [Fact]
+    public void GenericTypeArguments_AreNamedLikeCSharp()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class O<T> { public class N { } public class J<U> { } }
+
+                public class Foo<T> { public void A() { using var _ = this.Marker(); /*a*/ } }
+
+                public static class Probe
+                {
+                    public static void Run()
+                    {
+                        new Foo<O<int>.N>().A();
+                        new Foo<O<string>.N>().A();
+                        new Foo<O<int>.J<string>>().A();
+                        new Foo<int[]>().A();
+                        new Foo<System.Collections.Generic.Dictionary<int, string>.KeyCollection>().A();
+                    }
+                }
+            }
+            """;
+
+        var line = LineOf(source, "a");
+        Assert.Equal(new[]
+        {
+            $"Foo<O<Int32>.N>.A ({line})",
+            $"Foo<O<String>.N>.A ({line})",
+            $"Foo<O<Int32>.J<String>>.A ({line})",
+            $"Foo<Int32[]>.A ({line})",
+            $"Foo<Dictionary<Int32, String>.KeyCollection>.A ({line})",
+        }, Run(source));
+    }
+
+    [Fact]
+    public void TypeNestedInGenericType_AndItsGenericSibling_OpenTheirOwnMarkers()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Outer<T>
+                {
+                    public class Inner { public void Get() { using var _ = this.Marker(); /*inner*/ } }
+                    public class Inner<U> { public void Get() { using var _ = this.Marker(); /*generic*/ } }
+                }
+
+                public static class Probe
+                {
+                    public static void Run()
+                    {
+                        new Outer<int>.Inner().Get();
+                        new Outer<int>.Inner<string>().Get();
+                    }
+                }
+            }
+            """;
+
+        Assert.Equal(new[]
+        {
+            $"Inner.Get ({LineOf(source, "inner")})",
+            $"Inner<String>.Get ({LineOf(source, "generic")})",
+        }, Run(source));
+    }
+
+    [Fact]
+    public void ExplicitInterfaceMembers_UseTheInterfaceMemberName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public interface IFoo { void Run(); int Value { get; } event System.Action Changed; }
+
+                public class Foo : IFoo
+                {
+                    void IFoo.Run() { using var _ = this.Marker(); /*run*/ }
+                    int IFoo.Value { get { using var _ = this.Marker(); /*value*/ return 0; } }
+                    event System.Action IFoo.Changed { add { using var _ = this.Marker(); /*add*/ } remove { } }
+                }
+
+                public static class Probe
+                {
+                    public static void Run()
+                    {
+                        IFoo foo = new Foo();
+                        foo.Run();
+                        _ = foo.Value;
+                        foo.Changed += null;
+                    }
+                }
+            }
+            """;
+
+        Assert.Equal(new[]
+        {
+            $"Foo.Run ({LineOf(source, "run")})",
+            $"Foo.Value ({LineOf(source, "value")})",
+            $"Foo.Changed ({LineOf(source, "add")})",
+        }, Run(source));
+    }
+
+    [Fact]
+    public void WithNameWithInterpolationHole_KeepsTheMemberName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public void Run(int x) { using var _ = this.Marker().WithName($"X{x}"); /*a*/ }
+                }
+
+                public static class Probe { public static void Run() => new Foo().Run(1); }
+            }
+            """;
+
+        Assert.Equal(new[] { $"Foo.Run ({LineOf(source, "a")})" }, Run(source));
     }
 
     [Fact]

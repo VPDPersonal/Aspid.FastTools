@@ -68,6 +68,23 @@ public class ProfilerMarkersTypeShapeTests
         """);
 
     [Fact]
+    public void EveryConstraintKind_Compiles() => AssertCompilesAndBinds("""
+        #nullable enable
+        namespace Sample
+        {
+            public interface IUnit { }
+
+            public class A<T> where T : class?, new() { public void Run() { using var _ = this.Marker(); } }
+            public class B<T> where T : struct { public void Run() { using var _ = this.Marker(); } }
+            public class C<T> where T : unmanaged { public void Run() { using var _ = this.Marker(); } }
+            public class D<T> where T : notnull { public void Run() { using var _ = this.Marker(); } }
+            public class E<T, U> where T : IUnit, U where U : class { public void Run() { using var _ = this.Marker(); } }
+            public struct F<T> where T : System.IComparable<T> { public void Run() { using var _ = this.Marker(); } }
+            public class G<T> where T : G<T> { public void Run() { using var _ = this.Marker(); } }
+        }
+        """);
+
+    [Fact]
     public void StaticClass_GetsNoOverloadAndCompiles()
     {
         var run = GeneratorTestHost.RunProfilerMarkers("""
@@ -189,5 +206,34 @@ public class ProfilerMarkersTypeShapeTests
             .ToArray();
 
         Assert.Equal(new[] { "__ScreenProfilerMarkerExtensions", "ProfilerMarkerExtensionsForGenerator" }, calls);
+    }
+
+    [Fact]
+    public void DerivedTypeInTheSameNamespaceOfAnotherAssembly_GetsItsOwnOverload()
+    {
+        var stubs = GeneratorTestHost.EmitStubsReference();
+        var library = GeneratorTestHost.EmitReference("""
+            [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("TestCompilation")]
+
+            namespace Game
+            {
+                public class Base { public void Show() { using var _ = this.Marker(); } }
+                public class GBase<T> { public void Show() { using var _ = this.Marker(); } }
+            }
+            """, "Lib", stubs);
+
+        // Extension lookup meets Lib's overloads in namespace Game before the global fallback,
+        // so these types must get overloads of their own.
+        var run = GeneratorTestHost.RunProfilerMarkers(new[] { """
+            namespace Game
+            {
+                public class Derived : Base { public void Open() { using var _ = this.Marker(); } }
+                public class Closed : GBase<int> { public void Open() { using var _ = this.Marker(); } }
+                public class Open<U> : GBase<U> { public void Run() { using var _ = this.Marker(); } }
+            }
+            """ }, references: new[] { stubs, library }, includeStubs: false);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
     }
 }

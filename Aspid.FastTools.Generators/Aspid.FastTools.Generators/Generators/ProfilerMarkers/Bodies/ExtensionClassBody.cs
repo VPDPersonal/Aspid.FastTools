@@ -39,7 +39,7 @@ internal static class ExtensionClassBody
             var calls = typeGroup
                 .OrderBy(static call => call.Line)
                 .ThenBy(static call => call.FilePath, StringComparer.Ordinal)
-                .ThenBy(static call => call.Position)
+                .ThenBy(static call => call.Column)
                 .GroupBy(static call => call.Line)
                 .Select(static line => line.First())
                 .ToImmutableArray();
@@ -123,21 +123,37 @@ internal static class ExtensionClassBody
             .AppendLine();
     }
 
-    // Formats typeof(T) the way C# writes it, so List<int> and List<string> get different marker names.
+    // Formats typeof(T) the way C# writes it, so List<int> and List<string>, or Outer<int>.Inner and
+    // Outer<string>.Inner, get different marker names. A nested type's arguments include its declaring types'.
     private static CodeWriter AppendTypeNameHelper(this CodeWriter code, GeneratedNames names) =>
         code.AppendLine($"[{ProfilerMarkerGeneratedCode}]")
             .AppendLine($"private static string {names.TypeName}(global::System.Type type)")
             .BeginBlock()
+            .AppendLine("if (type.IsArray)")
+            .AppendLine($"    return {names.TypeName}(type.GetElementType()) + \"[\" + new string(',', type.GetArrayRank() - 1) + \"]\";")
+            .AppendLine()
+            .AppendLine("var arguments = type.IsGenericType ? type.GetGenericArguments() : global::System.Type.EmptyTypes;")
+            .AppendLine($"return {names.TypeName}(type, arguments, arguments.Length);")
+            .EndBlock()
+            .AppendLine()
+            .AppendLine($"[{ProfilerMarkerGeneratedCode}]")
+            .AppendLine($"private static string {names.TypeName}(global::System.Type type, global::System.Type[] arguments, int count)")
+            .BeginBlock()
             .AppendLine("var name = type.Name;")
             .AppendLine("var tick = name.IndexOf('`');")
-            .AppendLine("if (tick < 0) return name;")
+            .AppendLine("var own = tick < 0 ? 0 : int.Parse(name.Substring(tick + 1), global::System.Globalization.CultureInfo.InvariantCulture);")
+            .AppendLine("if (tick >= 0) name = name.Substring(0, tick);")
             .AppendLine()
-            .AppendLine("var arguments = type.GetGenericArguments();")
-            .AppendLine("var names = new string[arguments.Length];")
-            .AppendLine("for (var i = 0; i < arguments.Length; i++)")
-            .AppendLine($"    names[i] = {names.TypeName}(arguments[i]);")
+            .AppendLine("if (type.IsNested && !type.IsGenericParameter)")
+            .AppendLine($"    name = {names.TypeName}(type.DeclaringType, arguments, count - own) + \".\" + name;")
             .AppendLine()
-            .AppendLine("return name.Substring(0, tick) + \"<\" + string.Join(\", \", names) + \">\";")
+            .AppendLine("if (own == 0) return name;")
+            .AppendLine()
+            .AppendLine("var names = new string[own];")
+            .AppendLine("for (var i = 0; i < own; i++)")
+            .AppendLine($"    names[i] = {names.TypeName}(arguments[count - own + i]);")
+            .AppendLine()
+            .AppendLine("return name + \"<\" + string.Join(\", \", names) + \">\";")
             .EndBlock();
 
     private static CodeWriter AppendMarker(

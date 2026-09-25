@@ -168,6 +168,100 @@ class Foo
 class Outer { private class Inner { void Run() { this.{|#0:Marker|}(); } } }",
         Unsupported(0, Inaccessible("Outer.Inner")));
 
+    // Stands in for the generator's output, so calls can bind to a generated overload without running it.
+    private const string GeneratedBase = @"
+namespace N
+{
+    [System.CodeDom.Compiler.GeneratedCode(""Aspid.FastTools.Generators.ProfilerMarkersGenerator"", ""1.0.0"")]
+    static class __BaseProfilerMarkerExtensions
+    {
+        public static Unity.Profiling.ProfilerMarker.AutoScope Marker(this Base __instance, [System.Runtime.CompilerServices.CallerLineNumber] int __line = -1) => default;
+    }
+
+    public class Base { void Show() { using var _ = this.Marker(); } }
+}";
+
+    [Fact]
+    public Task PrivateNestedTypeBindingToBaseOverload_Reports() => Verify(GeneratedBase + @"
+namespace N
+{
+    class Host { private class Popup : Base { void Open() { using var _ = this.{|#0:Marker|}(); } } }
+}",
+        Unsupported(0, Inaccessible("N.Host.Popup")));
+
+    [Fact]
+    public Task MethodGroupOfGeneratedOverload_Reports() => Verify(GeneratedBase + @"
+namespace N
+{
+    class Derived : Base
+    {
+        void Run() { System.Func<int, Unity.Profiling.ProfilerMarker.AutoScope> f = this.{|#0:Marker|}; }
+    }
+}",
+        Unsupported(0, "it is used as a method group, so no call passes its line"));
+
+    [Fact]
+    public Task ConditionalAccess_Reports() => Verify(@"
+class Foo { void Run() { using var _ = this?.{|#0:Marker|}(); } }",
+        Unsupported(0, "it uses '?.' — call this.Marker() directly"));
+
+    [Fact]
+    public Task TypeArguments_Reports() => Verify(@"
+class Foo { void Run() { using var _ = this.{|#0:Marker<Foo>|}(); } }",
+        Unsupported(0, "it passes type arguments — call Marker() without them"));
+
+    [Fact]
+    public Task StaticCallForm_Reports() => Verify(@"
+class Foo { void Run() { using var _ = ProfilerMarkerExtensionsForGenerator.{|#0:Marker|}(this); } }",
+        Unsupported(0, "it is called as a static method — call it as an extension method: this.Marker()"));
+
+    [Fact]
+    public Task InitializersOfPrivateNestedType_Report() => Verify(@"
+class Outer
+{
+    private class Inner
+    {
+        static readonly int Field = Use(new Inner().{|#0:Marker|}());
+        static int Property { get; } = Use(new Inner().{|#1:Marker|}());
+        static int Use(Unity.Profiling.ProfilerMarker.AutoScope scope) => 0;
+    }
+}",
+        Unsupported(0, Inaccessible("Outer.Inner")),
+        Unsupported(1, Inaccessible("Outer.Inner")));
+
+    [Fact]
+    public Task DeeplyNestedShadowedTypeParameter_Reports() => Verify(@"
+public class A<T>
+{
+    public class B<U>
+    {
+#pragma warning disable CS0693
+        public class C<T> { void Run() { using var _ = this.{|#0:Marker|}(); } }
+#pragma warning restore CS0693
+    }
+}",
+        Unsupported(0, Shadowed("A<T>.B<U>.C<T>")));
+
+    [Fact]
+    public Task LookalikeClassInANamespace_NoDiagnostic() => Verify(@"
+namespace Other
+{
+    static class ProfilerMarkerExtensionsForGenerator { public static int Marker(this object instance) => 0; }
+
+    class Outer { private class Inner { void Run() { this.Marker(); } } }
+}");
+
+    [Fact]
+    public Task UnreadLocalScope_Reports() => Verify(@"
+class Foo
+{
+    void Unread() { var _ = this.{|#0:Marker|}(); }
+    void Disposed() { var scope = this.Marker(); scope.Dispose(); }
+    void Passed() { var scope = this.Marker(); Use(scope); }
+    static void Use(Unity.Profiling.ProfilerMarker.AutoScope scope) { }
+}",
+        Discarded(0));
+
     [Fact]
     public Task UnrelatedMarkerMethod_NoDiagnostic() => Verify(@"
 class Outer

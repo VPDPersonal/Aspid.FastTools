@@ -21,6 +21,7 @@ namespace Aspid.FastTools.Analyzers;
 public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
 {
     private const string MethodGroupReason = "it is used as a method group, so no call passes its line";
+    private const string ConditionalAccessReason = "it uses '?.' — call this.Marker() directly";
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule, DiagnosticRules.ProfilerMarkerScopeDiscardedRule);
@@ -36,16 +37,25 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeInvocation(SyntaxNodeAnalysisContext context)
     {
         var invocation = (InvocationExpressionSyntax)context.Node;
-        if (invocation.Expression is not MemberAccessExpressionSyntax { Name: IdentifierNameSyntax { Identifier.ValueText: "Marker" } name } access)
-            return;
-
         var model = context.SemanticModel;
         var ct = context.CancellationToken;
 
         // The package fallback or a generated overload; a call with the wrong arguments has it only as a candidate.
         var symbolInfo = model.GetSymbolInfo(invocation, ct);
-        var method = symbolInfo.Symbol as IMethodSymbol ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault(IsMarker);
-        if (!IsMarker(method)) return;
+        var method = symbolInfo.Symbol as IMethodSymbol ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault(MarkerCallRules.IsMarker);
+
+        // this?.Marker() is a member binding the generator never sees.
+        if (invocation.Expression is MemberBindingExpressionSyntax { Name.Identifier.ValueText: "Marker" } binding)
+        {
+            if (MarkerCallRules.IsMarker(method))
+                context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule, binding.Name.GetLocation(), ConditionalAccessReason));
+            return;
+        }
+
+        if (invocation.Expression is not MemberAccessExpressionSyntax { Name: SimpleNameSyntax { Identifier.ValueText: "Marker" } name } access)
+            return;
+
+        if (!MarkerCallRules.IsMarker(method)) return;
 
         if (MarkerCallRules.FindEnclosingMember(model.GetEnclosingSymbol(invocation.SpanStart, ct)) is not { ContainingType: { } type })
             return;
@@ -64,17 +74,14 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
     private static void AnalyzeMethodGroup(SyntaxNodeAnalysisContext context)
     {
         var access = (MemberAccessExpressionSyntax)context.Node;
-        if (access.Name is not IdentifierNameSyntax { Identifier.ValueText: "Marker" } name) return;
+        if (access.Name is not SimpleNameSyntax { Identifier.ValueText: "Marker" } name) return;
         if (access.Parent is InvocationExpressionSyntax invocation && invocation.Expression == access) return;
 
-        if (context.SemanticModel.GetSymbolInfo(access, context.CancellationToken).Symbol is not IMethodSymbol method || !IsMarker(method))
+        if (context.SemanticModel.GetSymbolInfo(access, context.CancellationToken).Symbol is not IMethodSymbol method || !MarkerCallRules.IsMarker(method))
             return;
 
         context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule, name.GetLocation(), MethodGroupReason));
     }
-
-    private static bool IsMarker(IMethodSymbol? method) =>
-        method is { Name: "Marker" } && (MarkerCallRules.IsPackageMethod(method) || MarkerCallRules.IsGeneratedOverload(method));
 
     // this.Marker(), or this.Marker().WithName("...") when the name is chained on it.
     private static SyntaxNode WithNameChain(InvocationExpressionSyntax invocation)
@@ -88,14 +95,31 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
             : outer;
     }
 
-    // A scope used as a statement or assigned to a discard is never disposed.
+    // A scope used as a statement, assigned to a discard, or kept in a local nothing reads is never disposed.
     private static bool IsDiscarded(SyntaxNode scope, SemanticModel model, SyntaxNodeAnalysisContext context)
     {
         var parent = model.GetOperation(scope, context.CancellationToken)?.Parent;
         while (parent is IConversionOperation or IParenthesizedOperation)
             parent = parent.Parent;
 
-        return parent is IExpressionStatementOperation
-            or ISimpleAssignmentOperation { Target: IDiscardOperation };
+        return parent switch
+        {
+            IExpressionStatementOperation => true,
+            ISimpleAssignmentOperation { Target: IDiscardOperation } => true,
+            IVariableInitializerOperation { Parent: IVariableDeclaratorOperation declarator } => IsUnusedLocal(declarator, model, context),
+            _ => false,
+        };
+    }
+
+    private static bool IsUnusedLocal(IVariableDeclaratorOperation declarator, SemanticModel model, SyntaxNodeAnalysisContext context)
+    {
+        // `using var _ = ...` disposes the local itself.
+        if (declarator.Syntax.Parent?.Parent is LocalDeclarationStatementSyntax { UsingKeyword.RawKind: not 0 }) return false;
+        if (declarator.Syntax.Parent?.Parent is not LocalDeclarationStatementSyntax { Parent: { } body }) return false;
+
+        var local = declarator.Symbol;
+        return !body.DescendantNodes().OfType<IdentifierNameSyntax>().Any(identifier =>
+            identifier.Identifier.ValueText == local.Name
+            && SymbolEqualityComparer.Default.Equals(model.GetSymbolInfo(identifier, context.CancellationToken).Symbol, local));
     }
 }

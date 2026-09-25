@@ -38,7 +38,7 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
 
         var model = context.SemanticModel;
         var receiverType = model.GetTypeInfo(access.Expression, ct).Type;
-        if (MarkerCallRules.GetPackageMarker(model.GetSymbolInfo(invocation, ct), receiverType) is null) return null;
+        if (MarkerCallRules.GetMarker(model.GetSymbolInfo(invocation, ct), receiverType) is null) return null;
 
         if (MarkerCallRules.FindEnclosingMember(model.GetEnclosingSymbol(invocation.SpanStart, ct)) is not { ContainingType: { } type } member)
             return null;
@@ -56,7 +56,7 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             fieldName: $"{markerName}_Marker_Line_{line}",
             label,
             invocation.SyntaxTree.FilePath,
-            invocation.SpanStart);
+            MarkerCallRules.GetCallerColumn(invocation));
     }
 
     // .WithName("...") chained directly on the call, bound to the package's WithName.
