@@ -24,7 +24,7 @@ URL указывает на последнюю preview-версию; кнопк�
 
 #### [Serializable Type System](02-serializable-types.md)
 
-Сохраняет `System.Type` в компоненте/ассете и даёт выбрать его в инспекторе из совместимых типов.
+Сохраняет <code lang="class-name">System.Type</code> в компоненте/ассете и даёт выбрать его в инспекторе из совместимых типов.
 
 <img src="../Images/serializable-type-quick-start.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
 
@@ -36,13 +36,13 @@ URL указывает на последнюю preview-версию; кнопк�
 
 #### [SerializeReference Selector](03-serialize-reference-selector.md)
 
-Даёт выбрать класс для поля `[SerializeReference]` в инспекторе и переносит совместимые данные при смене класса.
+Даёт выбрать класс для поля <code lang="csharp">[SerializeReference]</code> в инспекторе и переносит совместимые данные при смене класса.
 
 <img src="../Images/aspid_fasttools_serialize_reference_selector.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
 
 #### [SerializeReference Tooling](04-serialize-reference-tooling.md)
 
-Находит потерянные `[SerializeReference]` по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами — вручную, перед сборкой или в CI.
+Находит потерянные <code lang="csharp">[SerializeReference]</code> по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами — вручную, перед сборкой или в CI.
 
 <img src="../Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Восстановление потерянного типа оружия с сохранением данных" width="640" />
 
@@ -78,7 +78,7 @@ new VisualElement()
 
 #### [SerializedProperty Extensions](08-serialized-property-extensions.md)
 
-Записывает значение вместе с `Update` и `Apply` одной цепочкой, а ещё находит тип поля C# и объект, которому это поле принадлежит.
+Записывает значение вместе с <code lang="function">Update</code> и <code lang="function">Apply</code> одной цепочкой, а ещё находит тип поля C# и объект, которому это поле принадлежит.
 
 ```csharp
 manaCost
