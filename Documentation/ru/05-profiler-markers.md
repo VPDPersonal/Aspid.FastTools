@@ -25,6 +25,7 @@
 | Конструктор | `FlockSimulation.Ctor (строка)` |
 | Аксессор свойства `Speed` | `FlockSimulation.Speed (строка)` |
 | Аксессор индексатора | `FlockSimulation.Indexer (строка)` |
+| Аксессор события `Changed` | `FlockSimulation.Changed (строка)` |
 | Лямбда или локальная функция внутри `Step()` | `FlockSimulation.Step (строка)` |
 | Явная реализация `IUpdatable.Tick()` | `FlockSimulation.Tick (строка)` |
 | Метод `Move()` вложенного типа `FlockSimulation.Agent` | `Agent.Move (строка)` |
@@ -68,6 +69,7 @@ public void Step()
     "Aspid.FastTools.Generators.ProfilerMarkersGenerator", "1.0.0")]
 internal static class __FlockSimulationProfilerMarkerExtensions
 {
+#if ENABLE_PROFILER
     private static readonly ProfilerMarker Line_3 =
         new("FlockSimulation.Step (3)");
     private static readonly ProfilerMarker Line_5 =
@@ -76,6 +78,7 @@ internal static class __FlockSimulationProfilerMarkerExtensions
         new("FlockSimulation.Steering.Agent (7)");
     private static readonly ProfilerMarker Line_10 =
         new("FlockSimulation.Integrate (10)");
+#endif
 
     public static ProfilerMarker.AutoScope Marker(
         this FlockSimulation _, [CallerLineNumber] int line = -1)

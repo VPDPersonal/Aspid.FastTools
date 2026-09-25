@@ -25,6 +25,7 @@ Returns the `ProfilerMarker.AutoScope` of the `Type.Method (line)` marker for th
 | Constructor | `FlockSimulation.Ctor (line)` |
 | Accessor of the `Speed` property | `FlockSimulation.Speed (line)` |
 | Accessor of an indexer | `FlockSimulation.Indexer (line)` |
+| Accessor of the `Changed` event | `FlockSimulation.Changed (line)` |
 | Lambda or local function inside `Step()` | `FlockSimulation.Step (line)` |
 | Explicit implementation `IUpdatable.Tick()` | `FlockSimulation.Tick (line)` |
 | Method `Move()` of the nested type `FlockSimulation.Agent` | `Agent.Move (line)` |
@@ -68,6 +69,7 @@ Abridged: without `global::` and the repeated attribute, with shortened field na
     "Aspid.FastTools.Generators.ProfilerMarkersGenerator", "1.0.0")]
 internal static class __FlockSimulationProfilerMarkerExtensions
 {
+#if ENABLE_PROFILER
     private static readonly ProfilerMarker Line_3 =
         new("FlockSimulation.Step (3)");
     private static readonly ProfilerMarker Line_5 =
@@ -76,6 +78,7 @@ internal static class __FlockSimulationProfilerMarkerExtensions
         new("FlockSimulation.Steering.Agent (7)");
     private static readonly ProfilerMarker Line_10 =
         new("FlockSimulation.Integrate (10)");
+#endif
 
     public static ProfilerMarker.AutoScope Marker(
         this FlockSimulation _, [CallerLineNumber] int line = -1)
