@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.CodeAnalysis.Testing;
 using Aspid.FastTools.Analyzers.Descriptions;
 using VerifyCS = Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerVerifier<
     Aspid.FastTools.Analyzers.ProfilerMarkerAnalyzer,
@@ -9,66 +10,163 @@ namespace Aspid.FastTools.Analyzers.Tests;
 
 public class ProfilerMarkerAnalyzerTests
 {
-    // Mirrors the global-namespace class the analyzer matches by name, so the tests need no package reference.
+    // Mirrors the runtime signatures of the global-namespace class the analyzer matches, so the tests need no package reference.
     private const string Stubs = @"
+namespace Unity.Profiling
+{
+    public struct ProfilerMarker
+    {
+        public struct AutoScope : System.IDisposable { public void Dispose() { } }
+    }
+}
+
 public static class ProfilerMarkerExtensionsForGenerator
 {
-    public static int Marker(this object instance) => 0;
+    public static Unity.Profiling.ProfilerMarker.AutoScope Marker<T>(this T instance) => default;
+    public static Unity.Profiling.ProfilerMarker.AutoScope WithName(this in Unity.Profiling.ProfilerMarker.AutoScope marker, string name) => marker;
 }";
 
-    private const string InaccessibleReason =
-        "is private or protected, or nested in such a type, so the generated overload cannot see it — make it internal or public";
+    private static string Inaccessible(string type) =>
+        $"'{type}' is private or protected, or nested in such a type, so the generated overload cannot see it — make it internal or public";
 
-    private const string ShadowedTypeParameterReason =
-        "reuses a type parameter name of a containing type, which the generated overload cannot declare twice — rename it";
+    private static string Shadowed(string type) =>
+        $"'{type}' reuses a type parameter name of a containing type, which the generated overload cannot declare twice — rename it";
 
-    private static Task Verify(string code, params Microsoft.CodeAnalysis.Testing.DiagnosticResult[] expected) =>
+    private static string Receiver(string receiver, string type) =>
+        $"it is called on '{receiver}', not on '{type}' — only calls on an instance of the type they are written in get a marker";
+
+    private const string Argument = "it passes an argument, but the line must come from [CallerLineNumber] — call Marker() without arguments";
+
+    private static Task Verify(string code, params DiagnosticResult[] expected) =>
         VerifyCS.VerifyAnalyzerAsync(code + "\n" + Stubs, expected);
+
+    private static DiagnosticResult Unsupported(int location, string reason) =>
+        VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule).WithLocation(location).WithArguments(reason);
+
+    private static DiagnosticResult Discarded(int location) =>
+        VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerScopeDiscardedRule).WithLocation(location);
 
     [Fact]
     public Task PublicType_NoDiagnostic() => Verify(@"
-class C { void Run() { this.Marker(); } }");
+class C { void Run() { using var _ = this.Marker(); } }");
 
     [Fact]
-    public Task InternalNestedType_NoDiagnostic() => Verify(@"
-class Outer { internal class Inner { void Run() { this.Marker(); } } }");
-
-    [Fact]
-    public Task ProtectedInternalNestedType_NoDiagnostic() => Verify(@"
-class Outer { protected internal class Inner { void Run() { this.Marker(); } } }");
-
-    [Fact]
-    public Task NonGenericTypeNestedInGenericType_NoDiagnostic() => Verify(@"
-class Outer<T> { public class Inner { void Run() { this.Marker(); } } }");
+    public Task SupportedShapes_NoDiagnostic() => Verify(@"
+class Outer { internal class Inner { void Run() { using var _ = this.Marker(); } } }
+class Outer2 { protected internal class Inner { void Run() { using var _ = this.Marker(); } } }
+class Box<T> { public class Inner { void Run() { using var _ = this.Marker(); } } }
+struct S { void Run() { using var _ = this.Marker(); } }
+class F
+{
+    static readonly int Count = Use(new F().Marker());
+    static int Use(Unity.Profiling.ProfilerMarker.AutoScope scope) => 0;
+    void Other(F other) { using var _ = other.Marker(); }
+    void Scoped() { using (this.Marker()) { } }
+    Unity.Profiling.ProfilerMarker.AutoScope Returned() => this.Marker().WithName(""X"");
+}");
 
     [Theory]
     [InlineData("private")]
     [InlineData("protected")]
     [InlineData("private protected")]
     public Task InaccessibleNestedType_Reports(string accessibility) => Verify(
-        "class Outer { " + accessibility + " class Inner { void Run() { this.{|#0:Marker|}(); } } }",
-        VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule)
-            .WithLocation(0)
-            .WithArguments("Outer.Inner", InaccessibleReason));
+        "class Outer { " + accessibility + " class Inner { void Run() { using var _ = this.{|#0:Marker|}(); } } }",
+        Unsupported(0, Inaccessible("Outer.Inner")));
 
     [Fact]
     public Task PublicTypeNestedInPrivateType_Reports() => Verify(@"
-class Outer { private class Middle { public class Inner { void Run() { System.Action a = () => this.{|#0:Marker|}(); } } } }",
-        VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule)
-            .WithLocation(0)
-            .WithArguments("Outer.Middle.Inner", InaccessibleReason));
+class Outer { private class Middle { public class Inner { void Run() { System.Action a = () => { using var _ = this.{|#0:Marker|}(); }; } } } }",
+        Unsupported(0, Inaccessible("Outer.Middle.Inner")));
 
     [Fact]
     public Task NestedTypeParameterShadowingOuter_Reports() => Verify(@"
 class Outer<T>
 {
 #pragma warning disable CS0693
-    public class Inner<T> { void Run() { this.{|#0:Marker|}(); } }
+    public class Inner<T> { void Run() { using var _ = this.{|#0:Marker|}(); } }
 #pragma warning restore CS0693
 }",
-        VerifyCS.Diagnostic(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule)
-            .WithLocation(0)
-            .WithArguments("Outer<T>.Inner<T>", ShadowedTypeParameterReason));
+        Unsupported(0, Shadowed("Outer<T>.Inner<T>")));
+
+    [Fact]
+    public Task DefaultInterfaceMethod_Reports() => Verify(@"
+interface ITickable { void Tick() { using var _ = this.{|#0:Marker|}(); } }",
+        Unsupported(0, "'ITickable' is an interface — call it from the implementing type"));
+
+    [Fact]
+    public Task ReceiverOfAnotherType_Reports() => Verify(@"
+class Bar { }
+class Foo
+{
+    void Run(Bar bar)
+    {
+        using var a = bar.{|#0:Marker|}();
+        using var b = ((object)this).{|#1:Marker|}();
+    }
+}
+static class FooExtensions
+{
+    static void Measure(this Foo foo) { using var _ = foo.{|#2:Marker|}(); }
+}",
+        Unsupported(0, Receiver("Bar", "Foo")),
+        Unsupported(1, Receiver("object", "Foo")),
+        Unsupported(2, Receiver("Foo", "FooExtensions")));
+
+    [Fact]
+    public Task ExpressionTree_Reports() => Verify(@"
+class Foo
+{
+    System.Linq.Expressions.Expression<System.Func<Unity.Profiling.ProfilerMarker.AutoScope>> Get() => () => this.{|#0:Marker|}();
+}",
+        Unsupported(0, "it is inside an expression tree"));
+
+    [Fact]
+    public Task Argument_OnFallback_Reports() => Verify(@"
+class Foo { void Run() { using var _ = this.{|#0:Marker|}{|#1:(5)|}; } }",
+        Unsupported(0, Argument),
+        DiagnosticResult.CompilerError("CS1501").WithLocation(0).WithArguments("Marker", "1"));
+
+    [Fact]
+    public Task Argument_OnGeneratedOverload_Reports() => Verify(@"
+[System.CodeDom.Compiler.GeneratedCode(""Aspid.FastTools.Generators.ProfilerMarkersGenerator"", ""1.0.0"")]
+static class __FooProfilerMarkerExtensions
+{
+    public static Unity.Profiling.ProfilerMarker.AutoScope Marker(this Foo __instance, [System.Runtime.CompilerServices.CallerLineNumber] int __line = -1) => default;
+}
+class Foo
+{
+    void Run() { using var _ = this.Marker(); }
+    void Other() { using var _ = this.{|#0:Marker|}(line: 5); }
+}".Replace("(line: 5)", "(__line: 5)"),
+        Unsupported(0, Argument));
+
+    [Fact]
+    public Task MethodGroup_Reports() => Verify(@"
+class Foo
+{
+    void Run()
+    {
+        System.Func<Unity.Profiling.ProfilerMarker.AutoScope> f = this.{|#0:Marker|};
+    }
+}",
+        Unsupported(0, "it is used as a method group, so no call passes its line"));
+
+    [Fact]
+    public Task DiscardedScope_Reports() => Verify(@"
+class Foo
+{
+    void Statement() { this.{|#0:Marker|}(); }
+    void Discard() { _ = this.{|#1:Marker|}(); }
+    void ExpressionBody() => this.{|#2:Marker|}();
+    void Named() { this.{|#3:Marker|}().WithName(""X""); }
+    void Lambda() { System.Action a = () => this.{|#4:Marker|}(); }
+}",
+        Discarded(0), Discarded(1), Discarded(2), Discarded(3), Discarded(4));
+
+    [Fact]
+    public Task DiscardedScopeOfUnsupportedCall_ReportsOnlyUnsupported() => Verify(@"
+class Outer { private class Inner { void Run() { this.{|#0:Marker|}(); } } }",
+        Unsupported(0, Inaccessible("Outer.Inner")));
 
     [Fact]
     public Task UnrelatedMarkerMethod_NoDiagnostic() => Verify(@"

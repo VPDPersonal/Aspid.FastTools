@@ -29,6 +29,34 @@ public class IncrementalCacheTests
         AssertCachedAfterUnrelatedEdit(targetSource, new ProfilerMarkersGenerator());
     }
 
+    [Theory]
+    [InlineData("this.Marker().WithName(\"A\")", "this.Marker().WithName(\"B\")", "Foo.B (5)")]
+    [InlineData("this.Marker()", "\n        this.Marker()", "Foo.Run (6)")]
+    public void ProfilerMarkers_RelevantEdit_ChangesOutput(string before, string after, string expectedLabel)
+    {
+        static string Source(string call) => $$"""
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public void Run() { using var _ = {{call}}; }
+                }
+            }
+            """;
+
+        var stubs = new[] { GeneratorTestHost.ProfilerMarkerStubs };
+        GeneratorDriver driver = CSharpGeneratorDriver.Create(new ProfilerMarkersGenerator());
+
+        driver = driver.RunGenerators(MakeCompilation(Source(before), "// unrelated", stubs));
+        var first = driver.GetRunResult().Results.Single().GeneratedSources.Single().SourceText.ToString();
+
+        driver = driver.RunGenerators(MakeCompilation(Source(after), "// unrelated", stubs));
+        var second = driver.GetRunResult().Results.Single().GeneratedSources.Single().SourceText.ToString();
+
+        Assert.DoesNotContain($"\"{expectedLabel}\"", first);
+        Assert.Contains($"\"{expectedLabel}\"", second);
+    }
+
     private static void AssertCachedAfterUnrelatedEdit(string targetSource, IIncrementalGenerator generator)
     {
         var stubs = new[] { GeneratorTestHost.ProfilerMarkerStubs };

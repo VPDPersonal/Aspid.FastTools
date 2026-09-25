@@ -81,8 +81,16 @@ public static class DiagnosticRules
 
     public static readonly Descriptor ProfilerMarkerUnsupportedTypeRule = new(
         id: "AFT0010",
-        title: "this.Marker() in a type the profiler-marker generator cannot support",
-        messageFormat: "this.Marker() opens no profiler marker: '{0}' {1}",
+        title: "this.Marker() call the profiler-marker generator cannot support",
+        messageFormat: "this.Marker() opens no profiler marker: {0}",
+        category: UsageCategory,
+        defaultSeverity: Severity.Warning,
+        isEnabledByDefault: true);
+
+    public static readonly Descriptor ProfilerMarkerScopeDiscardedRule = new(
+        id: "AFT0011",
+        title: "this.Marker() scope is never disposed",
+        messageFormat: "The scope of this.Marker() is discarded, so the sample it begins never ends — write 'using var _ = this.Marker();'",
         category: UsageCategory,
         defaultSeverity: Severity.Warning,
         isEnabledByDefault: true);

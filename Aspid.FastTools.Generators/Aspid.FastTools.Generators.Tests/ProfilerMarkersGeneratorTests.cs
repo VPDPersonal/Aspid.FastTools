@@ -76,7 +76,7 @@ public class ProfilerMarkersGeneratorTests
     }
 
     [Fact]
-    public void TwoCallsOnSameLine_DedupesFieldNames()
+    public void TwoCallsOnSameLine_ShareTheFirstMarker()
     {
         const string source = """
             namespace Sample
@@ -85,22 +85,20 @@ public class ProfilerMarkersGeneratorTests
                 {
                     public void Run() { this.Marker(); this.Marker(); }
                 }
+
+                public static class Probe { public static void Run() => new Foo().Run(); }
             }
             """;
 
         var run = GeneratorTestHost.RunProfilerMarkers(source);
-        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+        var text = GeneratorTestHost.GeneratedText(run);
 
-        // Two distinct fields even though they're on the same source line.
+        // [CallerLineNumber] cannot tell the calls apart, so the second one gets no field of its own.
         var fieldDeclarations = Regex.Matches(
             text, @"static\s+readonly\s+global::Unity\.Profiling\.ProfilerMarker\s+(\w+)\s*=");
-        Assert.Equal(2, fieldDeclarations.Count);
+        Assert.Single(fieldDeclarations);
 
-        var name1 = fieldDeclarations[0].Groups[1].Value;
-        var name2 = fieldDeclarations[1].Groups[1].Value;
-        Assert.NotEqual(name1, name2);
-
-        GeneratorTestHost.AssertNoErrors(run);
+        Assert.Equal(new[] { "Foo.Run (5)", "Foo.Run (5)" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
     }
 
     [Fact]
@@ -229,9 +227,9 @@ public class ProfilerMarkersGeneratorTests
         var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
 
         // Braces in the label must not be treated as interpolation holes on the generic path,
-        // yet the type name must still be resolved per closed instantiation via typeof(T).Name.
+        // yet the type name must still be resolved per closed instantiation via typeof(T).
         Assert.Contains("Brace", text);
-        Assert.Contains("typeof(T).Name", text);
+        Assert.Contains("__TypeName(typeof(T))", text);
 
         GeneratorTestHost.AssertNoErrors(run);
     }
@@ -528,18 +526,22 @@ public class ProfilerMarkersGeneratorTests
             {
                 public class Foo
                 {
-                    private static readonly int _count = ((object)null).Marker() is var _ ? 1 : 0;
+                    public static readonly int _count = Count(new Foo().Marker());
+
+                    private static int Count(Unity.Profiling.ProfilerMarker.AutoScope scope) => 1;
                 }
+
+                public static class Probe { public static int Run() => Foo._count; }
             }
             """;
 
         var run = GeneratorTestHost.RunProfilerMarkers(source);
-        GeneratorTestHost.AssertNoErrors(run);
         var generated = run.RunResult.Results[0].GeneratedSources;
 
         Assert.Single(generated);
-        var text = generated[0].SourceText.ToString();
-        Assert.Contains("_count_Marker_Line_", text);
+        Assert.Contains("_count_Marker_Line_", generated[0].SourceText.ToString());
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+        Assert.Equal(new[] { "Foo._count (5)" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
     }
 
     [Theory]
@@ -665,8 +667,8 @@ public class ProfilerMarkersGeneratorTests
 
         Assert.Contains("Marker<T, U>(this global::Sample.Outer<T>.Inner<U>", text);
         // Only the nested type's own parameters appear in the label.
-        Assert.Contains("typeof(U).Name", text);
-        Assert.DoesNotContain("typeof(T).Name", text);
+        Assert.Contains("__TypeName(typeof(U))", text);
+        Assert.DoesNotContain("__TypeName(typeof(T))", text);
 
         GeneratorTestHost.AssertNoErrors(run);
         GeneratorTestHost.AssertCallsBindToGenerated(run);

@@ -35,6 +35,11 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- The generator's rules for which Marker() calls get a marker; one copy, so AFT0010 always agrees with it. -->
+        <Compile Include="..\..\..\Aspid.FastTools.Generators\Aspid.FastTools.Generators\Generators\ProfilerMarkers\MarkerCallRules.cs" Link="ProfilerMarkers\MarkerCallRules.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
       <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
       <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
     </ItemGroup>
