@@ -8,20 +8,22 @@ using Unity.Profiling;
 public static class ProfilerMarkerExtensionsForGenerator
 {
     /// <summary>
-    /// Opens a <see cref="ProfilerMarker"/> scope unique to this call site.
+    /// Opens the <see cref="ProfilerMarker"/> of this call site, named <c>Type.Member (line)</c>.
     /// </summary>
     /// <param name="instance">The instance the scope is opened on; its value is never read.</param>
-    /// <returns>An empty scope, since this body never runs.</returns>
+    /// <typeparam name="T">The type of <paramref name="instance"/>; generic, so a struct is not boxed.</typeparam>
+    /// <returns>An empty scope: this overload runs only when the call gets no marker.</returns>
     /// <remarks>
-    /// For every type that calls this method the generator emits a closer overload that overload
-    /// resolution picks instead, holding one <see cref="ProfilerMarker"/> per enclosing type, member and line.
+    /// For every type that calls this method on its own instance the generator emits a closer overload that
+    /// overload resolution picks instead, holding one <see cref="ProfilerMarker"/> per line of that type.
+    /// This overload runs only for calls the generator cannot support; analyzer <c>AFT0010</c> reports them.
     /// </remarks>
-    public static ProfilerMarker.AutoScope Marker(this object instance) => default;
+    public static ProfilerMarker.AutoScope Marker<T>(this T instance) => default;
 
     /// <summary>
-    /// Names the <see cref="ProfilerMarker"/> that the generator creates for the preceding <see cref="Marker(object)"/> call.
+    /// Names the <see cref="ProfilerMarker"/> that the generator creates for the preceding <see cref="Marker{T}(T)"/> call.
     /// </summary>
-    /// <param name="marker">The scope returned by <see cref="Marker(object)"/>.</param>
+    /// <param name="marker">The scope returned by <see cref="Marker{T}(T)"/>.</param>
     /// <param name="name">
     /// The text replacing the member part of the marker name. Read from the source at compile time,
     /// so it must be a string literal or an interpolated string without holes; anything else leaves the name untouched.
