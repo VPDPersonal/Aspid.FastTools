@@ -28,8 +28,7 @@
 Правило покрывает свойства и события всех элементов — от `VisualElement` до `MultiColumnTreeView`; полный список — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements). Исключения:
 
 - `EnumField` и `EnumFlagsField` (в редакторе) получают `Initialize` вместо `Init`;
-- `Button.SetClickable` принимает и `Clickable`, и `Action`;
-- `IMGUIContainer.MarkDirtyLayout` сохраняет своё имя.
+- `Button.SetClickable` принимает и `Clickable`, и `Action`.
 
 `IsFocused()` проверяет фокус:
 
