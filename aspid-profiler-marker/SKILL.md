@@ -31,10 +31,10 @@ across `yield return` or `await` measures only the part before it — put the ma
 
 `Type.Member (line)`, where `line` is the line of the `Marker()` call:
 
-- constructor -> `Ctor`; static constructor -> `StaticCtor`; property or indexer accessor -> property name / `Indexer`;
-  event accessor -> event name; field or auto-property initializer -> field / property name; operator -> `op_Addition`
-  and the like; lambda or local function -> the enclosing member; explicit interface implementation -> the interface
-  member name;
+- constructor -> `Ctor`; static constructor -> `StaticCtor`; finalizer -> `Finalize`; property or indexer accessor ->
+  property name / `Indexer`; event accessor -> event name; field or auto-property initializer -> field / property
+  name; operator -> `op_Addition` and the like; lambda or local function -> the enclosing member; explicit interface
+  implementation -> the interface member name;
 - nested type -> only the innermost type name (`Agent.Move (line)`), so same-named types in different namespaces or
   outer types show the same name;
 - generic class -> one marker per closed type (`Worker<List<Int32>>.Run (line)`); generic struct -> one marker for all
@@ -50,9 +50,12 @@ hand-written `static readonly ProfilerMarker`.
 - **Only the type's own instance.** A call gets a marker only when its receiver has the type the call is written
   in — `this`, or another instance of the same type. `other.Marker()` on another type, `((Base)this).Marker()` and
   calls in static classes open nothing; so do default interface methods: call it from the implementing type.
-- **Always `using`.** `this.Marker();` as a statement or `_ = this.Marker();` begins a sample that never ends — warning
-  `AFT0011`.
-- **No arguments, no method groups.** `this.Marker(5)` and `Func<AutoScope> f = this.Marker` do not mark a call site.
+- **Always `using`.** `this.Marker();` as a statement, `_ = this.Marker();` or a local nothing reads begins a sample
+  that never ends — warning `AFT0011`.
+- **Plain call only.** `this.Marker(5)`, `this.Marker<T>()`, `this?.Marker()`, the static form
+  `ProfilerMarkerExtensionsForGenerator.Marker(this)` and a method group `Func<AutoScope> f = this.Marker` mark nothing.
+- **No expression trees.** In a type that has other `this.Marker()` calls, a call inside `Expression<...>` fails with
+  CS0854.
 - **Helper wrappers merge callers.** `void Profile(Action a) { using (this.Marker()) a(); }` is one call site. Put
   `this.Marker()` at each real call site.
 - **One call per line.** Calls on the same line of a type (including across `partial` files) share the first call's
@@ -61,6 +64,7 @@ hand-written `static readonly ProfilerMarker`.
 - **No marker, warning `AFT0010`:** every call the generator cannot mark — the cases above, a call inside a
   `private`/`protected` nested type (or a type nested in one; typical for `private struct MyJob : IJob`), in
   `Outer<T>.Inner<T>` where the inner type parameter shadows the outer one, or inside an expression tree. Fix the call,
-  make the nested type `internal`/`public`, rename the parameter, or use a hand-written `ProfilerMarker`.
+  make the nested type `internal`/`public`, rename the parameter, or use a hand-written `ProfilerMarker`. A `private`
+  or `protected` nested `ref struct` does not compile at all (CS1929): make it `internal`/`public`.
 - `ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED` strips only the package's own markers, not user `this.Marker()` calls.
 - Leave existing `Profiler.BeginSample` / `ProfilerMarker` code alone unless the user asks to migrate it.
