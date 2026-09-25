@@ -28,8 +28,7 @@ Method names follow one rule:
 The rule covers the properties and events of every element, from `VisualElement` to `MultiColumnTreeView`; the full list is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements). Exceptions:
 
 - `EnumField` and `EnumFlagsField` (in the editor) get `Initialize` in place of `Init`;
-- `Button.SetClickable` takes a `Clickable` or an `Action`;
-- `IMGUIContainer.MarkDirtyLayout` keeps its name.
+- `Button.SetClickable` takes a `Clickable` or an `Action`.
 
 `IsFocused()` checks focus:
 
