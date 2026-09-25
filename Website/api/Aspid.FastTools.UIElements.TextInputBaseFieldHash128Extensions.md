@@ -23,10 +23,6 @@ public static class TextInputBaseFieldHash128Extensions
 [TextInputBaseFieldHash128Extensions](Aspid.FastTools.UIElements.TextInputBaseFieldHash128Extensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### SetAutoCorrection\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldHash128Extensions_SetAutoCorrection__1___0_System_Boolean_}

@@ -23,10 +23,6 @@ public static class ITextEditionExtensions
 [ITextEditionExtensions](Aspid.FastTools.UIElements.ITextEditionExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### SetAutoCorrection\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_ITextEditionExtensions_SetAutoCorrection__1___0_System_Boolean_}
