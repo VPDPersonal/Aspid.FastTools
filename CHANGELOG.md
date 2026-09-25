@@ -96,7 +96,7 @@ First release. Unity **6000.0**, assemblies `Aspid.FastTools` / `Aspid.FastTools
 #### VisualElement fluent extensions
 
 - Fluent API on `VisualElement`: layout, style, borders, colors, transitions, callbacks, USS, child management with `*If` variants, style presets.
-- Helpers for `Button`, `BaseField<T>` (`SetLabel` for 29 types), `Focusable`, `Foldout`, `HelpBox`, `Image`, `IMGUIContainer`, `IMixedValueSupport`, `INotifyValueChanged`, `IStyle`, `ICustomStyle`, list views, `Manipulators`, `ProgressBar`, `Slider`, `TextElement`, `CallbackEventHandler`.
+- Helpers for `Button`, `BaseField<T>` (`SetLabel` for 29 types), `Focusable`, `Foldout`, `HelpBox`, `Image`, `IMGUIContainer`, `IMixedValueSupport`, `INotifyValueChanged`, `IStyle`, `ICustomStyle`, list views, `Manipulators`, `ProgressBar`, `Slider`, `TextElement`.
 - Editor: `BindTo` / `UnbindFrom`, `BindPropertyTo`, `SetBindingPath`, `SetLabel` for `PropertyField`, `AddOpenScriptCommand`, `GetOwnerWindow`.
 - `Aspid.FastTools.VisualElements.Math` — `SetValue` / `ValueChanged` for `Unity.Mathematics` types, compiled only with `com.unity.mathematics`.
 

@@ -96,7 +96,7 @@
 #### Fluent-расширения VisualElement
 
 - Fluent API на `VisualElement`: раскладка, стиль, границы, цвета, переходы, колбэки, USS, управление детьми с вариантами `*If`, пресеты стилей.
-- Помощники для `Button`, `BaseField<T>` (`SetLabel` для 29 типов), `Focusable`, `Foldout`, `HelpBox`, `Image`, `IMGUIContainer`, `IMixedValueSupport`, `INotifyValueChanged`, `IStyle`, `ICustomStyle`, list view, `Manipulators`, `ProgressBar`, `Slider`, `TextElement`, `CallbackEventHandler`.
+- Помощники для `Button`, `BaseField<T>` (`SetLabel` для 29 типов), `Focusable`, `Foldout`, `HelpBox`, `Image`, `IMGUIContainer`, `IMixedValueSupport`, `INotifyValueChanged`, `IStyle`, `ICustomStyle`, list view, `Manipulators`, `ProgressBar`, `Slider`, `TextElement`.
 - Редактор: `BindTo` / `UnbindFrom`, `BindPropertyTo`, `SetBindingPath`, `SetLabel` для `PropertyField`, `AddOpenScriptCommand`, `GetOwnerWindow`.
 - `Aspid.FastTools.VisualElements.Math` — `SetValue` / `ValueChanged` для типов `Unity.Mathematics`, компилируется только с `com.unity.mathematics`.
 
