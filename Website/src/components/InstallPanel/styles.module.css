@@ -233,3 +233,26 @@ html[data-theme='light'] .install { --install-accent-soft: rgb(47 138 69 / 0.1);
 @media (prefers-reduced-motion: reduce) {
   .install *, .install *::before, .install *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; transition-delay: 0s !important; }
 }
+
+/* The light site theme shows Unity's light editor skin; colours come from its DefaultCommonLight theme. */
+html[data-theme='light'] .preview { background: #a5a5a5; }
+html[data-theme='light'] .pm { color: #090909; background: #c8c8c8; }
+html[data-theme='light'] .pmTitle { background: #a5a5a5; border-bottom-color: #999; }
+html[data-theme='light'] .pmTitle span { background: #c8c8c8; }
+html[data-theme='light'] .pmToolbar { background: #cbcbcb; border-bottom-color: #999; }
+html[data-theme='light'] .pmPlus, html[data-theme='light'] .pmInstall { background: #e4e4e4; border-color: #b2b2b2; }
+html[data-theme='light'] .pmPlus[data-press], html[data-theme='light'] .pmInstall[data-press] { background: #96c3fb; }
+html[data-theme='light'] .pmFilter { color: #090909; }
+html[data-theme='light'] .pmList { background: #c2c2c2; border-right-color: #999; }
+html[data-theme='light'] .pmList li { border-bottom-color: #b5b5b5; }
+html[data-theme='light'] .pmList li span:last-child { color: #555; }
+html[data-theme='light'] .pmNew { color: #fff; background: #3a72b0; }
+html[data-theme='light'] .pmDetail strong { color: #090909; }
+html[data-theme='light'] .pmId { color: #555; }
+html[data-theme='light'] .pmBadge { color: #1f6a31; background: rgb(47 138 69 / 0.14); border-color: rgb(47 138 69 / 0.45); }
+html[data-theme='light'] .pmSkeleton { background: #b0b0b0; }
+html[data-theme='light'] .pmMenu, html[data-theme='light'] .pmPopover { background: #c1c1c1; border-color: #999; box-shadow: 0 6px 18px rgb(0 0 0 / 0.2); }
+html[data-theme='light'] .pmInput { background: #f0f0f0; border-color: #1d5087; }
+html[data-theme='light'] .pmMenu[data-open] li[data-hover] { background: #3a72b0; }
+html[data-theme='light'] .pmTyped { color: #090909; }
+html[data-theme='light'] .pmProgress { background: #3a72b0; }
