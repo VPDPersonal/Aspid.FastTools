@@ -21,6 +21,7 @@
 | <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (строка)</code> |
 | <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move (строка)</code> |
 | <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run (строка)</code><br /><code lang="string">Worker&lt;Single&gt;.Run (строка)</code> |
+| <code lang="csharp">struct Job&lt;T&gt; &#123; void Execute() &#125;</code> | <code lang="string">Job&lt;T&gt;.Execute (строка)</code> для любого <code lang="class-name">T</code> |
 | <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run (строка)</code> для любого <code lang="class-name">T</code> |
 
 ## WithName()
@@ -57,12 +58,12 @@ public void Step()
 
 ## Ограничения
 
-- **Только <code lang="csharp">this</code>.** Маркер открывается на экземпляре своего типа, поэтому в статических методах его не поставить.
 - **Номер строки в имени** меняется, когда вызов переезжает: сравнивайте захваты до и после правки по имени без номера.
-- **Вложенные <code lang="csharp">private</code> и <code lang="csharp">protected</code> типы** маркер не получают — анализатор `AFT0010` предупредит об этом.
+- **Вызов без маркера.** Если маркер для вызова не создаётся — на объекте другого типа (<code lang="csharp">other.Marker()</code>), в статическом классе, во вложенном <code lang="csharp">private</code> или <code lang="csharp">protected</code> типе, — анализатор `AFT0010` предупредит об этом.
+- **Выброшенный замер.** <code lang="csharp">this.Marker();</code> без <code lang="csharp">using</code> начинает замер, который никогда не заканчивается, — анализатор `AFT0011` предупредит об этом.
 
 > [!WARNING]
-> Замер может попасть в чужую строку Profiler, если вызовы <code lang="csharp">this.Marker()</code> в разных файлах <code lang="csharp">partial</code> одного типа стоят на одной и той же строке, или если вызов сделан на объекте другого типа — <code lang="csharp">other.Marker()</code>.
+> Вызовы <code lang="csharp">this.Marker()</code> в разных файлах <code lang="csharp">partial</code> одного типа, стоящие на одной и той же строке, делят маркер первого из них — замеры второго попадут в чужую строку Profiler.
 
 ## Пример в пакете
 
