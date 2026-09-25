@@ -1150,13 +1150,15 @@ html[data-theme='light'] .scene-footage img { filter: url('#scene-footage-backgr
 .markdown .feature-card__more a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):hover { color: var(--venom-accent); text-decoration: none; }
 .markdown .feature-card__more a:hover::after { transform: translateX(3px); }
 /* Resource tiles: the intro's list of further links as a grid; the title link covers the whole tile. */
+/* Wrapping flex rather than a grid: a card left alone on the last row stretches across it instead of leaving a gap. */
 .theme-doc-markdown .resource-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 14px;
   margin-bottom: 2.5rem;
 }
 .theme-doc-markdown .resource-card {
+  flex: 1 1 220px;
   position: relative;
   display: flex;
   flex-direction: column;

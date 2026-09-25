@@ -67,8 +67,9 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 - **Highlighted inline code**: `<code lang="csharp">void Run&lt;T&gt;()</code>` is plain inline code on GitHub and is
   highlighted on the site (`introBanner.js` → `src/components/InlineCode`). Use it only for C# in a table column of
   declarations or calls — never for paths or flags — and escape `<`, `>`, `{`, `}` as in `<pre>` cells.
-  `<code lang="string">` and `<code lang="class-name">` paint the whole text in that token's colour: Profiler marker
-  names in a result column, a lone type parameter (`T`) in prose.
+  `<code lang="string">`, `<code lang="class-name">` and `<code lang="function">` paint the whole text in that token's
+  colour: Profiler marker names in a result column, a lone type (`T`; in `System.Type` only `Type`), a bare method
+  name (`Update`).
 - **Every `.md` and every image in the package needs a `.meta`** (`TextScriptImporter` for Markdown) — Unity
   would otherwise generate one in the consumer's project. Copy an existing one and give it a fresh GUID.
 - The package is English. A translation is a sibling file: `Documentation/ru/06-enum-values.md`,

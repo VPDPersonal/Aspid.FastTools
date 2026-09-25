@@ -24,7 +24,7 @@ The URL points to the latest preview; **Update** in the Package Manager brings i
 
 #### [Serializable Type System](02-serializable-types.md)
 
-Stores a `System.Type` in a component/asset and lets you pick it in the Inspector from compatible types.
+Stores a <code lang="class-name">System.Type</code> in a component/asset and lets you pick it in the Inspector from compatible types.
 
 <img src="Images/serializable-type-quick-start.gif" alt="Select a serializable type in the Inspector" width="640" />
 
@@ -36,13 +36,13 @@ Changes an added component/ScriptableObject to a derived type without losing sha
 
 #### [SerializeReference Selector](03-serialize-reference-selector.md)
 
-Lets you pick the class for a `[SerializeReference]` field in the Inspector and carries compatible data over when the class changes.
+Lets you pick the class for a <code lang="csharp">[SerializeReference]</code> field in the Inspector and carries compatible data over when the class changes.
 
 <img src="Images/aspid_fasttools_serialize_reference_selector.gif" alt="Switch Pistol to Shotgun while keeping Damage at 37" width="640" />
 
 #### [SerializeReference Tooling](04-serialize-reference-tooling.md)
 
-Finds lost `[SerializeReference]` entries across the project (prefabs, scenes, assets) and repairs them in groups — by hand, before a build or in CI.
+Finds lost <code lang="csharp">[SerializeReference]</code> entries across the project (prefabs, scenes, assets) and repairs them in groups — by hand, before a build or in CI.
 
 <img src="Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Repair a missing weapon type without losing its data" width="640" />
 
@@ -78,7 +78,7 @@ new VisualElement()
 
 #### [SerializedProperty Extensions](08-serialized-property-extensions.md)
 
-Writes a value together with `Update` and `Apply` in one chain, and finds the field's C# type and the object the field belongs to.
+Writes a value together with <code lang="function">Update</code> and <code lang="function">Apply</code> in one chain, and finds the field's C# type and the object the field belongs to.
 
 ```csharp
 manaCost
