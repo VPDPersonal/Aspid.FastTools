@@ -14,12 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `AndApplyWithoutUndo` counterparts for every `SerializedProperty` setter with immediate application, including `SetValue` overloads, references, enums, and array size helpers.
 - Analyzer `AFT0009` (warning) — two `[TypeSelector]` base types have no type in common, so the selector is empty.
 - Analyzer `AFT0010` (warning) — a `this.Marker()` call opens no profiler marker because the generator cannot support its type: the type is `private` or `protected` (or nested in such a type), or it reuses a type parameter name of a containing type.
+- Analyzer `AFT0011` (warning) — the scope of `this.Marker()` is discarded (`this.Marker();` as a statement, `_ = this.Marker();`, a local nothing reads), so the sample it begins never ends.
 
 ### Changed
 
 - The Agent Skills for this package moved from the `aspid-fasttools` Claude Code plugin in [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) into this repository (`skills/`). Install them into Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI or another agent with `npx skills add VPDPersonal/Aspid.FastTools`; the plugin is no longer published.
 - Renamed `GetScriptName()` to `GetDisplayName()` and `GetScriptNameWithIndex()` to `GetDisplayNameWithIndex()`; update existing calls to the new names. Both methods now return `string.Empty` for null or destroyed objects. Component indexing uses a pooled list instead of temporary arrays and LINQ.
 - `[TypeSelector]` on a `[SerializeReference]` field now offers only types assignable to every attribute type — the rule `string` and `SerializableType` fields already follow; it used to offer types matching any one of them. The same applies to `baseTypes` of `SerializeReferenceEditorGUI.CreateField`, `CreateList` and `DrawFieldLayout`. A list of alternatives such as `typeof(Pistol), typeof(Rifle)` now leaves the selector empty and triggers `AFT0009`: give the allowed classes a common interface or base class and pass that instead. `AFT0005` now checks all attribute types together.
+- The generated `this.Marker()` code now declares its marker fields only under `ENABLE_PROFILER`, like the `Marker()` body that reads them: builds without the profiler no longer create every marker in a static constructor.
+- `ProfilerMarkerExtensionsForGenerator.Marker(this object)` is now `Marker<T>(this T)`: a struct call site the generator cannot mark is no longer boxed, so a Burst job still compiles.
+- `AFT0010` now reports every `this.Marker()` call that opens no marker, not only unsupported types: a receiver of another type (`other.Marker()`, calls in static classes), a default interface method, an explicit argument (`this.Marker(5)`) or type argument, `this?.Marker()`, the static call form, a method group and a call inside an expression tree. The generator no longer emits dead markers for such calls.
+- A generic class names nested type arguments the way C# writes them (`Foo<List<Int32>>.Run (line)`, `Foo<Outer<Int32>.Inner>.Run (line)` instead of ``Foo<List`1>``, `Foo<Inner>`). A generic struct gets one marker per call site for all its closed types, named `Job<T>.Execute (line)`, because Burst cannot run the per-type label.
+- The generated `Marker()` dispatches on the line with a `switch`, so its cost no longer grows with the number of call sites in a type.
 
 ### Fixed
 
@@ -28,6 +34,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `this.Marker()` inside a `private` or `protected` nested type no longer breaks compilation with CS0122. The generated overload cannot see such a type, so the generator now skips it: the call compiles, opens no marker, and `AFT0010` reports it — make the type `internal` or `public` to profile it.
 - `this.Marker()` in a type nested in a generic type (`Outer<T>.Inner`) now compiles; the generated overload used to miss the outer type parameters (CS0246).
 - `this.Marker()` in an indexer accessor or a static constructor now compiles; the generated field names were invalid. The markers are named `Type.Indexer (line)` and `Type.StaticCtor (line)`.
+- `this.Marker()` in an event accessor is now named after the event, like a property accessor: `Type.Changed (line)` instead of `Type.add_Changed (line)` / `Type.remove_Changed (line)`, including explicit interface implementations.
+- `this.Marker()` no longer breaks compilation in an auto-property initializer, a static class, a default interface method or an expression tree, in a namespace or type parameter named with a keyword (`Game.@event`, `Foo<@event>`), or when type names differ only in case or flatten to the same name (`Foo`/`foo`, `Foo<T>`/`Foo_1`, `Outer.Inner`/`Outer_Inner`); some of these made every marker of the assembly disappear.
+- `Foo`, `Foo<T>` and `Foo<T1, T2>` in one namespace no longer share one generated class in which only the first type got markers; the package's own `EnumValues<TEnum, TValue>` markers now open.
+- A `this.Marker()` call split over several lines or under a `#line` directive now opens its own marker; the generator used a different line than `[CallerLineNumber]`.
+- A generic struct marked `[BurstCompile]` no longer fails the Burst build (BC1025/BC1360).
+- A type deriving from a type of another assembly that shares its namespace through `InternalsVisibleTo` now gets markers of its own; its calls used to bind to the base type's overload and open nothing.
+- `WithName($"Br{{ace}}")` gives `Br{ace}`, `WithName` text with U+2028, U+2029 or U+0085 compiles, and a user's own `WithName` extension no longer renames the marker.
+- `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
 
 ## [1.0.0-rc.8] — 2026-09-06
 

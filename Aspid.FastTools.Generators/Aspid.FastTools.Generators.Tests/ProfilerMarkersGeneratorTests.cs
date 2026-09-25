@@ -1,6 +1,8 @@
 using Xunit;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Aspid.FastTools.Generators.Tests.Helpers;
 
 // ReSharper disable once CheckNamespace
@@ -62,7 +64,7 @@ public class ProfilerMarkersGeneratorTests
         var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
 
         // Two distinct fields, named after method + their line numbers.
-        var fieldDeclarations = System.Text.RegularExpressions.Regex.Matches(
+        var fieldDeclarations = Regex.Matches(
             text, @"static\s+readonly\s+global::Unity\.Profiling\.ProfilerMarker\s+(\w+)\s*=");
         Assert.Equal(2, fieldDeclarations.Count);
 
@@ -74,7 +76,7 @@ public class ProfilerMarkersGeneratorTests
     }
 
     [Fact]
-    public void TwoCallsOnSameLine_DedupesFieldNames()
+    public void TwoCallsOnSameLine_ShareTheFirstMarker()
     {
         const string source = """
             namespace Sample
@@ -83,22 +85,20 @@ public class ProfilerMarkersGeneratorTests
                 {
                     public void Run() { this.Marker(); this.Marker(); }
                 }
+
+                public static class Probe { public static void Run() => new Foo().Run(); }
             }
             """;
 
         var run = GeneratorTestHost.RunProfilerMarkers(source);
-        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+        var text = GeneratorTestHost.GeneratedText(run);
 
-        // Two distinct fields even though they're on the same source line.
-        var fieldDeclarations = System.Text.RegularExpressions.Regex.Matches(
+        // [CallerLineNumber] cannot tell the calls apart, so the second one gets no field of its own.
+        var fieldDeclarations = Regex.Matches(
             text, @"static\s+readonly\s+global::Unity\.Profiling\.ProfilerMarker\s+(\w+)\s*=");
-        Assert.Equal(2, fieldDeclarations.Count);
+        Assert.Single(fieldDeclarations);
 
-        var name1 = fieldDeclarations[0].Groups[1].Value;
-        var name2 = fieldDeclarations[1].Groups[1].Value;
-        Assert.NotEqual(name1, name2);
-
-        GeneratorTestHost.AssertNoErrors(run);
+        Assert.Equal(new[] { "Foo.Run (5)", "Foo.Run (5)" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
     }
 
     [Fact]
@@ -227,9 +227,9 @@ public class ProfilerMarkersGeneratorTests
         var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
 
         // Braces in the label must not be treated as interpolation holes on the generic path,
-        // yet the type name must still be resolved per closed instantiation via typeof(T).Name.
+        // yet the type name must still be resolved per closed instantiation via typeof(T).
         Assert.Contains("Brace", text);
-        Assert.Contains("typeof(T).Name", text);
+        Assert.Contains("__TypeName(typeof(T))", text);
 
         GeneratorTestHost.AssertNoErrors(run);
     }
@@ -277,6 +277,105 @@ public class ProfilerMarkersGeneratorTests
         Assert.Contains("Value_Marker_Line_", text);
 
         GeneratorTestHost.AssertNoErrors(run);
+    }
+
+    [Fact]
+    public void EventAccessors_UseEventNameAsMarkerName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public event System.Action Changed
+                    {
+                        add { this.Marker(); }
+                        remove { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        // add and remove are on different lines, so they get distinct fields and markers.
+        var fields = Regex.Matches(text, @"\bChanged_Marker_Line_\d+\b")
+            .Select(m => m.Value).Distinct().ToArray();
+        var names = Regex.Matches(text, @"""Foo\.Changed \(\d+\)""")
+            .Select(m => m.Value).Distinct().ToArray();
+        Assert.Equal(2, fields.Length);
+        Assert.Equal(2, names.Length);
+        Assert.DoesNotContain("add_Changed", text);
+        Assert.DoesNotContain("remove_Changed", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void ExplicitInterfaceEvent_UsesEventNameAsMarkerName()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public interface INotifier { event System.Action Changed; }
+                public class Foo : INotifier
+                {
+                    event System.Action INotifier.Changed
+                    {
+                        add { this.Marker(); }
+                        remove { this.Marker(); }
+                    }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+        var text = run.RunResult.Results[0].GeneratedSources[0].SourceText.ToString();
+
+        Assert.Contains("Changed_Marker_Line_", text);
+        Assert.Contains("\"Foo.Changed (", text);
+        Assert.DoesNotContain("INotifier.Changed (", text);
+        Assert.DoesNotContain("add_Changed", text);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Fact]
+    public void MarkerFields_AreOnlyCompiledWithEnableProfiler()
+    {
+        const string source = """
+            namespace Sample
+            {
+                public class Foo
+                {
+                    public void Run() { this.Marker(); }
+                }
+
+                public class Bar<T>
+                {
+                    public void Run() { this.Marker(); }
+                }
+            }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source, enableProfiler: false);
+
+        foreach (var generated in run.RunResult.Results[0].GeneratedSources)
+        {
+            var root = generated.SyntaxTree.GetRoot();
+
+            // Without ENABLE_PROFILER the fields and Markers<T> are disabled text, not declarations.
+            Assert.Empty(root.DescendantNodes().OfType<FieldDeclarationSyntax>());
+            Assert.DoesNotContain(
+                root.DescendantNodes().OfType<ClassDeclarationSyntax>(),
+                c => c.Identifier.ValueText == "Markers");
+        }
+
+        GeneratorTestHost.AssertNoErrors(run);
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
     }
 
     [Fact]
@@ -427,18 +526,22 @@ public class ProfilerMarkersGeneratorTests
             {
                 public class Foo
                 {
-                    private static readonly int _count = ((object)null).Marker() is var _ ? 1 : 0;
+                    public static readonly int _count = Count(new Foo().Marker());
+
+                    private static int Count(Unity.Profiling.ProfilerMarker.AutoScope scope) => 1;
                 }
+
+                public static class Probe { public static int Run() => Foo._count; }
             }
             """;
 
         var run = GeneratorTestHost.RunProfilerMarkers(source);
-        GeneratorTestHost.AssertNoErrors(run);
         var generated = run.RunResult.Results[0].GeneratedSources;
 
         Assert.Single(generated);
-        var text = generated[0].SourceText.ToString();
-        Assert.Contains("_count_Marker_Line_", text);
+        Assert.Contains("_count_Marker_Line_", generated[0].SourceText.ToString());
+        GeneratorTestHost.AssertCallsBindToGenerated(run);
+        Assert.Equal(new[] { "Foo._count (5)" }, GeneratorTestHost.Execute(run, "Sample.Probe"));
     }
 
     [Theory]
@@ -564,8 +667,8 @@ public class ProfilerMarkersGeneratorTests
 
         Assert.Contains("Marker<T, U>(this global::Sample.Outer<T>.Inner<U>", text);
         // Only the nested type's own parameters appear in the label.
-        Assert.Contains("typeof(U).Name", text);
-        Assert.DoesNotContain("typeof(T).Name", text);
+        Assert.Contains("__TypeName(typeof(U))", text);
+        Assert.DoesNotContain("__TypeName(typeof(T))", text);
 
         GeneratorTestHost.AssertNoErrors(run);
         GeneratorTestHost.AssertCallsBindToGenerated(run);

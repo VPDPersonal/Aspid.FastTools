@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Aspid.FastTools.ProfilerMarkers;
 using Aspid.FastTools.Generators.ProfilerMarkers.Data;
 using Aspid.FastTools.Generators.ProfilerMarkers.Bodies;
 
@@ -14,8 +15,6 @@ namespace Aspid.FastTools.Generators.ProfilerMarkers;
 [Generator(LanguageNames.CSharp)]
 internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
 {
-    private const string TargetClassName = "ProfilerMarkerExtensionsForGenerator";
-
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var callsProvider = context.SyntaxProvider
@@ -27,184 +26,95 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         context.RegisterSourceOutput(collected, GenerateCode);
     }
 
-    private static bool Predicate(SyntaxNode node, CancellationToken _)
-    {
-        if (node is not InvocationExpressionSyntax invocation) return false;
-        if (invocation.Expression is not MemberAccessExpressionSyntax memberAccessExpression) return false;
-
-        return memberAccessExpression.Name is IdentifierNameSyntax
+    private static bool Predicate(SyntaxNode node, CancellationToken _) =>
+        node is InvocationExpressionSyntax
         {
-            Identifier.ValueText: "Marker"
+            Expression: MemberAccessExpressionSyntax { Name: IdentifierNameSyntax { Identifier.ValueText: "Marker" } }
         };
-    }
 
     private static MarkerCall? Transform(GeneratorSyntaxContext context, CancellationToken ct)
     {
-        var node = context.Node;
-        if (node is not InvocationExpressionSyntax invocation) return null;
-        if (invocation.Expression is not MemberAccessExpressionSyntax memberAccessExpression) return null;
-        if (memberAccessExpression.Name is not IdentifierNameSyntax idName || idName.Identifier.ValueText is not "Marker") return null;
+        if (context.Node is not InvocationExpressionSyntax { Expression: MemberAccessExpressionSyntax access } invocation) return null;
 
-        // Semantic gate: only match Marker() declared on the global-namespace ProfilerMarkerExtensionsForGenerator class.
-        var symbolInfo = context.SemanticModel.GetSymbolInfo(invocation, ct);
-        if (symbolInfo.Symbol is not IMethodSymbol invokedMethod) return null;
-        var owningType = invokedMethod.ContainingType;
-        if (owningType is null) return null;
-        if (owningType.Name != TargetClassName) return null;
-        if (!owningType.ContainingNamespace.IsGlobalNamespace) return null;
+        var model = context.SemanticModel;
+        var receiverType = model.GetTypeInfo(access.Expression, ct).Type;
+        if (MarkerCallRules.GetMarker(model.GetSymbolInfo(invocation, ct), receiverType) is null) return null;
 
-        var initialEnclosing = context.SemanticModel.GetEnclosingSymbol(invocation.SpanStart, ct);
-        if (ResolveEnclosingMember(initialEnclosing) is not { } enclosingInfo) return null;
-        var (namedTypeSymbol, markerName, methodKey) = enclosingInfo;
+        if (MarkerCallRules.FindEnclosingMember(model.GetEnclosingSymbol(invocation.SpanStart, ct)) is not { ContainingType: { } type } member)
+            return null;
 
-        // Unsupported types get no overload: the call binds to the object fallback and compiles,
-        // and the analyzer (AFT0010) reports the missing marker instead.
-        if (!IsVisibleToGeneratedClass(namedTypeSymbol)) return null;
-        if (!HasUniqueTypeParameterNames(namedTypeSymbol)) return null;
+        // Unsupported calls get no overload: they bind to the fallback and compile, and AFT0010 reports them.
+        if (MarkerCallRules.GetUnsupportedReason(invocation, access, type, model, ct) is not null) return null;
 
-        var markerValue = markerName;
+        var markerName = ResolveMarkerName(member);
+        var label = TryGetWithName(invocation, model, ct) ?? markerName;
+        var line = MarkerCallRules.GetCallerLine(invocation);
 
+        return new MarkerCall(
+            BuildTypeData(type),
+            line,
+            fieldName: $"{markerName}_Marker_Line_{line}",
+            label,
+            invocation.SyntaxTree.FilePath,
+            MarkerCallRules.GetCallerColumn(invocation));
+    }
+
+    // .WithName("...") chained directly on the call, bound to the package's WithName.
+    private static string? TryGetWithName(InvocationExpressionSyntax invocation, SemanticModel model, CancellationToken ct)
+    {
         // Walk past any parentheses so `(this.Marker()).WithName("x")` is still recognised.
         SyntaxNode outer = invocation;
         while (outer.Parent is ParenthesizedExpressionSyntax paren)
             outer = paren;
 
-        if (outer.Parent is MemberAccessExpressionSyntax memberAccessExpressionWithName
-            && memberAccessExpressionWithName.Name is IdentifierNameSyntax { Identifier.ValueText: "WithName" }
-            && memberAccessExpressionWithName.Parent is InvocationExpressionSyntax invocationExpressionWithName
-            && invocationExpressionWithName.ArgumentList.Arguments.FirstOrDefault()?.Expression is { } argExpr
-            && TryExtractStringLiteral(argExpr) is { } extracted)
-        {
-            markerValue = extracted;
-        }
+        if (outer.Parent is not MemberAccessExpressionSyntax { Name: IdentifierNameSyntax { Identifier.ValueText: "WithName" } } access
+            || access.Parent is not InvocationExpressionSyntax { ArgumentList.Arguments: { Count: 1 } arguments } withName)
+            return null;
 
-        var lineSpan = invocation.GetLocation().GetLineSpan();
-        var lineNumber = lineSpan.StartLinePosition.Line + 1;
+        if (!MarkerCallRules.IsPackageMethod(model.GetSymbolInfo(withName, ct).Symbol as IMethodSymbol)) return null;
 
-        var typeData = BuildTypeData(namedTypeSymbol);
-
-        return new MarkerCall(typeData, methodKey, lineNumber, markerName, markerValue);
-    }
-
-    private static (INamedTypeSymbol Type, string MarkerName, string MethodKey)? ResolveEnclosingMember(ISymbol? enclosing)
-    {
-        // Walk past synthesized symbols (lambdas, local functions, anonymous methods)
-        // until we find a real declared member that owns the call site.
-        while (enclosing is not null)
-        {
-            switch (enclosing)
-            {
-                case IMethodSymbol method:
-                    if (method.MethodKind is MethodKind.LambdaMethod
-                        or MethodKind.AnonymousFunction
-                        or MethodKind.LocalFunction)
-                    {
-                        enclosing = method.ContainingSymbol;
-                        continue;
-                    }
-                    if (method.ContainingType is null) return null;
-                    return (method.ContainingType, ResolveMarkerName(method), method.ToDisplayString());
-
-                case IFieldSymbol field:
-                    if (field.ContainingType is null) return null;
-                    return (field.ContainingType, field.Name, field.ToDisplayString());
-
-                case IPropertySymbol property:
-                    if (property.ContainingType is null) return null;
-                    return (property.ContainingType, property.IsIndexer ? "Indexer" : property.Name, property.ToDisplayString());
-
-                default:
-                    enclosing = enclosing.ContainingSymbol;
-                    continue;
-            }
-        }
-
-        return null;
-    }
-
-    // The generated extension class is top-level, so it can only name a type the whole assembly sees.
-    private static bool IsVisibleToGeneratedClass(INamedTypeSymbol symbol)
-    {
-        for (var t = symbol; t is not null; t = t.ContainingType)
-        {
-            if (t.DeclaredAccessibility is Accessibility.Private
-                or Accessibility.Protected
-                or Accessibility.ProtectedAndInternal)
-                return false;
-        }
-
-        return true;
-    }
-
-    // The generated Marker<...> method takes the type parameters of the whole containing chain,
-    // so a nested type parameter that shadows an outer one (CS0693) would be declared twice.
-    private static bool HasUniqueTypeParameterNames(INamedTypeSymbol symbol)
-    {
-        var names = new HashSet<string>();
-        foreach (var tp in GetChainTypeParameters(symbol))
-        {
-            if (!names.Add(tp.Name))
-                return false;
-        }
-
-        return true;
-    }
-
-    // Type parameters of the type and all its containing types, outermost first.
-    private static ImmutableArray<ITypeParameterSymbol> GetChainTypeParameters(INamedTypeSymbol symbol)
-    {
-        var stack = new Stack<INamedTypeSymbol>();
-        for (var t = symbol; t is not null; t = t.ContainingType)
-            stack.Push(t);
-
-        return stack.SelectMany(t => t.TypeParameters).ToImmutableArray();
+        return TryExtractStringLiteral(arguments[0].Expression);
     }
 
     private static TypeData BuildTypeData(INamedTypeSymbol symbol)
     {
-        var typeName = symbol.Name;
         var ns = symbol.ContainingNamespace.IsGlobalNamespace
             ? null
             : symbol.ContainingNamespace.ToDisplayString();
 
-        // Arity is part of each containing type's name so Outer.Inner and Outer<T>.Inner stay distinct.
-        var containingChain = string.Empty;
-        if (symbol.ContainingType is not null)
-        {
-            var stack = new Stack<INamedTypeSymbol>();
-            for (var t = symbol.ContainingType; t is not null; t = t.ContainingType)
-                stack.Push(t);
+        // Arity is part of every type name so Foo, Foo<T> and Outer<T>.Inner stay distinct.
+        var containing = new Stack<INamedTypeSymbol>();
+        for (var t = symbol.ContainingType; t is not null; t = t.ContainingType)
+            containing.Push(t);
 
-            var sb = new System.Text.StringBuilder();
-            foreach (var t in stack)
-            {
-                sb.Append(t.Name);
-                if (t.Arity > 0) sb.Append('_').Append(t.Arity);
-                sb.Append('.');
-            }
-            containingChain = sb.ToString();
-        }
+        var nameBuilder = new StringBuilder("__");
+        foreach (var t in containing)
+            AppendNameWithArity(nameBuilder, t).Append('_');
+        AppendNameWithArity(nameBuilder, symbol).Append("ProfilerMarkerExtensions");
 
-        var typeKey = (ns is null ? string.Empty : ns + ".") + containingChain + typeName;
-
-        var typeParameters = GetChainTypeParameters(symbol);
-        var isGeneric = typeParameters.Length > 0;
-        var typeParamList = isGeneric
-            ? "<" + string.Join(", ", typeParameters.Select(p => p.Name)) + ">"
+        var typeParameters = MarkerCallRules.GetChainTypeParameters(symbol);
+        var typeParamList = typeParameters.Count > 0
+            ? "<" + string.Join(", ", typeParameters.Select(static p => EscapeIdentifier(p.Name))) + ">"
             : string.Empty;
-        var constraintsClause = BuildConstraintsClause(typeParameters);
-
-        var fullyQualifiedDisplay = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
         return new TypeData(
-            typeKey: typeKey,
-            typeName: typeName,
+            typeKey: symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
+            typeName: symbol.Name,
             @namespace: ns,
-            containingTypeChain: containingChain,
-            fullyQualifiedDisplay: fullyQualifiedDisplay,
+            className: nameBuilder.ToString(),
+            fullyQualifiedDisplay: symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
             typeParamList: typeParamList,
-            constraintsClause: constraintsClause,
-            arity: symbol.Arity);
+            ownTypeParameters: string.Join(",", symbol.TypeParameters.Select(static p => p.Name)),
+            constraintsClause: BuildConstraintsClause(typeParameters),
+            arity: symbol.Arity,
+            isValueType: symbol.IsValueType);
+    }
+
+    private static StringBuilder AppendNameWithArity(StringBuilder builder, INamedTypeSymbol type)
+    {
+        builder.Append(type.Name);
+        if (type.Arity > 0) builder.Append('_').Append(type.Arity);
+        return builder;
     }
 
     private static string? TryExtractStringLiteral(ExpressionSyntax expr)
@@ -220,7 +130,9 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
                 foreach (var content in interp.Contents)
                 {
                     if (content is not InterpolatedStringTextSyntax text) return null;
-                    sb.Append(text.TextToken.ValueText);
+
+                    // The text token keeps the {{ and }} escapes of an interpolated string.
+                    sb.Append(text.TextToken.ValueText.Replace("{{", "{").Replace("}}", "}"));
                 }
                 return sb.ToString();
             }
@@ -229,33 +141,76 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
         return null;
     }
 
-    private static string ResolveMarkerName(IMethodSymbol enclosing)
+    private static string ResolveMarkerName(ISymbol member)
     {
-        if (enclosing.AssociatedSymbol is IPropertySymbol property)
+        var name = member switch
         {
-            // An indexer's name is "this[]", which is not a valid identifier for the generated field.
-            if (property.IsIndexer)
-                return "Indexer";
+            IMethodSymbol method => ResolveMethodName(method),
+            IFieldSymbol { AssociatedSymbol: IPropertySymbol property } => ResolvePropertyName(property),
+            IFieldSymbol { AssociatedSymbol: IEventSymbol @event } => ResolveEventName(@event),
+            IPropertySymbol property => ResolvePropertyName(property),
+            IEventSymbol @event => ResolveEventName(@event),
+            _ => member.Name,
+        };
 
-            return property.ExplicitInterfaceImplementations.Length > 0
-                ? property.ExplicitInterfaceImplementations[0].Name
-                : property.Name;
-        }
-
-        if (enclosing.MethodKind is MethodKind.Constructor)
-            return "Ctor";
-
-        if (enclosing.MethodKind is MethodKind.StaticConstructor)
-            return "StaticCtor";
-
-        return enclosing.ExplicitInterfaceImplementations.Length > 0
-            ? enclosing.ExplicitInterfaceImplementations[0].Name
-            : enclosing.Name;
+        return ToIdentifier(name);
     }
 
-    private static string BuildConstraintsClause(ImmutableArray<ITypeParameterSymbol> typeParameters)
+    private static string ResolveMethodName(IMethodSymbol method)
     {
-        if (typeParameters.Length is 0) return string.Empty;
+        if (method.AssociatedSymbol is IPropertySymbol property)
+            return ResolvePropertyName(property);
+
+        if (method.AssociatedSymbol is IEventSymbol @event)
+            return ResolveEventName(@event);
+
+        if (method.MethodKind is MethodKind.Constructor)
+            return "Ctor";
+
+        if (method.MethodKind is MethodKind.StaticConstructor)
+            return "StaticCtor";
+
+        return method.ExplicitInterfaceImplementations.Length > 0
+            ? method.ExplicitInterfaceImplementations[0].Name
+            : method.Name;
+    }
+
+    private static string ResolvePropertyName(IPropertySymbol property)
+    {
+        // An indexer's name is "this[]", which is not a valid identifier for the generated field.
+        if (property.IsIndexer)
+            return "Indexer";
+
+        return property.ExplicitInterfaceImplementations.Length > 0
+            ? property.ExplicitInterfaceImplementations[0].Name
+            : property.Name;
+    }
+
+    private static string ResolveEventName(IEventSymbol @event) =>
+        @event.ExplicitInterfaceImplementations.Length > 0
+            ? @event.ExplicitInterfaceImplementations[0].Name
+            : @event.Name;
+
+    // The name starts the generated field name, so anything that is not an identifier character becomes '_'.
+    private static string ToIdentifier(string name)
+    {
+        var builder = new StringBuilder(name.Length);
+        foreach (var c in name)
+            builder.Append(SyntaxFacts.IsIdentifierPartCharacter(c) ? c : '_');
+
+        if (builder.Length is 0 || !SyntaxFacts.IsIdentifierStartCharacter(builder[0]))
+            builder.Insert(0, '_');
+
+        return builder.ToString();
+    }
+
+    // A type parameter may be named with a keyword (class Foo<@event>); the generated code must escape it again.
+    internal static string EscapeIdentifier(string name) =>
+        SyntaxFacts.GetKeywordKind(name) is SyntaxKind.None ? name : "@" + name;
+
+    private static string BuildConstraintsClause(IReadOnlyList<ITypeParameterSymbol> typeParameters)
+    {
+        if (typeParameters.Count is 0) return string.Empty;
 
         var clauses = new List<string>();
         foreach (var tp in typeParameters)
@@ -274,7 +229,7 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             if (tp.HasConstructorConstraint) constraints.Add("new()");
 
             if (constraints.Count > 0)
-                clauses.Add($"where {tp.Name} : {string.Join(", ", constraints)}");
+                clauses.Add($"where {EscapeIdentifier(tp.Name)} : {string.Join(", ", constraints)}");
         }
 
         return clauses.Count is 0 ? string.Empty : " " + string.Join(" ", clauses);
