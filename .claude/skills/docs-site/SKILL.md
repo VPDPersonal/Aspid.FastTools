@@ -64,6 +64,11 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   Never link by site URL.
 - **Before/after comparisons**: a two-column table whose cells are `<pre lang="csharp">…</pre>` stays portable
   on GitHub and becomes real highlighted code blocks on the site (`src/remark/introBanner.js`).
+- **Highlighted inline code**: `<code lang="csharp">void Run&lt;T&gt;()</code>` is plain inline code on GitHub and is
+  highlighted on the site (`introBanner.js` → `src/components/InlineCode`). Use it only for C# in a table column of
+  declarations or calls — never for paths or flags — and escape `<`, `>`, `{`, `}` as in `<pre>` cells.
+  `<code lang="string">` and `<code lang="class-name">` paint the whole text in that token's colour: Profiler marker
+  names in a result column, a lone type parameter (`T`) in prose.
 - **Every `.md` and every image in the package needs a `.meta`** (`TextScriptImporter` for Markdown) — Unity
   would otherwise generate one in the consumer's project. Copy an existing one and give it a fresh GUID.
 - The package is English. A translation is a sibling file: `Documentation/ru/06-enum-values.md`,
@@ -105,21 +110,23 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 Rules the user confirmed while reworking `08-serialized-property-extensions.md` and `09-editor-helpers.md`; apply them
 to every main doc page, always to the English file and its `ru/` twin together.
 
-- **Lead paragraph = problem → solution → result, not a table of contents.** Two or three sentences a reader
-  understands without knowing the API: the pain the feature removes (what the Unity way costs), what the feature
-  does, ideally with the visible result (`FireAbility` → "Fire Ability", `FlockSimulation.Step (3)`), and what the
-  reader gains. Every claim must be checkable against the code or Unity's behaviour — no "powerful", "easy",
-  "seamless". No "for X, Y and Z" enumerations of sections, no abstract wording ("resolves the property back to its
-  owner"). The ProfilerMarkers page is the reference.
-- **One concrete example type per page**, declared in the quick start ("The examples on this page work with the
-  `AbilityBook` component:") and reused by every section. Extend that type rather than inventing a second one.
+- **Lead = one short sentence that makes the reader interested**, not an explanation. No API names, code,
+  `using`, name formats or mechanics — the quick start shows those right below. Plain wording a reader understands
+  without knowing the package; the claim must still hold (no "powerful", "easy", "seamless"), and no "for X, Y and Z"
+  enumerations of sections. References: the Introduction («Aspid.FastTools — пакет для Unity, который убирает рутину
+  из сериализации, профилирования и редакторского кода.») and ProfilerMarkers («Маркеры профилировщика одной строкой,
+  без полей и имён, которые приходится поддерживать вручную.»).
+- **One concrete example type per page**, reused by every section; extend that type rather than inventing a second
+  one. Do not announce it with a sentence ("The examples on this page work with…") — the before/after table
+  already shows it, and the link to the sample lives only in the closing `## Package sample`.
 - **Verify every claim against the source** (`Editor/Scripts/...`) before writing it; drop anything the code does
   not back (e.g. the "inherited attribute" note was removed from `GetDisplayName`).
 - **Results go in tables**: property × method result tables and Unity-API-vs-FastTools before/after tables replace
   runs of small code blocks. Long method lists (setters) become a grouped table, not a comma list.
 - **Say each fact once.** No repeat between a table's cell comments and the paragraph under it, and no repeat
   between quick start and a later section (`AndApply` is explained once).
-- **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`").
+- **Do not state what the context already implies** (no editor-only note under "in its custom `Editor`"),
+  and do not list what is *not* required ("no attributes or `partial`") — a requirement would be stated.
   Never stack two admonitions. A pitfall that silently loses data gets a `> [!WARNING]` (boxed struct copy).
 - **Sample reference is minimal**: a closing `## Package sample` / `## Пример в пакете` with one sentence, the
   link to the sample README and, when the sample's `demo.gif` shows this page's feature, that gif with the caption

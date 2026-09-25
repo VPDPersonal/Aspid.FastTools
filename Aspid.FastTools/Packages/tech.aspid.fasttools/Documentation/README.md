@@ -4,7 +4,7 @@
 [![Preview 1.0.0-rc.8](Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Aspid.FastTools is a Unity package that takes the routine out of serialization and editor code. Unity does not serialize `System.Type`, offers no Inspector picker for a `[SerializeReference]` field's class, and breaks that reference when the class is renamed. The package adds Inspector pickers for a type and a class and an editor for “enum → value” tables, and finds broken references across the project to repair them without data loss. A profiler marker takes one line, with its name generated from the code; UI Toolkit trees and `SerializedProperty` writes fit in one fluent chain instead of separate assignments.
+Aspid.FastTools is a Unity package that takes the routine out of serialization, profiling and editor code.
 
 [Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 

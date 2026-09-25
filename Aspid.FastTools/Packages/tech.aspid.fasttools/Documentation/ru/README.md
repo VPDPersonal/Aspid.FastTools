@@ -4,7 +4,7 @@
 [![Preview 1.0.0-rc.8](../Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](../Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации и редакторского кода. Unity не сериализует `System.Type`, не даёт выбрать класс для поля `[SerializeReference]` в инспекторе и ломает эту ссылку при переименовании класса. Пакет добавляет в инспектор выбор типа и класса из списка и редактор таблиц «enum → значение», а сломанные ссылки находит и восстанавливает по всему проекту без потери данных. Маркер профилировщика ставится одной строкой, а имя ему генератор берёт из кода; деревья UI Toolkit и запись в `SerializedProperty` умещаются в одну fluent-цепочку вместо отдельных присваиваний.
+Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации, профилирования и редакторского кода.
 
 [Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 

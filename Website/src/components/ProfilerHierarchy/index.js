@@ -53,7 +53,7 @@ function useElapsed(active, run) {
   return elapsed;
 }
 
-/** The whole view at `t` ms: which rows are visible and open, the counted calls, and every row's time. */
+/** The whole view at `t` ms: which rows are visible and open, the counted calls and every row's time. */
 function snapshot(t) {
   const live = Math.max(0, Math.floor((t - LIVE_AT) / FRAME_MS));
   const [agentMs, integrateMs] = FRAMES[live % FRAMES.length];
@@ -64,8 +64,6 @@ function snapshot(t) {
   return {
     live,
     frame: FIRST_FRAME + live,
-    counting: t >= AT.countFrom && t < AT.countTo,
-    done: t >= AT.integrate,
     rows: [
       {id: 'step', shown: t >= AT.step, open: t >= AT.stepOpen, calls: 1, ms: steering + integrate},
       {id: 'steer', shown: t >= AT.steer, open: t >= AT.steerOpen, calls: 1, ms: steering},
@@ -81,8 +79,8 @@ function snapshot(t) {
 const ROWS = {
   step: {name: 'FlockSimulation.Step', line: 3, depth: 0, parent: true, swatch: 'step', guides: []},
   steer: {name: 'FlockSimulation.Steering', line: 5, depth: 1, parent: true, swatch: 'steer', guides: [['tee', true]]},
-  agent: {name: 'FlockSimulation.Steering.Agent', line: 7, depth: 2, swatch: 'steer', guides: [['pass'], ['elbow', true]]},
-  integrate: {name: 'FlockSimulation.Integrate', line: 10, depth: 1, swatch: 'integrate', guides: [['elbow']]},
+  agent: {name: 'FlockSimulation.Steering.Agent', line: 9, depth: 2, swatch: 'steer', guides: [['pass'], ['elbow', true]]},
+  integrate: {name: 'FlockSimulation.Integrate', line: 14, depth: 1, swatch: 'integrate', guides: [['elbow']]},
 };
 const ORDER = ['step', 'steer', 'agent', 'integrate'];
 const PARENT = {steer: 'step', agent: 'steer', integrate: 'step'};
@@ -110,8 +108,8 @@ export default function ProfilerHierarchy({alt}) {
   const inView = useInView(ref, {rootMargin: '-15% 0px'});
   const view = snapshot(useElapsed(inView, run));
 
-  // Steering.Agent is selected once the tree is built, until the reader picks another row.
-  const selected = picked ?? (view.done ? 'agent' : null);
+  // Nothing is selected until the reader picks a row: the page points at GC Alloc, not at one marker.
+  const selected = picked;
   const rows = view.rows.map((row) => ({
     ...row,
     open: row.open && !folded.has(row.id),
@@ -173,7 +171,7 @@ export default function ProfilerHierarchy({alt}) {
         </div>
         <div className={styles.table} role="tree" aria-label={alt} onKeyDown={onKeyDown}>
           <div className={clsx(styles.row, styles.head)} aria-hidden="true">
-            <span>Marker</span><span>Calls</span><span className={styles.alloc}>GC Alloc</span><span>Time ms</span>
+            <span>Marker</span><span className={styles.calls}>Calls</span><span className={styles.alloc}>GC Alloc</span><span>Time ms</span>
           </div>
           {rows.map((row) => {
             const {name, line, depth, parent, swatch, guides} = ROWS[row.id];
@@ -200,9 +198,7 @@ export default function ProfilerHierarchy({alt}) {
                   <span className={styles.swatch} data-marker={swatch} />
                   <span className={styles.name}>{name}</span> <span className={styles.line}>({line})</span>
                 </span>
-                <span className={clsx(styles.num, styles.calls)} data-counting={(row.id === 'agent' && view.counting) || undefined}>
-                  {row.calls}
-                </span>
+                <span className={clsx(styles.num, styles.calls)}>{row.calls}</span>
                 <span className={clsx(styles.num, styles.alloc)}>0 B</span>
                 <Cell value={row.ms.toFixed(2)} live={view.live} className={view.live > 0 && styles.flash} />
               </div>

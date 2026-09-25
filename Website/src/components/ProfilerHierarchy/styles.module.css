@@ -13,7 +13,7 @@
   --ph-selected: color-mix(in srgb, var(--venom-accent) 12%, var(--ifm-code-background));
   --ph-indent: 1.35rem;
   --ph-pad: 0.9rem;
-  --ph-row: 2.35rem;
+  --ph-row: 1.75rem;
   position: relative;
   overflow: hidden;
   color: var(--ph-fg);
@@ -72,9 +72,11 @@
   transition: background-color 0.4s, box-shadow 0.4s;
 }
 .row > span { display: flex; align-items: center; }
-.row > span + span { justify-content: center; border-left: 1px solid var(--ph-line); }
+.row > span + span { justify-content: center; }
+/* Column rules only in the header: the tree guides are the body's only lines. */
+.head > span + span { border-left: 1px solid var(--ph-line); }
 .head {
-  height: 2.4rem;
+  height: 2rem;
   color: var(--ph-muted);
   border-bottom: 1px solid var(--ph-line);
   font-size: 0.75rem;
@@ -148,24 +150,24 @@
 .tee::after { top: calc(var(--lift) + var(--ph-row) / 2); }
 .elbow::after { bottom: 0; }
 
-.num { font-variant-numeric: tabular-nums; }
-.calls { transition: color 0.3s, text-shadow 0.3s; }
-.calls[data-counting] { color: var(--ph-accent); text-shadow: 0 0 12px color-mix(in srgb, var(--ph-accent) 55%, transparent); }
-.row.selected .calls { color: var(--ph-accent); font-weight: 600; }
+.num { font-variant-numeric: tabular-nums; color: var(--ph-muted); }
+/* The page's claim is "measuring allocates nothing", so GC Alloc is the one bright column. */
+.row:not(.head) .alloc { color: var(--venom-fg-strong); }
 .flash { animation: tick 0.3s ease-out; }
 @keyframes tick { from { color: var(--venom-fg-strong); text-shadow: 0 0 8px color-mix(in srgb, var(--venom-fg-strong) 35%, transparent); } }
 
 @container (max-width: 560px) {
   .window { --ph-indent: 1rem; --ph-pad: 0.6rem; font-size: 0.75rem; }
-  .table { grid-template-columns: minmax(max-content, 1fr) 3.5rem 4.25rem; }
-  .alloc { display: none !important; }
+  .table { grid-template-columns: minmax(max-content, 1fr) 4.5rem 4.25rem; }
+  /* GC Alloc carries the claim, so Calls is the column that goes. */
+  .calls { display: none !important; }
   /* Long names scroll under the numbers, which stay in view. */
   .row > span + span { position: sticky; right: 0; z-index: 1; background: var(--row-bg, var(--ph-bg)); }
-  .row > span:nth-child(2) { right: 4.25rem; }
+  .row > span:nth-child(3) { right: 4.25rem; }
   .head > span + span { background: var(--ph-bg); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .row:not(.head), .caret::before, .name, .calls { transition: none; }
+  .row:not(.head), .caret::before, .name { transition: none; }
   .flash, .frame b { animation: none; }
 }

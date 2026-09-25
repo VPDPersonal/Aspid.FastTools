@@ -22,6 +22,26 @@ function enhanceTableCode(node) {
   node.children?.forEach(enhanceTableCode);
 }
 
+// A portable `<code lang="csharp">` stays plain inline code on GitHub; on the site it is highlighted in place.
+function highlightInlineCode(node) {
+  if (node.type === 'mdxJsxTextElement' && node.name === 'code') {
+    const language = node.attributes.find((attribute) => attribute.name === 'lang')?.value;
+    if (typeof language === 'string' && node.children.every((part) => part.type === 'text')) {
+      const code = node.children.map((part) => part.value).join('');
+      Object.assign(node, {
+        name: 'InlineCode',
+        attributes: [
+          {type: 'mdxJsxAttribute', name: 'language', value: language},
+          {type: 'mdxJsxAttribute', name: 'code', value: code},
+        ],
+        children: [],
+      });
+      return;
+    }
+  }
+  node.children?.forEach(highlightInlineCode);
+}
+
 /** Keep the package README unchanged while placing the site's TOC after its banner. */
 export function remarkStatusBadges() {
   return (tree) => {
@@ -61,6 +81,7 @@ export default function remarkIntroBanner({baseUrl, siteUrl}) {
         cell.data = {...cell.data, hProperties: {...cell.data?.hProperties, 'data-label': labels[index]}};
       }));
     }
+    highlightInlineCode(tree);
     // Translated copies can start with generated front matter.
     const banner = tree.children.find((node) => node.type === 'mdxJsxFlowElement' && node.name === 'img');
     if (banner?.type === 'mdxJsxFlowElement' && banner.name === 'img'

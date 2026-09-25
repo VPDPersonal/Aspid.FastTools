@@ -4,6 +4,7 @@ import Link from '@docusaurus/Link';
 import Translate from '@docusaurus/Translate';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import AnimatedPreview from '@site/src/components/FeaturePreview';
+import InlineCode from '@site/src/components/InlineCode';
 import InstallPanel from '@site/src/components/InstallPanel';
 import ProfilerHierarchy from '@site/src/components/ProfilerHierarchy';
 import SupportPanel from '@site/src/components/SupportPanel';
@@ -34,4 +35,4 @@ function FeatureCardMore() {
   return <Translate id="featureCard.more">Read more</Translate>;
 }
 
-export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy};
+export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InlineCode, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy};

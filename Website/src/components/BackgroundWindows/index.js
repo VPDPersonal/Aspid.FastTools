@@ -1,7 +1,7 @@
 import {useEffect} from 'react';
 
-export const TINTED_WINDOWS = '.theme-admonition-info, .theme-admonition-note, .theme-admonition-warning';
-export const BACKGROUND_WINDOWS = `.doc-background-window, ${TINTED_WINDOWS}`;
+// Framed images only: notices sit on the article surface and keep just their outline.
+export const BACKGROUND_WINDOWS = '.doc-background-window';
 
 // Mask only the article's painted surface, leaving its content and the shared page canvas intact.
 export default function useBackgroundWindows(ref, documentKey) {

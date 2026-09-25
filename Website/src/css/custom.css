@@ -399,6 +399,8 @@ pre {
   border-radius: 12px;
   box-shadow: none;
 }
+/* Outline only: the block sits on the article surface; its colour stays in the border and the heading. */
+.theme-doc-markdown .theme-admonition.alert { background-color: transparent; }
 
 .alert--success { --ifm-alert-border-color: var(--venom-accent); --ifm-alert-background-color: var(--ifm-color-success-contrast-background); }
 .alert--info { --ifm-alert-border-color: var(--venom-sapphire); --ifm-alert-background-color: var(--ifm-color-info-contrast-background); }
@@ -515,20 +517,9 @@ html[data-theme='light'].docs-doc-page {
   --ifm-color-warning-contrast-background: color-mix(in srgb, var(--venom-amber) 10%, rgb(255 255 255 / 0.85));
   --ifm-color-danger-contrast-background: color-mix(in srgb, var(--venom-ruby) 9%, rgb(255 255 255 / 0.85));
 }
-/* Inline code inside a light admonition: an opaque chip tinted by the block's colour instead of Infima's translucent wash. */
-html[data-theme='light'] .theme-admonition {
-  --ifm-alert-background-color-highlight: color-mix(in srgb, var(--ifm-alert-border-color) 12%, var(--venom-panel));
-}
-/* Dark: the same idea, a wash of the block's colour instead of Infima's fixed yellow. */
-html[data-theme='dark'] .theme-admonition {
-  --ifm-alert-background-color-highlight: color-mix(in srgb, var(--ifm-alert-border-color) 26%, transparent);
-}
-/* The chip's outline follows the block too, not the neutral article line. */
-.markdown .theme-admonition :not(pre) > code {
-  border-color: color-mix(in srgb, var(--ifm-alert-border-color) 35%, transparent);
-}
-html[data-theme='dark'] .markdown .theme-admonition :not(pre) > code {
-  border-color: color-mix(in srgb, var(--ifm-alert-border-color) 60%, transparent);
+/* Inline code inside an admonition keeps the article's neutral chip, so highlighted code reads the same everywhere. */
+.theme-admonition {
+  --ifm-alert-background-color-highlight: var(--ifm-pre-background); /* Infima aliases --ifm-code-background to this inside .alert */
 }
 
 /* The root paints the full canvas even when body is only one viewport tall. */
@@ -986,22 +977,6 @@ html.docs-background-windows.docs-doc-page {
   mask-size: 100% 100%;
   mask-repeat: no-repeat;
   pointer-events: none;
-}
-/* Notices tint the real canvas visible through the article's cutout. */
-@media (min-width: 997px) {
-  /* Light: a translucent paper tint, so the ripple dots still show through and the fill does not turn grey-blue over the canvas. */
-  .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
-    background: color-mix(in srgb, var(--venom-sapphire) 9%, rgb(255 255 255 / 55%));
-  }
-  html[data-theme='dark'] .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
-    background: rgb(15 45 85 / 45%);
-  }
-  .doc-column-with-windows .theme-admonition-warning {
-    background: color-mix(in srgb, var(--venom-amber) 10%, rgb(255 255 255 / 55%));
-  }
-  html[data-theme='dark'] .doc-column-with-windows .theme-admonition-warning {
-    background: rgb(90 62 7 / 45%);
-  }
 }
 /* Keep the frame and image above the shared background. */
 .theme-doc-markdown .doc-image-panel {
