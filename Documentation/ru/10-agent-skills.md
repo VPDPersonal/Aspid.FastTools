@@ -1,43 +1,39 @@
-# Claude Code Plugin
+# Agent Skills
 
-`aspid-fasttools` добавляет в [Claude Code](https://docs.claude.com/en/docs/claude-code) скиллы для профилирования методов и построения UI через fluent-расширения `VisualElement` из пакета.
+Coding-агент не знает API Aspid.FastTools, поэтому пишет ручной `ProfilerMarker`, серию присваиваний `style` или `switch` по enum там, где у пакета есть решение короче. Скиллы пакета учат агента этому API: одна команда ставит их в Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI и другие агенты, и агент использует `this.Marker()`, fluent-расширения `VisualElement`, `SerializableType` и `EnumValues` там, где они подходят.
 
 ## Быстрый старт
 
-[Установите Aspid.FastTools](README.md#установка) в Unity-проект и откройте проект в Claude Code. В сессии Claude Code добавьте маркетплейс, затем установите плагин:
+[Установите Aspid.FastTools](README.md#установка) в Unity-проект и выполните в корне проекта:
 
-```text
-/plugin marketplace add VPDPersonal/Aspid.Claude.Plugins
+```bash
+npx skills add VPDPersonal/Aspid.FastTools
 ```
 
-```text
-/plugin install aspid-fasttools@aspid-claude-plugins
-```
+Скиллы попадают в папки агентов внутри проекта, например `.claude/skills` или `.agents/skills`. Закоммитьте эти папки, и скиллы получит вся команда. `-y` ставит без вопросов, `-a claude-code` ограничивает установку одним агентом, `-s <скилл>` — одним скиллом, а `--list` показывает скиллы без установки.
 
-Плагин устанавливается отдельно от Unity-пакета. Откройте `/plugin`, чтобы проверить наличие `aspid-fasttools` среди установленных плагинов.
+Чтобы потом подтянуть новые версии скиллов:
+
+```bash
+npx skills update
+```
 
 ## Скиллы
 
-Скиллы активируются автоматически при подходящих запросах. Эти два покрывают возможности, описанные в документации пакета:
+Скиллы активируются автоматически при подходящих запросах:
 
 | Скилл | Задача | Руководство по API |
 |---|---|---|
-| `aspid-profiler-marker` | Добавление областей замера методов и блоков через `this.Marker()` | [ProfilerMarkers](05-profiler-markers.md) |
+| `aspid-profiler-marker` | Замер метода или участка через `this.Marker()` | [ProfilerMarkers](05-profiler-markers.md) |
 | `aspid-visual-element-fluent` | Построение и оформление элементов UI Toolkit в C# | [VisualElement Extensions](07-visual-element-extensions.md) |
+| `aspid-serializable-type` | Хранение `System.Type` и выбор типов в инспекторе | [Serializable Type System](02-serializable-types.md), [SerializeReference Selector](03-serialize-reference-selector.md), [ComponentTypeSelector](11-component-type-selector.md) |
+| `aspid-enum-values` | Сопоставление значений членам enum | [EnumValues](06-enum-values.md) |
 
 Например, выделите метод и попросите:
 
 ```text
 Добавь маркер на весь метод Simulate и отдельный
 именованный маркер на поиск соседей.
-Используй this.Marker() из Aspid.FastTools.
 ```
 
 После применения изменений проверьте компиляцию и маркеры в Unity Profiler.
-
-## Совместимость
-
-> [!IMPORTANT]
-> Плагин находится в alpha. Его [документация](https://github.com/VPDPersonal/Aspid.Claude.Plugins/blob/main/plugins/aspid-fasttools/README_RU.md) ориентирована на прежний пакет `com.aspid.fasttools`, а эти руководства — на `tech.aspid.fasttools`. Сверяйте предлагаемый код с API установленного пакета.
-
-Плагин также содержит `aspid-id-struct` для API `IId` и `[UniqueId]` прежнего пакета, которые не входят в эту документацию. Плагин выпускается независимо; см. [релизы и обновления](https://github.com/VPDPersonal/Aspid.Claude.Plugins/releases).

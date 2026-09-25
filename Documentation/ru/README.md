@@ -99,9 +99,9 @@ config
 // "Ability Config (2)"
 ```
 
-#### [Claude Code Plugin](10-claude-code-plugin.md)
+#### [Agent Skills](10-agent-skills.md)
 
-Учит Claude Code расставлять `this.Marker()` и собирать UI на fluent-расширениях `VisualElement`.
+Учит coding-агента API пакета; Claude Code, Codex, Cursor и другие получают скиллы одной командой.
 
 ```text
 Добавь маркер на весь метод Simulate
