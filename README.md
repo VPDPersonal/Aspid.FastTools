@@ -6,7 +6,7 @@
 [![Preview 1.0.0-rc.8](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Aspid.FastTools is a Unity package that takes the routine out of serialization and editor code. Type references and `[SerializeReference]` fields survive class renames, and broken ones are repaired without data loss. The class behind a `SerializeReference` field and enum → value tables are set up right in the Inspector. Profiler markers, UI Toolkit trees and `SerializedProperty` writes take a single line or chain instead of boilerplate.
+Aspid.FastTools is a Unity package that takes the routine out of serialization and editor code. Unity does not serialize `System.Type`, offers no Inspector picker for a `[SerializeReference]` field's class, and breaks that reference when the class is renamed. The package adds Inspector pickers for a type and a class and an editor for “enum → value” tables, and finds broken references across the project to repair them without data loss. A profiler marker takes one line, with its name generated from the code; UI Toolkit trees and `SerializedProperty` writes fit in one fluent chain instead of separate assignments.
 
 [Documentation](https://vpdpersonal.github.io/Aspid.FastTools/docs) · [Source code](https://github.com/VPDPersonal/Aspid.FastTools) · [Releases](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
@@ -26,31 +26,31 @@ The URL points to the latest preview; **Update** in the Package Manager brings i
 
 #### [Serializable Type System](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/02-serializable-types.md)
 
-Store and pick a `System.Type` in the Inspector.
+Stores a `System.Type` in a component/asset and lets you pick it in the Inspector from compatible types.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/serializable-type-quick-start.gif" alt="Select a serializable type in the Inspector" width="640" />
 
 #### [ComponentTypeSelector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/11-component-type-selector.md)
 
-Switch an existing component's type while preserving shared fields.
+Changes an added component/ScriptableObject to a derived type without losing shared field values.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/component-type-selector.gif" alt="Switch a component type in the Inspector" width="640" />
 
 #### [SerializeReference Selector](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/03-serialize-reference-selector.md)
 
-Pick which class a `SerializeReference` field holds, straight from the Inspector.
+Lets you pick the class for a `[SerializeReference]` field in the Inspector and carries compatible data over when the class changes.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_selector.gif" alt="Switch Pistol to Shotgun while keeping Damage at 37" width="640" />
 
 #### [SerializeReference Tooling](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/04-serialize-reference-tooling.md)
 
-Audit and repair references across the whole project, before builds and in CI.
+Finds lost `[SerializeReference]` entries across the project (prefabs, scenes, assets) and repairs them in groups — by hand, before a build or in CI.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Repair a missing weapon type without losing its data" width="640" />
 
 #### [EnumValues](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/06-enum-values.md)
 
-Edit enum → value tables in the Inspector, including flags.
+Maps enum keys to values (multipliers, colors, assets), edited in the Inspector, flags included.
 
 <img src="Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/EnumValues/Documentation/Images/surface-tables.png" alt="Edit enum keys and their values in the Inspector" width="640" />
 
@@ -58,7 +58,7 @@ Edit enum → value tables in the Inspector, including flags.
 
 #### [ProfilerMarkers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/05-profiler-markers.md)
 
-Generate a unique profiler marker per call site with `this.Marker()`.
+Marks a section with one line; the generator takes the marker name from the code, unique per call site.
 
 ```csharp
 using (this.Marker())
@@ -69,7 +69,7 @@ using (this.Marker())
 
 #### [VisualElement Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/07-visual-element-extensions.md)
 
-Build UI Toolkit trees with fluent chains.
+Sets element properties, styles and events in a chain, so a UI Toolkit tree is built in one expression.
 
 ```csharp
 new VisualElement()
@@ -80,7 +80,7 @@ new VisualElement()
 
 #### [SerializedProperty Extensions](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/08-serialized-property-extensions.md)
 
-Set values, resize arrays, and inspect the field type and owning object.
+Writes a value together with `Update` and `Apply` in one chain, and finds the field's C# type and the object the field belongs to.
 
 ```csharp
 manaCost
@@ -90,7 +90,7 @@ manaCost
 
 #### [Editor Helpers](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/09-editor-helpers.md)
 
-Get readable object and component display names for custom editors.
+Handles small editor-tooling tasks, such as labelling objects and components with readable names.
 
 ```csharp
 config.GetDisplayName();
@@ -103,7 +103,7 @@ config
 
 #### [Claude Code Plugin](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/10-claude-code-plugin.md)
 
-Claude Code skills for `this.Marker()` and the fluent `VisualElement` extensions.
+Teaches Claude Code to place `this.Marker()` and build UI with the fluent `VisualElement` extensions.
 
 ```text
 Add a marker for the whole Simulate method
@@ -114,7 +114,7 @@ and a separate one for the neighbour search.
 
 - [Samples overview](Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~/README.md) — scenes and editor tools for serialization, enum tables, profiling and editor UI.
 - [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.Editors) — signatures and descriptions of every public type and member.
-- [Changelog](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.md)
+- [Changelog](https://vpdpersonal.github.io/Aspid.FastTools/changelog) — what was added, changed and fixed in each version.
 
 ## Help and support
 

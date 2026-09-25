@@ -4,7 +4,7 @@
 [![Preview 1.0.0-rc.8](../Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](../Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации и редакторского кода. Ссылки на типы и `[SerializeReference]` переживают переименование классов, а сломанные восстанавливаются без потери данных. Класс для поля `SerializeReference` и таблицы enum → значение настраиваются прямо в инспекторе. Маркеры профилировщика, деревья UI Toolkit и запись в `SerializedProperty` занимают одну строку или цепочку вместо шаблонного кода.
+Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации и редакторского кода. Unity не сериализует `System.Type`, не даёт выбрать класс для поля `[SerializeReference]` в инспекторе и ломает эту ссылку при переименовании класса. Пакет добавляет в инспектор выбор типа и класса из списка и редактор таблиц «enum → значение», а сломанные ссылки находит и восстанавливает по всему проекту без потери данных. Маркер профилировщика ставится одной строкой, а имя ему генератор берёт из кода; деревья UI Toolkit и запись в `SerializedProperty` умещаются в одну fluent-цепочку вместо отдельных присваиваний.
 
 [Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
@@ -24,31 +24,31 @@ URL указывает на последнюю preview-версию; кнопк�
 
 #### [Serializable Type System](02-serializable-types.md)
 
-Хранение и выбор `System.Type` в инспекторе.
+Сохраняет `System.Type` в компоненте/ассете и даёт выбрать его в инспекторе из совместимых типов.
 
 <img src="../Images/serializable-type-quick-start.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
 
 #### [ComponentTypeSelector](11-component-type-selector.md)
 
-Смена типа существующего компонента с сохранением общих полей.
+Меняет тип добавленного компонента/ScriptableObject на наследника, не теряя значения общих полей.
 
 <img src="../Images/component-type-selector.gif" alt="Смена типа компонента в инспекторе" width="640" />
 
 #### [SerializeReference Selector](03-serialize-reference-selector.md)
 
-Выбор класса для поля `SerializeReference` прямо в инспекторе.
+Даёт выбрать класс для поля `[SerializeReference]` в инспекторе и переносит совместимые данные при смене класса.
 
 <img src="../Images/aspid_fasttools_serialize_reference_selector.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
 
 #### [SerializeReference Tooling](04-serialize-reference-tooling.md)
 
-Аудит и восстановление ссылок по всему проекту, в том числе перед сборкой и в CI.
+Находит потерянные `[SerializeReference]` по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами — вручную, перед сборкой или в CI.
 
 <img src="../Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Восстановление потерянного типа оружия с сохранением данных" width="640" />
 
 #### [EnumValues](06-enum-values.md)
 
-Редактирование таблиц enum → значение в инспекторе, включая флаги.
+Сопоставляет ключам enum значения (множители, цвета, ассеты) и редактируется в инспекторе, включая флаги.
 
 <img src="../../Samples~/EnumValues/Documentation/Images/surface-tables.png" alt="Редактирование enum-ключей и значений в инспекторе" width="640" />
 
@@ -56,7 +56,7 @@ URL указывает на последнюю preview-версию; кнопк�
 
 #### [ProfilerMarkers](05-profiler-markers.md)
 
-Уникальный маркер профилирования для каждого места вызова через `this.Marker()`.
+Размечает участок одной строкой, а имя маркера генератор берёт из кода, своё для каждого места вызова.
 
 ```csharp
 using (this.Marker())
@@ -67,7 +67,7 @@ using (this.Marker())
 
 #### [VisualElement Extensions](07-visual-element-extensions.md)
 
-Построение деревьев UI Toolkit fluent-цепочками.
+Задаёт свойства, стили и события элемента цепочкой, так что дерево UI Toolkit собирается одним выражением.
 
 ```csharp
 new VisualElement()
@@ -78,7 +78,7 @@ new VisualElement()
 
 #### [SerializedProperty Extensions](08-serialized-property-extensions.md)
 
-Запись значений, изменение размера массивов, получение типа поля и объекта-владельца.
+Записывает значение вместе с `Update` и `Apply` одной цепочкой, а ещё находит тип поля C# и объект, которому это поле принадлежит.
 
 ```csharp
 manaCost
@@ -88,7 +88,7 @@ manaCost
 
 #### [Editor Helpers](09-editor-helpers.md)
 
-Читаемые подписи объектов и компонентов для редакторских инструментов.
+Решает мелкие задачи редакторских инструментов, например подписывает объекты и компоненты читаемыми именами.
 
 ```csharp
 config.GetDisplayName();
@@ -101,7 +101,7 @@ config
 
 #### [Claude Code Plugin](10-claude-code-plugin.md)
 
-Скиллы Claude Code для `this.Marker()` и fluent-расширений `VisualElement`.
+Учит Claude Code расставлять `this.Marker()` и собирать UI на fluent-расширениях `VisualElement`.
 
 ```text
 Добавь маркер на весь метод Simulate
@@ -112,7 +112,7 @@ config
 
 - [Обзор примеров](../../Samples~/README.ru.md) — сцены и инструменты для сериализации, enum-таблиц, профилирования и интерфейсов редактора.
 - [Справочник API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.Editors) — сигнатуры и описания всех публичных типов и членов.
-- [Журнал изменений](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/CHANGELOG.ru.md)
+- [Журнал изменений](https://vpdpersonal.github.io/Aspid.FastTools/ru/changelog) — что добавлено, изменено и исправлено в каждой версии.
 
 ## Помощь и поддержка
 
