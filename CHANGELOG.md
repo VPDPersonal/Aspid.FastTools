@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `RemoveChildren` and `RemoveChildrenIf` remove several children in one call and take the same `params`, `IEnumerable`, `List`, `Span` and `ReadOnlySpan` overloads as `AddChildren`.
 - `ToggleButtonGroup` gets typed `SetValue`, `AddValueChanged`, `RemoveValueChanged` and `SetLabel` overloads for `ToggleButtonGroupState`, so calls such as `AddValueChanged(evt => …)` need no type arguments.
+- `RectIntField` gets a typed `SetLabel`, so `SetLabel("Area")` needs no type arguments, as on `RectField`.
+- `SetRootItemsSelf` fills a `TreeView` or `MultiColumnTreeView` in a chain: `tree.SetRootItemsSelf(items).SetAutoExpand(true)`.
 - Added `AndApplyWithoutUndo` counterparts for every `SerializedProperty` setter with immediate application, including `SetValue` overloads, object references, enums, and array size helpers.
 - Analyzer `AFT0009` (warning) — two `[TypeSelector]` base types have no type in common, so the selector is empty.
 - Analyzer `AFT0010` (warning) — a `this.Marker()` call opens no profiler marker because the generator cannot support its type: the type is `private` or `protected` (or nested in such a type), or it reuses a type parameter name of a containing type.
@@ -48,6 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A type deriving from a type of another assembly that shares its namespace through `InternalsVisibleTo` now gets markers of its own; its calls used to bind to the base type's overload and open nothing.
 - `WithName($"Br{{ace}}")` gives `Br{ace}`, `WithName` text with U+2028, U+2029 or U+0085 compiles, and a user's own `WithName` extension no longer renames the marker.
 - `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
+- `AddChildren`, `InsertChildren`, `RemoveChildren` and their `…If` variants with an `IEnumerable` no longer throw `InvalidOperationException` ("Collection was modified") when given `Children()` of an element: `target.AddChildren(source.Children())` moves every child.
+- `SetItemsSource` on a `TreeView` or `MultiColumnTreeView` now throws `InvalidOperationException` pointing to `SetRootItemsSelf`; it used to log a type mismatch error and leave the tree empty.
 
 ## [1.0.0-rc.8] — 2026-09-06
 
