@@ -46,7 +46,7 @@ namespace Aspid.FastTools.Samples.EnumValues
 
         private void Update()
         {
-            var speed = _speed * (_tile is null ? 1f : _speedByTerrain.GetValue(_tile.Flags));
+            var speed = _speed * (_tile == null ? 1f : _speedByTerrain.GetValue(_tile.Flags));
             var position = transform.position + Vector3.right * (_direction * speed * Time.deltaTime);
             if (Mathf.Abs(position.x) > _range)
                 _direction = -_direction;
@@ -54,7 +54,7 @@ namespace Aspid.FastTools.Samples.EnumValues
 
             var previousTile = _tile;
             _tile = FindTileBelow();
-            if (_tile is null)
+            if (_tile == null)
             {
                 FinishTrail();
                 return;

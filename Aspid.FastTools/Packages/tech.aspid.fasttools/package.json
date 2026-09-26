@@ -37,7 +37,7 @@
   "samples": [
     {
       "displayName": "EnumValues",
-      "description": "A character walking over surface tiles: EnumValues<TEnum, TValue> on a palette asset, EnumValues<TValue> with a [Flags] enum picked in the Inspector, default values and the flags lookup rules in action.",
+      "description": "A character walking over surface tiles: EnumValues<TEnum, TValue> on a palette asset, EnumValues<TValue> with a [Flags] enum picked in the Inspector, default values and the flags lookup rules in action. Needs the built-in Physics module.",
       "path": "Samples~/EnumValues"
     },
     {
@@ -57,7 +57,7 @@
     },
     {
       "displayName": "ProfilerMarkers",
-      "description": "A flock simulation with this.Marker() around each phase: the generated marker tree in the Profiler, per-iteration markers, markers in plain classes and local functions.",
+      "description": "A flock simulation with this.Marker() around each phase: the generated marker tree in the Profiler, per-iteration markers, markers in plain classes and local functions. Needs the built-in Physics module.",
       "path": "Samples~/ProfilerMarkers"
     }
   ],
