@@ -69,13 +69,29 @@ namespace Aspid.FastTools.Enums.Editors
 
         private static void DrawKey(Rect rect, SerializedProperty keyProperty, SerializedProperty enumTypeProperty)
         {
-            if (EnumValuesPropertyDrawerHelper.ResolveKey(keyProperty, enumTypeProperty) is not { } enumValue)
+            if (EnumValuesPropertyDrawerHelper.GetEnumType(enumTypeProperty) is not { } enumType
+                || !EnumValuesPropertyDrawerHelper.HasMembers(enumType))
             {
                 EditorGUI.PropertyField(rect, keyProperty, GUIContent.none);
                 return;
             }
 
-            var selected = EnumInfo.IsFlags(enumValue.GetType())
+            var enumValue = EnumValuesPropertyDrawerHelper.ParseKey(keyProperty.stringValue, enumType);
+
+            if (enumValue is null || EnumValuesPropertyDrawerHelper.IsWideFlags(enumType))
+            {
+                var caption = EnumValuesPropertyDrawerHelper.GetKeyCaption(keyProperty.stringValue, enumValue);
+
+                if (EditorGUI.DropdownButton(rect, new GUIContent(caption), FocusType.Keyboard))
+                {
+                    EnumValuesPropertyDrawerHelper.ShowKeyMenu(
+                        rect, keyProperty.serializedObject, keyProperty.propertyPath, enumTypeProperty.propertyPath);
+                }
+
+                return;
+            }
+
+            var selected = EnumInfo.IsFlags(enumType)
                 ? EditorGUI.EnumFlagsField(rect, enumValue)
                 : EditorGUI.EnumPopup(rect, enumValue);
 
