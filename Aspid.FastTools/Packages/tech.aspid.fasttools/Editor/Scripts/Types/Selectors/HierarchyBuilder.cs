@@ -7,15 +7,53 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class HierarchyBuilder
     {
+        // Unfiltered hierarchies, reused between openings: the tree is immutable once built, and without a predicate
+        // or extra candidates it depends only on the key and the loaded types.
+        private static readonly Dictionary<string, TreeNode> _cache = new(StringComparer.Ordinal);
+        private static IReadOnlyList<Type> _cachedDomainTypes;
+
         internal static TreeNode Build(
             Type[] types,
             TypeAllow allow,
             Func<Type, bool> filter = null,
             IEnumerable<Type> additionalTypes = null,
             bool includeNoneOption = true,
-            bool includeHidden = false)
+            bool includeHidden = false,
+            bool excludeEditorOnly = false)
         {
-            var allTypes = TypeInfo.GetAllTypeInfos(types, allow, filter, additionalTypes, includeHidden);
+            if (filter is not null || additionalTypes is not null)
+                return BuildUncached(types, allow, filter, additionalTypes, includeNoneOption, includeHidden, excludeEditorOnly);
+
+            // A newly loaded assembly replaces the domain sweep, which drops every hierarchy built from the old one.
+            var domainTypes = TypeUtility.DomainTypes;
+
+            if (!ReferenceEquals(_cachedDomainTypes, domainTypes))
+            {
+                _cache.Clear();
+                _cachedDomainTypes = domainTypes;
+            }
+
+            var key = string.Join("|", types.Select(type => type.AssemblyQualifiedName)) +
+                $"#{(int)allow}{(includeNoneOption ? 1 : 0)}{(includeHidden ? 1 : 0)}{(excludeEditorOnly ? 1 : 0)}";
+
+            if (_cache.TryGetValue(key, out var cached)) return cached;
+
+            var root = BuildUncached(types, allow, null, null, includeNoneOption, includeHidden, excludeEditorOnly);
+            _cache[key] = root;
+
+            return root;
+        }
+
+        private static TreeNode BuildUncached(
+            Type[] types,
+            TypeAllow allow,
+            Func<Type, bool> filter,
+            IEnumerable<Type> additionalTypes,
+            bool includeNoneOption,
+            bool includeHidden,
+            bool excludeEditorOnly)
+        {
+            var allTypes = TypeInfo.GetAllTypeInfos(types, allow, filter, additionalTypes, includeHidden, excludeEditorOnly);
 
             var root = new TreeNode("/");
 
@@ -159,6 +197,7 @@ namespace Aspid.FastTools.Types.Editors
                 node.Tooltip = onlyChild.Tooltip;
                 node.Icon = onlyChild.Icon;
                 node.SearchName = onlyChild.SearchName;
+                node.QualifiedName = onlyChild.QualifiedName;
                 node.Children.Clear();
             }
 
@@ -201,6 +240,7 @@ namespace Aspid.FastTools.Types.Editors
             Tooltip = type.Tooltip,
             Icon = type.Icon,
             SearchName = type.Name,
+            QualifiedName = type.QualifiedName,
         };
 
         private static void SortNode(TreeNode node)

@@ -57,7 +57,7 @@ namespace Aspid.FastTools.Types.Editors
             // parameter narrows the nested definitions up front instead of offering ones that fail every later pick.
             var nested = GenericTypeResolver.GetAssignableGenericDefinitions(baseTypes[0], baseTypes, _inferredArgumentFilter);
             var hierarchy = HierarchyBuilder.Build(baseTypes, TypeAllow.None, (Func<Type, bool>)Filter, nested,
-                includeNoneOption: false, includeHidden: _includeHidden);
+                includeNoneOption: false, includeHidden: _includeHidden, excludeEditorOnly: _excludeEditorOnly);
 
             return new PickerPage
             {

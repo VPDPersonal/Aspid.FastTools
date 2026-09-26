@@ -81,6 +81,14 @@ namespace Aspid.FastTools.Types.Editors
                 return;
             }
 
+            // A query survives moving down into its results, but the list ignores text keys; hand them back to the
+            // field so refining the query does not need a click on it first.
+            if (_searchChromeOpen && !IsSearchFocused(focusController?.focusedElement) && TryEditSearchFromList(evt))
+            {
+                evt.StopPropagation();
+                return;
+            }
+
             switch (evt.keyCode)
             {
                 case KeyCode.UpArrow:
@@ -115,6 +123,23 @@ namespace Aspid.FastTools.Types.Editors
                         evt.StopPropagation();
                     break;
             }
+        }
+
+        private bool TryEditSearchFromList(KeyDownEvent evt)
+        {
+            var query = _searchField.value ?? string.Empty;
+
+            if (IsTypingCharacter(evt))
+                query += evt.character;
+            else if (evt.keyCode == KeyCode.Backspace && query.Length > 0)
+                query = query[..^1];
+            else
+                return false;
+
+            _searchField.value = query;
+            OpenSearch();
+
+            return true;
         }
 
         private static bool IsTypingCharacter(KeyDownEvent evt)

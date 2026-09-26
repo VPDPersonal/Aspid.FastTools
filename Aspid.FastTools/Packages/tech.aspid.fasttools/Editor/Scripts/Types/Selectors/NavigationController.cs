@@ -88,6 +88,7 @@ namespace Aspid.FastTools.Types.Editors
                             Tooltip = node.Tooltip,
                             Icon = node.Icon,
                             SearchName = node.SearchName,
+                            QualifiedName = node.QualifiedName,
                         });
                 }
             }
@@ -198,6 +199,7 @@ namespace Aspid.FastTools.Types.Editors
                     Tooltip = source.Tooltip,
                     Icon = source.Icon,
                     SearchName = source.SearchName,
+                    QualifiedName = source.QualifiedName,
                     SectionKey = title,
                 });
             }

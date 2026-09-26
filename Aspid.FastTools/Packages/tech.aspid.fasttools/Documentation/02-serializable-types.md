@@ -136,6 +136,8 @@ To allow a fixed set of classes, give them a common interface or base class and 
 
 Static classes are excluded. On a string or wrapper, `Allow` filters type categories without checking for a parameterless constructor.
 
+In the Inspector of a runtime object, the picker also leaves out types from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders): a player build cannot resolve them. Fields of editor-only objects, such as editor windows and settings, still offer every type. The rule follows the object's class, so a runtime object's field declared under `#if UNITY_EDITOR` leaves them out too.
+
 <details>
 <summary>TypeSelector argument forms</summary>
 
@@ -276,7 +278,7 @@ TypeSelectorWindow.Show(
 
 The callback receives an assembly-qualified name, or `null` for `<None>`. Dismissing the window without a choice does not invoke it.
 
-`currentAqn` controls the current mark: an empty string (the default) marks `<None>`, while `null` leaves selection unmarked.
+`currentAqn` controls the current mark: an empty string (the default) marks `<None>`, while `null` leaves selection unmarked, as does a name missing from the list, so Enter right after opening cannot erase a missing type's stored name.
 
 ### Window filters
 
