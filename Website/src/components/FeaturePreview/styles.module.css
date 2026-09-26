@@ -156,6 +156,39 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .promptTyped[data-typed] { max-width: 100%; transition: max-width 1s steps(40); }
 .caret { flex: none; width: 6px; height: 1.1em; margin-left: 1px; background: var(--venom-fg); animation: blink 1s steps(1) infinite; }
 .caret[data-hide] { visibility: hidden; }
+/* The Agent Skills page: the request waits for Send (an arrow, like a chat's send button), which turns into Replay
+   once the edit has landed. Send glows now and then, so the reader sees it can be pressed. */
+.promptSend {
+  display: grid;
+  flex: none;
+  place-items: center;
+  /* The button is the prompt's right end: it stretches over the field's padding and border, so their outlines coincide. */
+  align-self: stretch;
+  aspect-ratio: 1;
+  margin: -5px -9px -5px auto;
+  padding: 0;
+  color: var(--venom-accent);
+  background: var(--preview-accent-soft);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+.promptSend svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.promptSend:hover { background: color-mix(in srgb, var(--venom-accent) 24%, transparent); }
+/* The pulse fills the button from inside, so its outline stays the same 1px line as the prompt's. */
+.promptSend:not([data-replay]):not(:disabled) { animation: sendPulse 2.6s ease-in-out infinite; }
+.promptSend:not([data-replay]):not(:disabled):hover { animation: none; }
+@keyframes sendPulse {
+  0%, 60%, 100% { background-color: var(--preview-accent-soft); }
+  30% { background-color: color-mix(in srgb, var(--venom-accent) 32%, transparent); }
+}
+.promptSend[data-replay] { color: var(--venom-muted); background: transparent; }
+.promptSend[data-replay]:hover { color: var(--venom-fg-strong); background: var(--preview-accent-soft); }
+.promptSend:disabled { cursor: default; opacity: 0.35; }
+.promptSend:focus-visible { outline: 2px solid var(--venom-accent); outline-offset: 2px; }
+/* Nothing moves until Send: the caret waits without blinking. */
+.prompt:has(.promptSend) .caret { animation: none; }
 @keyframes blink { 50% { opacity: 0; } }
 .event { display: flex; align-items: center; gap: 8px; padding-left: 9px; opacity: 0; transform: translateY(4px); transition: opacity 0.3s ease, transform 0.3s var(--preview-ease); }
 .event[data-show] { opacity: 1; transform: none; }

@@ -3,6 +3,8 @@ import MDXComponents from '@theme-original/MDXComponents';
 import Link from '@docusaurus/Link';
 import Translate from '@docusaurus/Translate';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import AgentPrompt from '@site/src/components/AgentPrompt';
+import AgentSession from '@site/src/components/AgentSession';
 import AnimatedPreview from '@site/src/components/FeaturePreview';
 import InlineCode from '@site/src/components/InlineCode';
 import InstallPanel from '@site/src/components/InstallPanel';
@@ -35,4 +37,4 @@ function FeatureCardMore() {
   return <Translate id="featureCard.more">Read more</Translate>;
 }
 
-export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InlineCode, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy};
+export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InlineCode, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy, AgentSession, AgentPrompt};

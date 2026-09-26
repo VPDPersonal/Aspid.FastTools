@@ -219,57 +219,146 @@ function EnumPreview({ru}) {
   );
 }
 
-/* ---------- Agent Skills: a request in the session, the skill's edit in the method ---------- */
+/* ---------- Agent Skills: a request in the session, the skill's edit in the file ---------- */
 
-// The edited method, as the skill writes it: the same idioms as the ProfilerMarkers card. The neighbour search keeps its
-// old indent until the edit lands, then shifts under its new `using`.
-const PLUGIN_CODE = `public void Simulate()
+// One scene per package skill: the request, the skill it loads, and the file as the skill leaves it. `added` lines open up
+// when the edit lands; `indented` lines keep their old indent until then and shift under the new block. Each scene reuses
+// the quick-start example of the skill's feature page, so update it when that page changes. The card on the
+// introduction plays the first scene; the Agent Skills page plays each in its skill's section (`AgentSession`).
+export const AGENT_SCENES = [
+  {
+    skill: 'aspid-profiler-marker',
+    file: 'FlockSimulation.cs',
+    prompt: {en: 'Profile Simulate and the neighbor search', ru: 'Замерь Simulate и отдельно поиск соседей'},
+    code: `public void Simulate()
 {
     using var _ = this.Marker();
-    using (this.Marker().WithName("Neighbours"))
-    FindNeighbours();
+    using (this.Marker().WithName("Neighbors"))
+    FindNeighbors();
     Integrate();
-}`;
-const PLUGIN_ADDED = [2, 3];
-const PLUGIN_INDENTED = [4];
+}`,
+    added: [2, 3],
+    indented: [4],
+  },
+  {
+    skill: 'aspid-visual-element-fluent',
+    file: 'AbilityConfigEditor.cs',
+    prompt: {en: 'Build the inspector header with a title', ru: 'Собери шапку инспектора с заголовком'},
+    code: `public override VisualElement CreateInspectorGUI()
+{
+    return new VisualElement()
+        .SetPaddingX(12)
+        .SetPaddingY(10)
+        .AddChild(new Label("Ability Config")
+            .SetFontSize(14));
+}`,
+    added: [2, 3, 4, 5, 6],
+  },
+  {
+    skill: 'aspid-serializable-type',
+    file: 'WeaponMount.cs',
+    prompt: {en: 'Add a weapon class picker to the Inspector, no abstract ones', ru: 'Добавь в инспектор выбор класса оружия, без абстрактных'},
+    code: `public sealed class WeaponMount : MonoBehaviour
+{
+    [TypeSelector(Allow = TypeAllow.None)]
+    [SerializeField]
+    private SerializableType<Weapon> _primaryWeapon;
+}`,
+    added: [2, 3, 4],
+  },
+  {
+    skill: 'aspid-enum-values',
+    file: 'DamageReceiver.cs',
+    prompt: {en: 'Add a damage multiplier per DamageType to the Inspector', ru: 'Добавь в инспектор множитель урона для каждого DamageType'},
+    code: `public sealed class DamageReceiver : MonoBehaviour
+{
+    [SerializeField]
+    private EnumValues<DamageType, float> _multipliers;
 
-function PluginPreview({ru}) {
+    public float GetMultiplier(DamageType type) =>
+        _multipliers.GetValue(type);
+}`,
+    added: [2, 3, 4, 5, 6],
+  },
+];
+
+/** Steps of one scene: 0 an empty prompt, 1 the request is typed, 2 the skill loads, 3 the edit lands, 4–5 the result holds. */
+const AGENT_SCENE_STEPS = 6;
+const AGENT_SCENE_STEP_MS = 1300;
+
+/**
+ * One scene of an agent session. On the introduction card it loops; with `manual` (the Agent Skills page) the request
+ * waits in the prompt until the reader presses Send, plays once, and Send turns into Replay.
+ */
+export function PluginPreview({ru, scene = AGENT_SCENES[0], lines, manual = false}) {
   const ref = useRef(null);
   const theme = usePrismTheme();
-  // 0 an empty prompt, 1 the request is typed, 2 the skill loads, 3 the edit lands, 4–5 the result holds.
-  const step = useLoop(6, 1300, useInView(ref), 4);
+  const looped = useLoop(AGENT_SCENE_STEPS, AGENT_SCENE_STEP_MS, useInView(ref) && !manual, 4);
+  const [played, setPlayed] = useState(1);
+  const [busy, setBusy] = useState(false);
+  const timers = useRef([]);
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  const step = manual ? played : looped;
   const edited = step >= 3;
+  const added = scene.added ?? [];
+  const indented = scene.indented ?? [];
+
+  // Replay first folds the edit back, then runs the same two beats as the loop: the skill loads, the edit lands.
+  const send = () => {
+    timers.current.forEach(clearTimeout);
+    const start = step >= 3 ? 450 : 150;
+    setPlayed(1);
+    setBusy(true);
+    timers.current = [
+      setTimeout(() => setPlayed(2), start),
+      setTimeout(() => {
+        setPlayed(3);
+        setBusy(false);
+      }, start + AGENT_SCENE_STEP_MS),
+    ];
+  };
+  const sendLabel = step >= 3 ? (ru ? 'Повторить' : 'Replay') : (ru ? 'Отправить' : 'Send');
+
   return (
     <div ref={ref} className={styles.pluginBody}>
-      <div className={styles.session} aria-hidden="true">
-        <div className={styles.sessionBar}><span>Agent</span><span>FlockSimulation.cs</span></div>
+      <div className={styles.session} data-session aria-hidden={manual ? undefined : 'true'}>
+        <div className={styles.sessionBar}><span>Agent</span><span>{scene.file}</span></div>
         <div className={styles.sessionLog}>
           <div className={styles.prompt}>
             <span className={styles.promptSign}>&gt;</span>
-            <span className={styles.promptTyped} data-typed={step >= 1 || undefined}>
-              {ru ? 'Замерь Simulate и отдельно поиск соседей' : 'Profile Simulate and the neighbour search'}
-            </span>
+            <span className={styles.promptTyped} data-typed={step >= 1 || undefined}>{ru ? scene.prompt.ru : scene.prompt.en}</span>
             <span className={styles.caret} data-hide={step >= 2 || undefined} />
+            {manual && (
+              <button type="button" className={styles.promptSend} data-replay={step >= 3 || undefined}
+                disabled={busy} onClick={send} aria-label={sendLabel} title={sendLabel}>
+                <svg viewBox="0 0 16 16" aria-hidden="true">
+                  {step >= 3
+                    ? <path d="M13.5 8A5.5 5.5 0 1 1 11.9 4.1M12 1.5V4.4H9.1" />
+                    : <path d="M8 13V3M3.5 7.5L8 3l4.5 4.5" />}
+                </svg>
+              </button>
+            )}
           </div>
           <div className={styles.event} data-show={step >= 2 || undefined}>
             <span className={styles.eventDot} data-done={edited || undefined} />
-            Skill <b>aspid-profiler-marker</b>
+            Skill <b>{scene.skill}</b>
           </div>
           <div className={styles.event} data-show={edited || undefined}>
             <span className={styles.eventDot} data-done />
-            Update <b>FlockSimulation.cs</b> <span className={styles.eventDiff}>+2</span>
+            Update <b>{scene.file}</b> <span className={styles.eventDiff}>+{added.length}</span>
           </div>
         </div>
       </div>
-      <Highlight theme={theme} code={PLUGIN_CODE} language="csharp">
+      <Highlight theme={theme} code={scene.code} language="csharp">
         {({tokens, getTokenProps}) => (
-          <pre className={clsx(styles.snippet, styles.diff)} style={{color: theme.plain.color}} data-edited={edited || undefined}>
+          <pre className={clsx(styles.snippet, styles.diff)} style={{color: theme.plain.color, ...(lines && {minHeight: `calc(${lines} * 1.75em + 28px)`})}}
+            data-edited={edited || undefined}>
             {tokens.map((line, index) => (
               <span
                 key={index}
                 className={styles.snippetLine}
-                data-added={PLUGIN_ADDED.includes(index) || undefined}
-                data-indented={PLUGIN_INDENTED.includes(index) || undefined}>
+                data-added={added.includes(index) || undefined}
+                data-indented={indented.includes(index) || undefined}>
                 {line.map((token, tokenIndex) => {
                   const {key, ...props} = getTokenProps({token});
                   return <span key={tokenIndex} {...props} />;
