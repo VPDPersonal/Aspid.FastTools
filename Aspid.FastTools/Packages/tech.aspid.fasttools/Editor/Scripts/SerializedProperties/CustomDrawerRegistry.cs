@@ -18,6 +18,8 @@ namespace Aspid.FastTools.Editors
 
         private static List<(Type Target, bool UseForChildren)> _registrations;
 
+        private static readonly Dictionary<(Type, bool), bool> Cache = new();
+
         private static List<(Type Target, bool UseForChildren)> Registrations => _registrations ??= Collect();
 
         // Mirrors Unity's lookup: the type and its base classes, then its interfaces, each also by generic definition.
@@ -26,12 +28,20 @@ namespace Aspid.FastTools.Editors
         {
             if (type is null) return false;
 
+            // Drawers only change with a domain reload, which also clears this cache.
+            if (Cache.TryGetValue((type, isManagedReference), out var hasDrawer)) return hasDrawer;
+            return Cache[(type, isManagedReference)] = Lookup(type, isManagedReference);
+        }
+
+        private static bool Lookup(Type type, bool isManagedReference)
+        {
             for (var current = type; current is not null; current = current.BaseType)
                 if (Matches(current, requested: current == type, isManagedReference))
                     return true;
 
+            // An interface itself was checked above, so every interface listed here is an ancestor.
             foreach (var @interface in type.GetInterfaces())
-                if (Matches(@interface, requested: type.IsInterface, isManagedReference))
+                if (Matches(@interface, requested: false, isManagedReference))
                     return true;
 
             return false;

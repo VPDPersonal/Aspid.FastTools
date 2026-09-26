@@ -83,6 +83,7 @@ namespace Aspid.FastTools.Editors.Tests
 
             Assert.AreEqual(abilitiesField, Abilities.GetFieldInfo());
             Assert.AreEqual(abilitiesField, ability.GetFieldInfo());
+            Assert.AreEqual(typeof(ReflectionBook).GetField(nameof(ReflectionBook.Effect)), Effect.GetFieldInfo());
             Assert.AreEqual(typeof(ReflectionAbility).GetField(nameof(ReflectionAbility.Name)),
                 ability.FindPropertyRelative(nameof(ReflectionAbility.Name)).GetFieldInfo());
             Assert.AreEqual(typeof(ReflectionBurnEffect).GetField(nameof(ReflectionBurnEffect.Damage)),
@@ -105,6 +106,7 @@ namespace Aspid.FastTools.Editors.Tests
 
             Assert.AreSame(_book, Abilities.GetDeclaringInstance());
             Assert.AreSame(_book, ability.GetDeclaringInstance());
+            Assert.AreSame(_book, Effect.GetDeclaringInstance());
             Assert.AreSame(_book.Abilities[0], ability.FindPropertyRelative(nameof(ReflectionAbility.Name)).GetDeclaringInstance());
             Assert.AreSame(_book.Effect, Effect.FindPropertyRelative(nameof(ReflectionBurnEffect.Damage)).GetDeclaringInstance());
         }
