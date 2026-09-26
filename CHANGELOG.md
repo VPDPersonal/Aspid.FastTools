@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `ToggleButtonGroup` gets typed `SetValue`, `AddValueChanged`, `RemoveValueChanged` and `SetLabel` overloads for `ToggleButtonGroupState`, so calls such as `AddValueChanged(evt => …)` need no type arguments.
 - Added `AndApplyWithoutUndo` counterparts for every `SerializedProperty` setter with immediate application, including `SetValue` overloads, object references, enums, and array size helpers.
 - Analyzer `AFT0009` (warning) — two `[TypeSelector]` base types have no type in common, so the selector is empty.
 - Analyzer `AFT0010` (warning) — a `this.Marker()` call opens no profiler marker because the generator cannot support its type: the type is `private` or `protected` (or nested in such a type), or it reuses a type parameter name of a containing type.
