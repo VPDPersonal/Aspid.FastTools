@@ -70,7 +70,7 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerScopeDiscardedRule, name.GetLocation()));
     }
 
-    // `Func<AutoScope> f = this.Marker` passes no line, so it reaches the fallback or another line's marker.
+    // `Func<int, AutoScope> f = this.Marker` passes no line, so it reaches the fallback or another line's marker.
     private static void AnalyzeMethodGroup(SyntaxNodeAnalysisContext context)
     {
         var access = (MemberAccessExpressionSyntax)context.Node;
