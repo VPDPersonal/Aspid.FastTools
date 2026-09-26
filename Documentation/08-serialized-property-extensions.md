@@ -154,11 +154,11 @@ All three methods return `null` when resolution fails: a missing field, a `null`
 
 ## Persistent()
 
-An inspector's `SerializedObject` lives only while the inspector is open, so its properties cannot be kept for a deferred call. `Persistent()` returns the same property on a new `SerializedObject` for the same target objects:
+An inspector's `SerializedObject` lives only while the inspector is open, so its properties cannot be kept for a deferred call. `Persistent()` returns the same property on a new `SerializedObject` for the same target objects and context:
 
 | Before — Unity API | After — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(manaCost&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(manaCost.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = manaCost.Persistent();</code></pre> |
+| <pre lang="csharp"><code>var source = manaCost.serializedObject;&#10;var independentObject = new SerializedObject(&#10;    source.targetObjects, source.context);&#10;var independent = independentObject&#10;    .FindProperty(manaCost.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = manaCost.Persistent();</code></pre> |
 
 The caller owns the new object:
 
