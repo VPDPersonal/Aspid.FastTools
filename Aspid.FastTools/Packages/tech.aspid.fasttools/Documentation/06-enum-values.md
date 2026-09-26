@@ -188,7 +188,7 @@ Keys are stored by member **name**:
 | Member renamed or deleted | Its row is no longer recognised: initialization logs an error to the Console, and lookup and enumeration skip it |
 
 > [!NOTE]
-> The Inspector shows such a row as `<Missing Name>` and keeps its key until you pick a member, so renaming the member back restores the row. The same applies when `EnumValues<TValue>` is switched to another enum: switching back restores every key.
+> The Inspector shows such a row as `<Missing Name>` and keeps its key until you pick a member, so renaming the member back restores the row. The same applies when `EnumValues<TValue>` is switched to another enum: switching back restores every key. A row added to an empty table has no key and shows `<None>` until you pick a member.
 
 ## Package sample
 
