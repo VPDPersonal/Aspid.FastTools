@@ -292,6 +292,10 @@ language, theme).
 `src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow
 keys, Enter and Esc. `node --test scripts/search.test.mjs` checks matching and Markdown extraction.
 
+`src/components/DotRipple` draws the click ripples on the dot background; its per-frame math lives in `waves.js`
+(add waves through `addWave`, never `push`). `node --test scripts/dot-ripple.test.mjs` checks the wave cap and the
+row culling.
+
 ## Deploy
 
 `.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package `Documentation/`,
