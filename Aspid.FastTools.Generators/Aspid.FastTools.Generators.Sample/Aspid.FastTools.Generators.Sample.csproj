@@ -20,10 +20,10 @@
 
     <!-- The generator's bin/ output is not merged (see ILRepack.targets), so the compiler needs its
          dependencies as analyzers too, or the generator fails to load and every call binds to the
-         fallback. Keep the versions in step with Aspid.FastTools.Generators.csproj. -->
+         fallback. The versions come from Directory.Build.props, shared with the generator. -->
     <ItemGroup>
-        <PackageReference Include="Aspid.Generators.Helper" Version="[0.1.0]" GeneratePathProperty="true" ExcludeAssets="all" PrivateAssets="all" />
-        <PackageReference Include="Aspid.Generators.Helper.Unity" Version="[0.0.1-alpha.3]" GeneratePathProperty="true" ExcludeAssets="all" PrivateAssets="all" />
+        <PackageReference Include="Aspid.Generators.Helper" Version="$(AspidGeneratorsHelperVersion)" GeneratePathProperty="true" ExcludeAssets="all" PrivateAssets="all" />
+        <PackageReference Include="Aspid.Generators.Helper.Unity" Version="$(AspidGeneratorsHelperUnityVersion)" GeneratePathProperty="true" ExcludeAssets="all" PrivateAssets="all" />
         <Analyzer Include="$(PkgAspid_Generators_Helper)/lib/netstandard2.0/Aspid.Generators.Helper.dll" />
         <Analyzer Include="$(PkgAspid_Generators_Helper_Unity)/lib/netstandard2.0/Aspid.Generators.Helper.Unity.dll" />
     </ItemGroup>
