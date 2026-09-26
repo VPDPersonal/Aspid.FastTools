@@ -54,13 +54,19 @@ public sealed class Armory : MonoBehaviour
 ## SerializableType / SerializableMonoScript
 
 - Both have a picker without any attribute; `[TypeSelector]` only adds constraints or `Required`.
-- Read: `.Type` (lazy, cached once resolved), implicit `Type?`, `AssemblyQualifiedName` (stored name, kept when it no
-  longer resolves), `BaseType` (`typeof(T)`).
+- Read: `.Type` (lazy; the result, `null` included, is cached until the stored name changes), implicit `Type?`,
+  `AssemblyQualifiedName` (stored name, kept when it no longer resolves), `BaseType` (`typeof(T)`).
+- `T` limits the picker and the constructor only: a name stored before `T` or the class's base changed still resolves,
+  so check `BaseType.IsAssignableFrom(type)` before casting when that matters.
+- A player resolves only the stored name, which managed stripping does not see: with Managed Stripping Level Low or
+  higher, mark types picked only in the Inspector `[Preserve]` (`UnityEngine.Scripting`) or list them in `link.xml`,
+  else `.Type` is `null` in the build. Same for `[TypeSelector]` strings.
 - Create in code: `new SerializableType<Weapon>(typeof(Sword))` (throws `ArgumentException` if not assignable;
   `null` = empty). `SerializableMonoScript` has no public constructor.
 - `SerializableMonoScript` accepts only top-level non-generic classes in a file of the same name; the user can drag
-  the `.cs` file onto the field. Only it follows renames: for `SerializableType` and strings a renamed class or
-  namespace makes `.Type` return `null` silently.
+  the `.cs` file onto the field. Only it follows renames (in the editor it falls back to the script's class until the
+  asset is re-saved): for `SerializableType` and strings a renamed class or namespace makes `.Type` return `null`
+  silently.
 - Declare the generic variant on the field: Unity serializes by the declared type, so a `SerializableType` field
   loses `T`.
 
