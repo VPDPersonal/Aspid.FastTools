@@ -10,8 +10,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     // The field's stylesheet sits on its root, and child PropertyFields are built inside it, so its rules must only
     // match the field's own header and open button — never a button or foldout of a nested drawer or list.
-    // The tree mirrors SerializeReferenceField (root > Foldout > toggle + content), so only the stylesheet is under
-    // test, without the field's binding and layout.
+    // Most tests mirror SerializeReferenceField (root > Foldout > toggle + content), so only the stylesheet is under
+    // test, without the field's binding and layout; RealField_OpenButton_SitsInTheHeaderWithItsClass checks that
+    // the real field still builds that tree.
     [TestFixture]
     internal sealed class SerializeReferenceFieldStyleScopeTests
     {
@@ -22,6 +23,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private EditorWindow _window;
         private Foldout _header;
         private Button _openButton;
+        private LinkerTestObject _target;
 
         [SetUp]
         public void SetUp()
@@ -45,6 +47,32 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void TearDown()
         {
             if (_window) Object.DestroyImmediate(_window);
+            if (_target) Object.DestroyImmediate(_target);
+        }
+
+        [UnityTest]
+        public IEnumerator RealField_OpenButton_SitsInTheHeaderWithItsClass()
+        {
+            _target = ScriptableObject.CreateInstance<LinkerTestObject>();
+            var serialized = new SerializedObject(_target);
+            serialized.FindProperty("a").managedReferenceValue = new TestSword();
+            serialized.ApplyModifiedProperties();
+
+            var field = new SerializeReferenceField("A", serialized.FindProperty("a"));
+            _window.rootVisualElement.Add(field);
+
+            yield return null;
+
+            var header = field.Q<Foldout>();
+            var openButton = field.Q<Button>(className: OpenButtonClass);
+
+            Assert.AreSame(field, header.parent, "The header foldout must be a direct child of the field.");
+            Assert.IsNotNull(openButton, "The field's open-in-script-editor button must carry its own class.");
+            Assert.AreSame(header.Q<Toggle>(), openButton.parent, "The open button must sit in the header toggle.");
+            Assert.AreEqual(18f, openButton.resolvedStyle.maxWidth.value);
+            Assert.AreEqual(18f, openButton.resolvedStyle.maxHeight.value);
+            Assert.AreEqual(0f, header.Q(className: Foldout.inputUssClassName).resolvedStyle.flexGrow,
+                "The header rules must reach the real field's foldout arrow.");
         }
 
         [UnityTest]
