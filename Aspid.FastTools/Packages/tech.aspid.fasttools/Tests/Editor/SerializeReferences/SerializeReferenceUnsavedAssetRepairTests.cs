@@ -1,3 +1,4 @@
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
@@ -80,6 +81,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(UnsavedDamage, ((TestSword)probe.b).damage, "The repair must not discard the unsaved edit.");
             Assert.IsInstanceOf<TestSword>(probe.a);
             Assert.AreEqual(StoredDamage, ((TestSword)probe.a).damage, "The repair must keep the reference's stored data.");
+        }
+
+        [Test]
+        public void ApplyFix_DirtyAsset_RefusesAndKeepsUnsavedChanges()
+        {
+            // Outside batch mode the Save and Continue prompt would wait for a click.
+            if (!Application.isBatchMode) Assert.Ignore("Runs in batch mode only.");
+
+            var rid = SerializationUtility.GetManagedReferencesWithMissingTypes(_probe)[0].referenceId;
+            AssetDatabase.TryGetGUIDAndLocalFileIdentifier(_probe, out _, out long fileId);
+            var before = File.ReadAllText(ProbeAssetPath);
+
+            Assert.IsFalse(SerializeReferenceGraphEditor.ApplyFix(ProbeAssetPath, fileId, rid, typeof(TestSword).AssemblyQualifiedName));
+
+            Assert.AreEqual(before, File.ReadAllText(ProbeAssetPath));
+            var probe = AssetDatabase.LoadAssetAtPath<UnsavedRepairTestObject>(ProbeAssetPath);
+            Assert.AreEqual(UnsavedDamage, ((TestSword)probe.b).damage, "The refused fix must not discard the unsaved edit.");
         }
 
         [Test]
