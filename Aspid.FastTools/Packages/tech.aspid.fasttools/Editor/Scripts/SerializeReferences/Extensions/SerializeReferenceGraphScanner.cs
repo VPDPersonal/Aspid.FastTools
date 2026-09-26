@@ -22,15 +22,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Regex _mappingKey = new(@"^\s*(?:-\s+)?(?<key>[A-Za-z_][\w\-]*)\s*:", RegexOptions.Compiled);
 
         // Resolving document labels loads assets; project sweeps pass false to keep the scan text-only.
-        public static List<ReferenceGraphDocument> Build(string assetPath, bool resolveTypeNames = true)
+        public static List<ReferenceGraphDocument> Build(string assetPath, bool resolveTypeNames = true) =>
+            Build(assetPath, text: null, resolveTypeNames);
+
+        // text is the asset's content when the caller has already read it, e.g. to probe it before parsing.
+        public static List<ReferenceGraphDocument> Build(string assetPath, string text, bool resolveTypeNames)
         {
             var result = new List<ReferenceGraphDocument>();
 
             try
             {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
+                if (string.IsNullOrEmpty(assetPath)) return result;
+                if (text is null && !File.Exists(assetPath)) return result;
 
-                var lines = File.ReadAllLines(assetPath);
+                var lines = text is null ? File.ReadAllLines(assetPath) : SplitLines(text);
                 var headers = CollectHeaders(lines);
                 var typeNames = resolveTypeNames ? ResolveTypeNames(assetPath) : null;
 
@@ -55,6 +60,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return result;
+        }
+
+        // The same line breaks File.ReadAllLines splits on.
+        private static string[] SplitLines(string text)
+        {
+            var lines = new List<string>();
+            using var reader = new StringReader(text);
+
+            while (reader.ReadLine() is { } line)
+                lines.Add(line);
+
+            return lines.ToArray();
         }
 
         // Documents without reference entries or field pointers contribute no graph.
