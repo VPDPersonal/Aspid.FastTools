@@ -20,6 +20,10 @@ namespace Aspid.FastTools.Types
     /// Managed Stripping Level Low up, a class referenced only by this name can be removed from the build and
     /// <see cref="Type"/> returns <see langword="null"/>. Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
     /// </para>
+    /// <para>
+    /// A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly
+    /// loaded later is not picked up before that.
+    /// </para>
     /// </remarks>
     [Serializable]
     public abstract class SerializableTypeBase :
@@ -29,15 +33,16 @@ namespace Aspid.FastTools.Types
         [Tooltip("The selected type, stored by its assembly-qualified name.")]
         [SerializeField] private string? _assemblyQualifiedName;
 
+        // Marks a failed lookup, so one reference write publishes the resolved state; null means not resolved yet.
+        private static readonly Type _unresolved = typeof(Unresolved);
+
         private Type? _type;
-        private bool _isResolved;
 
         private protected SerializableTypeBase() { }
 
         private protected SerializableTypeBase(Type? type)
         {
-            _type = type;
-            _isResolved = true;
+            _type = type ?? _unresolved;
             _assemblyQualifiedName = type?.AssemblyQualifiedName;
         }
 
@@ -62,13 +67,8 @@ namespace Aspid.FastTools.Types
 #endif
                 {
                     // A failed lookup is cached too: a missing assembly makes every Type.GetType call probe for it.
-                    if (!_isResolved)
-                    {
-                        _type = ResolveType(_assemblyQualifiedName);
-                        _isResolved = true;
-                    }
-
-                    return _type;
+                    var type = _type ??= ResolveType(_assemblyQualifiedName) ?? _unresolved;
+                    return ReferenceEquals(type, _unresolved) ? null : type;
                 }
             }
         }
@@ -99,11 +99,8 @@ namespace Aspid.FastTools.Types
 
         private protected virtual void OnBeforeSerialize() { }
 
-        private void ResetResolvedType()
-        {
+        private void ResetResolvedType() =>
             _type = null;
-            _isResolved = false;
-        }
 
         private static Type? GetTypeFromAssemblyQualifiedName(string? assemblyQualifiedName)
         {
@@ -113,5 +110,7 @@ namespace Aspid.FastTools.Types
                 typeName: assemblyQualifiedName,
                 throwOnError: false);
         }
+
+        private sealed class Unresolved { }
     }
 }

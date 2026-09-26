@@ -94,7 +94,7 @@ var empty = new SerializableType<Weapon>(null);
 Выбранный тип читается через `.Type` или неявное преобразование в `System.Type`, как у `SerializableType`. В плеере обёртка тоже хранит только имя типа.
 
 > [!WARNING]
-> Плеер ищет тип по сохранённому имени, а managed code stripping не видит имён, записанных в сценах и ассетах. Начиная с **Managed Stripping Level** Low, IL2CPP может вырезать класс, на который ссылается только инспектор, и в билде `.Type` вернёт `null`, хотя в редакторе тип находится. Пометьте такие классы `[Preserve]` (`UnityEngine.Scripting`) или перечислите их в `link.xml`. То же относится к `[TypeSelector]` на `string`.
+> В плеере `SerializableType` и `SerializableMonoScript` ищут тип по сохранённому имени, а managed code stripping не видит имён, записанных в сценах и ассетах. Начиная с **Managed Stripping Level** Low, класс, на который ссылается только инспектор, может не попасть в билд, и `.Type` вернёт `null`, хотя в редакторе тип находится. Пометьте такие классы `[Preserve]` (`UnityEngine.Scripting`) или перечислите их в `link.xml`. То же относится к `[TypeSelector]` на `string`.
 
 ## TypeSelectorAttribute
 

@@ -69,7 +69,8 @@ namespace Aspid.FastTools.Types
         private protected sealed override Type? ResolveType(string? assemblyQualifiedName)
         {
             // Only OnBeforeSerialize re-syncs the name, and an object loaded in Play Mode may never run it — e.g. an
-            // additional scene or Resources.Load after a class rename whose owners were not saved again.
+            // additional scene or Resources.Load after a class rename whose owners were not saved again. GetClass is
+            // main-thread only, so the fallback is too.
             var type = base.ResolveType(assemblyQualifiedName);
             if (type is not null || !_script) return type;
 
@@ -94,8 +95,9 @@ namespace Aspid.FastTools.Types
     /// <remarks>
     /// Unity serializes a field by its declared type, so a <see cref="SerializableMonoScript{T}"/> assigned from code
     /// to a field declared as <see cref="SerializableMonoScript"/> is reloaded unconstrained: the type survives, the
-    /// constraint does not. Only the picker checks <typeparamref name="T"/>: a loaded name is not re-checked, so after
-    /// <typeparamref name="T"/> or the stored class's base changes, the type may no longer be assignable to it.
+    /// constraint does not. Only the Inspector checks <typeparamref name="T"/> when a type is picked or dropped: a
+    /// loaded name is not re-checked, so after <typeparamref name="T"/> or the stored class's base changes, the type
+    /// may no longer be assignable to it.
     /// </remarks>
     /// <typeparam name="T">Base constraint type; the picker offers only types assignable to it.</typeparam>
     /// <example>

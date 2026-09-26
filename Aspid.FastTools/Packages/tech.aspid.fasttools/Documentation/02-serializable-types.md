@@ -94,7 +94,7 @@ A suitable script is a file in a runtime assembly that declares a top-level, non
 Read the selected type through `.Type` or implicit conversion to `System.Type`, as with `SerializableType`. In a player, the wrapper also stores just the type name.
 
 > [!WARNING]
-> A player finds the type by its stored name, and managed code stripping does not see names stored in scenes and assets. From **Managed Stripping Level** Low up, IL2CPP may remove a class referenced only from the Inspector, and `.Type` returns `null` in the build while the editor resolves it. Mark such classes `[Preserve]` (`UnityEngine.Scripting`) or list them in `link.xml`. The same applies to `[TypeSelector]` on a `string`.
+> In a player, `SerializableType` and `SerializableMonoScript` find the type by its stored name, and managed code stripping does not see names stored in scenes and assets. From **Managed Stripping Level** Low up, the build may drop a class referenced only from the Inspector, and `.Type` then returns `null` while the editor resolves it. Mark such classes `[Preserve]` (`UnityEngine.Scripting`) or list them in `link.xml`. The same applies to `[TypeSelector]` on a `string`.
 
 ## TypeSelectorAttribute
 
