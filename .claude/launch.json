@@ -7,11 +7,11 @@
       "runtimeArgs": [
         "docusaurus",
         "start",
-        "--port",
-        "3100",
         "--no-open"
       ],
       "cwd": "Website",
+      "_note": "Hot-reload dev server for one page, English; the app picks a free port (PORT), so worktrees never collide.",
+      "autoPort": true,
       "port": 3100
     },
     {
@@ -22,26 +22,12 @@
         "start",
         "--locale",
         "ru",
-        "--port",
-        "3101",
         "--no-open"
       ],
       "cwd": "Website",
+      "_note": "Same as website-dev for the Russian locale.",
+      "autoPort": true,
       "port": 3101
-    },
-    {
-      "name": "website-build-3003",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": [
-        "docusaurus",
-        "serve",
-        "--port",
-        "3003",
-        "--no-open"
-      ],
-      "cwd": "Website",
-      "_note": "Serves an existing `npm run build` (en + ru) from a worktree without replacing the shared 3001 build.",
-      "port": 3003
     }
   ]
 }
