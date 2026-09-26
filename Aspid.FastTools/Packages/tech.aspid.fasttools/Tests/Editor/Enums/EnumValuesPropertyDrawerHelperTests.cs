@@ -3,6 +3,9 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Collections;
+using UnityEngine.TestTools;
+using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.Enums.Editors;
@@ -87,6 +90,61 @@ namespace Aspid.FastTools.Enums.Tests
             DrawRowsWithoutWrites("_ints");
 
             CollectionAssert.AreEqual(new[] { nameof(Quality.Default) }, GetKeys("_ints"));
+        }
+
+        [UnityTest]
+        public IEnumerator KeyChangedElsewhere_UpdatesTheKeyDropdown()
+        {
+            SetEnumType("_ints", typeof(Season));
+            AddEntry("_ints", nameof(Season.Summer));
+
+            var window = ScriptableObject.CreateInstance<EditorWindow>();
+
+            try
+            {
+                window.ShowUtility();
+
+                var row = EnumValueUIToolkitPropertyDrawer.Draw(
+                    _serializedObject.FindProperty("_ints._values").GetArrayElementAtIndex(0));
+
+                window.rootVisualElement.Add(row);
+                yield return null;
+
+                var keyField = row.Q<EnumField>();
+                Assert.AreEqual(Season.Summer, keyField.value);
+
+                // Stands in for Undo, Revert or Paste: the key changes without going through the row.
+                using (var other = new SerializedObject(_host))
+                {
+                    other.FindProperty("_ints._values.Array.data[0]._key").stringValue = nameof(Season.Winter);
+                    other.ApplyModifiedPropertiesWithoutUndo();
+                }
+
+                var deadline = EditorApplication.timeSinceStartup + 3;
+                while (!Equals(keyField.value, Season.Winter) && EditorApplication.timeSinceStartup < deadline)
+                    yield return null;
+
+                Assert.AreEqual(Season.Winter, keyField.value);
+            }
+            finally
+            {
+                if (window) window.Close();
+            }
+        }
+
+        [Test]
+        public void WideFlagsKey_ShowsTheMenuFieldWithoutWriting()
+        {
+            SetEnumType("_ints", typeof(BigFlags));
+            AddEntry("_ints", nameof(BigFlags.High));
+
+            var row = DrawRowsWithoutWrites("_ints")[0];
+
+            var menuField = row.Q<BaseField<string>>(className: EnumField.ussClassName);
+            Assert.AreEqual(DisplayStyle.Flex, menuField.style.display.value);
+            Assert.AreEqual(nameof(BigFlags.High), menuField.Q<TextElement>(className: EnumField.textUssClassName).text);
+            Assert.AreEqual(DisplayStyle.None, row.Q<EnumFlagsField>().style.display.value);
+            CollectionAssert.AreEqual(new[] { nameof(BigFlags.High) }, GetKeys("_ints"));
         }
 
         [Test]
@@ -254,16 +312,19 @@ namespace Aspid.FastTools.Enums.Tests
 
         // Builds the UI Toolkit row of every entry, which resolves the key as the Inspector does, and checks
         // that nothing was written to the asset.
-        private void DrawRowsWithoutWrites(string field)
+        private VisualElement[] DrawRowsWithoutWrites(string field)
         {
             var dirtyCount = EditorUtility.GetDirtyCount(_host);
             var values = _serializedObject.FindProperty($"{field}._values");
 
-            for (var i = 0; i < values.arraySize; i++)
-                EnumValueUIToolkitPropertyDrawer.Draw(values.GetArrayElementAtIndex(i));
+            var rows = Enumerable.Range(0, values.arraySize)
+                .Select(i => EnumValueUIToolkitPropertyDrawer.Draw(values.GetArrayElementAtIndex(i)))
+                .ToArray();
 
             Assert.IsFalse(_serializedObject.hasModifiedProperties);
             Assert.AreEqual(dirtyCount, EditorUtility.GetDirtyCount(_host));
+
+            return rows;
         }
 
         private string GetCaption(string field, int index)
