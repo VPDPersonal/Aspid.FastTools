@@ -104,6 +104,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             property.managedReferenceValue = value;
             serializedObject.ApplyModifiedProperties();
+            SerializeReferenceHelpers.InvalidateReferenceMemos();
             return true;
         }
 

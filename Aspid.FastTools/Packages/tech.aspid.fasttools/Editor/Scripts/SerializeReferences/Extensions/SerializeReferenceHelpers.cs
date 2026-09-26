@@ -180,6 +180,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Update() pulls the per-target writes back in; applying instead would write the live object's stale
             // reference back over them.
             serializedObject.Update();
+            InvalidateReferenceMemos();
         }
 
         // Repair notices operate on one backing asset and cannot represent a multi-object selection.
@@ -191,8 +192,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool IsMissingType(SerializedProperty property) =>
             TryGetMissingType(property, out _, out _);
 
-        // Missing-reference probes run repeatedly during repaint; same-frame repairs explicitly invalidate this memo.
-        private static int _missingProbeFrame = -1;
+        // Missing-reference probes run repeatedly during repaint; same-tick repairs explicitly invalidate this memo.
+        private static long _missingProbeFrame = -1;
         private static readonly Dictionary<(int instanceId, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
             _missingProbeMemo = new();
 
@@ -206,7 +207,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (property.propertyType != SerializedPropertyType.ManagedReference) return false;
             if (property.managedReferenceValue is not null) return false;
 
-            var frame = Time.frameCount;
+            var frame = MemoTick;
             if (_missingProbeFrame != frame)
             {
                 _missingProbeMemo.Clear();
@@ -988,7 +989,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return GetSharedReferenceIndices(property.serializedObject).TryGetValue(id, out var index) ? index : 0;
         }
 
-        private static int _aliasFrame = -1;
+        private static long _aliasFrame = -1;
         private static SerializedObject _aliasSerializedObject;
         private static readonly Dictionary<long, int> AliasCounts = new();
 
@@ -996,7 +997,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static Dictionary<long, int> GetReferenceIdCounts(SerializedObject serializedObject)
         {
-            var frame = Time.frameCount;
+            var frame = MemoTick;
             if (_aliasFrame == frame && ReferenceEquals(_aliasSerializedObject, serializedObject))
                 return AliasCounts;
 
@@ -1020,7 +1021,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return AliasCounts;
         }
 
-        private static int _sharedIndicesFrame = -1;
+        private static long _sharedIndicesFrame = -1;
         private static SerializedObject _sharedIndicesObject;
         private static readonly Dictionary<long, int> SharedIndices = new();
 
@@ -1029,7 +1030,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Refreshing the counts first also resets this memo's frame when it rebuilds.
             var counts = GetReferenceIdCounts(serializedObject);
 
-            var frame = Time.frameCount;
+            var frame = MemoTick;
             if (_sharedIndicesFrame == frame && ReferenceEquals(_sharedIndicesObject, serializedObject))
                 return SharedIndices;
 
@@ -1135,7 +1136,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return DisplayPathCache[propertyPath] = builder.ToString();
         }
 
-        private static int _sharedPathsFrame = -1;
+        private static long _sharedPathsFrame = -1;
         private static SerializedObject _sharedPathsObject;
         private static readonly Dictionary<long, List<string>> SharedPathsById = new();
 
@@ -1144,7 +1145,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Refreshing the counts first also resets this memo's frame when it rebuilds.
             var counts = GetReferenceIdCounts(serializedObject);
 
-            var frame = Time.frameCount;
+            var frame = MemoTick;
             if (_sharedPathsFrame == frame && ReferenceEquals(_sharedPathsObject, serializedObject))
                 return SharedPathsById;
 
@@ -1164,7 +1165,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return SharedPathsById;
         }
 
-        // Call after a same-frame reassignment: the memo is keyed by frame, so a synchronous re-query would
+        // Call after a same-tick reassignment: the memo is keyed by tick, so a synchronous re-query would
         // otherwise return the pre-mutation snapshot and still report the just-broken alias as shared.
         public static void InvalidateSharedReferenceCache()
         {
@@ -1173,11 +1174,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _sharedPathsFrame = -1;
         }
 
-        // A same-frame repaint after an undo would read the pre-undo snapshot. Registered at domain load, before any
+        // Call after any managed-reference write: the next repaint can land in the same tick, and the mixed-types
+        // cache is keyed by selection, so none of them would notice the change on their own.
+        public static void InvalidateReferenceMemos()
+        {
+            InvalidateSharedReferenceCache();
+            InvalidateMissingTypeMemo();
+            InvalidateMixedTypesCache();
+            SerializeReferenceDuplicateGuard.InvalidateObservationMemo();
+        }
+
+        // Time.frameCount barely moves in Edit Mode, so the per-frame memos are keyed by editor update ticks instead.
+        public static long MemoTick { get; private set; }
+
+        // A same-tick repaint after an undo would read the pre-undo snapshot. Registered at domain load, before any
         // per-field handler subscribes, so it always runs first.
         [InitializeOnLoadMethod]
-        private static void InvalidateAliasMemoOnUndoRedo() =>
-            Undo.undoRedoPerformed += InvalidateSharedReferenceCache;
+        private static void TrackMemoLifetime()
+        {
+            EditorApplication.update += () => MemoTick++;
+            Undo.undoRedoPerformed += InvalidateReferenceMemos;
+        }
 
         public static void MakeReferenceUnique(SerializedProperty property)
         {
@@ -1187,7 +1204,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             persistent.SetManagedReferenceAndApply(CloneManagedReferenceGraph(current));
 
-            InvalidateSharedReferenceCache();
+            InvalidateReferenceMemos();
         }
 
         // Report revisited IDs but do not enter their children, so cyclic reference graphs terminate.
