@@ -107,8 +107,37 @@ internal sealed class ProfilerMarkersGenerator : IIncrementalGenerator
             ownTypeParameters: string.Join(",", symbol.TypeParameters.Select(static p => p.Name)),
             constraintsClause: BuildConstraintsClause(typeParameters),
             arity: symbol.Arity,
-            isValueType: symbol.IsValueType);
+            isValueType: symbol.IsValueType,
+            isObsolete: IsObsolete(symbol) || typeParameters.Any(static p => p.ConstraintTypes.Any(IsObsolete)));
     }
+
+    // A type is obsolete when it, a containing type or a type in its name (type argument, array element) is.
+    private static bool IsObsolete(ITypeSymbol type)
+    {
+        switch (type)
+        {
+            case IArrayTypeSymbol array:
+                return IsObsolete(array.ElementType);
+
+            case IPointerTypeSymbol pointer:
+                return IsObsolete(pointer.PointedAtType);
+
+            case INamedTypeSymbol named:
+                for (var t = named; t is not null; t = t.ContainingType)
+                {
+                    if (HasObsoleteAttribute(t) || t.TypeArguments.Any(IsObsolete)) return true;
+                }
+                return false;
+
+            default:
+                return false;
+        }
+    }
+
+    private static bool HasObsoleteAttribute(ISymbol symbol) =>
+        symbol.GetAttributes().Any(static attribute =>
+            attribute.AttributeClass is { Name: "ObsoleteAttribute" } attributeClass
+            && attributeClass.ContainingNamespace.ToDisplayString() == "System");
 
     private static StringBuilder AppendNameWithArity(StringBuilder builder, INamedTypeSymbol type)
     {

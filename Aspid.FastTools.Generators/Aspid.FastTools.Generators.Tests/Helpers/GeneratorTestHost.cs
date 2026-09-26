@@ -36,7 +36,7 @@ internal static class GeneratorTestHost
 
         public static class ProfilerMarkerExtensionsForGenerator
         {
-            public static Unity.Profiling.ProfilerMarker.AutoScope Marker<T>(this T instance) => default;
+            public static Unity.Profiling.ProfilerMarker.AutoScope Marker<T>(this T instance, [System.Runtime.CompilerServices.CallerLineNumber] int line = -1) => default;
             public static Unity.Profiling.ProfilerMarker.AutoScope WithName(this in Unity.Profiling.ProfilerMarker.AutoScope marker, string name) => marker;
         }
         """;

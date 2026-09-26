@@ -74,6 +74,7 @@ internal static class ExtensionClassBody
             .AppendLineIf(hasNamespace, $"namespace {type.Namespace}")
             .BeginBlockIf(hasNamespace)
             .AppendLine($"[{ProfilerMarkerGeneratedCode}]")
+            .AppendLineIf(type.IsObsolete, "[global::System.Obsolete]")
             .AppendLine($"internal static class {className}")
             .BeginBlock()
             .AppendProfilerMarkers(type, names, calls, isPerClosedType)

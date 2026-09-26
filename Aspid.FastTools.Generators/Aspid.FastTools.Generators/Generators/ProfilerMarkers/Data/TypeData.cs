@@ -20,6 +20,10 @@ internal readonly struct TypeData : IEquatable<TypeData>
     public readonly int Arity;
     public readonly bool IsValueType;
 
+    // The generated code names the type, its containing types and its constraints, so it is marked
+    // [Obsolete] when one of them is: only an obsolete context silences CS0612, CS0618 and CS0619.
+    public readonly bool IsObsolete;
+
     public TypeData(
         string typeKey,
         string typeName,
@@ -30,7 +34,8 @@ internal readonly struct TypeData : IEquatable<TypeData>
         string ownTypeParameters,
         string constraintsClause,
         int arity,
-        bool isValueType)
+        bool isValueType,
+        bool isObsolete)
     {
         TypeKey = typeKey;
         TypeName = typeName;
@@ -42,6 +47,7 @@ internal readonly struct TypeData : IEquatable<TypeData>
         ConstraintsClause = constraintsClause;
         Arity = arity;
         IsValueType = isValueType;
+        IsObsolete = isObsolete;
     }
 
     public bool Equals(TypeData other) =>
@@ -54,7 +60,8 @@ internal readonly struct TypeData : IEquatable<TypeData>
         && OwnTypeParameters == other.OwnTypeParameters
         && ConstraintsClause == other.ConstraintsClause
         && Arity == other.Arity
-        && IsValueType == other.IsValueType;
+        && IsValueType == other.IsValueType
+        && IsObsolete == other.IsObsolete;
 
     public override bool Equals(object? obj) => obj is TypeData other && Equals(other);
 
@@ -72,6 +79,7 @@ internal readonly struct TypeData : IEquatable<TypeData>
             hash = (hash * 397) ^ ConstraintsClause.GetHashCode();
             hash = (hash * 397) ^ Arity;
             hash = (hash * 397) ^ (IsValueType ? 1 : 0);
+            hash = (hash * 397) ^ (IsObsolete ? 1 : 0);
             return hash;
         }
     }

@@ -522,6 +522,47 @@ public class ProfilerMarkersExecutionTests
     }
 
     [Fact]
+    public void GlobalNamespaceTypes_OpenTheirMarkers()
+    {
+        // Unity's script template declares no namespace.
+        const string source = """
+            public class Foo { public void Run() { using var _ = this.Marker(); /*foo*/ } }
+            public class Box<T> { public void Run() { using var _ = this.Marker(); /*box*/ } }
+
+            public static class Probe { public static void Run() { new Foo().Run(); new Box<int>().Run(); } }
+            """;
+
+        var run = GeneratorTestHost.RunProfilerMarkers(source);
+
+        Assert.Equal(new[]
+        {
+            $"Foo.Run ({LineOf(source, "foo")})",
+            $"Box<Int32>.Run ({LineOf(source, "box")})",
+        }, GeneratorTestHost.Execute(run, "Probe"));
+    }
+
+    [Fact]
+    public void ObsoleteTypes_OpenTheirMarkers()
+    {
+        const string source = """
+            namespace Sample
+            {
+                [System.Obsolete("x")] public class Foo { public void Run() { using var _ = this.Marker(); /*foo*/ } }
+                [System.Obsolete("x", true)] public class Bar { public void Run() { using var _ = this.Marker(); /*bar*/ } }
+
+                [System.Obsolete]
+                public static class Probe { public static void Run() { new Foo().Run(); new Bar().Run(); } }
+            }
+            """;
+
+        Assert.Equal(new[]
+        {
+            $"Foo.Run ({LineOf(source, "foo")})",
+            $"Bar.Run ({LineOf(source, "bar")})",
+        }, Run(source));
+    }
+
+    [Fact]
     public void WithoutEnableProfiler_CompilesAndOpensNothing()
     {
         const string source = """
