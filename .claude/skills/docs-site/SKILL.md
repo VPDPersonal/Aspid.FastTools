@@ -245,7 +245,9 @@ regenerate or `git checkout Website/api` before building:
    front matter with a short `sidebar_label`, and `toc.yml` → `sidebar.js` (namespace → Classes/Interfaces/…
    groups). A type name that appears in two namespaces (`TypeExtensions`, `VisualElementExtensions`) gets a
    namespace suffix in its label — Docusaurus derives one translation key per label and the `ru` build fails
-   on duplicates.
+   on duplicates. Unity links point at the Scripting Reference of the Editor in
+   `Aspid.FastTools/ProjectSettings/ProjectVersion.txt` (members move between versions);
+   `node --test scripts/unity-script-reference.test.mjs` checks the URL builder.
 
 `Website/sidebarsApi.js` adapts the generated sidebar for display (drops the repeated `Aspid.FastTools.`
 prefix, folds the `SetLabel` overloads). Never edit files in `Website/api/` by hand; fix the XML comment or the
