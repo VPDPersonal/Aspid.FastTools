@@ -40,9 +40,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             "\n" +
             "    /* Switches (unset by default, so they follow the editor skin) */\n" +
             "    /* --aspid-colors-switch-accent:        rgb(85, 175, 100); */\n" +
-            "    /* --aspid-colors-switch-track_border:  rgb(82, 82, 87); */\n" +
+            "    /* --aspid-colors-switch-track-border:  rgb(82, 82, 87); */\n" +
             "    /* --aspid-colors-switch-handle:        rgba(189, 189, 196, 0.85); */\n" +
-            "    /* --aspid-colors-switch-handle_shadow: rgba(0, 0, 0, 0.15); */\n" +
+            "    /* --aspid-colors-switch-handle-shadow: rgba(0, 0, 0, 0.15); */\n" +
             "}\n";
 
         public static void BuildControls(VisualElement container)
