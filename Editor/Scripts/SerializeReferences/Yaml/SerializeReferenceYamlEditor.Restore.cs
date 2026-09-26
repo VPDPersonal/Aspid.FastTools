@@ -9,6 +9,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static partial class SerializeReferenceYamlEditor
     {
+        private static readonly System.Random _ridRandom = new();
+
         // Captures the full RefIds entry block behind a top-level array element, verbatim indentation and all — the
         // exact text needed to re-materialize it later. The missing-list guard snapshots with this BEFORE a list
         // resize destroys the element, since Unity collapses a named missing rid into the anonymous sentinel.
@@ -51,9 +53,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // Re-points the array element at a fresh rid — one past the document's maximum, so it collides with nothing
-        // surviving — and re-inserts the captured entry under it. It acts only while the element holds a null id, so
-        // a slot the user has since re-assigned is never clobbered. The caller reimports the asset.
+        // Re-points the array element at a free rid and re-inserts the captured entry under it. It acts only while the
+        // element holds a null id, so a slot the user has since re-assigned is never clobbered. The caller reimports
+        // the asset.
         public static bool TryRestoreArrayElementReference(string assetPath, long fileId, string elementPath,
             IReadOnlyList<string> entryLines)
         {
@@ -78,7 +80,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return false;
                 if (currentRid >= 0) return false;
 
-                var freshRid = NextFreeRid(lines, start, end);
+                var freshRid = PickRestoreRid(lines, start, end, entryLines);
 
                 var pointerIndent = IndentOf(lines[pointerLine]);
                 lines[pointerLine] = new string(' ', pointerIndent) + $"- rid: {freshRid}";
@@ -242,21 +244,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return false;
         }
 
-        // The smallest positive id greater than every "rid: N" in the document. Scans both field pointers and RefIds
-        // entries so a reused id can never alias a surviving reference.
-        private static long NextFreeRid(string[] lines, int start, int end)
+        // Prefers the snapshot's own rid: Unity has just dropped it, and instance overrides keyed to it
+        // ("managedReferences[rid].field") keep applying. Otherwise a random positive 63-bit id, as Unity allocates —
+        // never "max + 1": Unity hands out ids sequentially within a session, so the base's max + 1 is often the id
+        // of an override a variant, nested prefab or scene already holds, and the two would merge into one entry.
+        private static long PickRestoreRid(string[] lines, int start, int end, IReadOnlyList<string> entryLines)
+        {
+            var used = CollectRids(lines, start, end);
+
+            var header = Regex.Match(entryLines[0], @"^\s*-\s+rid:\s*(?<rid>-?\d+)\s*$");
+            if (header.Success && long.TryParse(header.Groups["rid"].Value, out var original)
+                && original > 0 && !used.Contains(original))
+                return original;
+
+            var buffer = new byte[8];
+            while (true)
+            {
+                _ridRandom.NextBytes(buffer);
+                var candidate = BitConverter.ToInt64(buffer, 0) & long.MaxValue;
+                if (candidate > 0 && !used.Contains(candidate)) return candidate;
+            }
+        }
+
+        // Every "rid: N" in the document — field pointers and RefIds entries alike — so a chosen id never aliases a
+        // surviving reference.
+        private static HashSet<long> CollectRids(string[] lines, int start, int end)
         {
             var ridPattern = new Regex(@"rid:\s*(?<rid>-?\d+)");
-            var max = 0L;
+            var result = new HashSet<long>();
 
             for (var i = start; i < end; i++)
             {
                 foreach (Match match in ridPattern.Matches(lines[i]))
-                    if (long.TryParse(match.Groups["rid"].Value, out var value) && value > max)
-                        max = value;
+                    if (long.TryParse(match.Groups["rid"].Value, out var value))
+                        result.Add(value);
             }
 
-            return max + 1;
+            return result;
         }
 
         // Copies the captured entry, rewriting only its header's rid to freshRid (the type / data lines are preserved
