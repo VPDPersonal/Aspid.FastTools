@@ -288,9 +288,19 @@ namespace Aspid.FastTools.UIElements
         /// <param name="element">The element to modify.</param>
         /// <param name="value">The items source to set.</param>
         /// <returns>The element, for chaining.</returns>
+        /// <exception cref="InvalidOperationException">
+        /// <paramref name="element"/> is a <see cref="BaseTreeView"/>; fill it with
+        /// <see cref="BaseTreeViewExtensions.SetRootItemsSelf{T, TData}"/> instead.
+        /// </exception>
         public static T SetItemsSource<T>(this T element, IList value)
             where T : BaseVerticalCollectionView
         {
+            if (element is BaseTreeView)
+            {
+                throw new InvalidOperationException(
+                    $"{element.GetType().Name} does not accept an items source; use SetRootItemsSelf instead.");
+            }
+
             element.itemsSource = value;
             return element;
         }
