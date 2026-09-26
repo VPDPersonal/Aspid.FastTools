@@ -3,6 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Aspid.FastTools.Enums.Editors;
 
@@ -26,9 +27,9 @@ namespace Aspid.FastTools.Enums.Tests
     }
 
     /// <summary>
-    /// Coverage for <see cref="EnumValuesPropertyDrawerHelper"/>: keys are never rewritten by the drawing path,
-    /// Populate Missing Enum Members compares numeric values and copies collection values, and 64-bit flags
-    /// are toggled without truncation.
+    /// Coverage for <see cref="EnumValuesPropertyDrawerHelper"/> and the UI Toolkit drawers: drawing a row never
+    /// rewrites its key, the header shows the given label, Populate Missing Enum Members compares numeric values
+    /// and copies collection values, and 64-bit flags are toggled without truncation.
     /// </summary>
     [TestFixture]
     internal sealed class EnumValuesPropertyDrawerHelperTests
@@ -65,13 +66,13 @@ namespace Aspid.FastTools.Enums.Tests
             AddEntry("_ints", nameof(Season.Autumn));
 
             SetEnumType("_ints", typeof(Sides));
-            DrawKeys("_ints");
+            DrawRowsWithoutWrites("_ints");
 
             CollectionAssert.AreEqual(new[] { "Summer", "Autumn" }, GetKeys("_ints"));
             Assert.AreEqual("<Missing Summer>", GetCaption("_ints", 0));
 
             SetEnumType("_ints", typeof(Season));
-            DrawKeys("_ints");
+            DrawRowsWithoutWrites("_ints");
 
             CollectionAssert.AreEqual(new[] { "Summer", "Autumn" }, GetKeys("_ints"));
             Assert.AreEqual(nameof(Season.Summer), GetCaption("_ints", 0));
@@ -83,9 +84,20 @@ namespace Aspid.FastTools.Enums.Tests
             SetEnumType("_ints", typeof(Quality));
             AddEntry("_ints", nameof(Quality.Default));
 
-            DrawKeys("_ints");
+            DrawRowsWithoutWrites("_ints");
 
             CollectionAssert.AreEqual(new[] { nameof(Quality.Default) }, GetKeys("_ints"));
+        }
+
+        [Test]
+        public void Header_ShowsTheGivenLabel()
+        {
+            SetEnumType("_ints", typeof(Season));
+
+            var root = EnumValuesUIToolkitPropertyDrawer.Draw(
+                _serializedObject.FindProperty("_ints"), "Damage colors", isTyped: false);
+
+            Assert.AreEqual("Damage colors", root.Q(className: "aspid-fasttools-enum-values__header").Q<Label>().text);
         }
 
         [Test]
@@ -240,13 +252,18 @@ namespace Aspid.FastTools.Enums.Tests
             _serializedObject.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        // Runs what the drawers do for every row before showing it.
-        private void DrawKeys(string field)
+        // Builds the UI Toolkit row of every entry, which resolves the key as the Inspector does, and checks
+        // that nothing was written to the asset.
+        private void DrawRowsWithoutWrites(string field)
         {
+            var dirtyCount = EditorUtility.GetDirtyCount(_host);
             var values = _serializedObject.FindProperty($"{field}._values");
 
             for (var i = 0; i < values.arraySize; i++)
-                GetCaption(field, i);
+                EnumValueUIToolkitPropertyDrawer.Draw(values.GetArrayElementAtIndex(i));
+
+            Assert.IsFalse(_serializedObject.hasModifiedProperties);
+            Assert.AreEqual(dirtyCount, EditorUtility.GetDirtyCount(_host));
         }
 
         private string GetCaption(string field, int index)
