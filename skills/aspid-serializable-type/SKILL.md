@@ -80,6 +80,12 @@ public sealed class Armory : MonoBehaviour
 - `[Conditional("UNITY_EDITOR")]`: never read it at runtime.
 - `[SerializeReference]`: the field type is the first constraint, only instantiable classes are offered, nested
   managed references get the selector automatically; `UnityEngine.Object` field types are invalid (`AFT0004`).
+- Renaming or moving a `[SerializeReference]` implementation turns its stored data into a missing type. Add
+  `[MovedFrom(true, sourceNamespace: "Old.Ns", sourceAssembly: "OldAsm", sourceClassName: "OldName")]`
+  (`UnityEngine.Scripting.APIUpdating`; pass only what changed), then **Tools → Aspid 🐍 → FastTools → Project
+  References → Scan Project → Migrate all**; keep the attribute until every asset is migrated. Already missing types:
+  **Fix all** in that window, or **Fix** / **Smart Fix** in the Inspector. See
+  [SerializeReference Tooling](https://vpdpersonal.github.io/Aspid.FastTools/docs/serialize-reference-tooling#migrations-with-movedfrom).
 
 ## [TypeSelectorDisplay]
 
