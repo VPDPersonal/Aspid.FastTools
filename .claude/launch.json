@@ -2,21 +2,6 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "website-ru-3001",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": [
-        "docusaurus",
-        "start",
-        "--locale",
-        "ru",
-        "--port",
-        "3001",
-        "--no-open"
-      ],
-      "cwd": "Website",
-      "port": 3001
-    },
-    {
       "name": "website-dev",
       "runtimeExecutable": "npx",
       "runtimeArgs": [
@@ -43,17 +28,6 @@
       ],
       "cwd": "Website",
       "port": 3101
-    },
-    {
-      "name": "website-serve-all",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": [
-        "-c",
-        "npm run build && npx docusaurus serve --port 3001 --no-open"
-      ],
-      "cwd": "Website",
-      "_note": "Only when Website/scripts/serve-all.sh is unusable: this ties the shared 3001 server to one session.",
-      "port": 3001
     },
     {
       "name": "website-build-3003",
