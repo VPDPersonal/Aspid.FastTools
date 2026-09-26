@@ -17,6 +17,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceYamlEditorWriteTests
     {
+        // Never imported: it only gives AssetDatabase.MakeEditable a path inside the project.
+        private const string ProjectAssetPath = "Assets/__AspidYamlWriteProbe__.prefab";
+
         private static readonly ManagedTypeName Pistol = new(
             "Aspid.FastTools.Samples.SerializeReferences",
             "Aspid.FastTools.Samples.SerializeReferences",
@@ -50,6 +53,50 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void TryRewriteType_ReadOnlyFileUnderAssets_RefusesWithClearError_AndLeavesFileUntouched()
+        {
+            File.WriteAllText(ProjectAssetPath, YamlFixtures.MissingTypePrefab);
+
+            try
+            {
+                File.SetAttributes(ProjectAssetPath, FileAttributes.ReadOnly);
+
+                LogAssert.Expect(LogType.Error, new Regex("is read-only"));
+                var rewritten = SerializeReferenceYamlEditor.TryRewriteType(
+                    ProjectAssetPath, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol);
+
+                Assert.IsFalse(rewritten, "A read-only asset must not be reported as rewritten.");
+                Assert.AreEqual(YamlFixtures.MissingTypePrefab, File.ReadAllText(ProjectAssetPath),
+                    "A refused rewrite must leave the file byte-identical.");
+            }
+            finally
+            {
+                File.SetAttributes(ProjectAssetPath, FileAttributes.Normal);
+                File.Delete(ProjectAssetPath);
+                if (File.Exists(ProjectAssetPath + ".meta")) File.Delete(ProjectAssetPath + ".meta");
+            }
+        }
+
+        [Test]
+        public void BatchNull_ReadOnlyFile_ReportsTheRefusalOnce()
+        {
+            File.SetAttributes(_path, FileAttributes.ReadOnly);
+            var entries = new[]
+            {
+                new MissingReferenceLocation(_path,
+                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol)),
+                new MissingReferenceLocation(_path,
+                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.ShotgunRid, Pistol)),
+            };
+
+            // A second "is read-only" error would be unexpected and fail the test.
+            LogAssert.Expect(LogType.Error, new Regex("is read-only"));
+            var applied = SerializeReferenceBatchEditor.Null(entries, "Test");
+
+            Assert.AreEqual(0, applied, "Nothing can be applied to a read-only file.");
+        }
+
+        [Test]
         public void TryRewriteType_PreservesUtf8ByteOrderMark()
         {
             File.WriteAllText(_path, YamlFixtures.MissingTypePrefab, new UTF8Encoding(true));
@@ -77,7 +124,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsTrue(SerializeReferenceYamlEditor.TryRewriteType(
                 _path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol));
 
-            var leftovers = Directory.GetFiles(Path.GetDirectoryName(_path),$".{Path.GetFileName(_path)}.*");
+            var leftovers = Directory.GetFiles(Path.GetDirectoryName(_path), $".{Path.GetFileName(_path)}.*");
             CollectionAssert.IsEmpty(leftovers, "The temp file used for the atomic replace must be gone.");
         }
     }
