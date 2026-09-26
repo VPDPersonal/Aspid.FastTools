@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".
 - A `[TypeSelector(nameof(...))]` member reference on a field inside a `[Serializable]` class or a list element now resolves on the instance that declares the field, as analyzers `AFT0006`–`AFT0008` already check it; it used to be looked up on the inspected component or asset and showed a warning. The same applies to the picker of the Asset References window.
+- A nested `[SerializeReference]` field or list now keeps a custom drawer Unity picks for it: one for an open generic type (`typeof(Effect<>)`), a base class or an interface, even without `useForChildren`, matched by the stored instance type or the list's element type. The package used to draw its own header and type picker over it.
 - `this.Marker()` inside a `private` or `protected` nested type no longer breaks compilation with CS0122. The generated overload cannot see such a type, so the generator now skips it: the call compiles, opens no marker, and `AFT0010` reports it — make the type `internal` or `public` to profile it.
 - `this.Marker()` in a type nested in a generic type (`Outer<T>.Inner`) now compiles; the generated overload used to miss the outer type parameters (CS0246).
 - `this.Marker()` in an indexer accessor or a static constructor now compiles; the generated field names were invalid. The markers are named `Type.Indexer (line)` and `Type.StaticCtor (line)`.
@@ -48,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A type deriving from a type of another assembly that shares its namespace through `InternalsVisibleTo` now gets markers of its own; its calls used to bind to the base type's overload and open nothing.
 - `WithName($"Br{{ace}}")` gives `Br{ace}`, `WithName` text with U+2028, U+2029 or U+0085 compiles, and a user's own `WithName` extension no longer renames the marker.
 - `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
+- `Persistent()` keeps the `context` of the source `SerializedObject`, so an `ExposedReference` read or written through the copy resolves in the same table (for example a `PlayableDirector`) instead of the default value in the asset.
 
 ## [1.0.0-rc.8] — 2026-09-06
 
