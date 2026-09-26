@@ -10,7 +10,7 @@ namespace Aspid.FastTools.Types
     public interface ISerializableType
     {
         /// <summary>
-        /// Gets the base type the picker offers types assignable to; <see cref="object"/> when unconstrained.
+        /// Gets the base type that types offered by the picker are assignable to; <see cref="object"/> when unconstrained.
         /// </summary>
         /// <remarks>
         /// A loaded type is not checked against it: a name stored before the constraint changed resolves as is.
