@@ -218,7 +218,7 @@ A missing reference with Fix and Smart Fix actions in the Inspector
 
 Smart Fix considers `[MovedFrom]`, the name, namespace, assembly, and field similarity. It only applies when clicked. The **Fix** picker also permits `Hidden` types: recovering old data may require an implementation removed from normal selection.
 
-For an asset on disk, Fix rewrites the stored type and reimports the asset; that file write has no ordinary Undo. In an open saved scene or Prefab Mode, repair affects the object in memory — verify the result and save the scene or prefab. Preserving data does not automatically convert incompatible fields; in-memory repair also does not guarantee recovery of the entire nested graph.
+For an asset on disk, Fix rewrites the stored type and reimports the asset; that file write has no ordinary Undo. In an open saved scene, Prefab Mode or an asset with unsaved changes, repair affects the object in memory and keeps those changes — verify the result and save the scene, prefab or asset. While a prefab is open in Prefab Mode, Fix on its asset in the Project window is refused; repair the field in Prefab Mode instead. Preserving data does not automatically convert incompatible fields; in-memory repair also does not guarantee recovery of the entire nested graph.
 
 If Fix is unavailable, select one object and ensure the scene or Prefab Mode is saved with no pending changes. For a prefab instance in a scene, open its source prefab. If the problem is inside a missing parent and the field is inaccessible, use [Asset References](04-serialize-reference-tooling.md#asset-references-inspect-one-asset).
 
