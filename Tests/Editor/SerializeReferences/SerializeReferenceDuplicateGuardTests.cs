@@ -43,6 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void TearDown()
         {
             _serialized.Dispose();
+            Undo.ClearUndo(_target);
             Object.DestroyImmediate(_target);
             SerializeReferenceSettings.AutoDeAliasEnabled = _autoDeAlias;
         }
@@ -132,6 +133,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.AreEqual(Rid(0), Rid(1), "The earlier Link to Existing is intentional and must survive the fix.");
             Assert.AreNotEqual(Rid(0), Rid(2), "Only the appended copy is split.");
+        }
+
+        [UnityTest]
+        public IEnumerator Observe_AfterUndoOfTheFix_KeepsTheRestoredAlias()
+        {
+            Assign(0, new TestSword());
+            Observe(0);
+
+            DuplicateLast();
+            Assert.IsTrue(Observe(1));
+
+            // The fix lands in its own undo group, so undoing it restores exactly the aliased layout.
+            Undo.IncrementCurrentGroup();
+            yield return FlushDelayCalls();
+            Assert.AreNotEqual(Rid(0), Rid(1), "Precondition: the fix split the copy.");
+
+            Undo.PerformUndo();
+            _serialized.Update();
+            Assert.AreEqual(Rid(0), Rid(1), "Precondition: the undo restored the alias.");
+
+            Assert.IsFalse(Observe(1), "An undo drops the baseline, so the restored alias is only re-recorded.");
         }
 
         // Index to rid, the shape the guard builds from a list.
