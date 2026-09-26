@@ -42,16 +42,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var path = paths[i];
                 onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
 
-                var needsYaml = options.ScanMissingTypes || (options.ScanRequiredFields && SerializeReferenceHelpers.IsScene(path));
-                if (needsYaml && unscanned is not null && File.Exists(path))
+                // Sniffed once here; the YAML scanners below are told the result instead of opening the file again.
+                var isScene = SerializeReferenceHelpers.IsScene(path);
+                var needsYaml = options.ScanMissingTypes || (options.ScanRequiredFields && isScene);
+                var isTextYaml = true;
+
+                if (needsYaml && File.Exists(path))
                 {
                     var format = SerializeReferenceYaml.SniffFileFormat(path);
-                    if (format != AssetFileFormat.TextYaml) unscanned.Add((path, format));
+                    isTextYaml = format == AssetFileFormat.TextYaml;
+                    if (!isTextYaml) unscanned?.Add((path, format));
                 }
 
-                if (options.ScanMissingTypes)
+                if (options.ScanMissingTypes && isTextYaml)
                 {
-                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves))
+                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves, knownTextYaml: true))
                     {
                         if (IsPendingMigration(path, entry)) continue;
                         violations.Add(new GateViolation(path, entry.FileId, entry.Rid, entry.StoredType, GateViolationKind.MissingType, string.Empty));
@@ -60,8 +65,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (options.ScanRequiredFields)
                 {
-                    if (SerializeReferenceHelpers.IsScene(path)) CollectSceneRequiredViolations(path, violations);
-                    else CollectRequiredViolations(path, violations);
+                    if (!isScene) CollectRequiredViolations(path, violations);
+                    else if (isTextYaml) CollectSceneRequiredViolations(path, violations, knownTextYaml: true);
                 }
             }
 
@@ -153,9 +158,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return map;
         }
 
-        private static void CollectSceneRequiredViolations(string assetPath, List<GateViolation> violations)
+        private static void CollectSceneRequiredViolations(
+            string assetPath, List<GateViolation> violations, bool knownTextYaml = false)
         {
-            foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(assetPath, RequiredFieldsForScript))
+            foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(assetPath, RequiredFieldsForScript, knownTextYaml))
             {
                 violations.Add(new GateViolation(assetPath, entry.FileId, entry.Rid, default,
                     GateViolationKind.RequiredUnset, entry.FieldName));
