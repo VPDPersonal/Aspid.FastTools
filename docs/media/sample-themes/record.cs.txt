@@ -6,7 +6,7 @@ using UnityEditor;
 [DefaultExecutionOrder(10000)]
 public sealed class SampleThemeRecorder : MonoBehaviour
 {
- private const string Output="/Users/vladislavpanin/Documents/Codex/2026-09-20/localhost-3001-aspid-fasttools-ru-docs/work/sample-themes-brighter/frames";
+ private static readonly string Output=Path.Combine(Path.GetDirectoryName(Application.dataPath),"Temp","SampleThemes","frames");
  private Camera _camera;
  private RenderTexture _target;
  private Texture2D _image;
