@@ -292,4 +292,4 @@ keys, Enter and Esc. `node --test scripts/search.test.mjs` checks matching and M
 
 `.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package `Documentation/`,
 a sample's `Documentation/`, the root `README.md` or `CHANGELOG*.md`, and on every PR (build only, skipped when
-none of those paths changed, so `Docs build` can be a required check); it runs `check-readme` before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
+none of those paths changed, so `Docs build` can be a required check); it runs `check-readme` and the search tests (`node --test scripts/search.test.mjs`) before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
