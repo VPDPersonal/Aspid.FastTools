@@ -7,9 +7,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceYaml
     {
-        public static readonly Regex DocumentHeader = new(@"^--- !u!(?<class>\d+) &(?<id>\d+)", RegexOptions.Compiled);
+        // "--- !u!114 &11400000". The anchor is a signed 64-bit fileID: sub-assets (AddObjectToAsset) and prefab
+        // components are often written with a negative one ("&-4472597160913118672").
+        public static readonly Regex DocumentHeader = new(@"^--- !u!(?<class>\d+) &(?<id>-?\d+)", RegexOptions.Compiled);
 
         public static readonly Regex RefIdsKey = new(@"^\s*RefIds:\s*$", RegexOptions.Compiled);
+
+        private static readonly Regex _entryHeader = new(@"^(?<indent>\s*)-\s+rid:\s*(?<rid>-?\d+)\s*$", RegexOptions.Compiled);
+
+        private static readonly Regex _typeLine = new(@"^\s*type:\s*\{.*\}\s*$", RegexOptions.Compiled);
 
         public static readonly Regex InlineType = new(
             @"class:\s*(?:'(?<class>(?:[^']|'')*)'|(?<class>[^,}]*?))\s*,\s*ns:\s*(?<ns>[^,}]*?)\s*,\s*asm:\s*(?<asm>[^,}]*?)\s*$",
@@ -38,6 +44,81 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (RefIdsKey.IsMatch(lines[i]))
                     return i;
+            }
+
+            return -1;
+        }
+
+        // Every "--- " line starts a document, whether or not DocumentHeader can parse its anchor, so a document never
+        // runs into the next one.
+        public static bool IsDocumentStart(string line) =>
+            line.StartsWith("--- ", StringComparison.Ordinal);
+
+        public static int FindDocumentEnd(string[] lines, int from)
+        {
+            for (var i = from; i < lines.Length; i++)
+            {
+                if (IsDocumentStart(lines[i]))
+                    return i;
+            }
+
+            return lines.Length;
+        }
+
+        // RefIds entry headers sit at the indent of the first "- rid:" under RefIds. A deeper "- rid:" is an element
+        // of a [SerializeReference] list inside another entry's data block, not an entry.
+        public static int FindRefIdsEntryIndent(string[] lines, int refIdsStart, int end)
+        {
+            for (var i = refIdsStart + 1; i < end; i++)
+            {
+                var match = _entryHeader.Match(lines[i]);
+                if (match.Success) return match.Groups["indent"].Length;
+            }
+
+            return -1;
+        }
+
+        public static bool TryMatchEntryHeader(string line, int entryIndent, out long rid)
+        {
+            rid = 0;
+
+            var match = _entryHeader.Match(line);
+            return match.Success
+                && match.Groups["indent"].Length == entryIndent
+                && long.TryParse(match.Groups["rid"].Value, out rid);
+        }
+
+        // Returns the line of rid's own RefIds entry header, or -1. A nested "- rid: N" list element in an earlier
+        // entry's data block has the same shape and is skipped by its indent.
+        public static int FindEntryHeader(string[] lines, int refIdsStart, int end, long rid, out int entryIndent)
+        {
+            entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
+            if (entryIndent < 0) return -1;
+
+            for (var i = refIdsStart + 1; i < end; i++)
+            {
+                if (TryMatchEntryHeader(lines[i], entryIndent, out var headerRid) && headerRid == rid)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        // Returns the line of the entry's own "type: {…}" mapping within (headerIndex, entryEnd), or -1. Only the
+        // entry's direct children are considered, so a same-named field inside its data block is never taken.
+        public static int FindEntryTypeLine(string[] lines, int headerIndex, int entryEnd)
+        {
+            var childIndent = -1;
+
+            for (var i = headerIndex + 1; i < entryEnd; i++)
+            {
+                if (lines[i].Trim().Length == 0) continue;
+
+                var indent = IndentOf(lines[i]);
+                if (childIndent < 0) childIndent = indent;
+                if (indent != childIndent) continue;
+
+                if (_typeLine.IsMatch(lines[i])) return i;
             }
 
             return -1;
