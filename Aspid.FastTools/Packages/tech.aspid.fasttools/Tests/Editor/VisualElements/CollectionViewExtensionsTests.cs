@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using NUnit.Framework;
 using System.Collections.Generic;
@@ -39,10 +38,32 @@ namespace Aspid.FastTools.UIElements.Tests
         }
 
         [Test]
-        public void SetItemsSource_OnTreeView_Throws()
+        public void SetRootItemsSelf_Null_ClearsTree()
         {
-            Assert.Throws<InvalidOperationException>(() => new TreeView().SetItemsSource(CreateRootItems()));
-            Assert.Throws<InvalidOperationException>(() => new MultiColumnTreeView().SetItemsSource(CreateRootItems()));
+            var tree = new TreeView().SetRootItemsSelf(CreateRootItems());
+
+            tree.SetRootItemsSelf<TreeView, string>(null);
+
+            CollectionAssert.IsEmpty(tree.GetRootIds());
+        }
+
+        [Test]
+        public void SetItemsSource_Null_OnTreeView_ClearsTree()
+        {
+            var tree = new TreeView().SetRootItemsSelf(CreateRootItems());
+
+            Assert.AreSame(tree, tree.SetItemsSource(null));
+            CollectionAssert.IsEmpty(tree.GetRootIds());
+        }
+
+        [Test]
+        public void SetItemsSource_MatchingItems_OnTreeView_FillsTree()
+        {
+            var items = new List<TreeViewItemData<object>> { new(1, "Weapons"), new(2, "Armor") };
+
+            var tree = new TreeView().SetItemsSource(items);
+
+            CollectionAssert.AreEqual(new[] { 1, 2 }, tree.GetRootIds().ToArray());
         }
 
         [Test]

@@ -50,8 +50,7 @@
 - Тип, унаследованный от типа другой сборки, с которой он делит пространство имён через `InternalsVisibleTo`, теперь получает собственные маркеры; раньше его вызовы попадали в перегрузку базового типа и ничего не открывали.
 - `WithName($"Br{{ace}}")` даёт `Br{ace}`, текст `WithName` с U+2028, U+2029 или U+0085 компилируется, а собственное расширение `WithName` пользователя больше не переименовывает маркер.
 - `Persistent()` больше не оставляет неосвобождённым созданный `SerializedObject`, если путь свойства больше не существует на целевых объектах: он освобождается перед возвратом `null`.
-- `AddChildren`, `InsertChildren`, `RemoveChildren` и их варианты `…If` с `IEnumerable` больше не бросают `InvalidOperationException` («Collection was modified»), когда получают `Children()` элемента: `target.AddChildren(source.Children())` переносит всех детей.
-- `SetItemsSource` на `TreeView` или `MultiColumnTreeView` теперь бросает `InvalidOperationException` с указанием на `SetRootItemsSelf`; раньше он писал в консоль ошибку несовпадения типа и оставлял дерево пустым.
+- `AddChildren`, `InsertChildren` и их варианты `…If` с `IEnumerable` больше не бросают `InvalidOperationException` («Collection was modified»), когда получают `Children()` элемента: `target.AddChildren(source.Children())` переносит всех детей.
 
 ## [1.0.0-rc.8] — 2026-09-06
 

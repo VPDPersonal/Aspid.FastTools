@@ -25,11 +25,11 @@ Method names follow one rule:
 | delegate property `x` | `SetX`; an `Action` also gets `AddX` / `RemoveX` | `bindItem` → `SetBindItem`, `AddBindItem` |
 | method `M()` | `MSelf()` | `Focus()` → `FocusSelf()` |
 
-The rule covers `VisualElement`, `Focusable`, text elements, fields, sliders, `Button`, `Foldout`, `HelpBox`, `Image`, `ProgressBar`, `IMGUIContainer`, and the list and tree views; the full list is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements). Properties outside it, such as `ScrollView.mode` or `TextField.multiline`, have no methods. Exceptions:
+The rule covers `VisualElement`, `Focusable`, text elements, fields, sliders, `Button`, `Foldout`, `HelpBox`, `Image`, `ProgressBar`, `IMGUIContainer`, and the list and tree views, but not every property gets a method: `VisualElement.generateVisualContent`, `TextField.multiline` and `ScrollView.mode` have none. The full list is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements). Exceptions:
 
 - `EnumField` and `EnumFlagsField` (in the editor) get `Initialize` in place of `Init`;
 - `Button.SetClickable` takes a `Clickable` or an `Action`;
-- `TreeView` and `MultiColumnTreeView` are filled with `SetRootItemsSelf`; `SetItemsSource` throws on them.
+- `TreeView` and `MultiColumnTreeView` are filled with `SetRootItemsSelf`, not `SetItemsSource`.
 
 `IsFocused()` checks focus:
 
