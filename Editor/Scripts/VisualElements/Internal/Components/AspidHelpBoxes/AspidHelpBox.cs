@@ -23,6 +23,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly StatusStyle _status;
         private AspidLabel _titleElement;
         private HelpBoxMessageType _messageType;
+        private bool _isStatusFromMessageType;
 
         [UxmlAttribute]
         public string Title
@@ -41,6 +42,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 if (_titleElement is null) _titleElement = new AspidLabel(value, _titlePreset).AddClass(TitleClass);
                 else _titleElement.Text = value;
 
+                _titleElement.LabelStatus = _status.Value;
+
                 if (_titleElement.parent is null) _textContainer.InsertChild(index: 0, _titleElement);
             }
         }
@@ -56,7 +59,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public StatusStyle.Type Status
         {
             get => _status.Value;
-            set => _status.SetValue(value);
+            set
+            {
+                _isStatusFromMessageType = false;
+                ApplyStatus(value);
+            }
         }
 
         [UxmlAttribute]
@@ -73,6 +80,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
                 if (value == HelpBoxMessageType.None) _imageElement.AddClass(IconHiddenClass);
                 else _imageElement.RemoveClass(IconHiddenClass);
+
+                if (_status.Value is not StatusStyle.Type.None && !_isStatusFromMessageType) return;
+
+                ApplyStatus(MapToStatus(value));
+                _isStatusFromMessageType = true;
             }
         }
 
@@ -102,9 +114,32 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 .AddChild(_textContainer);
 
             _status = new StatusStyle(this, preset.Status);
+            RegisterCallback<CustomStyleResolvedEvent>(_ => SyncLabelStatus());
+
             MessageType = preset.MessageType;
+            _isStatusFromMessageType = _status.Value == MapToStatus(_messageType);
             Title = title;
         }
+
+        private void ApplyStatus(StatusStyle.Type value)
+        {
+            _status.SetValue(value);
+            SyncLabelStatus();
+        }
+
+        private void SyncLabelStatus()
+        {
+            _messageElement.LabelStatus = _status.Value;
+            if (_titleElement is not null) _titleElement.LabelStatus = _status.Value;
+        }
+
+        internal static StatusStyle.Type MapToStatus(HelpBoxMessageType type) => type switch
+        {
+            HelpBoxMessageType.Info => StatusStyle.Type.Info,
+            HelpBoxMessageType.Warning => StatusStyle.Type.Warning,
+            HelpBoxMessageType.Error => StatusStyle.Type.Error,
+            _ => StatusStyle.Type.None,
+        };
 
         private static string GetMessageTypeClass(HelpBoxMessageType type) => type switch
         {
