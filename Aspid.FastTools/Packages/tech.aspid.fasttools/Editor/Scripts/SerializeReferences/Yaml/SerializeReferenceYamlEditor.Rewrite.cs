@@ -26,7 +26,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     return false; // the file changed since the edit was computed — abort rather than write a stale line
 
                 lines[edit.LineNumber] = edit.NewLine;
-                WritePreservingNewlines(assetPath, lines);
+                if (!TryWritePreservingNewlines(assetPath, lines)) return false;
                 // Same-tick writes can leave the modification-time key unchanged, so bust the probe cache explicitly.
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return true;
@@ -123,7 +123,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     for (var k = 0; k < i; k++) remaining.Add(lines[k]);
                     for (var k = entryEnd; k < lines.Length; k++) remaining.Add(lines[k]);
 
-                    WritePreservingNewlines(assetPath, remaining);
+                    if (!TryWritePreservingNewlines(assetPath, remaining)) return false;
                     SerializeReferenceYamlProbeCache.ClearCache();
                     return true;
                 }
@@ -222,7 +222,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     }
                 }
 
-                WritePreservingNewlines(assetPath, result);
+                if (!TryWritePreservingNewlines(assetPath, result)) return false;
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return true;
             }
