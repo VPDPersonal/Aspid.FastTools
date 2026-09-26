@@ -22,9 +22,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string RefIdsMarker = "RefIds:";
 
         // "record struct" / "record class" come first, or the bare "record" alternative would swallow the keyword.
+        // The type parameter list is captured so that Command and Command<T> of another file are not confused.
         private static readonly Regex _typeDeclaration = new(
-            @"\b(?:record\s+(?:class|struct)|class|struct|record)\s+@?(?<name>[A-Za-z_]\w*)",
+            @"\b(?:record\s+(?:class|struct)|class|struct|record)\s+@?(?<name>[A-Za-z_]\w*)(?:\s*<(?<parameters>[^<>]*)>)?",
             RegexOptions.Compiled);
+
+        private static readonly Regex _namespaceDeclaration = new(
+            @"\bnamespace\s+@?(?<name>[A-Za-z_][\w.]*)",
+            RegexOptions.Compiled);
+
+        // Comments and string or char literals, so that "class Foo" written in them is not taken for a declaration.
+        private static readonly Regex _commentOrLiteral = new(
+            @"//[^\n]*|/\*.*?\*/|(?:@\$?|\$@)""(?:[^""]|"""")*""|\$?""(?:\\.|[^\\""\n])*""|'(?:\\.|[^\\'\n])*'",
+            RegexOptions.Compiled | RegexOptions.Singleline);
 
         private static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions options)
         {
@@ -42,7 +52,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var sample = new SortedSet<string>(StringComparer.Ordinal);
             var counts = CountUsages(types, sample);
-            if (counts is null) return AssetDeleteResult.DidNotDelete;
+            if (counts is null) return AssetDeleteResult.FailedDelete;
 
             var used = types.Where(type => counts[type] > 0).ToList();
             if (used.Count == 0) return AssetDeleteResult.DidNotDelete;
@@ -77,7 +87,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (types.Count == 0) return AssetDeleteResult.DidNotDelete;
 
             var counts = CountUsages(types, samplePaths: null);
-            if (counts is null) return AssetDeleteResult.DidNotDelete;
+            if (counts is null) return AssetDeleteResult.FailedDelete;
 
             var affected = new List<string>();
             var totalCount = 0;
@@ -115,19 +125,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var script = AssetDatabase.LoadAssetAtPath<MonoScript>(scriptPath);
             if (script == null) return result;
 
-            var text = script.text ?? string.Empty;
+            var text = _commentOrLiteral.Replace(script.text ?? string.Empty, " ");
+
+            // Names carry the generic arity the way Type.Name does ("Command`1").
             var declaredNames = new HashSet<string>(StringComparer.Ordinal);
             foreach (Match match in _typeDeclaration.Matches(text))
-                declaredNames.Add(match.Groups["name"].Value);
+                declaredNames.Add(GetDeclaredName(match));
+
+            var declaredNamespaces = new HashSet<string>(StringComparer.Ordinal);
+            foreach (Match match in _namespaceDeclaration.Matches(text))
+                declaredNamespaces.Add(match.Groups["name"].Value);
 
             var declared = new List<Type>();
-            if (script.GetClass() is { } mainType) declared.Add(mainType);
+            // GetClass() ignores generic arity: for a script declaring only Command<T> it can return a Command of
+            // another file.
+            if (script.GetClass() is { } mainType && declaredNames.Contains(mainType.Name)) declared.Add(mainType);
 
             foreach (var type in GetAssemblyTypes(scriptPath, assemblyTypes))
             {
                 if (type.DeclaringType is not null || declared.Contains(type)) continue;
-                if (!declaredNames.Contains(TypeUtility.StripArity(type.Name))) continue;
-                if (!DeclaresNamespace(text, type.Namespace)) continue;
+                if (!declaredNames.Contains(type.Name)) continue;
+                if (!DeclaresNamespace(declaredNamespaces, type.Namespace)) continue;
 
                 declared.Add(type);
             }
@@ -137,7 +155,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var nested in declared[i].GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic))
                 {
                     // The name check drops compiler-generated closures and nested types of another partial file.
-                    if (declared.Contains(nested) || !declaredNames.Contains(TypeUtility.StripArity(nested.Name))) continue;
+                    if (declared.Contains(nested) || !declaredNames.Contains(nested.Name)) continue;
                     declared.Add(nested);
                 }
             }
@@ -171,8 +189,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return types;
         }
 
-        private static bool DeclaresNamespace(string text, string @namespace) =>
-            string.IsNullOrEmpty(@namespace) || Regex.IsMatch(text, $@"\bnamespace\s+{Regex.Escape(@namespace)}\b");
+        private static string GetDeclaredName(Match match)
+        {
+            var name = match.Groups["name"].Value;
+            var parameters = match.Groups["parameters"];
+            if (!parameters.Success || parameters.Value.Trim().Length == 0) return name;
+
+            return $"{name}`{parameters.Value.Count(character => character == ',') + 1}";
+        }
+
+        // Nested blocks (namespace A { namespace B { } }) declare A.B piece by piece.
+        private static bool DeclaresNamespace(HashSet<string> declaredNamespaces, string @namespace)
+        {
+            if (string.IsNullOrEmpty(@namespace) || declaredNamespaces.Contains(@namespace)) return true;
+
+            foreach (var declared in declaredNamespaces)
+            {
+                if (@namespace.Length > declared.Length + 1 &&
+                    @namespace[declared.Length] == '.' &&
+                    @namespace.StartsWith(declared, StringComparison.Ordinal) &&
+                    DeclaresNamespace(declaredNamespaces, @namespace[(declared.Length + 1)..]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         // Unlike IsAssignableManagedReference, an open generic definition passes: its script is matched against every
         // closed instantiation stored in YAML.
@@ -192,9 +235,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return name;
         }
 
-        // Null when the user cancels the sweep: the check is skipped and the delete goes ahead, since the breakage
-        // notification still reports whatever it leaves missing. samplePaths, when given, collects up to
-        // SamplePathCount asset paths that hold a usage.
+        // Null when the user cancels the sweep, which cancels the delete too: its outcome was never shown. samplePaths,
+        // when given, collects up to SamplePathCount asset paths that hold a usage.
         internal static Dictionary<Type, int> CountUsages(IReadOnlyList<Type> types, ICollection<string> samplePaths)
         {
             var counts = types.ToDictionary(type => type, _ => 0);
@@ -244,11 +286,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         return null;
                     }
 
-                    if (!MayHoldUsages(path, classTokens)) continue;
+                    var text = ReadIfMayHoldUsages(path, classTokens);
+                    if (text is null) continue;
 
                     var usedHere = false;
                     // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
-                    foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
+                    foreach (var document in SerializeReferenceGraphScanner.Build(path, text, resolveTypeNames: false))
                     {
                         foreach (var node in document.Nodes)
                         {
@@ -272,8 +315,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // A substring probe before the line-by-line parse: most assets hold no managed references at all, and the rest
-        // rarely name the class being deleted.
-        private static bool MayHoldUsages(string path, HashSet<string> classTokens)
+        // rarely name the class being deleted. Returns the text for the parse, so each asset is read once, or null when
+        // the asset can be skipped.
+        private static string ReadIfMayHoldUsages(string path, HashSet<string> classTokens)
         {
             string text;
             try
@@ -282,15 +326,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
             catch (Exception)
             {
-                return false;
+                return null;
             }
 
-            if (text.IndexOf(RefIdsMarker, StringComparison.Ordinal) < 0) return false;
+            if (text.IndexOf(RefIdsMarker, StringComparison.Ordinal) < 0) return null;
 
             foreach (var token in classTokens)
-                if (text.IndexOf(token, StringComparison.Ordinal) >= 0) return true;
+                if (text.IndexOf(token, StringComparison.Ordinal) >= 0) return text;
 
-            return false;
+            return null;
         }
 
         private static void AddSample(ICollection<string> samplePaths, string path)
