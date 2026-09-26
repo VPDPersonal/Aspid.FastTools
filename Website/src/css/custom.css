@@ -1,6 +1,7 @@
 /*
  * Aspid.FastTools docs theme "Venom": acid green on near-black. Dark is the primary mode;
  * light mode is neutral paper (cool grey canvas, white surfaces) with the same green, deepened for contrast.
+ * Green is the default accent; the red, blue and yellow variants are in accents.css.
  */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
@@ -53,6 +54,8 @@
   --venom-accent-2: #2a7c3e;
   --venom-accent-deep: #26733a;
   --venom-accent-ink: #ffffff;
+  /* Success green, kept when the reader picks another accent (src/css/accents.css). */
+  --venom-emerald: #2f8a45;
   --venom-sapphire: #2369b4;
   --venom-ruby: #c23a52;
   --venom-amber: #a8720f;
@@ -113,11 +116,11 @@
   --doc-sidebar-width: var(--venom-navigation-width);
   --ifm-menu-link-padding-vertical: 0.4rem;
   --docusaurus-highlighted-code-line-bg: var(--venom-glow-soft);
-  --ifm-color-success: var(--venom-accent);
+  --ifm-color-success: var(--venom-emerald);
   --ifm-color-info: var(--venom-sapphire);
   --ifm-color-warning: var(--venom-amber);
   --ifm-color-danger: var(--venom-ruby);
-  --ifm-color-success-contrast-background: color-mix(in srgb, var(--venom-accent) 10%, var(--venom-bg));
+  --ifm-color-success-contrast-background: color-mix(in srgb, var(--venom-emerald) 10%, var(--venom-bg));
   --ifm-color-info-contrast-background: color-mix(in srgb, var(--venom-sapphire) 10%, var(--venom-bg));
   --ifm-color-warning-contrast-background: color-mix(in srgb, var(--venom-amber) 10%, var(--venom-bg));
   --ifm-color-danger-contrast-background: color-mix(in srgb, var(--venom-ruby) 10%, var(--venom-bg));
@@ -140,6 +143,7 @@ html[data-theme='dark'] {
   --venom-accent-2: #a9dbb2;
   --venom-accent-deep: #357a42;
   --venom-accent-ink: #06140a;
+  --venom-emerald: #5cb46b;
   /* Gemstones: sapphire, ruby, amber, amethyst */
   --venom-sapphire: #4a90d0;
   /* USS info-dark (#0f2d55) blended over the page: a navy fill instead of a teal tint. */
@@ -400,7 +404,7 @@ pre {
   box-shadow: none;
 }
 
-.alert--success { --ifm-alert-border-color: var(--venom-accent); --ifm-alert-background-color: var(--ifm-color-success-contrast-background); }
+.alert--success { --ifm-alert-border-color: var(--venom-emerald); --ifm-alert-background-color: var(--ifm-color-success-contrast-background); }
 .alert--info { --ifm-alert-border-color: var(--venom-sapphire); --ifm-alert-background-color: var(--ifm-color-info-contrast-background); }
 .alert--warning { --ifm-alert-border-color: var(--venom-amber); --ifm-alert-background-color: var(--ifm-color-warning-contrast-background); }
 .alert--danger { --ifm-alert-border-color: var(--venom-ruby); --ifm-alert-background-color: var(--ifm-color-danger-contrast-background); }
@@ -506,11 +510,12 @@ html.docs-doc-page {
 html[data-theme='light'].docs-doc-page {
   --venom-canvas: #e6e7eb;
   --venom-accent: #26733a;
+  --venom-emerald: #26733a;
   --venom-muted: #5a5e66;
   /* Ripple crests: a lighter green than the text accent, so risen dots read as a highlight, not dark specks on grey. */
   --venom-ripple: #5cb46b;
   /* Admonition windows: a mostly-opaque white tint over the canvas, so the dots stay faint and the fill reads as paper. */
-  --ifm-color-success-contrast-background: color-mix(in srgb, var(--venom-accent) 9%, rgb(255 255 255 / 0.85));
+  --ifm-color-success-contrast-background: color-mix(in srgb, var(--venom-emerald) 9%, rgb(255 255 255 / 0.85));
   --ifm-color-info-contrast-background: color-mix(in srgb, var(--venom-sapphire) 9%, rgb(255 255 255 / 0.85));
   --ifm-color-warning-contrast-background: color-mix(in srgb, var(--venom-amber) 10%, rgb(255 255 255 / 0.85));
   --ifm-color-danger-contrast-background: color-mix(in srgb, var(--venom-ruby) 9%, rgb(255 255 255 / 0.85));
