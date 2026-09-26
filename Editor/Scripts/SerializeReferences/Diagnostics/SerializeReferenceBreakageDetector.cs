@@ -240,10 +240,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static HashSet<string> CollectResolvableKeys(string path)
         {
             var keys = new HashSet<string>(StringComparer.Ordinal);
-            if (!SerializeReferenceHelpers.IsScanCandidate(path) || !MayHoldReferences(path)) return keys;
+            if (!SerializeReferenceHelpers.IsScanCandidate(path)) return keys;
+
+            var text = ReadIfMayHoldReferences(path);
+            if (text is null) return keys;
 
             // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
-            foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
+            foreach (var document in SerializeReferenceGraphScanner.Build(path, text, resolveTypeNames: false))
             {
                 foreach (var node in document.Nodes)
                 {
@@ -255,16 +258,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return keys;
         }
 
-        // A substring probe before the line-by-line parse, since most assets hold no managed references at all.
-        private static bool MayHoldReferences(string path)
+        // A substring probe before the line-by-line parse, since most assets hold no managed references at all. Returns
+        // the text for the parse, so each asset is read once, or null when the asset can be skipped.
+        private static string ReadIfMayHoldReferences(string path)
         {
             try
             {
-                return File.Exists(path) && File.ReadAllText(path).IndexOf(RefIdsMarker, StringComparison.Ordinal) >= 0;
+                if (!File.Exists(path)) return null;
+
+                var text = File.ReadAllText(path);
+                return text.IndexOf(RefIdsMarker, StringComparison.Ordinal) >= 0 ? text : null;
             }
             catch (Exception)
             {
-                return false;
+                return null;
             }
         }
 

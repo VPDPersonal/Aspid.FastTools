@@ -15,6 +15,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         // GUIDs from the fixture scripts' .meta files, so the lookup does not depend on where the package is installed.
         private const string FixturesScriptGuid = "e6234341c7874a99b575757146d497c8";
         private const string SettingsScriptGuid = "16332bb6fc28429f8b7968f66638aadd";
+        private const string GenericScriptGuid = "0d4aeac1171c40c59cd879d9b181d89a";
         private const string ProbeAssetPath = "Assets/__AspidDeleteGuardProbe__.asset";
 
         [TearDown]
@@ -29,14 +30,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             var types = SerializeReferenceDeleteGuard.ResolveCandidateTypes(AssetDatabase.GUIDToAssetPath(FixturesScriptGuid));
 
+            // DeleteGuardPistol<T> of another script shares the name, not the arity, so it stays out.
             CollectionAssert.AreEquivalent(
                 new[] { typeof(DeleteGuardPistol), typeof(DeleteGuardRifle), typeof(DeleteGuardArmory.Crate) },
                 types);
         }
 
         [Test]
+        public void ResolveCandidateTypes_GenericTypeInNestedNamespaceBlocks_ReturnsOnlyThatType()
+        {
+            var types = SerializeReferenceDeleteGuard.ResolveCandidateTypes(AssetDatabase.GUIDToAssetPath(GenericScriptGuid));
+
+            CollectionAssert.AreEquivalent(new[] { typeof(DeleteGuardPistol<>) }, types);
+        }
+
+        [Test]
         public void ResolveCandidateTypes_ScriptWithOnlyUnityObjectTypes_ReturnsNothing()
         {
+            // The script names other fixture types in a comment and a string, which declare nothing.
             var types = SerializeReferenceDeleteGuard.ResolveCandidateTypes(AssetDatabase.GUIDToAssetPath(SettingsScriptGuid));
 
             CollectionAssert.IsEmpty(types);
