@@ -43,7 +43,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 SerializeReferenceHelpers.ApplyManagedReferencePerTarget(persistent,
                     target => SerializeReferenceHelpers.CreateInstancePreservingData(type, target));
             }
-            else persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
+            else
+            {
+                persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, previous));
+                SerializeReferenceHelpers.InvalidateReferenceMemos();
+            }
         }
     }
 }
