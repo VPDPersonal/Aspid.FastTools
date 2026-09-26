@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Tick every box before publishing. Anything left unchecked in **§1 Blockers** must be resolved first.
-        Replace `X.Y.Z` in the title with the target version. Automatable sections (§4, §8, §9) can be run with the local skills/agents (`dotnet test`, `uss-bem-checker`, `sync-readmes`).
+        Replace `X.Y.Z` in the title with the target version. Automatable checks: `dotnet test` in both Roslyn solutions (§4), `node scripts/check-changes.mjs` (changelogs, version files, translations) and `npm --prefix Website run check-readme` (§9).
 
   - type: input
     id: version
@@ -24,9 +24,9 @@ body:
       label: 1. Release blockers
       description: Hard gates — release cannot ship until all are checked.
       options:
-        - label: "`package.json` `version` bumped to the release version (no `-rc`/`-preview` suffix for a stable release)"
-        - label: "`CHANGELOG.md` `[Unreleased]` section closed into `[X.Y.Z]` with a date"
-        - label: Git release tag created and the release branch merged
+        - label: "Release PR prepared with `node scripts/prepare-release.mjs X.Y.Z` (no `-rc` suffix for a stable release): both changelogs closed into `[X.Y.Z]`, the version bumped everywhere"
+        - label: "Stable release: the badge reads `Release X.Y.Z` and the install URLs use `#upm` (`scripts/set-version.sh` switches them from `Preview` / `#upm-preview`)"
+        - label: "Release PR merged into `main`; the Release workflow created the `v` and `upm*/` tags and the GitHub release"
         - label: Working tree clean (`git status`)
 
   - type: checkboxes
@@ -51,14 +51,14 @@ body:
         - label: "`LICENSE` (MIT) present in package and matches the manifest"
         - label: All `.meta` files present — no GUID churn / broken refs on import into a foreign project
         - label: "No stray files shipped (`.csproj`, `bin/`, `obj/`, `.vs/`, test scenes, generator **source**)"
-        - label: Generator DLL present, flagged as RoslynAnalyzer (not a platform managed plugin)
+        - label: Generator and analyzer DLLs present, flagged as RoslynAnalyzer (not a platform managed plugin)
 
   - type: checkboxes
     id: compilation
     attributes:
       label: 3. Compilation & builds
       options:
-        - label: All asmdefs compile (`Aspid.FastTools`, `.Unity`, `.Unity.Editor`, `.Unity.VisualElements.Math`, sample asmdefs)
+        - label: All asmdefs compile (`Aspid.FastTools`, `Aspid.FastTools.Editor`, `Aspid.FastTools.Editor.SerializeReferences.Yaml`, `Aspid.FastTools.VisualElements.Math`, sample asmdefs)
         - label: Player build passes on **Mono** and **IL2CPP** (Runtime/ ⊄ UnityEditor boundary holds)
         - label: Non-development build (`ENABLE_PROFILER` off) — ProfilerMarker dispatcher compiles via `#if` fallback `return default;`
         - label: IL2CPP stripping keeps reflection paths `SerializableType` needs (AQN resolution works on an AOT build)
@@ -69,7 +69,7 @@ body:
     attributes:
       label: 4. Source generators
       options:
-        - label: "`dotnet test -c Release` green (incl. `IncrementalCacheTests`)"
+        - label: "`dotnet test` green in `Aspid.FastTools.Generators` and `Aspid.FastTools.Analyzers` (incl. `IncrementalCacheTests`)"
         - label: "ProfilerMarkersGenerator — unique marker per (type, method, line); `.WithName(literal)` & `$\"...\"` work; same-line dedup"
         - label: Incremental cache intact — editing an unrelated file does not trigger regeneration
 
@@ -91,16 +91,16 @@ body:
         - label: "EnumValues<TValue> — plain enum and `[Flags]`, add/remove, persistence"
         - label: "VisualElement fluent API — layout/size/style/borders/colors/transitions/callbacks/USS/child; `*If` variants; `BindTo`/`UnbindFrom`; `SetLabel` overloads"
         - label: Internal editor components (AspidLabel/Box/GradientButton/HelpBox/InspectorHeader/AnimatedLogo…) render, USS applies, animations run
-        - label: "Welcome Window (`Tools/Aspid FastTools/Welcome`) opens, reads `package.json`, sample-import buttons work; first-import auto-show fires once"
+        - label: "Welcome Window (`Tools/Aspid 🐍/FastTools/Welcome`) opens, reads `package.json`, sample-import buttons work; first-import auto-show fires once"
 
   - type: checkboxes
     id: samples
     attributes:
       label: 7. Samples (via Package Manager)
-      description: For each of Types, EnumValues, Ids, ProfilerMarkers, VisualElements.
+      description: For each of EnumValues, Types, SerializeReferences, EditorTools, ProfilerMarkers.
       options:
         - label: Each imports through PM into `Assets/Samples/...`
-        - label: Each compiles (incl. Editor sub-asmdefs for Types / VisualElements)
+        - label: Each compiles (incl. Editor sub-asmdefs for SerializeReferences / EditorTools)
         - label: Scenes/demos open — no pink materials, no Missing Script
         - label: "Manifest `displayName`/`description`/`path` match the real folders"
 
@@ -109,7 +109,7 @@ body:
     attributes:
       label: 8. USS / visuals
       options:
-        - label: "`uss-bem-checker` clean — no BEM / positional-grammar violations"
+        - label: USS class names follow BEM (`aspid-editor-component` skill)
         - label: Base palette `Aspid-FastTools-Default-Dark.uss` loads first; `--aspid-icons-*` resolve
         - label: Checked in Dark and Light editor theme — no unreadable text
 
@@ -118,9 +118,9 @@ body:
     attributes:
       label: 9. Documentation
       options:
-        - label: "Package docs (`Documentation/`, `Documentation/ru/`, sample READMEs) match the API; `cd Website && npm run build` passes with no broken links"
+        - label: "Package docs (`Documentation/`, `Documentation/ru/`, sample READMEs) match the API; `npm --prefix Website run build` passes with no broken links"
         - label: Images in `Documentation/Images/` exist and render on GitHub and in the unpacked package
-        - label: Stable (`upm`) and Preview (`upm-preview`) badges render
+        - label: The version badge renders and links the `vX.Y.Z` release
         - label: Asset Store card screenshots proofread (no typos)
 
   - type: checkboxes
