@@ -11,7 +11,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     // The field's stylesheet sits on its root, and child PropertyFields are built inside it, so its rules must only
     // match the field's own header and open button — never a button or foldout of a nested drawer or list.
     // The tree mirrors SerializeReferenceField (root > Foldout > toggle + content), so only the stylesheet is under
-    // test: a live field in a batch-mode window logs "Layout update is struggling", which fails any test.
+    // test, without the field's binding and layout.
     [TestFixture]
     internal sealed class SerializeReferenceFieldStyleScopeTests
     {
