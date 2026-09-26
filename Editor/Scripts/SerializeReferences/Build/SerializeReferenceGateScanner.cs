@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEditor;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
@@ -9,6 +11,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceGateScanner
     {
+        private const int MaxListedPointers = 10;
+
         // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only
         // for assets whose unresolved entries carry a [MovedFrom] claim. Null marks an asset whose map failed to build.
         private static readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _constraintMapCache =
@@ -19,7 +23,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Dictionary<string, IReadOnlyList<RequiredFieldDescriptor>> _scriptRequiredFieldsCache =
             new(StringComparer.Ordinal);
 
-        public static IReadOnlyList<GateViolation> Scan(GateOptions options, Action<float, string> onProgress = null)
+        // `unscanned` collects the candidates the YAML pass had to skip (binary files, LFS pointers): their missing
+        // types, and a scene's required fields, were not checked. Prefabs and assets still get the object-load
+        // required check, which does not depend on the file format.
+        public static IReadOnlyList<GateViolation> Scan(
+            GateOptions options,
+            Action<float, string> onProgress = null,
+            ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
             var violations = new List<GateViolation>();
             var paths = AssetDatabase.GetAllAssetPaths().Where(SerializeReferenceHelpers.IsScanCandidate).ToArray();
@@ -31,6 +41,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 var path = paths[i];
                 onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
+
+                var needsYaml = options.ScanMissingTypes || (options.ScanRequiredFields && SerializeReferenceHelpers.IsScene(path));
+                if (needsYaml && unscanned is not null && File.Exists(path))
+                {
+                    var format = SerializeReferenceYaml.SniffFileFormat(path);
+                    if (format != AssetFileFormat.TextYaml) unscanned.Add((path, format));
+                }
 
                 if (options.ScanMissingTypes)
                 {
@@ -49,6 +66,44 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return violations;
+        }
+
+        // A warning for the log, or null when nothing worth one was skipped. Under Force Text, Unity still writes a few
+        // assets binary (LightingData, NavMesh); they hold no managed references, so binary files alone warn only in
+        // the other modes. An LFS pointer always warns: the real file was never pulled.
+        public static string DescribeUnscanned(
+            IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
+        {
+            if (unscanned is null || unscanned.Count == 0) return null;
+
+            var pointers = unscanned
+                .Where(file => file.Format == AssetFileFormat.LfsPointer)
+                .Select(file => file.AssetPath)
+                .ToList();
+
+            var binaryCount = unscanned.Count - pointers.Count;
+            var warnBinary = binaryCount > 0 && serializationMode != SerializationMode.ForceText;
+            if (pointers.Count == 0 && !warnBinary) return null;
+
+            var builder = new StringBuilder();
+            var count = warnBinary ? unscanned.Count : pointers.Count;
+            builder.AppendLine($"[Aspid FastTools] {count} file(s) were not checked for SerializeReference problems because they are not text YAML:");
+
+            if (warnBinary)
+                builder.AppendLine($"  {binaryCount} binary file(s): Asset Serialization Mode is {serializationMode}. Set it to Force Text and save the assets again.");
+
+            if (pointers.Count > 0)
+            {
+                builder.AppendLine($"  {pointers.Count} Git LFS pointer(s): fetch the LFS objects before the check.");
+
+                foreach (var path in pointers.Take(MaxListedPointers))
+                    builder.AppendLine($"    {path}");
+
+                if (pointers.Count > MaxListedPointers)
+                    builder.AppendLine($"    … and {pointers.Count - MaxListedPointers} more");
+            }
+
+            return builder.ToString();
         }
 
         public static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath)

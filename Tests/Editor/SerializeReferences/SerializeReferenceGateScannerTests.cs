@@ -1,7 +1,10 @@
+using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -68,6 +71,67 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 AssetDatabase.DeleteAsset(ProbeAssetPath);
             }
         }
+
+        // An asset whose file is an LFS pointer (a checkout without the LFS objects) cannot be checked for missing
+        // types; the scan must hand it back as unscanned instead of passing it silently.
+        [Test]
+        public void Scan_MissingOnly_ReportsLfsPointerAsUnscanned()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                File.WriteAllText(ProbeAssetPath, "version https://git-lfs.github.com/spec/v1\noid sha256:0\nsize 1\n");
+
+                var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+                SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned);
+
+                CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.LfsPointer));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        [Test]
+        public void DescribeUnscanned_BinaryUnderForceText_IsSilent()
+        {
+            var unscanned = new[] { ("Assets/Scene/LightingData.asset", AssetFileFormat.Binary) };
+            Assert.IsNull(SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText));
+        }
+
+        [TestCase(SerializationMode.ForceBinary)]
+        [TestCase(SerializationMode.Mixed)]
+        public void DescribeUnscanned_BinaryOutsideForceText_Warns(SerializationMode mode)
+        {
+            var unscanned = new[] { ("Assets/Weapons/Pistol.prefab", AssetFileFormat.Binary) };
+            var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, mode);
+
+            StringAssert.Contains("Force Text", notice);
+            StringAssert.Contains(mode.ToString(), notice);
+        }
+
+        [Test]
+        public void DescribeUnscanned_LfsPointer_WarnsWithPath()
+        {
+            var unscanned = new[]
+            {
+                ("Assets/Scene/LightingData.asset", AssetFileFormat.Binary),
+                ("Assets/Weapons/Pistol.prefab", AssetFileFormat.LfsPointer),
+            };
+
+            var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText);
+
+            StringAssert.Contains("1 Git LFS pointer(s)", notice);
+            StringAssert.Contains("Assets/Weapons/Pistol.prefab", notice);
+            StringAssert.DoesNotContain("LightingData", notice);
+        }
+
+        [Test]
+        public void DescribeUnscanned_Nothing_IsSilent() =>
+            Assert.IsNull(SerializeReferenceGateScanner.DescribeUnscanned(
+                Array.Empty<(string, AssetFileFormat)>(), SerializationMode.ForceBinary));
 
         [Test]
         public void ScanAssetRequiredFields_NonCandidatePath_ReturnsEmpty()

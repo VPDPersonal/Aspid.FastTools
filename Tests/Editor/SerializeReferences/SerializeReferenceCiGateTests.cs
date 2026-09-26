@@ -1,3 +1,4 @@
+using System.Linq;
 using NUnit.Framework;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -50,5 +51,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void ResolveSeverity_BothFlags_WarnOnlyWins() =>
             Assert.AreEqual(GateSeverity.Warn, SerializeReferenceCiGate.ResolveSeverity(GateSeverity.Fail, warnOnly: true, failOverride: true));
+
+        // Files the YAML pass skipped are counted and listed as comment lines, so the report no longer reads as a
+        // clean project and the tab-separated violation lines keep their format.
+        [Test]
+        public void BuildReport_ListsUnscannedFilesAsComments()
+        {
+            var violation = new GateViolation("Assets/A.prefab", 1, 2, new ManagedTypeName("Asm", "Ns", "Ghost"),
+                GateViolationKind.MissingType, string.Empty);
+
+            var unscanned = new[]
+            {
+                ("Assets/Scene/LightingData.asset", AssetFileFormat.Binary),
+                ("Assets/B.prefab", AssetFileFormat.LfsPointer),
+            };
+
+            var lines = SerializeReferenceCiGate.BuildReport(new[] { violation }, unscanned)
+                .Split('\n')
+                .Select(line => line.TrimEnd('\r'))
+                .ToArray();
+
+            CollectionAssert.Contains(lines, "# Not scanned (not text YAML): 2");
+            CollectionAssert.Contains(lines, "#   Binary\tAssets/Scene/LightingData.asset");
+            CollectionAssert.Contains(lines, "#   LfsPointer\tAssets/B.prefab");
+            CollectionAssert.Contains(lines, "MissingType\tAssets/A.prefab\t1\t2\tGhost\t");
+        }
     }
 }
