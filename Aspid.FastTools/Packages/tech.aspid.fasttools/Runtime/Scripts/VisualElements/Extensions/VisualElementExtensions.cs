@@ -129,7 +129,8 @@ namespace Aspid.FastTools.UIElements
         /// Sets <see cref="VisualElement.usageHints"/>.
         /// </summary>
         /// <remarks>
-        /// Must be called before the element is added to a panel; afterwards the property is effectively read-only and throws on assignment.
+        /// Unity recommends setting the hints before the element is added to a panel.
+        /// Changing them afterwards does not throw, but triggers a render-hints update.
         /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>

@@ -1,4 +1,5 @@
 using System;
+using UnityEngine.Pool;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 
@@ -509,6 +510,10 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Adds an enumerable of child elements to the <see cref="VisualElement.contentContainer"/> of this element.
         /// </summary>
+        /// <remarks>
+        /// <paramref name="children"/> is copied before the first change, so it may be the live
+        /// <see cref="VisualElement.Children"/> of this or another element.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="children">The children to add.</param>
@@ -518,7 +523,10 @@ namespace Aspid.FastTools.UIElements
         {
             if (children is null) return element;
 
-            foreach (var child in children)
+            using var pooled = ListPool<VisualElement>.Get(out var snapshot);
+            snapshot.AddRange(children);
+
+            foreach (var child in snapshot)
                 element.Add(child);
 
             return element;
@@ -527,6 +535,10 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Conditionally adds an enumerable of child elements to the <see cref="VisualElement.contentContainer"/> of this element.
         /// </summary>
+        /// <remarks>
+        /// <paramref name="children"/> is copied before the first change, so it may be the live
+        /// <see cref="VisualElement.Children"/> of this or another element.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
@@ -539,7 +551,10 @@ namespace Aspid.FastTools.UIElements
 
             if (condition)
             {
-                foreach (var child in children)
+                using var pooled = ListPool<VisualElement>.Get(out var snapshot);
+                snapshot.AddRange(children);
+
+                foreach (var child in snapshot)
                     element.Add(child);
             }
 
@@ -549,6 +564,10 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Inserts an enumerable of child elements starting at the specified index in the <see cref="VisualElement.contentContainer"/> of this element.
         /// </summary>
+        /// <remarks>
+        /// <paramref name="children"/> is copied before the first change, so it may be the live
+        /// <see cref="VisualElement.Children"/> of this or another element.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="index">The index at which to start inserting children.</param>
@@ -559,7 +578,10 @@ namespace Aspid.FastTools.UIElements
         {
             if (children is null) return element;
 
-            foreach (var child in children)
+            using var pooled = ListPool<VisualElement>.Get(out var snapshot);
+            snapshot.AddRange(children);
+
+            foreach (var child in snapshot)
                 element.Insert(index++, child);
 
             return element;
@@ -568,6 +590,10 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Conditionally inserts an enumerable of child elements starting at the specified index in the <see cref="VisualElement.contentContainer"/> of this element.
         /// </summary>
+        /// <remarks>
+        /// <paramref name="children"/> is copied before the first change, so it may be the live
+        /// <see cref="VisualElement.Children"/> of this or another element.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
@@ -581,7 +607,10 @@ namespace Aspid.FastTools.UIElements
 
             if (condition)
             {
-                foreach (var child in children)
+                using var pooled = ListPool<VisualElement>.Get(out var snapshot);
+                snapshot.AddRange(children);
+
+                foreach (var child in snapshot)
                     element.Insert(index++, child);
             }
 
@@ -591,6 +620,10 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Removes an enumerable of child elements from the element.
         /// </summary>
+        /// <remarks>
+        /// <paramref name="children"/> is copied before the first change, so it may be this element's own
+        /// <see cref="VisualElement.Children"/>.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="children">The children to remove.</param>
@@ -600,7 +633,10 @@ namespace Aspid.FastTools.UIElements
         {
             if (children is null) return element;
 
-            foreach (var child in children)
+            using var pooled = ListPool<VisualElement>.Get(out var snapshot);
+            snapshot.AddRange(children);
+
+            foreach (var child in snapshot)
                 element.Remove(child);
 
             return element;
@@ -609,6 +645,10 @@ namespace Aspid.FastTools.UIElements
         /// <summary>
         /// Conditionally removes an enumerable of child elements from the element.
         /// </summary>
+        /// <remarks>
+        /// <paramref name="children"/> is copied before the first change, so it may be this element's own
+        /// <see cref="VisualElement.Children"/>.
+        /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
         /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
@@ -621,7 +661,10 @@ namespace Aspid.FastTools.UIElements
 
             if (condition)
             {
-                foreach (var child in children)
+                using var pooled = ListPool<VisualElement>.Get(out var snapshot);
+                snapshot.AddRange(children);
+
+                foreach (var child in snapshot)
                     element.Remove(child);
             }
 

@@ -25,16 +25,19 @@ Method names follow one rule:
 | delegate property `x` | `SetX`; an `Action` also gets `AddX` / `RemoveX` | `bindItem` → `SetBindItem`, `AddBindItem` |
 | method `M()` | `MSelf()` | `Focus()` → `FocusSelf()` |
 
-The rule covers the properties and events of every element, from `VisualElement` to `MultiColumnTreeView`; the full list is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements). Exceptions:
+The rule covers `VisualElement`, `Focusable`, text elements, fields, sliders, `Button`, `Foldout`, `HelpBox`, `Image`, `ProgressBar`, `IMGUIContainer`, and the list and tree views, but not every property gets a method: `VisualElement.generateVisualContent`, `TextField.multiline` and `ScrollView.mode` have none. The full list is in the [API reference](https://vpdpersonal.github.io/Aspid.FastTools/api/Aspid.FastTools.UIElements). Exceptions:
 
 - `EnumField` and `EnumFlagsField` (in the editor) get `Initialize` in place of `Init`;
-- `Button.SetClickable` takes a `Clickable` or an `Action`.
+- `Button.SetClickable` takes a `Clickable` or an `Action`;
+- `TreeView` and `MultiColumnTreeView` are filled with `SetRootItemsSelf`, not `SetItemsSource`.
 
 `IsFocused()` checks focus:
 
 | Before — Unity API | After — FastTools |
 |---|---|
 | <pre lang="csharp"><code>bool focused = search.focusController?&#10;    .focusedElement == search;</code></pre> | <pre lang="csharp"><code>bool focused = search.IsFocused();</code></pre> |
+
+Like `focusedElement`, it reports the outermost composite element: a field inside a `Vector3Field` or a `ListView` row returns `false`.
 
 ## Children
 
@@ -49,7 +52,7 @@ The rule covers the properties and events of every element, from `VisualElement`
 | <pre lang="csharp"><code>header.Clear();</code></pre> | <pre lang="csharp"><code>header.ClearChildren();</code></pre> |
 | <pre lang="csharp"><code>if (isFree)&#10;    body.Add(helpBox);</code></pre> | <pre lang="csharp"><code>body.AddChildIf(isFree, helpBox);</code></pre> |
 
-Every method has an `…If(condition, …)` variant. `AddChildren` and `InsertChildren` take `params`, `IEnumerable`, `List`, `Span` or `ReadOnlySpan`, keep the order of the elements and skip a `null` collection.
+Every method has an `…If(condition, …)` variant. `AddChildren` and `InsertChildren` take `params`, `IEnumerable`, `List`, `Span` or `ReadOnlySpan`, keep the order of the elements and skip a `null` collection. An `IEnumerable` is copied first, so `target.AddChildren(source.Children())` moves every child.
 
 ## Styles
 

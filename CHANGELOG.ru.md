@@ -13,6 +13,8 @@
 
 - Добавлены `RemoveChildren` и `RemoveChildrenIf`: удаляют несколько дочерних элементов за один вызов и принимают те же перегрузки `params`, `IEnumerable`, `List`, `Span` и `ReadOnlySpan`, что и `AddChildren`.
 - Для `ToggleButtonGroup` добавлены типизированные перегрузки `SetValue`, `AddValueChanged`, `RemoveValueChanged` и `SetLabel` для `ToggleButtonGroupState`, поэтому вызовы вроде `AddValueChanged(evt => …)` не требуют аргументов типа.
+- Для `RectIntField` добавлен типизированный `SetLabel`, поэтому `SetLabel("Area")` не требует аргументов типа, как и у `RectField`.
+- `SetRootItemsSelf` заполняет `TreeView` или `MultiColumnTreeView` в цепочке: `tree.SetRootItemsSelf(items).SetAutoExpand(true)`.
 - Добавлены варианты `AndApplyWithoutUndo` для всех сеттеров `SerializedProperty` с немедленным применением, включая перегрузки `SetValue`, ссылки на объекты, перечисления и методы изменения размера массивов.
 - Анализатор `AFT0009` (предупреждение) — два базовых типа `[TypeSelector]` не имеют общего типа, поэтому селектор пуст.
 - Анализатор `AFT0010` (предупреждение) — вызов `this.Marker()` не открывает маркер профайлера, потому что генератор не поддерживает его тип: тип `private` или `protected` (или вложен в такой тип) либо повторяет имя параметра типа внешнего типа.
@@ -48,6 +50,7 @@
 - Тип, унаследованный от типа другой сборки, с которой он делит пространство имён через `InternalsVisibleTo`, теперь получает собственные маркеры; раньше его вызовы попадали в перегрузку базового типа и ничего не открывали.
 - `WithName($"Br{{ace}}")` даёт `Br{ace}`, текст `WithName` с U+2028, U+2029 или U+0085 компилируется, а собственное расширение `WithName` пользователя больше не переименовывает маркер.
 - `Persistent()` больше не оставляет неосвобождённым созданный `SerializedObject`, если путь свойства больше не существует на целевых объектах: он освобождается перед возвратом `null`.
+- `AddChildren`, `InsertChildren` и их варианты `…If` с `IEnumerable` больше не бросают `InvalidOperationException` («Collection was modified»), когда получают `Children()` элемента: `target.AddChildren(source.Children())` переносит всех детей.
 
 ## [1.0.0-rc.8] — 2026-09-06
 

@@ -23,12 +23,15 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Adds bold to <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any existing italic style.
+        /// Adds bold to <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any inline italic style.
         /// </summary>
         /// <remarks>
         /// Transitions: <see cref="FontStyle.Normal"/> → <see cref="FontStyle.Bold"/>,
         /// <see cref="FontStyle.Italic"/> → <see cref="FontStyle.BoldAndItalic"/>.
         /// Other values are left unchanged.
+        /// Only the inline <see cref="IStyle.unityFontStyleAndWeight"/> value is read; a bold or italic
+        /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
+        /// and is therefore not preserved.
         /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
@@ -41,12 +44,15 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Removes bold from <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any existing italic style.
+        /// Removes bold from <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any inline italic style.
         /// </summary>
         /// <remarks>
         /// Transitions: <see cref="FontStyle.Bold"/> → <see cref="FontStyle.Normal"/>,
         /// <see cref="FontStyle.BoldAndItalic"/> → <see cref="FontStyle.Italic"/>.
         /// Other values are left unchanged.
+        /// Only the inline <see cref="IStyle.unityFontStyleAndWeight"/> value is read; a bold or italic
+        /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
+        /// and is therefore not preserved.
         /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
@@ -59,12 +65,15 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Adds italic to <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any existing bold style.
+        /// Adds italic to <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any inline bold style.
         /// </summary>
         /// <remarks>
         /// Transitions: <see cref="FontStyle.Normal"/> → <see cref="FontStyle.Italic"/>,
         /// <see cref="FontStyle.Bold"/> → <see cref="FontStyle.BoldAndItalic"/>.
         /// Other values are left unchanged.
+        /// Only the inline <see cref="IStyle.unityFontStyleAndWeight"/> value is read; a bold or italic
+        /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
+        /// and is therefore not preserved.
         /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
@@ -77,12 +86,15 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Removes italic from <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any existing bold style.
+        /// Removes italic from <see cref="IStyle.unityFontStyleAndWeight"/>, preserving any inline bold style.
         /// </summary>
         /// <remarks>
         /// Transitions: <see cref="FontStyle.Italic"/> → <see cref="FontStyle.Normal"/>,
         /// <see cref="FontStyle.BoldAndItalic"/> → <see cref="FontStyle.Bold"/>.
         /// Other values are left unchanged.
+        /// Only the inline <see cref="IStyle.unityFontStyleAndWeight"/> value is read; a bold or italic
+        /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
+        /// and is therefore not preserved.
         /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>

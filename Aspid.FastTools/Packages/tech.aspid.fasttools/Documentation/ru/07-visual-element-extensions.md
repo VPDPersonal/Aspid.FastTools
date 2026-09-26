@@ -25,16 +25,19 @@
 | свойство-делегат `x` | `SetX`; у `Action` ещё `AddX` / `RemoveX` | `bindItem` → `SetBindItem`, `AddBindItem` |
 | метод `M()` | `MSelf()` | `Focus()` → `FocusSelf()` |
 
-Правило покрывает свойства и события всех элементов — от `VisualElement` до `MultiColumnTreeView`; полный список — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements). Исключения:
+Правило покрывает `VisualElement`, `Focusable`, текстовые элементы, поля, слайдеры, `Button`, `Foldout`, `HelpBox`, `Image`, `ProgressBar`, `IMGUIContainer`, списки и деревья, но метод есть не у каждого свойства: у `VisualElement.generateVisualContent`, `TextField.multiline` и `ScrollView.mode` его нет. Полный список — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements). Исключения:
 
 - `EnumField` и `EnumFlagsField` (в редакторе) получают `Initialize` вместо `Init`;
-- `Button.SetClickable` принимает и `Clickable`, и `Action`.
+- `Button.SetClickable` принимает и `Clickable`, и `Action`;
+- `TreeView` и `MultiColumnTreeView` заполняются через `SetRootItemsSelf`, а не `SetItemsSource`.
 
 `IsFocused()` проверяет фокус:
 
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>bool focused = search.focusController?&#10;    .focusedElement == search;</code></pre> | <pre lang="csharp"><code>bool focused = search.IsFocused();</code></pre> |
+
+Как и `focusedElement`, метод видит внешний составной элемент: для поля внутри `Vector3Field` или строки `ListView` он вернёт `false`.
 
 ## Дочерние элементы
 
@@ -49,7 +52,7 @@
 | <pre lang="csharp"><code>header.Clear();</code></pre> | <pre lang="csharp"><code>header.ClearChildren();</code></pre> |
 | <pre lang="csharp"><code>if (isFree)&#10;    body.Add(helpBox);</code></pre> | <pre lang="csharp"><code>body.AddChildIf(isFree, helpBox);</code></pre> |
 
-У каждого метода есть вариант `…If(condition, …)`. `AddChildren` и `InsertChildren` принимают `params`, `IEnumerable`, `List`, `Span` или `ReadOnlySpan`, сохраняют порядок элементов и пропускают `null`-коллекцию.
+У каждого метода есть вариант `…If(condition, …)`. `AddChildren` и `InsertChildren` принимают `params`, `IEnumerable`, `List`, `Span` или `ReadOnlySpan`, сохраняют порядок элементов и пропускают `null`-коллекцию. `IEnumerable` сначала копируется, поэтому `target.AddChildren(source.Children())` переносит всех детей.
 
 ## Стили
 
