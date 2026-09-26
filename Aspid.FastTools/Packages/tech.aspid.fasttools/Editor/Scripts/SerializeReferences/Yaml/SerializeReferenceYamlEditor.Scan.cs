@@ -19,14 +19,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static readonly Regex _referencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
 
-        public static List<MissingReferenceEntry> FindMissingReferences(string assetPath, Func<ManagedTypeName, bool> resolves)
+        // `knownTextYaml` skips the format sniff for a caller that has already sniffed the file (the gate's Scan).
+        public static List<MissingReferenceEntry> FindMissingReferences(
+            string assetPath, Func<ManagedTypeName, bool> resolves, bool knownTextYaml = false)
         {
             var result = new List<MissingReferenceEntry>();
 
             try
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
-                if (!SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
+                if (!knownTextYaml && !SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
 
                 var lines = File.ReadAllLines(assetPath);
 
@@ -85,7 +87,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // ABSENT is not a violation either: Unity omits a serialized field saved before the field existed, so
         // flagging it would fail a project that is valid once reserialized. An absent ancestor key counts the same.
         public static List<RequiredViolationEntry> FindUnsetRequiredFields(
-            string assetPath, Func<string, IReadOnlyList<RequiredFieldDescriptor>> requiredFieldsForScript)
+            string assetPath,
+            Func<string, IReadOnlyList<RequiredFieldDescriptor>> requiredFieldsForScript,
+            bool knownTextYaml = false)
         {
             var result = new List<RequiredViolationEntry>();
             if (requiredFieldsForScript is null) return result;
@@ -93,7 +97,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             try
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
-                if (!SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
+                if (!knownTextYaml && !SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
 
                 // One-shot bulk read like FindMissingReferences — bypass the probe cache so large scene files don't evict
                 // the interactive per-property entries (see SerializeReferenceYamlProbeCache remarks).

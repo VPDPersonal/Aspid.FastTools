@@ -85,6 +85,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(0, violations.Count);
         }
 
+        // The gate's Scan sniffs each file once and passes knownTextYaml, so the scanner must not sniff again: the same
+        // preamble-less body is parsed instead of skipped.
+        [Test]
+        public void FindMissingReferences_KnownTextYaml_SkipsSniff()
+        {
+            var path = Write(StripPreamble(YamlFixtures.MissingTypePrefab));
+            var missing = SerializeReferenceYamlEditor.FindMissingReferences(
+                path, type => !type.Class.StartsWith("Ghost", StringComparison.Ordinal), knownTextYaml: true);
+
+            Assert.AreEqual(1, missing.Count);
+        }
+
+        [Test]
+        public void FindUnsetRequiredFields_KnownTextYaml_SkipsSniff()
+        {
+            var path = Write(StripPreamble(YamlFixtures.RequiredSceneUnset));
+            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(path, guid =>
+                guid == YamlFixtures.RequiredSceneScriptGuid
+                    ? TypeSelectorRequiredGate.GetRequiredFields(typeof(RequiredTestObject))
+                    : Array.Empty<RequiredFieldDescriptor>(), knownTextYaml: true);
+
+            Assert.AreNotEqual(0, violations.Count);
+        }
+
         [Test]
         public void GraphScannerBuild_NotTextYaml_IsSkipped()
         {

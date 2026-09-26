@@ -197,7 +197,7 @@ This limitation applies to unset required fields. Missing-type detection separat
 
 ### Report and exit codes
 
-The header counts violations and files that were not scanned because they are not text YAML; each such file follows as a `#` comment line with `Binary` or `LfsPointer` and its path. Skipped files do not change the exit code.
+The header counts violations and files that were not scanned because they are not text YAML; each such file follows as a `#` comment line with `Binary` or `LfsPointer` and its path. Skipped files do not change the exit code. Even in **Force Text**, Unity writes some assets binary (LightingData, NavMesh), so a healthy project can list them; they hold no managed references, and the log warning does not mention them.
 
 After the header, each violation occupies one line. Fields are tab-separated:
 
