@@ -20,8 +20,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
   group: ${{ github.event_name == 'pull_request' && format('docs-{0}', github.ref) || 'pages' }}
@@ -32,10 +30,11 @@ jobs:
     name: Docs build
     runs-on: ubuntu-latest
     steps:
-      # On a pull request HEAD is the merge commit and HEAD^1 the base branch tip.
+      # On a pull request HEAD is the merge commit and HEAD^1 the base branch tip. A deploy needs the full
+      # history: Docusaurus and sync-i18n read each page's "Last updated" date from git log.
       - uses: actions/checkout@v4
         with:
-          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 1 }}
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
       - name: Detect docs changes
         id: changes
         run: |
@@ -57,6 +56,9 @@ jobs:
       - run: npm run check-readme
         if: steps.changes.outputs.build
         working-directory: Website
+      - run: node --test scripts/search.test.mjs
+        if: steps.changes.outputs.build
+        working-directory: Website
       - run: npm run build
         if: steps.changes.outputs.build
         working-directory: Website
@@ -69,6 +71,9 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
