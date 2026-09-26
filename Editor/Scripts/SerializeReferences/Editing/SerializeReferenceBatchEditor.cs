@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
@@ -105,7 +106,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     var changed = false;
                     foreach (var entry in file)
                     {
-                        if (!edit(file.Key, entry)) continue;
+                        if (!edit(file.Key, entry))
+                        {
+                            // The rest of a read-only file's entries would each be refused with the same error.
+                            if (IsReadOnly(file.Key)) break;
+                            continue;
+                        }
 
                         applied++;
                         changed = true;
@@ -122,5 +128,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return applied;
         }
+
+        private static bool IsReadOnly(string path) =>
+            File.Exists(path) && (File.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
     }
 }
