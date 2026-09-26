@@ -17,8 +17,11 @@ const REPO = 'https://github.com/VPDPersonal/Aspid.FastTools';
 const ASSET_STORE = 'https://assetstore.unity.com/packages/slug/365584';
 /** The docs in the working tree describe the package version in the working tree. */
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL(`${PACKAGE}/package.json`, import.meta.url), 'utf8')).version;
-/** The UPM branch the install URL points at; each release tags it `<branch>/<version>`. */
-const UPM_BRANCH = 'upm-preview';
+/**
+ * The UPM branch the install URL points at; each release tags it `<branch>/<version>`. A prerelease publishes to
+ * `upm-preview`, a stable version to `upm` (.github/workflows/release.yml).
+ */
+const UPM_BRANCH = PACKAGE_VERSION.includes('-') ? 'upm-preview' : 'upm';
 
 /** Orders `1.0.0-rc.10` after `1.0.0-rc.9`, and a release after its prereleases. */
 function compareVersions(a, b) {
