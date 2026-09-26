@@ -1,4 +1,5 @@
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.CSharp;
@@ -40,14 +41,11 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
         var model = context.SemanticModel;
         var ct = context.CancellationToken;
 
-        // The package fallback or a generated overload; a call with the wrong arguments has it only as a candidate.
-        var symbolInfo = model.GetSymbolInfo(invocation, ct);
-        var method = symbolInfo.Symbol as IMethodSymbol ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault(MarkerCallRules.IsMarker);
-
+        // The name is checked first, so a call that is not named Marker is never bound.
         // this?.Marker() is a member binding the generator never sees.
         if (invocation.Expression is MemberBindingExpressionSyntax { Name.Identifier.ValueText: "Marker" } binding)
         {
-            if (MarkerCallRules.IsMarker(method))
+            if (MarkerCallRules.IsMarker(GetMethod(invocation, model, ct)))
                 context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerUnsupportedTypeRule, binding.Name.GetLocation(), ConditionalAccessReason));
             return;
         }
@@ -55,7 +53,7 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
         if (invocation.Expression is not MemberAccessExpressionSyntax { Name: SimpleNameSyntax { Identifier.ValueText: "Marker" } name } access)
             return;
 
-        if (!MarkerCallRules.IsMarker(method)) return;
+        if (!MarkerCallRules.IsMarker(GetMethod(invocation, model, ct))) return;
 
         if (MarkerCallRules.FindEnclosingMember(model.GetEnclosingSymbol(invocation.SpanStart, ct)) is not { ContainingType: { } type })
             return;
@@ -68,6 +66,13 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
 
         if (IsDiscarded(WithNameChain(invocation), model, context))
             context.ReportDiagnostic(Diagnostic.Create(DiagnosticRules.ProfilerMarkerScopeDiscardedRule, name.GetLocation()));
+    }
+
+    // The package fallback or a generated overload; a call with the wrong arguments has it only as a candidate.
+    private static IMethodSymbol? GetMethod(InvocationExpressionSyntax invocation, SemanticModel model, CancellationToken ct)
+    {
+        var symbolInfo = model.GetSymbolInfo(invocation, ct);
+        return symbolInfo.Symbol as IMethodSymbol ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault(MarkerCallRules.IsMarker);
     }
 
     // `Func<AutoScope> f = this.Marker` passes no line, so it reaches the fallback or another line's marker.

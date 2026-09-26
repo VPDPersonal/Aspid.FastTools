@@ -487,6 +487,237 @@ class C
     [TypeSelector(new string[] { nameof(_base), {|AFT0006:""_missing""|} })] private string _type;
 }");
 
+    // Nullable annotations do not change which members the drawer accepts.
+
+    [Fact]
+    public Task MemberReference_NullableTypeMembers_NoDiagnostic() => Verify(@"
+#nullable enable
+using Aspid.FastTools.Types;
+class C
+{
+    private System.Type? _base;
+    private System.Type?[]? _bases;
+    [TypeSelector(nameof(_base))] private string _type = """";
+    [TypeSelector(nameof(_bases))] private string _other = """";
+}");
+
+    [Fact]
+    public Task NullableObjectDerivedManagedReference_ReportsAFT0004() => Verify(@"
+#nullable enable
+using UnityEngine;
+using Aspid.FastTools.Types;
+class MyComponent : Object { }
+class C
+{
+    [SerializeReference, {|AFT0004:TypeSelector|}] private MyComponent? _comp;
+    [SerializeReference, {|AFT0004:TypeSelector|}] private Object? _object;
+}");
+
+    // The drawer reads a property through its getter.
+
+    [Fact]
+    public Task MemberReference_SetOnlyProperty_ReportsAFT0007() => Verify(@"
+using Aspid.FastTools.Types;
+class C
+{
+    private System.Type Base { set { } }
+    [TypeSelector({|AFT0007:nameof(Base)|})] private string _type;
+}");
+
+    [Fact]
+    public Task MemberReference_SerializableMonoScriptField_NoDiagnostic() => Verify(@"
+using Aspid.FastTools.Types;
+class C
+{
+    private SerializableMonoScript[] _bases;
+    [TypeSelector(nameof(_bases))] private string _type;
+}");
+
+    // Generic base and field types: the drawer lists closed implementations and closes open ones.
+
+    [Fact]
+    public Task ClosedGenericInterfaceField_ClosedImpl_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IFoo<T> { }
+class IntFoo : IFoo<int> { }
+class C { [SerializeReference, TypeSelector] private IFoo<int> _foo; }");
+
+    [Fact]
+    public Task ClosedGenericClassField_ClosedImpl_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+abstract class Base<T> { }
+class IntImpl : Base<int> { }
+class C { [SerializeReference, TypeSelector] private Base<int> _value; }");
+
+    [Fact]
+    public Task ClosedGenericInterfaceField_OpenImpl_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+using System.Collections.Generic;
+interface IFoo<T> { }
+class Foo<T> : IFoo<T> { }
+class C { [SerializeReference, TypeSelector] private List<IFoo<int>> _foos; }");
+
+    [Fact]
+    public Task ClosedGenericTypeofBase_ClosedImpl_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IAny { }
+interface IFoo<T> { }
+class IntFoo : IFoo<int>, IAny { }
+class C { [SerializeReference, TypeSelector(typeof(IFoo<int>))] private IAny _value; }");
+
+    [Fact]
+    public Task ClosedGenericInterfaceField_OnlyOtherArgumentImpls_ReportsAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IFoo<T> { }
+class StringFoo : IFoo<string> { }
+class ListFoo<T> : IFoo<System.Collections.Generic.List<T>> { }
+class C { [SerializeReference, {|AFT0005:TypeSelector|}] private IFoo<int> _foo; }");
+
+    // A variant interface accepts implementations of a more derived argument, as Type.IsAssignableFrom does.
+
+    [Fact]
+    public Task CovariantBaseType_SealedFieldType_NoAFT0003() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IAnimal { }
+class Dog : IAnimal { }
+interface IProducer<out T> { }
+sealed class DogProducer : IProducer<Dog> { }
+class C { [SerializeReference, TypeSelector(typeof(IProducer<IAnimal>))] private DogProducer _producer; }");
+
+    [Fact]
+    public Task CovariantField_ImplOfDerivedArgument_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IAnimal { }
+class Dog : IAnimal { }
+interface IProducer<out T> { }
+class DogProducer : IProducer<Dog> { }
+class C { [SerializeReference, TypeSelector] private IProducer<IAnimal> _producer; }");
+
+    // A type-parameter field is only known once the containing generic type is closed.
+
+    [Fact]
+    public Task TypeParameterField_NoDiagnostic() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+using System.Collections.Generic;
+class Impl { }
+class Slot<T> where T : class
+{
+    [SerializeReference, TypeSelector(typeof(Impl))] private T _value;
+    [SerializeReference, TypeSelector] private T _other;
+    [SerializeReference, TypeSelector] private List<IComparer<T>> _comparers;
+}");
+
+    [Fact]
+    public Task NestedInGenericArgument_OnlyOtherOuterArgumentImpls_ReportsAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+using System.Collections.Generic;
+interface IBar<T> { }
+class Outer<T> { public class Inner { } }
+class ListImpl<T> : IBar<Outer<List<T>>.Inner> { }
+class C { [SerializeReference, {|AFT0005:TypeSelector|}] private IBar<Outer<int>.Inner> _bar; }");
+
+    [Fact]
+    public Task NestedInGenericArgument_OpenImpl_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IBar<T> { }
+class Outer<T> { public class Inner { } }
+class Impl<T> : IBar<Outer<T>.Inner> { }
+class C { [SerializeReference, TypeSelector] private IBar<Outer<int>.Inner> _bar; }");
+
+    // An unbound typeof(Foo<>) is related to a type whose hierarchy contains some Foo<X>.
+
+    [Fact]
+    public Task UnboundGenericBase_SealedTypeWithoutIt_ReportsAFT0003AndAFT0009() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IFoo<T> { }
+sealed class Plain { }
+class C
+{
+    [SerializeReference, TypeSelector({|AFT0003:typeof(IFoo<>)|})] private Plain _plain;
+    [TypeSelector(typeof(IFoo<>), {|AFT0009:typeof(Plain)|})] private string _type;
+}");
+
+    [Fact]
+    public Task UnboundGenericBase_SealedTypeImplementingIt_NoDiagnostic() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IFoo<T> { }
+sealed class IntFoo : IFoo<int> { }
+class C
+{
+    [SerializeReference, TypeSelector(typeof(IFoo<>))] private IntFoo _foo;
+    [TypeSelector(typeof(IFoo<>), typeof(IntFoo))] private string _type;
+}");
+
+    // AFT0003 on SerializableType<T> / SerializableMonoScript<T>: the picker also requires T.
+
+    [Fact]
+    public Task DisjointBaseType_OnGenericWrappers_ReportsAFT0003() => Verify(@"
+using Aspid.FastTools.Types;
+class Base { }
+class Unrelated { }
+class C
+{
+    [TypeSelector({|AFT0003:typeof(Unrelated)|})] private SerializableType<Base> _type;
+    [TypeSelector({|AFT0003:typeof(Unrelated)|})] private SerializableMonoScript<Base>[] _scripts;
+}");
+
+    [Fact]
+    public Task CompatibleBaseType_OnGenericWrappers_NoDiagnostic() => Verify(@"
+using Aspid.FastTools.Types;
+class Base { }
+class Derived : Base { }
+class Unrelated { }
+class C
+{
+    [TypeSelector(typeof(Derived))] private SerializableType<Base> _type;
+    [TypeSelector(typeof(Unrelated))] private SerializableType<object> _any;
+    [TypeSelector(typeof(Unrelated))] private SerializableType _plain;
+}");
+
+    // [field: ...] on an auto-property targets its serialized backing field.
+
+    [Fact]
+    public Task FieldTargetedAutoProperty_UnsupportedType_ReportsAFT0001() => Verify(@"
+using Aspid.FastTools.Types;
+class C { [field: {|AFT0001:TypeSelector|}] public int Value { get; set; } }");
+
+    [Fact]
+    public Task FieldTargetedAutoProperty_ManagedReference_ReportsAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IEmpty { }
+class C { [field: SerializeReference, {|AFT0005:TypeSelector|}] public IEmpty Value { get; private set; } }");
+
+    [Fact]
+    public Task FieldTargetedAutoProperty_MemberReference_ReportsAFT0006() => Verify(@"
+using Aspid.FastTools.Types;
+class C { [field: TypeSelector({|AFT0006:""_missing""|})] public string Value { get; set; } }");
+
+    [Fact]
+    public Task FieldTargetedAutoProperty_ValidShapes_NoDiagnostic() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IFoo { }
+class FooImpl : IFoo { }
+class C
+{
+    [field: TypeSelector] public string TypeName { get; set; }
+    [field: SerializeReference, TypeSelector] public IFoo Foo { get; set; }
+    [field: TypeSelector] public SerializableType Type { get; set; }
+}");
+
     private static Task VerifyWithReferencedProject(string code, string referencedProjectSource)
     {
         var test = new Microsoft.CodeAnalysis.CSharp.Testing.CSharpAnalyzerTest<

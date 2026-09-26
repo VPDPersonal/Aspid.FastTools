@@ -26,6 +26,11 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
 {
     private const string ListDefinition = "System.Collections.Generic.List<T>";
 
+    // The default display format without the '?' of an annotated reference type, so a match by full name does not
+    // depend on the nullable context the member is declared in.
+    private static readonly SymbolDisplayFormat FullNameFormat = SymbolDisplayFormat.CSharpErrorMessageFormat
+        .RemoveMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(
             DiagnosticRules.TypeSelectorFieldTypeRule,
@@ -53,62 +58,112 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             compilationContext.RegisterSyntaxNodeAction(
                 ctx => AnalyzeField(ctx, candidateSearch),
                 SyntaxKind.FieldDeclaration);
+
+            compilationContext.RegisterSyntaxNodeAction(
+                ctx => AnalyzeAutoProperty(ctx, candidateSearch),
+                SyntaxKind.PropertyDeclaration);
         });
     }
 
     private static void AnalyzeField(SyntaxNodeAnalysisContext context, CandidateSearch candidateSearch)
     {
         var field = (FieldDeclarationSyntax)context.Node;
+        var attributes = field.AttributeLists.SelectMany(list => list.Attributes).ToImmutableArray();
 
-        var typeSelector = FindAttribute(field, context.SemanticModel, AspidAttributes.TypeSelectorFull);
+        var typeSelector = FindAttribute(attributes, context.SemanticModel, AspidAttributes.TypeSelectorFull);
         if (typeSelector is null) return;
 
         if (field.Declaration.Variables.Count == 0) return;
         if (context.SemanticModel.GetDeclaredSymbol(field.Declaration.Variables[0]) is not IFieldSymbol fieldSymbol) return;
 
+        AnalyzeMember(context, candidateSearch, typeSelector, attributes, fieldSymbol.Name, fieldSymbol.Type, fieldSymbol.ContainingType);
+    }
+
+    // [field: SerializeReference, TypeSelector] on an auto-property lands on its backing field, which Unity
+    // serializes like any other field; only the field-targeted attribute lists apply to it.
+    private static void AnalyzeAutoProperty(SyntaxNodeAnalysisContext context, CandidateSearch candidateSearch)
+    {
+        var property = (PropertyDeclarationSyntax)context.Node;
+        var attributes = property.AttributeLists
+            .Where(list => list.Target?.Identifier.IsKind(SyntaxKind.FieldKeyword) == true)
+            .SelectMany(list => list.Attributes)
+            .ToImmutableArray();
+
+        if (attributes.IsEmpty) return;
+
+        var typeSelector = FindAttribute(attributes, context.SemanticModel, AspidAttributes.TypeSelectorFull);
+        if (typeSelector is null) return;
+
+        if (context.SemanticModel.GetDeclaredSymbol(property, context.CancellationToken) is not { } propertySymbol) return;
+
+        // Without a backing field (an accessor has a body) the compiler ignores the field-targeted attributes.
+        var hasBackingField = propertySymbol.ContainingType.GetMembers().OfType<IFieldSymbol>()
+            .Any(field => SymbolEqualityComparer.Default.Equals(field.AssociatedSymbol, propertySymbol));
+        if (!hasBackingField) return;
+
+        AnalyzeMember(context, candidateSearch, typeSelector, attributes, propertySymbol.Name, propertySymbol.Type, propertySymbol.ContainingType);
+    }
+
+    private static void AnalyzeMember(
+        SyntaxNodeAnalysisContext context,
+        CandidateSearch candidateSearch,
+        AttributeSyntax typeSelector,
+        ImmutableArray<AttributeSyntax> attributes,
+        string memberName,
+        ITypeSymbol memberType,
+        INamedTypeSymbol containingType)
+    {
         // Unwrap arrays / List<T> so the checks see the element type a [SerializeReference] entry actually holds.
-        var elementType = GetElementType(fieldSymbol.Type);
+        var elementType = GetElementType(memberType);
         var isString = elementType.SpecialType == SpecialType.System_String;
         var isSerializableType = IsSerializableType(elementType);
-        var isManagedReference = FindAttribute(field, context.SemanticModel, UnityAttributes.SerializeReferenceFull) is not null;
+        var isManagedReference = FindAttribute(attributes, context.SemanticModel, UnityAttributes.SerializeReferenceFull) is not null;
 
         // AFT0001 — none of the valid shapes (a string type-name field, a SerializableType / SerializableMonoScript
         // wrapper, or a [SerializeReference] managed reference): the drawer renders an error box instead of the field.
         if (!isString && !isSerializableType && !isManagedReference)
         {
             context.ReportDiagnostic(Diagnostic.Create(
-                DiagnosticRules.TypeSelectorFieldTypeRule, typeSelector.GetLocation(), fieldSymbol.Name));
+                DiagnosticRules.TypeSelectorFieldTypeRule, typeSelector.GetLocation(), memberName));
             return;
         }
 
         // AFT0006/AFT0007/AFT0008 — the drawer resolves each string argument member-first: a valid identifier is
         // looked up as a field/property on the target object, anything else falls back to Type.GetType. Both
         // failures are silent at runtime (the picker just loses its constraint), so they are surfaced here.
-        ReportStringArguments(context, typeSelector, fieldSymbol);
+        ReportStringArguments(context, typeSelector, memberName, containingType);
 
         // AFT0009 — every field shape intersects the base types, so two of them that share no type empty the picker.
         var hasDisjointPair = ReportDisjointBaseTypePairs(context, typeSelector);
 
         // On a string or SerializableType field both Allow and the base types are meaningful (a Type is named, not
         // instantiated), and none of the managed-reference-only checks below apply.
-        if (!isManagedReference) return;
+        if (!isManagedReference)
+        {
+            // AFT0003 — SerializableType<T> / SerializableMonoScript<T> adds its T to the picker's base types, so a
+            // base disjoint from T empties the picker just as on a managed reference.
+            if (GetWrapperBaseType(elementType) is { } wrapperBaseType)
+                ReportDisjointBaseTypes(context, typeSelector, wrapperBaseType);
 
-        ReportAllowOnManagedReference(context, typeSelector, fieldSymbol.Name);
+            return;
+        }
+
+        ReportAllowOnManagedReference(context, typeSelector, memberName);
 
         // AFT0003 — a base provably disjoint from the field type empties the picker on its own.
         var hasDisjointBase = ReportDisjointBaseTypes(context, typeSelector, elementType);
 
         // AFT0004 — element type derives from UnityEngine.Object: Unity silently skips it for managed references.
-        if (ReportObjectDerivedManagedReference(context, typeSelector, fieldSymbol.Name, elementType)) return;
+        if (ReportObjectDerivedManagedReference(context, typeSelector, memberName, elementType)) return;
 
         // AFT0003 or AFT0009 already says the selector is empty — AFT0005 on top would be redundant noise.
         if (hasDisjointPair || hasDisjointBase) return;
 
         // AFT0005 — no visible concrete implementation exists for the effective base set.
-        ReportNoConcreteImplementation(context, typeSelector, fieldSymbol.Name, elementType, candidateSearch);
+        ReportNoConcreteImplementation(context, typeSelector, memberName, elementType, candidateSearch);
     }
 
-    // System.Type — the member value shape the drawer reads reflectively (besides string); matched by display name
+    // System.Type — the member value shape the drawer reads reflectively (besides string); matched by full name
     // so the tests need no reference resolution tricks.
     private const string SystemTypeFull = "System.Type";
 
@@ -116,18 +171,20 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
     // drawer contract: a valid C# identifier names an instance field/property on the target object whose value
     // (Type / Type[] / string / string[]) supplies the base types; any other string must be an assembly-qualified
     // type name for Type.GetType.
-    private static void ReportStringArguments(SyntaxNodeAnalysisContext context, AttributeSyntax typeSelector, IFieldSymbol fieldSymbol)
+    private static void ReportStringArguments(
+        SyntaxNodeAnalysisContext context, AttributeSyntax typeSelector, string memberName, INamedTypeSymbol containingType)
     {
         if (typeSelector.ArgumentList is null) return;
 
         foreach (var argument in typeSelector.ArgumentList.Arguments)
         {
             if (argument.NameEquals is not null) continue; // skip Allow = ... / Required = ...
-            ValidateStringExpression(context, argument.Expression, fieldSymbol);
+            ValidateStringExpression(context, argument.Expression, memberName, containingType);
         }
     }
 
-    private static void ValidateStringExpression(SyntaxNodeAnalysisContext context, ExpressionSyntax expression, IFieldSymbol fieldSymbol)
+    private static void ValidateStringExpression(
+        SyntaxNodeAnalysisContext context, ExpressionSyntax expression, string memberName, INamedTypeSymbol containingType)
     {
         // The params string[] overload can be called with an explicit array — validate each element.
         var initializer = expression switch
@@ -140,7 +197,7 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         if (initializer is not null)
         {
             foreach (var element in initializer.Expressions)
-                ValidateStringExpression(context, element, fieldSymbol);
+                ValidateStringExpression(context, element, memberName, containingType);
             return;
         }
 
@@ -154,26 +211,26 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         {
             // Identifier → member reference. The drawer walks the runtime type's hierarchy with instance-only
             // binding flags, so the member must be an instance field/property visible from the declaring type.
-            var member = FindMemberFromHierarchy(fieldSymbol.ContainingType, name);
+            var member = FindMemberFromHierarchy(containingType, name);
 
             if (member is null)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticRules.TypeSelectorMemberNotFoundRule, expression.GetLocation(),
-                    fieldSymbol.Name, name, fieldSymbol.ContainingType.Name));
+                    memberName, name, containingType.Name));
             }
             else if (!IsSuitableConstraintSource(member))
             {
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticRules.TypeSelectorMemberUnsuitableRule, expression.GetLocation(),
-                    fieldSymbol.Name, name));
+                    memberName, name));
             }
         }
         else if (!IsPlausibleTypeName(name))
         {
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticRules.TypeSelectorTypeNameSyntaxRule, expression.GetLocation(),
-                fieldSymbol.Name, name));
+                memberName, name));
         }
     }
 
@@ -195,15 +252,15 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         return null;
     }
 
-    // A member the drawer can read as a base-type source: an instance field or property whose (element) type is
-    // System.Type, string, or a SerializableType / SerializableType<T> wrapper. Static members are invisible to the
-    // drawer's instance-only lookup.
+    // A member the drawer can read as a base-type source: an instance field or a readable property whose (element)
+    // type is System.Type, string, or a SerializableType / SerializableMonoScript wrapper. Static members are
+    // invisible to the drawer's instance-only lookup.
     private static bool IsSuitableConstraintSource(ISymbol member)
     {
         var memberType = member switch
         {
             IFieldSymbol { IsStatic: false } field => field.Type,
-            IPropertySymbol { IsStatic: false } property => property.Type,
+            IPropertySymbol { IsStatic: false, GetMethod: not null } property => property.Type,
             _ => null
         };
 
@@ -211,7 +268,7 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         if (memberType is IArrayTypeSymbol array) memberType = array.ElementType;
 
         return memberType.SpecialType == SpecialType.System_String ||
-            memberType.ToDisplayString() == SystemTypeFull ||
+            memberType.ToDisplayString(FullNameFormat) == SystemTypeFull ||
             IsSerializableType(memberType);
     }
 
@@ -282,7 +339,7 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
 
         foreach (var (typeOf, baseType) in CollectTypeofBases(typeSelector, context.SemanticModel))
         {
-            if (!AreProvablyDisjoint(baseType, fieldElementType)) continue;
+            if (!AreProvablyDisjoint(baseType, fieldElementType, context.Compilation)) continue;
 
             context.ReportDiagnostic(Diagnostic.Create(
                 DiagnosticRules.TypeSelectorBaseTypeRule, typeOf.GetLocation(), baseType.Name, fieldElementType.Name));
@@ -304,7 +361,7 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         {
             for (var earlier = 0; earlier < later; earlier++)
             {
-                if (!AreProvablyDisjoint(bases[earlier].Type, bases[later].Type)) continue;
+                if (!AreProvablyDisjoint(bases[earlier].Type, bases[later].Type, context.Compilation)) continue;
 
                 context.ReportDiagnostic(Diagnostic.Create(
                     DiagnosticRules.TypeSelectorDisjointBaseTypesRule,
@@ -374,12 +431,15 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             ? typeofBases.Select(entry => entry.Type).ToImmutableArray()
             : ImmutableArray.Create(elementType);
 
+        // A type parameter (or a type built from one) is only known once the generic type is closed.
+        if (IsOpen(elementType) || bases.Any(IsOpen)) return;
+
         // Skip the search when a base is a concrete instantiable class meeting the other bases — it is its own
         // candidate.
         foreach (var baseType in bases)
         {
             if (!IsConcreteInstantiable(baseType) || IsUnityObjectDerived(baseType)) continue;
-            if (bases.All(other => IsAssignableTo(baseType, other))) return;
+            if (bases.All(other => IsAssignableTo(baseType, other, context.Compilation))) return;
         }
 
         if (candidateSearch.HasVisibleCandidate(bases, elementType, context.CancellationToken)) return;
@@ -451,13 +511,13 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        private static bool ScanAssembly(IAssemblySymbol assembly, Constraints constraints, CancellationToken cancellationToken)
+        private bool ScanAssembly(IAssemblySymbol assembly, Constraints constraints, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return ScanNamespace(assembly.GlobalNamespace, constraints);
         }
 
-        private static bool ScanNamespace(INamespaceSymbol ns, Constraints constraints)
+        private bool ScanNamespace(INamespaceSymbol ns, Constraints constraints)
         {
             foreach (var type in ns.GetTypeMembers())
                 if (ScanType(type, constraints)) return true;
@@ -468,7 +528,7 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             return false;
         }
 
-        private static bool ScanType(INamedTypeSymbol type, Constraints constraints)
+        private bool ScanType(INamedTypeSymbol type, Constraints constraints)
         {
             if (IsCandidate(type, constraints)) return true;
 
@@ -480,27 +540,67 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         }
 
         // A candidate is a concrete, non-abstract, non-static class, not derived from UnityEngine.Object, not string,
-        // not a delegate, assignable to every constraint type. For open generic candidates assignability is tested
-        // against original definitions to avoid needing concrete type arguments (any closed form would still be
-        // assignable to the bases). Cheapest checks first: the UnityEngine.Object walk only runs on a type that
-        // already matched every constraint.
-        private static bool IsCandidate(INamedTypeSymbol type, Constraints constraints)
+        // not a delegate, assignable to every constraint type. An open generic candidate qualifies when some closed
+        // form of it could be (the drawer closes it on selection), so its supertypes are unified with each constraint
+        // rather than converted. Cheapest checks first: the UnityEngine.Object walk only runs on a type that already
+        // matched every constraint.
+        private bool IsCandidate(INamedTypeSymbol type, Constraints constraints)
         {
             if (!IsConcreteInstantiable(type)) return false;
 
-            var testFrom = type.IsGenericType ? type.OriginalDefinition : type;
-
             foreach (var baseType in constraints.BaseTypes)
-                if (!IsAssignableTo(testFrom, AsDefinition(baseType))) return false;
+                if (!CanBeAssignedTo(type, baseType)) return false;
 
-            if (!constraints.FieldIsObject && !IsAssignableTo(testFrom, AsDefinition(constraints.FieldElementType)))
+            if (!constraints.FieldIsObject && !CanBeAssignedTo(type, constraints.FieldElementType))
                 return false;
 
             return !IsUnityObjectDerived(type);
         }
 
-        private static ITypeSymbol AsDefinition(ITypeSymbol type) =>
-            type.IsDefinition ? type : (type as INamedTypeSymbol)?.OriginalDefinition ?? type;
+        private bool CanBeAssignedTo(INamedTypeSymbol type, ITypeSymbol target) =>
+            IsOpen(type) ? CanCloseTo(type, target) : IsAssignableTo(type, target, _compilation);
+
+        // Some supertype of the open candidate matches the target once the candidate's type parameters are bound.
+        private static bool CanCloseTo(INamedTypeSymbol type, ITypeSymbol target)
+        {
+            for (var current = type; current is not null; current = current.BaseType)
+                if (CanUnify(current, target)) return true;
+
+            foreach (var contract in type.AllInterfaces)
+                if (CanUnify(contract, target)) return true;
+
+            return false;
+        }
+
+        // A type parameter binds to anything (its constraints are not checked, which can only hide a warning).
+        private static bool CanUnify(ITypeSymbol open, ITypeSymbol closed)
+        {
+            if (open is ITypeParameterSymbol) return true;
+            if (SymbolEqualityComparer.Default.Equals(open, closed)) return true;
+
+            switch (open)
+            {
+                case IArrayTypeSymbol openArray when closed is IArrayTypeSymbol closedArray:
+                    return openArray.Rank == closedArray.Rank && CanUnify(openArray.ElementType, closedArray.ElementType);
+
+                case INamedTypeSymbol { IsGenericType: true } openNamed when closed is INamedTypeSymbol { IsGenericType: true } closedNamed:
+                {
+                    if (!SymbolEqualityComparer.Default.Equals(openNamed.OriginalDefinition, closedNamed.OriginalDefinition))
+                        return false;
+
+                    for (var i = 0; i < openNamed.TypeArguments.Length; i++)
+                        if (!CanUnify(openNamed.TypeArguments[i], closedNamed.TypeArguments[i])) return false;
+
+                    // Outer<List<T>>.Inner and Outer<int>.Inner share a definition but not the outer arguments.
+                    return openNamed.ContainingType is not { } openOuter ||
+                        closedNamed.ContainingType is not { } closedOuter ||
+                        CanUnify(openOuter, closedOuter);
+                }
+
+                default:
+                    return false;
+            }
+        }
 
         // True when the assembly is (or references) the target, i.e. its metadata can declare a type derived from a
         // type of the target. A null target (unresolved constraint type) filters nothing.
@@ -571,22 +671,22 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         return true;
     }
 
-    // Walks the base chain to find UnityEngine.Object by full display name. Intentionally matches both the real
+    // Walks the base chain to find UnityEngine.Object by full name. Intentionally matches both the real
     // Unity type and the test stub (both share the same namespace + class name).
     private static bool IsUnityObjectDerived(ITypeSymbol type)
     {
         for (var t = type as INamedTypeSymbol; t is not null; t = t.BaseType)
-            if (t.ToDisplayString() == UnityClasses.ObjectFull) return true;
+            if (t.ToDisplayString(FullNameFormat) == UnityClasses.ObjectFull) return true;
 
         return false;
     }
 
-    private static AttributeSyntax? FindAttribute(FieldDeclarationSyntax field, SemanticModel model, string fullName)
+    private static AttributeSyntax? FindAttribute(ImmutableArray<AttributeSyntax> attributes, SemanticModel model, string fullName)
     {
-        foreach (var attribute in field.AttributeLists.SelectMany(list => list.Attributes))
+        foreach (var attribute in attributes)
         {
             if (model.GetSymbolInfo(attribute).Symbol is not IMethodSymbol constructor) continue;
-            if (constructor.ContainingType.ToDisplayString() == fullName) return attribute;
+            if (constructor.ContainingType.ToDisplayString(FullNameFormat) == fullName) return attribute;
         }
 
         return null;
@@ -597,11 +697,33 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         if (type is IArrayTypeSymbol array) return array.ElementType;
 
         if (type is INamedTypeSymbol { IsGenericType: true } named &&
-            named.OriginalDefinition.ToDisplayString() == ListDefinition)
+            named.OriginalDefinition.ToDisplayString(FullNameFormat) == ListDefinition)
             return named.TypeArguments[0];
 
         return type;
     }
+
+    // The T of a SerializableType<T> / SerializableMonoScript<T> element, which the drawer adds to the base types;
+    // null for the non-generic wrappers and for T = object, which narrow nothing.
+    private static ITypeSymbol? GetWrapperBaseType(ITypeSymbol elementType)
+    {
+        if (elementType is not INamedTypeSymbol { IsGenericType: true } named || !IsSerializableType(named)) return null;
+
+        var argument = named.TypeArguments[0];
+        return argument.SpecialType == SpecialType.System_Object ? null : argument;
+    }
+
+    // True for a type parameter or a type built from one (T[], List<T>, a type nested in Outer<T>), and for an
+    // unbound typeof(Foo<>): which types it stands for is only known once the generic type is closed.
+    private static bool IsOpen(ITypeSymbol type) => type switch
+    {
+        ITypeParameterSymbol => true,
+        IArrayTypeSymbol array => IsOpen(array.ElementType),
+        INamedTypeSymbol named => named.IsUnboundGenericType ||
+            named.TypeArguments.Any(IsOpen) ||
+            (named.ContainingType is { } containing && IsOpen(containing)),
+        _ => false
+    };
 
     // A SerializableType / SerializableType<T> or SerializableMonoScript / SerializableMonoScript<T> field names a Type
     // (like a string) rather than instantiating one, so [TypeSelector] is valid on it. Matched by the wrapper's original
@@ -611,7 +733,7 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
     {
         if (type is not INamedTypeSymbol named) return false;
 
-        var definition = named.OriginalDefinition.ToDisplayString();
+        var definition = named.OriginalDefinition.ToDisplayString(FullNameFormat);
         return definition == AspidClasses.SerializableTypeFull ||
             definition == AspidClasses.SerializableTypeGenericFull ||
             definition == AspidClasses.SerializableMonoScriptFull ||
@@ -621,9 +743,19 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
     // Two non-interface types with no inheritance relationship can share no concrete instance (single inheritance),
     // so the selector would be empty. An interface paired with a class is only provably disjoint when the class is
     // sealed and does not implement it — no further subtype can add the interface. Two interfaces are never provably
-    // disjoint (one class can implement both), so they are left alone to avoid false positives.
-    private static bool AreProvablyDisjoint(ITypeSymbol baseType, ITypeSymbol fieldType)
+    // disjoint (one class can implement both), so they are left alone to avoid false positives. An unbound
+    // typeof(Foo<>) against a closed type is matched by generic definition: related when some Foo<X> is in the other
+    // type's hierarchy, or the other type is in Foo's.
+    private static bool AreProvablyDisjoint(ITypeSymbol baseType, ITypeSymbol fieldType, Compilation compilation)
     {
+        var unboundBase = IsUnbound(baseType);
+        var unboundField = IsUnbound(fieldType);
+        var byDefinition = unboundBase != unboundField;
+
+        // A type parameter stands for a type that is only known once the generic type is closed.
+        if (byDefinition ? IsOpen(unboundBase ? fieldType : baseType) : IsOpen(baseType) || IsOpen(fieldType))
+            return false;
+
         var baseIsInterface = baseType.TypeKind == TypeKind.Interface;
         var fieldIsInterface = fieldType.TypeKind == TypeKind.Interface;
 
@@ -634,23 +766,62 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             var contract = baseIsInterface ? baseType : fieldType;
             var implementation = baseIsInterface ? fieldType : baseType;
 
-            return implementation.IsSealed && !IsAssignableTo(implementation, contract);
+            return implementation.IsSealed && !Reaches(implementation, contract);
         }
 
-        return !IsAssignableTo(baseType, fieldType) && !IsAssignableTo(fieldType, baseType);
+        return !Reaches(baseType, fieldType) && !Reaches(fieldType, baseType);
+
+        bool Reaches(ITypeSymbol from, ITypeSymbol to) =>
+            byDefinition ? HasDefinitionInHierarchy(from, to) : IsAssignableTo(from, to, compilation);
     }
 
-    private static bool IsAssignableTo(ITypeSymbol from, ITypeSymbol to)
+    private static bool IsUnbound(ITypeSymbol type) => type is INamedTypeSymbol { IsUnboundGenericType: true };
+
+    // True when the type, a base class or an implemented interface shares the target's generic definition.
+    private static bool HasDefinitionInHierarchy(ITypeSymbol from, ITypeSymbol to)
+    {
+        var definition = to.OriginalDefinition;
+
+        for (ITypeSymbol? current = from.OriginalDefinition; current is not null; current = current.BaseType)
+            if (SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, definition)) return true;
+
+        foreach (var contract in from.OriginalDefinition.AllInterfaces)
+            if (SymbolEqualityComparer.Default.Equals(contract.OriginalDefinition, definition)) return true;
+
+        return false;
+    }
+
+    // Type.IsAssignableFrom for closed types: identity, a base class, or an implemented interface — the latter also
+    // through out/in variance (IProducer<Dog> to IProducer<IAnimal>). The hierarchy walk stays the fast path; the
+    // compiler is asked only about an interface of the same variant generic definition.
+    private static bool IsAssignableTo(ITypeSymbol from, ITypeSymbol to, Compilation compilation)
     {
         if (SymbolEqualityComparer.Default.Equals(from, to)) return true;
 
         for (var baseType = from.BaseType; baseType is not null; baseType = baseType.BaseType)
             if (SymbolEqualityComparer.Default.Equals(baseType, to)) return true;
 
-        if (to.TypeKind == TypeKind.Interface)
-            foreach (var contract in from.AllInterfaces)
-                if (SymbolEqualityComparer.Default.Equals(contract, to)) return true;
+        if (to.TypeKind != TypeKind.Interface) return false;
+
+        if (from.TypeKind == TypeKind.Interface && IsVariantConvertible(from, to, compilation)) return true;
+
+        foreach (var contract in from.AllInterfaces)
+        {
+            if (SymbolEqualityComparer.Default.Equals(contract, to)) return true;
+            if (IsVariantConvertible(contract, to, compilation)) return true;
+        }
 
         return false;
+    }
+
+    private static bool IsVariantConvertible(ITypeSymbol contract, ITypeSymbol to, Compilation compilation)
+    {
+        if (contract is not INamedTypeSymbol { IsGenericType: true } named) return false;
+        if (to is not INamedTypeSymbol { IsGenericType: true } target) return false;
+        if (!SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, target.OriginalDefinition)) return false;
+        if (named.TypeParameters.All(parameter => parameter.Variance == VarianceKind.None)) return false;
+
+        var conversion = compilation.ClassifyCommonConversion(contract, to);
+        return conversion.IsImplicit && conversion.IsReference;
     }
 }
