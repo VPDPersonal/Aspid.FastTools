@@ -13,3 +13,5 @@ EnumValues light surfaces: tiles Grass #9ABD9F, Stone #BBC0CB, Metal #93A9B5, Wa
 The light capsule and platform accent now use mint #A6D8A8; trail colors are lifted to softer midtones. Previous muted-color footage is retained as source-light-muted.mkv.
 
 Other light samples use Cyan #97C7D8, Grid #B4BDC8 and Animated Color Lift 0.45. Animated property blocks are softened only while the camera renders, then restored; gameplay and authored material colors remain unchanged. New recordings and recipes for Types, SerializeReferences, ProfilerMarkers and EditorTools are in other-samples/.
+
+The recipes open the samples imported for the current package version (Assets/Samples/Aspid.FastTools/<version>/) and write frames and the saved scene path to the Unity project's Temp/SampleThemes/.

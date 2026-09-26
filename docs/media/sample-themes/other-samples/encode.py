@@ -1,8 +1,10 @@
 from pathlib import Path
-import subprocess,shutil
+import subprocess,shutil,json
 root=Path(__file__).resolve().parent
 repo=root.parents[3]
-samples=repo/'Aspid.FastTools/Packages/tech.aspid.fasttools/Samples~'
+package=repo/'Aspid.FastTools/Packages/tech.aspid.fasttools'
+version=json.loads((package/'package.json').read_text())['version']
+samples=package/'Samples~'
 def ff(*args):subprocess.run(['ffmpeg','-y','-hide_banner','-loglevel','error',*map(str,args)],check=True)
 items=[('Types','types','1204:680:100:116'),('SerializeReferences','serialize-references','888:532:276:178'),('ProfilerMarkers','profiler-markers','800:688:320:108')]
 for sample,slug,crop in items:
@@ -18,6 +20,6 @@ ff('-i',root/'catalog-before.jpg','-vf','crop=1116:526:4:30','-frames:v','1',ima
 ff('-i',root/'catalog-before.jpg','-vf','crop=1116:628:4:30','-frames:v','1',repo/'Website/static/img/samples/ability-catalog-light.png')
 for sample in ['Types','SerializeReferences','ProfilerMarkers','EditorTools']:
  images=samples/sample/'Documentation/Images'
- imported=repo/'Aspid.FastTools/Assets/Samples/Aspid.FastTools/1.0.0-rc.8'/sample/'Documentation/Images'
+ imported=repo/'Aspid.FastTools/Assets/Samples/Aspid.FastTools'/version/sample/'Documentation/Images'
  for name in ['demo-light.gif','scene-light.png','ability-catalog-light.png']:
   if (images/name).exists() and imported.exists():shutil.copy2(images/name,imported/name)
