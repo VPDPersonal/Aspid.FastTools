@@ -164,7 +164,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
   place-items: center;
   /* The button is the prompt's right end: it stretches over the field's padding and border, so their outlines coincide. */
   align-self: stretch;
-  aspect-ratio: 1;
+  width: 32px;
   margin: -5px -9px -5px auto;
   padding: 0;
   color: var(--venom-accent);
@@ -189,6 +189,8 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .promptSend:focus-visible { outline: 2px solid var(--venom-accent); outline-offset: 2px; }
 /* Nothing moves until Send: the caret waits without blinking. */
 .prompt:has(.promptSend) .caret { animation: none; }
+/* The request is already typed, so on a narrow screen it wraps instead of pushing Send out of the field. */
+.prompt:has(.promptSend) .promptTyped { flex: 0 1 auto; min-width: 0; white-space: normal; }
 @keyframes blink { 50% { opacity: 0; } }
 .event { display: flex; align-items: center; gap: 8px; padding-left: 9px; opacity: 0; transform: translateY(4px); transition: opacity 0.3s ease, transform 0.3s var(--preview-ease); }
 .event[data-show] { opacity: 1; transform: none; }
