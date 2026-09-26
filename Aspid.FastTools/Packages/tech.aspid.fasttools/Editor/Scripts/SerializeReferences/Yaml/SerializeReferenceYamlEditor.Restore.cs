@@ -11,6 +11,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private static readonly System.Random _ridRandom = new();
 
+        private static readonly Regex _anyRid = new(@"rid:\s*(?<rid>-?\d+)", RegexOptions.Compiled);
+
         // Captures the full RefIds entry block behind a top-level array element, verbatim indentation and all — the
         // exact text needed to re-materialize it later. The missing-list guard snapshots with this BEFORE a list
         // resize destroys the element, since Unity collapses a named missing rid into the anonymous sentinel.
@@ -252,8 +254,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var used = CollectRids(lines, start, end);
 
-            var header = Regex.Match(entryLines[0], @"^\s*-\s+rid:\s*(?<rid>-?\d+)\s*$");
-            if (header.Success && long.TryParse(header.Groups["rid"].Value, out var original)
+            if (SerializeReferenceYaml.TryParseEntryHeaderRid(entryLines[0], out var original)
                 && original > 0 && !used.Contains(original))
                 return original;
 
@@ -270,12 +271,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // surviving reference.
         private static HashSet<long> CollectRids(string[] lines, int start, int end)
         {
-            var ridPattern = new Regex(@"rid:\s*(?<rid>-?\d+)");
             var result = new HashSet<long>();
 
             for (var i = start; i < end; i++)
             {
-                foreach (Match match in ridPattern.Matches(lines[i]))
+                foreach (Match match in _anyRid.Matches(lines[i]))
                     if (long.TryParse(match.Groups["rid"].Value, out var value))
                         result.Add(value);
             }
