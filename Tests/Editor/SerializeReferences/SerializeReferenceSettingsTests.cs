@@ -44,14 +44,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [TearDown]
         public void TearDown()
         {
-            SerializeReferenceSettings.AutoDeAliasEnabled = _autoDeAlias;
-            SerializeReferenceSettings.BreakageDetectionEnabled = _breakageDetection;
-            SerializeReferenceSettings.ExcludedFolders = _excludedFolders;
-            SerializeReferenceSettings.BuildSeverity = _buildSeverity;
-
-            // The values above already match the snapshot in memory; this puts the file back byte for byte.
-            if (_sharedSettingsFile is null) File.Delete(SharedSettingsPath);
-            else File.WriteAllBytes(SharedSettingsPath, _sharedSettingsFile);
+            try
+            {
+                SerializeReferenceSettings.AutoDeAliasEnabled = _autoDeAlias;
+                SerializeReferenceSettings.BreakageDetectionEnabled = _breakageDetection;
+                SerializeReferenceSettings.ExcludedFolders = _excludedFolders;
+                SerializeReferenceSettings.BuildSeverity = _buildSeverity;
+            }
+            finally
+            {
+                // The values above already match the snapshot in memory; this puts the file back byte for byte,
+                // even if one of the setters threw.
+                if (_sharedSettingsFile is null) File.Delete(SharedSettingsPath);
+                else File.WriteAllBytes(SharedSettingsPath, _sharedSettingsFile);
+            }
         }
 
         // -----------------------------------------------------------------------------------------------------
