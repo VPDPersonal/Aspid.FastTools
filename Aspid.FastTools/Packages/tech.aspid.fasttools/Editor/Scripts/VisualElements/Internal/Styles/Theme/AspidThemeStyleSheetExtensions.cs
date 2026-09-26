@@ -9,8 +9,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public static T AddAspidThemeStyleSheets<T>(this T element)
             where T : VisualElement
         {
-            element.AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet)
-                .EnableInClassList(AspidStyles.SkinLightClass, !EditorGUIUtility.isProSkin);
+            element.AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet);
+            UpdateSkinClass(element);
+
+            // A switch of the editor skin restyles the panel, so the class follows it without a rebuild.
+            element.RegisterCallback<CustomStyleResolvedEvent>(OnCustomStyleResolved);
 
             var applied = AspidThemeSettings.OverrideStyleSheet;
             if (applied != null) element.AddStyleSheet(applied);
@@ -32,5 +35,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 if (applied != null) element.AddStyleSheet(applied);
             }
         }
+
+        private static void OnCustomStyleResolved(CustomStyleResolvedEvent evt) =>
+            UpdateSkinClass((VisualElement)evt.currentTarget);
+
+        private static void UpdateSkinClass(VisualElement element) =>
+            element.EnableInClassList(AspidStyles.SkinLightClass, !EditorGUIUtility.isProSkin);
     }
 }

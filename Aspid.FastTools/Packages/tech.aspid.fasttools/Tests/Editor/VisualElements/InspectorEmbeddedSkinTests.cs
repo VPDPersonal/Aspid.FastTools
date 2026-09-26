@@ -13,13 +13,22 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
     /// current skin and backgrounds come from Unity's theme instead of the dark Aspid palette.
     /// </summary>
     /// <remarks>
-    /// The skin of a test run cannot be switched, so skin-driven checks assert against whichever skin is active and
-    /// the folder icons are checked through the light-skin class directly.
+    /// The skin of a test run cannot be switched, so colours and icons are compared with probes that resolve Unity's
+    /// theme variables in the same window, and the folder icons are checked through the light-skin class directly.
     /// </remarks>
     [TestFixture]
     internal sealed class InspectorEmbeddedSkinTests
     {
         private const string EnumValuesStyleSheet = "UI/Enums/Aspid-FastTools-EnumValues";
+        private const string SerializeReferenceStyleSheet = "UI/SerializeReferences/Aspid-FastTools-SerializeReference";
+        private const string ProbeStyleSheetPath =
+            "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/InspectorEmbeddedSkinProbe.uss";
+
+        private const string WarningTextProbeClass = "aspid-fasttools-test-probe--warning-text";
+        private const string TitlebarProbeClass = "aspid-fasttools-test-probe--titlebar";
+        private const string HelpBoxProbeClass = "aspid-fasttools-test-probe--helpbox";
+        private const string WarnIconProbeClass = "aspid-fasttools-test-probe--warn-icon";
+        private const string SwitchTokensClass = "aspid-fasttools-test-switch-tokens";
 
         private EditorWindow _window;
 
@@ -28,6 +37,10 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             _window = ScriptableObject.CreateInstance<EditorWindow>();
             _window.ShowUtility();
+
+            var probeStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ProbeStyleSheetPath);
+            Assert.IsNotNull(probeStyleSheet, "The probe style sheet must load.");
+            _window.rootVisualElement.AddStyleSheet(probeStyleSheet);
         }
 
         [TearDown]
@@ -47,12 +60,68 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             AssertSkinIcon(notice.Q(className: "aspid-fasttools-inspector-notice__icon"), "console.warnicon");
         }
 
+        [UnityTest]
+        public IEnumerator InspectorNotice_MatchesUnityTheme()
+        {
+            var notice = new InspectorNotice();
+            notice.Set("Message", actionText: null, detail: null, onAction: null);
+            var textProbe = AddProbe(WarningTextProbeClass);
+            var iconProbe = AddProbe(WarnIconProbeClass);
+            _window.rootVisualElement.Add(notice);
+            yield return null;
+
+            AssertColor(textProbe.resolvedStyle.color,
+                notice.Q(className: "aspid-fasttools-inspector-notice__message").resolvedStyle.color, "notice message");
+
+            var expected = iconProbe.resolvedStyle.backgroundImage.texture;
+            Assert.IsNotNull(expected, "The Unity warning icon must resolve.");
+            Assert.AreEqual(expected,
+                notice.Q(className: "aspid-fasttools-inspector-notice__icon").resolvedStyle.backgroundImage.texture);
+        }
+
+        [UnityTest]
+        public IEnumerator SerializeReference_MissingType_UsesUnityWarningColor()
+        {
+            var caption = new TextElement().AddClass("unity-enum-field__text");
+            var stripe = new VisualElement()
+                .AddClass("aspid-fasttools-serialize-reference__stripe")
+                .AddClass("aspid-fasttools-serialize-reference__stripe--warning");
+            var probe = AddProbe(WarningTextProbeClass);
+
+            _window.rootVisualElement
+                .AddAspidThemeStyleSheets()
+                .AddChild(new VisualElement()
+                    .AddStyleSheetFromResources(SerializeReferenceStyleSheet)
+                    .AddChild(new VisualElement()
+                        .AddClass("aspid-fasttools-serialize-reference__dropdown--missing")
+                        .AddChild(caption))
+                    .AddChild(stripe));
+            yield return null;
+
+            AssertColor(probe.resolvedStyle.color, caption.resolvedStyle.color, "missing-type caption");
+            AssertColor(probe.resolvedStyle.backgroundColor, stripe.resolvedStyle.backgroundColor, "warning stripe");
+        }
+
         [Test]
         public void ThemeStyleSheets_MarkLightSkin()
         {
             var host = new VisualElement().AddAspidThemeStyleSheets();
 
             Assert.AreEqual(!EditorGUIUtility.isProSkin, host.ClassListContains(AspidStyles.SkinLightClass));
+        }
+
+        [UnityTest]
+        public IEnumerator ThemeStyleSheets_Restyle_RestoresSkinClass()
+        {
+            var host = new VisualElement().AddAspidThemeStyleSheets();
+            _window.rootVisualElement.Add(host);
+            yield return null;
+
+            host.EnableInClassList(AspidStyles.SkinLightClass, EditorGUIUtility.isProSkin);
+            yield return null;
+
+            Assert.AreEqual(!EditorGUIUtility.isProSkin, host.ClassListContains(AspidStyles.SkinLightClass),
+                "A restyle must bring the skin class back in line with the editor skin.");
         }
 
         [UnityTest]
@@ -66,6 +135,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         {
             var header = new VisualElement().AddClass("aspid-fasttools-enum-values__header");
             var container = new VisualElement().AddClass("aspid-fasttools-enum-values__container");
+            var titlebarProbe = AddProbe(TitlebarProbeClass);
+            var helpBoxProbe = AddProbe(HelpBoxProbeClass);
 
             _window.rootVisualElement
                 .AddAspidThemeStyleSheets()
@@ -77,6 +148,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 
             AssertSkinBackground(header.resolvedStyle.backgroundColor, "header");
             AssertSkinBackground(container.resolvedStyle.backgroundColor, "container");
+            AssertColor(titlebarProbe.resolvedStyle.backgroundColor, header.resolvedStyle.backgroundColor, "header");
+            AssertColor(helpBoxProbe.resolvedStyle.backgroundColor, container.resolvedStyle.backgroundColor, "container");
         }
 
         [UnityTest]
@@ -98,16 +171,52 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             Assert.AreEqual(expected.a, actual.a, 0.01f, "An unset switch token must keep the skin default handle.");
         }
 
+        [UnityTest]
+        public IEnumerator Switch_PaletteTokens_RecolorSwitch()
+        {
+            var toggle = new AspidSwitch("Switch");
+            _window.rootVisualElement
+                .AddAspidThemeStyleSheets()
+                .AddChild(new VisualElement()
+                    .AddClass(SwitchTokensClass)
+                    .AddChild(toggle));
+            yield return null;
+
+            var track = toggle.Q(className: BaseField<bool>.inputUssClassName)[0];
+            AssertColor(Color.red, track[0].resolvedStyle.backgroundColor, "switch handle");
+            AssertColor(Color.blue, track.resolvedStyle.borderTopColor, "switch track border");
+        }
+
         private IEnumerator AssertFolderIcon(bool lightSkin, string expected)
         {
+            // The field keeps its own skin class in line with the editor, so the forced skin sits on its parent.
             var field = new TypeField("Type");
-            field.EnableInClassList(AspidStyles.SkinLightClass, lightSkin);
-            _window.rootVisualElement.Add(field);
+            _window.rootVisualElement.Add(new VisualElement()
+                .EnableClass(AspidStyles.SkinLightClass, lightSkin)
+                .AddChild(field));
             yield return null;
 
             var texture = field.Q<Button>()[0].resolvedStyle.backgroundImage.texture;
             Assert.IsNotNull(texture, "The folder icon must resolve.");
             Assert.AreEqual(expected, texture.name);
+        }
+
+        private VisualElement AddProbe(string className)
+        {
+            var probe = new VisualElement().AddClass(className);
+            _window.rootVisualElement.Add(probe);
+            return probe;
+        }
+
+        private static void AssertColor(Color expected, Color actual, string part)
+        {
+            Assert.Greater(expected.a, 0f, $"The expected {part} colour must resolve.");
+
+            var message = $"The {part} colour {actual} must be {expected}.";
+            Assert.AreEqual(expected.r, actual.r, 0.01f, message);
+            Assert.AreEqual(expected.g, actual.g, 0.01f, message);
+            Assert.AreEqual(expected.b, actual.b, 0.01f, message);
+            Assert.AreEqual(expected.a, actual.a, 0.01f, message);
         }
 
         private static void AssertSkinIcon(VisualElement icon, string iconName)

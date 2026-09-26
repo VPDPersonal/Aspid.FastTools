@@ -44,8 +44,9 @@ Read and mirror, in full, before writing:
   `--aspid-fasttools-{colors|prop|metrics|icons}-<name>`. No inline `style.*` for anything a theme should control.
   A new colour goes into `Aspid-FastTools-Default-Dark.uss` as a token, never as a literal in a component sheet.
 - UI drawn inside a regular Inspector (drawers, fields, notices) sits on Unity's own background: colour it with
-  `var(--unity-colors-*)`, not the dark palette, and name built-in icons without `d_` (`resource("console.warnicon")`)
-  so Unity picks the variant for the editor skin.
+  `var(--unity-colors-*)`, not the dark palette. A built-in icon takes `var(--unity-icons-*)` where Unity has one;
+  otherwise keep the `d_` icon and override it under `.aspid-fasttools-skin--light`, which
+  `AddAspidThemeStyleSheets()` sets on the light skin — `resource()` does not pick the skin variant.
 
 ## Pitfalls
 

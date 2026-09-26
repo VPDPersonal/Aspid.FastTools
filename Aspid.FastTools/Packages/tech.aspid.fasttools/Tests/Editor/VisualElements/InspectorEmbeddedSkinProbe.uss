@@ -1,0 +1,22 @@
+/* Resolves Unity's theme variables on probe elements, so tests compare against the active editor skin. */
+.aspid-fasttools-test-probe--warning-text {
+    color:                                                 var(--unity-colors-warning-text);
+    background-color:                                      var(--unity-colors-warning-text);
+}
+
+.aspid-fasttools-test-probe--titlebar {
+    background-color:                                      var(--unity-colors-inspector_titlebar-background);
+}
+
+.aspid-fasttools-test-probe--helpbox {
+    background-color:                                      var(--unity-colors-helpbox-background);
+}
+
+.aspid-fasttools-test-probe--warn-icon {
+    background-image:                                      var(--unity-icons-console_entry_warn);
+}
+
+.aspid-fasttools-test-switch-tokens {
+    --aspid-colors-switch-handle:                          rgb(255, 0, 0);
+    --aspid-colors-switch-track-border:                    rgb(0, 0, 255);
+}
