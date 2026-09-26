@@ -1,3 +1,5 @@
+using UnityEditor;
+using UnityEngine;
 using NUnit.Framework;
 using System.Collections.Generic;
 
@@ -78,6 +80,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var arityTwo = SerializeReferenceHelpers.OpenTypeKey(ManagedTypeName.FromType(typeof(GenericPair<,>)));
 
             Assert.AreNotEqual(arityOne, arityTwo);
+        }
+
+        [Test]
+        public void GetFieldType_NestedDeclaredTypes_ResolveExactly()
+        {
+            // Unity names these field types with '/' (Holder/IEffect), which only Mono's Type.GetType accepts; an
+            // unresolved field type would fall back to object and drop every picker constraint.
+            var obj = ScriptableObject.CreateInstance<NestedFieldTypeObject>();
+            try
+            {
+                using var serialized = new SerializedObject(obj);
+                var effect = serialized.FindProperty(nameof(NestedFieldTypeObject.effect));
+
+                StringAssert.Contains("NestedTypeHolder/IEffect", effect.managedReferenceFieldTypename);
+                Assert.AreEqual(typeof(NestedTypeHolder.IEffect), SerializeReferenceHelpers.GetFieldType(effect));
+                Assert.AreEqual(typeof(ITestGenericEffect<NestedTypeHolder.Impl>),
+                    SerializeReferenceHelpers.GetFieldType(serialized.FindProperty(nameof(NestedFieldTypeObject.generic))));
+                Assert.AreEqual(typeof(NestedTypeHolder.IEffect),
+                    SerializeReferenceHelpers.GetFieldType(serialized.FindProperty("effects.Array.data[0]")));
+            }
+            finally { Object.DestroyImmediate(obj); }
+        }
+
+        [Test]
+        public void GetTypeFromTypename_MapsNestedSeparatorToClrPlus()
+        {
+            var assembly = typeof(NestedTypeHolder).Assembly.GetName().Name;
+            var typename = $"{assembly} {typeof(NestedTypeHolder).Namespace}.NestedTypeHolder/IEffect";
+
+            Assert.AreEqual(typeof(NestedTypeHolder.IEffect), SerializeReferenceHelpers.GetTypeFromTypename(typename));
         }
     }
 }

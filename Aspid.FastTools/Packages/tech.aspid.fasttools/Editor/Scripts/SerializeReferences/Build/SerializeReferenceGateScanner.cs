@@ -120,6 +120,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return required;
         }
 
+        // A required reference whose missing type is stored in a prefab override is reported here as missing rather
+        // than unset, whatever the options: the document scan never sees a type inside an override.
         private static void CollectRequiredViolations(string assetPath, List<GateViolation> violations)
         {
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
@@ -146,6 +148,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     }
 
                     if (iterator.propertyType is not (SerializedPropertyType.ManagedReference or SerializedPropertyType.String)) continue;
+
+                    if (TypeSelectorRequiredGate.TryGetRequired(iterator, out _) &&
+                        SerializeReferenceHelpers.TryGetPrefabOverrideMissingType(iterator, out var missingRid, out var storedType))
+                    {
+                        violations.Add(new GateViolation(assetPath, fileId, missingRid, storedType,
+                            GateViolationKind.MissingType, iterator.propertyPath));
+                        continue;
+                    }
+
                     if (!TypeSelectorRequiredGate.IsViolation(iterator)) continue;
 
                     var rid = iterator.propertyType == SerializedPropertyType.ManagedReference ? iterator.managedReferenceId : 0L;

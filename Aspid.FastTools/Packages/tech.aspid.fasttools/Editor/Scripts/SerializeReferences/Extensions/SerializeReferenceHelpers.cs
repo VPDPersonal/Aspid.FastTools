@@ -191,17 +191,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool IsMissingType(SerializedProperty property) =>
             TryGetMissingType(property, out _, out _);
 
+        // Where a missing reference's stored type lives, which decides whether it can be repaired from this object.
+        private enum MissingTypeOrigin
+        {
+            OwnDocument,
+            SourcePrefab,
+            PrefabOverride,
+        }
+
         // Missing-reference probes run repeatedly during repaint; same-frame repairs explicitly invalidate this memo.
         private static int _missingProbeFrame = -1;
-        private static readonly Dictionary<(int instanceId, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
+        private static readonly Dictionary<(int instanceId, string path), (bool missing, long referenceId, ManagedTypeName storedType, MissingTypeOrigin origin, string storedIn)>
             _missingProbeMemo = new();
+
+        // Every null reference field of a prefab instance reads the same modification list, so it is fetched once
+        // per instance and frame alongside the memo above.
+        private static readonly Dictionary<int, PropertyModification[]> _propertyModificationsMemo = new();
 
         public static void InvalidateMissingTypeMemo() => _missingProbeFrame = -1;
 
-        private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType)
+        private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType) =>
+            TryGetMissingType(property, out referenceId, out storedType, out _, out _);
+
+        private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType,
+            out MissingTypeOrigin origin, out string storedIn)
         {
             referenceId = 0;
             storedType = default;
+            origin = MissingTypeOrigin.OwnDocument;
+            storedIn = null;
 
             if (property.propertyType != SerializedPropertyType.ManagedReference) return false;
             if (property.managedReferenceValue is not null) return false;
@@ -210,6 +228,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_missingProbeFrame != frame)
             {
                 _missingProbeMemo.Clear();
+                _propertyModificationsMemo.Clear();
                 _missingProbeFrame = frame;
             }
 
@@ -220,24 +239,197 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 referenceId = cached.referenceId;
                 storedType = cached.storedType;
+                origin = cached.origin;
+                storedIn = cached.storedIn;
                 return cached.missing;
             }
 
-            var missing = ProbeMissingType(property, out referenceId, out storedType);
-            _missingProbeMemo[key] = (missing, referenceId, storedType);
+            var missing = ProbeMissingType(property, out referenceId, out storedType, out origin, out storedIn);
+            _missingProbeMemo[key] = (missing, referenceId, storedType, origin, storedIn);
             return missing;
         }
 
-        private static bool ProbeMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType)
+        private static bool ProbeMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType,
+            out MissingTypeOrigin origin, out string storedIn)
         {
             referenceId = 0;
             storedType = default;
+            origin = MissingTypeOrigin.OwnDocument;
+            storedIn = null;
 
-            if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _)) return false;
+            if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out _))
+                return ProbeInheritedMissingType(property, out referenceId, out storedType, out origin, out storedIn);
+
             if (!SerializeReferenceYamlEditor.TryReadStoredType(assetPath, fileId, property.propertyPath, out referenceId, out storedType))
                 return false;
 
+            storedIn = assetPath;
             return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+        }
+
+        // Deeper chains than this are not authored by hand; the bound only guards against a malformed source loop.
+        private const int MaxPrefabSourceDepth = 32;
+
+        // A prefab-instance object has no document of its own and Unity reports no missing type on it, so the
+        // stored type is read where the reference actually lives: a property override on some level of the source
+        // chain, or else the document of the object the chain ends at.
+        private static bool ProbeInheritedMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType,
+            out MissingTypeOrigin origin, out string storedIn)
+        {
+            referenceId = 0;
+            storedType = default;
+            origin = MissingTypeOrigin.SourcePrefab;
+            storedIn = null;
+
+            var propertyPath = property.propertyPath;
+            var current = property.serializedObject.targetObject;
+            if (current == null || !PrefabUtility.IsPartOfPrefabInstance(current)) return false;
+
+            for (var depth = 0; depth < MaxPrefabSourceDepth; depth++)
+            {
+                var source = PrefabUtility.GetCorrespondingObjectFromSource(current);
+                if (source == null) return false;
+
+                if (TryReadOverriddenType(current, source, propertyPath, out var hasType, out referenceId, out storedType))
+                {
+                    if (!hasType) return false;
+
+                    origin = MissingTypeOrigin.PrefabOverride;
+                    storedIn = GetStoragePath(current);
+                    return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+                }
+
+                // No modification of the field itself, but an override on an enclosing reference still owns its data.
+                if (IsPrefabOverride(property, current, depth)) return false;
+
+                current = source;
+                if (!PrefabUtility.IsPartOfPrefabInstance(current)) break;
+            }
+
+            if (PrefabUtility.IsPartOfPrefabInstance(current)) return false;
+
+            var assetPath = AssetDatabase.GetAssetPath(current);
+            if (string.IsNullOrEmpty(assetPath)) return false;
+            if (!AssetDatabase.TryGetGUIDAndLocalFileIdentifier(current, out _, out long fileId)) return false;
+            if (!SerializeReferenceYamlEditor.TryReadStoredType(assetPath, fileId, propertyPath, out referenceId, out storedType))
+                return false;
+
+            storedIn = assetPath;
+            return !storedType.IsEmpty && !StoredTypeResolves(storedType);
+        }
+
+        // True when the instance overrides the field. Unity records a reference override as the field's new rid
+        // plus a managedReferences[rid] entry whose value is "<assembly> <full type name>"; an override to <None>
+        // carries a negative rid and no type, and reads back as found but empty.
+        private static bool TryReadOverriddenType(Object instance, Object source, string propertyPath,
+            out bool hasType, out long referenceId, out ManagedTypeName storedType)
+        {
+            hasType = false;
+            referenceId = 0;
+            storedType = default;
+
+            var instanceId = instance.GetInstanceID();
+            if (!_propertyModificationsMemo.TryGetValue(instanceId, out var modifications))
+            {
+                modifications = PrefabUtility.GetPropertyModifications(instance);
+                _propertyModificationsMemo[instanceId] = modifications;
+            }
+
+            if (modifications is null) return false;
+
+            var found = false;
+            foreach (var modification in modifications)
+            {
+                if (modification.target != source || modification.propertyPath != propertyPath) continue;
+                if (!long.TryParse(modification.value, out referenceId)) return false;
+
+                found = true;
+                break;
+            }
+
+            if (!found) return false;
+            if (referenceId < 0) return true;
+
+            var typePath = $"managedReferences[{referenceId}]";
+            foreach (var modification in modifications)
+            {
+                if (modification.target != source || modification.propertyPath != typePath) continue;
+
+                storedType = ParseManagedReferenceTypename(modification.value);
+                hasType = !storedType.IsEmpty;
+                break;
+            }
+
+            return true;
+        }
+
+        private static bool IsPrefabOverride(SerializedProperty property, Object current, int depth)
+        {
+            if (depth == 0) return property.prefabOverride;
+
+            using var serializedObject = new SerializedObject(current);
+            using var levelProperty = serializedObject.FindProperty(property.propertyPath);
+            return levelProperty is { prefabOverride: true };
+        }
+
+        private static string GetStoragePath(Object target)
+        {
+            var assetPath = AssetDatabase.GetAssetPath(target);
+            if (!string.IsNullOrEmpty(assetPath)) return assetPath;
+
+            var go = target as GameObject ?? (target as Component)?.gameObject;
+            return go != null ? go.scene.path : null;
+        }
+
+        // "<assembly> <namespace>.<class>" — the managedReferenceFullTypename shape. The namespace ends at the last dot
+        // before any nested-type separator or generic argument list, whose own dots belong to the class segment.
+        public static ManagedTypeName ParseManagedReferenceTypename(string typename)
+        {
+            if (string.IsNullOrWhiteSpace(typename)) return default;
+
+            var separator = typename.IndexOf(' ');
+            if (separator <= 0 || separator == typename.Length - 1) return default;
+
+            var assembly = typename[..separator];
+            var fullName = typename[(separator + 1)..];
+
+            var classEnd = fullName.IndexOfAny(new[] { '/', '[' });
+            if (classEnd < 0) classEnd = fullName.Length;
+
+            var dot = classEnd > 0 ? fullName.LastIndexOf('.', classEnd - 1) : -1;
+            return dot < 0
+                ? new ManagedTypeName(assembly, string.Empty, fullName)
+                : new ManagedTypeName(assembly, fullName[..dot], fullName[(dot + 1)..]);
+        }
+
+        // Why Fix is unavailable for a missing reference, as the notice's second line.
+        public static string GetMissingTypeRepairHint(SerializedProperty property)
+        {
+            if (!TryGetMissingType(property, out _, out _, out var origin, out var storedIn))
+                return "Open this asset from the Project window to repair it.";
+
+            return origin switch
+            {
+                MissingTypeOrigin.SourcePrefab =>
+                    $"The reference is stored in the source prefab {storedIn} — open it to repair the type there.",
+                MissingTypeOrigin.PrefabOverride =>
+                    "The reference is a prefab override — pick a new type, or revert the override to inherit the source value.",
+                _ => "Open this asset from the Project window to repair it.",
+            };
+        }
+
+        // A missing reference recorded as an override on this prefab instance: no scan of a saved document finds it.
+        public static bool TryGetPrefabOverrideMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType)
+        {
+            if (TryGetMissingType(property, out referenceId, out storedType, out var origin, out _) &&
+                origin == MissingTypeOrigin.PrefabOverride)
+            {
+                return true;
+            }
+
+            referenceId = 0;
+            storedType = default;
+            return false;
         }
 
         public static bool StoredTypeResolves(ManagedTypeName name)
@@ -422,15 +614,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             int IEqualityComparer<object>.GetHashCode(object obj) => RuntimeHelpers.GetHashCode(obj);
         }
 
+        // Unity joins nested types with '/', which only Mono's Type.GetType accepts; the CLR separator is '+'. No CLR
+        // type name contains '/', so the replacement is safe inside generic argument lists too.
         public static Type GetTypeFromTypename(string typename)
         {
             if (string.IsNullOrEmpty(typename)) return null;
 
-            var separator = typename.IndexOf(' ');
-            if (separator < 0) return Type.GetType(typename, throwOnError: false);
+            var normalized = typename.Replace('/', '+');
+            var separator = normalized.IndexOf(' ');
+            if (separator < 0) return Type.GetType(normalized, throwOnError: false);
 
-            var assembly = typename[..separator];
-            var fullName = typename[(separator + 1)..];
+            var assembly = normalized[..separator];
+            var fullName = normalized[(separator + 1)..];
             return Type.GetType($"{fullName}, {assembly}", throwOnError: false);
         }
 
@@ -529,7 +724,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The asset path and the target's local file id — the YAML document anchor. False for scene objects and
-        // prefab instances, which have no editable asset file of their own.
+        // prefab instances, which have no editable asset file of their own. An inherited component of a variant or
+        // nested prefab still gets a computed file id, but no document in the file carries it.
         public static bool TryGetAssetLocation(SerializedProperty property, out string assetPath, out long fileId)
         {
             fileId = 0;
@@ -537,6 +733,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             assetPath = AssetDatabase.GetAssetPath(target);
 
             if (string.IsNullOrEmpty(assetPath)) return false;
+            if (PrefabUtility.IsPartOfPrefabInstance(target)) return false;
             return AssetDatabase.TryGetGUIDAndLocalFileIdentifier(target, out _, out fileId);
         }
 
@@ -549,7 +746,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             assetPath = null;
             fileId = 0;
 
+            // Its reference lives in a source prefab or in an override; repairing it here would only hide that.
             var target = property.serializedObject.targetObject;
+            if (target == null || PrefabUtility.IsPartOfPrefabInstance(target)) return false;
+
             var go = target as GameObject ?? (target as Component)?.gameObject;
             if (go is null) return false;
 
