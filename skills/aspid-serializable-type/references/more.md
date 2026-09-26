@@ -33,4 +33,6 @@ public abstract class EnemyBase : MonoBehaviour
 
 The dropdown lists concrete subclasses of the declaring class (no `<None>`) and rewrites the object's script,
 keeping the fields both classes share. Each subclass must live in its own file named after the class, otherwise the
-switch is skipped with a Console warning.
+switch is skipped with a Console warning. The switch adds the new class's `[RequireComponent]` components and is
+refused (with a warning) when it would duplicate a `[DisallowMultipleComponent]` class or drop a class another
+component requires.
