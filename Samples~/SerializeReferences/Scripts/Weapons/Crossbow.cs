@@ -9,7 +9,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
     // MovedFrom loads the old CrossbowLauncher name in RenamedWeaponPreset.asset.
     // Project References can write the current name back to the asset.
     /// <summary>
-    /// <see cref="IRanged"/> with a migrated class name that automatically reloads an empty quiver.
+    /// <see cref="IRanged"/> with a migrated class name, fixed attack damage and its bolt capacity in the name.
     /// </summary>
     [Serializable]
     [MovedFrom(false, null, null, "CrossbowLauncher")]
@@ -19,21 +19,13 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         [Tooltip("Damage dealt by one attack.")]
         [SerializeField, Min(0)] private int _damage = 14;
 
-        [Tooltip("Bolts available before automatically reloading.")]
+        [Tooltip("Bolt capacity shown in the weapon name.")]
         [SerializeField, Min(1)] private int _boltCount = 8;
 
-        private int _bolts;
+        /// <inheritdoc/>
+        public string Name => $"Crossbow ({_boltCount} bolts)";
 
         /// <inheritdoc/>
-        public string Name => "Crossbow";
-
-        /// <inheritdoc/>
-        public int Fire()
-        {
-            if (_bolts <= 0)
-                _bolts = _boltCount;
-            _bolts--;
-            return _damage;
-        }
+        public int Fire() => _damage;
     }
 }
