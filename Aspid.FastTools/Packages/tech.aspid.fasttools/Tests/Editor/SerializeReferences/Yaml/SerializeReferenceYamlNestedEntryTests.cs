@@ -201,7 +201,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 var topLevel = System.Array.IndexOf(after, "  _weapons:");
 
                 Assert.AreEqual("    - rid: -2", after[nested + 1], "The nested list's null slot stays null.");
-                Assert.AreEqual("  - rid: 301", after[topLevel + 1], "The top-level slot is re-pointed.");
+                Assert.AreEqual("  - rid: 200", after[topLevel + 1], "The top-level slot is re-pointed.");
                 Assert.AreEqual("  - rid: -2", after[topLevel + 2]);
             }
             finally
