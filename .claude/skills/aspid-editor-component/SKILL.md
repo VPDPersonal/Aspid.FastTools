@@ -27,7 +27,7 @@ Read and mirror, in full, before writing:
 
 Preset and Extensions are skipped only when there is nothing to configure (`AspidSwitch` is a `BaseField<bool>`,
 `AspidWindowFooter` takes one constructor flag) or the element is a child that its owner configures through the
-owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader`).
+owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` / `AspidGradientButton`).
 
 ## Rules
 

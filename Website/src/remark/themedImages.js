@@ -3,7 +3,7 @@ import path from 'node:path';
 
 /** Samples whose `demo`/`scene` captures show a scene rather than an editor window (`Samples~/<Name>/`). */
 const SCENE_SAMPLES = ['EnumValues', 'Types', 'SerializeReferences', 'ProfilerMarkers'];
-// On a tutorials page the file lives in the kebab-case slug folder (`serialize-references`).
+// On a tutorials page the file lives in `tutorials/<Name>/` (a kebab-case spelling also matches).
 const sceneSampleFolder = new RegExp(
   `[/\\\\](?:${SCENE_SAMPLES.map((name) => name.replace(/(?<=[a-z])(?=[A-Z])/g, '-?')).join('|')})[/\\\\]`, 'i');
 // A doc page links the sample's own `Documentation/Images/`.

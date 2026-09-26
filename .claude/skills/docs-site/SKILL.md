@@ -253,8 +253,8 @@ regenerate or `git checkout Website/api` before building:
    Reference), `<pre><code>` → fenced code, heading anchors as `{#id}`, escaped `<T`/`{}`, no "Inherited Members",
    front matter with a short `sidebar_label`, and `toc.yml` → `sidebar.js` (namespace → Classes/Interfaces/…
    groups). A type name that appears in two namespaces (`VisualElementExtensions` in `UIElements` and
-   `UIElements.Editors`) gets a namespace suffix in its label — Docusaurus derives one translation key per label and the `ru` build fails
-   on duplicates.
+   `UIElements.Editors`) gets a namespace suffix in its label — Docusaurus derives one translation key per label
+   and the `ru` build fails on duplicates.
 
 `Website/sidebarsApi.js` adapts the generated sidebar for display (drops the repeated `Aspid.FastTools.`
 prefix, folds the `SetLabel` overloads). Never edit files in `Website/api/` by hand; fix the XML comment or the
