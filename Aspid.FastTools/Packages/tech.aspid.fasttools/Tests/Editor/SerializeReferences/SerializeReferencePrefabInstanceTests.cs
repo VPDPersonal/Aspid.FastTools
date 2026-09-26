@@ -5,6 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.TestTools;
+using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 using Aspid.FastTools.SerializeReferences.Tests;
 using Object = UnityEngine.Object;
@@ -94,13 +95,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     "A present reference with a missing type is set, not unset.");
             }
 
-            var forField = SerializeReferenceGateScanner.Scan(GateOptions.Full)
+            AssertRequiredReportedAsMissing(SerializeReferenceGateScanner.Scan(GateOptions.Full), "Scan(Full)");
+            AssertRequiredReportedAsMissing(SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly), "Scan(RequiredOnly)");
+            AssertRequiredReportedAsMissing(SerializeReferenceGateScanner.ScanAssetRequiredFields(VariantPath), "ScanAssetRequiredFields");
+        }
+
+        // Every required scan must report it: the missing-type document scan never sees a type inside an override.
+        private static void AssertRequiredReportedAsMissing(IReadOnlyList<GateViolation> violations, string scan)
+        {
+            var forField = violations
                 .Where(v => v.AssetPath == VariantPath && v.FieldPath == nameof(PrefabReferenceProbe.requiredWeapon))
                 .ToList();
 
-            Assert.AreEqual(1, forField.Count, "The gate must report the required field exactly once.");
-            Assert.AreEqual(GateViolationKind.MissingType, forField[0].Kind);
-            Assert.AreEqual("PrefabTestBowRemoved", forField[0].StoredType.Class);
+            Assert.AreEqual(1, forField.Count, $"{scan} must report the required field exactly once.");
+            Assert.AreEqual(GateViolationKind.MissingType, forField[0].Kind, scan);
+            Assert.AreEqual("PrefabTestBowRemoved", forField[0].StoredType.Class, scan);
         }
 
         [Test]
