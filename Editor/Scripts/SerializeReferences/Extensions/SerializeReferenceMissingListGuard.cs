@@ -43,7 +43,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             SerializeReferenceYaml.IsCandidateAssetPath(path) && SerializeReferenceOpenCopyGuard.IsWritable(path);
 
         // Called before a missing element is set to <None>, so the next save does not bring it back. The note outlives
-        // an Undo of the clear until that save, which then drops the element if it also resizes the list.
+        // an Undo of the clear until that save, which then leaves the element to Unity.
         public static void NoteIntentionalClear(SerializedProperty property)
         {
             if (property is null) return;
@@ -126,7 +126,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (restored == 0) return;
 
             AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
-            UnityEngine.Debug.Log($"[Aspid FastTools] Preserved {restored} missing reference(s) that a list resize would have dropped in '{assetPath}'.");
+            UnityEngine.Debug.Log($"[Aspid FastTools] Preserved {restored} missing list reference(s) that saving dropped in '{assetPath}'.");
         }
 
         internal static int RestoreSnapshots(string assetPath, List<Snapshot> snapshots)
@@ -157,84 +157,98 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Where the missing element before[index] sits after the save, if the save dropped it and nothing else. Unity
-        // collapses missing list elements into null ids only when the list is resized, so at an unchanged size a null
-        // there was set on purpose. A shrunk list restores only when every way to get after by deleting elements of
-        // before keeps this element, at one place; a grown list prefers the old index, since "+" appends.
+        // may write a missing element as a null id on any save (a prefab never keeps one), so an unchanged size keeps
+        // it in its slot, as Unity does itself for a ScriptableObject. A grown list prefers the old index, since "+"
+        // appends; a shrunk list follows the alignment that ShrunkAlignment picks.
         internal static bool TryResolveRestoreIndex(ArrayState before, IReadOnlyList<long> after, int index, out int target)
         {
             target = -1;
             if (index < 0 || index >= before.Count || !before.Collapsible[index]) return false;
-            if (after.Count == before.Count) return false;
 
-            var grown = after.Count > before.Count;
-            var bigCount = grown ? after.Count : before.Count;
-            var smallCount = grown ? before.Count : after.Count;
+            var candidate = after.Count == before.Count ? index
+                : after.Count > before.Count ? GrownCandidate(before, after, index)
+                : ShrunkAlignment(before, after)?[index] ?? -1;
 
-            bool Matches(int bigIndex, int smallIndex) => grown
-                ? before.Accepts(smallIndex, after[bigIndex])
-                : before.Accepts(bigIndex, after[smallIndex]);
-
-            // prefix[b, s]: the first s small elements embed into the first b big ones; suffix[b, s]: small from s
-            // embeds into big from b.
-            var prefix = new bool[bigCount + 1, smallCount + 1];
-            for (var b = 0; b <= bigCount; b++)
-            {
-                prefix[b, 0] = true;
-                for (var s = 1; s <= smallCount && b > 0; s++)
-                    prefix[b, s] = prefix[b - 1, s] || (prefix[b - 1, s - 1] && Matches(b - 1, s - 1));
-            }
-
-            var suffix = new bool[bigCount + 1, smallCount + 1];
-            for (var b = bigCount; b >= 0; b--)
-            {
-                suffix[b, smallCount] = true;
-                for (var s = smallCount - 1; s >= 0 && b < bigCount; s--)
-                    suffix[b, s] = suffix[b + 1, s] || (Matches(b, s) && suffix[b + 1, s + 1]);
-            }
-
-            var candidate = -1;
-            var ambiguous = false;
-
-            if (grown)
-            {
-                for (var j = 0; j < after.Count; j++)
-                {
-                    if (!prefix[j, index] || !Matches(j, index) || !suffix[j + 1, index + 1]) continue;
-                    if (j == index)
-                    {
-                        candidate = j;
-                        ambiguous = false;
-                        break;
-                    }
-
-                    ambiguous |= candidate >= 0;
-                    candidate = j;
-                }
-            }
-            else
-            {
-                // Deleted in some alignment: the user may have removed exactly this element, so it stays removed.
-                for (var s = 0; s <= after.Count; s++)
-                    if (prefix[index, s] && suffix[index + 1, s]) return false;
-
-                for (var s = 0; s < after.Count; s++)
-                {
-                    if (!prefix[index, s] || !Matches(index, s) || !suffix[index + 1, s + 1]) continue;
-
-                    ambiguous |= candidate >= 0;
-                    candidate = s;
-                }
-            }
-
-            if (candidate < 0 || ambiguous) return false;
+            if (candidate < 0) return false;
             if (after[candidate] >= 0) return false; // the element survived, or the slot was re-assigned
 
             target = candidate;
             return true;
         }
 
-        // The pre-save pointers of one array: which slots hold a missing element that a resize may collapse to a null
-        // id. A missing element the user cleared counts as a plain null.
+        // The only place in after that before[index] can take while every other element of before keeps its order;
+        // the old index when it is one of several.
+        private static int GrownCandidate(ArrayState before, IReadOnlyList<long> after, int index)
+        {
+            // prefix[a, b]: the first b elements of before embed into the first a of after; suffix[a, b]: before from
+            // b embeds into after from a.
+            var prefix = new bool[after.Count + 1, before.Count + 1];
+            for (var a = 0; a <= after.Count; a++)
+            {
+                prefix[a, 0] = true;
+                for (var b = 1; b <= before.Count && a > 0; b++)
+                    prefix[a, b] = prefix[a - 1, b] || (prefix[a - 1, b - 1] && before.Accepts(b - 1, after[a - 1]));
+            }
+
+            var suffix = new bool[after.Count + 1, before.Count + 1];
+            for (var a = after.Count; a >= 0; a--)
+            {
+                suffix[a, before.Count] = true;
+                for (var b = before.Count - 1; b >= 0 && a < after.Count; b--)
+                    suffix[a, b] = suffix[a + 1, b] || (before.Accepts(b, after[a]) && suffix[a + 1, b + 1]);
+            }
+
+            var candidate = -1;
+            for (var j = 0; j < after.Count; j++)
+            {
+                if (!prefix[j, index] || !before.Accepts(index, after[j]) || !suffix[j + 1, index + 1]) continue;
+                if (j == index) return j;
+                if (candidate >= 0) return -1;
+
+                candidate = j;
+            }
+
+            return candidate;
+        }
+
+        // Where each element of before sits in after, or -1 where it was deleted; null when no deletion gives after.
+        // A save writes the same nulls whether the user deleted a missing element or a <None> beside it, so the pick
+        // keeps as many <None> elements as it can (a deleted missing element stays deleted) and, among those
+        // alignments, the earliest elements: a run of missing elements that lost one keeps its first ones in order.
+        internal static int[] ShrunkAlignment(ArrayState before, IReadOnlyList<long> after)
+        {
+            // kept[b, a]: the most <None> elements kept when before from b is aligned onto after from a; -1 if none.
+            var kept = new int[before.Count + 1, after.Count + 1];
+            for (var b = before.Count; b >= 0; b--)
+            {
+                for (var a = after.Count; a >= 0; a--)
+                {
+                    if (a == after.Count) kept[b, a] = 0;
+                    else if (b == before.Count) kept[b, a] = -1;
+                    else kept[b, a] = Math.Max(kept[b + 1, a], KeepScore(before, after, b, a, kept));
+                }
+            }
+
+            if (kept[0, 0] < 0) return null;
+
+            var positions = new int[before.Count];
+            for (int b = 0, a = 0; b < before.Count; b++)
+            {
+                var keep = a < after.Count && KeepScore(before, after, b, a, kept) == kept[b, a];
+                positions[b] = keep ? a++ : -1;
+            }
+
+            return positions;
+        }
+
+        private static int KeepScore(ArrayState before, IReadOnlyList<long> after, int b, int a, int[,] kept)
+        {
+            if (!before.Accepts(b, after[a]) || kept[b + 1, a + 1] < 0) return -1;
+            return kept[b + 1, a + 1] + (before.IsNull(b) ? 1 : 0);
+        }
+
+        // The pre-save pointers of one array: which slots hold a missing element that the save may write as a null id.
+        // A missing element the user cleared counts as a plain null.
         internal sealed class ArrayState
         {
             public readonly long[] Rids;
@@ -266,7 +280,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return new ArrayState(slots, collapsible);
             }
 
-            // Whether the slot may hold this id after a save that only resized the list.
+            // A <None> element: a null the user left, not a missing element.
+            public bool IsNull(int index) => !Collapsible[index] && Rids[index] < 0;
+
+            // Whether the slot may hold this id after a save that only deleted or added elements.
             public bool Accepts(int index, long rid)
             {
                 var previous = Rids[index];

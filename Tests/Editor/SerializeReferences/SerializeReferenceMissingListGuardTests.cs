@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEngine;
 using NUnit.Framework;
 using UnityEditor.SceneManagement;
 using System.Collections.Generic;
@@ -31,7 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void DeletingTheMissingElement_DoesNotRestoreIt()
         {
             // [GhostPistol, <None>], element 0 deleted: the saved [-2] is the surviving <None>. Deleting element 1
-            // saves the same file, so the guard cannot tell the two apart and leaves the deletion as it is.
+            // saves the same file, so the guard cannot tell the two apart and keeps the <None>.
             var snapshots = Snapshot(1002, -2);
             Save(-2);
 
@@ -51,9 +52,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
-        public void ClearingToNoneWithoutResize_DoesNotRestore()
+        public void SaveWithoutResize_RestoresInPlace()
         {
+            // A prefab drops every missing element on save, even when the list keeps its size.
             var snapshots = Snapshot(1002, 1003);
+            Save(-2, 1003);
+
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            AssertGhostPistolAt(0);
+        }
+
+        [Test]
+        public void NotedClear_WithoutResize_DoesNotRestore()
+        {
+            Write(1002, 1003);
+            SerializeReferenceMissingListGuard.NoteIntentionalClear(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+
+            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
             Save(-2, 1003);
 
             Assert.AreEqual(0, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
@@ -84,6 +99,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void NoteIntentionalClear_OnElementProperty_KeepsItOutOfTheSnapshot()
+        {
+            const string assetPath = "Assets/__AspidMissingListGuardClearProbe__.asset";
+            var probe = ScriptableObject.CreateInstance<ReferenceListTestObject>();
+            probe.weapons.Add(new TestSword());
+
+            try
+            {
+                AssetDatabase.CreateAsset(probe, assetPath);
+
+                // The file now stores a missing type while the loaded element reads as null, as a missing one does.
+                File.WriteAllText(assetPath, File.ReadAllText(assetPath).Replace("class: TestSword,", "class: GhostSword,"));
+                probe.weapons[0] = null;
+
+                using var serializedObject = new SerializedObject(probe);
+                var element = serializedObject.FindProperty($"{nameof(ReferenceListTestObject.weapons)}.Array.data[0]");
+
+                Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(assetPath, Resolves).Count);
+
+                SerializeReferenceMissingListGuard.NoteIntentionalClear(element);
+
+                Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(assetPath, Resolves).Count);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(assetPath);
+            }
+        }
+
+        [Test]
         public void NotedClear_IsConsumedByOneSave()
         {
             Write(1002, 1003);
@@ -103,6 +148,44 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, new long[] { -2, 1003, -2 }, 1, out var target));
             Assert.AreEqual(2, target);
+        }
+
+        [Test]
+        public void TryResolveRestoreIndex_AllMissingShrunk_KeepsTheFirstInOrder()
+        {
+            // Three missing elements, one deleted: the saved nulls do not say which, so the first two come back in order.
+            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { 1002, 1004, 1006 }, new[] { true, true, true });
+            var after = new long[] { -2, -2 };
+
+            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 0, out var first));
+            Assert.AreEqual(0, first);
+            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 1, out var second));
+            Assert.AreEqual(1, second);
+            Assert.IsFalse(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 2, out _));
+        }
+
+        [Test]
+        public void TryResolveRestoreIndex_MissingAmongNulls_KeepsTheNulls()
+        {
+            // [<None>, GhostPistol] with one element deleted saves [-2] either way; the guard keeps the <None>.
+            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { -2, 1002 }, new[] { false, true });
+
+            Assert.IsFalse(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, new long[] { -2 }, 1, out _));
+        }
+
+        [Test]
+        public void TryResolveRestoreIndex_MixedRunShrunk_RestoresTheSurvivors()
+        {
+            // [Ghost, Ghost, Ghost, <None>, Shotgun] with the <None> or one Ghost deleted: two Ghosts still come back.
+            var before = new SerializeReferenceMissingListGuard.ArrayState(
+                new long[] { 1002, 1004, 1006, -2, 1003 }, new[] { true, true, true, false, false });
+            var after = new long[] { -2, -2, -2, 1003 };
+
+            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 0, out var first));
+            Assert.AreEqual(0, first);
+            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 1, out var second));
+            Assert.AreEqual(1, second);
+            Assert.IsFalse(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 2, out _));
         }
 
         [Test]
