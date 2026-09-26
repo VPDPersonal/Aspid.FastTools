@@ -220,7 +220,7 @@ Smart Fix considers `[MovedFrom]`, the name, namespace, assembly, and field simi
 
 For an asset on disk, Fix rewrites the stored type and reimports the asset; that file write has no ordinary Undo. In an open saved scene or Prefab Mode, repair affects the object in memory — verify the result and save the scene or prefab. Preserving data does not automatically convert incompatible fields; in-memory repair also does not guarantee recovery of the entire nested graph.
 
-If Fix is unavailable, select one object and ensure the scene or Prefab Mode is saved with no pending changes. For a prefab instance in a scene, open its source prefab. If the problem is inside a missing parent and the field is inaccessible, use [Asset References](04-serialize-reference-tooling.md#asset-references-inspect-one-asset).
+If Fix is unavailable, select one object and ensure the scene or Prefab Mode is saved with no pending changes. For a prefab instance, open its source prefab when the type is broken there. When a prefab variant, nested prefab, or scene instance sets the type through an override, the source prefab has nothing to repair: choose a new type on the instance itself or revert the override. If the problem is inside a missing parent and the field is inaccessible, use [Asset References](04-serialize-reference-tooling.md#asset-references-inspect-one-asset).
 
 Accompany planned renames with [`[MovedFrom]`](04-serialize-reference-tooling.md#migrations-with-movedfrom). For auditing and repairing multiple assets, see [SerializeReference Tooling](04-serialize-reference-tooling.md).
 
