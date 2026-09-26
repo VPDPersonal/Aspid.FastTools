@@ -22,7 +22,7 @@ namespace Unity.Profiling
 
 public static class ProfilerMarkerExtensionsForGenerator
 {
-    public static Unity.Profiling.ProfilerMarker.AutoScope Marker<T>(this T instance) => default;
+    public static Unity.Profiling.ProfilerMarker.AutoScope Marker<T>(this T instance, [System.Runtime.CompilerServices.CallerLineNumber] int line = -1) => default;
     public static Unity.Profiling.ProfilerMarker.AutoScope WithName(this in Unity.Profiling.ProfilerMarker.AutoScope marker, string name) => marker;
 }";
 
@@ -116,15 +116,15 @@ static class FooExtensions
     public Task ExpressionTree_Reports() => Verify(@"
 class Foo
 {
-    System.Linq.Expressions.Expression<System.Func<Unity.Profiling.ProfilerMarker.AutoScope>> Get() => () => this.{|#0:Marker|}();
+    System.Linq.Expressions.Expression<System.Func<Unity.Profiling.ProfilerMarker.AutoScope>> Get() => () => {|#1:this.{|#0:Marker|}()|};
 }",
-        Unsupported(0, "it is inside an expression tree"));
+        Unsupported(0, "it is inside an expression tree"),
+        DiagnosticResult.CompilerError("CS0854").WithLocation(1));
 
     [Fact]
     public Task Argument_OnFallback_Reports() => Verify(@"
-class Foo { void Run() { using var _ = this.{|#0:Marker|}{|#1:(5)|}; } }",
-        Unsupported(0, Argument),
-        DiagnosticResult.CompilerError("CS1501").WithLocation(0).WithArguments("Marker", "1"));
+class Foo { void Run() { using var _ = this.{|#0:Marker|}(5); } }",
+        Unsupported(0, Argument));
 
     [Fact]
     public Task Argument_OnGeneratedOverload_Reports() => Verify(@"
@@ -146,7 +146,7 @@ class Foo
 {
     void Run()
     {
-        System.Func<Unity.Profiling.ProfilerMarker.AutoScope> f = this.{|#0:Marker|};
+        System.Func<int, Unity.Profiling.ProfilerMarker.AutoScope> f = this.{|#0:Marker|};
     }
 }",
         Unsupported(0, "it is used as a method group, so no call passes its line"));
