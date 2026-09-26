@@ -462,7 +462,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 actionText: canFix ? "Fix" : string.Empty,
                 detail: canFix
                     ? $"Missing type: {typeName}.\nClick Fix to re-point this reference to an existing type, keeping its data."
-                    : $"Missing type: {typeName}.\nOpen this asset from the Project window to repair it.",
+                    : $"Missing type: {typeName}.\n{SerializeReferenceHelpers.GetMissingTypeRepairHint(_property)}",
                 onAction: OpenFixSelector);
 
             UpdateSuggestion(canFix);

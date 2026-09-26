@@ -17,6 +17,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public int damage;
     }
 
+    // Declared field types that Unity names with '/' between nested types (Outer/IEffect).
+    internal sealed class NestedTypeHolder
+    {
+        internal interface IEffect { }
+
+        [Serializable]
+        internal sealed class Impl : IEffect { }
+    }
+
+    internal interface ITestGenericEffect<T> { }
+
+    internal sealed class NestedFieldTypeObject : ScriptableObject
+    {
+        [SerializeReference] public NestedTypeHolder.IEffect effect;
+        [SerializeReference] public ITestGenericEffect<NestedTypeHolder.Impl> generic;
+        [SerializeReference] public NestedTypeHolder.IEffect[] effects = { null };
+    }
+
     // Two managed-reference fields, used to prove Link to Existing actually shares one rid.
     internal sealed class LinkerTestObject : ScriptableObject
     {
