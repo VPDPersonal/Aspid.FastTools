@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `ToggleButtonGroup` gets typed `SetValue`, `AddValueChanged`, `RemoveValueChanged` and `SetLabel` overloads for `ToggleButtonGroupState`, so calls such as `AddValueChanged(evt => …)` need no type arguments.
+- `TextField`, `IntegerField`, `LongField`, `UnsignedIntegerField`, `UnsignedLongField`, `FloatField`, `DoubleField` and `Hash128Field` get chainable setters: `SetMaxLength`, `SetMaskChar`, `SetDelayed`, `SetReadOnly`, `SetPassword`, `SetPlaceholder`, `SetHidePlaceholderOnFocus`, `SetKeyboardType`, `SetAutoCorrection`, `SetHideMobileInput`, `SetHideSoftKeyboard`, and for text selection `SetSelectable`, `SetSelectAllOnFocus`, `SetSelectAllOnMouseUp`, `SetDoubleClickSelectsWord`, `SetTripleClickSelectsLine`, `SetCursorIndex`, `SetSelectIndex`, `AddOnCursorIndexChange` / `RemoveOnCursorIndexChange`, `AddOnSelectIndexChange` / `RemoveOnSelectIndexChange`. The `ITextEdition` and `ITextSelection` setters do not reach these fields. Other value types use `TextInputBaseFieldExtensions` and `TextInputBaseFieldTextSelectionExtensions`.
 - Added `AndApplyWithoutUndo` counterparts for every `SerializedProperty` setter with immediate application, including `SetValue` overloads, object references, enums, and array size helpers.
 - Analyzer `AFT0009` (warning) — two `[TypeSelector]` base types have no type in common, so the selector is empty.
 - Analyzer `AFT0010` (warning) — a `this.Marker()` call opens no profiler marker because the generator cannot support its type: the type is `private` or `protected` (or nested in such a type), or it reuses a type parameter name of a containing type.
@@ -21,6 +22,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The Agent Skills for this package moved from the `aspid-fasttools` Claude Code plugin in [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) into this repository (`skills/`). Install them into Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI or another agent with `npx skills add VPDPersonal/Aspid.FastTools`; the plugin is no longer published.
 - Renamed `GetScriptName()` to `GetDisplayName()` and `GetScriptNameWithIndex()` to `GetDisplayNameWithIndex()`; update existing calls to the new names. Both methods now return `string.Empty` for null or destroyed objects. Component indexing uses a pooled list instead of temporary arrays and LINQ.
+- Renamed VisualElement extensions; update existing calls:
+  - `SetIsDelayed` / `SetIsPassword` / `SetIsReadOnly` / `SetIsSelectable` → `SetDelayed` / `SetPassword` / `SetReadOnly` / `SetSelectable`;
+  - `IsFocus` → `IsFocused`, `SetFocus` / `SetBlur` → `FocusSelf` / `BlurSelf`;
+  - `EnableInClass` / `ToggleInClass` → `EnableClass` / `ToggleClass`;
+  - `AddStyleSheets` / `RemoveStyleSheets` → `AddStyleSheet` / `RemoveStyleSheet`, `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` → `AddStyleSheetFromResources` / `RemoveStyleSheetFromResources`;
+  - `SetImageFromResource`, `SetSpriteFromResource`, `SetVectorImageFromResource`, `SetBackgroundImageFromResource` → `…FromResources`;
+  - `MarkDirtyLayout` → `MarkDirtyLayoutSelf`: `IMGUIContainer.MarkDirtyLayout()` hid the old extension, so the call returned `void`; the new name chains.
+- Renamed the extension classes `BaseFieldExtensionsSetLabel<Type>` to `BaseField<Type>Extensions` (`BaseFieldExtensionsSetLabelInt` → `BaseFieldIntExtensions`) and `ProgressBarExtensions` to `AbstractProgressBarExtensions`. Extension-method calls are unaffected; only calls through the class name change.
+- `SetShowMixedValue` no longer defaults its argument to `true`; pass the value explicitly.
+- `SetDirection`, `SetFill`, `SetInverted`, `SetPageSize` and `SetShowInputField` now return the slider's own type (`Slider`, `SliderInt`) instead of `BaseSlider<TValue>`, so a chain keeps the slider's members. They accept `BaseSlider<float>` and `BaseSlider<int>`; the open `BaseSlider<TValue>` overloads are gone.
+- The parameterless constructors of `SerializableType` / `SerializableType<T>` are no longer public: create a wrapper with `new SerializableType(type)` or `new SerializableType<T>(type)` (`null` gives an empty one). `SerializableMonoScript` / `SerializableMonoScript<T>` have no public constructors: declare them as serialized fields and pick the script in the Inspector.
 - `[TypeSelector]` on a `[SerializeReference]` field now offers only types assignable to every attribute type — the rule `string` and `SerializableType` fields already follow; it used to offer types matching any one of them. The same applies to `baseTypes` of `SerializeReferenceEditorGUI.CreateField`, `CreateList` and `DrawFieldLayout`. A list of alternatives such as `typeof(Pistol), typeof(Rifle)` now leaves the selector empty and triggers `AFT0009`: give the allowed classes a common interface or base class and pass that instead. `AFT0005` now checks all attribute types together.
 - The generated `this.Marker()` code now declares its marker fields only under `ENABLE_PROFILER`, like the `Marker()` body that reads them: builds without the profiler no longer create every marker in a static constructor.
 - `ProfilerMarkerExtensionsForGenerator.Marker(this object)` is now `Marker<T>(this T)`: a struct call site the generator cannot mark is no longer boxed, so a Burst job still compiles.
@@ -31,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed `SetExposedReferenceAndApply()` from `SerializedProperty` extensions; call `SetExposedReference()` instead. Without an `IExposedPropertyTable` context, Unity's `exposedReferenceValue` setter already applies the write and records Undo, so the extra apply did nothing, and a variant without Undo cannot be built on top of it.
+- Removed `SerializableMonoScript.Script`; read the type through `Type` or the implicit conversion to `Type`.
+- Removed `AddMakeItem` / `RemoveMakeItem` of `ListView` and `TreeView`, and `AddMakeHeader` / `AddMakeFooter` / `AddMakeNoneElement` of `BaseListView` with their `Remove*` pairs; the view keeps one factory, so call `SetMakeItem`, `SetMakeHeader`, `SetMakeFooter` or `SetMakeNoneElement`.
+- Removed the runtime `Aspid.FastTools.StringExtensions.ToKebabCase` and `Aspid.FastTools.TypeExtensions.GetMembersInfosIncludingBaseClasses` from the public API, without a replacement.
 
 ### Fixed
 
@@ -132,7 +147,6 @@ First release. Unity **6000.0**, assemblies `Aspid.FastTools` / `Aspid.FastTools
 
 - `GetScriptName()` / `GetScriptNameWithIndex()`.
 - Open-script command that handles interfaces in differently named files and nested types.
-- `InspectorNotice` / `InspectorNoticeGUI` and the branded `Aspid*` UI Toolkit components.
 
 #### Samples
 
