@@ -2,13 +2,15 @@
     margin:                                                 0;
 }
 
-.aspid-fasttools-serialize-reference .unity-foldout__toggle {
+/* Child combinators keep the header rules off the foldouts of nested properties. */
+.aspid-fasttools-serialize-reference > .unity-foldout > .unity-foldout__toggle {
     flex-direction:                                         row;
     align-items:                                            center;
 }
 
 .aspid-fasttools-serialize-reference
-    .unity-foldout__toggle
+    > .unity-foldout
+    > .unity-foldout__toggle
     > .unity-foldout__input {
     flex-grow:                                              0;
     flex-shrink:                                            0;
@@ -33,15 +35,18 @@
 }
 
 .aspid-fasttools-serialize-reference--empty
-    .unity-foldout__toggle
+    > .unity-foldout
+    > .unity-foldout__toggle
     .unity-foldout__checkmark,
 .aspid-fasttools-serialize-reference--childless
-    .unity-foldout__toggle
+    > .unity-foldout
+    > .unity-foldout__toggle
     .unity-foldout__checkmark {
     display:                                                none;
 }
 
-.aspid-fasttools-serialize-reference Button {
+/* A class, not a type selector: buttons of nested drawers and lists share this subtree. */
+Button.aspid-fasttools-serialize-reference__open-button {
     padding:                                                0;
     min-width:                                              18px;
     max-width:                                              18px;
@@ -50,13 +55,13 @@
     margin:                                                 0 0 0 1px;
 }
 
-.aspid-fasttools-serialize-reference Button > VisualElement {
+.aspid-fasttools-serialize-reference__open-button > VisualElement {
     width:                                                  100%;
     height:                                                 100%;
     background-image:                                       resource("d_Folder Icon");
 }
 
-.aspid-fasttools-serialize-reference Button > VisualElement:enabled:hover {
+.aspid-fasttools-serialize-reference__open-button > VisualElement:enabled:hover {
     background-image:                                       resource("d_FolderOpened Icon");
 }
 
@@ -92,7 +97,9 @@
     bottom:                                                0;
 }
 
-.aspid-fasttools-serialize-reference--striped .aspid-fasttools-serialize-reference__notices {
+.aspid-fasttools-serialize-reference--striped
+    > .unity-foldout
+    > .aspid-fasttools-serialize-reference__notices {
     margin-left:                                           -14px;
 }
 
