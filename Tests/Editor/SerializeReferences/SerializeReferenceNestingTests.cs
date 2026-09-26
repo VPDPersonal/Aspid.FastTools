@@ -25,6 +25,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
     internal interface IDrawnEffect { }
 
+    internal interface IDrawnChildEffect : IDrawnEffect { }
+
     [Serializable]
     internal sealed class DrawnInterfaceEffect : IDrawnEffect
     {
@@ -95,6 +97,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void HasDrawerFor_InterfaceDrawer_AppliesToManagedReferences() =>
             Assert.IsTrue(CustomDrawerRegistry.HasDrawerFor(typeof(DrawnInterfaceEffect), isManagedReference: true));
+
+        [Test]
+        public void HasDrawerFor_ParentInterfaceDrawer_AppliesOnlyToManagedReferences()
+        {
+            Assert.IsTrue(CustomDrawerRegistry.HasDrawerFor(typeof(IDrawnChildEffect), isManagedReference: true));
+            Assert.IsFalse(CustomDrawerRegistry.HasDrawerFor(typeof(IDrawnChildEffect)),
+                "Without useForChildren a parent-interface drawer does not apply to a plain child-interface field.");
+        }
 
         [Test]
         public void HasDrawerFor_TypeWithoutDrawer_ReturnsFalse() =>
