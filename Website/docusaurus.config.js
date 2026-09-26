@@ -152,12 +152,15 @@ const config = {
         include: ['index.mdx', '*/README.md'],
         numberPrefixParser: samplePrefixParser,
         ...markdownOptions,
-        // `<Sample>/README.md` → `Samples~/<Sample>/Documentation/README.md`, translations as `README.<locale>.md`.
+        // `<Sample>/README.md` → `Samples~/<Sample>/Documentation/README.md`, translations as `README.<locale>.md`;
+        // the overview `index.mdx` → `Website/src/samples/index.mdx` (`index.<locale>.mdx`).
         editUrl: ({ docPath, locale }) =>
-          `${REPO}/edit/main/${PACKAGE_DIR}/Samples~/${docPath.replace(
-            /\/README\.md$/,
-            locale === 'en' ? '/Documentation/README.md' : `/Documentation/README.${locale}.md`,
-          )}`,
+          docPath === 'index.mdx'
+            ? `${REPO}/edit/main/Website/src/samples/index${locale === 'en' ? '' : `.${locale}`}.mdx`
+            : `${REPO}/edit/main/${PACKAGE_DIR}/Samples~/${docPath.replace(
+                /\/README\.md$/,
+                locale === 'en' ? '/Documentation/README.md' : `/Documentation/README.${locale}.md`,
+              )}`,
       }),
     ],
     [

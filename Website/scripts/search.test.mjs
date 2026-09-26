@@ -1,7 +1,9 @@
 import assert from 'node:assert/strict';
+import path from 'node:path';
 import {test} from 'node:test';
+import {fileURLToPath} from 'node:url';
 import {prepareIndex, searchEntries} from '../src/components/search.js';
-import {plainText} from '../src/plugins/search/index.js';
+import searchPlugin, {plainText} from '../src/plugins/search/index.js';
 
 const entries = prepareIndex([
   {title: 'Types Sample', section: 'Samples', url: '/tutorials/types', text: 'Choose Enemy Type in the Inspector.'},
@@ -26,4 +28,16 @@ test('index strips Markdown markup while preserving searchable code', () => {
 test('empty queries suggest documentation and samples', () => {
   assert.equal(searchEntries(entries, '  ').length, 3);
   assert.ok(searchEntries(entries, '').every((entry) => entry.section !== 'API'));
+});
+test('index URLs follow trailingSlash: false', async () => {
+  const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+  const doc = (permalink) => ({permalink, title: 'Samples', source: '@site/src/samples/index.mdx'});
+  const allContent = {'docusaurus-plugin-content-docs': {tutorials: {loadedVersions: [{docs: [
+    doc('/Aspid.FastTools/ru/tutorials/'), doc('/Aspid.FastTools/ru/tutorials/types/'), doc('/Aspid.FastTools/ru/docs/enum-values'),
+  ]}]}}};
+  let index;
+  const context = {siteDir, baseUrl: '/Aspid.FastTools/ru/', siteConfig: {trailingSlash: false, baseUrl: '/Aspid.FastTools/'}};
+  await searchPlugin(context).allContentLoaded({allContent, actions: {createData: async (name, data) => { index = JSON.parse(data); }}});
+  assert.deepEqual(index.map((entry) => entry.url),
+    ['/Aspid.FastTools/ru/tutorials', '/Aspid.FastTools/ru/tutorials/types', '/Aspid.FastTools/ru/docs/enum-values']);
 });

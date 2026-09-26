@@ -99,16 +99,18 @@ function translatePaginationLabel(locale, destination) {
 
 /**
  * The changelog is served at /changelog. The language-switch line at its top (`> Русская версия: …`)
- * exists for GitHub readers; the site has a locale dropdown, so it is dropped.
+ * exists for GitHub readers; the site has a locale dropdown, so it is dropped. A translation's H1 carries a
+ * language suffix for GitHub (`# Changelog (RU)`); on the site it takes the navbar's translated label instead.
  */
 // `## [1.0.0] — 2026-01-01` → anchor `#v1-0-0`, so the generated sidebar can link every version in every locale.
 const versionHeading = /^## \[([^\]]+)\](.*)$/gm;
 const versionAnchor = (version) => `v${version.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 
-function writeChangelog(source, destination) {
+function writeChangelog(source, destination, title) {
   const body = fs
     .readFileSync(source, 'utf8')
     .replace(/^> .*CHANGELOG(?:\.[a-z]{2})?\.md.*\n\n/m, '')
+    .replace(/^# (.+?)(?: \([A-Z]{2}\))?$/m, (line, heading) => `# ${title ?? heading}`)
     .replace(versionHeading, (line, version) => `${line} {#${versionAnchor(version)}}`);
   const date = lastCommitDate(source);
   fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -150,7 +152,9 @@ for (const locale of locales) {
   if (fs.existsSync(interfaceTranslations)) copy(interfaceTranslations, path.join(i18nDir, locale));
   const changelog = path.join(repoDir, `CHANGELOG.${locale}.md`);
   if (fs.existsSync(changelog)) {
-    writeChangelog(changelog, path.join(i18nDir, locale, 'docusaurus-plugin-content-docs-changelog', 'current', 'index.md'));
+    const navbar = path.join(interfaceTranslations, 'docusaurus-theme-classic', 'navbar.json');
+    const title = fs.existsSync(navbar) ? JSON.parse(fs.readFileSync(navbar, 'utf8'))['item.label.Changelog']?.message : undefined;
+    writeChangelog(changelog, path.join(i18nDir, locale, 'docusaurus-plugin-content-docs-changelog', 'current', 'index.md'), title);
   }
 
   copy(path.join(docsDir, locale), path.join(i18nDir, locale, 'docusaurus-plugin-content-docs', 'current'));
