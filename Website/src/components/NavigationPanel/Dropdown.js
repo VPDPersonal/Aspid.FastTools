@@ -6,9 +6,10 @@ import styles from './styles.module.css';
 
 /**
  * A click-toggled menu of links that closes on outside pointer, Escape and navigation.
- * `items` are `{key, label, to, active, ...linkProps}`; `up` opens the menu above the button (panel footer).
+ * `items` are `{key, label, to, active, ...linkProps}`; `menu` replaces them with custom `<li>` content that stays open
+ * on choice (appearance). `up` opens the menu above the button (panel footer).
  */
-export default function Dropdown({items, up, buttonClassName, children, ...buttonProps}) {
+export default function Dropdown({items = [], menu, up, buttonClassName, children, ...buttonProps}) {
   const [open, setOpen] = useState(false);
   const root = useRef(null);
   const id = useId();
@@ -30,7 +31,7 @@ export default function Dropdown({items, up, buttonClassName, children, ...butto
         {children}
       </button>
       <ul id={id} role="menu" className={clsx(styles.switcherMenu, up && styles.switcherMenuUp)} hidden={!open}>
-        {items.map(({key, label, active, ...linkProps}) => (
+        {menu ?? items.map(({key, label, active, ...linkProps}) => (
           <li key={key} role="none">
             <Link role="menuitem" {...linkProps} className={clsx(styles.switcherItem, active && styles.switcherItemActive)} aria-current={active ? 'page' : undefined}>
               {label}

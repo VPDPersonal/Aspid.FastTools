@@ -5,7 +5,7 @@
 
 .install {
   --install-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --install-accent-soft: rgb(92 180 107 / 0.12);
+  --install-accent-soft: color-mix(in srgb, var(--venom-accent) 12%, transparent);
   margin-bottom: 2.5rem;
   overflow: hidden;
   container-type: inline-size;
@@ -13,7 +13,7 @@
   border: 2px solid var(--venom-line-strong);
   border-radius: 12px;
 }
-html[data-theme='light'] .install { --install-accent-soft: rgb(47 138 69 / 0.1); }
+html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, var(--venom-accent) 10%, transparent); }
 
 .top { display: flex; border-bottom: 1px solid var(--venom-line-strong); }
 /* The steps take the width their menu paths need on one line; the mock-up gets the rest. */

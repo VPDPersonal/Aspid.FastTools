@@ -256,8 +256,12 @@ installed, which this project does not.
 ## Design
 
 The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as accent (`--venom-*` tokens in
-`Website/src/css/custom.css`), IBM Plex Serif/Mono from Google Fonts, iA Writer Quattro body self-hosted in
-`src/fonts/` (OFL, keep the licence file), Ayu-based Prism themes in `src/prism/venom.js`.
+`Website/src/css/custom.css`). Green is the default; the reader can switch the accent to red, blue, yellow or mono in the
+sidebar footer appearance menu, next to the theme (`NavigationPanel/AppearanceSwitcher.js`). The variants live in `src/css/accents.css` under
+`html[data-accent]`, the list and the pre-paint boot script in `src/accents.js`. Colour things with `--venom-accent*`
+/ `--ifm-color-primary*`, never a literal green, unless it mimics Unity or means success (`--venom-emerald`).
+Fonts: IBM Plex Serif/Mono from Google Fonts, iA Writer Quattro body self-hosted in `src/fonts/` (OFL, keep the
+licence file). Prism themes are Ayu-based, in `src/prism/venom.js`.
 
 ### Introduction feature cards
 
@@ -273,7 +277,9 @@ between the latest preview and `#upm-preview/<packageVersion>` (`customFields.pa
 Its text is written in the component per locale, so update it when the README's install steps change.
 
 `static/img/logo.png` and `favicon.png` are copies of the package icon
-`Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`; re-copy them if the icon changes.
+`Editor/Resources/Icons/aspid_icon_medium_green_256x253.png`, and `logo-red.png`, `logo-blue.png`, `logo-yellow.png` of
+its colour variants, `logo-mono.png` a greyscale copy of the green one (each also the favicon for its accent); re-copy them if the icons change. `src/theme/Logo` renders
+all four and CSS shows the current accent's.
 
 The page uses normal document scrolling with sticky navigation. The borderless article has an opaque reading
 surface (graphite in dark mode, warm linen in light mode). The fixed dot texture is painted on `html`, not the

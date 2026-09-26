@@ -54,6 +54,20 @@
       "cwd": "Website",
       "_note": "Only when Website/scripts/serve-all.sh is unusable: this ties the shared 3001 server to one session.",
       "port": 3001
+    },
+    {
+      "name": "website-build-3003",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "docusaurus",
+        "serve",
+        "--port",
+        "3003",
+        "--no-open"
+      ],
+      "cwd": "Website",
+      "_note": "Serves an existing `npm run build` (en + ru) from a worktree without replacing the shared 3001 build.",
+      "port": 3003
     }
   ]
 }
