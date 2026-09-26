@@ -151,6 +151,27 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
+        public void StaleName_LoadedWithoutSerialization_ResolvesFromTheScript()
+        {
+            const string staleName = "Old.Name, Old";
+
+            var holder = CreateHolder();
+            try
+            {
+                SerializableMonoScriptUtility.Assign(new SerializedObject(holder).FindProperty(nameof(Holder.wrapper)), ScriptedType);
+
+                // FromJsonOverwrite only deserializes, like loading an asset not saved since a class rename: the
+                // wrapper's OnBeforeSerialize gets no chance to re-sync the name.
+                var json = EditorJsonUtility.ToJson(holder).Replace(ScriptedType.AssemblyQualifiedName, staleName);
+                EditorJsonUtility.FromJsonOverwrite(json, holder);
+
+                Assert.AreEqual(staleName, holder.wrapper.AssemblyQualifiedName, "Precondition: the stored name is stale.");
+                Assert.AreEqual(ScriptedType, holder.wrapper.Type, "The editor falls back to the script's class.");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
         public void SyncScriptFromName_PointsTheScriptAtTheWrittenType()
         {
             var holder = CreateHolder();
