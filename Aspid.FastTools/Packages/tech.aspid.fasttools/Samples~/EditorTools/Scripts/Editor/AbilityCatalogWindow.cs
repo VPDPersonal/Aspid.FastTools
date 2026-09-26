@@ -26,7 +26,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
         private ListView _list;
         private TextField _search;
         private VisualElement _details;
-        private AbilityConfig _shown;
+        [NonSerialized] private AbilityConfig _shown;
         private string _filter = string.Empty;
 
         [MenuItem("Tools/Aspid 🐍/FastTools/Samples/Ability Catalog")]
