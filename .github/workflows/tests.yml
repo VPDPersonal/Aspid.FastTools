@@ -95,7 +95,11 @@ jobs:
         id: project
         env:
           UNITY: ${{ matrix.unity }}
-        run: echo "unity=$(scripts/make-unity-test-project.sh ci-unity-project "$UNITY")" >> "$GITHUB_OUTPUT"
+        # Assigned first: a failure inside $(...) passed straight to echo would not fail the step.
+        run: |
+          version="$(scripts/make-unity-test-project.sh ci-unity-project "$UNITY")"
+          [ -n "$version" ] || { echo "::error::make-unity-test-project.sh printed no Unity version"; exit 1; }
+          echo "unity=$version" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache@v4
         with:

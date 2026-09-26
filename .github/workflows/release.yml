@@ -191,6 +191,9 @@ jobs:
         run: dotnet test --nologo
         working-directory: ${{ env.ANALYZERS_SOLUTION_DIR }}
 
+      - name: Run YAML engine tests
+        run: dotnet test Aspid.FastTools.YamlTests --nologo
+
       # Rebuilding in Release re-deploys both DLLs into the package checkout
       # (Directory.Build.targets); a clean `git diff` then proves the committed
       # DLLs were built from the sources being released.
