@@ -31,6 +31,7 @@ namespace Aspid.FastTools.Editors.Tests
 
             Assert.AreEqual(0, HookCount(EditorApplication.update), "Authored must not hook EditorApplication.update.");
             Assert.AreEqual(0, HookCount(Camera.onPreCull), "Authored must not hook Camera.onPreCull.");
+            Assert.AreEqual(0, HookCount(Camera.onPostRender), "Authored must not hook Camera.onPostRender.");
         }
 
         [Test]
@@ -41,11 +42,13 @@ namespace Aspid.FastTools.Editors.Tests
 
             Assert.AreEqual(1, HookCount(EditorApplication.update), "A preview must hook EditorApplication.update once.");
             Assert.AreEqual(1, HookCount(Camera.onPreCull), "A preview must hook Camera.onPreCull once.");
+            Assert.AreEqual(1, HookCount(Camera.onPostRender), "A preview must hook Camera.onPostRender once.");
 
             SampleThemePreview.SetMode(SampleThemeMode.Authored);
 
             Assert.AreEqual(0, HookCount(EditorApplication.update), "Authored must remove the update hook.");
-            Assert.AreEqual(0, HookCount(Camera.onPreCull), "Authored must remove the camera hook.");
+            Assert.AreEqual(0, HookCount(Camera.onPreCull), "Authored must remove the pre-cull hook.");
+            Assert.AreEqual(0, HookCount(Camera.onPostRender), "Authored must remove the post-render hook.");
         }
 
         private static int HookCount(Delegate callback) =>
