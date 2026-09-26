@@ -19,6 +19,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             " * This sheet is layered on top of the built-in Default-Dark palette,\n" +
             " * so you only need to declare the tokens you want to change.\n" +
             " * Full token list: Packages/tech.aspid.fasttools/Editor/Resources/UI/Aspid-FastTools-Default-Dark.uss\n" +
+            " * Fields drawn inside a regular Inspector follow Unity's editor theme instead.\n" +
             " */\n" +
             ":root {\n" +
             "    /* Backgrounds (surface palette, dark → light) */\n" +
@@ -27,12 +28,21 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             "    /* --aspid-colors-bg-light:     rgb(46, 46, 46); */\n" +
             "    /* --aspid-colors-bg-lightness: rgb(56, 56, 56); */\n" +
             "\n" +
+            "    /* Cards and panels */\n" +
+            "    /* --aspid-colors-surface-card: rgba(20, 20, 20, 0.55); */\n" +
+            "\n" +
             "    /* Text (high-contrast content) */\n" +
             "    /* --aspid-colors-text-lightness: rgb(220, 220, 220); */\n" +
             "    /* --aspid-colors-text-light:     rgb(190, 190, 190); */\n" +
             "\n" +
             "    /* Accent example — tweak the success status base */\n" +
             "    /* --aspid-colors-status-success-dark: rgb(12, 65, 30); */\n" +
+            "\n" +
+            "    /* Switches (unset by default, so they follow the editor skin) */\n" +
+            "    /* --aspid-colors-switch-accent:        rgb(85, 175, 100); */\n" +
+            "    /* --aspid-colors-switch-track_border:  rgb(82, 82, 87); */\n" +
+            "    /* --aspid-colors-switch-handle:        rgba(189, 189, 196, 0.85); */\n" +
+            "    /* --aspid-colors-switch-handle_shadow: rgba(0, 0, 0, 0.15); */\n" +
             "}\n";
 
         public static void BuildControls(VisualElement container)

@@ -1,3 +1,4 @@
+using UnityEditor;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
@@ -8,7 +9,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public static T AddAspidThemeStyleSheets<T>(this T element)
             where T : VisualElement
         {
-            element.AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet);
+            element.AddStyleSheetFromResources(AspidStyles.DefaultStyleSheet)
+                .EnableInClassList(AspidStyles.SkinLightClass, !EditorGUIUtility.isProSkin);
 
             var applied = AspidThemeSettings.OverrideStyleSheet;
             if (applied != null) element.AddStyleSheet(applied);

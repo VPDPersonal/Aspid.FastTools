@@ -16,3 +16,11 @@ Button > VisualElement {
 Button > VisualElement:enabled:hover {
     background-image:       resource("d_FolderOpened Icon");
 }
+
+.aspid-fasttools-skin--light Button > VisualElement {
+    background-image:       resource("Folder Icon");
+}
+
+.aspid-fasttools-skin--light Button > VisualElement:enabled:hover {
+    background-image:       resource("FolderOpened Icon");
+}

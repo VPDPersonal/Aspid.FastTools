@@ -13,7 +13,7 @@
     border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
-    background-color:                                     rgba(20, 20, 20, 0.55);
+    background-color:                                     var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-reference-graph__card-title {
@@ -159,7 +159,7 @@
     border-radius:                                        6px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
-    --aspid-fasttools-colors-gradient_button-bg:          rgba(20, 20, 20, 0.55);
+    --aspid-fasttools-colors-gradient_button-bg:          var(--aspid-colors-surface-card);
     --aspid-fasttools-colors-gradient_button-accent:      var(--aspid-colors-text-lightness);
 }
 
@@ -210,7 +210,7 @@
     border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
-    background-color:                                     rgba(20, 20, 20, 0.55);
+    background-color:                                     var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-reference-graph__node--picking.aspid-fasttools-background {
@@ -223,7 +223,7 @@
 
 .aspid-fasttools-reference-graph__node--back-edge.aspid-fasttools-background {
     border-color:                                         var(--aspid-colors-shade-dark);
-    background-color:                                     rgba(20, 20, 20, 0.35);
+    background-color:                                     var(--aspid-colors-surface-card-dim);
 }
 
 .aspid-fasttools-reference-graph__node--empty .aspid-fasttools-reference-graph__node-type {
@@ -429,7 +429,7 @@
     border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-status-warning-shade-darkness);
-    background-color:                                     rgba(45, 30, 5, 0.3);
+    background-color:                                     var(--aspid-colors-status-warning-tint-darkness);
 }
 
 .aspid-fasttools-reference-graph__orphan-group-header {
@@ -459,7 +459,7 @@
     border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-dark);
-    background-color:                                     rgba(20, 20, 20, 0.55);
+    background-color:                                     var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-reference-graph__picker--attached.aspid-fasttools-background {

@@ -1,0 +1,7 @@
+/* An unset palette token leaves the property unresolved, so the switch keeps its skin-aware C# default. */
+:root {
+    --aspid-fasttools-colors-switch-accent:                     var(--aspid-colors-switch-accent);
+    --aspid-fasttools-colors-switch-track_border:               var(--aspid-colors-switch-track_border);
+    --aspid-fasttools-colors-switch-handle:                     var(--aspid-colors-switch-handle);
+    --aspid-fasttools-colors-switch-handle_shadow:              var(--aspid-colors-switch-handle_shadow);
+}
