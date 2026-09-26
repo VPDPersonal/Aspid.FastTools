@@ -16,16 +16,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // provider consulted when the picker opens, since a member-referenced constraint can re-resolve later.
         public static void TryInstall(VisualElement elementField, SerializedProperty elementProperty, Type elementType, Func<Type[]> baseTypesProvider)
         {
-            if (elementField is null || elementProperty is null) return;
-
-            var serializedObject = elementProperty.serializedObject;
-            if (serializedObject is null) return;
-
-            // The innermost array: a list nested in another array's element must append to itself, not the outer one.
-            if (!SerializeReferenceHelpers.TryGetArrayPath(elementProperty.propertyPath, out var arrayPath)) return;
-
-            var targets = serializedObject.targetObjects;
-            if (targets.Length == 0 || targets[0] == null) return;
+            if (elementField is null) return;
+            if (!TryResolveAppendTarget(elementProperty, out var targets, out var arrayPath)) return;
 
             var listView = elementField.GetFirstAncestorOfType<ListView>();
             if (listView is null || listView.overridingAddButtonBehavior != null) return;
@@ -39,6 +31,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 listView.overridingAddButtonBehavior = (_, button) =>
                     OpenAppendPicker(targets, arrayPath, elementType, baseTypesProvider(), button);
             });
+        }
+
+        // The objects and the array an element's "+" appends to: every selected object, and the innermost array, so a
+        // list nested in another array's element appends to itself, not the outer one.
+        public static bool TryResolveAppendTarget(SerializedProperty elementProperty, out Object[] targets, out string arrayPath)
+        {
+            targets = null;
+            arrayPath = null;
+
+            var serializedObject = elementProperty?.serializedObject;
+            if (serializedObject is null) return false;
+            if (!SerializeReferenceHelpers.TryGetArrayPath(elementProperty.propertyPath, out arrayPath)) return false;
+
+            targets = serializedObject.targetObjects;
+            return targets.Length > 0 && targets[0] != null;
         }
 
         public static void OpenAppendPicker(Object[] targets, string arrayPath, Type elementType, Type[] baseTypes, VisualElement anchor)

@@ -2,6 +2,7 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Object = UnityEngine.Object;
 
@@ -21,8 +22,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public List<int> counts = new();
     }
 
-    // Covers the picker-backed "+" of managed-reference lists: which array an element's "+" appends to, one
-    // independent instance per selected object, and the argument checks of the public IMGUI list.
+    // Covers the picker-backed "+" of managed-reference lists: which array and objects an element's "+" appends to,
+    // one independent instance per selected object, and the argument checks of the public IMGUI list.
     [TestFixture]
     internal sealed class SerializeReferenceListAddTests
     {
@@ -46,6 +47,71 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 "A sub-field of an array element is not itself an element.");
             Assert.IsFalse(SerializeReferenceHelpers.TryGetArrayPath("primary", out _));
             Assert.IsFalse(SerializeReferenceHelpers.TryGetArrayPath(null, out _));
+        }
+
+        [Test]
+        public void TryResolveAppendTarget_NestedListElement_ResolvesTheInnerList()
+        {
+            var obj = ScriptableObject.CreateInstance<ListAddTestObject>();
+            try
+            {
+                obj.loadouts.Add(new ListAddTestLoadout { weapons = { new TestSword() } });
+                var serialized = new SerializedObject(obj);
+                var element = serialized.FindProperty("loadouts.Array.data[0].weapons.Array.data[0]");
+
+                Assert.IsTrue(SerializeReferenceListAddBehavior.TryResolveAppendTarget(element, out var targets, out var arrayPath));
+                Assert.AreEqual("loadouts.Array.data[0].weapons", arrayPath,
+                    "The \"+\" of a list nested in another array's element must append to the inner list, not the outer array.");
+                CollectionAssert.AreEqual(new Object[] { obj }, targets);
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
+        [Test]
+        public void TryResolveAppendTarget_MultipleObjects_ResolvesEveryTarget()
+        {
+            var first = ScriptableObject.CreateInstance<ListAddTestObject>();
+            var second = ScriptableObject.CreateInstance<ListAddTestObject>();
+            try
+            {
+                first.sidearms.Add(new TestSword());
+                second.sidearms.Add(new TestSword());
+                var serialized = new SerializedObject(new Object[] { first, second });
+                var element = serialized.FindProperty("sidearms.Array.data[0]");
+
+                Assert.IsTrue(SerializeReferenceListAddBehavior.TryResolveAppendTarget(element, out var targets, out var arrayPath));
+                Assert.AreEqual("sidearms", arrayPath);
+                CollectionAssert.AreEqual(new Object[] { first, second }, targets,
+                    "A multi-object selection must append to every selected object.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(first);
+                Object.DestroyImmediate(second);
+            }
+        }
+
+        [Test]
+        public void CreateList_MultipleObjects_OverridesTheAddButton()
+        {
+            var first = ScriptableObject.CreateInstance<ListAddTestObject>();
+            var second = ScriptableObject.CreateInstance<ListAddTestObject>();
+            try
+            {
+                var serialized = new SerializedObject(new Object[] { first, second });
+                var field = SerializeReferenceEditorGUI.CreateList(serialized.FindProperty("sidearms"));
+
+                Assert.IsNotNull(field.Q<ListView>().overridingAddButtonBehavior,
+                    "A multi-object selection must get the picker-backed \"+\", not the native add that copies the last element's rid.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(first);
+                Object.DestroyImmediate(second);
+            }
         }
 
         [Test]
