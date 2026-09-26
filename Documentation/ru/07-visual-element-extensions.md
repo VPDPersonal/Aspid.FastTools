@@ -25,11 +25,11 @@
 | свойство-делегат `x` | `SetX`; у `Action` ещё `AddX` / `RemoveX` | `bindItem` → `SetBindItem`, `AddBindItem` |
 | метод `M()` | `MSelf()` | `Focus()` → `FocusSelf()` |
 
-Правило покрывает `VisualElement`, `Focusable`, текстовые элементы, поля, слайдеры, `Button`, `Foldout`, `HelpBox`, `Image`, `ProgressBar`, `IMGUIContainer`, списки и деревья; полный список — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements). У остальных свойств, например `ScrollView.mode` или `TextField.multiline`, методов нет. Исключения:
+Правило покрывает `VisualElement`, `Focusable`, текстовые элементы, поля, слайдеры, `Button`, `Foldout`, `HelpBox`, `Image`, `ProgressBar`, `IMGUIContainer`, списки и деревья, но метод есть не у каждого свойства: у `VisualElement.generateVisualContent`, `TextField.multiline` и `ScrollView.mode` его нет. Полный список — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements). Исключения:
 
 - `EnumField` и `EnumFlagsField` (в редакторе) получают `Initialize` вместо `Init`;
 - `Button.SetClickable` принимает и `Clickable`, и `Action`;
-- `TreeView` и `MultiColumnTreeView` заполняются через `SetRootItemsSelf`; `SetItemsSource` на них бросает исключение.
+- `TreeView` и `MultiColumnTreeView` заполняются через `SetRootItemsSelf`, а не `SetItemsSource`.
 
 `IsFocused()` проверяет фокус:
 
