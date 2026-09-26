@@ -824,6 +824,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
+                if (type is null) SerializeReferenceMissingListGuard.NoteIntentionalClear(_property);
+
                 // Multi-object: each target gets its OWN instance, created from that target's previous value, so the
                 // managed reference is never aliased across objects; <None> clears all. One Undo step covers them all.
                 if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
