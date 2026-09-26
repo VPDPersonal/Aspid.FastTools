@@ -1,5 +1,6 @@
 using System;
 using UnityEditor;
+using UnityEngine;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 using Aspid.FastTools.Editors;
@@ -31,6 +32,11 @@ namespace Aspid.FastTools.Enums.Editors
                 .SetDisplay(DisplayStyle.None)
                 .AddValueChanged(e => OnKeyChanged(e.newValue));
 
+            // Shows a key the enum cannot parse, and the flags of a 64-bit enum that EnumFlagsField would truncate.
+            var keyMenuField = new KeyMenuField(rect => EnumValuesPropertyDrawerHelper.ShowKeyMenu(
+                    rect, serializedObject, keyPath, enumTypePath))
+                .SetDisplay(DisplayStyle.None);
+
             var keyField = new PropertyField(serializedObject.FindProperty(keyPath), label: string.Empty)
                 .SetDisplay(DisplayStyle.None);
 
@@ -46,6 +52,7 @@ namespace Aspid.FastTools.Enums.Editors
                     .AddChild(keyField)
                     .AddChild(keyEnumField)
                     .AddChild(keyEnumFlagField)
+                    .AddChild(keyMenuField)
                 )
                 .AddChild(new PropertyField(valueProperty, label: hasFoldout ? "Value" : string.Empty)
                     .AddClass(ValueClass)
@@ -54,7 +61,9 @@ namespace Aspid.FastTools.Enums.Editors
             if (!hasFoldout)
                 root.AddClass(InlineClass);
 
-            // Track the serialized property because direct writes do not notify a hidden PropertyField.
+            // Track the serialized properties because the enum fields are not bound: Undo, Revert or Paste
+            // change the key without notifying them, and direct writes do not notify a hidden PropertyField.
+            root.TrackPropertyValue(serializedObject.FindProperty(keyPath), _ => UpdateValue());
             root.TrackPropertyValue(serializedObject.FindProperty(enumTypePath), _ => UpdateValue());
 
             return root;
@@ -70,15 +79,25 @@ namespace Aspid.FastTools.Enums.Editors
 
                 keyField.SetDisplay(DisplayStyle.None);
                 keyEnumField.SetDisplay(DisplayStyle.None);
+                keyMenuField.SetDisplay(DisplayStyle.None);
                 keyEnumFlagField.SetDisplay(DisplayStyle.None);
 
-                if (EnumValuesPropertyDrawerHelper.ResolveKey(keyProperty, enumTypeProperty) is not { } enumValue)
+                if (EnumValuesPropertyDrawerHelper.GetEnumType(enumTypeProperty) is not { } enumType
+                    || !EnumValuesPropertyDrawerHelper.HasMembers(enumType))
                 {
                     keyField.SetDisplay(DisplayStyle.Flex);
                     return;
                 }
 
-                if (EnumInfo.IsFlags(enumValue.GetType()))
+                var enumValue = EnumValuesPropertyDrawerHelper.ParseKey(keyProperty.stringValue, enumType);
+
+                if (enumValue is null || EnumValuesPropertyDrawerHelper.IsWideFlags(enumType))
+                {
+                    keyMenuField
+                        .SetCaption(EnumValuesPropertyDrawerHelper.GetKeyCaption(keyProperty.stringValue, enumValue))
+                        .SetDisplay(DisplayStyle.Flex);
+                }
+                else if (EnumInfo.IsFlags(enumType))
                 {
                     // Reset before initialization to discard the previous enum type's dropdown choices.
                     keyEnumFlagField
@@ -92,6 +111,49 @@ namespace Aspid.FastTools.Enums.Editors
                         .Initialize(enumValue)
                         .SetDisplay(DisplayStyle.Flex);
                 }
+            }
+        }
+
+        private sealed class KeyMenuField : BaseField<string>
+        {
+            private readonly TextElement _textElement;
+            private readonly VisualElement _visualInput;
+
+            public KeyMenuField(Action<Rect> onOpen)
+                : this(onOpen, new VisualElement()) { }
+
+            private KeyMenuField(Action<Rect> onOpen, VisualElement visualInput)
+                : base(label: null, visualInput)
+            {
+                this.AddClass(EnumField.ussClassName);
+
+                _visualInput = visualInput;
+
+                _textElement = new TextElement()
+                    .AddClass(EnumField.textUssClassName)
+                    .SetPickingMode(PickingMode.Ignore);
+
+                visualInput
+                    .AddClass(EnumField.inputUssClassName)
+                    .AddChild(_textElement)
+                    .AddChild(new VisualElement()
+                        .AddClass(EnumField.arrowUssClassName)
+                        .SetPickingMode(PickingMode.Ignore)
+                    );
+
+                visualInput.RegisterCallback<PointerDownEvent>(evt =>
+                {
+                    if (evt.button is not 0) return;
+
+                    onOpen(_visualInput.worldBound);
+                    evt.StopPropagation();
+                });
+            }
+
+            public KeyMenuField SetCaption(string caption)
+            {
+                _textElement.SetText(caption);
+                return this;
             }
         }
     }

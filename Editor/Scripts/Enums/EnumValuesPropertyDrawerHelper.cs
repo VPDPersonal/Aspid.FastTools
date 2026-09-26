@@ -13,26 +13,93 @@ namespace Aspid.FastTools.Enums.Editors
     internal static class EnumValuesPropertyDrawerHelper
     {
         private const string PopulateMenuItem = "Populate Missing Enum Members";
+        private const string NothingCaption = "Nothing";
+        private const string EverythingCaption = "Everything";
+        private const string NoneCaption = "<None>";
 
-        public static Enum? ResolveKey(SerializedProperty keyProperty, SerializedProperty enumTypeProperty)
+        public static Type? GetEnumType(SerializedProperty enumTypeProperty)
         {
-            var enumType = Type.GetType(enumTypeProperty.stringValue, throwOnError: false);
-            if (enumType is null || !enumType.IsEnum) return null;
+            var type = Type.GetType(enumTypeProperty.stringValue, throwOnError: false);
+            return type is { IsEnum: true } ? type : null;
+        }
 
-            if (!Enum.TryParse(enumType, keyProperty.stringValue, out var parsed))
+        public static bool HasMembers(Type enumType) =>
+            Enum.GetValues(enumType).Length > 0;
+
+        // Drawing never rewrites the key: one the enum cannot parse is kept until a member is picked,
+        // so switching the enum type back or restoring a member brings the row back.
+        public static Enum? ParseKey(string key, Type enumType) =>
+            Enum.TryParse(enumType, key, out var parsed) ? (Enum)parsed : null;
+
+        // Unity's flags fields hold a 32-bit mask: they throw for a 64-bit enum or cut its high bits off.
+        public static bool IsWideFlags(Type enumType)
+        {
+            if (!EnumInfo.IsFlags(enumType)) return false;
+
+            var underlyingType = Enum.GetUnderlyingType(enumType);
+            return underlyingType == typeof(long) || underlyingType == typeof(ulong);
+        }
+
+        public static string GetKeyCaption(string key, Enum? enumValue)
+        {
+            if (enumValue is null)
+                return string.IsNullOrWhiteSpace(key) ? NoneCaption : $"<Missing {key}>";
+
+            if (EnumInfo.ToInt64(enumValue) is 0L && !Enum.IsDefined(enumValue.GetType(), enumValue))
+                return NothingCaption;
+
+            return enumValue.ToString();
+        }
+
+        public static Enum ToggleFlag(Enum current, Enum flag)
+        {
+            var mask = EnumInfo.ToInt64(current);
+            var bits = EnumInfo.ToInt64(flag);
+
+            mask = (mask & bits) == bits ? mask & ~bits : mask | bits;
+            return (Enum)Enum.ToObject(current.GetType(), mask);
+        }
+
+        public static void ShowKeyMenu(Rect rect, SerializedObject serializedObject, string keyPath, string enumTypePath)
+        {
+            var keyProperty = serializedObject.FindProperty(keyPath);
+            if (GetEnumType(serializedObject.FindProperty(enumTypePath)) is not { } enumType) return;
+
+            var menu = new GenericMenu();
+            var current = ParseKey(keyProperty.stringValue, enumType);
+
+            if (current is null || !EnumInfo.IsFlags(enumType))
             {
-                var values = Enum.GetValues(enumType);
-                if (values.Length is 0) return null;
+                foreach (var member in GetDistinctMembers(enumType))
+                {
+                    var isChecked = current is not null && EnumInfo.ToInt64(current) == EnumInfo.ToInt64(member);
+                    AddKeyItem(member.ToString(), isChecked, member);
+                }
+            }
+            else
+            {
+                var all = GetDistinctMembers(enumType).Aggregate(0L, (mask, member) => mask | EnumInfo.ToInt64(member));
+                var mask = EnumInfo.ToInt64(current);
 
-                parsed = values.GetValue(0);
+                AddKeyItem(NothingCaption, mask is 0L, (Enum)Enum.ToObject(enumType, 0L));
+                AddKeyItem(EverythingCaption, mask == all, (Enum)Enum.ToObject(enumType, all));
+                menu.AddSeparator(string.Empty);
+
+                foreach (var member in GetDistinctMembers(enumType))
+                {
+                    var bits = EnumInfo.ToInt64(member);
+                    if (bits is 0L) continue;
+
+                    AddKeyItem(member.ToString(), (mask & bits) == bits, ToggleFlag(current, member));
+                }
             }
 
-            var enumValue = (Enum)parsed;
+            menu.DropDown(rect);
 
-            if (keyProperty.stringValue != enumValue.ToString())
-                keyProperty.SetStringAndApply(enumValue.ToString());
-
-            return enumValue;
+            void AddKeyItem(string text, bool isChecked, Enum key) =>
+                menu.AddItem(new GUIContent(text), isChecked, () => serializedObject
+                    .FindProperty(keyPath)
+                    .SetStringAndApply(key.ToString()));
         }
 
         public static void SyncEntryEnumTypes(SerializedProperty values, SerializedProperty enumType)
@@ -102,27 +169,27 @@ namespace Aspid.FastTools.Enums.Editors
             current.Use();
         }
 
-        private static void PopulateMissing(
+        internal static void PopulateMissing(
             SerializedProperty values,
             SerializedProperty enumType,
             SerializedProperty defaultValue)
         {
-            var type = Type.GetType(enumType.stringValue, throwOnError: false);
-            if (type is null || !type.IsEnum) return;
+            if (GetEnumType(enumType) is not { } type) return;
 
-            var existing = CollectExistingKeys(values);
+            var existing = CollectExistingKeys(values, type);
             var added = false;
 
-            foreach (var name in Enum.GetNames(type))
+            // Compare numeric values: an alias shares its member's value, and ToString() names only one of them.
+            foreach (var member in GetDistinctMembers(type))
             {
-                if (!existing.Add(name)) continue;
+                if (!existing.Add(EnumInfo.ToInt64(member))) continue;
 
                 values.arraySize++;
 
                 var element = values.GetArrayElementAtIndex(values.arraySize - 1);
-                element.FindPropertyRelative("_key").stringValue = name;
+                element.FindPropertyRelative("_key").stringValue = member.ToString();
                 element.FindPropertyRelative("_enumType").stringValue = enumType.stringValue;
-                element.FindPropertyRelative("_value").boxedValue = defaultValue.boxedValue;
+                CopyValue(defaultValue, element.FindPropertyRelative("_value"));
 
                 added = true;
             }
@@ -131,25 +198,53 @@ namespace Aspid.FastTools.Enums.Editors
                 values.serializedObject.ApplyModifiedProperties();
         }
 
-        private static bool HasMissingMembers(SerializedProperty values, SerializedProperty enumType)
+        internal static bool HasMissingMembers(SerializedProperty values, SerializedProperty enumType)
         {
-            var type = Type.GetType(enumType.stringValue, throwOnError: false);
-            if (type is null || !type.IsEnum) return false;
+            if (GetEnumType(enumType) is not { } type) return false;
 
-            var existing = CollectExistingKeys(values);
-            return Enum.GetNames(type).Any(name => !existing.Contains(name));
+            var existing = CollectExistingKeys(values, type);
+            return GetDistinctMembers(type).Any(member => !existing.Contains(EnumInfo.ToInt64(member)));
         }
 
-        private static HashSet<string> CollectExistingKeys(SerializedProperty values)
+        private static IEnumerable<Enum> GetDistinctMembers(Type enumType)
         {
-            var set = new HashSet<string>(values.arraySize);
+            var seen = new HashSet<long>();
+
+            foreach (Enum member in Enum.GetValues(enumType))
+            {
+                if (seen.Add(EnumInfo.ToInt64(member)))
+                    yield return member;
+            }
+        }
+
+        private static HashSet<long> CollectExistingKeys(SerializedProperty values, Type enumType)
+        {
+            var set = new HashSet<long>();
             for (var i = 0; i < values.arraySize; i++)
             {
                 var element = values.GetArrayElementAtIndex(i);
-                set.Add(element.FindPropertyRelative("_key").stringValue);
+
+                if (ParseKey(element.FindPropertyRelative("_key").stringValue, enumType) is { } key)
+                    set.Add(EnumInfo.ToInt64(key));
             }
 
             return set;
+        }
+
+        private static void CopyValue(SerializedProperty source, SerializedProperty destination)
+        {
+            // boxedValue throws for an array or a list, so they are copied element by element.
+            if (source.isArray && source.propertyType is not SerializedPropertyType.String)
+            {
+                destination.arraySize = source.arraySize;
+
+                for (var i = 0; i < source.arraySize; i++)
+                    CopyValue(source.GetArrayElementAtIndex(i), destination.GetArrayElementAtIndex(i));
+
+                return;
+            }
+
+            destination.boxedValue = source.boxedValue;
         }
     }
 }
