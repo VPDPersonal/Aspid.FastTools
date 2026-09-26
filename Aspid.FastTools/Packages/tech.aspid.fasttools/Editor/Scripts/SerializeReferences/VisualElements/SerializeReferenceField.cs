@@ -125,7 +125,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The per-group navigation cursor: the member the last click revealed, keyed by (target object, rid).
         // Advancing from the cursor — not the clicked field — lets repeated clicks on the same notice walk the group.
-        private static readonly Dictionary<(int target, long rid), string> _navigationCursor = new();
+        private static readonly Dictionary<(UnityEngine.Object target, long rid), string> _navigationCursor = new();
 
         public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null, int depth = 0)
         {
@@ -576,7 +576,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            var key = (target.GetInstanceID(), rid);
+            var key = (target, rid);
             var start = _navigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
             if (start < 0) start = IndexOf(group, selfPath);
 
