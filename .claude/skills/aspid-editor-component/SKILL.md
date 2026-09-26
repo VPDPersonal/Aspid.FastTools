@@ -47,6 +47,8 @@ Read and mirror, in full, before writing:
   `var(--unity-colors-*)`, not the dark palette. A built-in icon takes `var(--unity-icons-*)` where Unity has one;
   otherwise keep the `d_` icon and override it under `.aspid-fasttools-skin--light`, which
   `AddAspidThemeStyleSheets()` sets on the light skin — `resource()` does not pick the skin variant.
+  Its IMGUI twin picks the same Unity colours by `EditorGUIUtility.isProSkin` (see `InspectorNoticeGUI`), and
+  `EditorGUIUtility.IconContent` takes the plain icon name, since it adds the `d_` prefix on the dark skin itself.
 
 ## Pitfalls
 

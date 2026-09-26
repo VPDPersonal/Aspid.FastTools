@@ -4,6 +4,8 @@ using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using Aspid.FastTools.Editors;
+using Aspid.FastTools.Enums.Editors;
 using Aspid.FastTools.Types.Editors;
 
 namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
@@ -25,7 +27,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             "Packages/tech.aspid.fasttools/Tests/Editor/VisualElements/InspectorEmbeddedSkinProbe.uss";
 
         private const string WarningTextProbeClass = "aspid-fasttools-test-probe--warning-text";
+        private const string HelpBoxTextProbeClass = "aspid-fasttools-test-probe--helpbox-text";
         private const string TitlebarProbeClass = "aspid-fasttools-test-probe--titlebar";
+        private const string TitlebarBorderProbeClass = "aspid-fasttools-test-probe--titlebar-border";
         private const string HelpBoxProbeClass = "aspid-fasttools-test-probe--helpbox";
         private const string WarnIconProbeClass = "aspid-fasttools-test-probe--warn-icon";
         private const string SwitchTokensClass = "aspid-fasttools-test-switch-tokens";
@@ -102,6 +106,45 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             AssertColor(probe.resolvedStyle.backgroundColor, stripe.resolvedStyle.backgroundColor, "warning stripe");
         }
 
+        [UnityTest]
+        public IEnumerator InspectorNoticeGUI_MatchesUnityTheme()
+        {
+            var warningProbe = AddProbe(WarningTextProbeClass);
+            var infoProbe = AddProbe(HelpBoxTextProbeClass);
+            yield return null;
+
+            AssertColor(warningProbe.resolvedStyle.color, InspectorNoticeGUI.NoticeColor, "IMGUI notice");
+            AssertColor(infoProbe.resolvedStyle.color, InspectorNoticeGUI.InfoNoticeColor, "IMGUI info notice");
+        }
+
+        [UnityTest]
+        public IEnumerator EnumValuesIMGUI_MatchesUnityTheme()
+        {
+            var titlebarProbe = AddProbe(TitlebarProbeClass);
+            var borderProbe = AddProbe(TitlebarBorderProbeClass);
+            var helpBoxProbe = AddProbe(HelpBoxProbeClass);
+            yield return null;
+
+            AssertColor(titlebarProbe.resolvedStyle.backgroundColor, EnumValuesIMGUIPropertyDrawer.HeaderColor,
+                "IMGUI header");
+            AssertColor(borderProbe.resolvedStyle.backgroundColor, EnumValuesIMGUIPropertyDrawer.BorderColor,
+                "IMGUI border");
+            AssertColor(helpBoxProbe.resolvedStyle.backgroundColor, EnumValuesIMGUIPropertyDrawer.ContainerColor,
+                "IMGUI container");
+        }
+
+        [TestCase(TypeIMGUIPropertyDrawer.FolderClosedIconPath)]
+        [TestCase(TypeIMGUIPropertyDrawer.FolderOpenedIconPath)]
+        public void TypeIMGUI_FolderIcon_MatchesEditorSkin(string iconPath)
+        {
+            Assert.IsFalse(iconPath.StartsWith("d_"), "IconContent picks the skin variant only for the plain name.");
+
+            var texture = EditorGUIUtility.IconContent(iconPath).image;
+            Assert.IsNotNull(texture, $"The {iconPath} icon must resolve.");
+            Assert.AreEqual(EditorGUIUtility.isProSkin, texture.name.StartsWith("d_"),
+                $"'{texture.name}' must be the {(EditorGUIUtility.isProSkin ? "dark" : "light")} skin variant.");
+        }
+
         [Test]
         public void ThemeStyleSheets_MarkLightSkin()
         {
@@ -129,6 +172,14 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 
         [UnityTest]
         public IEnumerator TypeField_FolderIcon_LightSkin() => AssertFolderIcon(lightSkin: true, "Folder Icon");
+
+        [UnityTest]
+        public IEnumerator SerializeReference_FolderIcon_DarkSkin() =>
+            AssertSerializeReferenceFolderIcon(lightSkin: false, "d_Folder Icon");
+
+        [UnityTest]
+        public IEnumerator SerializeReference_FolderIcon_LightSkin() =>
+            AssertSerializeReferenceFolderIcon(lightSkin: true, "Folder Icon");
 
         [UnityTest]
         public IEnumerator EnumValues_Background_FollowsEditorSkin()
@@ -197,6 +248,22 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             yield return null;
 
             var texture = field.Q<Button>()[0].resolvedStyle.backgroundImage.texture;
+            Assert.IsNotNull(texture, "The folder icon must resolve.");
+            Assert.AreEqual(expected, texture.name);
+        }
+
+        private IEnumerator AssertSerializeReferenceFolderIcon(bool lightSkin, string expected)
+        {
+            // The rule needs the skin class on the field root itself, next to the block class.
+            var icon = new VisualElement();
+            _window.rootVisualElement.Add(new VisualElement()
+                .AddStyleSheetFromResources(SerializeReferenceStyleSheet)
+                .AddClass("aspid-fasttools-serialize-reference")
+                .EnableClass(AspidStyles.SkinLightClass, lightSkin)
+                .AddChild(new Button().AddChild(icon)));
+            yield return null;
+
+            var texture = icon.resolvedStyle.backgroundImage.texture;
             Assert.IsNotNull(texture, "The folder icon must resolve.");
             Assert.AreEqual(expected, texture.name);
         }

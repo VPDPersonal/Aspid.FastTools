@@ -4,6 +4,14 @@
     background-color:                                      var(--unity-colors-warning-text);
 }
 
+.aspid-fasttools-test-probe--helpbox-text {
+    color:                                                 var(--unity-colors-helpbox-text);
+}
+
+.aspid-fasttools-test-probe--titlebar-border {
+    background-color:                                      var(--unity-colors-inspector_titlebar-border);
+}
+
 .aspid-fasttools-test-probe--titlebar {
     background-color:                                      var(--unity-colors-inspector_titlebar-background);
 }
