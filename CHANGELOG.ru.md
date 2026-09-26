@@ -13,6 +13,7 @@
 
 - Добавлены `RemoveChildren` и `RemoveChildrenIf`: удаляют несколько дочерних элементов за один вызов и принимают те же перегрузки `params`, `IEnumerable`, `List`, `Span` и `ReadOnlySpan`, что и `AddChildren`.
 - Для `ToggleButtonGroup` добавлены типизированные перегрузки `SetValue`, `AddValueChanged`, `RemoveValueChanged` и `SetLabel` для `ToggleButtonGroupState`, поэтому вызовы вроде `AddValueChanged(evt => …)` не требуют аргументов типа.
+- `TextField`, `IntegerField`, `LongField`, `UnsignedIntegerField`, `UnsignedLongField`, `FloatField`, `DoubleField` и `Hash128Field` получили цепочечные сеттеры: `SetMaxLength`, `SetMaskChar`, `SetDelayed`, `SetReadOnly`, `SetPassword`, `SetPlaceholder`, `SetHidePlaceholderOnFocus`, `SetKeyboardType`, `SetAutoCorrection`, `SetHideMobileInput`, `SetHideSoftKeyboard`, а для выделения текста — `SetSelectable`, `SetSelectAllOnFocus`, `SetSelectAllOnMouseUp`, `SetDoubleClickSelectsWord`, `SetTripleClickSelectsLine`, `SetCursorIndex`, `SetSelectIndex`, `AddOnCursorIndexChange` / `RemoveOnCursorIndexChange`, `AddOnSelectIndexChange` / `RemoveOnSelectIndexChange`. Сеттеры `ITextEdition` и `ITextSelection` к этим полям не применяются. Для других типов значений есть `TextInputBaseFieldExtensions` и `TextInputBaseFieldTextSelectionExtensions`.
 - Добавлены варианты `AndApplyWithoutUndo` для всех сеттеров `SerializedProperty` с немедленным применением, включая перегрузки `SetValue`, ссылки на объекты, перечисления и методы изменения размера массивов.
 - Анализатор `AFT0009` (предупреждение) — два базовых типа `[TypeSelector]` не имеют общего типа, поэтому селектор пуст.
 - Анализатор `AFT0010` (предупреждение) — вызов `this.Marker()` не открывает маркер профайлера, потому что генератор не поддерживает его тип: тип `private` или `protected` (или вложен в такой тип) либо повторяет имя параметра типа внешнего типа.
@@ -22,6 +23,17 @@
 
 - Agent Skills для пакета переехали из плагина `aspid-fasttools` для Claude Code в [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins) в этот репозиторий (`skills/`). Устанавливайте их в Claude Code, Codex, Cursor, GitHub Copilot, Gemini CLI или другой агент командой `npx skills add VPDPersonal/Aspid.FastTools`; плагин больше не публикуется.
 - `GetScriptName()` переименован в `GetDisplayName()`, а `GetScriptNameWithIndex()` — в `GetDisplayNameWithIndex()`; замените старые вызовы новыми именами. Оба метода возвращают `string.Empty` для null и уничтоженных объектов. Поиск индекса компонента использует список из пула вместо временных массивов и LINQ.
+- Переименованы расширения VisualElement; замените старые вызовы:
+  - `SetIsDelayed` / `SetIsPassword` / `SetIsReadOnly` / `SetIsSelectable` → `SetDelayed` / `SetPassword` / `SetReadOnly` / `SetSelectable`;
+  - `IsFocus` → `IsFocused`, `SetFocus` / `SetBlur` → `FocusSelf` / `BlurSelf`;
+  - `EnableInClass` / `ToggleInClass` → `EnableClass` / `ToggleClass`;
+  - `AddStyleSheets` / `RemoveStyleSheets` → `AddStyleSheet` / `RemoveStyleSheet`, `AddStyleSheetsFromResource` / `RemoveStyleSheetsFromResource` → `AddStyleSheetFromResources` / `RemoveStyleSheetFromResources`;
+  - `SetImageFromResource`, `SetSpriteFromResource`, `SetVectorImageFromResource`, `SetBackgroundImageFromResource` → `…FromResources`;
+  - `MarkDirtyLayout` → `MarkDirtyLayoutSelf`: `IMGUIContainer.MarkDirtyLayout()` перекрывал старое расширение, и вызов возвращал `void`; новое имя встраивается в цепочку.
+- Классы расширений `BaseFieldExtensionsSetLabel<Type>` переименованы в `BaseField<Type>Extensions` (`BaseFieldExtensionsSetLabelInt` → `BaseFieldIntExtensions`), а `ProgressBarExtensions` — в `AbstractProgressBarExtensions`. Вызовы методов расширения не меняются; меняются только вызовы через имя класса.
+- У `SetShowMixedValue` больше нет значения аргумента по умолчанию `true`; передавайте значение явно.
+- `SetDirection`, `SetFill`, `SetInverted`, `SetPageSize` и `SetShowInputField` теперь возвращают собственный тип слайдера (`Slider`, `SliderInt`) вместо `BaseSlider<TValue>`, поэтому цепочка сохраняет члены слайдера. Они принимают `BaseSlider<float>` и `BaseSlider<int>`; открытые перегрузки для `BaseSlider<TValue>` удалены.
+- Конструкторы без параметров у `SerializableType` / `SerializableType<T>` больше не публичные: создавайте обёртку через `new SerializableType(type)` или `new SerializableType<T>(type)` (`null` даёт пустую). У `SerializableMonoScript` / `SerializableMonoScript<T>` нет публичных конструкторов: объявляйте их сериализуемыми полями и выбирайте скрипт в инспекторе.
 - `[TypeSelector]` на поле `[SerializeReference]` теперь предлагает только типы, совместимые со всеми типами атрибута, — по тому же правилу, что уже действовало для полей `string` и `SerializableType`; раньше достаточно было совпасть с одним из них. То же относится к `baseTypes` у `SerializeReferenceEditorGUI.CreateField`, `CreateList` и `DrawFieldLayout`. Список альтернатив вроде `typeof(Pistol), typeof(Rifle)` теперь оставляет селектор пустым и вызывает `AFT0009`: дайте разрешённым классам общий интерфейс или базовый класс и укажите его. `AFT0005` теперь проверяет все типы атрибута вместе.
 - Сгенерированный код `this.Marker()` теперь объявляет поля маркеров только под `ENABLE_PROFILER`, как и тело `Marker()`, которое их читает: сборки без профайлера больше не создают все маркеры в статическом конструкторе.
 - `ProfilerMarkerExtensionsForGenerator.Marker(this object)` стал `Marker<T>(this T)`: вызов в структуре, которую генератор не может обработать, больше не упаковывается, и Burst-джоба компилируется.
@@ -32,6 +44,9 @@
 ### Удалено
 
 - Из расширений `SerializedProperty` удалён `SetExposedReferenceAndApply()`; вызывайте `SetExposedReference()`. Без контекста `IExposedPropertyTable` сеттер `exposedReferenceValue` в Unity сам применяет запись и записывает Undo, поэтому дополнительное применение ничего не делало, а вариант без Undo поверх него построить нельзя.
+- Удалено editor-only свойство `SerializableMonoScript.Script`, которое возвращало ассет `MonoScript`; публичного доступа к ассету больше нет. Тип по-прежнему доступен через `Type` или неявное преобразование в `Type`.
+- Удалены `AddMakeItem` / `RemoveMakeItem` у `ListView` и `TreeView`, а также `AddMakeHeader` / `AddMakeFooter` / `AddMakeNoneElement` у `BaseListView` вместе с парами `Remove*`; у списка одна фабрика, поэтому вызывайте `SetMakeItem`, `SetMakeHeader`, `SetMakeFooter` или `SetMakeNoneElement`.
+- Runtime-методы `Aspid.FastTools.StringExtensions.ToKebabCase` и `Aspid.FastTools.TypeExtensions.GetMembersInfosIncludingBaseClasses` убраны из публичного API без замены.
 
 ### Исправлено
 
@@ -133,7 +148,6 @@
 
 - `GetScriptName()` / `GetScriptNameWithIndex()`.
 - Команда открытия скрипта, понимающая интерфейсы в файлах с другим именем и вложенные типы.
-- `InspectorNotice` / `InspectorNoticeGUI` и брендированные UI Toolkit-компоненты `Aspid*`.
 
 #### Примеры
 
