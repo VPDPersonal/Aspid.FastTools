@@ -160,39 +160,36 @@ to refresh the root `README.md`.
 
 ## Local run / check
 
-**Shared server (default).** The user works on the English and Russian versions at the same time, and other
-agents work on the site in parallel, so everything is checked on **one shared production build** served on
-port 3001 — never on per-agent dev servers:
+**One production build per checkout (default).** The user checks English and Russian together, on a production
+build, and other agents work on the site in parallel in their own worktrees. So every checkout serves **its own**
+build, and nobody replaces anybody else's:
 
 ```bash
-Website/scripts/serve-all.sh          # kill the old server, `npm run build` (en + ru), serve detached on 3001
+Website/scripts/serve-all.sh          # replace this checkout's server, `npm run build` (en + ru), serve detached
 ```
 
 ```bash
-Website/scripts/serve-all.sh --stop
+Website/scripts/serve-all.sh --stop   # stop this checkout's server only
 ```
 
-- English: `http://localhost:3001/Aspid.FastTools/`, Russian: `http://localhost:3001/Aspid.FastTools/ru/`.
-- The server is detached (`nohup`, log in `Website/.serve-all.log`), so it outlives the session that started it
-  and every agent and the user see the same site. Do not start it through `preview_start` — that ties it to one
-  session.
+- The main checkout serves on **3001**. A linked worktree gets its own port in 3200–3999, derived from its path (the
+  next free one if taken), so it stays the same across rebuilds; the script prints the URLs and writes the port to
+  `Website/.serve-all.port`. Give the user the printed English and Russian links.
+- In a worktree the script links `Website/node_modules` to the main checkout's on first run — no `npm ci` needed.
+- The server is detached (`nohup`, log in `Website/.serve-all.log`) and bound to localhost. Do not start it through
+  `preview_start` — that ties it to one session. Each run also stops servers whose checkout was deleted
+  (including worktrees the app moved to `.ccd-trash`), so abandoned builds do not pile up.
 - A static build does **not** pick up edits: after **every** change you want to verify (Markdown, config, remark
   plugins, CSS, sidebars), rerun `serve-all.sh` yourself and only then check in the browser. Never ask the user
   to restart it. The rebuild takes about a minute.
-- If port 3001 is already answering when you start, another agent's build is up — rerun the script anyway after
-  your edits; it replaces the server safely. Do not run `npm run build` or a dev server from `Website/` while the
-  script is building (they share `.docusaurus/`, `build/` and `i18n/`).
-- A session in another git worktree that runs the script replaces the shared build with its own checkout, without
-  your uncommitted edits. If a page suddenly shows old content, check where the server runs
-  (`lsof -a -p $(lsof -tiTCP:3001 -sTCP:LISTEN) -d cwd`) and rebuild from your checkout. Sessions in a worktree
-  check pages on a dev server (3100/3101), not on 3001.
+- Do not run `npm run build` or a dev server from the same `Website/` while the script is building (they share
+  `.docusaurus/`, `build/` and `i18n/`). Other checkouts are unaffected.
 - Open the page with a fresh query (`?v=N`) after a rebuild: the browser otherwise shows the cached version.
 
 Dev servers serve one locale at a time and are only for quick hot-reload iteration on a single page — they
-don't reload config or remark plugins, and the user does not look at them: `npm start` / `npm run start:ru`, or
-`website-dev` / `website-dev-ru` in `.claude/launch.json` (3100/3101). The `website-ru-3001` and
-`website-serve-all` entries in that file both occupy port 3001 and would replace the shared build with a
-session-bound server — do not launch them.
+don't reload config or remark plugins, and the user does not look at them: `website-dev` / `website-dev-ru` in
+`.claude/launch.json`, started with `preview_start`. They use `autoPort`, so dev servers of different worktrees get
+different ports. There is no launch entry for the production build on purpose: only `serve-all.sh` starts it.
 
 `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
 (`onBrokenAnchors` only warns — check the log for `#anchor` typos).
