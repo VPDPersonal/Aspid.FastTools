@@ -184,15 +184,15 @@ Website/scripts/serve-all.sh --stop
   script is building (they share `.docusaurus/`, `build/` and `i18n/`).
 - A session in another git worktree that runs the script replaces the shared build with its own checkout, without
   your uncommitted edits. If a page suddenly shows old content, check where the server runs
-  (`lsof -a -p $(lsof -tiTCP:3001 -sTCP:LISTEN) -d cwd`) and rebuild from your checkout. Sessions in a worktree
-  check pages on a dev server (3100/3101), not on 3001.
+  (`lsof -a -p $(lsof -tiTCP:3001 -sTCP:LISTEN) -d cwd`) and rebuild from your checkout. A session in a worktree
+  does not run the script: it runs `npm --prefix Website run build` in its own checkout and serves that build with
+  `website-build-3003` from `.claude/launch.json` (en + ru on 3003), rebuilding after every change like on 3001.
 - Open the page with a fresh query (`?v=N`) after a rebuild: the browser otherwise shows the cached version.
 
 Dev servers serve one locale at a time and are only for quick hot-reload iteration on a single page — they
 don't reload config or remark plugins, and the user does not look at them: `npm start` / `npm run start:ru`, or
-`website-dev` / `website-dev-ru` in `.claude/launch.json` (3100/3101). The `website-ru-3001` and
-`website-serve-all` entries in that file both occupy port 3001 and would replace the shared build with a
-session-bound server — do not launch them.
+`website-dev` / `website-dev-ru` in `.claude/launch.json` (3100/3101). Port 3001 has no launch entry on purpose:
+only `serve-all.sh` starts the shared build.
 
 `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
 (`onBrokenAnchors` only warns — check the log for `#anchor` typos).
