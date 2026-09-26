@@ -34,6 +34,7 @@ namespace Aspid.FastTools.UIElements.Tests
             Assert.IsNotEmpty(paths, "No stylesheets found in the package.");
 
             var rulesProperty = typeof(StyleSheet).GetProperty("rules", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(rulesProperty, "StyleSheet.rules was not found; update this test for the current Unity.");
 
             foreach (var path in paths)
             {
@@ -41,8 +42,9 @@ namespace Aspid.FastTools.UIElements.Tests
                 Assert.IsNotNull(styleSheet, $"{path} did not load as a StyleSheet.");
                 Assert.IsFalse(styleSheet.importedWithErrors, $"{path} was imported with errors.");
 
-                if (rulesProperty?.GetValue(styleSheet) is ICollection rules)
-                    Assert.Greater(rules.Count, 0, $"{path} was imported without rules.");
+                var rules = rulesProperty.GetValue(styleSheet) as ICollection;
+                Assert.IsNotNull(rules, $"{path} has no rules collection.");
+                Assert.Greater(rules.Count, 0, $"{path} was imported without rules.");
             }
         }
 
