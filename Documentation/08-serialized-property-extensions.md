@@ -66,7 +66,7 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 | <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>manaCost.SetIntAndApply(42);</code></pre> |
 | <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
 
-Every setter on this page comes in these three forms.
+Every setter on this page except `SetExposedReference` comes in these three forms.
 
 `SetValue(42)` is the same as `SetInt(42)`: the overload is chosen **by the argument's type**, which must match the field.
 
@@ -107,7 +107,7 @@ Each of these setters also has a `SetValue` overload:
 `SetExposedReference` sets `exposedReferenceValue` of an `ExposedReference<T>` field.
 
 > [!NOTE]
-> Without an `IExposedPropertyTable` context, Unity's setter applies the write itself, with Undo: `SetExposedReference` does not wait for an apply, and `SetExposedReferenceAndApplyWithoutUndo` still records Undo.
+> Without an `IExposedPropertyTable` context, Unity's setter applies the write itself, with Undo, so `SetExposedReference` has no `AndApply` or `AndApplyWithoutUndo` form.
 
 ## Field type and owner
 

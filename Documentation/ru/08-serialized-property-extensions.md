@@ -66,7 +66,7 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 | <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedProperties();</code></pre> | <pre lang="csharp"><code>manaCost.SetIntAndApply(42);</code></pre> |
 | <pre lang="csharp"><code>manaCost.intValue = 42;&#10;manaCost.serializedObject&#10;    .ApplyModifiedPropertiesWithoutUndo();</code></pre> | <pre lang="csharp"><code>manaCost&#10;    .SetIntAndApplyWithoutUndo(42);</code></pre> |
 
-Каждый сеттер на этой странице есть в этих трёх формах.
+Каждый сеттер на этой странице, кроме `SetExposedReference`, есть в этих трёх формах.
 
 `SetValue(42)` — то же, что `SetInt(42)`: перегрузка выбирается **по типу аргумента**, который должен совпадать с типом поля.
 
@@ -107,7 +107,7 @@ serializedObject.FindProperty("_manaCost").SetIntAndApply(10);
 `SetExposedReference` задаёт `exposedReferenceValue` поля `ExposedReference<T>`.
 
 > [!NOTE]
-> Без контекста `IExposedPropertyTable` сеттер Unity сам применяет запись с Undo: `SetExposedReference` не ждёт применения, а `SetExposedReferenceAndApplyWithoutUndo` всё равно записывает Undo.
+> Без контекста `IExposedPropertyTable` сеттер Unity сам применяет запись с Undo, поэтому у `SetExposedReference` нет форм `AndApply` и `AndApplyWithoutUndo`.
 
 ## Тип поля и объект-владелец
 
