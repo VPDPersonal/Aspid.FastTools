@@ -16,7 +16,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             if (string.IsNullOrEmpty(assemblyQualifiedName)) return ClearReference(assetPath, fileId, rid);
 
-            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
+            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath) ||
+                SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath))
+                return false;
 
             var type = Type.GetType(assemblyQualifiedName, throwOnError: false);
             if (type is null) return false;
@@ -33,7 +35,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // exactly what Unity writes for a cleared field. Confirmed, not undoable, and the payload is discarded.
         public static bool ClearReference(string assetPath, long fileId, long rid)
         {
-            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
+            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath) ||
+                SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath))
+                return false;
 
             var fieldCount = SerializeReferenceYamlEditor.CountPointersTo(assetPath, fileId, rid);
             var pointerLine = fieldCount switch
@@ -65,7 +69,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             staleRescan = null;
 
-            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
+            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath) ||
+                SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath))
+                return false;
 
             if (!EditorUtility.DisplayDialog(
                     "Drop Orphaned Entry",
