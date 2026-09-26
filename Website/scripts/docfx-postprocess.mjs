@@ -201,8 +201,8 @@ const toc = parseToc(fs.readFileSync(path.join(apiDir, 'toc.yml'), 'utf8'));
 const sidebar = toc.map(namespaceCategory);
 
 // Docusaurus derives one translation key per doc label in a sidebar, so two namespaces holding a type of the same
-// name (`TypeExtensions` in `Aspid.FastTools` and `Aspid.FastTools.Types.Editors`) break the i18n build. Give the
-// duplicates a namespace suffix.
+// name (`VisualElementExtensions` in `Aspid.FastTools.UIElements` and `Aspid.FastTools.UIElements.Editors`) break
+// the i18n build. Give the duplicates a namespace suffix.
 const docItems = [];
 const collect = (items, namespace) => {
   for (const item of items) {

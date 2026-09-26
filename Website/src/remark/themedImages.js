@@ -1,6 +1,14 @@
 import {existsSync} from 'node:fs';
 import path from 'node:path';
 
+/** Samples whose `demo`/`scene` captures show a scene rather than an editor window (`Samples~/<Name>/`). */
+const SCENE_SAMPLES = ['EnumValues', 'Types', 'SerializeReferences', 'ProfilerMarkers'];
+// On a tutorials page the file lives in `tutorials/<Name>/` (a kebab-case spelling also matches).
+const sceneSampleFolder = new RegExp(
+  `[/\\\\](?:${SCENE_SAMPLES.map((name) => name.replace(/(?<=[a-z])(?=[A-Z])/g, '-?')).join('|')})[/\\\\]`, 'i');
+// A doc page links the sample's own `Documentation/Images/`.
+const sceneSampleUrl = new RegExp(`Samples~/(?:${SCENE_SAMPLES.join('|')})/`);
+
 /** A sibling `image-light.png` supplies the light theme; Markdown stays usable outside the site. */
 export default function remarkThemedImages() {
   return (tree, file) => {
@@ -22,9 +30,9 @@ export default function remarkThemedImages() {
           const lightUrl = image.url.replace(/(?<!-light)(\.(?:png|gif|jpe?g|webp|svg))$/i, '-light$1');
           if (lightUrl !== image.url && existsSync(path.resolve(path.dirname(file.path), decodeURIComponent(lightUrl)))) {
             const sceneCapture = /(?:^|\/)(?:demo|scene)\.(?:gif|png)$/i.test(image.url);
-            const sceneSample = sceneCapture && /[/\\](?:enum-?values|types|serialize-?references|profiler-?markers)[/\\]/i.test(file.path);
+            const sceneSample = sceneCapture && sceneSampleFolder.test(file.path);
             // A scene sample's footage linked from a doc page keeps its own background, which matches the article.
-            const sceneFootage = sceneCapture && /Samples~\/(?:EnumValues|Types|SerializeReferences|ProfilerMarkers)\//.test(image.url);
+            const sceneFootage = sceneCapture && sceneSampleUrl.test(image.url);
             // Any other sample's footage linked from a doc page is an editor window with its own edge: no frame around it.
             const windowFootage = sceneCapture && !sceneFootage && /Samples~\//.test(image.url);
             const sceneClass = sceneSample ? ' sample-scene' : sceneFootage ? ' scene-footage' : windowFootage ? ' window-footage' : '';

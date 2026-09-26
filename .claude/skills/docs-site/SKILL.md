@@ -90,8 +90,9 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   So name inspector captures anything but `demo`/`scene`, and name scene footage exactly that.
   A sample's `demo`/`scene` linked from a doc page is never framed either: a scene sample's gets `.scene-footage`,
   any other sample's (an editor window, e.g. EditorTools) gets `.window-footage` — the capture is the only frame.
-- `.sample-scene` (the background-recolouring filter) is applied by `themedImages.js` only to `demo`/`scene`
-  files inside a **hardcoded list of sample folders** — a new sample must be added to that regex.
+- Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
+  `Samples~/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
+  and `.scene-footage`; a sample missing from it gets `.window-footage` on doc pages. Nothing fails the build.
 - A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
 - Click or Enter opens the image in a modal (Esc closes). Unframed images are capped at 640×520;
   framed and `.sample-scene` media fill the article.
@@ -153,16 +154,21 @@ to refresh the root `README.md`.
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
    description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png`.
-4. If the sample ships `demo`/`scene` captures, add its folder to the sample regex in
-   `Website/src/remark/themedImages.js`.
+4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its `Samples~/` folder name
+   to `SCENE_SAMPLES` in `Website/src/remark/themedImages.js`.
 5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) and register it in the package
    `package.json` → `samples`.
 
 ## Local run / check
 
-**Shared server (default).** The user works on the English and Russian versions at the same time, and other
-agents work on the site in parallel, so everything is checked on **one shared production build** served on
-port 3001 — never on per-agent dev servers:
+The user reads the English and Russian versions side by side on **one shared production build** on port 3001.
+Which server a session uses depends on its checkout:
+
+- **The checkout the user works in** rebuilds 3001 with `serve-all.sh` after every change.
+- **Any other worktree** (a parallel or background agent) never runs `serve-all.sh` — it would replace the user's
+  build with its own checkout — and checks its pages on a dev server on 3100/3101.
+
+### Shared build (3001)
 
 ```bash
 Website/scripts/serve-all.sh          # kill the old server, `npm run build` (en + ru), serve detached on 3001
@@ -179,20 +185,23 @@ Website/scripts/serve-all.sh --stop
 - A static build does **not** pick up edits: after **every** change you want to verify (Markdown, config, remark
   plugins, CSS, sidebars), rerun `serve-all.sh` yourself and only then check in the browser. Never ask the user
   to restart it. The rebuild takes about a minute.
-- If port 3001 is already answering when you start, another agent's build is up — rerun the script anyway after
-  your edits; it replaces the server safely. Do not run `npm run build` or a dev server from `Website/` while the
-  script is building (they share `.docusaurus/`, `build/` and `i18n/`).
-- A session in another git worktree that runs the script replaces the shared build with its own checkout, without
-  your uncommitted edits. If a page suddenly shows old content, check where the server runs
-  (`lsof -a -p $(lsof -tiTCP:3001 -sTCP:LISTEN) -d cwd`) and rebuild from your checkout. Sessions in a worktree
-  check pages on a dev server (3100/3101), not on 3001.
+- Do not run `npm run build` or a dev server from the same `Website/` while the script is building (they share
+  `.docusaurus/`, `build/` and `i18n/`).
+- If a page suddenly shows old content, another checkout has replaced the build: check where the server runs
+  (`lsof -a -p $(lsof -tiTCP:3001 -sTCP:LISTEN) -d cwd`) and rebuild from yours.
 - Open the page with a fresh query (`?v=N`) after a rebuild: the browser otherwise shows the cached version.
+- The `website-ru-3001` and `website-serve-all` entries in `.claude/launch.json` both occupy port 3001 and would
+  replace the shared build with a session-bound server — do not launch them.
 
-Dev servers serve one locale at a time and are only for quick hot-reload iteration on a single page — they
-don't reload config or remark plugins, and the user does not look at them: `npm start` / `npm run start:ru`, or
-`website-dev` / `website-dev-ru` in `.claude/launch.json` (3100/3101). The `website-ru-3001` and
-`website-serve-all` entries in that file both occupy port 3001 and would replace the shared build with a
-session-bound server — do not launch them.
+### Dev server (other worktrees, 3100/3101)
+
+- A fresh worktree has no `Website/node_modules`: run `npm --prefix Website ci` once.
+- Start `website-dev` / `website-dev-ru` from `.claude/launch.json`, or `npm start` / `npm run start:ru` in
+  `Website/`. All of them run `prestart`, whose `sync-i18n` creates `Website/tutorials/`, `changelog/` and `i18n/`
+  — a fresh worktree has none of them, and `npx docusaurus start` alone fails without them.
+- One locale per server. Hot reload picks up the English `Documentation/*.md`, which are read in place; config and
+  remark plugins need a restart. `Documentation/ru/**`, sample READMEs and the changelogs reach the site as copies:
+  after editing them run `npm --prefix Website run sync-i18n` for the server to see the change.
 
 `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
 (`onBrokenAnchors` only warns — check the log for `#anchor` typos).
@@ -243,15 +252,16 @@ regenerate or `git checkout Website/api` before building:
 3. `docfx-postprocess.mjs` makes it MDX-safe: `<xref>` → links (own pages, learn.microsoft.com, Unity Scripting
    Reference), `<pre><code>` → fenced code, heading anchors as `{#id}`, escaped `<T`/`{}`, no "Inherited Members",
    front matter with a short `sidebar_label`, and `toc.yml` → `sidebar.js` (namespace → Classes/Interfaces/…
-   groups). A type name that appears in two namespaces (`TypeExtensions`, `VisualElementExtensions`) gets a
-   namespace suffix in its label — Docusaurus derives one translation key per label and the `ru` build fails
-   on duplicates.
+   groups). A type name that appears in two namespaces (`VisualElementExtensions` in `UIElements` and
+   `UIElements.Editors`) gets a namespace suffix in its label — Docusaurus derives one translation key per label
+   and the `ru` build fails on duplicates.
 
 `Website/sidebarsApi.js` adapts the generated sidebar for display (drops the repeated `Aspid.FastTools.`
 prefix, folds the `SetLabel` overloads). Never edit files in `Website/api/` by hand; fix the XML comment or the
 postprocess script and regenerate. Translations are not generated; the `ru` locale falls back to the English
-pages. The Math satellite assembly is not documented — it compiles only when `com.unity.mathematics` is
-installed, which this project does not.
+pages. The Math satellite assembly (`Aspid.FastTools.VisualElements.Math`, `INotifyValueChangedMathExtensions`) is
+not in `/api` only because `ASSEMBLIES` in `docfx-projects.mjs` does not list it; it compiles in this project
+(`com.unity.mathematics` comes in transitively), so documenting it means adding it there.
 
 ## Design
 

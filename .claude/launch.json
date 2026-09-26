@@ -18,10 +18,11 @@
     },
     {
       "name": "website-dev",
-      "runtimeExecutable": "npx",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "docusaurus",
+        "run",
         "start",
+        "--",
         "--port",
         "3100",
         "--no-open"
@@ -31,12 +32,11 @@
     },
     {
       "name": "website-dev-ru",
-      "runtimeExecutable": "npx",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "docusaurus",
-        "start",
-        "--locale",
-        "ru",
+        "run",
+        "start:ru",
+        "--",
         "--port",
         "3101",
         "--no-open"
