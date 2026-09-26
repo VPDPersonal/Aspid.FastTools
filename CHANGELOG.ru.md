@@ -85,7 +85,7 @@
 #### Рабочее окно (`Tools → Aspid 🐍 → FastTools`)
 
 - **Welcome** — примеры с отметками установки; открывается автоматически один раз на версию пакета.
-- **Asset References** — весь граф `[SerializeReference]` ассета из YAML с бейджами `MISSING` / `SHARED`, встроенным Fix, Clear для осиротевших записей, Open Source Prefab.
+- **Asset References** — весь граф `[SerializeReference]` ассета из YAML с предупреждающей полосой на отсутствующих типах и бейджами `SHARED`, встроенным Fix, Clear для осиротевших записей, Open Source Prefab.
 - **Project References** — `Scan Project` по `Assets/`, **Fix all** на тип с Undo, Smart Fix, Migrate all, Required violations.
 - **Settings** — все настройки пакета с полосками области (общая / пользовательская) и сбросом по областям.
 - Навигация с клавиатуры, легенды, контекстные меню строк на каждой вкладке.

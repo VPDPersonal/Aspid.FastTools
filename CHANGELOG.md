@@ -85,7 +85,7 @@ First release. Unity **6000.0**, assemblies `Aspid.FastTools` / `Aspid.FastTools
 #### Workbench window (`Tools → Aspid 🐍 → FastTools`)
 
 - **Welcome** — samples with install markers; auto-opens once per package version.
-- **Asset References** — the asset's whole `[SerializeReference]` graph from YAML with `MISSING` / `SHARED` badges, inline Fix, Clear for orphans, Open Source Prefab.
+- **Asset References** — the asset's whole `[SerializeReference]` graph from YAML with a warning band on missing types and `SHARED` badges, inline Fix, Clear for orphans, Open Source Prefab.
 - **Project References** — `Scan Project` over `Assets/`, **Fix all** per type with Undo, Smart Fix, Migrate all, Required violations.
 - **Settings** — all package settings with shared / per-user scope stripes and per-scope reset.
 - Keyboard navigation, legends, row context menus on every tab.
