@@ -160,7 +160,7 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     if (gameObject.GetComponent(required)) continue;
 
-                    if (required.IsAbstract || required.IsInterface)
+                    if (required.IsAbstract)
                     {
                         Debug.LogWarning($"[ComponentTypeSelector] {newType.Name} requires {required.Name}, which is abstract and cannot be added to {gameObject.name}.", gameObject);
                         continue;
