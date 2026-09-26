@@ -13,10 +13,11 @@ namespace Aspid.FastTools.Samples.Types
     public sealed class EnemySpawner : MonoBehaviour
     {
         // SerializableMonoScript<T> keeps a MonoScript reference in the editor, so renaming or moving the
-        // class does not break the scene. Required = true flags an empty field in the Inspector and in the
-        // build/CI gate.
+        // class does not break the scene. Allow = TypeAllow.None keeps the abstract Enemy out of the picker.
+        // Required = true flags an empty field in the Inspector, in Project References → Scan Project and in
+        // CI runs with -srGateRequired.
         [Header("Enemy")]
-        [TypeSelector(Required = true)]
+        [TypeSelector(Required = true, Allow = TypeAllow.None)]
         [Tooltip("Enemy type spawned for regular wave members.")]
         [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
 
@@ -86,8 +87,15 @@ namespace Aspid.FastTools.Samples.Types
                 go.transform.SetParent(transform);
                 go.transform.position = pattern.GetPosition(i, _count, _radius) + Vector3.up;
 
-                // AddComponent(Type) is why the field is constrained to Enemy: the picker never offers anything else.
+                // AddComponent(Type) is why the field is constrained to concrete Enemy types: the picker never
+                // offers anything else. A script assigned by other means can still fail, so drop the empty capsule.
                 var enemy = (Enemy)go.AddComponent(type);
+                if (enemy == null)
+                {
+                    Destroy(go);
+                    continue;
+                }
+
                 Debug.Log($"Spawned {enemy}", enemy);
             }
         }

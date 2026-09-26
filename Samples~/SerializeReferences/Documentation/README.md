@@ -14,7 +14,7 @@ Weapons, a nested burn effect, and modifiers in the Loadout Inspector.
 ## Open it
 
 1. Import the sample and open `Scenes/SerializeReferences.unity`.
-2. Select **Loadout**. Enter Play Mode: the primary weapon and the sidearms take turns hitting the dummy once a second; it shrinks, tints while burning or frozen, and resets when destroyed. The Console shows each hit.
+2. Select **Loadout**. Enter Play Mode: the primary weapon and the sidearms take turns hitting the dummy, once a second at first and then every 1.5 seconds, because `On Hit` freezes it and each hit renews the freeze; it shrinks, tints while burning or frozen, and resets when destroyed. The Console shows each hit.
 
 For recording, use **Light / Dark / Authored** in `Tools → Aspid 🐍 → FastTools → Sample Themes`.
 
@@ -48,7 +48,7 @@ That completes the basic scenario. The sections below are independent exercises 
 5. **Nesting.** Choose `Railgun` in `Primary` and `BurnEffect` in its `Charge Effect`: the effect is a `[SerializeReference]` of its own with its own dropdown. The dummy catches fire when the railgun hits.
 6. **Abstract base.** `On Hit` is a `StatusEffect`; the picker offers `BurnEffect` and `FreezeEffect`, never the abstract base.
 7. **Generics.** `Damage Modifier` is a `Modifier<float>`: `T` is fixed, so `DamageModifier` and `Modifier<float>` are offered and created directly. `Perks` is a `List<IModifier>`: it offers the closed subclasses **and** the open `Modifier<T>`, which asks for `T` on a second page.
-8. **Required.** Set `Primary` to `<None>`: a notice appears, and the field counts as a violation for the build/CI gate.
+8. **Required.** Set `Primary` to `<None>`: a notice appears, and **Project References → Scan Project** and CI runs with `-srGateRequired` report the field as a violation. A player build does not check it; see [where required fields are checked](../../../Documentation/04-serialize-reference-tooling.md#where-required-fields-are-checked).
 9. **Right-click any dropdown** for Copy / Paste, Make Unique Reference, Save as Template, Find Usages and Create New Script.
 
 ## Advanced exercises: repair
