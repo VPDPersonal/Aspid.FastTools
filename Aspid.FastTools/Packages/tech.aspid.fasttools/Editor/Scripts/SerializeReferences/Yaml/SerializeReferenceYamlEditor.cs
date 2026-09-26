@@ -14,7 +14,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static Regex DocumentHeader => SerializeReferenceYaml.DocumentHeader;
 
         // Returns the [start, end) line range of the document whose anchor equals fileId. Falls back to the single
-        // document of a one-object asset (the common ScriptableObject case) when the anchor cannot be matched.
+        // document of a one-object asset (the common ScriptableObject case) when the anchor cannot be matched. Any
+        // "--- " line ends a document, so the range never spans a neighbour whose header failed to parse.
         private static (int start, int end) FindDocumentRange(string[] lines, long fileId)
         {
             var start = -1;
@@ -24,8 +25,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             for (var i = 0; i < lines.Length; i++)
             {
-                var match = DocumentHeader.Match(lines[i]);
-                if (!match.Success) continue;
+                if (!SerializeReferenceYaml.IsDocumentStart(lines[i])) continue;
 
                 headerCount++;
                 if (firstHeader < 0) firstHeader = i;
@@ -36,7 +36,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     break;
                 }
 
-                if (long.TryParse(match.Groups["id"].Value, out var anchor) && anchor == fileId)
+                var match = DocumentHeader.Match(lines[i]);
+                if (match.Success && long.TryParse(match.Groups["id"].Value, out var anchor) && anchor == fileId)
                     start = i;
             }
 
@@ -46,6 +47,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static int FindRefIdsStart(string[] lines, int start, int end) =>
             SerializeReferenceYaml.FindRefIdsStart(lines, start, end);
+
+        private static int FindRefIdsEntryIndent(string[] lines, int refIdsStart, int end) =>
+            SerializeReferenceYaml.FindRefIdsEntryIndent(lines, refIdsStart, end);
+
+        private static int FindEntryHeader(string[] lines, int refIdsStart, int end, long rid, out int entryIndent) =>
+            SerializeReferenceYaml.FindEntryHeader(lines, refIdsStart, end, rid, out entryIndent);
+
+        private static int FindEntryTypeLine(string[] lines, int headerIndex, int entryEnd) =>
+            SerializeReferenceYaml.FindEntryTypeLine(lines, headerIndex, entryEnd);
 
         private static int FindEntryEnd(string[] lines, int headerIndex, int end, int entryIndent) =>
             SerializeReferenceYaml.FindEntryEnd(lines, headerIndex, end, entryIndent);

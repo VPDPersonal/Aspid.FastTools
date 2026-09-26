@@ -58,27 +58,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var refIdsStart = FindRefIdsStart(lines, start, end);
                 if (refIdsStart < 0) return false;
 
-                var ridPattern = new Regex($@"^\s*-\s+rid:\s*{rid}\s*$");
-                var typePattern = new Regex(@"^(?<indent>\s*type:\s*)\{.*\}\s*$");
+                // Only the entry header counts: a nested "- rid: N" list element in an earlier entry's data block would
+                // aim the rewrite at the type line of whichever entry follows it.
+                var headerIndex = FindEntryHeader(lines, refIdsStart, end, rid, out var entryIndent);
+                if (headerIndex < 0) return false;
 
-                for (var i = refIdsStart; i < end; i++)
-                {
-                    if (!ridPattern.IsMatch(lines[i])) continue;
+                var typeLine = FindEntryTypeLine(lines, headerIndex, FindEntryEnd(lines, headerIndex, end, entryIndent));
+                if (typeLine < 0) return false;
 
-                    // The type mapping follows the rid line; scan a few lines to tolerate formatting variance.
-                    for (var j = i + 1; j < end && j <= i + 4; j++)
-                    {
-                        var match = typePattern.Match(lines[j]);
-                        if (!match.Success) continue;
+                var match = new Regex(@"^(?<indent>\s*type:\s*)\{.*\}\s*$").Match(lines[typeLine]);
+                if (!match.Success) return false;
 
-                        edit = new RewriteEdit(assetPath, j, lines[j], match.Groups["indent"].Value + newType.ToYamlType());
-                        return true;
-                    }
-
-                    return false;
-                }
-
-                return false;
+                edit = new RewriteEdit(assetPath, typeLine, lines[typeLine], match.Groups["indent"].Value + newType.ToYamlType());
+                return true;
             }
             catch (Exception exception)
             {
@@ -103,32 +95,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var refIdsStart = FindRefIdsStart(lines, start, end);
                 if (refIdsStart < 0) return false;
 
-                var ridPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
+                // A nested "- rid: N" list element in another entry's data block is a pointer, not this entry.
+                var headerIndex = FindEntryHeader(lines, refIdsStart, end, rid, out var entryIndent);
+                if (headerIndex < 0) return false;
 
-                for (var i = refIdsStart; i < end; i++)
-                {
-                    var match = ridPattern.Match(lines[i]);
-                    if (!match.Success) continue;
+                // The entry runs until the next list item at its own indent, or until the block dedents out of it —
+                // the same bounding rule the data-block reader uses.
+                var entryEnd = FindEntryEnd(lines, headerIndex, end, entryIndent);
 
-                    // The entry runs until the next list item at its own indent, or until the block dedents out of it —
-                    // the same bounding rule the data-block reader uses.
-                    var entryIndent = match.Groups["indent"].Length;
-                    var entryEnd = FindEntryEnd(lines, i, end, entryIndent);
+                // Unexpected (tab / mixed) indentation in the entry block means IndentOf and the "- rid:" \s* regex
+                // can disagree on where the block ends — bail rather than write a possibly mis-bounded deletion.
+                if (!BlockIndentIsTrusted(lines, headerIndex, entryEnd)) return false;
 
-                    // Unexpected (tab / mixed) indentation in the entry block means IndentOf and the "- rid:" \s* regex
-                    // can disagree on where the block ends — bail rather than write a possibly mis-bounded deletion.
-                    if (!BlockIndentIsTrusted(lines, i, entryEnd)) return false;
+                var remaining = new List<string>(lines.Length - (entryEnd - headerIndex));
+                for (var k = 0; k < headerIndex; k++) remaining.Add(lines[k]);
+                for (var k = entryEnd; k < lines.Length; k++) remaining.Add(lines[k]);
 
-                    var remaining = new List<string>(lines.Length - (entryEnd - i));
-                    for (var k = 0; k < i; k++) remaining.Add(lines[k]);
-                    for (var k = entryEnd; k < lines.Length; k++) remaining.Add(lines[k]);
-
-                    WritePreservingNewlines(assetPath, remaining);
-                    SerializeReferenceYamlProbeCache.ClearCache();
-                    return true;
-                }
-
-                return false;
+                WritePreservingNewlines(assetPath, remaining);
+                SerializeReferenceYamlProbeCache.ClearCache();
+                return true;
             }
             catch (Exception exception)
             {
@@ -162,7 +147,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
                 if (entryIndent < 0) return false;
 
-                var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
                 var pointerToken = BuildPointerPattern(rid);
 
                 var headerIndex = -1;
@@ -172,14 +156,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     // This rid's own RefIds entry header (a "- rid: N" under RefIds at the entry indent) is removed
                     // below, not nulled — skip it so it isn't rewritten to the null id.
-                    if (headerIndex < 0 && i > refIdsStart)
+                    if (headerIndex < 0 && i > refIdsStart
+                        && SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var headerRid)
+                        && headerRid == rid)
                     {
-                        var header = headerPattern.Match(lines[i]);
-                        if (header.Success && header.Groups["indent"].Length == entryIndent)
-                        {
-                            headerIndex = i;
-                            continue;
-                        }
+                        headerIndex = i;
+                        continue;
                     }
 
                     // Null every pointer to the rid — a "- rid: N" array element, a "rid: N" scalar field or an inline
@@ -252,7 +234,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
                 if (entryIndent < 0) return 0;
 
-                var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
                 var pointerToken = BuildPointerPattern(rid);
 
                 var headerSkipped = false;
@@ -262,14 +243,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     // Skip this rid's own RefIds entry header exactly once — it is the entry, not a pointer. Mirrors
                     // the header skip in TryNullReference so the count equals the pointers that path would rewrite.
-                    if (!headerSkipped && i > refIdsStart)
+                    if (!headerSkipped && i > refIdsStart
+                        && SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var headerRid)
+                        && headerRid == rid)
                     {
-                        var header = headerPattern.Match(lines[i]);
-                        if (header.Success && header.Groups["indent"].Length == entryIndent)
-                        {
-                            headerSkipped = true;
-                            continue;
-                        }
+                        headerSkipped = true;
+                        continue;
                     }
 
                     if (pointerToken.IsMatch(lines[i])) count++;
@@ -292,26 +271,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static bool HasNullSentinelEntry(string[] lines, int refIdsStart, int end, int entryIndent)
         {
-            var sentinel = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{NullRid}\s*$");
             for (var i = refIdsStart + 1; i < end; i++)
             {
-                var match = sentinel.Match(lines[i]);
-                if (match.Success && match.Groups["indent"].Length == entryIndent) return true;
+                if (SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var headerRid)
+                    && headerRid == NullRid) return true;
             }
 
             return false;
-        }
-
-        private static int FindRefIdsEntryIndent(string[] lines, int refIdsStart, int end)
-        {
-            var entry = new Regex(@"^(?<indent>\s*)-\s+rid:\s*-?\d+\s*$");
-            for (var i = refIdsStart + 1; i < end; i++)
-            {
-                var match = entry.Match(lines[i]);
-                if (match.Success) return match.Groups["indent"].Length;
-            }
-
-            return -1;
         }
     }
 }
