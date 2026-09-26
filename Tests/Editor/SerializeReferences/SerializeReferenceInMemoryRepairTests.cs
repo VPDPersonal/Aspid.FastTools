@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using UnityEditor;
@@ -23,12 +24,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private InMemoryRepairTestComponent _component;
 
         [SetUp]
-        public void SetUp()
+        public void SetUp() =>
+            OpenSceneWithMissingType(component => component.value = new InMemoryRepairPayload { x = 3 });
+
+        private void OpenSceneWithMissingType(Action<InMemoryRepairTestComponent> populate)
         {
             // Untitled scenes block additive creation, so the fixture replaces the open scene set.
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             var go = new UnityEngine.GameObject("Holder");
-            go.AddComponent<InMemoryRepairTestComponent>().value = new InMemoryRepairPayload { x = 3 };
+            populate(go.AddComponent<InMemoryRepairTestComponent>());
 
             Assert.IsTrue(EditorSceneManager.SaveScene(scene, ScenePath));
             EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -104,6 +108,66 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             var text = File.ReadAllText(ScenePath).Replace("\r\n", "\n");
             Assert.That(text, Does.Contain($"value:\n    rid: {referenceId}\n"), "The field must still point at the missing rid.");
+            Assert.That(text, Does.Contain($"- rid: {referenceId}\n      type: {{class: {MissingClass},"));
+            Assert.That(text, Does.Contain("x: 3"));
+        }
+
+        [Test]
+        public void FixInMemory_ThenUndoRedoAndSave_DropsReplacedEntryFromFile()
+        {
+            using var serializedObject = new SerializedObject(_component);
+            var property = serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.value));
+
+            Undo.IncrementCurrentGroup();
+            Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairReplacement)));
+            Undo.PerformUndo();
+            Undo.PerformRedo();
+            Assert.IsInstanceOf<InMemoryRepairReplacement>(_component.value);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_scene));
+
+            Assert.IsFalse(SerializationUtility.HasManagedReferencesWithMissingTypes(_component));
+            Assert.That(File.ReadAllText(ScenePath), Does.Not.Contain(MissingClass));
+        }
+
+        // The fix is recorded by the repaired instance's rid, not by its path: after the list shifts, the fixed index
+        // holds another element, and clearing the entry on save would leave Undo of the shift pointing at nothing.
+        // The shift itself stores the missing element as null (Unity's behaviour), so only Undo brings it back.
+        [Test]
+        public void FixListElement_ThenUndoAndShiftListAndSave_KeepsMissingEntryForUndo()
+        {
+            TearDown();
+            OpenSceneWithMissingType(component => component.list.AddRange(new object[]
+            {
+                new InMemoryRepairReplacement { x = 1 },
+                new InMemoryRepairPayload { x = 3 },
+                new InMemoryRepairReplacement { x = 5 },
+            }));
+
+            using var serializedObject = new SerializedObject(_component);
+            var list = serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.list));
+            var property = list.GetArrayElementAtIndex(1);
+            Assert.IsTrue(SerializeReferenceHelpers.TryGetMissingReferenceId(property, out var referenceId));
+
+            Undo.IncrementCurrentGroup();
+            Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(property, typeof(InMemoryRepairReplacement)));
+            Undo.PerformUndo();
+            serializedObject.Update();
+
+            Undo.IncrementCurrentGroup();
+            list.DeleteArrayElementAtIndex(0);
+            serializedObject.ApplyModifiedProperties();
+            Assert.IsTrue(EditorSceneManager.SaveScene(_scene));
+
+            var entry = SerializationUtility.GetManagedReferencesWithMissingTypes(_component)
+                .FirstOrDefault(candidate => candidate.referenceId == referenceId);
+            Assert.AreEqual(MissingClass, entry.className, "Saving must not clear the entry of an undone fix.");
+
+            Undo.PerformUndo();
+            Assert.AreEqual(3, _component.list.Count);
+            Assert.IsTrue(EditorSceneManager.SaveScene(_scene));
+
+            var text = File.ReadAllText(ScenePath).Replace("\r\n", "\n");
+            Assert.That(text, Does.Match($@"list:\n  - rid: -?\d+\n  - rid: {referenceId}\n"), "The list must point at the missing rid again.");
             Assert.That(text, Does.Contain($"- rid: {referenceId}\n      type: {{class: {MissingClass},"));
             Assert.That(text, Does.Contain("x: 3"));
         }

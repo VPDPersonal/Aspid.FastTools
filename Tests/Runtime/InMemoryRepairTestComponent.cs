@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Aspid.FastTools.Tests
 {
@@ -8,6 +9,7 @@ namespace Aspid.FastTools.Tests
     public sealed class InMemoryRepairTestComponent : MonoBehaviour
     {
         [SerializeReference] public object value;
+        [SerializeReference] public List<object> list = new();
     }
 
     // Saved under this name, then renamed in the scene file so the reference loads as a missing type.

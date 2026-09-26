@@ -725,7 +725,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Missing-type entries are not part of Unity's Undo snapshot: clearing one with the fix would leave Ctrl+Z
         // pointing at a deleted rid. The replaced entry stays orphaned until its scene or prefab is saved. Entries
         // registered before a domain reload are forgotten and saved as orphans.
-        private static readonly List<(Object target, string propertyPath, long referenceId)> PendingRepairedEntries = new();
+        private static readonly List<(Object target, long repairedId, long referenceId)> PendingRepairedEntries = new();
 
         [InitializeOnLoadMethod]
         private static void ClearRepairedEntriesOnSave()
@@ -734,16 +734,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             PrefabStage.prefabSaving += root => ClearRepairedMissingEntries(root.scene);
         }
 
-        // Undo can no longer restore a cleared entry, so the owner's Undo history is dropped along with it. A pointer
-        // to a missing type reads as null, so a null field means the fix was undone: the entry stays pending in case
-        // the fix is redone.
-        public static void ClearRepairedMissingEntries(UnityEngine.SceneManagement.Scene scene)
+        // Undo can no longer restore a cleared entry, so the owner's Undo history is dropped along with it. Undo removes
+        // the repaired instance, so a rid no pointer uses, whatever list edits followed, means the fix was undone: the
+        // entry stays pending in case the fix is redone.
+        private static void ClearRepairedMissingEntries(UnityEngine.SceneManagement.Scene scene)
         {
             var cleared = false;
 
             for (var i = PendingRepairedEntries.Count - 1; i >= 0; i--)
             {
-                var (target, propertyPath, referenceId) = PendingRepairedEntries[i];
+                var (target, repairedId, referenceId) = PendingRepairedEntries[i];
                 if (target == null)
                 {
                     PendingRepairedEntries.RemoveAt(i);
@@ -751,7 +751,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
 
                 if (GetOwningScene(target) != scene) continue;
-                if (IsNullManagedReference(target, propertyPath)) continue;
+                if (!IsManagedReferenceUsed(target, repairedId)) continue;
 
                 if (ClearMissingSubtree(target, referenceId) > 0)
                 {
@@ -772,11 +772,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static UnityEngine.SceneManagement.Scene GetOwningScene(Object target) =>
             (target as Component)?.gameObject.scene ?? (target as GameObject)?.scene ?? default;
 
-        private static bool IsNullManagedReference(Object target, string propertyPath)
+        private static bool IsManagedReferenceUsed(Object target, long referenceId)
         {
+            var used = false;
             using var serializedObject = new SerializedObject(target);
-            var property = serializedObject.FindProperty(propertyPath);
-            return property is { propertyType: SerializedPropertyType.ManagedReference, managedReferenceValue: null };
+            TraverseManagedReferences(serializedObject, property => used = property.managedReferenceId == referenceId);
+            return used;
         }
 
         private static bool HasMissingEntry(Object target, long referenceId)
@@ -803,9 +804,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             property.SetManagedReferenceAndApply(instance);
-            PendingRepairedEntries.Add((target, property.propertyPath, referenceId));
             EditorUtility.SetDirty(target);
             property.serializedObject.Update();
+            PendingRepairedEntries.Add((target, property.managedReferenceId, referenceId));
 
             var scene = GetOwningScene(target);
             if (scene.IsValid()) EditorSceneManager.MarkSceneDirty(scene);
