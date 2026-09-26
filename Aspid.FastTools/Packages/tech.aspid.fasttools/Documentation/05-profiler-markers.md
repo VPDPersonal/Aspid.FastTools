@@ -19,7 +19,7 @@ No attributes or `partial`: the call works in `MonoBehaviour` and ordinary C# cl
 
 Returns the `ProfilerMarker.AutoScope` of the `Type.Method (line)` marker for the current call site: the measurement lasts until the end of the `using` block. The `Type` and `Method` parts depend on where the call is:
 
-| Where `this.Marker()` is called | Marker name |
+| Where `Marker()` is called | Marker name |
 |---|---|
 | Method `Step()` | `FlockSimulation.Step (line)` |
 | Constructor | `FlockSimulation.Ctor (line)` |
@@ -106,7 +106,7 @@ internal static class __FlockSimulationProfilerMarkerExtensions
 
 - **Only an instance of its own type.** A call gets a marker when it is made on an instance of the type it is written in: `this` or another instance, such as `new FlockSimulation().Marker()` in a static method. `other.Marker()` on an object of another type and `((Base)this).Marker()` open nothing — or that type's marker, when the line number matches one of its calls. Analyzer `AFT0010` warns about such calls.
 - **Line suffix.** The number in the name changes when the call moves to another line, so compare captures from before and after an edit by the name without the suffix.
-- **Private and protected nested types.** The generated overload cannot see a `private` or `protected` nested type, or a type nested in one: the call compiles but opens no marker, and analyzer `AFT0010` warns. Make the type `internal` or `public`.
+- **Private and protected nested types.** The generated overload cannot see a `private` or `protected` nested type, or a type nested in one: the call compiles but opens nothing — or the base type's marker, when the type derives from a type with markers and the line number matches one of its calls. Analyzer `AFT0010` warns about such calls. Make the type `internal` or `public`.
 
 > [!WARNING]
 > `this.Marker()` calls on the same line of a type, including across `partial` files, share the first call's marker — the second one's measurements land in someone else's Profiler row.

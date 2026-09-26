@@ -63,7 +63,8 @@ hand-written `static readonly ProfilerMarker`.
 - **Line numbers move** with edits; compare Profiler captures by name without the `(line)` suffix.
 - **No marker, warning `AFT0010`:** every call the generator cannot mark — the cases above, a call inside a
   `private`/`protected` nested type (or a type nested in one; typical for `private struct MyJob : IJob`) or in
-  `Outer<T>.Inner<T>` where the inner type parameter shadows the outer one. Fix the call,
+  `Outer<T>.Inner<T>` where the inner type parameter shadows the outer one. A nested type deriving from a type with markers opens the base type's marker
+  when the line matches one of its calls. Fix the call,
   make the nested type `internal`/`public`, rename the parameter, or use a hand-written `ProfilerMarker`. A `private`
   or `protected` nested `ref struct` does not compile at all (CS1929): make it `internal`/`public`.
 - `ASPID_FAST_TOOLS_UNITY_PROFILER_DISABLED` strips only the package's own markers, not user `this.Marker()` calls.
