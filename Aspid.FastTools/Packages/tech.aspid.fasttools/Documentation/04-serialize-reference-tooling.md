@@ -68,7 +68,7 @@ Bulk clearing may null references in open scenes or Prefab Mode in memory. Save 
 
 ### Prefab instance overrides
 
-A prefab variant, a nested prefab, or a prefab instance in a scene can set a field's type through an override. Unity stores that type in the instance's modifications, not in the managed-reference list. Missing types found there appear in a separate **Prefab instance overrides** card, and pre-build checks count them as missing types.
+A prefab variant, a nested prefab, or a prefab instance in a scene can set a field's type through an override. Unity stores that type in the instance's modifications, not in the managed-reference list. Missing types found there appear in a separate **Prefab instance overrides** card, and pre-build checks count them as missing types. An old name that `[MovedFrom]` maps is not listed: Unity migrates it at load, like any pending migration.
 
 **Fix all**, **Smart Fix**, and `<None>` do not rewrite overrides. Select the instance, then choose a new type in its Inspector or revert the override. Asset References does not show references that exist only as overrides.
 
@@ -216,7 +216,7 @@ KIND    assetPath    fileId    rid    className    fieldPath
 | `fileId` | Host object ID within the file; for a prefab instance override, the ID of the prefab instance |
 | `rid` | Managed-reference ID; `0` for a required string field |
 | `className` | Stored class name for `MissingType`, without separate namespace or assembly fields |
-| `fieldPath` | Required field path; for a `MissingType` override, the overridden field; otherwise empty |
+| `fieldPath` | Required field path; for a `MissingType` override, the overridden field when the instance overrides it; otherwise empty |
 
 Save the report as a CI artifact. The asset path, `fileId`, and `rid` together help locate the entry in Asset References.
 
