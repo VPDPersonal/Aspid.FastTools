@@ -19,16 +19,16 @@
     padding: 5px 5px 2px 5px;
     border-width: 1px;
     border-radius: 5px 5px 0 0;
-    border-color: var(--aspid-colors-bg-dark);
-    background-color: var(--aspid-colors-bg-light);
+    border-color: var(--unity-colors-inspector_titlebar-border);
+    background-color: var(--unity-colors-inspector_titlebar-background);
 }
 
 .aspid-fasttools-enum-values__container {
     padding: 2px 5px 5px 5px;
     border-width: 0 1px 1px 1px;
     border-radius: 0 0 5px 5px;
-    border-color: var(--aspid-colors-bg-dark);
-    background-color: var(--aspid-colors-bg-lightness);
+    border-color: var(--unity-colors-inspector_titlebar-border);
+    background-color: var(--unity-colors-helpbox-background);
 }
 
 .aspid-fasttools-enum-value--inline {

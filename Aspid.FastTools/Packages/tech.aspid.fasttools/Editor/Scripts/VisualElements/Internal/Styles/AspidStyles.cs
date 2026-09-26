@@ -7,5 +7,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public const string BackgroundStyle = "aspid-fasttools-background";
         public const string BackgroundRoundedState = BackgroundStyle + "--rounded";
         public const string InspectorStyleClass = "aspid-fasttools-inspector-container";
+        public const string SkinLightClass = "aspid-fasttools-skin--light";
     }
 }

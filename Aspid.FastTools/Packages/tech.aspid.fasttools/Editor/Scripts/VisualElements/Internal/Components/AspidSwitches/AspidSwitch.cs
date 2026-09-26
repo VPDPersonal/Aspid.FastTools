@@ -8,6 +8,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     [UxmlElement(libraryPath = "Aspid/FastTools")]
     internal sealed partial class AspidSwitch : BaseField<bool>
     {
+        private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidSwitch";
         private const string SwitchClass = "aspid-fasttools-switch";
         private const float TrackWidth = 44f;
         private const float TrackHeight = 24f;
@@ -21,20 +22,29 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private const float TrackInnerHeight = TrackHeight - 2f * TrackBorderWidth;
         private const float HandleInset = (TrackInnerHeight - HandleSize) / 2f;
 
-        private static readonly Color AccentColor = new(0.333f, 0.686f, 0.392f, 1f);
+        private static readonly CustomStyleProperty<Color> AccentProperty = new("--aspid-fasttools-colors-switch-accent");
+        private static readonly CustomStyleProperty<Color> TrackOffBorderProperty = new("--aspid-fasttools-colors-switch-track_border");
+        private static readonly CustomStyleProperty<Color> HandleProperty = new("--aspid-fasttools-colors-switch-handle");
+        private static readonly CustomStyleProperty<Color> HandleShadowProperty = new("--aspid-fasttools-colors-switch-handle_shadow");
 
-        private static readonly Color TrackOffBorderColor = EditorGUIUtility.isProSkin
+        // Fallbacks while the --aspid-colors-switch-* palette tokens are unset.
+        private static readonly Color DefaultAccentColor = new(0.333f, 0.686f, 0.392f, 1f);
+
+        private static readonly Color DefaultTrackOffBorderColor = EditorGUIUtility.isProSkin
             ? new Color(0.32f, 0.32f, 0.34f, 1f)
             : new Color(0.45f, 0.45f, 0.47f, 1f);
 
-        private static readonly Color HandleColor = EditorGUIUtility.isProSkin
+        private static readonly Color DefaultHandleColor = EditorGUIUtility.isProSkin
             ? new Color(0.74f, 0.74f, 0.77f, 0.85f)
             : new Color(0.35f, 0.35f, 0.38f, 0.9f);
 
-        private static readonly Color HandleShadowColor = new(0f, 0f, 0f, 0.15f);
+        private static readonly Color DefaultHandleShadowColor = new(0f, 0f, 0f, 0.15f);
 
         private readonly VisualElement _track;
         private readonly VisualElement _handle;
+
+        private Color _accentColor = DefaultAccentColor;
+        private Color _trackOffBorderColor = DefaultTrackOffBorderColor;
 
         private float _handlePosition;
         private IVisualElementScheduledItem _animation;
@@ -48,7 +58,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private AspidSwitch(string label, VisualElement input)
             : base(label, input)
         {
-            this.AddClass(SwitchClass);
+            this.AddStyleSheetFromResources(StyleSheetPath)
+                .AddClass(SwitchClass);
             style.alignItems = Align.Center;
 
             labelElement.style.flexGrow = 1;
@@ -73,8 +84,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 .SetPosition(Position.Absolute)
                 .SetBorderWidth(1)
                 .SetBorderRadius(HandleSize / 2)
-                .SetBackgroundColor(HandleColor)
-                .SetBorderColor(HandleShadowColor)
+                .SetBackgroundColor(DefaultHandleColor)
+                .SetBorderColor(DefaultHandleShadowColor)
                 .SetPickingMode(PickingMode.Ignore);
             _handle.style.top = HandleInset;
 
@@ -82,6 +93,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
             RegisterCallback<ClickEvent>(_ => value = !value);
             RegisterCallback<KeyDownEvent>(OnKeyDown);
+            RegisterCallback<CustomStyleResolvedEvent>(OnCustomStyleResolved);
 
             SetValueWithoutNotify(false);
         }
@@ -92,6 +104,23 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             // BaseField may seed the value before the track is constructed.
             if (_track == null) return;
             MoveTo(newValue);
+        }
+
+        private void OnCustomStyleResolved(CustomStyleResolvedEvent evt)
+        {
+            var customStyle = evt.customStyle;
+
+            _accentColor = customStyle.TryGetValue(AccentProperty, out var accent) ? accent : DefaultAccentColor;
+            _trackOffBorderColor = customStyle.TryGetValue(TrackOffBorderProperty, out var border)
+                ? border
+                : DefaultTrackOffBorderColor;
+
+            _handle.SetBackgroundColor(customStyle.TryGetValue(HandleProperty, out var handle) ? handle : DefaultHandleColor);
+            _handle.SetBorderColor(customStyle.TryGetValue(HandleShadowProperty, out var shadow)
+                ? shadow
+                : DefaultHandleShadowColor);
+
+            UpdateVisuals();
         }
 
         private void OnKeyDown(KeyDownEvent evt)
@@ -133,8 +162,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _handle.style.left = Mathf.Lerp(HandleInset, maxLeft, _handlePosition);
 
             _track.style.backgroundColor =
-                new Color(AccentColor.r, AccentColor.g, AccentColor.b, Mathf.Lerp(0f, OnFillAlpha, _handlePosition));
-            _track.SetBorderColor(Color.Lerp(TrackOffBorderColor, AccentColor, _handlePosition));
+                new Color(_accentColor.r, _accentColor.g, _accentColor.b, Mathf.Lerp(0f, OnFillAlpha, _handlePosition));
+            _track.SetBorderColor(Color.Lerp(_trackOffBorderColor, _accentColor, _handlePosition));
         }
     }
 }

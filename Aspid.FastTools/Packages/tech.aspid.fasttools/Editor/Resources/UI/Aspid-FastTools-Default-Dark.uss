@@ -22,6 +22,17 @@
     --aspid-colors-shade-light:                     rgb(80, 80, 80);
     --aspid-colors-shade-lightness:                 rgb(100, 100, 100);
 
+    --aspid-colors-surface-canvas:                  rgb(0, 0, 0);
+    --aspid-colors-surface-card:                    rgba(20, 20, 20, 0.55);
+    --aspid-colors-surface-card-dim:                rgba(20, 20, 20, 0.35);
+
+    --aspid-colors-overlay-hover:                   rgba(255, 255, 255, 0.05);
+    --aspid-colors-overlay-control:                 rgba(255, 255, 255, 0.06);
+    --aspid-colors-overlay-control-hover:           rgba(255, 255, 255, 0.16);
+    --aspid-colors-overlay-scrollbar:               rgba(255, 255, 255, 0.12);
+    --aspid-colors-overlay-scrollbar-hover:         rgba(255, 255, 255, 0.28);
+    --aspid-colors-slider-handle:                   rgba(189, 189, 196, 0.85);
+
     --aspid-colors-status-success-darkness:         rgb(8, 40, 20);
     --aspid-colors-status-success-dark:             rgb(12, 65, 30);
     --aspid-colors-status-success-light:            rgb(20, 90, 45);
@@ -81,6 +92,17 @@
     --aspid-colors-status-info-shade-dark:          rgb(35, 65, 95);
     --aspid-colors-status-info-shade-light:         rgb(55, 100, 145);
     --aspid-colors-status-info-shade-lightness:     rgb(85, 145, 200);
+
+    --aspid-colors-status-success-tint:             rgba(20, 90, 45, 0.25);
+    --aspid-colors-status-warning-tint:             rgba(90, 65, 30, 0.25);
+    --aspid-colors-status-warning-tint-darkness:    rgba(45, 30, 5, 0.3);
+    --aspid-colors-status-error-tint:               rgba(125, 35, 35, 0.25);
+    --aspid-colors-status-info-tint:                rgba(25, 75, 130, 0.25);
+
+    --aspid-colors-status-success-blob:             rgb(41, 71, 54);
+    --aspid-colors-status-warning-blob:             rgb(77, 64, 31);
+    --aspid-colors-status-error-blob:               rgb(82, 41, 41);
+    --aspid-colors-status-info-blob:                rgb(38, 54, 77);
 }
 
 .aspid-fasttools-inspector-container {

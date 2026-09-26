@@ -44,6 +44,7 @@
     display:                                                    none;
 }
 
+/* The box always sits on the dark palette, so it keeps the dark-skin icons on either editor skin. */
 :root.aspid-fasttools-help-box--info {
     --aspid-fasttools-icons-help_box:                           resource("d_console.infoicon@2x");
 }
@@ -67,20 +68,4 @@
 :root AspidLabel > Label {
     cursor:                                                     text;
     overflow:                                                   hidden;
-}
-
-:root.aspid-fasttools-status--success AspidLabel > Label {
-    color:                                                      var(--aspid-colors-status-success-text-lightness);
-}
-
-:root.aspid-fasttools-status--warning AspidLabel > Label {
-    color:                                                      var(--aspid-colors-status-warning-text-lightness);
-}
-
-:root.aspid-fasttools-status--error AspidLabel > Label {
-    color:                                                      var(--aspid-colors-status-error-text-lightness);
-}
-
-:root.aspid-fasttools-status--info AspidLabel > Label {
-    color:                                                      var(--aspid-colors-status-info-text-lightness);
 }

@@ -14,11 +14,11 @@
     background-size:                                       contain;
     background-repeat:                                     no-repeat;
     background-position:                                   center;
-    background-image:                                      resource("d_console.warnicon");
+    background-image:                                      var(--unity-icons-console_entry_warn);
 }
 
 .aspid-fasttools-inspector-notice__message {
-    color:                                                 var(--aspid-colors-status-warning-text-light);
+    color:                                                 var(--unity-colors-warning-text);
     -unity-font-style:                                     normal;
     white-space:                                           normal;
 }
@@ -29,18 +29,18 @@
 
 .aspid-fasttools-inspector-notice__action {
     margin-left:                                           auto;
-    color:                                                 var(--aspid-colors-status-warning-text-light);
+    color:                                                 var(--unity-colors-warning-text);
     -unity-font-style:                                     bold;
     cursor:                                                link;
 }
 
 .aspid-fasttools-inspector-notice__action:hover {
-    color:                                                 var(--aspid-colors-status-warning-text-lightness);
+    color:                                                 var(--unity-colors-default-text-hover);
 }
 
 .aspid-fasttools-inspector-notice__suggestion {
     margin-left:                                           6px;
-    color:                                                 var(--aspid-colors-status-warning-text-light);
+    color:                                                 var(--unity-colors-warning-text);
     -unity-font-style:                                     bold;
     cursor:                                                link;
     display:                                               none;
@@ -52,7 +52,7 @@
 
 .aspid-fasttools-inspector-notice__suggestion-separator {
     margin-left:                                           6px;
-    color:                                                 var(--aspid-colors-status-warning-text-light);
+    color:                                                 var(--unity-colors-warning-text);
     -unity-font-style:                                     bold;
     display:                                               none;
 }
@@ -62,7 +62,7 @@
 }
 
 .aspid-fasttools-inspector-notice__suggestion:hover {
-    color:                                                 var(--aspid-colors-status-warning-text-lightness);
+    color:                                                 var(--unity-colors-default-text-hover);
 }
 
 .aspid-fasttools-inspector-notice__dot {
@@ -85,10 +85,10 @@
 
 .aspid-fasttools-inspector-notice--info
     .aspid-fasttools-inspector-notice__icon {
-    background-image:                                      resource("d_console.infoicon");
+    background-image:                                      var(--unity-icons-console_entry_info);
 }
 
 .aspid-fasttools-inspector-notice--info
     .aspid-fasttools-inspector-notice__message {
-    color:                                                 var(--aspid-colors-text-dark);
+    color:                                                 var(--unity-colors-helpbox-text);
 }

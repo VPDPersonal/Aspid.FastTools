@@ -68,7 +68,7 @@
 }
 
 .aspid-fasttools-excluded-folders__entry--danger {
-    background-color:                                     rgba(125, 35, 35, 0.25);
+    background-color:                                     var(--aspid-colors-status-error-tint);
 }
 
 .aspid-fasttools-excluded-folders__path {

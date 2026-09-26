@@ -29,7 +29,7 @@
     white-space:                                            nowrap;
     text-overflow:                                          ellipsis;
     -unity-text-overflow-position:                          start;
-    color:                                                  var(--aspid-colors-status-warning-text-light);
+    color:                                                  var(--unity-colors-warning-text);
 }
 
 .aspid-fasttools-serialize-reference--empty
@@ -60,6 +60,14 @@
     background-image:                                       resource("d_FolderOpened Icon");
 }
 
+.aspid-fasttools-serialize-reference.aspid-fasttools-skin--light Button > VisualElement {
+    background-image:                                       resource("Folder Icon");
+}
+
+.aspid-fasttools-serialize-reference.aspid-fasttools-skin--light Button > VisualElement:enabled:hover {
+    background-image:                                       resource("FolderOpened Icon");
+}
+
 /* Use padding to preserve Unity's margin-based foldout nesting indent. */
 .aspid-fasttools-serialize-reference--striped > .unity-foldout {
     padding-left:                                         8px;
@@ -80,7 +88,7 @@
 }
 
 .aspid-fasttools-serialize-reference__stripe--warning {
-    background-color:                                      var(--aspid-colors-status-warning-text-light);
+    background-color:                                      var(--unity-colors-warning-text);
 }
 
 .aspid-fasttools-serialize-reference__flash {
@@ -111,7 +119,7 @@
     border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
-    background-color:                                     rgba(20, 20, 20, 0.55);
+    background-color:                                     var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-repair-references__panel-title {
@@ -232,7 +240,7 @@
 /* The status-qualified selector outranks the help box's warning background rule. */
 .aspid-fasttools-repair-references__results
     .aspid-fasttools-repair-references__summary.aspid-fasttools-status--warning {
-    background-color:                                      rgba(90, 65, 30, 0.25);
+    background-color:                                      var(--aspid-colors-status-warning-tint);
     border-color:                                          var(--aspid-colors-status-warning-shade-dark);
 }
 
@@ -282,7 +290,7 @@
     border-radius:                                         8px;
     border-width:                                          1px;
     border-color:                                          var(--aspid-colors-shade-dark);
-    background-color:                                      rgba(20, 20, 20, 0.55);
+    background-color:                                      var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-repair-references__picker--attached.aspid-fasttools-background {
@@ -327,7 +335,7 @@
     border-radius:                                         8px;
     border-width:                                          1px;
     border-color:                                          var(--aspid-colors-shade-darkness);
-    background-color:                                      rgba(20, 20, 20, 0.55);
+    background-color:                                      var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-repair-references__group--picking.aspid-fasttools-background {
@@ -559,7 +567,7 @@
 }
 
 .aspid-fasttools-serialize-reference--drop-target {
-    background-color:                                      var(--aspid-colors-bg-light);
+    background-color:                                      var(--unity-colors-helpbox-background);
     border-left-width:                                     2px;
     border-left-color:                                     var(--aspid-colors-status-info-light);
 }
