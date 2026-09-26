@@ -44,7 +44,7 @@ namespace Aspid.FastTools.Types.Editors
 
                 TypeSelectorWindow.Show(
                     screenRect: GUIUtility.GUIToScreenRect(dropdownRect),
-                    filter: CreateFilter(allow, types),
+                    filter: CreateFilter(allow, types, TypeSelectorHelpers.IsStoredInRuntimeObject(persistent)),
                     currentAqn: currentType?.AssemblyQualifiedName ?? assemblyQualifiedName,
                     onSelected: picked => SerializableMonoScriptUtility.Assign(persistent, TypeUtility.GetTypeOrNull(picked)));
             }
@@ -65,11 +65,12 @@ namespace Aspid.FastTools.Types.Editors
                 "This [TypeSelector] field is marked required but has no type.");
         }
 
-        internal static TypeSelectorFilter CreateFilter(TypeAllow allow, Type[] types) => new()
+        internal static TypeSelectorFilter CreateFilter(TypeAllow allow, Type[] types, bool excludeEditorOnly) => new()
         {
             Types = types,
             Allow = allow,
             Predicate = SerializableMonoScriptUtility.HasScript,
+            ExcludeEditorOnly = excludeEditorOnly,
         };
 
         private static void HandleDrop(Rect rect, SerializedProperty wrapperProperty, TypeAllow allow, Type[] types)

@@ -33,6 +33,7 @@ namespace Aspid.FastTools.Types.Editors
                 Allow = allow,
                 Types = types,
                 Predicate = SerializableMonoScriptUtility.HasScript,
+                ExcludeEditorOnlyTypes = TypeSelectorHelpers.IsStoredInRuntimeObject(persistent),
             };
 
             field = typeField;
