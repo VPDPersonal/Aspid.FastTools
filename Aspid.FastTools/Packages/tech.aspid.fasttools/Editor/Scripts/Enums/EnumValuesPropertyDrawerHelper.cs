@@ -31,13 +31,17 @@ namespace Aspid.FastTools.Enums.Editors
         public static Enum? ParseKey(string key, Type enumType) =>
             Enum.TryParse(enumType, key, out var parsed) ? (Enum)parsed : null;
 
-        // Unity's flags fields hold a 32-bit mask: they throw for a 64-bit enum or cut its high bits off.
+        // Unity's flags fields hold a signed 32-bit mask: they throw for a 64-bit enum or cut its high bits off,
+        // and misread a uint enum that uses bit 31.
         public static bool IsWideFlags(Type enumType)
         {
             if (!EnumInfo.IsFlags(enumType)) return false;
 
             var underlyingType = Enum.GetUnderlyingType(enumType);
-            return underlyingType == typeof(long) || underlyingType == typeof(ulong);
+            if (underlyingType == typeof(long) || underlyingType == typeof(ulong)) return true;
+
+            return underlyingType == typeof(uint)
+                && Enum.GetValues(enumType).Cast<Enum>().Any(value => (EnumInfo.ToInt64(value) & 0x80000000L) != 0);
         }
 
         public static string GetKeyCaption(string key, Enum? enumValue)
