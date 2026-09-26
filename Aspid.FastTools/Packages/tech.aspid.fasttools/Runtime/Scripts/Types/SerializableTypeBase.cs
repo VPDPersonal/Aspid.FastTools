@@ -10,9 +10,16 @@ namespace Aspid.FastTools.Types
     /// assembly-qualified name and resolves it lazily on first access.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Not meant to be derived from outside the package — use <see cref="SerializableType"/> or
     /// <see cref="SerializableMonoScript"/>. Unity serializes the name under the same field for all of them,
     /// so every wrapper shares one serialized layout.
+    /// </para>
+    /// <para>
+    /// A player resolves the type by the stored name only, which managed code stripping does not see: from
+    /// Managed Stripping Level Low up, a class referenced only by this name can be removed from the build and
+    /// <see cref="Type"/> returns <see langword="null"/>. Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
+    /// </para>
     /// </remarks>
     [Serializable]
     public abstract class SerializableTypeBase :
@@ -23,12 +30,14 @@ namespace Aspid.FastTools.Types
         [SerializeField] private string? _assemblyQualifiedName;
 
         private Type? _type;
+        private bool _isResolved;
 
         private protected SerializableTypeBase() { }
 
         private protected SerializableTypeBase(Type? type)
         {
             _type = type;
+            _isResolved = true;
             _assemblyQualifiedName = type?.AssemblyQualifiedName;
         }
 
@@ -52,7 +61,14 @@ namespace Aspid.FastTools.Types
                 using (this.Marker())
 #endif
                 {
-                    return _type ??= GetTypeFromAssemblyQualifiedName(_assemblyQualifiedName);
+                    // A failed lookup is cached too: a missing assembly makes every Type.GetType call probe for it.
+                    if (!_isResolved)
+                    {
+                        _type = ResolveType(_assemblyQualifiedName);
+                        _isResolved = true;
+                    }
+
+                    return _type;
                 }
             }
         }
@@ -68,17 +84,26 @@ namespace Aspid.FastTools.Types
 
         private protected void SetAssemblyQualifiedName(string? assemblyQualifiedName)
         {
-            _type = null;
+            ResetResolvedType();
             _assemblyQualifiedName = assemblyQualifiedName;
         }
 
+        private protected virtual Type? ResolveType(string? assemblyQualifiedName) =>
+            GetTypeFromAssemblyQualifiedName(assemblyQualifiedName);
+
         void ISerializationCallbackReceiver.OnAfterDeserialize() =>
-            _type = null;
+            ResetResolvedType();
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() =>
             OnBeforeSerialize();
 
         private protected virtual void OnBeforeSerialize() { }
+
+        private void ResetResolvedType()
+        {
+            _type = null;
+            _isResolved = false;
+        }
 
         private static Type? GetTypeFromAssemblyQualifiedName(string? assemblyQualifiedName)
         {
