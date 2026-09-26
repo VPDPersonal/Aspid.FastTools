@@ -36,7 +36,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        private static string Key => KeyPrefix + PlayerSettings.productGUID;
+        internal static string Key => KeyPrefix + PlayerSettings.productGUID;
 
         public static bool Contains(string name) => Load().entries.Exists(entry => entry.name == name);
 
@@ -59,23 +59,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Persist(store);
         }
 
+        // An entry whose type does not resolve is only skipped, never pruned: the type may be missing just for now
+        // (another branch, a removed package), and the store is shared by every copy of the project.
         public static List<Template> LoadResolved()
         {
             var store = Load();
             var result = new List<Template>(store.entries.Count);
-            var changed = false;
 
             foreach (var entry in store.entries)
             {
                 var type = string.IsNullOrEmpty(entry.aqn) ? null : Type.GetType(entry.aqn, throwOnError: false);
                 if (type is not null) result.Add(new Template(entry.name, type));
-                else changed = true;
-            }
-
-            if (changed)
-            {
-                store.entries.RemoveAll(entry => string.IsNullOrEmpty(entry.aqn) || Type.GetType(entry.aqn, throwOnError: false) is null);
-                Persist(store);
             }
 
             return result;
