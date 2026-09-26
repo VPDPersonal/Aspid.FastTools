@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AFT0010` now reports every `this.Marker()` call that opens no marker, not only unsupported types: a receiver of another type (`other.Marker()`, calls in static classes), a default interface method, an explicit argument (`this.Marker(5)`) or type argument, `this?.Marker()`, the static call form, a method group and a call inside an expression tree. The generator no longer emits dead markers for such calls.
 - A generic class names nested type arguments the way C# writes them (`Foo<List<Int32>>.Run (line)`, `Foo<Outer<Int32>.Inner>.Run (line)` instead of ``Foo<List`1>``, `Foo<Inner>`). A generic struct gets one marker per call site for all its closed types, named `Job<T>.Execute (line)`, because Burst cannot run the per-type label.
 - The generated `Marker()` dispatches on the line with a `switch`, so its cost no longer grows with the number of call sites in a type.
+- The Sample Themes window hooks the editor update loop, camera rendering and scene saving only while a **Light** or **Dark** preview is on; in the default **Authored** mode it adds no editor callbacks.
+- `Aspid.FastTools.VisualElements.Math` is no longer compiled as an empty assembly in projects without `com.unity.mathematics`.
 
 ### Removed
 
@@ -37,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".
 - A `[TypeSelector(nameof(...))]` member reference on a field inside a `[Serializable]` class or a list element now resolves on the instance that declares the field, as analyzers `AFT0006`–`AFT0008` already check it; it used to be looked up on the inspected component or asset and showed a warning. The same applies to the picker of the Asset References window.
+- The per-user settings reset no longer lists the removed "Dropdown without [TypeSelector]" option in its tooltip and confirmation dialog.
 - `this.Marker()` inside a `private` or `protected` nested type no longer breaks compilation with CS0122. The generated overload cannot see such a type, so the generator now skips it: the call compiles, opens no marker, and `AFT0010` reports it — make the type `internal` or `public` to profile it.
 - `this.Marker()` in a type nested in a generic type (`Outer<T>.Inner`) now compiles; the generated overload used to miss the outer type parameters (CS0246).
 - `this.Marker()` in an indexer accessor or a static constructor now compiles; the generated field names were invalid. The markers are named `Type.Indexer (line)` and `Type.StaticCtor (line)`.
