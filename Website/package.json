@@ -16,6 +16,7 @@
     "version": "docusaurus docs:version",
     "sync-readme": "node scripts/sync-readme.mjs",
     "check-readme": "node scripts/sync-readme.mjs --check",
+    "test": "node --test scripts/*.test.mjs",
     "prestart:ru": "npm run sync-readme && npm run sync-i18n"
   },
   "dependencies": {

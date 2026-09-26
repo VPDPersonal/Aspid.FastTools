@@ -286,7 +286,7 @@ language, theme).
 
 `src/plugins/search` builds a locale-specific index from Docusaurus' resolved document sources and permalinks.
 `src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow
-keys, Enter and Esc. `node --test scripts/search.test.mjs` checks matching and Markdown extraction.
+keys, Enter and Esc. `npm --prefix Website test` runs `scripts/*.test.mjs`: matching, Markdown extraction and index URLs.
 
 ## Deploy
 
