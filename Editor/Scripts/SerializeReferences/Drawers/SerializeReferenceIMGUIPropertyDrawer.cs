@@ -274,7 +274,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // "Make unique" stays right-pinned.
                 var noticeRect = new Rect(content.x - FoldoutArrowIndent, y,
                     content.width + FoldoutArrowIndent, EditorGUIUtility.singleLineHeight);
-                var persistent = property.Persistent();
 
                 // Navigation needs the live property: expansion state is cached per SerializedObject, so the
                 // ancestor isExpanded writes must go through the inspector's own.
@@ -283,7 +282,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     sharedIndex > 0 ? $"Shared reference #{sharedIndex}" : "Shared reference",
                     "Make unique",
                     SerializeReferenceHelpers.BuildSharedReferenceDetail(property),
-                    () => SerializeReferenceHelpers.MakeReferenceUnique(persistent),
+                    () => SerializeReferenceHelpers.MakeReferenceUnique(property),
                     ridColor: indexColor,
                     onMessageClick: () => SerializeReferenceSharedNavigation.NavigateFrom(property));
 
@@ -418,6 +417,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var single = persistent.managedReferenceValue;
                 persistent.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstancePreservingData(type, single));
                 persistent.isExpanded = type is not null;
+                SerializeReferenceHelpers.InvalidateReferenceMemos();
             }
         }
 
@@ -511,6 +511,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var value = SerializeReferenceClipboard.CreateInstance();
                 target.SetManagedReferenceAndApply(value);
                 target.isExpanded = value is not null;
+                SerializeReferenceHelpers.InvalidateReferenceMemos();
             }
         }
 
@@ -530,6 +531,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             persistent.SetManagedReferenceAndApply(instance);
             persistent.isExpanded = true;
+            SerializeReferenceHelpers.InvalidateReferenceMemos();
         }
 
         private static string GetCaption(SerializedProperty property, Type currentType, out string missingTooltip)
