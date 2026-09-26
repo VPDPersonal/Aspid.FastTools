@@ -68,6 +68,7 @@ public void Step()
     "Aspid.FastTools.Generators.ProfilerMarkersGenerator", "1.0.0")]
 internal static class __FlockSimulationProfilerMarkerExtensions
 {
+#if ENABLE_PROFILER
     private static readonly ProfilerMarker Line_3 =
         new("FlockSimulation.Step (3)");
     private static readonly ProfilerMarker Line_5 =
@@ -76,15 +77,19 @@ internal static class __FlockSimulationProfilerMarkerExtensions
         new("FlockSimulation.Steering.Agent (7)");
     private static readonly ProfilerMarker Line_10 =
         new("FlockSimulation.Integrate (10)");
+#endif
 
     public static ProfilerMarker.AutoScope Marker(
         this FlockSimulation _, [CallerLineNumber] int line = -1)
     {
 #if ENABLE_PROFILER
-        if (line is 3) return Line_3.Auto();
-        if (line is 5) return Line_5.Auto();
-        if (line is 7) return Line_7.Auto();
-        if (line is 10) return Line_10.Auto();
+        switch (line)
+        {
+            case 3: return Line_3.Auto();
+            case 5: return Line_5.Auto();
+            case 7: return Line_7.Auto();
+            case 10: return Line_10.Auto();
+        }
 #endif
         return default;
     }
