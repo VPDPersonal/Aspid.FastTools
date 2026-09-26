@@ -664,6 +664,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ArgumentFilter = IsValidGenericArgument,
                     InferredArgumentFilter = IsAcceptableGenericArgument,
                     IncludeHidden = true,
+                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
                 currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>

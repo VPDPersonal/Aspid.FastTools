@@ -9,10 +9,17 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal sealed class TypeInfo
     {
+        // A type's picker data changes only with a recompile, which reloads the domain and resets these caches.
+        private static readonly Dictionary<Type, TypeInfo> _cache = new();
+        private static readonly Dictionary<System.Reflection.Assembly, string> _assemblyNames = new();
+
         internal readonly string Name;
         internal readonly string Assembly;
         internal readonly string Namespace;
         internal readonly string AssemblyQualifiedName;
+
+        // Namespace.Name without the assembly part, which search matches instead of the assembly-qualified name.
+        internal readonly string QualifiedName;
 
         internal readonly string Tooltip;
 
@@ -24,11 +31,22 @@ namespace Aspid.FastTools.Types.Editors
 
         internal string Label => CustomName ?? Name;
 
-        internal TypeInfo(Type type)
+        internal static TypeInfo Get(Type type)
+        {
+            if (_cache.TryGetValue(type, out var info)) return info;
+
+            info = new TypeInfo(type);
+            _cache[type] = info;
+
+            return info;
+        }
+
+        private TypeInfo(Type type)
         {
             Name = TypeUtility.FormatGenericName(type);
-            Assembly = type.Assembly.GetName().Name;
+            Assembly = GetAssemblyName(type.Assembly);
             AssemblyQualifiedName = type.AssemblyQualifiedName;
+            QualifiedName = string.IsNullOrEmpty(type.Namespace) ? Name : $"{type.Namespace}.{Name}";
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
 
             var item = type.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false);
@@ -45,6 +63,16 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!string.IsNullOrWhiteSpace(item.Tooltip))
                 Tooltip = item.Tooltip;
+        }
+
+        private static string GetAssemblyName(System.Reflection.Assembly assembly)
+        {
+            if (_assemblyNames.TryGetValue(assembly, out var name)) return name;
+
+            name = assembly.GetName().Name;
+            _assemblyNames[assembly] = name;
+
+            return name;
         }
 
         // "Combat / Melee //" → ["Combat", "Melee"]; null when nothing survives, so a blank-only Group degrades to
@@ -65,27 +93,31 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // Additional candidates bypass ordinary constraints, but hidden types remain excluded unless the repair
-        // picker explicitly includes them.
+        // picker explicitly includes them. Types from editor-only assemblies are left out of both when the value is
+        // stored in a runtime object, since a player cannot resolve them. The cheap name and modifier checks run
+        // before the attribute lookups, which matters for an unconstrained picker scanning the whole domain.
         internal static List<TypeInfo> GetAllTypeInfos(
             Type[] baseTypes,
             TypeAllow allow,
             Func<Type, bool> filter = null,
             IEnumerable<Type> additionalTypes = null,
-            bool includeHidden = false)
+            bool includeHidden = false,
+            bool excludeEditorOnly = false)
         {
             var result = new List<TypeInfo>();
 
             result.AddRange(TypeUtility.DomainTypes
-                .Where(t => baseTypes.All(baseType => baseType.IsAssignableFrom(t)) &&
-                    !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
-                    !t.Name.Contains("<") &&
+                .Where(t => !t.Name.Contains("<") &&
                     !t.Name.Contains(">") &&
                     !(t.IsAbstract && t.IsSealed) &&
                     (allow.HasFlag(TypeAllow.Abstract) || t.IsInterface || !t.IsAbstract) &&
                     (allow.HasFlag(TypeAllow.Interface) || !t.IsInterface) &&
+                    baseTypes.All(baseType => baseType.IsAssignableFrom(t)) &&
+                    (!excludeEditorOnly || !TypeUtility.IsEditorOnlyAssembly(t.Assembly)) &&
+                    !t.IsDefined(typeof(CompilerGeneratedAttribute), false) &&
                     (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(t)) &&
                     (filter is null || filter(t)))
-                .Select(type => new TypeInfo(type)));
+                .Select(Get));
 
             if (additionalTypes is not null)
             {
@@ -93,9 +125,10 @@ namespace Aspid.FastTools.Types.Editors
 
                 result.AddRange(additionalTypes
                     .Where(type => type is not null &&
+                        (!excludeEditorOnly || !TypeUtility.IsEditorOnlyAssembly(type.Assembly)) &&
                         (includeHidden || !TypeSelectorHelpers.IsHiddenFromPicker(type)) &&
                         existing.Add(type.AssemblyQualifiedName))
-                    .Select(type => new TypeInfo(type)));
+                    .Select(Get));
             }
 
             return result;
