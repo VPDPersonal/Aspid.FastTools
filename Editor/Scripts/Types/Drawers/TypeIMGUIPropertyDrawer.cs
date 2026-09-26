@@ -68,6 +68,7 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     Types = types,
                     Allow = allow,
+                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 };
 
                 TypeSelectorWindow.Show(

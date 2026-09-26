@@ -76,6 +76,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(elementType, baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                     InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
+                    ExcludeEditorOnly = TypeSelectorHelpers.IsRuntimeObject(target),
                 },
                 currentAqn: null, // a "+" append has no current value — nothing (not even <None>) wears the check
                 onSelected: aqn => Append(target, arrayPath, aqn));

@@ -30,6 +30,10 @@ namespace Aspid.FastTools.Types.Editors
         /// <summary>
         /// Gets or sets which kinds of types can be picked.
         /// </summary>
+        /// <remarks>
+        /// <see cref="TypeAllow.None"/> by default, so only concrete types are offered, unlike
+        /// <see cref="TypeSelectorAttribute.Allow"/>, which defaults to <see cref="TypeAllow.All"/>.
+        /// </remarks>
         [UxmlAttribute]
         public TypeAllow Allow { get; set; } = TypeAllow.None;
 
@@ -50,6 +54,10 @@ namespace Aspid.FastTools.Types.Editors
         /// </summary>
         [UxmlAttribute]
         public bool HideNoneOption { get; set; }
+
+        // Whether the picker leaves out types from editor-only assemblies; a field bound to a runtime object's
+        // property turns it on, since a player cannot resolve such a type.
+        internal bool ExcludeEditorOnlyTypes { get; set; }
 
         /// <summary>
         /// Creates an unbound field without a label.
@@ -74,6 +82,7 @@ namespace Aspid.FastTools.Types.Editors
             : this(label)
         {
             _property = property.Persistent();
+            ExcludeEditorOnlyTypes = TypeSelectorHelpers.IsStoredInRuntimeObject(_property);
             SetValueFromAssemblyQualifiedNameWithoutNotify(_property.stringValue);
 
             this.TrackPropertyValue(_property, current =>
@@ -185,18 +194,14 @@ namespace Aspid.FastTools.Types.Editors
                 Allow = Allow,
                 Predicate = Predicate,
                 HideNoneOption = HideNoneOption,
+                ExcludeEditorOnly = ExcludeEditorOnlyTypes,
             };
 
             TypeSelectorWindow.Show(
                 screenRect: GetScreenRect(),
                 filter: filter,
                 currentAqn: value?.AssemblyQualifiedName ?? _missingAssemblyQualifiedName ?? string.Empty,
-                onSelected: assemblyQualifiedName =>
-                {
-                    this.SetValue(TypeUtility.GetTypeOrNull(assemblyQualifiedName));
-
-                    _property?.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
-                });
+                onSelected: ApplyPicked);
 
             evt.StopPropagation();
             return;
@@ -206,6 +211,28 @@ namespace Aspid.FastTools.Types.Editors
                 window.position.y + _visualInput.worldBound.yMin,
                 _visualInput.worldBound.width,
                 _visualInput.worldBound.height);
+        }
+
+        internal void ApplyPicked(string assemblyQualifiedName)
+        {
+            var picked = TypeUtility.GetTypeOrNull(assemblyQualifiedName);
+
+            // Clearing a missing type keeps the value null, so the base setter would see no change and stay silent;
+            // an unbound owner such as the SerializableMonoScript drawer still needs the event to drop the stored name.
+            if (picked is null && _missingAssemblyQualifiedName is not null)
+            {
+                SetValueWithoutNotify(null);
+
+                using var evt = ChangeEvent<Type>.GetPooled(null, null);
+                evt.target = this;
+                SendEvent(evt);
+            }
+            else
+            {
+                this.SetValue(picked);
+            }
+
+            _property?.SetStringAndApply(assemblyQualifiedName ?? string.Empty);
         }
     }
 }
