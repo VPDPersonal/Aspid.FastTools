@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceTypeUsageIndex
     {
-        // Identity is (asset, document, rid); the rest is payload.
+        // Identity is (asset, document, rid, override target); the rest is payload.
         public readonly struct Usage : IEquatable<Usage>
         {
             public readonly string Guid;
@@ -21,7 +22,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // edit.
             public readonly bool IsOverride;
 
-            public Usage(string guid, long fileId, long rid, bool resolves, ManagedTypeName storedType, bool isOverride = false)
+            // The overridden object of an override, zero and empty otherwise. Two components of one instance can
+            // override the same rid, so it is part of the identity.
+            public readonly long TargetFileId;
+            public readonly string TargetGuid;
+
+            public Usage(string guid, long fileId, long rid, bool resolves, ManagedTypeName storedType, bool isOverride = false,
+                long targetFileId = 0, string targetGuid = null)
             {
                 Guid = guid ?? string.Empty;
                 FileId = fileId;
@@ -29,14 +36,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 Resolves = resolves;
                 StoredType = storedType;
                 IsOverride = isOverride;
+                TargetFileId = targetFileId;
+                TargetGuid = targetGuid ?? string.Empty;
             }
 
             public bool Equals(Usage other) =>
-                string.Equals(Guid, other.Guid, StringComparison.Ordinal) && FileId == other.FileId && Rid == other.Rid;
+                string.Equals(Guid, other.Guid, StringComparison.Ordinal) && FileId == other.FileId && Rid == other.Rid &&
+                TargetFileId == other.TargetFileId && string.Equals(TargetGuid, other.TargetGuid, StringComparison.Ordinal);
 
             public override bool Equals(object obj) => obj is Usage other && Equals(other);
 
-            public override int GetHashCode() => unchecked((Guid.GetHashCode() * 397 ^ FileId.GetHashCode()) * 397 ^ Rid.GetHashCode());
+            public override int GetHashCode() => unchecked(
+                (((Guid.GetHashCode() * 397 ^ FileId.GetHashCode()) * 397 ^ Rid.GetHashCode()) * 397 ^
+                    TargetFileId.GetHashCode()) * 397 ^ TargetGuid.GetHashCode());
         }
 
         private static Dictionary<string, HashSet<Usage>> _index;
@@ -155,8 +167,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // RefIds entries plus the types set by prefab instance overrides, which live outside any RefIds block.
         public static IEnumerable<Usage> CollectUsages(string path, string guid)
         {
+            // One read feeds both passes, so a project sweep reads each file once.
+            var lines = ReadLines(path);
+            if (lines is null) yield break;
+
             // Data-only: resolving display names would load every asset.
-            foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
+            foreach (var document in SerializeReferenceGraphScanner.Build(lines))
             {
                 foreach (var node in document.Nodes)
                 {
@@ -165,10 +181,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 }
             }
 
-            foreach (var entry in SerializeReferenceYamlEditor.FindPrefabOverrideReferences(path))
+            foreach (var entry in SerializeReferenceYamlEditor.FindPrefabOverrideReferences(lines))
             {
                 yield return new Usage(guid, entry.FileId, entry.Rid,
-                    SerializeReferenceHelpers.StoredTypeResolves(entry.StoredType), entry.StoredType, isOverride: true);
+                    SerializeReferenceHelpers.StoredTypeResolves(entry.StoredType), entry.StoredType, isOverride: true,
+                    entry.TargetFileId, entry.TargetGuid);
+            }
+        }
+
+        private static string[] ReadLines(string path)
+        {
+            try
+            {
+                return string.IsNullOrEmpty(path) || !File.Exists(path) ? null : File.ReadAllLines(path);
+            }
+            catch (Exception)
+            {
+                // Best effort, like the scanners: an unreadable file contributes no usages.
+                return null;
             }
         }
 

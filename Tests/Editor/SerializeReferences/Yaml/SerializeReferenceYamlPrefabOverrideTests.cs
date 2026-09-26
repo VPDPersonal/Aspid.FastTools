@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using UnityEditor;
 using NUnit.Framework;
 using System.Reflection;
 using System.Collections.Generic;
@@ -207,6 +209,25 @@ PrefabInstance:
     m_RemovedComponents: []
 ";
 
+        // Two components of one instance that override the same (legacy 1000-based) rid; each gets its own type.
+        private static string TwoTargetsSameRid(string firstType, string secondType) =>
+$@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100
+PrefabInstance:
+  m_Modification:
+    m_Modifications:
+    - target: {{fileID: 200, guid: 1d4d79cb574804cd3967d8baa572e9fd, type: 3}}
+      propertyPath: 'managedReferences[1000]'
+      value: {firstType}
+      objectReference: {{fileID: 0}}
+    - target: {{fileID: 201, guid: 1d4d79cb574804cd3967d8baa572e9fd, type: 3}}
+      propertyPath: 'managedReferences[1000]'
+      value: {secondType}
+      objectReference: {{fileID: 0}}
+    m_RemovedComponents: []
+";
+
         private string _path;
 
         [TearDown]
@@ -311,18 +332,8 @@ PrefabInstance:
         {
             _path = YamlFixtures.WriteTemp(VariantPrefab);
 
-            // Seeds the index with this one file instead of warming it over the whole project.
-            var indexField = typeof(SerializeReferenceTypeUsageIndex).GetField("_index", BindingFlags.NonPublic | BindingFlags.Static);
-            var addAsset = typeof(SerializeReferenceTypeUsageIndex).GetMethod("AddAsset", BindingFlags.NonPublic | BindingFlags.Static);
-            Assert.IsNotNull(indexField);
-            Assert.IsNotNull(addAsset);
-
-            var previous = indexField.GetValue(null);
-            try
+            WithSeededIndex(_path, "variant", () =>
             {
-                indexField.SetValue(null, new Dictionary<string, HashSet<SerializeReferenceTypeUsageIndex.Usage>>(System.StringComparer.Ordinal));
-                addAsset.Invoke(null, new object[] { _path, "variant" });
-
                 var bow = SerializeReferenceTypeUsageIndex.FindUsages(
                     SerializeReferenceHelpers.StoredTypeKey(new ManagedTypeName("Assembly-CSharp", "P05.Game", "Bow")));
 
@@ -334,6 +345,59 @@ PrefabInstance:
                 Assert.AreEqual(BowRid, usage.Rid);
 
                 Assert.AreEqual(3, SerializeReferenceTypeUsageIndex.EnumerateUnresolved().Count(entry => entry.IsOverride));
+            });
+        }
+
+        [Test]
+        public void TypeUsageIndex_SameRidOnTwoTargets_CountsBoth()
+        {
+            _path = YamlFixtures.WriteTemp(TwoTargetsSameRid("Assembly-CSharp P05.Game.Bow", "Assembly-CSharp P05.Game.Bow"));
+
+            WithSeededIndex(_path, "shared", () =>
+            {
+                var bow = SerializeReferenceTypeUsageIndex.FindUsages(
+                    SerializeReferenceHelpers.StoredTypeKey(new ManagedTypeName("Assembly-CSharp", "P05.Game", "Bow")));
+
+                Assert.AreEqual(2, bow.Count, "Each overridden component is its own usage.");
+                CollectionAssert.AreEquivalent(new[] { 200L, 201L }, bow.Select(usage => usage.TargetFileId).ToArray());
+            });
+        }
+
+        // The gate treats a [MovedFrom]-claimed override as a pending migration, so Project References must not list
+        // it as missing either. (RenamedRanged is the shared [MovedFrom(..., "OldRenamedRanged")] fixture.)
+        [Test]
+        public void CollectOverridesFromIndex_MovedFromClaimedName_IsLeftOut()
+        {
+            var renamed = $"{typeof(RenamedRanged).Assembly.GetName().Name} {typeof(RenamedRanged).Namespace}.OldRenamedRanged";
+            _path = YamlFixtures.WriteTemp(TwoTargetsSameRid(renamed, "Assembly-CSharp P05.Game.Bow"));
+
+            // CollectOverridesFromIndex maps the guid back to a path, so it must be a real asset's.
+            var guid = AssetDatabase.AssetPathToGUID("Packages/tech.aspid.fasttools/package.json");
+            Assert.IsNotEmpty(guid);
+
+            WithSeededIndex(_path, guid, () =>
+            {
+                var overrides = MissingReferenceGroup.CollectOverridesFromIndex();
+
+                Assert.AreEqual(1, overrides.Count);
+                Assert.AreEqual("Bow", overrides[0].Entry.StoredType.Class);
+            });
+        }
+
+        // Seeds the index with this one file instead of warming it over the whole project.
+        private static void WithSeededIndex(string path, string guid, Action body)
+        {
+            var indexField = typeof(SerializeReferenceTypeUsageIndex).GetField("_index", BindingFlags.NonPublic | BindingFlags.Static);
+            var addAsset = typeof(SerializeReferenceTypeUsageIndex).GetMethod("AddAsset", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.IsNotNull(indexField);
+            Assert.IsNotNull(addAsset);
+
+            var previous = indexField.GetValue(null);
+            try
+            {
+                indexField.SetValue(null, new Dictionary<string, HashSet<SerializeReferenceTypeUsageIndex.Usage>>(StringComparer.Ordinal));
+                addAsset.Invoke(null, new object[] { path, guid });
+                body();
             }
             finally
             {

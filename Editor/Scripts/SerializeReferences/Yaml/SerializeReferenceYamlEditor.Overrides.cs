@@ -43,6 +43,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
+        // For a sweep that already read the file for another pass.
+        public static List<PrefabOverrideReference> FindPrefabOverrideReferences(string[] lines)
+        {
+            try
+            {
+                return lines is null ? new List<PrefabOverrideReference>() : CollectPrefabOverrides(lines);
+            }
+            catch (Exception)
+            {
+                return new List<PrefabOverrideReference>();
+            }
+        }
+
         // Every type-setting modification ("managedReferences[rid]" -> "<asm> <ns>.<class>") of every PrefabInstance
         // document. A cleared field writes "managedReferences[-2]" with an empty value, which is not a reference.
         private static List<PrefabOverrideReference> CollectPrefabOverrides(string[] lines)
