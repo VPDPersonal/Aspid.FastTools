@@ -217,6 +217,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (documents.Count == 0 && _requiredViolations.Count == 0)
             {
+                // A variant or a scene may hold its managed references only as prefab instance overrides, which have
+                // no RefIds graph to map.
+                if (SerializeReferenceYamlEditor.FindPrefabOverrideReferences(assetPath).Count > 0)
+                {
+                    ShowEmpty(
+                        "Only prefab overrides",
+                        "This asset sets [SerializeReference] types only through prefab instance overrides, which this " +
+                        "view does not map. Project References lists the missing ones.");
+                    return;
+                }
+
                 ShowEmpty(
                     "No managed references",
                     "This asset has no [SerializeReference] managed references to map.");

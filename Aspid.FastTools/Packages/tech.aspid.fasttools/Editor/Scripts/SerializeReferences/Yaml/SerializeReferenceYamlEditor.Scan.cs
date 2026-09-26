@@ -67,6 +67,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         }
                     }
                 }
+
+                // A variant, a nested prefab or a scene instance keeps an overridden type in its PrefabInstance
+                // document, which has no RefIds block.
+                foreach (var entry in CollectPrefabOverrides(lines))
+                {
+                    if (!resolves(entry.StoredType))
+                        result.Add(new MissingReferenceEntry(entry.FileId, entry.Rid, entry.StoredType, isOverride: true, entry.FieldPath));
+                }
             }
             catch (Exception)
             {

@@ -17,13 +17,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             public readonly bool Resolves;
             public readonly ManagedTypeName StoredType;
 
-            public Usage(string guid, long fileId, long rid, bool resolves, ManagedTypeName storedType)
+            // Set by a prefab instance override: FileId is the PrefabInstance document, which the YAML repair cannot
+            // edit.
+            public readonly bool IsOverride;
+
+            public Usage(string guid, long fileId, long rid, bool resolves, ManagedTypeName storedType, bool isOverride = false)
             {
                 Guid = guid ?? string.Empty;
                 FileId = fileId;
                 Rid = rid;
                 Resolves = resolves;
                 StoredType = storedType;
+                IsOverride = isOverride;
             }
 
             public bool Equals(Usage other) =>
@@ -143,16 +148,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void AddAsset(string path, string guid)
         {
+            foreach (var usage in CollectUsages(path, guid))
+                AddUsage(SerializeReferenceHelpers.StoredTypeKey(usage.StoredType), usage);
+        }
+
+        // RefIds entries plus the types set by prefab instance overrides, which live outside any RefIds block.
+        public static IEnumerable<Usage> CollectUsages(string path, string guid)
+        {
             // Data-only: resolving display names would load every asset.
             foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
             {
                 foreach (var node in document.Nodes)
                 {
                     if (node.StoredType.IsEmpty) continue;
-
-                    var key = SerializeReferenceHelpers.StoredTypeKey(node.StoredType);
-                    AddUsage(key, new Usage(guid, document.FileId, node.Rid, node.Resolves, node.StoredType));
+                    yield return new Usage(guid, document.FileId, node.Rid, node.Resolves, node.StoredType);
                 }
+            }
+
+            foreach (var entry in SerializeReferenceYamlEditor.FindPrefabOverrideReferences(path))
+            {
+                yield return new Usage(guid, entry.FileId, entry.Rid,
+                    SerializeReferenceHelpers.StoredTypeResolves(entry.StoredType), entry.StoredType, isOverride: true);
             }
         }
 
