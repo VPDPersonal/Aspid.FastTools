@@ -37,7 +37,8 @@ The receiver constraint is given per section. Version-guarded members are marked
 
 Every method has an `…If(bool condition, …)` variant: `AddChildIf`, `AddChildrenIf`, `InsertChildIf`,
 `InsertChildrenIf`, `RemoveChildIf`, `RemoveChildrenIf`, `RemoveChildAtIf`, `ClearChildrenIf`. Collection overloads keep
-order and ignore a `null` collection.
+order and ignore a `null` collection; an `IEnumerable` is copied first, so `target.AddChildren(source.Children())`
+moves every child.
 
 ## USS classes and style sheets (`where T : VisualElement`)
 
@@ -170,7 +171,7 @@ Any other type: `SetValue<TField, TValue>` (infers from the argument),
 
 | Receiver | Methods |
 |---|---|
-| `BaseField<X>` for `int`, `uint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal`, `char`, `string`, `Enum`, `Object`, `Color`, `Color32`, `Rect`, `Bounds`, `BoundsInt`, `Hash128`, `Vector2`, `Vector2Int`, `Vector3`, `Vector3Int`, `Vector4`, `Quaternion`, `Gradient`, `AnimationCurve`, `ToggleButtonGroupState` | `SetLabel(string)` |
+| `BaseField<X>` for `int`, `uint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal`, `char`, `string`, `Enum`, `Object`, `Color`, `Color32`, `Rect`, `RectInt`, `Bounds`, `BoundsInt`, `Hash128`, `Vector2`, `Vector2Int`, `Vector3`, `Vector3Int`, `Vector4`, `Quaternion`, `Gradient`, `AnimationCurve`, `ToggleButtonGroupState` | `SetLabel(string)` |
 | any other `BaseField<TValue>` | `SetLabel<TField, TValue>(string)` |
 | `BaseBoolField` (`Toggle`) | `SetLabel`, `SetText`, `SetToggleOnLabelClick(bool)` |
 | `EnumField` | `Initialize(Enum defaultValue, bool includeObsoleteValues = false)` |
@@ -202,7 +203,8 @@ Any other type: `SetValue<TField, TValue>` (infers from the argument),
 ## Focus (`where T : Focusable`)
 
 `FocusSelf()`, `BlurSelf()`, `SetFocusable(bool)`, `SetTabIndex(int)`, `SetDelegatesFocus(bool)`;
-`IsFocused()` returns `bool`.
+`IsFocused()` returns `bool`: whether the element is the panel's `focusedElement`, which is the outermost composite
+element, so a field inside a `Vector3Field` or a `ListView` row reports `false`.
 
 ## Manipulators (`where T : VisualElement`)
 
@@ -219,10 +221,10 @@ Keep the `out` manipulator to remove it later with `RemoveManipulatorSelf`.
 
 | Receiver | Methods |
 |---|---|
-| `BaseVerticalCollectionView` | `SetItemsSource(IList)`, `SetFixedItemHeight(float)`, `SetSelectionType(SelectionType)`, `SetSelectedIndex(int)`, `SetReorderable(bool)`, `SetHorizontalScrollingEnabled(bool)`, `SetVirtualizationMethod(CollectionVirtualizationMethod)`, `SetShowAlternatingRowBackgrounds(AlternatingRowBackground)`; events `Add/Remove` + `SelectionChanged`, `SelectedIndicesChanged`, `ItemsChosen`, `ItemIndexChanged`, `ItemsSourceChanged`, `CanStartDrag`, `SetupDragAndDrop`, `DragAndDropUpdate`, `HandleDrop` |
+| `BaseVerticalCollectionView` | `SetItemsSource(IList)` (lists only; throws on a `BaseTreeView`), `SetFixedItemHeight(float)`, `SetSelectionType(SelectionType)`, `SetSelectedIndex(int)`, `SetReorderable(bool)`, `SetHorizontalScrollingEnabled(bool)`, `SetVirtualizationMethod(CollectionVirtualizationMethod)`, `SetShowAlternatingRowBackgrounds(AlternatingRowBackground)`; events `Add/Remove` + `SelectionChanged`, `SelectedIndicesChanged`, `ItemsChosen`, `ItemIndexChanged`, `ItemsSourceChanged`, `CanStartDrag`, `SetupDragAndDrop`, `DragAndDropUpdate`, `HandleDrop` |
 | `BaseListView` | `SetHeaderTitle(string)`, `SetShowFoldoutHeader`, `SetShowAddRemoveFooter`, `SetShowBoundCollectionSize`, `SetAllowAdd`, `SetAllowRemove` (`bool`), `SetReorderMode(ListViewReorderMode)`, `SetBindingSourceSelectionMode`, `SetMakeHeader` / `SetMakeFooter` / `SetMakeNoneElement` (`Func<VisualElement>`), `SetOnAdd` / `AddOnAdd` / `RemoveOnAdd`, `SetOnRemove` / `AddOnRemove` / `RemoveOnRemove` (`Action<BaseListView>`), `SetOverridingAddButtonBehavior` / `Add…` / `Remove…` (`Action<BaseListView, Button>`), `Add/RemoveItemsAdded`, `Add/RemoveItemsRemoved` (`Action<IEnumerable<int>>`) |
 | `ListView`, `TreeView` | `SetMakeItem(Func<VisualElement>)`, `SetBindItem` / `AddBindItem` / `RemoveBindItem`, `SetUnbindItem` / `AddUnbindItem` / `RemoveUnbindItem` (`Action<VisualElement, int>`), `SetDestroyItem` / `AddDestroyItem` / `RemoveDestroyItem` (`Action<VisualElement>`), `SetItemTemplate(VisualTreeAsset)` |
-| `BaseTreeView` | `SetAutoExpand(bool)`, `Add/RemoveItemExpandedChanged(Action<TreeViewExpansionChangedArgs>)` |
+| `BaseTreeView` | `SetRootItemsSelf(IList<TreeViewItemData<TData>>)`, `SetAutoExpand(bool)`, `Add/RemoveItemExpandedChanged(Action<TreeViewExpansionChangedArgs>)` |
 | `MultiColumnListView`, `MultiColumnTreeView` | `SetSortingMode(ColumnSortingMode)`, `Add/RemoveColumnSortingChanged(Action)` |
 
 ## Custom USS properties
