@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using NUnit.Framework;
+using System.Reflection;
 using UnityEngine.Scripting.APIUpdating;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -93,6 +94,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var stored = new ManagedTypeName("Some.Other.Assembly", Namespace, "OldRenamedRanged");
 
             Assert.IsFalse(SerializeReferenceMovedFromResolver.TryResolve(stored, out _));
+        }
+
+        [Test]
+        public void UnityMovedFromInternals_StillExist()
+        {
+            // The resolver reads these non-public members and treats a miss as "no rename", so a Unity rename would
+            // silently hide every [MovedFrom] from Smart Fix instead of failing.
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+            var data = typeof(MovedFromAttribute).GetField("data", flags);
+            Assert.IsNotNull(data, "Unity renamed MovedFromAttribute.data; update SerializeReferenceMovedFromResolver.");
+
+            foreach (var name in new[] { "className", "nameSpace", "assembly", "classHasChanged", "nameSpaceHasChanged", "assemblyHasChanged" })
+                Assert.IsNotNull(data.FieldType.GetField(name, flags),
+                    $"Unity renamed MovedFromAttributeData.{name}; update SerializeReferenceMovedFromResolver.");
         }
     }
 }

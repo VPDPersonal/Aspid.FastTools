@@ -1,4 +1,6 @@
+using System;
 using UnityEditor;
+using System.Reflection;
 using Aspid.FastTools.Types;
 using Aspid.FastTools.Editors;
 
@@ -26,8 +28,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (field is null) return false;
 
             return field.IsDefined(typeof(TypeSelectorAttribute), inherit: true) ||
-                   CustomDrawerRegistry.HasDrawerFor(field.FieldType) ||
+                   CustomDrawerRegistry.HasDrawerFor(GetDrawnType(child, field), isManagedReference: true) ||
                    CustomDrawerRegistry.DeclaresDrawnAttribute(field);
+        }
+
+        // Unity picks a drawer by the instance type of a managed reference and by the element type of a list.
+        private static Type GetDrawnType(SerializedProperty child, FieldInfo field)
+        {
+            if (child.propertyType is SerializedPropertyType.ManagedReference &&
+                SerializeReferenceHelpers.GetTypeFromTypename(child.managedReferenceFullTypename) is { } instanceType)
+                return instanceType;
+
+            return child.isArray || child.IsArrayElement()
+                ? field.FieldType.GetCollectionElementTypeOrSelf()
+                : field.FieldType;
         }
 
         internal static bool HasVisibleChildren(SerializedProperty property)

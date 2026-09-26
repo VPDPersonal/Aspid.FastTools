@@ -104,7 +104,7 @@ public sealed class DoubleShot : IWeapon
 
 Choose **DoubleShot** in `Primary`, then **Pistol** in its **Weapon** field. You do not need to repeat `[TypeSelector]` on `Weapon`. Nested arrays and lists of managed references work the same way.
 
-Automatic drawing covers eight nesting levels, after which Unity's standard drawing takes over. This is a drawing limit, not a restriction on storing deeper graphs. A child field with its own `[TypeSelector]` or `[CustomPropertyDrawer]` keeps that drawer.
+Automatic drawing covers eight nesting levels, after which Unity's standard drawing takes over. This is a drawing limit, not a restriction on storing deeper graphs. A child field keeps its `[TypeSelector]` or the `[CustomPropertyDrawer]` Unity would use for it: one for the stored type, a base class, an interface or an open generic type such as `typeof(Effect<>)`.
 
 ## Working with data
 

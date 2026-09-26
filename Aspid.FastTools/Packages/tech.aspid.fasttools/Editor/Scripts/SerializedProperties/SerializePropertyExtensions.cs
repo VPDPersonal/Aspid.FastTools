@@ -61,7 +61,7 @@ namespace Aspid.FastTools.Editors
         }
 
         /// <summary>
-        /// Returns the property at the same path on an independent <see cref="SerializedObject"/>.
+        /// Returns the property at the same path on an independent <see cref="SerializedObject"/> with the same targets and context.
         /// </summary>
         /// <param name="property">The source property.</param>
         /// <returns>The independent property; otherwise, <see langword="null"/> if the path no longer exists on the targets.</returns>
@@ -71,7 +71,8 @@ namespace Aspid.FastTools.Editors
         /// </remarks>
         public static SerializedProperty Persistent(this SerializedProperty property)
         {
-            var serializedObject = new SerializedObject(property.serializedObject.targetObjects);
+            var source = property.serializedObject;
+            var serializedObject = new SerializedObject(source.targetObjects, source.context);
             var persistent = serializedObject.FindProperty(property.propertyPath);
             if (persistent is null) serializedObject.Dispose();
 

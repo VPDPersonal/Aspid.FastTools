@@ -10,25 +10,29 @@ namespace Aspid.FastTools.Editors
     internal static class CustomDrawerRegistry
     {
         // Unity exposes no public drawer registry; missing internal attribute fields disable this lookup.
-        private static readonly FieldInfo _targetField =
+        internal static readonly FieldInfo TargetField =
             typeof(CustomPropertyDrawer).GetField("m_Type", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        private static readonly FieldInfo _useForChildrenField =
+        internal static readonly FieldInfo UseForChildrenField =
             typeof(CustomPropertyDrawer).GetField("m_UseForChildren", BindingFlags.Instance | BindingFlags.NonPublic);
 
         private static List<(Type Target, bool UseForChildren)> _registrations;
 
         private static List<(Type Target, bool UseForChildren)> Registrations => _registrations ??= Collect();
 
-        internal static bool HasDrawerFor(Type type)
+        // Mirrors Unity's lookup: the type and its base classes, then its interfaces, each also by generic definition.
+        // An ancestor's drawer applies with useForChildren or, as Unity treats managed references, without it.
+        internal static bool HasDrawerFor(Type type, bool isManagedReference = false)
         {
             if (type is null) return false;
 
-            foreach (var (target, useForChildren) in Registrations)
-            {
-                if (target == type) return true;
-                if (useForChildren && target.IsAssignableFrom(type)) return true;
-            }
+            for (var current = type; current is not null; current = current.BaseType)
+                if (Matches(current, requested: current == type, isManagedReference))
+                    return true;
+
+            foreach (var @interface in type.GetInterfaces())
+                if (Matches(@interface, requested: type.IsInterface, isManagedReference))
+                    return true;
 
             return false;
         }
@@ -44,10 +48,23 @@ namespace Aspid.FastTools.Editors
             return false;
         }
 
+        private static bool Matches(Type type, bool requested, bool isManagedReference)
+        {
+            var definition = type.IsGenericType ? type.GetGenericTypeDefinition() : null;
+
+            foreach (var (target, useForChildren) in Registrations)
+            {
+                if (target != type && target != definition) continue;
+                if (requested || useForChildren || isManagedReference) return true;
+            }
+
+            return false;
+        }
+
         private static List<(Type Target, bool UseForChildren)> Collect()
         {
             var result = new List<(Type, bool)>();
-            if (_targetField is null) return result;
+            if (TargetField is null) return result;
 
             foreach (var drawer in TypeCache.GetTypesWithAttribute<CustomPropertyDrawer>())
             {
@@ -55,8 +72,8 @@ namespace Aspid.FastTools.Editors
 
                 foreach (var registration in drawer.GetCustomAttributes<CustomPropertyDrawer>(inherit: true))
                 {
-                    if (_targetField.GetValue(registration) is not Type target) continue;
-                    var useForChildren = _useForChildrenField?.GetValue(registration) is true;
+                    if (TargetField.GetValue(registration) is not Type target) continue;
+                    var useForChildren = UseForChildrenField?.GetValue(registration) is true;
 
                     result.Add((target, useForChildren));
                 }
