@@ -44,7 +44,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (options.ScanRequiredFields)
                 {
                     if (SerializeReferenceHelpers.IsScene(path)) CollectSceneRequiredViolations(path, violations);
-                    else CollectRequiredViolations(path, violations, options.ScanMissingTypes);
+                    else CollectRequiredViolations(path, violations);
                 }
             }
 
@@ -120,9 +120,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return required;
         }
 
-        // With the missing-type scan on, a required reference whose missing type is stored in a prefab override is
-        // reported as missing rather than unset: the document scan never sees a type inside an override.
-        private static void CollectRequiredViolations(string assetPath, List<GateViolation> violations, bool reportOverrideMissingTypes = false)
+        // A required reference whose missing type is stored in a prefab override is reported here as missing rather
+        // than unset, whatever the options: the document scan never sees a type inside an override.
+        private static void CollectRequiredViolations(string assetPath, List<GateViolation> violations)
         {
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
             {
@@ -149,8 +149,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     if (iterator.propertyType is not (SerializedPropertyType.ManagedReference or SerializedPropertyType.String)) continue;
 
-                    if (reportOverrideMissingTypes &&
-                        TypeSelectorRequiredGate.TryGetRequired(iterator, out _) &&
+                    if (TypeSelectorRequiredGate.TryGetRequired(iterator, out _) &&
                         SerializeReferenceHelpers.TryGetPrefabOverrideMissingType(iterator, out var missingRid, out var storedType))
                     {
                         violations.Add(new GateViolation(assetPath, fileId, missingRid, storedType,

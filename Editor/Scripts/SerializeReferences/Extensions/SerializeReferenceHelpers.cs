@@ -204,6 +204,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Dictionary<(int instanceId, string path), (bool missing, long referenceId, ManagedTypeName storedType, MissingTypeOrigin origin, string storedIn)>
             _missingProbeMemo = new();
 
+        // Every null reference field of a prefab instance reads the same modification list, so it is fetched once
+        // per instance and frame alongside the memo above.
+        private static readonly Dictionary<int, PropertyModification[]> _propertyModificationsMemo = new();
+
         public static void InvalidateMissingTypeMemo() => _missingProbeFrame = -1;
 
         private static bool TryGetMissingType(SerializedProperty property, out long referenceId, out ManagedTypeName storedType) =>
@@ -224,6 +228,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_missingProbeFrame != frame)
             {
                 _missingProbeMemo.Clear();
+                _propertyModificationsMemo.Clear();
                 _missingProbeFrame = frame;
             }
 
@@ -323,7 +328,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             referenceId = 0;
             storedType = default;
 
-            var modifications = PrefabUtility.GetPropertyModifications(instance);
+            var instanceId = instance.GetInstanceID();
+            if (!_propertyModificationsMemo.TryGetValue(instanceId, out var modifications))
+            {
+                modifications = PrefabUtility.GetPropertyModifications(instance);
+                _propertyModificationsMemo[instanceId] = modifications;
+            }
+
             if (modifications is null) return false;
 
             var found = false;
