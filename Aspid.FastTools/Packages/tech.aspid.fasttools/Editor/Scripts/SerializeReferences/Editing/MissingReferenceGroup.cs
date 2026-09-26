@@ -63,7 +63,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Missing types set by prefab instance overrides. They are reported but not repaired: the fix is a new type or
-        // Revert on the instance itself.
+        // Revert on the instance itself. An old name a [MovedFrom] claims is left out, as the gate treats it as a
+        // pending migration (an override has no field constraint to reject the target).
         public static List<MissingReferenceLocation> CollectOverridesFromIndex()
         {
             var result = new List<MissingReferenceLocation>();
@@ -71,6 +72,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             foreach (var usage in SerializeReferenceTypeUsageIndex.EnumerateUnresolved())
             {
                 if (!usage.IsOverride) continue;
+                if (SerializeReferenceMovedFromResolver.TryResolve(usage.StoredType, out _)) continue;
 
                 var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
                 if (string.IsNullOrEmpty(path)) continue;

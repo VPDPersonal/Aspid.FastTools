@@ -30,23 +30,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
 
                 var lines = File.ReadAllLines(assetPath);
-                var headers = CollectHeaders(lines);
-                var typeNames = resolveTypeNames ? ResolveTypeNames(assetPath) : null;
-
-                for (var h = 0; h < headers.Count; h++)
-                {
-                    var (fileId, classId, start) = headers[h];
-                    var end = SerializeReferenceYaml.FindDocumentEnd(lines, start + 1);
-
-                    var document = BuildDocument(lines, fileId, start, end);
-                    if (document is null) continue;
-
-                    document.TypeName = typeNames != null && typeNames.TryGetValue(fileId, out var name) && !string.IsNullOrEmpty(name)
-                        ? name
-                        : $"!u!{classId}";
-
-                    result.Add(document);
-                }
+                AddDocuments(lines, resolveTypeNames ? ResolveTypeNames(assetPath) : null, result);
             }
             catch (Exception)
             {
@@ -54,6 +38,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             return result;
+        }
+
+        // Text-only, for a sweep that already read the file for another pass.
+        public static List<ReferenceGraphDocument> Build(string[] lines)
+        {
+            var result = new List<ReferenceGraphDocument>();
+
+            try
+            {
+                if (lines is not null) AddDocuments(lines, typeNames: null, result);
+            }
+            catch (Exception)
+            {
+                // Best effort, like the path overload.
+            }
+
+            return result;
+        }
+
+        private static void AddDocuments(string[] lines, Dictionary<long, string> typeNames, List<ReferenceGraphDocument> result)
+        {
+            var headers = CollectHeaders(lines);
+
+            for (var h = 0; h < headers.Count; h++)
+            {
+                var (fileId, classId, start) = headers[h];
+                var end = SerializeReferenceYaml.FindDocumentEnd(lines, start + 1);
+
+                var document = BuildDocument(lines, fileId, start, end);
+                if (document is null) continue;
+
+                document.TypeName = typeNames != null && typeNames.TryGetValue(fileId, out var name) && !string.IsNullOrEmpty(name)
+                    ? name
+                    : $"!u!{classId}";
+
+                result.Add(document);
+            }
         }
 
         // Documents without reference entries or field pointers contribute no graph.
