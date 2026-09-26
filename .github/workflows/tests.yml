@@ -19,8 +19,10 @@ jobs:
         include:
           - name: Generators
             path: Aspid.FastTools.Generators
+            project: Aspid.FastTools.Generators/Aspid.FastTools.Generators
           - name: Analyzers
             path: Aspid.FastTools.Analyzers
+            project: Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers
     steps:
       - uses: actions/checkout@v4
 
@@ -33,3 +35,15 @@ jobs:
 
       - name: Run ${{ matrix.name }} tests
         run: dotnet test "${{ matrix.path }}" --nologo
+
+      # A Release build re-deploys the DLL into the package (Directory.Build.targets); a clean diff proves
+      # the committed DLL was built from these sources, as the release workflow requires.
+      - name: Verify the committed ${{ matrix.name }} DLL
+        run: |
+          set -euo pipefail
+          dotnet build "${{ matrix.project }}" -c Release --nologo
+          DLL="Aspid.FastTools/Packages/tech.aspid.fasttools/Aspid.FastTools.${{ matrix.name }}.dll"
+          if ! git diff --exit-code --stat -- "$DLL"; then
+            echo "::error file=$DLL::$DLL is stale. Run 'dotnet build ${{ matrix.project }} -c Release' and commit the DLL."
+            exit 1
+          fi

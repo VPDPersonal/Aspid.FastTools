@@ -1,9 +1,16 @@
 name: Release
 
+# Publishes a release: a pushed v* tag, a manual run, or a merge into main that changes the package version
+# (a release PR from scripts/prepare-release.mjs). A main push whose version is already tagged does nothing.
+
 on:
   push:
     tags:
       - 'v*'
+    branches: [main]
+    # Not evaluated for tag pushes.
+    paths:
+      - 'Aspid.FastTools/Packages/tech.aspid.fasttools/package.json'
   workflow_dispatch:
     inputs:
       version:
@@ -14,6 +21,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 env:
   PACKAGE_PATH: Aspid.FastTools/Packages/tech.aspid.fasttools
   CHANGELOG_PATH: CHANGELOG.md
@@ -21,18 +32,29 @@ env:
   ANALYZERS_SOLUTION_DIR: Aspid.FastTools.Analyzers
 
 jobs:
-  release:
+  version:
     runs-on: ubuntu-latest
-
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      release: ${{ steps.version.outputs.release }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Determine version
         id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            VERSION="${{ inputs.version }}"
-          else
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            VERSION="$INPUT_VERSION"
+          elif [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
             VERSION="${GITHUB_REF_NAME}"
+          else
+            VERSION=$(jq -r .version "$PACKAGE_PATH/package.json")
           fi
           VERSION="${VERSION#v}"
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
@@ -47,8 +69,21 @@ jobs:
           else
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
-          echo "Releasing $TAG"
+          if [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF_TYPE" == "branch" ]] \
+             && git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::$TAG is already released; nothing to do."
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "Releasing $TAG"
+          fi
 
+  release:
+    needs: version
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -60,10 +95,10 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Check tag does not already exist
-        if: github.event_name == 'workflow_dispatch'
+        if: github.ref_type != 'tag'
         run: |
           set -euo pipefail
-          TAG="${{ steps.version.outputs.tag }}"
+          TAG="${{ needs.version.outputs.tag }}"
           if git rev-parse --verify --quiet "refs/tags/$TAG" >/dev/null; then
             echo "::error::Tag $TAG already exists locally. Delete it or pick another version."
             exit 1
@@ -76,7 +111,7 @@ jobs:
       - name: Validate package.json version
         run: |
           set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ needs.version.outputs.version }}"
           PKG_VERSION=$(jq -r .version "$PACKAGE_PATH/package.json")
           if [[ "$PKG_VERSION" != "$VERSION" ]]; then
             echo "::error file=$PACKAGE_PATH/package.json::package.json version ($PKG_VERSION) does not match release version ($VERSION). Bump it before tagging."
@@ -87,7 +122,7 @@ jobs:
       - name: Validate documentation version
         run: |
           set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ needs.version.outputs.version }}"
           for f in README.md "$PACKAGE_PATH/Documentation/README.md" "$PACKAGE_PATH/Documentation/ru/README.md" \
                    "$PACKAGE_PATH/Documentation/Images/status-badge-preview.svg"; do
             if ! grep -qF "$VERSION" "$f"; then
@@ -100,7 +135,7 @@ jobs:
         id: changelog
         run: |
           set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="${{ needs.version.outputs.version }}"
           NOTES=$(awk -v ver="$VERSION" '
             BEGIN { capture = 0 }
             /^## \[/ {
@@ -173,24 +208,24 @@ jobs:
           echo "Committed Roslyn DLLs match a fresh Release build."
 
       - name: Create and push release tag
-        if: github.event_name == 'workflow_dispatch'
+        if: github.ref_type != 'tag'
         run: |
           set -euo pipefail
-          TAG="${{ steps.version.outputs.tag }}"
+          TAG="${{ needs.version.outputs.tag }}"
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
 
       - name: Checkout release tag
         run: |
           set -euo pipefail
-          git fetch origin "refs/tags/${{ steps.version.outputs.tag }}:refs/tags/${{ steps.version.outputs.tag }}" || true
-          git checkout "${{ steps.version.outputs.tag }}"
+          git fetch origin "refs/tags/${{ needs.version.outputs.tag }}:refs/tags/${{ needs.version.outputs.tag }}" || true
+          git checkout "${{ needs.version.outputs.tag }}"
 
       - name: Publish UPM subtree
         run: |
           set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
-          PRERELEASE="${{ steps.version.outputs.prerelease }}"
+          VERSION="${{ needs.version.outputs.version }}"
+          PRERELEASE="${{ needs.version.outputs.prerelease }}"
 
           if [[ "$PRERELEASE" == "true" ]]; then
             UPM_BRANCH="upm-preview"
@@ -218,7 +253,7 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: ${{ steps.version.outputs.tag }}
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: ${{ needs.version.outputs.tag }}
           body: ${{ steps.changelog.outputs.notes }}
-          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
+          prerelease: ${{ needs.version.outputs.prerelease == 'true' }}

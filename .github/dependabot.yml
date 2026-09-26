@@ -1,0 +1,28 @@
+# One grouped PR per ecosystem a month. The Roslyn packages of Aspid.FastTools.Generators/Analyzers are not
+# listed: their versions must match the compiler Unity ships.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci
+      include: scope
+    labels: ['dependencies', 'type: ci', 'area: ci']
+
+  - package-ecosystem: npm
+    directory: /Website
+    schedule:
+      interval: monthly
+    groups:
+      website:
+        patterns: ['*']
+        update-types: [minor, patch]
+    commit-message:
+      prefix: chore
+      include: scope
+    labels: ['dependencies', 'type: chore', 'area: docs']

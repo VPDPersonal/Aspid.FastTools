@@ -1,0 +1,5 @@
+#!/bin/sh
+# The CI consistency checks on the staged files, plus a rebuild of a Roslyn DLL whose sources are staged.
+# Enable once per clone: git config core.hooksPath .githooks
+command -v node >/dev/null 2>&1 || exit 0
+exec node scripts/check-changes.mjs --staged

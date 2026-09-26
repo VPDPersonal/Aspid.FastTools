@@ -141,7 +141,7 @@ First release. Unity **6000.0**, assemblies `Aspid.FastTools` / `Aspid.FastTools
 
 - English and Russian docs in `Documentation/`, published at https://vpdpersonal.github.io/Aspid.FastTools/.
 - `aspid-fasttools` Claude Code plugin in [Aspid.Claude.Plugins](https://github.com/VPDPersonal/Aspid.Claude.Plugins).
-- `upm` / `upm/<version>` for stable releases, `upm-preview` for prereleases.
+- `upm` / `upm/<version>` for stable releases, `upm-preview` for prereleases. Until the first stable release, the `upm` branch still holds the older `com.aspid.fasttools` package (`1.0.0-rc.2`).
 - EditMode tests for the YAML editor and the CI-gate scan.
 
 [1.0.0-rc.8]: https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8

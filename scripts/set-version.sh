@@ -11,7 +11,7 @@ OLD=$(sed -n 's/^  "version": "\(.*\)",$/\1/p' "$PKG/package.json")
 [ "$OLD" != "$NEW" ] || { echo "already at $NEW"; exit 0; }
 for f in "$PKG/package.json" "$PKG/Documentation/README.md" "$PKG/Documentation/ru/README.md" \
          "$PKG/Documentation/Images/status-badge-preview.svg"; do
-  sed -i '' "s/$OLD/$NEW/g" "$f"
+  perl -pi -e "s/\Q$OLD\E/$NEW/g" "$f"
 done
 npm --prefix Website run --silent sync-readme
 echo "$OLD -> $NEW"
