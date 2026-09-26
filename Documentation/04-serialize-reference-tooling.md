@@ -74,14 +74,14 @@ The graph groups references by host object and field path:
 
 | Label | Meaning |
 |---|---|
-| **MISSING** | The reference's stored type cannot be found |
+| Warning band with **Fix Missing ▼** | The reference's stored type cannot be found |
 | **SHARED** | Several fields use the same managed-reference instance |
 | **Orphaned** | A YAML entry remains with no field pointing to it |
 | `rid` | A managed-reference identifier within its host object |
 
 `SHARED` does not inherently mean an error: sharing can be intentional. Matching colours help locate connected fields; the colour is derived from the ID and has no separate setting.
 
-Open **Fix** on a missing-reference card and choose a replacement. In this example, `GhostWeapon` becomes `Pistol`:
+Open **Fix Missing** on a missing-reference card and choose a replacement. In this example, `GhostWeapon` becomes `Pistol`:
 
 ![Repairing GhostWeapon as Pistol while preserving reference data](Images/aspid_fasttools_serialize_reference_tooling.gif)
 
