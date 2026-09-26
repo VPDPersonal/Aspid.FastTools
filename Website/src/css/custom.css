@@ -777,11 +777,12 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
   vertical-align: 0.05em;
 }
 /* The introduction banner spans the reading panel without a media frame. */
-.theme-doc-markdown img.readme-banner {
+.theme-doc-markdown .readme-banner {
   display: block;
   width: calc(100% + 2.5rem);
   max-width: none;
   height: auto;
+  aspect-ratio: 1280 / 384;
   margin-inline: -1.25rem;
   margin-bottom: 0.75rem;
   border: 0;
@@ -789,7 +790,7 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 }
 
 @media (min-width: 997px) {
-  .theme-doc-markdown img.readme-banner {
+  .theme-doc-markdown .readme-banner {
     width: 100cqw;
     margin-inline: calc(50% - 50cqw);
   }
@@ -797,14 +798,14 @@ html.docs-doc-page .navbar { border-bottom: 1px solid var(--venom-line); }
 
 /* The introduction starts with its banner; the compact TOC follows it. */
 @media (min-width: 997px) {
-  .theme-doc-markdown > img.readme-banner:first-child {
+  .theme-doc-markdown > .readme-banner:first-child {
     margin-top: -1.5rem;
     border-radius: 12px 12px 0 0;
   }
 }
 
 @media (max-width: 996px) {
-  .theme-doc-markdown > img.readme-banner:first-child {
+  .theme-doc-markdown > .readme-banner:first-child {
     margin-top: -1.5rem;
   }
 }
