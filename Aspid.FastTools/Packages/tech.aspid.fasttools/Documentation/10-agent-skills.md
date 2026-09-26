@@ -18,6 +18,14 @@ To pull newer versions of the skills later:
 npx skills update
 ```
 
+Both commands take the skills from the `main` branch, which can already describe API your package version does not have. To match the skills to the installed package, add them from its release tag; `npx skills update` then stays on that tag, and after a package upgrade you run `add` again with the new tag:
+
+```bash
+npx skills add VPDPersonal/Aspid.FastTools#v<version>
+```
+
+Releases up to and including `1.0.0-rc.8` do not ship these skills; with them, install from `main`, which may describe API your version does not have.
+
 ## Skills
 
 Skills activate automatically for matching requests:

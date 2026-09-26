@@ -115,7 +115,7 @@ Remove `[MovedFrom]` only after migrating all data that must remain loadable, in
 
 ## Pre-build checks
 
-Open **Project Settings → Aspid FastTools → SerializeReference** and set **Build / CI gate**:
+Open **Project Settings → Aspid.FastTools → SerializeReference** and set **Build / CI gate**:
 
 | Mode | Player build | Standalone CI run |
 |---|---|---|
@@ -150,7 +150,7 @@ Shared settings are saved in `ProjectSettings/SerializeReferenceSharedSettings.a
 <details>
 <summary>Other window and selector settings</summary>
 
-The same options are available in the FastTools window's **Settings** tab and **Preferences → Aspid FastTools**. Personal settings are nearby:
+The same options are available in the FastTools window's **Settings** tab and **Preferences → Aspid.FastTools**. Personal settings are nearby:
 
 - **Favorites** — shows or hides favourites.
 - **Recent items** — history capacity from 0 to 20. Setting 0 hides the section and pauses recording while retaining history.
