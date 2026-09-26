@@ -31,11 +31,12 @@ The receiver constraint is given per section. Version-guarded members are marked
 | `InsertChild` | `int index, VisualElement child` |
 | `InsertChildren` | `int index` + the same collection overloads as `AddChildren` |
 | `RemoveChild` | `VisualElement child` |
+| `RemoveChildren` | the same collection overloads as `AddChildren` |
 | `RemoveChildAt` | `int index` |
 | `ClearChildren` | — |
 
 Every method has an `…If(bool condition, …)` variant: `AddChildIf`, `AddChildrenIf`, `InsertChildIf`,
-`InsertChildrenIf`, `RemoveChildIf`, `RemoveChildAtIf`, `ClearChildrenIf`. Collection overloads keep
+`InsertChildrenIf`, `RemoveChildIf`, `RemoveChildrenIf`, `RemoveChildAtIf`, `ClearChildrenIf`. Collection overloads keep
 order and ignore a `null` collection.
 
 ## USS classes and style sheets (`where T : VisualElement`)
