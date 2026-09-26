@@ -28,7 +28,11 @@ Returns the `ProfilerMarker.AutoScope` of the `Type.Method (line)` marker for th
 | Lambda or local function inside `Step()` | `FlockSimulation.Step (line)` |
 | Explicit implementation `IUpdatable.Tick()` | `FlockSimulation.Tick (line)` |
 | Method `Move()` of the nested type `FlockSimulation.Agent` | `Agent.Move (line)` |
-| Method `Run()` in `Worker<int>`, one marker per closed type | `Worker<Int32>.Run (line)` |
+| Method `Run()` in the class `Worker<int>`, one marker per closed type | `Worker<Int32>.Run (line)` |
+| Method `Execute()` in the struct `Job<int>`, one marker for all closed types | `Job<T>.Execute (line)` |
+| Static constructor, on an instance of the type | `FlockSimulation.StaticCtor (line)` |
+
+A generic struct keeps `<T>` in the name because Burst cannot build a name for each closed type.
 
 ## WithName()
 
@@ -100,7 +104,7 @@ internal static class __FlockSimulationProfilerMarkerExtensions
 
 ## Limitations
 
-- **Only `this`.** Markers are generated for the type the call is written in: `other.Marker()` on an object of another type measures nothing. Static methods have no `this`, so they cannot hold a marker.
+- **Only an instance of its own type.** A call gets a marker when it is made on an instance of the type it is written in: `this` or another instance, such as `new FlockSimulation().Marker()` in a static method. `other.Marker()` on an object of another type and `((Base)this).Marker()` open nothing — or that type's marker, when the line number matches one of its calls. Analyzer `AFT0010` warns about such calls.
 - **Line suffix.** The number in the name changes when the call moves to another line, so compare captures from before and after an edit by the name without the suffix.
 - **Private and protected nested types.** The generated overload cannot see a `private` or `protected` nested type, or a type nested in one: the call compiles but opens no marker, and analyzer `AFT0010` warns. Make the type `internal` or `public`.
 
