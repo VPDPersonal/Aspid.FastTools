@@ -6,9 +6,9 @@ using NUnit.Framework;
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     /// <summary>
-    /// Guards the post-repair path of the UIToolkit <see cref="SerializeReferenceField"/>: a Fix / Smart Fix on a saved
-    /// asset reimports it and invalidates the field's live SerializedObject, after which the reference-change handler
-    /// must no-op on that object instead of throwing.
+    /// Guards the post-repair path of the UI Toolkit <see cref="SerializeReferenceField"/>: a Fix / Smart Fix on a
+    /// saved asset reimports it and invalidates the field's live SerializedObject, after which the reference-change
+    /// handler must no-op on that object instead of throwing.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceFieldStalePropertyTests
