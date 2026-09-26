@@ -93,11 +93,24 @@ if (touched(CHANGELOG) || touched(CHANGELOG_RU)) {
   }
 }
 
-// The version is written by hand in several files (scripts/set-version.sh keeps them in step).
+// The version is written by hand in several files (scripts/set-version.sh keeps them in step). A stable version
+// installs from the `upm` branch under a "Release" badge, a prerelease from `upm-preview` under a "Preview" one.
+// The version is matched whole: 1.0.0 must not pass on a file that still says 1.0.0-rc.8.
 if ([`${PKG}/package.json`, ...VERSION_FILES].some(touched)) {
-  const version = JSON.parse(read(`${PKG}/package.json`) ?? '{}').version;
+  const version = JSON.parse(read(`${PKG}/package.json`) ?? '{}').version ?? '';
+  const [branch, label] = version.includes('-') ? ['upm-preview', 'Preview'] : ['upm', 'Release'];
+  const whole = text => new RegExp(`(^|[^0-9A-Za-z.-])${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([^0-9A-Za-z.-]|$)`);
+  const fix = `run scripts/set-version.sh ${version}`;
   for (const file of VERSION_FILES) {
-    if (!read(file)?.includes(version)) error(file, `does not mention the package version ${version}; run scripts/set-version.sh ${version}`);
+    const text = read(file) ?? '';
+    if (!whole(`${label} ${version}`).test(text)) error(file, `has no "${label} ${version}" badge; ${fix}`);
+    if (file.endsWith('.svg')) {
+      if (!text.includes(`>${label}</text>`)) error(file, `the badge text is not "${label}"; ${fix}`);
+      continue;
+    }
+    if (!text.includes(`/releases/tag/v${version})`)) error(file, `the badge does not link the v${version} release; ${fix}`);
+    const urls = [...text.matchAll(/\.git#(upm(?:-preview)?)\b/g)].map(m => m[1]);
+    if (!urls.length || urls.some(url => url !== branch)) error(file, `the install URLs must use #${branch} for ${version}; ${fix}`);
   }
 }
 

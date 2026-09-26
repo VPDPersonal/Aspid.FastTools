@@ -269,7 +269,10 @@ The Inspector GIFs of the first two cards are cropped in `custom.css` to hide th
 
 The same plugin replaces the Installation section's instruction, URL block and version note with
 `src/components/InstallPanel`: a Package Manager walk-through beside the steps, and the URL to copy with a toggle
-between the latest preview and `#upm-preview/<packageVersion>` (`customFields.packageVersion` from `package.json`).
+between the latest version and `<url>/<packageVersion>` (`customFields.packageVersion` from `package.json`). The
+README's URL carries the channel — `#upm-preview` for a prerelease, `#upm` for a stable version — and
+`scripts/set-version.sh` switches it together with the badge label; `UPM_BRANCH` in `docusaurus.config.js`, whose
+tags the version list reads, follows the `package.json` version the same way.
 Its text is written in the component per locale, so update it when the README's install steps change.
 
 `static/img/logo.png` and `favicon.png` are copies of the package icon
