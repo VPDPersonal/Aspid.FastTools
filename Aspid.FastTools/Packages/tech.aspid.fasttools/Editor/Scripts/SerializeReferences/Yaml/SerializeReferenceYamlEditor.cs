@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Text;
+using UnityEditor;
+using UnityEngine;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -56,12 +58,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static bool TryParseInlineType(string body, out ManagedTypeName type) =>
             SerializeReferenceYaml.TryParseInlineType(body, out type);
 
-        // Writes lines back preserving the source's newline style and trailing-newline state. Unity writes its YAML
-        // with LF on every platform; File.WriteAllLines would re-emit Environment.NewLine (CRLF on Windows) and churn
-        // the whole file for a one-line edit.
-        private static void WritePreservingNewlines(string assetPath, IReadOnlyList<string> lines)
+        // Writes lines back preserving the source's newline style, trailing-newline state and encoding (a UTF-8 BOM
+        // stays). Unity writes its YAML with LF on every platform; File.WriteAllLines would re-emit Environment.NewLine
+        // (CRLF on Windows) and churn the whole file for a one-line edit. Returns false, with the reason logged, when
+        // the asset cannot be made editable; nothing is written then.
+        private static bool TryWritePreservingNewlines(string assetPath, IReadOnlyList<string> lines)
         {
-            var original = File.ReadAllText(assetPath);
+            var original = ReadAllText(assetPath, out var encoding);
+
+            // Check out through the version control provider, as Unity's own saves do. Without a provider this returns
+            // true even for a read-only file, so the read-only flag is checked on its own.
+            if (!AssetDatabase.MakeEditable(assetPath))
+            {
+                Debug.LogError($"[Aspid FastTools] '{assetPath}' could not be checked out in version control; it was not changed.");
+                return false;
+            }
+
+            if ((File.GetAttributes(assetPath) & FileAttributes.ReadOnly) != 0)
+            {
+                Debug.LogError($"[Aspid FastTools] '{assetPath}' is read-only; check it out or make it writable, then retry. It was not changed.");
+                return false;
+            }
+
+            // A checkout may fetch a newer revision; the edit was computed from the old one, so it must not be applied.
+            if (ReadAllText(assetPath, out _) != original)
+            {
+                Debug.LogError($"[Aspid FastTools] '{assetPath}' changed on disk while it was checked out; it was not changed. Retry the fix.");
+                return false;
+            }
+
             var newline = DominantNewline(original);
 
             var builder = new StringBuilder(original.Length);
@@ -73,7 +98,36 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (original.Length > 0 && original[^1] == '\n') builder.Append(newline);
 
-            File.WriteAllText(assetPath, builder.ToString());
+            WriteAtomically(assetPath, builder.ToString(), encoding);
+            return true;
+        }
+
+        // The encoding comes from the byte-order mark, UTF-8 without one when there is none.
+        private static string ReadAllText(string path, out Encoding encoding)
+        {
+            using var reader = new StreamReader(path, new UTF8Encoding(false), detectEncodingFromByteOrderMarks: true);
+            var text = reader.ReadToEnd();
+            encoding = reader.CurrentEncoding;
+            return text;
+        }
+
+        // File.WriteAllText truncates the asset first, so a failed write (full disk, killed process) would leave it cut
+        // short. The text goes to a sibling temp file that replaces the asset in one step. The leading dot and the
+        // .tmp extension keep Unity from importing the temp file.
+        private static void WriteAtomically(string path, string text, Encoding encoding)
+        {
+            var directory = Path.GetDirectoryName(Path.GetFullPath(path)) ?? string.Empty;
+            var tempPath = Path.Combine(directory, $".{Path.GetFileName(path)}.{Guid.NewGuid():N}.tmp");
+
+            try
+            {
+                File.WriteAllText(tempPath, text, encoding);
+                File.Replace(tempPath, path, destinationBackupFileName: null);
+            }
+            finally
+            {
+                if (File.Exists(tempPath)) File.Delete(tempPath);
+            }
         }
 
         // The newline style that dominates the source by line count — a majority pick keeps a one-line edit on a
