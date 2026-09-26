@@ -27,14 +27,15 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private static readonly CustomStyleProperty<Color> HandleProperty = new("--aspid-fasttools-colors-switch-handle");
         private static readonly CustomStyleProperty<Color> HandleShadowProperty = new("--aspid-fasttools-colors-switch-handle_shadow");
 
-        // Fallbacks while the --aspid-colors-switch-* palette tokens are unset.
+        // Fallbacks while the --aspid-colors-switch-* palette tokens are unset; the skin is read on every style
+        // resolve, so a switch of the editor skin updates them.
         private static readonly Color DefaultAccentColor = new(0.333f, 0.686f, 0.392f, 1f);
 
-        private static readonly Color DefaultTrackOffBorderColor = EditorGUIUtility.isProSkin
+        private static Color DefaultTrackOffBorderColor => EditorGUIUtility.isProSkin
             ? new Color(0.32f, 0.32f, 0.34f, 1f)
             : new Color(0.45f, 0.45f, 0.47f, 1f);
 
-        private static readonly Color DefaultHandleColor = EditorGUIUtility.isProSkin
+        private static Color DefaultHandleColor => EditorGUIUtility.isProSkin
             ? new Color(0.74f, 0.74f, 0.77f, 0.85f)
             : new Color(0.35f, 0.35f, 0.38f, 0.9f);
 

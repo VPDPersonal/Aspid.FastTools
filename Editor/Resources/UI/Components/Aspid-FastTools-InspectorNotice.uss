@@ -35,7 +35,7 @@
 }
 
 .aspid-fasttools-inspector-notice__action:hover {
-    color:                                                 var(--unity-colors-default-text-hover);
+    color:                                                 var(--aspid-colors-status-warning-text-lightness);
 }
 
 .aspid-fasttools-inspector-notice__suggestion {
@@ -62,7 +62,15 @@
 }
 
 .aspid-fasttools-inspector-notice__suggestion:hover {
-    color:                                                 var(--unity-colors-default-text-hover);
+    color:                                                 var(--aspid-colors-status-warning-text-lightness);
+}
+
+/* Unity's light-skin warning text is near black, so a hovered link turns a lighter brown instead. */
+.aspid-fasttools-inspector-notice.aspid-fasttools-skin--light
+    .aspid-fasttools-inspector-notice__action:hover,
+.aspid-fasttools-inspector-notice.aspid-fasttools-skin--light
+    .aspid-fasttools-inspector-notice__suggestion:hover {
+    color:                                                 var(--aspid-colors-status-warning-text-darkness);
 }
 
 .aspid-fasttools-inspector-notice__dot {
