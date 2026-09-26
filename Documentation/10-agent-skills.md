@@ -11,8 +11,7 @@ npx skills add VPDPersonal/Aspid.FastTools
 ```
 
 ```text prompt
-Add a marker for the entire Simulate method
-and a separate one for the neighbor search.
+Profile Simulate and the neighbor search
 ```
 
 | Without skills | With skills |

@@ -11,8 +11,7 @@ npx skills add VPDPersonal/Aspid.FastTools
 ```
 
 ```text prompt
-Добавь маркер на весь метод Simulate
-и отдельный на поиск соседей.
+Замерь Simulate и отдельно поиск соседей
 ```
 
 | Без скиллов | Со скиллами |
