@@ -5,7 +5,8 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "Aspid.FastTools.Editor",
-        "Aspid.FastTools"
+        "Aspid.FastTools",
+        "Aspid.FastTools.Tests.Fixtures"
     ],
     "includePlatforms": [
         "Editor"
