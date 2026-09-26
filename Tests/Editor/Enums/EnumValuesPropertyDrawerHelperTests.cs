@@ -29,10 +29,26 @@ namespace Aspid.FastTools.Enums.Tests
         Top = 1UL << 63,
     }
 
+    [Flags]
+    internal enum TopBitFlags : uint
+    {
+        None = 0,
+        Low = 1,
+        Top = 1u << 31,
+    }
+
+    [Flags]
+    internal enum NarrowUnsignedFlags : uint
+    {
+        None = 0,
+        Low = 1,
+        High = 1u << 30,
+    }
+
     /// <summary>
     /// Coverage for <see cref="EnumValuesPropertyDrawerHelper"/> and the UI Toolkit drawers: drawing a row never
     /// rewrites its key, the header shows the given label, Populate Missing Enum Members compares numeric values
-    /// and copies collection values, and 64-bit flags are toggled without truncation.
+    /// and copies collection values, and flags beyond a signed 32-bit mask are toggled without truncation.
     /// </summary>
     [TestFixture]
     internal sealed class EnumValuesPropertyDrawerHelperTests
@@ -158,6 +174,43 @@ namespace Aspid.FastTools.Enums.Tests
             Assert.AreEqual("Damage colors", root.Q(className: "aspid-fasttools-enum-values__header").Q<Label>().text);
         }
 
+        [UnityTest]
+        public IEnumerator PropertyField_HeaderShowsItsLabelOrTheDisplayName()
+        {
+            SetEnumType("_ints", typeof(Season));
+
+            var window = ScriptableObject.CreateInstance<EditorWindow>();
+
+            try
+            {
+                window.ShowUtility();
+
+                var property = _serializedObject.FindProperty("_ints");
+                var labeled = new PropertyField(property, "Damage colors");
+                var unlabeled = new PropertyField(property);
+
+                window.rootVisualElement.Add(labeled);
+                window.rootVisualElement.Add(unlabeled);
+                labeled.Bind(_serializedObject);
+                unlabeled.Bind(_serializedObject);
+
+                var deadline = EditorApplication.timeSinceStartup + 3;
+                while ((GetHeader(labeled) is null || GetHeader(unlabeled) is null)
+                    && EditorApplication.timeSinceStartup < deadline)
+                    yield return null;
+
+                Assert.AreEqual("Damage colors", GetHeader(labeled));
+                Assert.AreEqual(property.displayName, GetHeader(unlabeled));
+            }
+            finally
+            {
+                if (window) window.Close();
+            }
+
+            static string GetHeader(VisualElement field) =>
+                field.Q(className: "aspid-fasttools-enum-values__header")?.Q<Label>()?.text;
+        }
+
         [Test]
         public void GetKeyCaption_DescribesUnresolvedAndEmptyKeys()
         {
@@ -258,10 +311,12 @@ namespace Aspid.FastTools.Enums.Tests
         }
 
         [Test]
-        public void IsWideFlags_OnlyForFlagsWithA64BitUnderlyingType()
+        public void IsWideFlags_ForFlagsBeyondASigned32BitMask()
         {
             Assert.IsTrue(EnumValuesPropertyDrawerHelper.IsWideFlags(typeof(BigFlags)));
             Assert.IsTrue(EnumValuesPropertyDrawerHelper.IsWideFlags(typeof(WideUnsignedFlags)));
+            Assert.IsTrue(EnumValuesPropertyDrawerHelper.IsWideFlags(typeof(TopBitFlags)));
+            Assert.IsFalse(EnumValuesPropertyDrawerHelper.IsWideFlags(typeof(NarrowUnsignedFlags)));
             Assert.IsFalse(EnumValuesPropertyDrawerHelper.IsWideFlags(typeof(Sides)));
             Assert.IsFalse(EnumValuesPropertyDrawerHelper.IsWideFlags(typeof(UnsignedValues)));
         }
@@ -285,6 +340,15 @@ namespace Aspid.FastTools.Enums.Tests
 
             Assert.AreEqual(WideUnsignedFlags.Low | WideUnsignedFlags.Top, value);
             Assert.AreEqual(WideUnsignedFlags.Low | WideUnsignedFlags.Top, Enum.Parse(typeof(WideUnsignedFlags), value.ToString()));
+        }
+
+        [Test]
+        public void ToggleFlag_UIntFlags_KeepsBit31()
+        {
+            var value = EnumValuesPropertyDrawerHelper.ToggleFlag(TopBitFlags.Low, TopBitFlags.Top);
+
+            Assert.AreEqual(TopBitFlags.Low | TopBitFlags.Top, value);
+            Assert.AreEqual(TopBitFlags.Low | TopBitFlags.Top, Enum.Parse(typeof(TopBitFlags), value.ToString()));
         }
 
         private void SetEnumType(string field, Type enumType)
