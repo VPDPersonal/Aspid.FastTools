@@ -10,9 +10,20 @@ namespace Aspid.FastTools.Types
     /// assembly-qualified name and resolves it lazily on first access.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// Not meant to be derived from outside the package — use <see cref="SerializableType"/> or
     /// <see cref="SerializableMonoScript"/>. Unity serializes the name under the same field for all of them,
     /// so every wrapper shares one serialized layout.
+    /// </para>
+    /// <para>
+    /// A player resolves the type by the stored name only, which managed code stripping does not see: from
+    /// Managed Stripping Level Low up, a class referenced only by this name can be removed from the build and
+    /// <see cref="Type"/> returns <see langword="null"/>. Keep such classes with <c>[Preserve]</c> or <c>link.xml</c>.
+    /// </para>
+    /// <para>
+    /// A failed lookup is cached until the stored name changes or the object is deserialized again, so an assembly
+    /// loaded later is not picked up before that.
+    /// </para>
     /// </remarks>
     [Serializable]
     public abstract class SerializableTypeBase :
@@ -22,13 +33,16 @@ namespace Aspid.FastTools.Types
         [Tooltip("The selected type, stored by its assembly-qualified name.")]
         [SerializeField] private string? _assemblyQualifiedName;
 
+        // Marks a failed lookup, so one reference write publishes the resolved state; null means not resolved yet.
+        private static readonly Type _unresolved = typeof(Unresolved);
+
         private Type? _type;
 
         private protected SerializableTypeBase() { }
 
         private protected SerializableTypeBase(Type? type)
         {
-            _type = type;
+            _type = type ?? _unresolved;
             _assemblyQualifiedName = type?.AssemblyQualifiedName;
         }
 
@@ -52,7 +66,9 @@ namespace Aspid.FastTools.Types
                 using (this.Marker())
 #endif
                 {
-                    return _type ??= GetTypeFromAssemblyQualifiedName(_assemblyQualifiedName);
+                    // A failed lookup is cached too: a missing assembly makes every Type.GetType call probe for it.
+                    var type = _type ??= ResolveType(_assemblyQualifiedName) ?? _unresolved;
+                    return ReferenceEquals(type, _unresolved) ? null : type;
                 }
             }
         }
@@ -68,17 +84,23 @@ namespace Aspid.FastTools.Types
 
         private protected void SetAssemblyQualifiedName(string? assemblyQualifiedName)
         {
-            _type = null;
+            ResetResolvedType();
             _assemblyQualifiedName = assemblyQualifiedName;
         }
 
+        private protected virtual Type? ResolveType(string? assemblyQualifiedName) =>
+            GetTypeFromAssemblyQualifiedName(assemblyQualifiedName);
+
         void ISerializationCallbackReceiver.OnAfterDeserialize() =>
-            _type = null;
+            ResetResolvedType();
 
         void ISerializationCallbackReceiver.OnBeforeSerialize() =>
             OnBeforeSerialize();
 
         private protected virtual void OnBeforeSerialize() { }
+
+        private void ResetResolvedType() =>
+            _type = null;
 
         private static Type? GetTypeFromAssemblyQualifiedName(string? assemblyQualifiedName)
         {
@@ -88,5 +110,7 @@ namespace Aspid.FastTools.Types
                 typeName: assemblyQualifiedName,
                 throwOnError: false);
         }
+
+        private sealed class Unresolved { }
     }
 }
