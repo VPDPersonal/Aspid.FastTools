@@ -48,8 +48,9 @@ hand-written `static readonly ProfilerMarker`.
 ## Pitfalls
 
 - **Only the type's own instance.** A call gets a marker only when its receiver has the type the call is written
-  in — `this`, or another instance of the same type. `other.Marker()` on another type, `((Base)this).Marker()` and
-  calls in static classes open nothing; so do default interface methods: call it from the implementing type.
+  in — `this`, or another instance of the same type (`new Foo().Marker()` in a static member). `other.Marker()` on
+  another type, `((Base)this).Marker()` and calls in static classes get no marker: they open nothing, or that type's
+  marker when the line matches one of its calls. Nor do default interface methods: call it from the implementing type.
 - **Always `using`.** `this.Marker();` as a statement, `_ = this.Marker();` or a local nothing reads begins a sample
   that never ends — warning `AFT0011`.
 - **Plain call only.** `this.Marker(5)`, `this.Marker<T>()`, `this?.Marker()`, the static form
