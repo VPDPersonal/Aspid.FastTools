@@ -106,8 +106,7 @@ config
 Teaches a coding agent the package API; Claude Code, Codex, Cursor and others get the skills with one command.
 
 ```text
-Add a marker for the whole Simulate method
-and a separate one for the neighbour search.
+Profile Simulate and the neighbor search
 ```
 
 ## Resources
