@@ -23,10 +23,10 @@ A wave of regular and elite enemies moves toward the center.
 
 ## Try
 
-1. **Rename-safe component type.** `Enemy Type` is a `SerializableMonoScript<Enemy>`: the field references the script asset, not the class name. Rename the class in `Scripts/Enemies/Grunt.cs` to `Footman` (and the file), let Unity recompile, and the field still reads `Footman`. A `SerializableType` would have gone `<Missing>`.
+1. **Rename-safe component type.** `Enemy Type` is a `SerializableMonoScript<Enemy>`: the field references the script asset, not the class name. Rename the class in `Scripts/Enemies/Grunt.cs` to `Footman` (and the file) with your IDE's Rename refactoring, so `ArmoredGrunt`, which derives from it, is updated too. Let Unity recompile, and the field still reads `Footman`. A `SerializableType` would have gone `<Missing>`.
 2. **Dependent picker.** `Elite Type` is a plain `string` with `[TypeSelector(nameof(_enemyType))]`, so its picker offers only subtypes of whatever `Enemy Type` currently holds. Switch `Enemy Type` to `Archer` and open `Elite Type`: `Sniper` is offered, `ArmoredGrunt` is gone.
 3. **Picker presentation.** Open `Pattern`. The candidates sit under one **Spawn Patterns** group with friendly names, tooltips and icons, all from `[TypeSelectorDisplay]` on the pattern classes. `OriginPattern` is not listed because it is `Hidden`; `Allow = TypeAllow.None` on the field keeps the `ISpawnPattern` interface itself out too. Pick **Grid** and spawn a wave.
-4. **Required.** Set `Enemy Type` to `<None>`: an inline notice appears, and the field counts as a violation for the build/CI gate described in [SerializeReference Tooling](../../../Documentation/04-serialize-reference-tooling.md).
+4. **Required.** Set `Enemy Type` to `<None>`: an inline notice appears, and **Project References → Scan Project** and CI runs with `-srGateRequired` report the field as a violation. A player build does not check it; see [where required fields are checked](../../../Documentation/04-serialize-reference-tooling.md#where-required-fields-are-checked).
 5. **Swap a component in place.** Select **Placed Enemy (swap its type)**. The dropdown at the top of its Inspector comes from the `ComponentTypeSelector` field on `Enemy`. Switch `Archer` to `Brute`: `Health` and `Speed`, declared on the shared base, keep their values, while `Keep Distance` (Archer-only) is gone.
 
 ## Where to look

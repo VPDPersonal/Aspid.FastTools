@@ -24,7 +24,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
         private readonly List<AbilityConfig> _filtered = new();
 
         private ListView _list;
+        private TextField _search;
         private VisualElement _details;
+        private AbilityConfig _shown;
         private string _filter = string.Empty;
 
         [MenuItem("Tools/Aspid 🐍/FastTools/Samples/Ability Catalog")]
@@ -45,7 +47,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
 
             Reload();
 
-            var search = new TextField()
+            _search = new TextField()
                 .SetFlexGrow(1)
                 .SetPlaceholder("Search abilities…")
                 .AddValueChanged<TextField, string>(evt => ApplyFilter(evt.newValue));
@@ -60,7 +62,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetAlignItems(Align.Center)
                 .SetPaddingX(6)
                 .SetPaddingY(4)
-                .AddChild(search)
+                .AddChild(_search)
                 .AddChild(create);
 
             _list = new ListView()
@@ -124,10 +126,18 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .AddChild(left)
                 .AddChild(_details));
 
-            if (_filtered.Count > 0)
-                _list.SetSelection(0);
-            else
-                ShowDetails(null);
+            Select(null);
+        }
+
+        // Assets created, renamed or deleted in the Project window while the window is open.
+        private void OnProjectChange()
+        {
+            if (_list is null)
+                return;
+
+            var selected = _list.selectedItem as AbilityConfig;
+            Reload();
+            Select(selected);
         }
 
         private void Reload()
@@ -135,8 +145,23 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             _all.Clear();
             _all.AddRange(AssetDatabase.FindAssets($"t:{nameof(AbilityConfig)}")
                 .Select(guid => AssetDatabase.LoadAssetAtPath<AbilityConfig>(AssetDatabase.GUIDToAssetPath(guid)))
+                .Where(config => config != null)
                 .OrderBy(config => config.AbilityName));
             ApplyFilter(_filter);
+        }
+
+        // Keeps the selection on the same asset after a reload, falling back to the first one. The details are
+        // rebuilt only when the shown asset changes, so a field being edited keeps its focus.
+        private void Select(AbilityConfig config)
+        {
+            var index = config == null ? -1 : _filtered.IndexOf(config);
+            if (index < 0)
+                index = _filtered.Count > 0 ? 0 : -1;
+
+            var item = index < 0 ? null : _filtered[index];
+            _list.SetSelectionWithoutNotify(index < 0 ? Array.Empty<int>() : new[] { index });
+            if (item == null || !ReferenceEquals(item, _shown))
+                ShowDetails(item);
         }
 
         private void ApplyFilter(string filter)
@@ -151,8 +176,10 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
         private void ShowDetails(AbilityConfig config)
         {
             _details.ClearChildren();
+            _shown = config;
 
-            if (config is null)
+            // Unity's == also catches an asset deleted while it was listed.
+            if (config == null)
             {
                 _details.AddChild(new HelpBox("Select an ability, or press Create.", HelpBoxMessageType.Info));
                 return;
@@ -265,15 +292,18 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
         private void CreateAsset()
         {
             var selected = _list.selectedItem as AbilityConfig;
-            var folder = selected is null ? "Assets" : System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(selected));
+            var folder = selected == null ? "Assets" : System.IO.Path.GetDirectoryName(AssetDatabase.GetAssetPath(selected));
             var path = AssetDatabase.GenerateUniqueAssetPath($"{folder}/Ability.asset");
 
             var config = CreateInstance<AbilityConfig>();
             AssetDatabase.CreateAsset(config, path);
             AssetDatabase.SaveAssets();
 
+            // Clear the search so the new "New Ability" is listed and can be selected.
+            _search.SetValueWithoutNotify(string.Empty);
+            _filter = string.Empty;
             Reload();
-            _list.SetSelection(_filtered.IndexOf(config));
+            Select(config);
         }
     }
 }
