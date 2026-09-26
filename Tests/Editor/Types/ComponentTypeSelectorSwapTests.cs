@@ -23,28 +23,34 @@ namespace Aspid.FastTools.Types.Editors.Tests
         public void SetUp() => _gameObject = new GameObject(nameof(ComponentTypeSelectorSwapTests));
 
         [TearDown]
-        public void TearDown() => Object.DestroyImmediate(_gameObject);
+        public void TearDown()
+        {
+            Object.DestroyImmediate(_gameObject);
+            Undo.ClearAll();
+        }
 
         [Test]
         public void SwapScript_AddsTheComponentsTheNewTypeRequires()
         {
             var component = _gameObject.AddComponent<ComponentSwapPlain>();
 
-            Swap(component, typeof(ComponentSwapNeedsRigidbody));
+            Swap(component, typeof(ComponentSwapNeedsRequirement));
 
-            Assert.IsNotNull(_gameObject.GetComponent<ComponentSwapNeedsRigidbody>(), "The swap must change the component's class.");
-            Assert.IsNotNull(_gameObject.GetComponent<Rigidbody>(), "The [RequireComponent] of the new class must be added.");
+            Assert.IsNotNull(_gameObject.GetComponent<ComponentSwapNeedsRequirement>(), "The swap must change the component's class.");
+            Assert.IsNotNull(_gameObject.GetComponent<ComponentSwapRequirement>(), "The [RequireComponent] of the new class must be added.");
         }
 
         [Test]
         public void SwapScript_OneUndoRevertsTheSwapAndTheAddedComponents()
         {
             var component = _gameObject.AddComponent<ComponentSwapPlain>();
+            Undo.IncrementCurrentGroup();
 
-            Swap(component, typeof(ComponentSwapNeedsRigidbody));
+            Swap(component, typeof(ComponentSwapNeedsRequirement));
+            Assert.AreEqual($"Change Type to {nameof(ComponentSwapNeedsRequirement)}", Undo.GetCurrentGroupName());
             Undo.PerformUndo();
 
-            Assert.IsNull(_gameObject.GetComponent<Rigidbody>());
+            Assert.IsNull(_gameObject.GetComponent<ComponentSwapRequirement>());
             Assert.IsNotNull(_gameObject.GetComponent<ComponentSwapPlain>());
         }
 
@@ -67,7 +73,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             LogAssert.Expect(LogType.Warning, new Regex($"{nameof(ComponentSwapPlainDependent)} requires {nameof(ComponentSwapPlain)}"));
 
-            Assert.IsFalse(Replace(component, typeof(ComponentSwapNeedsRigidbody)));
+            Assert.IsFalse(Replace(component, typeof(ComponentSwapNeedsRequirement)));
         }
 
         [Test]
@@ -76,7 +82,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             var component = _gameObject.AddComponent<ComponentSwapPlain>();
             _gameObject.AddComponent<ComponentSwapBaseDependent>();
 
-            Assert.IsNull(ComponentTypeSelectorPropertyDrawer.FindSwapConflict(component, typeof(ComponentSwapNeedsRigidbody)));
+            Assert.IsNull(ComponentTypeSelectorPropertyDrawer.FindSwapConflict(component, typeof(ComponentSwapNeedsRequirement)));
         }
 
         [Test]
@@ -86,7 +92,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             _gameObject.AddComponent<ComponentSwapPlain>();
             _gameObject.AddComponent<ComponentSwapPlainDependent>();
 
-            Assert.IsNull(ComponentTypeSelectorPropertyDrawer.FindSwapConflict(component, typeof(ComponentSwapNeedsRigidbody)));
+            Assert.IsNull(ComponentTypeSelectorPropertyDrawer.FindSwapConflict(component, typeof(ComponentSwapNeedsRequirement)));
         }
 
         private static void Swap(Component component, Type newType)
