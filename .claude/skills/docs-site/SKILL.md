@@ -190,9 +190,9 @@ Website/scripts/serve-all.sh --stop
 
 Dev servers serve one locale at a time and are only for quick hot-reload iteration on a single page — they
 don't reload config or remark plugins, and the user does not look at them: `npm start` / `npm run start:ru`, or
-`website-dev` / `website-dev-ru` in `.claude/launch.json` (3100/3101). The `website-ru-3001` and
-`website-serve-all` entries in that file both occupy port 3001 and would replace the shared build with a
-session-bound server — do not launch them.
+`website-dev` / `website-dev-ru` in `.claude/launch.json` (3100/3101). The `website-serve-all` entry in that
+file occupies port 3001 and replaces the shared build with a session-bound server — launch it only when
+`serve-all.sh` is unusable.
 
 `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
 (`onBrokenAnchors` only warns — check the log for `#anchor` typos).

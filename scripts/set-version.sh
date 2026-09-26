@@ -1,6 +1,7 @@
 #!/bin/sh
-# Set the package version everywhere it is written by hand: package.json, the version badge and the install URLs
-# in both README translations. The root README is regenerated from the package one.
+# Set the package version everywhere it is written by hand: package.json, the badge SVG and the badge alt text and
+# release link in both README translations. The root README is regenerated from the package one. The install URLs
+# name the upm branch, not the version, so they are left alone.
 #   scripts/set-version.sh 1.0.0-rc.9
 set -eu
 cd "$(dirname "$0")/.."

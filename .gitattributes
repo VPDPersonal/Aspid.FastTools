@@ -1,0 +1,15 @@
+# Line endings stay as committed (the vendored com.unity.asset-store-tools and the font licences are CRLF);
+# only files that stop working with CRLF are pinned to LF.
+*.sh            text eol=lf
+.githooks/*     text eol=lf
+
+# Binary: no diff, no merge, no line-ending conversion.
+*.dll           binary
+*.png           binary
+*.jpg           binary
+*.gif           binary
+*.mp4           binary
+*.mov           binary
+*.mkv           binary
+*.ttf           binary
+*.woff2         binary
