@@ -147,7 +147,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
                 if (entryIndent < 0) return false;
 
-                var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
                 var pointerToken = BuildPointerPattern(rid);
 
                 var headerIndex = -1;
@@ -157,14 +156,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     // This rid's own RefIds entry header (a "- rid: N" under RefIds at the entry indent) is removed
                     // below, not nulled — skip it so it isn't rewritten to the null id.
-                    if (headerIndex < 0 && i > refIdsStart)
+                    if (headerIndex < 0 && i > refIdsStart
+                        && SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var headerRid)
+                        && headerRid == rid)
                     {
-                        var header = headerPattern.Match(lines[i]);
-                        if (header.Success && header.Groups["indent"].Length == entryIndent)
-                        {
-                            headerIndex = i;
-                            continue;
-                        }
+                        headerIndex = i;
+                        continue;
                     }
 
                     // Null every pointer to the rid — a "- rid: N" array element, a "rid: N" scalar field or an inline
@@ -237,7 +234,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var entryIndent = FindRefIdsEntryIndent(lines, refIdsStart, end);
                 if (entryIndent < 0) return 0;
 
-                var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
                 var pointerToken = BuildPointerPattern(rid);
 
                 var headerSkipped = false;
@@ -247,14 +243,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     // Skip this rid's own RefIds entry header exactly once — it is the entry, not a pointer. Mirrors
                     // the header skip in TryNullReference so the count equals the pointers that path would rewrite.
-                    if (!headerSkipped && i > refIdsStart)
+                    if (!headerSkipped && i > refIdsStart
+                        && SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var headerRid)
+                        && headerRid == rid)
                     {
-                        var header = headerPattern.Match(lines[i]);
-                        if (header.Success && header.Groups["indent"].Length == entryIndent)
-                        {
-                            headerSkipped = true;
-                            continue;
-                        }
+                        headerSkipped = true;
+                        continue;
                     }
 
                     if (pointerToken.IsMatch(lines[i])) count++;
@@ -277,11 +271,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static bool HasNullSentinelEntry(string[] lines, int refIdsStart, int end, int entryIndent)
         {
-            var sentinel = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{NullRid}\s*$");
             for (var i = refIdsStart + 1; i < end; i++)
             {
-                var match = sentinel.Match(lines[i]);
-                if (match.Success && match.Groups["indent"].Length == entryIndent) return true;
+                if (SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var headerRid)
+                    && headerRid == NullRid) return true;
             }
 
             return false;
