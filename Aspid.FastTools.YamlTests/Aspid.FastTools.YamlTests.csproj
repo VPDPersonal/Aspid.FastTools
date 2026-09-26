@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Runs the SerializeReference YAML engine's NUnit tests outside Unity. The engine and its tests are compiled from
+         the package sources as-is; Stubs/ stands in for the one Unity API the engine calls (Debug.LogError). -->
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <!-- The C# version of Unity 6000.0, so a newer language feature fails here as it would in Unity. -->
+        <LangVersion>9.0</LangVersion>
+        <Nullable>disable</Nullable>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Aspid.FastTools.SerializeReferences.Editors.Tests</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <_Package>$(MSBuildThisFileDirectory)../Aspid.FastTools/Packages/tech.aspid.fasttools/</_Package>
+        <_YamlSources>$(_Package)Editor/Scripts/SerializeReferences/Yaml/</_YamlSources>
+        <_YamlTests>$(_Package)Tests/Editor/SerializeReferences/Yaml/</_YamlTests>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- The invalidator hooks the AssetDatabase and is the only file that needs UnityEditor. -->
+        <Compile Include="$(_YamlSources)*.cs"
+                 Exclude="$(_YamlSources)SerializeReferenceYamlProbeCacheInvalidator.cs"
+                 Link="Yaml/%(Filename)%(Extension)" />
+        <Compile Include="$(_YamlTests)*.cs" Link="Tests/%(Filename)%(Extension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- NUnit 3, the major version Unity's Test Framework ships: classic Assert/StringAssert as the tests use them. -->
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+        <PackageReference Include="NUnit" Version="3.14.0" />
+        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    </ItemGroup>
+
+</Project>

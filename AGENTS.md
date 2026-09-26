@@ -14,6 +14,9 @@ Agent Skills for projects that consume the package in `skills/`.
 
 - A change to generator or analyzer source reaches Unity **only** after `dotnet build -c Release` in that solution;
   `dotnet test` (Debug) deliberately does not copy the DLL, so it is safe to run.
+- `Aspid.FastTools.YamlTests/` runs the package's SerializeReference YAML engine and its tests outside Unity: it compiles
+  those package sources as-is (C# 9, Unity 6000.0's version) and stubs only `Debug.LogError`, so a Unity API or a newer
+  language feature added to that engine breaks this project first.
 - The version lives in `package.json`, the badge SVG and the install URLs of both READMEs; bump all of them with
   `scripts/set-version.sh <version>`. A release is prepared with `scripts/prepare-release.mjs` (the `release` skill),
   and merging the PR that changes the `package.json` version publishes it.
