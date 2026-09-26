@@ -7,11 +7,11 @@
 .featurePreview {
   --preview-surface: #0d0f14;
   --preview-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --preview-accent-soft: rgb(92 180 107 / 0.12);
+  --preview-accent-soft: color-mix(in srgb, var(--venom-accent) 12%, transparent);
 }
 html[data-theme='light'] .featurePreview {
   --preview-surface: #ffffff;
-  --preview-accent-soft: rgb(47 138 69 / 0.1);
+  --preview-accent-soft: color-mix(in srgb, var(--venom-accent) 10%, transparent);
 }
 
 .snippet {
@@ -106,7 +106,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .inspectorRow { display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; gap: 8px; padding: 6px 10px; }
 .inspectorField { padding: 2px 7px; color: #e6e6e6; background: #2a2a2a; border: 1px solid #202020; border-radius: 3px; font-variant-numeric: tabular-nums; }
 .inspectorField[data-flash] { animation: flash 1s ease; }
-@keyframes flash { 0% { background: rgb(92 180 107 / 0.6); border-color: #5cb46b; } 100% { background: #2a2a2a; border-color: #202020; } }
+@keyframes flash { 0% { background: color-mix(in srgb, var(--venom-accent) 60%, transparent); border-color: var(--venom-accent); } 100% { background: #2a2a2a; border-color: #202020; } }
 .toast { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: #d6d6d6; background: #262626; border: 1px solid #1a1a1a; border-radius: 6px; opacity: 0; transform: translateY(10px); transition: opacity 0.35s ease, transform 0.35s var(--preview-ease); }
 .toast[data-show] { opacity: 1; transform: none; }
 .toast kbd { padding: 0 5px; color: #eee; background: #3a3a3a; border: 1px solid #1a1a1a; border-radius: 4px; box-shadow: none; font: 600 11px/1.5 var(--ifm-font-family-monospace); }
@@ -190,6 +190,6 @@ html[data-theme='light'] .inspectorHead { background: #cbcbcb; border-bottom-col
 html[data-theme='light'] .inspectorIcon { background: #f0f0f0; box-shadow: inset 0 0 0 1px #aaa; }
 html[data-theme='light'] .inspectorField { color: #090909; background: #f0f0f0; border-color: #b7b7b7; }
 html[data-theme='light'] .inspectorField[data-flash] { animation-name: flashLight; }
-@keyframes flashLight { 0% { background: rgb(47 138 69 / 0.35); border-color: #2f8a45; } 100% { background: #f0f0f0; border-color: #b7b7b7; } }
+@keyframes flashLight { 0% { background: color-mix(in srgb, var(--venom-accent) 35%, transparent); border-color: var(--venom-accent); } 100% { background: #f0f0f0; border-color: #b7b7b7; } }
 html[data-theme='light'] .toast { color: #090909; background: #e4e4e4; border-color: #b2b2b2; }
 html[data-theme='light'] .toast kbd { color: #090909; background: #f0f0f0; border-color: #b2b2b2; }
