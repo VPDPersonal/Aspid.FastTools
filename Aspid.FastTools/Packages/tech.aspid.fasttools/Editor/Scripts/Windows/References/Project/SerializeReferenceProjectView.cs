@@ -193,6 +193,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 ? Array.Empty<GateViolation>()
                 : SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly);
 
+        // Keeps a warm audit current after a bulk edit by re-checking only the files it rewrote on disk.
+        private static void RefreshRequiredViolations(IEnumerable<string> editedPaths)
+        {
+            if (!_requiredIsWarm || SerializeReferenceSettings.BuildSeverity == GateSeverity.Off) return;
+
+            _requiredViolationsCache = SerializeReferenceGateScanner.RescanRequiredFields(_requiredViolationsCache, editedPaths);
+        }
+
         private void RenderGroups(List<MissingReferenceGroup> groups, IReadOnlyList<GateViolation> requiredViolations)
         {
             _list.Clear();
@@ -203,10 +211,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (missingCount == 0 && requiredCount == 0)
             {
-                ShowEmptyState(
-                    success: true,
-                    title: "Project clean",
-                    message: "No missing managed references or unset required fields found anywhere under Assets/.");
+                // An audit that never ran (or went stale) has found nothing, which is not the same as a clean project.
+                if (_requiredIsWarm)
+                {
+                    ShowEmptyState(
+                        success: true,
+                        title: "Project clean",
+                        message: "No missing managed references or unset required fields found anywhere under Assets/.");
+                }
+                else
+                {
+                    ShowEmptyState(
+                        success: false,
+                        title: "No missing references",
+                        message: "No missing managed references found anywhere under Assets/. " +
+                            SerializeReferenceProjectSummary.RequiredNotScannedText);
+                }
+
                 return;
             }
 
@@ -222,7 +243,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ShowResults(
                 SerializeReferenceProjectSummary.BuildResultsHeaderText(missingCount - migrationCount, migrationCount, requiredCount),
                 StatusStyle.Type.Warning);
-            _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(requiredCount > 0);
+            _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(requiredCount > 0, _requiredIsWarm);
 
             var hasAmber = groups.Count > migrations.Count || requiredCount > 0;
             _legend.EnableInClassList(LegendHiddenClass, migrations.Count == 0 || !hasAmber);
@@ -253,8 +274,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 requiredViolations.Count == 0
                     ? "No missing references"
                     : $"No missing references, {BuildCountText(requiredViolations.Count, "required violation")}",
-                StatusStyle.Type.Success);
-            _resultsHint.text = "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
+                _requiredIsWarm ? StatusStyle.Type.Success : StatusStyle.Type.Info);
+            _resultsHint.text = _requiredIsWarm
+                ? "Nothing left to repair. Rescan to sweep the project again and confirm it's clean."
+                : SerializeReferenceProjectSummary.RequiredNotScannedText;
             _legend.AddClass(LegendHiddenClass);
 
             if (requiredViolations.Count > 0)

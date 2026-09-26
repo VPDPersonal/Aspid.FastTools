@@ -9,6 +9,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private const int MaxPreviewedEntries = 8;
 
+        public const string RequiredNotScannedText = "Required fields have not been checked yet — Rescan to include them.";
+
         public static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount)
         {
             var parts = new List<string>(3);
@@ -19,9 +21,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return string.Join(", ", parts);
         }
 
-        public static string BuildResultsHintText(bool hasRequiredViolations)
+        public static string BuildResultsHintText(bool hasRequiredViolations, bool requiredScanned)
         {
             const string hint = "Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.";
+
+            if (!requiredScanned) return hint + " " + RequiredNotScannedText;
 
             return hasRequiredViolations
                 ? hint + " Click a required-violation row to jump to its asset."
