@@ -35,9 +35,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // exactly what Unity writes for a cleared field. Confirmed, not undoable, and the payload is discarded.
         public static bool ClearReference(string assetPath, long fileId, long rid)
         {
-            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath) ||
-                SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath))
-                return false;
+            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
 
             var fieldCount = SerializeReferenceYamlEditor.CountPointersTo(assetPath, fileId, rid);
             var pointerLine = fieldCount switch
@@ -54,6 +52,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "Clear", "Cancel"))
                 return false;
 
+            // Asked after the confirmation, so a cancelled clear never saves the asset.
+            if (SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath)) return false;
+
             if (!SerializeReferenceYamlEditor.TryNullReference(assetPath, fileId, rid)) return false;
 
             // The forced import lets the index invalidator patch this asset alone; a full ClearCache would dump the
@@ -69,9 +70,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             staleRescan = null;
 
-            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath) ||
-                SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath))
-                return false;
+            if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath)) return false;
 
             if (!EditorUtility.DisplayDialog(
                     "Drop Orphaned Entry",
@@ -79,6 +78,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     "This edits the asset file directly and cannot be undone.",
                     "Remove", "Cancel"))
                 return false;
+
+            // Asked after the confirmation, so a cancelled drop never saves the asset.
+            if (SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath)) return false;
 
             // The on-screen graph may be stale, so re-confirm the orphan against a fresh scan before deleting.
             var fresh = SerializeReferenceGraphScanner.Build(assetPath);
