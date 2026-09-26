@@ -17,7 +17,10 @@ namespace Aspid.FastTools.Enums.Editors
             EnumValuesIMGUIPropertyDrawer.GetHeight(property);
 
         public override VisualElement CreatePropertyGUI(SerializedProperty property) =>
-            EnumValuesUIToolkitPropertyDrawer.Draw(property, IsTypedVariant());
+            EnumValuesUIToolkitPropertyDrawer.Draw(
+                property,
+                string.IsNullOrEmpty(preferredLabel) ? property.displayName : preferredLabel,
+                IsTypedVariant());
 
         private bool IsTypedVariant()
         {

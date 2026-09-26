@@ -44,8 +44,10 @@ public sealed class DamageConfig : ScriptableObject
 ## Pitfalls
 
 - Keys are stored by member **name**. Reordering or renumbering members is safe. Renaming or deleting one logs
-  `Couldn't parse key ...` and the row is skipped; drawing that row in the Inspector silently rewrites its key to the
-  enum's first member. When renaming enum members, tell the user to fix the affected rows.
-- A new member returns Default Value until a row is added.
+  `Couldn't parse key ...` and the row is skipped; the Inspector shows it as `<Missing Name>` and keeps the key until
+  a member is picked (also after switching `EnumValues<TValue>` to another enum). When renaming enum members, tell
+  the user to fix the affected rows.
+- A new member returns Default Value until a row is added. A row added to an empty table has an empty key (`<None>`)
+  and logs `Couldn't parse key ...` until a member is picked.
 - `EnumValues<TValue>` with no enum selected, or with a type that no longer resolves, logs a warning/error and always
   returns Default Value.
