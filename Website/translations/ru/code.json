@@ -1,5 +1,6 @@
 {
   "theme.TOCCollapsible.toggleButtonLabel": {"message": "Содержание"},
   "featureCard.more": {"message": "Подробнее"},
+  "homepage.description": {"message": "Инструменты для Unity, которые убирают шаблонный код"},
   "theme.admonition.warning": {"message": "внимание", "description": "Docusaurus ships the ru label untranslated"}
 }

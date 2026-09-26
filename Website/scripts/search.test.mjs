@@ -29,15 +29,16 @@ test('empty queries suggest documentation and samples', () => {
   assert.equal(searchEntries(entries, '  ').length, 3);
   assert.ok(searchEntries(entries, '').every((entry) => entry.section !== 'API'));
 });
-test('index URLs follow trailingSlash: false', async () => {
+test('index URLs follow trailingSlash: false except the locale root', async () => {
   const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
   const doc = (permalink) => ({permalink, title: 'Samples', source: '@site/src/samples/index.mdx'});
   const allContent = {'docusaurus-plugin-content-docs': {tutorials: {loadedVersions: [{docs: [
-    doc('/Aspid.FastTools/ru/tutorials/'), doc('/Aspid.FastTools/ru/tutorials/types/'), doc('/Aspid.FastTools/ru/docs/enum-values'),
+    doc('/Aspid.FastTools/ru/'), doc('/Aspid.FastTools/ru/tutorials/'), doc('/Aspid.FastTools/ru/tutorials/types/'),
+    doc('/Aspid.FastTools/ru/docs/enum-values'),
   ]}]}}};
   let index;
   const context = {siteDir, baseUrl: '/Aspid.FastTools/ru/', siteConfig: {trailingSlash: false, baseUrl: '/Aspid.FastTools/'}};
   await searchPlugin(context).allContentLoaded({allContent, actions: {createData: async (name, data) => { index = JSON.parse(data); }}});
   assert.deepEqual(index.map((entry) => entry.url),
-    ['/Aspid.FastTools/ru/tutorials', '/Aspid.FastTools/ru/tutorials/types', '/Aspid.FastTools/ru/docs/enum-values']);
+    ['/Aspid.FastTools/ru/', '/Aspid.FastTools/ru/tutorials', '/Aspid.FastTools/ru/tutorials/types', '/Aspid.FastTools/ru/docs/enum-values']);
 });
