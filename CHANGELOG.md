@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed `SetExposedReferenceAndApply()` from `SerializedProperty` extensions; call `SetExposedReference()` instead. Without an `IExposedPropertyTable` context, Unity's `exposedReferenceValue` setter already applies the write and records Undo, so the extra apply did nothing, and a variant without Undo cannot be built on top of it.
-- Removed `SerializableMonoScript.Script`; read the type through `Type` or the implicit conversion to `Type`.
+- Removed the editor-only `SerializableMonoScript.Script`, which returned the `MonoScript` asset; no public accessor for the asset remains. The type is still available through `Type` or the implicit conversion to `Type`.
 - Removed `AddMakeItem` / `RemoveMakeItem` of `ListView` and `TreeView`, and `AddMakeHeader` / `AddMakeFooter` / `AddMakeNoneElement` of `BaseListView` with their `Remove*` pairs; the view keeps one factory, so call `SetMakeItem`, `SetMakeHeader`, `SetMakeFooter` or `SetMakeNoneElement`.
 - Removed the runtime `Aspid.FastTools.StringExtensions.ToKebabCase` and `Aspid.FastTools.TypeExtensions.GetMembersInfosIncludingBaseClasses` from the public API, without a replacement.
 

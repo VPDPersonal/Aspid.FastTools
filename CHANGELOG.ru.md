@@ -43,7 +43,7 @@
 ### Удалено
 
 - Из расширений `SerializedProperty` удалён `SetExposedReferenceAndApply()`; вызывайте `SetExposedReference()`. Без контекста `IExposedPropertyTable` сеттер `exposedReferenceValue` в Unity сам применяет запись и записывает Undo, поэтому дополнительное применение ничего не делало, а вариант без Undo поверх него построить нельзя.
-- Удалено свойство `SerializableMonoScript.Script`; тип читайте через `Type` или неявное преобразование в `Type`.
+- Удалено editor-only свойство `SerializableMonoScript.Script`, которое возвращало ассет `MonoScript`; публичного доступа к ассету больше нет. Тип по-прежнему доступен через `Type` или неявное преобразование в `Type`.
 - Удалены `AddMakeItem` / `RemoveMakeItem` у `ListView` и `TreeView`, а также `AddMakeHeader` / `AddMakeFooter` / `AddMakeNoneElement` у `BaseListView` вместе с парами `Remove*`; у списка одна фабрика, поэтому вызывайте `SetMakeItem`, `SetMakeHeader`, `SetMakeFooter` или `SetMakeNoneElement`.
 - Runtime-методы `Aspid.FastTools.StringExtensions.ToKebabCase` и `Aspid.FastTools.TypeExtensions.GetMembersInfosIncludingBaseClasses` убраны из публичного API без замены.
 
