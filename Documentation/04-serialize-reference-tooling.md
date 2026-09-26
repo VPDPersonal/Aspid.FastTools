@@ -66,6 +66,12 @@ Bulk replacement produces a summary with an **Undo** button. It restores the old
 
 Bulk clearing may null references in open scenes or Prefab Mode in memory. Save those objects: file-based scans continue to show the old entries until they are saved.
 
+### Prefab instance overrides
+
+A prefab variant, a nested prefab, or a prefab instance in a scene can set a field's type through an override. Unity stores that type in the instance's modifications, not in the managed-reference list. Missing types found there appear in a separate **Prefab instance overrides** card, and pre-build checks count them as missing types.
+
+**Fix all**, **Smart Fix**, and `<None>` do not rewrite overrides. Select the instance, then choose a new type in its Inspector or revert the override. Asset References does not show references that exist only as overrides.
+
 ## Asset References: inspect one asset
 
 Open **Asset References** and assign a saved prefab, ScriptableObject, or scene file to the object field beside **Rescan**. You can also arrive here from a **Project References** result row.
@@ -207,10 +213,10 @@ KIND    assetPath    fileId    rid    className    fieldPath
 |---|---|
 | `KIND` | `MissingType` or `RequiredUnset` |
 | `assetPath` | File path, such as `Assets/Weapons/Pistol.prefab` |
-| `fileId` | Host object ID within the file |
+| `fileId` | Host object ID within the file; for a prefab instance override, the ID of the prefab instance |
 | `rid` | Managed-reference ID; `0` for a required string field |
 | `className` | Stored class name for `MissingType`, without separate namespace or assembly fields |
-| `fieldPath` | Required field path; empty for `MissingType` |
+| `fieldPath` | Required field path; for a `MissingType` override, the overridden field; otherwise empty |
 
 Save the report as a CI artifact. The asset path, `fileId`, and `rid` together help locate the entry in Asset References.
 
