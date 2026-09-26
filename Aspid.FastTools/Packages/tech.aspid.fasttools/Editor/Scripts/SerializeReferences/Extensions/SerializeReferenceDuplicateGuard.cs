@@ -23,7 +23,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly HashSet<ArrayKey> _pending = new();
 
         // Observe runs for every element on every IMGUI event. Growth is the only layout change that can trigger a
-        // fix, so within one editor tick an array is rescanned only when its size changes.
+        // fix, so within one editor tick an array is rescanned only when its size changes. A same-size edit that
+        // skips InvalidateObservationMemo (a native drag reorder, raw user code) reaches the baseline only next tick,
+        // so a growth in that same tick is judged against the pre-edit layout.
         private static readonly Dictionary<ArrayKey, int> _scannedSizes = new();
         private static long _scannedTick = -1;
 
