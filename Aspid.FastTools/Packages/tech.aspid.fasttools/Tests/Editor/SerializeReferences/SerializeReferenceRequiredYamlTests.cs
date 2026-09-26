@@ -93,6 +93,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void FindUnsetRequiredFields_NegativeMonoBehaviourAnchor_ReportsBoth()
+        {
+            _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredPrefabNegativeAnchorUnset);
+
+            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, Resolve);
+
+            Assert.AreEqual(2, violations.Count, "A MonoBehaviour under a negative anchor must still be scanned.");
+            Assert.IsTrue(violations.All(v => v.FileId == YamlFixtures.NegativeFileId),
+                "The violations carry the negative file id, sign included.");
+        }
+
+        [Test]
         public void FindUnsetRequiredFields_BothSet_ReportsNone()
         {
             _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneSet);

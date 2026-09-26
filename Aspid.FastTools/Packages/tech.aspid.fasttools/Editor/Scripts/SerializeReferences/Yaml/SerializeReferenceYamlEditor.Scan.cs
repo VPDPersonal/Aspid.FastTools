@@ -10,7 +10,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         // "--- !u!114 &11400000" — a MonoBehaviour document header (class id 114), the only kind that carries m_Script
         // and serialized user fields, so the scene required-field scan iterates these alone.
-        private static readonly Regex _monoBehaviourHeader = new(@"^--- !u!114 &(\d+)", RegexOptions.Compiled);
+        private static readonly Regex _monoBehaviourHeader = new(@"^--- !u!114 &(-?\d+)", RegexOptions.Compiled);
 
         // "  m_Script: {fileID: 11500000, guid: <guid>, type: 3}" — the script reference whose guid maps to the C# type;
         // its indent is the document's top-level field indent (every direct field of the MonoBehaviour aligns with it).

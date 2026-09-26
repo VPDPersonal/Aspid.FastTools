@@ -7,7 +7,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceYaml
     {
-        public static readonly Regex DocumentHeader = new(@"^--- !u!(?<class>\d+) &(?<id>\d+)", RegexOptions.Compiled);
+        // The anchor is the object's local file id; sub-assets and prefab objects get random 64-bit ids, often negative.
+        public static readonly Regex DocumentHeader = new(@"^--- !u!(?<class>\d+) &(?<id>-?\d+)", RegexOptions.Compiled);
 
         public static readonly Regex RefIdsKey = new(@"^\s*RefIds:\s*$", RegexOptions.Compiled);
 

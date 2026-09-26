@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A type deriving from a type of another assembly that shares its namespace through `InternalsVisibleTo` now gets markers of its own; its calls used to bind to the base type's overload and open nothing.
 - `WithName($"Br{{ace}}")` gives `Br{ace}`, `WithName` text with U+2028, U+2029 or U+0085 compiles, and a user's own `WithName` extension no longer renames the marker.
 - `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
+- The inspector **Fix**, **Asset References** and **Project References** now work on sub-assets and prefab objects whose local file id is negative (`--- !u!114 &-3200400644298251397`), about half of them. Such objects used to be skipped, or read and edited as part of the object before them.
 
 ## [1.0.0-rc.8] — 2026-09-06
 

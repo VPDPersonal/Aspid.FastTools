@@ -1,0 +1,12 @@
+﻿<Solution>
+  <Project Path="Aspid.FastTools.csproj" />
+  <Project Path="asset-store-tools-editor.csproj" />
+  <Project Path="Aspid.FastTools.Editor.csproj" />
+  <Project Path="Aspid.FastTools.Editor.SerializeReferences.Tests.csproj" />
+  <Project Path="Aspid.FastTools.Editor.SerializeReferences.Yaml.csproj" />
+  <Project Path="Aspid.FastTools.Editor.Tests.csproj" />
+  <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="Aspid.FastTools.VisualElements.Math.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
+  <Project Path="Aspid.FastTools.DevTests.CliCommands.Editor.csproj" />
+</Solution>

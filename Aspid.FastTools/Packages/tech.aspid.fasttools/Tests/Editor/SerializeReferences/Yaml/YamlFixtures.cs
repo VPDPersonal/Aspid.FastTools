@@ -346,6 +346,52 @@ MonoBehaviour:
         _spreadAngle: 25
 ";
 
+        // Unity gives a sub-asset (AssetDatabase.AddObjectToAsset) and every object of a prefab a random 64-bit local
+        // file id, and about half of them are negative ("--- !u!114 &-3200400644298251397").
+        public const long NegativeFileId = -3200400644298251397L;
+
+        // The main object's file id and the rid both documents of the sub-asset fixture below hold.
+        public const long SubAssetMainFileId = 11400000L;
+        public const long SubAssetRid = 1000L;
+
+        // A ScriptableObject with one sub-asset under a negative anchor. Rids are unique per object only, so both
+        // documents hold rid 1000: Pistol (resolvable) in the main object, GhostPistol (MISSING) in the sub-asset. A
+        // reader that skips the negative header folds the sub-asset into the main document and edits the main entry.
+        public const string NegativeSubAssetAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: WeaponPreset
+  _weapon:
+    rid: 1000
+  references:
+    version: 2
+    RefIds:
+    - rid: 1000
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 10
+        _magazineSize: 7
+--- !u!114 &-3200400644298251397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: SidearmPreset
+  _weapon:
+    rid: 1000
+  references:
+    version: 2
+    RefIds:
+    - rid: 1000
+      type: {class: GhostPistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 15
+        _magazineSize: 12
+";
+
         // The script guid of the scene required-field fixtures below — maps (via the test's injected resolver) to
         // RequiredTestObject's required fields. Any other guid (the mixed fixture's bbbb… script) is unknown to the resolver.
         public const string RequiredSceneScriptGuid = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
@@ -577,6 +623,32 @@ GameObject:
 MonoBehaviour:
   m_GameObject: {fileID: 200}
   m_Script: {fileID: 11500000, guid: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, type: 3}
+  m_Name:
+  requiredRef:
+    rid: -2
+  requiredString:
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+";
+
+        // RequiredSceneUnset as a prefab: the GameObject and the MonoBehaviour (NegativeFileId) have negative anchors.
+        // Two violations expected.
+        public const string RequiredPrefabNegativeAnchorUnset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &-7340289451137645013
+GameObject:
+  m_Component:
+  - component: {fileID: -3200400644298251397}
+  m_Name: Hero
+--- !u!114 &-3200400644298251397
+MonoBehaviour:
+  m_GameObject: {fileID: -7340289451137645013}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
   m_Name:
   requiredRef:
     rid: -2
