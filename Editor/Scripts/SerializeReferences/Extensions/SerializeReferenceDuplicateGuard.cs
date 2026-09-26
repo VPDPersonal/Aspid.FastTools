@@ -42,7 +42,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var target = serializedObject.targetObject;
             if (target == null) return false;
 
-            var key = new ArrayKey(target.GetInstanceID(), arrayPath);
+            var key = new ArrayKey(target, arrayPath);
 
             if (_pending.Contains(key)) return false;
 
@@ -257,17 +257,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private readonly struct ArrayKey : IEquatable<ArrayKey>
         {
-            private readonly int _targetInstanceId;
+            private readonly Object _target;
             private readonly string _arrayPath;
 
-            public ArrayKey(int targetInstanceId, string arrayPath)
+            public ArrayKey(Object target, string arrayPath)
             {
-                _targetInstanceId = targetInstanceId;
+                _target = target;
                 _arrayPath = arrayPath;
             }
 
             public bool Equals(ArrayKey other) =>
-                _targetInstanceId == other._targetInstanceId && _arrayPath == other._arrayPath;
+                _target == other._target && _arrayPath == other._arrayPath;
 
             public override bool Equals(object obj) => obj is ArrayKey other && Equals(other);
 
@@ -275,7 +275,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 unchecked
                 {
-                    return (_targetInstanceId * 397) ^ (_arrayPath?.GetHashCode() ?? 0);
+                    return ((_target is null ? 0 : _target.GetHashCode()) * 397) ^ (_arrayPath?.GetHashCode() ?? 0);
                 }
             }
         }
