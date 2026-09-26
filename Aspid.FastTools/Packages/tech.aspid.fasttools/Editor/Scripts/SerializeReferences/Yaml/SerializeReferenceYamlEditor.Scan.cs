@@ -26,6 +26,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             try
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
+                if (!SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
 
                 var lines = File.ReadAllLines(assetPath);
 
@@ -92,6 +93,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             try
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
+                if (!SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
 
                 // One-shot bulk read like FindMissingReferences — bypass the probe cache so large scene files don't evict
                 // the interactive per-property entries (see SerializeReferenceYamlProbeCache remarks).

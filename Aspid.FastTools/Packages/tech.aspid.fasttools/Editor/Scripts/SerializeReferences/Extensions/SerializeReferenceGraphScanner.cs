@@ -28,6 +28,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             try
             {
                 if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
+                if (!SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
 
                 var lines = File.ReadAllLines(assetPath);
                 var headers = CollectHeaders(lines);
