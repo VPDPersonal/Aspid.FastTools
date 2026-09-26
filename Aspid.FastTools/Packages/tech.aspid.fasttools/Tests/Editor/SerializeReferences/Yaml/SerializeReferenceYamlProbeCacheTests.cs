@@ -72,11 +72,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void ClearCache_ForcesReRead()
         {
-            var stamp = File.GetLastWriteTimeUtc(_path);
+            // The same pinned write time as in ReadAllLines_SameTimestamp_ServesCachedContent, so only ClearCache can
+            // bust the entry — a re-captured OS stamp may lose precision and re-read even with a no-op ClearCache.
+            var pinned = new System.DateTime(2020, 1, 1, 0, 0, 0, System.DateTimeKind.Utc);
+
+            File.SetLastWriteTimeUtc(_path, pinned);
             SerializeReferenceYamlProbeCache.ReadAllLines(_path); // warm
 
             File.WriteAllText(_path, "beta\n");
-            File.SetLastWriteTimeUtc(_path, stamp); // keep timestamp so only ClearCache can bust it
+            File.SetLastWriteTimeUtc(_path, pinned);
+
+            var cached = SerializeReferenceYamlProbeCache.ReadAllLines(_path);
+            Assert.AreEqual("alpha", cached[0], "Precondition: the unchanged key must still serve the cached copy.");
 
             SerializeReferenceYamlProbeCache.ClearCache();
 

@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
@@ -10,25 +9,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 {
     internal sealed class VisualElementInteractionTests
     {
-        private EditorWindow _window;
+        private TestPanel _panel;
 
         [SetUp]
-        public void SetUp()
-        {
-            _window = ScriptableObject.CreateInstance<EditorWindow>();
-            _window.ShowUtility();
-        }
+        public void SetUp() => _panel = new TestPanel();
 
         [TearDown]
-        public void TearDown()
-        {
-            if (_window) Object.DestroyImmediate(_window);
-        }
+        public void TearDown() => _panel.Dispose();
 
         [UnityTest]
         public IEnumerator Navigation_DoesNotActOnSelectionInsideCollapsedContainer()
         {
-            var host = _window.rootVisualElement;
+            var host = _panel.Root;
             var container = new VisualElement();
             var target = new VisualElement();
             container.Add(target);
@@ -63,7 +55,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         public IEnumerator InspectorHeader_LeavingAfterStatusClearedResetsHoverAccents()
         {
             var header = new AspidInspectorHeader();
-            _window.rootVisualElement.Add(header);
+            _panel.Root.Add(header);
             yield return null;
 
             var icon = header.Q<Image>(className: "aspid-fasttools-inspector-header__icon");
