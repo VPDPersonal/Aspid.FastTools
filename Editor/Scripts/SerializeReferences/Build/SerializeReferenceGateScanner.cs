@@ -9,6 +9,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceGateScanner
     {
+        // How many files the required-field sweep loads before it releases the ones nothing references any more.
+        private const int UnloadEveryLoadedFiles = 64;
+
         // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only
         // for assets whose unresolved entries carry a [MovedFrom] claim. Null marks an asset whose map failed to build.
         private static readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _constraintMapCache =
@@ -27,6 +30,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _scriptRequiredFieldsCache.Clear();
             _constraintMapCache.Clear();
 
+            var loadedSinceUnload = 0;
+
             for (var i = 0; i < paths.Length; i++)
             {
                 var path = paths[i];
@@ -43,10 +48,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (options.ScanRequiredFields)
                 {
-                    if (SerializeReferenceHelpers.IsScene(path)) CollectSceneRequiredViolations(path, violations);
-                    else CollectRequiredViolations(path, violations);
+                    if (SerializeReferenceHelpers.IsScene(path))
+                    {
+                        CollectSceneRequiredViolations(path, violations);
+                    }
+                    else
+                    {
+                        if (!AssetDatabase.IsMainAssetAtPathLoaded(path)) loadedSinceUnload++;
+                        CollectRequiredViolations(path, violations);
+                    }
                 }
+
+                // Every loaded file stays in memory until unloaded, so a sweep of a large project would otherwise hold
+                // all of its prefabs and assets at once.
+                if (loadedSinceUnload < UnloadEveryLoadedFiles) continue;
+
+                EditorUtility.UnloadUnusedAssetsImmediate();
+                loadedSinceUnload = 0;
             }
+
+            if (loadedSinceUnload > 0) EditorUtility.UnloadUnusedAssetsImmediate();
 
             return violations;
         }
@@ -60,6 +81,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             if (SerializeReferenceHelpers.IsScene(assetPath)) CollectSceneRequiredViolations(assetPath, violations);
             else CollectRequiredViolations(assetPath, violations);
+
+            return violations;
+        }
+
+        // Re-audits the files an edit touched and swaps their entries in a cached project audit; every other file's
+        // violations are kept as they were.
+        public static IReadOnlyList<GateViolation> RescanRequiredFields(
+            IReadOnlyList<GateViolation> cached, IEnumerable<string> assetPaths)
+        {
+            var paths = new HashSet<string>(assetPaths, StringComparer.Ordinal);
+            var violations = cached.Where(violation => !paths.Contains(violation.AssetPath)).ToList();
+
+            foreach (var path in paths)
+                violations.AddRange(ScanAssetRequiredFields(path));
 
             return violations;
         }

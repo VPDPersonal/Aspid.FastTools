@@ -69,6 +69,61 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
         }
 
+        // A project sweep loads every prefab and asset it audits; it must release them, or a large project ends up
+        // holding all of its content in memory at once.
+        [Test]
+        public void Scan_RequiredOnly_UnloadsAssetsItLoaded()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                Resources.UnloadAsset(probe);
+                Assume.That(AssetDatabase.IsMainAssetAtPathLoaded(ProbeAssetPath), Is.False);
+
+                SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly);
+
+                Assert.IsFalse(AssetDatabase.IsMainAssetAtPathLoaded(ProbeAssetPath),
+                    "An asset the sweep loaded for its audit must not stay loaded after the scan.");
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        // After a bulk edit the Project References window re-audits only the rewritten files; the cached entries of
+        // those files are replaced and every other file's are kept.
+        [Test]
+        public void RescanRequiredFields_ReplacesOnlyTheRescannedFiles()
+        {
+            const string otherPath = "Assets/__AspidGateScannerUntouched__.asset";
+
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+
+                var cached = new[]
+                {
+                    new GateViolation(ProbeAssetPath, 1, 0, default, GateViolationKind.RequiredUnset, "stale"),
+                    new GateViolation(otherPath, 1, 0, default, GateViolationKind.RequiredUnset, "kept"),
+                };
+
+                var refreshed = SerializeReferenceGateScanner.RescanRequiredFields(cached, new[] { ProbeAssetPath });
+
+                Assert.IsTrue(refreshed.Any(v => v.AssetPath == otherPath && v.FieldPath == "kept"),
+                    "A file outside the rescan keeps its cached violations.");
+                Assert.IsFalse(refreshed.Any(v => v.FieldPath == "stale"), "A rescanned file drops its cached entries.");
+                Assert.IsTrue(refreshed.Any(v => v.AssetPath == ProbeAssetPath && v.FieldPath == nameof(RequiredTestObject.requiredRef)),
+                    "A rescanned file reports its current violations.");
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
         [Test]
         public void ScanAssetRequiredFields_NonCandidatePath_ReturnsEmpty()
         {
