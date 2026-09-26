@@ -58,7 +58,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var id = $"{usage.Guid}:{usage.FileId}:{usage.Rid}";
                 var missing = usage.Resolves ? string.Empty : "  (missing)";
                 var label = $"{className}{missing}";
-                var description = $"{path}  —  rid {usage.Rid}";
+                var description = $"{path}  —  rid {usage.Rid}{(usage.IsOverride ? "  (prefab override)" : string.Empty)}";
 
                 var item = provider.CreateItem(context, id, label, description, null, path);
                 items.Add(item);

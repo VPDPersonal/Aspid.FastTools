@@ -126,6 +126,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return card;
         }
 
+        // Report-only: Fix all edits RefIds entries, and an override type lives in the PrefabInstance document instead.
+        private VisualElement BuildOverrideGroupCard(IReadOnlyList<MissingReferenceLocation> overrides)
+        {
+            var card = new AspidBox(AspidBoxPreset.Default.SetTheme(ThemeStyle.Type.Darkness))
+                .AddClass(GroupClass);
+
+            var files = overrides.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
+
+            card.AddChild(BuildGroupHeaderRow(
+                "Prefab instance overrides",
+                $"{BuildCountText(overrides.Count, "entry")} · {(files == 1 ? "1 file" : $"{files} files")}",
+                StatusStyle.Type.Warning,
+                isStatic: true));
+
+            AddGroupDivider(card, withSweep: false);
+
+            foreach (var entry in overrides)
+                card.AddChild(BuildOverrideEntryRow(entry));
+
+            return card;
+        }
+
+        private VisualElement BuildOverrideEntryRow(MissingReferenceLocation entry)
+        {
+            var path = MakeSelectable(new Label(entry.AssetPath).AddClass(GroupEntryPathClass));
+            path.tooltip = entry.AssetPath;
+
+            var type = MakeSelectable(new Label($"{entry.Entry.StoredType.Class} · rid {entry.Entry.Rid}")
+                .AddClass(GroupEntryFieldClass));
+            type.tooltip = $"{entry.Entry.StoredType.DisplayName}\nSet by a prefab instance override. Select the " +
+                "instance and pick a new type in its Inspector, or Revert the override.";
+
+            return BuildEntryRow(entry.AssetPath, path, type);
+        }
+
         private static VisualElement BuildGroupHeaderRow(string title, string countText, StatusStyle.Type status, bool isStatic)
         {
             var header = new AspidLabel(title, AspidLabelPreset.Default

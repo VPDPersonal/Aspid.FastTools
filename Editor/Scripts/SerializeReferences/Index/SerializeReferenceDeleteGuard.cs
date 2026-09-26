@@ -96,16 +96,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
-                // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
-                foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
+                // A pure text pass rather than an asset load; prefab instance overrides count like RefIds entries.
+                foreach (var usage in SerializeReferenceTypeUsageIndex.CollectUsages(path, guid: null))
                 {
-                    foreach (var node in document.Nodes)
-                    {
-                        if (node.StoredType.IsEmpty) continue;
-
-                        var key = SerializeReferenceHelpers.OpenTypeKey(node.StoredType);
-                        if (countsByKey.TryGetValue(key, out var count)) countsByKey[key] = count + 1;
-                    }
+                    var key = SerializeReferenceHelpers.OpenTypeKey(usage.StoredType);
+                    if (countsByKey.TryGetValue(key, out var count)) countsByKey[key] = count + 1;
                 }
             }
 
@@ -141,17 +136,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
                 var usedHere = false;
-                // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
-                foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
+                // A pure text pass rather than an asset load; prefab instance overrides count like RefIds entries.
+                foreach (var usage in SerializeReferenceTypeUsageIndex.CollectUsages(path, guid: null))
                 {
-                    foreach (var node in document.Nodes)
-                    {
-                        if (node.StoredType.IsEmpty) continue;
-                        if (!string.Equals(SerializeReferenceHelpers.OpenTypeKey(node.StoredType), key, StringComparison.Ordinal)) continue;
+                    if (!string.Equals(SerializeReferenceHelpers.OpenTypeKey(usage.StoredType), key, StringComparison.Ordinal)) continue;
 
-                        count++;
-                        usedHere = true;
-                    }
+                    count++;
+                    usedHere = true;
                 }
 
                 if (usedHere && paths.Count < SamplePathCount) paths.Add(path);

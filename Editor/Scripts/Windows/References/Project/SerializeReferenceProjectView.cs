@@ -198,7 +198,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _list.Clear();
             ResetNavTargets();
 
-            var missingCount = groups.Sum(group => group.Entries.Count);
+            var overrides = MissingReferenceGroup.CollectOverridesFromIndex();
+            var missingCount = groups.Sum(group => group.Entries.Count) + overrides.Count;
             var requiredCount = requiredViolations.Count;
 
             if (missingCount == 0 && requiredCount == 0)
@@ -222,10 +223,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ShowResults(
                 SerializeReferenceProjectSummary.BuildResultsHeaderText(missingCount - migrationCount, migrationCount, requiredCount),
                 StatusStyle.Type.Warning);
-            _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(requiredCount > 0);
+            _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(requiredCount > 0, overrides.Count > 0);
 
-            var hasAmber = groups.Count > migrations.Count || requiredCount > 0;
+            var hasAmber = groups.Count > migrations.Count || requiredCount > 0 || overrides.Count > 0;
             _legend.EnableInClassList(LegendHiddenClass, migrations.Count == 0 || !hasAmber);
+
+            if (overrides.Count > 0)
+                _list.AddChild(BuildOverrideGroupCard(overrides));
 
             if (requiredCount > 0)
                 _list.AddChild(BuildRequiredGroupCard(requiredViolations));
@@ -239,7 +243,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_scanButton is not null) _scanButton.Text = RescanLabel;
 
             var groups = MissingReferenceGroup.CollectFromIndex();
-            if (groups.Count == 0) ShowMissingReferencesClean();
+            if (groups.Count == 0 && MissingReferenceGroup.CollectOverridesFromIndex().Count == 0) ShowMissingReferencesClean();
             else RenderGroups(groups, RequiredViolationsForRender);
         }
 
