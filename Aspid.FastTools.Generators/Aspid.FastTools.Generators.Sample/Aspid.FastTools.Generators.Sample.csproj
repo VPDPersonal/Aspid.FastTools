@@ -1,19 +1,35 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+    <!-- Target of the generator's DebugRoslynSourceGenerator launch profile. Unity is not referenced,
+         so the project builds on any machine: Stubs/ stands in for Unity.Profiling, and the package's
+         extension class is compiled from its real source. -->
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <RootNamespace>Aspid.FastTools.Sample</RootNamespace>
-        <UnityVersion>6000.2.7f2</UnityVersion>
+        <!-- Unity compiles user code as C# 9 with ENABLE_PROFILER in the Editor and development builds. -->
         <LangVersion>9</LangVersion>
+        <DefineConstants>$(DefineConstants);ENABLE_PROFILER</DefineConstants>
+        <!-- A generator that fails to load or throws is only a warning; here it breaks the build. -->
+        <WarningsAsErrors>$(WarningsAsErrors);CS8784;CS8785</WarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Aspid.FastTools.Generators\Aspid.FastTools.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
+    <!-- The generator's bin/ output is not merged (see ILRepack.targets), so the compiler needs its
+         dependencies as analyzers too, or the generator fails to load and every call binds to the
+         fallback. Keep the versions in step with Aspid.FastTools.Generators.csproj. -->
     <ItemGroup>
-      <PackageReference Include="Unity3D" Version="3.0.1" />
+        <PackageReference Include="Aspid.Generators.Helper" Version="[0.1.0]" GeneratePathProperty="true" ExcludeAssets="all" PrivateAssets="all" />
+        <PackageReference Include="Aspid.Generators.Helper.Unity" Version="[0.0.1-alpha.3]" GeneratePathProperty="true" ExcludeAssets="all" PrivateAssets="all" />
+        <Analyzer Include="$(PkgAspid_Generators_Helper)/lib/netstandard2.0/Aspid.Generators.Helper.dll" />
+        <Analyzer Include="$(PkgAspid_Generators_Helper_Unity)/lib/netstandard2.0/Aspid.Generators.Helper.Unity.dll" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Include="..\..\Aspid.FastTools\Packages\tech.aspid.fasttools\Runtime\Scripts\ProfilerMarkers\ProfilerMarkerExtensionsForGenerator.cs" Link="Package\ProfilerMarkerExtensionsForGenerator.cs" />
     </ItemGroup>
 
 </Project>

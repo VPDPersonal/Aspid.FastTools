@@ -1,9 +1,9 @@
-﻿{
+{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "DebugRoslynSourceGenerator": {
       "commandName": "DebugRoslynComponent",
-      "targetProject": "../Aspid.UnityFastTools.Generators.Sample/Aspid.UnityFastTools.Generators.Sample.csproj"
+      "targetProject": "../Aspid.FastTools.Generators.Sample/Aspid.FastTools.Generators.Sample.csproj"
     }
   }
 }
