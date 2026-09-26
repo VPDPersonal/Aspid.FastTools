@@ -723,44 +723,59 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Missing-type entries are not part of Unity's Undo snapshot: clearing one with the fix would leave Ctrl+Z
-        // pointing at a deleted rid. The replaced entry stays orphaned until its scene or prefab is saved. Entries
-        // registered before a domain reload are forgotten and saved as orphans.
-        private static readonly List<(Object target, long repairedId, long referenceId)> PendingRepairedEntries = new();
+        // pointing at a deleted rid. The replaced entry stays orphaned until its scene or prefab is saved.
+        private static List<SerializeReferencePendingRepairs.Entry> PendingRepairs =>
+            SerializeReferencePendingRepairs.instance.Entries;
 
         [InitializeOnLoadMethod]
-        private static void ClearRepairedEntriesOnSave()
+        private static void TrackRepairedEntries()
         {
             EditorSceneManager.sceneSaving += (scene, _) => ClearRepairedMissingEntries(scene);
             PrefabStage.prefabSaving += root => ClearRepairedMissingEntries(root.scene);
+            Undo.undoRedoEvent += OnRepairUndoRedo;
         }
 
-        // Undo can no longer restore a cleared entry, so the owner's Undo history is dropped along with it. Undo removes
-        // the repaired instance, so a rid no pointer uses, whatever list edits followed, means the fix was undone: the
-        // entry stays pending in case the fix is redone.
+        // Only an undo step can take the fix back: overwriting or deleting the repaired value afterwards leaves it
+        // applied. Steps run through the groups in order, so undoing the fix's group or an earlier one takes it back,
+        // and redoing it or a later one restores it. The repaired rid is new, so its use means the fix is applied.
+        private static void OnRepairUndoRedo(in UndoRedoInfo info)
+        {
+            foreach (var entry in PendingRepairs)
+            {
+                if (entry.target == null) continue;
+
+                if (IsManagedReferenceUsed(entry.target, entry.repairedId)) entry.undone = false;
+                else if (!info.isRedo && info.undoGroup <= entry.undoGroup) entry.undone = true;
+                else if (info.isRedo && info.undoGroup >= entry.undoGroup) entry.undone = false;
+            }
+        }
+
+        // Undo can no longer restore a cleared entry, so the owner's Undo history is dropped along with it. The entry
+        // of an undone fix stays pending in case the fix is redone.
         private static void ClearRepairedMissingEntries(UnityEngine.SceneManagement.Scene scene)
         {
             var cleared = false;
+            var pending = PendingRepairs;
 
-            for (var i = PendingRepairedEntries.Count - 1; i >= 0; i--)
+            for (var i = pending.Count - 1; i >= 0; i--)
             {
-                var (target, repairedId, referenceId) = PendingRepairedEntries[i];
-                if (target == null)
+                var entry = pending[i];
+                if (entry.target == null)
                 {
-                    PendingRepairedEntries.RemoveAt(i);
+                    pending.RemoveAt(i);
                     continue;
                 }
 
-                if (GetOwningScene(target) != scene) continue;
-                if (!IsManagedReferenceUsed(target, repairedId)) continue;
+                if (entry.undone || GetOwningScene(entry.target) != scene) continue;
 
-                if (ClearMissingSubtree(target, referenceId) > 0)
+                if (ClearMissingSubtree(entry.target, entry.referenceId) > 0)
                 {
-                    Undo.ClearUndo(target);
+                    Undo.ClearUndo(entry.target);
                     cleared = true;
                 }
 
-                if (!HasMissingEntry(target, referenceId))
-                    PendingRepairedEntries.RemoveAt(i);
+                if (!HasMissingEntry(entry.target, entry.referenceId))
+                    pending.RemoveAt(i);
             }
 
             if (!cleared) return;
@@ -806,7 +821,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             property.SetManagedReferenceAndApply(instance);
             EditorUtility.SetDirty(target);
             property.serializedObject.Update();
-            PendingRepairedEntries.Add((target, property.managedReferenceId, referenceId));
+            PendingRepairs.Add(new SerializeReferencePendingRepairs.Entry
+            {
+                target = target,
+                repairedId = property.managedReferenceId,
+                referenceId = referenceId,
+                undoGroup = Undo.GetCurrentGroup(),
+            });
 
             var scene = GetOwningScene(target);
             if (scene.IsValid()) EditorSceneManager.MarkSceneDirty(scene);
