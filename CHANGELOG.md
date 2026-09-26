@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AFT0010` now reports every `this.Marker()` call that opens no marker, not only unsupported types: a receiver of another type (`other.Marker()`, calls in static classes), a default interface method, an explicit argument (`this.Marker(5)`) or type argument, `this?.Marker()`, the static call form, a method group and a call inside an expression tree. The generator no longer emits dead markers for such calls.
 - A generic class names nested type arguments the way C# writes them (`Foo<List<Int32>>.Run (line)`, `Foo<Outer<Int32>.Inner>.Run (line)` instead of ``Foo<List`1>``, `Foo<Inner>`). A generic struct gets one marker per call site for all its closed types, named `Job<T>.Execute (line)`, because Burst cannot run the per-type label.
 - The generated `Marker()` dispatches on the line with a `switch`, so its cost no longer grows with the number of call sites in a type.
+- The animated dot background of the FastTools window and the settings page draws all its dots as one mesh instead of tessellating a path per dot on every frame, and pauses while Unity is in the background, so an idle open window no longer keeps the editor busy.
 
 ### Removed
 
