@@ -51,16 +51,8 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         public AspidHelpBoxPreset SetMessageType(HelpBoxMessageType value)
         {
             MessageType = value;
-            if (Status == StatusStyle.Type.None) SetStatus(MapToStatus(value));
+            if (Status == StatusStyle.Type.None) SetStatus(AspidHelpBox.MapToStatus(value));
             return this;
         }
-
-        private static StatusStyle.Type MapToStatus(HelpBoxMessageType type) => type switch
-        {
-            HelpBoxMessageType.Info => StatusStyle.Type.Info,
-            HelpBoxMessageType.Warning => StatusStyle.Type.Warning,
-            HelpBoxMessageType.Error => StatusStyle.Type.Error,
-            _ => StatusStyle.Type.None,
-        };
     }
 }
