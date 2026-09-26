@@ -615,6 +615,51 @@ class Slot<T> where T : class
     [SerializeReference, TypeSelector] private List<IComparer<T>> _comparers;
 }");
 
+    [Fact]
+    public Task NestedInGenericArgument_OnlyOtherOuterArgumentImpls_ReportsAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+using System.Collections.Generic;
+interface IBar<T> { }
+class Outer<T> { public class Inner { } }
+class ListImpl<T> : IBar<Outer<List<T>>.Inner> { }
+class C { [SerializeReference, {|AFT0005:TypeSelector|}] private IBar<Outer<int>.Inner> _bar; }");
+
+    [Fact]
+    public Task NestedInGenericArgument_OpenImpl_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IBar<T> { }
+class Outer<T> { public class Inner { } }
+class Impl<T> : IBar<Outer<T>.Inner> { }
+class C { [SerializeReference, TypeSelector] private IBar<Outer<int>.Inner> _bar; }");
+
+    // An unbound typeof(Foo<>) is related to a type whose hierarchy contains some Foo<X>.
+
+    [Fact]
+    public Task UnboundGenericBase_SealedTypeWithoutIt_ReportsAFT0003AndAFT0009() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IFoo<T> { }
+sealed class Plain { }
+class C
+{
+    [SerializeReference, TypeSelector({|AFT0003:typeof(IFoo<>)|})] private Plain _plain;
+    [TypeSelector(typeof(IFoo<>), {|AFT0009:typeof(Plain)|})] private string _type;
+}");
+
+    [Fact]
+    public Task UnboundGenericBase_SealedTypeImplementingIt_NoDiagnostic() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IFoo<T> { }
+sealed class IntFoo : IFoo<int> { }
+class C
+{
+    [SerializeReference, TypeSelector(typeof(IFoo<>))] private IntFoo _foo;
+    [TypeSelector(typeof(IFoo<>), typeof(IntFoo))] private string _type;
+}");
+
     // AFT0003 on SerializableType<T> / SerializableMonoScript<T>: the picker also requires T.
 
     [Fact]

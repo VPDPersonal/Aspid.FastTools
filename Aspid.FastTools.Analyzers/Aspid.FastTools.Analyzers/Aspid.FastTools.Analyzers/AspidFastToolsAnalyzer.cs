@@ -591,7 +591,10 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
                     for (var i = 0; i < openNamed.TypeArguments.Length; i++)
                         if (!CanUnify(openNamed.TypeArguments[i], closedNamed.TypeArguments[i])) return false;
 
-                    return true;
+                    // Outer<List<T>>.Inner and Outer<int>.Inner share a definition but not the outer arguments.
+                    return openNamed.ContainingType is not { } openOuter ||
+                        closedNamed.ContainingType is not { } closedOuter ||
+                        CanUnify(openOuter, closedOuter);
                 }
 
                 default:
@@ -740,11 +743,18 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
     // Two non-interface types with no inheritance relationship can share no concrete instance (single inheritance),
     // so the selector would be empty. An interface paired with a class is only provably disjoint when the class is
     // sealed and does not implement it — no further subtype can add the interface. Two interfaces are never provably
-    // disjoint (one class can implement both), so they are left alone to avoid false positives.
+    // disjoint (one class can implement both), so they are left alone to avoid false positives. An unbound
+    // typeof(Foo<>) against a closed type is matched by generic definition: related when some Foo<X> is in the other
+    // type's hierarchy, or the other type is in Foo's.
     private static bool AreProvablyDisjoint(ITypeSymbol baseType, ITypeSymbol fieldType, Compilation compilation)
     {
+        var unboundBase = IsUnbound(baseType);
+        var unboundField = IsUnbound(fieldType);
+        var byDefinition = unboundBase != unboundField;
+
         // A type parameter stands for a type that is only known once the generic type is closed.
-        if (IsOpen(baseType) || IsOpen(fieldType)) return false;
+        if (byDefinition ? IsOpen(unboundBase ? fieldType : baseType) : IsOpen(baseType) || IsOpen(fieldType))
+            return false;
 
         var baseIsInterface = baseType.TypeKind == TypeKind.Interface;
         var fieldIsInterface = fieldType.TypeKind == TypeKind.Interface;
@@ -756,10 +766,29 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             var contract = baseIsInterface ? baseType : fieldType;
             var implementation = baseIsInterface ? fieldType : baseType;
 
-            return implementation.IsSealed && !IsAssignableTo(implementation, contract, compilation);
+            return implementation.IsSealed && !Reaches(implementation, contract);
         }
 
-        return !IsAssignableTo(baseType, fieldType, compilation) && !IsAssignableTo(fieldType, baseType, compilation);
+        return !Reaches(baseType, fieldType) && !Reaches(fieldType, baseType);
+
+        bool Reaches(ITypeSymbol from, ITypeSymbol to) =>
+            byDefinition ? HasDefinitionInHierarchy(from, to) : IsAssignableTo(from, to, compilation);
+    }
+
+    private static bool IsUnbound(ITypeSymbol type) => type is INamedTypeSymbol { IsUnboundGenericType: true };
+
+    // True when the type, a base class or an implemented interface shares the target's generic definition.
+    private static bool HasDefinitionInHierarchy(ITypeSymbol from, ITypeSymbol to)
+    {
+        var definition = to.OriginalDefinition;
+
+        for (ITypeSymbol? current = from.OriginalDefinition; current is not null; current = current.BaseType)
+            if (SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, definition)) return true;
+
+        foreach (var contract in from.OriginalDefinition.AllInterfaces)
+            if (SymbolEqualityComparer.Default.Equals(contract.OriginalDefinition, definition)) return true;
+
+        return false;
     }
 
     // Type.IsAssignableFrom for closed types: identity, a base class, or an implemented interface — the latter also
