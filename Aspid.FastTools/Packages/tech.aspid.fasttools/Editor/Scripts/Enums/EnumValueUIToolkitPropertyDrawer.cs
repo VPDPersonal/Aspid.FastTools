@@ -145,9 +145,31 @@ namespace Aspid.FastTools.Enums.Editors
                 {
                     if (evt.button is not 0) return;
 
-                    onOpen(_visualInput.worldBound);
+                    Open();
                     evt.StopPropagation();
                 });
+
+                RegisterCallback<NavigationSubmitEvent>(evt =>
+                {
+                    Open();
+                    evt.StopPropagation();
+                });
+
+                return;
+
+                // GenericMenu takes GUI coordinates, which a UI Toolkit event does not set up: go through screen space.
+                void Open()
+                {
+                    var window = _visualInput.GetOwnerWindow();
+                    if (!window) return;
+
+                    var bound = _visualInput.worldBound;
+                    onOpen(GUIUtility.ScreenToGUIRect(new Rect(
+                        window.position.x + bound.xMin,
+                        window.position.y + bound.yMin,
+                        bound.width,
+                        bound.height)));
+                }
             }
 
             public KeyMenuField SetCaption(string caption)
