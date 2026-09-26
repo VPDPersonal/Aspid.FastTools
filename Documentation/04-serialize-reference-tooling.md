@@ -14,7 +14,7 @@ After renaming or deleting a class, check which assets still store its old name:
 4. Click **Fix all** in the relevant group, choose a replacement, and review the changes in the **Rewrite** dialog.
 5. Review the summary and the affected assets' values. If needed, use **Undo** in the operation summary; then click **Rescan** to check again.
 
-File rewrites skip references in open scenes and Prefab Mode. Save and close those scenes or prefabs before repair, or repair a visible field using [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types).
+File rewrites skip references in open scenes, Prefab Mode and assets with unsaved changes: the rewrite reimports the asset and would discard those changes. **Asset References** offers to save such an asset first. Save and close those scenes, prefabs and assets before repair, or repair a visible field using [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types).
 
 > [!NOTE]
 > Analysis requires text YAML assets. In Unity's editor settings, select **Asset Serialization → Mode → Force Text**. Existing binary assets need to be saved again; changing the mode alone does not make them scannable.
@@ -64,7 +64,7 @@ Bulk replacement produces a summary with an **Undo** button. It restores the old
 
 `<None>` clears references and deletes their stored data. If several fields share a `rid`, all pointers to that instance are cleared. The tool asks for confirmation; this operation cannot be undone.
 
-Bulk clearing may null references in open scenes or Prefab Mode in memory. Save those objects: file-based scans continue to show the old entries until they are saved.
+Bulk clearing may null references in open scenes, Prefab Mode or assets with unsaved changes in memory. Save those objects: file-based scans continue to show the old entries until they are saved.
 
 ## Asset References: inspect one asset
 

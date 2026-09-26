@@ -22,7 +22,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        // skipped counts the entries held back because an open copy would clobber the file edit on its next save.
+        // skipped counts the entries held back because an open copy would clobber the file edit on its next save, or
+        // the edit's reimport would discard an asset's unsaved changes.
         public static List<MissingReferenceLocation> FilterWritable(IReadOnlyList<MissingReferenceLocation> source, out int skipped)
         {
             var prefabStagePath = SerializeReferenceOpenCopyGuard.CurrentPrefabStagePath();

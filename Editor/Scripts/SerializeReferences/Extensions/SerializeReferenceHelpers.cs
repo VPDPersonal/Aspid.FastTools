@@ -677,12 +677,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 });
         }
 
-        // Repair saved assets through YAML and open Prefab Mode objects through their live serialized state.
+        // Repair saved assets through YAML; Prefab Mode objects, loaded scenes and assets with unsaved changes through
+        // their live serialized state.
         public static bool TryFixMissingType(SerializedProperty property, Type newType)
         {
             if (newType is null) return false;
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return false;
             if (!TryGetMissingReferenceId(property, out var referenceId)) return false;
+
+            if (!inMemory)
+            {
+                // Prefab Mode saves over the asset file, so neither route would survive. Unsaved changes would be
+                // dropped by the reimport, so a dirty asset is repaired in memory and saved along with them.
+                if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath, "Fix Missing Type")) return false;
+                inMemory = SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath);
+            }
 
             bool repaired;
             if (inMemory)
@@ -794,6 +803,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var root in scene.GetRootGameObjects())
                     foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
                         if (mb != null) yield return mb;
+
+            // A loaded asset with unsaved changes is its own open copy: a file rewrite would reload it from disk.
+            if (SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath))
+                foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
+                    if (obj is MonoBehaviour or ScriptableObject) yield return obj;
         }
 
         // Preserve any repaired-subtree member referenced from outside it, including that member's descendants.
