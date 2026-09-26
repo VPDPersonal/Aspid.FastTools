@@ -37,6 +37,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var path = paths[i];
                 onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
 
+                // Scenes are read as YAML. Any other file is loaded by the required sweep, or earlier by the
+                // constraint map of a pending migration, and either load counts toward the next unload.
+                var wasLoaded = !options.ScanRequiredFields || SerializeReferenceHelpers.IsScene(path) ||
+                    AssetDatabase.IsMainAssetAtPathLoaded(path);
+
                 if (options.ScanMissingTypes)
                 {
                     foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves))
@@ -48,16 +53,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (options.ScanRequiredFields)
                 {
-                    if (SerializeReferenceHelpers.IsScene(path))
-                    {
-                        CollectSceneRequiredViolations(path, violations);
-                    }
-                    else
-                    {
-                        if (!AssetDatabase.IsMainAssetAtPathLoaded(path)) loadedSinceUnload++;
-                        CollectRequiredViolations(path, violations);
-                    }
+                    if (SerializeReferenceHelpers.IsScene(path)) CollectSceneRequiredViolations(path, violations);
+                    else CollectRequiredViolations(path, violations);
                 }
+
+                if (!wasLoaded && AssetDatabase.IsMainAssetAtPathLoaded(path)) loadedSinceUnload++;
 
                 // Every loaded file stays in memory until unloaded, so a sweep of a large project would otherwise hold
                 // all of its prefabs and assets at once.

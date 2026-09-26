@@ -9,7 +9,29 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private const int MaxPreviewedEntries = 8;
 
-        public const string RequiredNotScannedText = "Required fields have not been checked yet — Rescan to include them.";
+        private const string RequiredNotScannedText = "Required fields have not been checked yet — Rescan to include them.";
+        private const string RequiredDisabledText =
+            "Required fields are not checked while gate severity is Off (Project Settings → Aspid.FastTools → SerializeReference).";
+
+        // Only a sweep that actually ran the required check can call the project clean.
+        public static RequiredAuditState GetRequiredAuditState(bool scanned, bool checkDisabled) =>
+            !scanned ? RequiredAuditState.NotScanned
+            : checkDisabled ? RequiredAuditState.Disabled
+            : RequiredAuditState.Checked;
+
+        public static string BuildRequiredNotCheckedText(RequiredAuditState state) =>
+            state == RequiredAuditState.Disabled ? RequiredDisabledText : RequiredNotScannedText;
+
+        public static (bool Success, string Title, string Message) BuildNothingFoundState(RequiredAuditState state) =>
+            state == RequiredAuditState.Checked
+                ? (true, "Project clean", "No missing managed references or unset required fields found anywhere under Assets/.")
+                : (false, "No missing references",
+                    "No missing managed references found anywhere under Assets/. " + BuildRequiredNotCheckedText(state));
+
+        public static string BuildMissingReferencesCleanHintText(RequiredAuditState state) =>
+            state == RequiredAuditState.Checked
+                ? "Nothing left to repair. Rescan to sweep the project again and confirm it's clean."
+                : BuildRequiredNotCheckedText(state);
 
         public static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount)
         {
@@ -21,11 +43,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return string.Join(", ", parts);
         }
 
-        public static string BuildResultsHintText(bool hasRequiredViolations, bool requiredScanned)
+        public static string BuildResultsHintText(bool hasRequiredViolations, RequiredAuditState state)
         {
             const string hint = "Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.";
 
-            if (!requiredScanned) return hint + " " + RequiredNotScannedText;
+            if (state != RequiredAuditState.Checked) return hint + " " + BuildRequiredNotCheckedText(state);
 
             return hasRequiredViolations
                 ? hint + " Click a required-violation row to jump to its asset."
@@ -97,5 +119,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             builder.AppendLine();
             return builder.ToString();
         }
+    }
+
+    internal enum RequiredAuditState
+    {
+        NotScanned,
+        Disabled,
+        Checked,
     }
 }
