@@ -91,12 +91,12 @@ manaCost
 Решает мелкие задачи редакторских инструментов, например подписывает объекты и компоненты читаемыми именами.
 
 ```csharp
-config.GetDisplayName();
-// "Ability Config"
+caster.GetDisplayName();
+// "Ability Caster"
 
-config
+caster
   .GetDisplayNameWithIndex();
-// "Ability Config (2)"
+// "Ability Caster (2)"
 ```
 
 #### [Agent Skills](10-agent-skills.md)

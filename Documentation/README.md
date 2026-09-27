@@ -91,12 +91,12 @@ manaCost
 Handles small editor-tooling tasks, such as labelling objects and components with readable names.
 
 ```csharp
-config.GetDisplayName();
-// "Ability Config"
+caster.GetDisplayName();
+// "Ability Caster"
 
-config
+caster
   .GetDisplayNameWithIndex();
-// "Ability Config (2)"
+// "Ability Caster (2)"
 ```
 
 #### [Agent Skills](10-agent-skills.md)
