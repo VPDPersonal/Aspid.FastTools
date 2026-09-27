@@ -9,6 +9,7 @@ import AnimatedPreview from '@site/src/components/FeaturePreview';
 import InlineCode from '@site/src/components/InlineCode';
 import InstallPanel from '@site/src/components/InstallPanel';
 import ProfilerHierarchy from '@site/src/components/ProfilerHierarchy';
+import PropertyExplorer from '@site/src/components/PropertyExplorer';
 import SupportPanel from '@site/src/components/SupportPanel';
 import StatusBadge from '@site/src/components/StatusBadge';
 import banner from '@site/../docs/images/aspid_fasttools_readme_banner.gif';
@@ -37,4 +38,4 @@ function FeatureCardMore() {
   return <Translate id="featureCard.more">Read more</Translate>;
 }
 
-export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InlineCode, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy, AgentSession, AgentPrompt};
+export default {...MDXComponents, table: DocTable, IntroBanner, ReadmeLink, FeaturePreview, FeatureCardMore, InlineCode, InstallPanel, SupportPanel, StatusBadge, ProfilerHierarchy, AgentSession, AgentPrompt, PropertyExplorer};

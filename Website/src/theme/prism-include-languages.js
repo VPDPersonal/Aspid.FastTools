@@ -16,6 +16,14 @@ export default function includeLanguages(Prism) {
       alias: 'class-name',
       inside: {punctuation: /\./},
     },
+    // Prism leaves a type used for static access plain (`EditorApplication.delayCall`, `Resources.Load`, `DamageType.Fire`).
+    // A PascalCase name followed by `.` counts as a type unless a `.` precedes it, so member chains keep their colours.
+    // Root namespaces stay plain, as in `System.Type`, which InlineCode colours the same way.
+    'static-type-access': {
+      pattern: /(^|[^.\w])(?!(?:System|UnityEngine|UnityEditor|Unity|Aspid|Microsoft)\b)[A-Z]\w*(?=\s*\.\s*[A-Za-z_])/,
+      lookbehind: true,
+      alias: 'class-name',
+    },
     'event-type': {
       pattern: /(\bevent\s+)[A-Za-z_][\w.]*(?:<[^<>;{}]*>)?(?=\s+[A-Za-z_]\w*)/,
       lookbehind: true,

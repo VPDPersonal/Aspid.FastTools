@@ -1,0 +1,57 @@
+/* An Inspector mock-up beside the reflection results, in one frame. The Inspector follows the editor skin of the site
+   theme, like the introduction's Inspector previews; the results use the site tokens. */
+.panel { container-type: inline-size; margin-bottom: var(--ifm-leading); }
+.window {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+  border: 2px solid var(--venom-line-strong);
+  border-radius: 12px;
+}
+@container (max-width: 560px) {
+  .window { grid-template-columns: minmax(0, 1fr); }
+}
+
+.inspector { padding-bottom: 8px; color: #d2d2d2; background: #383838; font: 12.5px/1.4 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+.inspectorHead { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: #3e3e3e; border-bottom: 1px solid #242424; font-weight: 600; }
+.inspectorIcon { display: inline-grid; place-items: center; width: 16px; height: 16px; color: #2d6b39; background: #e6e6e6; border-radius: 3px; font: 700 11px/1 var(--ifm-font-family-monospace); }
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 30px;
+  padding: 3px 10px;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.row:hover { background: rgb(255 255 255 / 0.05); }
+.row[aria-checked='true'] { background: rgb(92 180 107 / 0.16); border-left-color: var(--venom-accent); }
+.row:focus-visible { outline: 2px solid var(--venom-accent); outline-offset: -2px; }
+.label { display: flex; align-items: center; gap: 4px; grid-column: 1; min-width: 0; padding-left: calc(var(--depth) * 14px); }
+.caret { width: 12px; color: #999; font-size: 12px; }
+.field { grid-column: 2; padding: 2px 7px; overflow: hidden; color: #e6e6e6; background: #2a2a2a; border: 1px solid #202020; border-radius: 3px; text-overflow: ellipsis; white-space: nowrap; }
+.field[data-picker]::after { float: right; color: #999; content: '▾'; }
+
+.results { display: grid; align-content: start; gap: 12px; margin: 0; padding: 14px 16px; background: var(--ifm-code-background); border-left: 1px solid var(--venom-line-strong); }
+@container (max-width: 560px) {
+  .results { border-top: 1px solid var(--venom-line-strong); border-left: 0; }
+}
+.result { display: grid; gap: 4px; }
+.result dt { color: var(--venom-muted); font-size: 0.8rem; }
+.result dd { margin: 0; color: var(--venom-fg); font-size: 0.875rem; }
+
+/* The light site theme shows Unity's light editor skin; colours come from its DefaultCommonLight theme. */
+html[data-theme='light'] .inspector { color: #090909; background: #c8c8c8; }
+html[data-theme='light'] .inspectorHead { background: #cbcbcb; border-bottom-color: #7f7f7f; }
+html[data-theme='light'] .inspectorIcon { background: #f0f0f0; box-shadow: inset 0 0 0 1px #aaa; }
+html[data-theme='light'] .row:hover { background: rgb(0 0 0 / 0.05); }
+html[data-theme='light'] .row[aria-checked='true'] { background: rgb(47 138 69 / 0.16); }
+html[data-theme='light'] .caret, html[data-theme='light'] .field[data-picker]::after { color: #555; }
+html[data-theme='light'] .field { color: #090909; background: #f0f0f0; border-color: #b7b7b7; }
