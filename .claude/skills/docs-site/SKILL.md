@@ -70,7 +70,7 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   `<`, `>`, `{`, `}` as in `<pre>` cells.
   `<code lang="string">`, `<code lang="class-name">` and `<code lang="function">` paint the whole text in that token's
   colour: Profiler marker names in a result column, a lone type (`T`; in `System.Type` only `Type`), a bare method
-  name (`Update`).
+  name (`Update`; in `styleSheets.Add` only `Add`).
 - **Every `.md` and every image in the package needs a `.meta`** (`TextScriptImporter` for Markdown) — Unity
   would otherwise generate one in the consumer's project. Copy an existing one and give it a fresh GUID.
 - The package is English. A translation is a sibling file: `Documentation/ru/06-enum-values.md`,
@@ -106,6 +106,10 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
 - A static picture can have a live site version: `src/remark/liveDiagrams.js` maps the file name to a component
   (`profiler-markers-hierarchy.svg` → `ProfilerHierarchy`). Markdown
   keeps the picture for GitHub and Unity; the caption paragraph must still repeat the alt text as plain text.
+- A table can have a live site version the same way: `TABLES` in `liveDiagrams.js` maps its first body cell to a
+  component (`SetPadding(8)` → `StyleSides`, the Styles table of VisualElement Extensions), which gets every row as
+  `<StyleSidesRow call="…">` with the second cell as children. Markdown keeps the table, and the rows and their
+  translations stay in the page; changing that first cell detaches the component.
 
 ## Writing a feature page (docs/)
 
