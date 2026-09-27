@@ -31,25 +31,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var refIdsStart = FindRefIdsStart(lines, start, end);
                 if (refIdsStart < 0) return false;
 
-                var headerPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
-                for (var i = refIdsStart + 1; i < end; i++)
-                {
-                    var match = headerPattern.Match(lines[i]);
-                    if (!match.Success) continue;
+                var headerIndex = FindEntryHeader(lines, refIdsStart, end, rid, out var entryIndent);
+                if (headerIndex < 0) return false;
 
-                    var entryIndent = match.Groups["indent"].Length;
-                    var entryEnd = FindEntryEnd(lines, i, end, entryIndent);
+                var entryEnd = FindEntryEnd(lines, headerIndex, end, entryIndent);
 
-                    var captured = new List<string>(entryEnd - i);
-                    for (var k = i; k < entryEnd; k++) captured.Add(lines[k]);
+                var captured = new List<string>(entryEnd - headerIndex);
+                for (var k = headerIndex; k < entryEnd; k++) captured.Add(lines[k]);
 
-                    if (captured.Count < 2) return false;
+                if (captured.Count < 2) return false;
 
-                    entryLines = captured;
-                    return true;
-                }
-
-                return false;
+                entryLines = captured;
+                return true;
             }
             catch (Exception exception)
             {
@@ -129,6 +122,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var headerPattern = new Regex(@"^(?<lead>\s*)(?<name>[^\s:#-][^:]*):\s*$");
                 var itemPattern = new Regex(@"^(?<lead>\s*)-\s+rid:\s*(?<rid>-?\d+)\s*$");
 
+                // Only the object's own fields, at the m_Script indent, own a top-level array; a same-named list nested
+                // in an earlier field's container is skipped. Without a script guid any indent is accepted.
+                var topIndent = TryReadScriptGuid(lines, start + 1, fieldsEnd, out _, out var scriptIndent)
+                    ? scriptIndent
+                    : -1;
+
                 string currentField = null;
                 var fieldIndent = -1;
                 var count = 0;
@@ -152,7 +151,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     }
 
                     var header = headerPattern.Match(lines[i]);
-                    if (header.Success)
+                    if (header.Success && (topIndent < 0 || header.Groups["lead"].Length == topIndent))
                     {
                         currentField = header.Groups["name"].Value;
                         fieldIndent = header.Groups["lead"].Length;
@@ -201,12 +200,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var fieldPattern = new Regex($@"^(?<lead>\s*){Regex.Escape(fieldName)}:\s*$");
             var itemPattern = new Regex(@"^(?<lead>\s*)-\s+rid:\s*(?<rid>-?\d+)\s*$");
 
+            // The field key is matched at the m_Script indent, as in TryReadReferenceId, so a same-named list nested in
+            // an earlier field's container never receives the restored pointer.
+            var topIndent = TryReadScriptGuid(lines, start + 1, fieldsEnd, out _, out var scriptIndent)
+                ? scriptIndent
+                : -1;
+
             for (var i = start; i < fieldsEnd; i++)
             {
                 var field = fieldPattern.Match(lines[i]);
                 if (!field.Success) continue;
 
                 var fieldIndent = field.Groups["lead"].Length;
+                if (topIndent >= 0 && fieldIndent != topIndent) continue;
                 var count = 0;
 
                 for (var j = i + 1; j < fieldsEnd; j++)
