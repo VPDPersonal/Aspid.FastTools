@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -22,6 +23,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             RegexOptions.Compiled);
 
         public static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
+
+        // The one file read of the text scans (graph, missing types, overrides, usage index): the asset's lines, or
+        // null when the path is empty, missing or unreadable.
+        public static string[] ReadLines(string assetPath)
+        {
+            try
+            {
+                return string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath) ? null : File.ReadAllLines(assetPath);
+            }
+            catch (Exception)
+            {
+                // Best effort, like the scanners: an unreadable file has nothing to scan.
+                return null;
+            }
+        }
 
         public static bool TryParseInlineType(string body, out ManagedTypeName type)
         {

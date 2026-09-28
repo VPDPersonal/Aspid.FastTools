@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Text;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -15,8 +14,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Regex _modificationsKey =
             new(@"^(?<indent>\s*)m_Modifications:\s*(?<inline>.*)$", RegexOptions.Compiled);
 
+        // The flow mapping may wrap: editors before Unity 6 break "{fileID: ..., guid: ...,\n  type: 3}" at about 80
+        // columns, and Unity does not reserialize those files on upgrade.
         private static readonly Regex _modificationTarget =
-            new(@"^(?<indent>\s*)-\s+target:\s*\{(?<body>.*)\}\s*$", RegexOptions.Compiled);
+            new(@"^\s*-\s+target:\s*(?<body>\{.*)$", RegexOptions.Compiled);
 
         private static readonly Regex _modificationField =
             new(@"^(?<indent>\s*)(?<key>propertyPath|value):\s?(?<value>.*)$", RegexOptions.Compiled);
@@ -32,9 +33,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             try
             {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return new List<PrefabOverrideReference>();
-
-                return CollectPrefabOverrides(File.ReadAllLines(assetPath));
+                var lines = SerializeReferenceYaml.ReadLines(assetPath);
+                return lines is null ? new List<PrefabOverrideReference>() : CollectPrefabOverrides(lines);
             }
             catch (Exception)
             {
@@ -170,12 +170,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var isItem = line.TrimStart().StartsWith("- ", StringComparison.Ordinal);
                 if (indent < keyIndent || (indent == keyIndent && !isItem)) break;
 
-                var target = _modificationTarget.Match(line);
-                if (target.Success && target.Groups["indent"].Length == keyIndent)
+                // Every item at the key's indent starts a new modification. One whose target cannot be read drops its
+                // fields rather than letting them overwrite the previous modification.
+                if (indent == keyIndent)
                 {
-                    current = new Modification(ParseTargetFileId(target.Groups["body"].Value),
-                        ParseTargetGuid(target.Groups["body"].Value));
-                    result.Add(current);
+                    current = TryReadTarget(lines, ref i, end, keyIndent, out var targetFileId, out var targetGuid)
+                        ? new Modification(targetFileId, targetGuid)
+                        : null;
+
+                    if (current is not null) result.Add(current);
                     continue;
                 }
 
@@ -223,16 +226,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return scalar;
         }
 
-        private static long ParseTargetFileId(string body)
+        // "- target: {fileID: ..., guid: ..., type: 3}", joined with the deeper-indented lines it wraps onto until the
+        // closing '}'. `i` ends on the last line consumed.
+        private static bool TryReadTarget(string[] lines, ref int i, int end, int keyIndent, out long fileId, out string guid)
         {
-            var match = _targetFileId.Match(body);
-            return match.Success && long.TryParse(match.Groups["id"].Value, out var id) ? id : 0;
-        }
+            fileId = 0;
+            guid = string.Empty;
 
-        private static string ParseTargetGuid(string body)
-        {
-            var match = _targetGuid.Match(body);
-            return match.Success ? match.Groups["guid"].Value : string.Empty;
+            var target = _modificationTarget.Match(lines[i]);
+            if (!target.Success) return false;
+
+            var body = new StringBuilder(target.Groups["body"].Value.Trim());
+            while (body.ToString().IndexOf('}') < 0 && i + 1 < end)
+            {
+                var next = lines[i + 1];
+                if (next.Trim().Length == 0 || IndentOf(next) <= keyIndent) break;
+
+                body.Append(' ').Append(next.Trim());
+                i++;
+            }
+
+            var text = body.ToString();
+            if (text.IndexOf('}') < 0) return false;
+
+            var id = _targetFileId.Match(text);
+            if (!id.Success || !long.TryParse(id.Groups["id"].Value, out fileId)) return false;
+
+            var match = _targetGuid.Match(text);
+            guid = match.Success ? match.Groups["guid"].Value : string.Empty;
+            return true;
         }
 
         private sealed class Modification

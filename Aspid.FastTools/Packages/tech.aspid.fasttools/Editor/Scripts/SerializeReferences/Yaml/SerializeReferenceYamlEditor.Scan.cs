@@ -25,9 +25,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             try
             {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
-
-                var lines = File.ReadAllLines(assetPath);
+                var lines = SerializeReferenceYaml.ReadLines(assetPath);
+                if (lines is null) return result;
 
                 var headers = new List<(long fileId, int start)>();
                 for (var i = 0; i < lines.Length; i++)
