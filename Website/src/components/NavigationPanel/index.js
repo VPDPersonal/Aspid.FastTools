@@ -2,11 +2,11 @@ import React from 'react';
 import clsx from 'clsx';
 import Logo from '@theme/Logo';
 import SearchBar from '@theme/SearchBar';
-import ColorModeToggle from '@theme/Navbar/ColorModeToggle';
 import {useThemeConfig} from '@docusaurus/theme-common';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import SectionSwitcher from './SectionSwitcher';
 import LocaleSwitcher from './LocaleSwitcher';
+import AppearanceSwitcher from './AppearanceSwitcher';
 import styles from './styles.module.css';
 
 function UnityIcon() {
@@ -51,7 +51,7 @@ function PanelFooter() {
       {github && <a className={styles.icon} href={github.href} target="_blank" rel="noopener noreferrer" aria-label={github['aria-label'] ?? github.label} title={github.label}><GitHubIcon /></a>}
       {customFields.assetStore && <a className={styles.icon} href={customFields.assetStore} target="_blank" rel="noopener noreferrer" aria-label={assetStoreLabel} title={assetStoreLabel}><UnityIcon /></a>}
       <LocaleSwitcher />
-      <ColorModeToggle className={styles.theme} />
+      <AppearanceSwitcher />
     </footer>
   );
 }
