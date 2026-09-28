@@ -45,6 +45,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : typeof(object);
         }
 
+        private const string ArrayElementMarker = ".Array.data[";
+
+        // The array that directly owns an element: the last marker, so a list nested in another array's element
+        // resolves to the inner list. Only the array entry itself carries the element's reference, so a sub-field
+        // path must not match.
+        public static bool TryGetArrayPath(string elementPath, out string arrayPath)
+        {
+            arrayPath = null;
+            if (string.IsNullOrEmpty(elementPath)) return false;
+
+            var marker = elementPath.LastIndexOf(ArrayElementMarker, StringComparison.Ordinal);
+            if (marker < 0) return false;
+
+            var close = elementPath.IndexOf(']', marker + ArrayElementMarker.Length);
+            if (close < 0 || close != elementPath.Length - 1) return false;
+
+            arrayPath = elementPath[..marker];
+            return arrayPath.Length > 0;
+        }
+
         #region Project scan helpers
         public static bool IsScanCandidate(string path) =>
             SerializeReferenceYaml.IsCandidateAssetPath(path) && !SerializeReferenceSettings.IsExcluded(path);
