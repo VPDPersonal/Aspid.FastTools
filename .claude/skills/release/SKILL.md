@@ -28,7 +28,8 @@ prepares that PR.
 7. **After the merge:** `gh run list --workflow release.yml --limit 1` and report the release URL.
 
 A failed release run publishes nothing before its "Publish release tag and UPM subtree" step, which pushes the tags
-and the upm branch in one atomic push: fix it in a new PR that keeps the version (the next merge re-runs the
-release), or rerun the workflow. If only "Create GitHub release" failed, the tags are already out: create the release
-by hand with `gh release create v<version> --verify-tag --notes-file <section>` (plus `--prerelease` for a
-prerelease).
+and the upm branch in one atomic push: fix it in a new PR that keeps the version, then start the release from main:
+`gh workflow run release.yml --ref main -f version=<version>`. A merge that leaves `package.json` alone does not
+trigger it, and rerunning the failed run replays the old commit, so that helps only with a transient failure. If only
+"Create GitHub release" failed, the tags are already out: create the release by hand with
+`gh release create v<version> --verify-tag --notes-file <section>` (plus `--prerelease` for a prerelease).

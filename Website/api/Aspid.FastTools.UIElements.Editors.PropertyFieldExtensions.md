@@ -23,10 +23,6 @@ public static class PropertyFieldExtensions
 [PropertyFieldExtensions](Aspid.FastTools.UIElements.Editors.PropertyFieldExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### AddValueChanged\<T\>\(T, EventCallback\<SerializedPropertyChangeEvent\>\) {#Aspid_FastTools_UIElements_Editors_PropertyFieldExtensions_AddValueChanged__1___0_UnityEngine_UIElements_EventCallback_UnityEditor_UIElements_SerializedPropertyChangeEvent__}

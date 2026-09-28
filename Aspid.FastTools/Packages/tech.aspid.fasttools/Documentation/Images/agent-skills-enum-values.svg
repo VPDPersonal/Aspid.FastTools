@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="534" viewBox="0 0 1120 534" fill="none">
+  <title>Agent session with the aspid-enum-values skill</title>
+  <desc>The request "Add a damage multiplier per DamageType to the Inspector" loads the aspid-enum-values skill by itself, and the agent edits DamageReceiver.cs.</desc>
+  <rect x="1" y="1" width="1118" height="532" rx="12" fill="#0e1015" stroke="#272b35"/>
+  <path d="M13 1H1107A12 12 0 0 1 1119 13V56H1V13A12 12 0 0 1 13 1Z" fill="#14171e"/>
+  <path d="M1 56H1119M1 222H1119" stroke="#272b35"/>
+  <g font-family="'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace">
+    <text x="28" y="36" font-size="17" letter-spacing="2" fill="#92959f">AGENT</text>
+    <text x="1092" y="36" font-size="17" letter-spacing="2" text-anchor="end" fill="#92959f">DAMAGERECEIVER.CS</text>
+    <rect x="24" y="78" width="1072" height="50" rx="8" stroke="#272b35" stroke-width="2"/>
+    <text x="44" y="111" font-size="20" font-weight="600" fill="#d97757">&gt;</text>
+    <text x="72" y="111" font-size="20" fill="#e1e2e6">Add a damage multiplier per DamageType to the Inspector</text>
+    <circle cx="36" cy="145" r="6" fill="#75c584"/>
+    <text x="56" y="152" font-size="19" fill="#bfbdb6">Skill <tspan font-weight="600" fill="#e1e2e6">aspid-enum-values</tspan></text>
+    <circle cx="36" cy="185" r="6" fill="#75c584"/>
+    <text x="56" y="192" font-size="19" fill="#bfbdb6">Update <tspan font-weight="600" fill="#e1e2e6">DamageReceiver.cs</tspan> <tspan fill="#75c584">+5</tspan></text>
+    <text x="28" y="256" font-size="20" xml:space="preserve"><tspan fill="#f29750">public</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#f29750">sealed</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#f29750">class</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#73c0f8">DamageReceiver</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#bfbdb6">:</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#73c0f8">MonoBehaviour</tspan></text>
+    <text x="28" y="292" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">{</tspan></text>
+    <rect x="1" y="303" width="1118" height="36" fill="#75c584" fill-opacity="0.12"/>
+    <path d="M2 303V339" stroke="#75c584" stroke-width="3"/>
+    <text x="28" y="328" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">    </tspan><tspan fill="#bfbdb6">[</tspan><tspan fill="#73c0f8">SerializeField</tspan><tspan fill="#bfbdb6">]</tspan></text>
+    <rect x="1" y="339" width="1118" height="36" fill="#75c584" fill-opacity="0.12"/>
+    <path d="M2 339V375" stroke="#75c584" stroke-width="3"/>
+    <text x="28" y="364" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">    </tspan><tspan fill="#f29750">private</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#73c0f8">EnumValues</tspan><tspan fill="#bfbdb6">&lt;</tspan><tspan fill="#73c0f8">DamageType</tspan><tspan fill="#bfbdb6">,</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#f29750">float</tspan><tspan fill="#bfbdb6">&gt;</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#bfbdb6">_multipliers</tspan><tspan fill="#bfbdb6">;</tspan></text>
+    <rect x="1" y="375" width="1118" height="36" fill="#75c584" fill-opacity="0.12"/>
+    <path d="M2 375V411" stroke="#75c584" stroke-width="3"/>
+    <rect x="1" y="411" width="1118" height="36" fill="#75c584" fill-opacity="0.12"/>
+    <path d="M2 411V447" stroke="#75c584" stroke-width="3"/>
+    <text x="28" y="436" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">    </tspan><tspan fill="#f29750">public</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#f29750">float</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#ffb454">GetMultiplier</tspan><tspan fill="#bfbdb6">(</tspan><tspan fill="#73c0f8">DamageType</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#bfbdb6">type</tspan><tspan fill="#bfbdb6">)</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#f29750">=&gt;</tspan></text>
+    <rect x="1" y="447" width="1118" height="36" fill="#75c584" fill-opacity="0.12"/>
+    <path d="M2 447V483" stroke="#75c584" stroke-width="3"/>
+    <text x="28" y="472" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">        </tspan><tspan fill="#bfbdb6">_multipliers</tspan><tspan fill="#bfbdb6">.</tspan><tspan fill="#ffb454">GetValue</tspan><tspan fill="#bfbdb6">(</tspan><tspan fill="#bfbdb6">type</tspan><tspan fill="#bfbdb6">)</tspan><tspan fill="#bfbdb6">;</tspan></text>
+    <text x="28" y="508" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">}</tspan></text>
+  </g>
+</svg>

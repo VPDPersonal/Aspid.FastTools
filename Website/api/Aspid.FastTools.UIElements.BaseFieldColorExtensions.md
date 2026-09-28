@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldColorExtensions.SetLabel%60<T>`](Aspid.FastTools.UIElements.BaseFieldColorExtensions.md) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Color`](https://docs.unity3d.com/ScriptReference/Color.html).
+Provides [`BaseFieldColorExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldColorExtensions.md#Aspid_FastTools_UIElements_BaseFieldColorExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Color`](https://docs.unity3d.com/ScriptReference/Color.html).
 
 ```csharp
 public static class BaseFieldColorExtensions
@@ -22,10 +22,6 @@ public static class BaseFieldColorExtensions
 [object](https://learn.microsoft.com/dotnet/api/system.object) ← 
 [BaseFieldColorExtensions](Aspid.FastTools.UIElements.BaseFieldColorExtensions.md)
 
-
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
 
 ## Methods
 

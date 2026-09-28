@@ -23,10 +23,6 @@ public static class TreeViewExtensions
 [TreeViewExtensions](Aspid.FastTools.UIElements.TreeViewExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### AddBindItem\<T\>\(T, Action\<VisualElement, int\>\) {#Aspid_FastTools_UIElements_TreeViewExtensions_AddBindItem__1___0_System_Action_UnityEngine_UIElements_VisualElement_System_Int32__}
