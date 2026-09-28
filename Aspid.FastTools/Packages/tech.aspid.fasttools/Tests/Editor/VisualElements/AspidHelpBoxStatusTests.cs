@@ -32,6 +32,18 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
 
             Assert.AreEqual(fromPreset.Status, fromProperty.Status);
             CollectionAssert.AreEqual(LabelStatuses(fromPreset), LabelStatuses(fromProperty));
+            CollectionAssert.AreEqual(LineStatuses(fromPreset), LineStatuses(fromProperty));
+        }
+
+        [Test]
+        public void MessageType_Changed_RecolorsTheLines()
+        {
+            var box = new AspidHelpBox("Title", "Message",
+                    AspidHelpBoxPreset.Default.SetMessageType(HelpBoxMessageType.Warning))
+                .SetMessageType(HelpBoxMessageType.Info);
+
+            Assert.That(LineStatuses(box), Is.All.EqualTo(StatusStyle.Type.Info),
+                "The title and message lines must follow the box status.");
         }
 
         [Test]
@@ -82,9 +94,13 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             var statuses = LabelStatuses(box);
             Assert.IsNotEmpty(statuses);
             Assert.That(statuses, Is.All.EqualTo(status), "The title and message must carry the box status.");
+            Assert.That(LineStatuses(box), Is.All.EqualTo(status), "The title and message lines must carry the box status.");
         }
 
         private static StatusStyle.Type[] LabelStatuses(AspidHelpBox box) =>
             box.Query<AspidLabel>().ToList().Select(label => label.LabelStatus).ToArray();
+
+        private static StatusStyle.Type[] LineStatuses(AspidHelpBox box) =>
+            box.Query<AspidLabel>().ToList().Select(label => label.LineStatus).ToArray();
     }
 }

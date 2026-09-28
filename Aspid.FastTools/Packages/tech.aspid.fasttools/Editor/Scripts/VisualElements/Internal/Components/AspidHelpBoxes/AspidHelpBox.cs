@@ -43,6 +43,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 else _titleElement.Text = value;
 
                 _titleElement.LabelStatus = _status.Value;
+                _titleElement.LineStatus = _status.Value;
 
                 if (_titleElement.parent is null) _textContainer.InsertChild(index: 0, _titleElement);
             }
@@ -130,7 +131,11 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private void SyncLabelStatus()
         {
             _messageElement.LabelStatus = _status.Value;
-            if (_titleElement is not null) _titleElement.LabelStatus = _status.Value;
+            _messageElement.LineStatus = _status.Value;
+            if (_titleElement is null) return;
+
+            _titleElement.LabelStatus = _status.Value;
+            _titleElement.LineStatus = _status.Value;
         }
 
         internal static StatusStyle.Type MapToStatus(HelpBoxMessageType type) => type switch
