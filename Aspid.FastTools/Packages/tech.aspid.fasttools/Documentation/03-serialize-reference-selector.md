@@ -22,7 +22,7 @@ A ready-made scene with weapons, effects, and nested modifiers is included in th
 
 ## Configuring selection
 
-The field type sets the base compatibility: `IWeapon` offers its implementations, while an abstract class offers concrete subclasses. Apply `[Serializable]` to classes whose data Unity should persist.
+The field type sets the base compatibility: `IWeapon` offers its implementations, while an abstract class offers concrete subclasses. In the Inspector of a runtime object, classes from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders) are left out: a player build cannot create them. Apply `[Serializable]` to classes whose data Unity should persist.
 
 | Task | Configuration |
 |---|---|
@@ -82,7 +82,7 @@ For arrays and lists, apply both attributes to the collection field. One list ca
 [SerializeReference] private IWeapon[] _slots = new IWeapon[2];
 ```
 
-In a UI Toolkit list, **+** opens the type picker and appends a new instance. Choosing `<None>` appends an empty entry. For the same behaviour in a custom IMGUI Inspector, use `SerializeReferenceIMGUIList.Draw` — see the [example below](#custom-imgui-inspectors).
+In a UI Toolkit list, **+** opens the type picker and appends a new instance. Choosing `<None>` appends an empty entry. With multiple objects selected, each object gets its own instance in one Undo group. For the same behaviour in a custom IMGUI Inspector, use `SerializeReferenceIMGUIList.Draw` — see the [example below](#custom-imgui-inspectors).
 
 ### Nested selectors without repeated attributes
 
@@ -219,9 +219,11 @@ A missing reference with Fix and Smart Fix actions in the Inspector
 
 Smart Fix considers `[MovedFrom]`, the name, namespace, assembly, and field similarity. It only applies when clicked. The **Fix** picker also permits `Hidden` types: recovering old data may require an implementation removed from normal selection.
 
-For an asset on disk, Fix rewrites the stored type and reimports the asset; that file write has no ordinary Undo. In an open saved scene or Prefab Mode, repair affects the object in memory — verify the result and save the scene or prefab. Preserving data does not automatically convert incompatible fields; in-memory repair also does not guarantee recovery of the entire nested graph.
+For an asset on disk, Fix rewrites the stored type and reimports the asset; that file write has no ordinary Undo. In an open saved scene or Prefab Mode, repair affects the object in memory — verify the result and save the scene or prefab. Until you save, Undo brings back the missing reference with its data, and Unity's missing-types notice on the object stays; saving (including Prefab Mode Auto Save) makes the repair final and clears that object's Undo history. Preserving data does not automatically convert incompatible fields; in-memory repair also does not guarantee recovery of the entire nested graph.
 
 If Fix is unavailable, select one object and ensure the scene or Prefab Mode is saved with no pending changes. For a prefab instance in a scene, open its source prefab. If the problem is inside a missing parent and the field is inaccessible, use [Asset References](04-serialize-reference-tooling.md#asset-references-inspect-one-asset).
+
+If the asset has unsaved changes, Fix first offers to save it: the reimport would discard them. While a prefab is open in Prefab Mode, Fix on its asset in the Project window is refused; repair the field in Prefab Mode instead.
 
 Accompany planned renames with [`[MovedFrom]`](04-serialize-reference-tooling.md#migrations-with-movedfrom). For auditing and repairing multiple assets, see [SerializeReference Tooling](04-serialize-reference-tooling.md).
 
