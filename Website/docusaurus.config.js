@@ -5,8 +5,10 @@ import venom from './src/prism/venom.js';
 import remarkGithubAdmonitionsToDirectives from 'remark-github-admonitions-to-directives';
 import remarkCrossInstanceLinks from './src/remark/crossInstanceLinks.js';
 import remarkThemedImages from './src/remark/themedImages.js';
+import remarkAgentPrompt from './src/remark/agentPrompt.js';
 import remarkLiveDiagrams from './src/remark/liveDiagrams.js';
 import remarkIntroBanner, {remarkStatusBadges} from './src/remark/introBanner.js';
+import {ACCENT_BOOT_SCRIPT} from './src/accents.js';
 
 const PACKAGE = '../Aspid.FastTools/Packages/tech.aspid.fasttools';
 const PACKAGE_DIR = PACKAGE.replace(/^\.\.\//, ''); // repository-relative, for "Edit this page" links
@@ -67,7 +69,7 @@ function samplePrefixParser(filename) {
  * between the two plugin instances become site routes.
  */
 const markdownOptions = {
-  beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives, remarkCrossInstanceLinks, remarkLiveDiagrams, remarkThemedImages],
+  beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives, remarkCrossInstanceLinks, remarkAgentPrompt, remarkLiveDiagrams, remarkThemedImages],
   showLastUpdateTime: true,
   // Translations live next to the English sources: `Documentation/<locale>/<file>`.
   editUrl: ({ docPath, locale }) =>
@@ -79,6 +81,9 @@ const config = {
   title: 'Aspid.FastTools',
   tagline: 'Unity tools that cut boilerplate',
   favicon: 'img/favicon.png',
+  // Applies the stored accent colour before the first paint (src/accents.js).
+  headTags: [{ tagName: 'script', attributes: {}, innerHTML: ACCENT_BOOT_SCRIPT }],
+  clientModules: ['./src/clientModules/accent.js'],
 
   url: 'https://vpdpersonal.github.io',
   baseUrl: '/Aspid.FastTools/',
@@ -131,7 +136,7 @@ const config = {
           remarkPlugins: [remarkStatusBadges],
         },
         blog: false,
-        theme: { customCss: './src/css/custom.css' },
+        theme: { customCss: ['./src/css/custom.css', './src/css/accents.css'] },
       }),
     ],
   ],
