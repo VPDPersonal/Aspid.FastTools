@@ -53,6 +53,11 @@ jobs:
           fi
 
   # Secrets are unavailable to fork PRs and until the owner adds them; the Unity job is then skipped, not failed.
+  # Secrets for a Personal license (Unity no longer issues one through manual .alf activation):
+  #   UNITY_LICENSE   contents of the .ulf that Unity Hub writes after signing in and activating a Personal license
+  #                   (macOS /Library/Application Support/Unity/Unity_lic.ulf, Windows C:\ProgramData\Unity\Unity_lic.ulf,
+  #                   Linux ~/.local/share/unity3d/Unity/Unity_lic.ulf); repeat when Hub renews it
+  #   UNITY_EMAIL, UNITY_PASSWORD   that Unity account
   unity-license:
     name: Unity license
     runs-on: ubuntu-latest
