@@ -815,7 +815,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
                     ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(_property),
                 },
-                currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
+                currentAqn: SerializeReferenceHelpers.GetSelectorCurrentAqn(_property, currentType),
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
                     ? null
                     : Type.GetType(assemblyQualifiedName, throwOnError: false)));
