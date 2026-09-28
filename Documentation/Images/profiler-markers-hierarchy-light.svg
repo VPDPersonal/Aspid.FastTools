@@ -4,7 +4,7 @@
   <rect x="1" y="1" width="1118" height="304" rx="12" fill="#ffffff"/>
   <path d="M13 1H1107A12 12 0 0 1 1119 13V72H1V13A12 12 0 0 1 13 1Z" fill="#f7f7f8"/>
   <path d="M1 72H1119M1 126H1119M660 72V126M800 72V126M960 72V126" stroke="#e3e4e8"/>
-  <path d="M28 39H35L41 27L49 49L56 35H66" stroke="#2f8a45" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M28 39H35L41 27L49 49L56 35H66" stroke="#22a04b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
   <g font-family="'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace">
     <text x="84" y="45" font-size="23" fill="#2a2c31">CPU Usage</text>
     <path d="M236 31L243 38L236 45" stroke="#5f636b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -33,7 +33,7 @@
       <text x="1040" y="284" text-anchor="middle" fill="#5f636b">0.01</text>
     </g>
   </g>
-  <g fill="#2f8a45">
+  <g fill="#22a04b">
     <path d="M36 152H50L43 160Z"/>
     <path d="M76 192H90L83 200Z"/>
     <circle cx="123" cy="236" r="4"/>
