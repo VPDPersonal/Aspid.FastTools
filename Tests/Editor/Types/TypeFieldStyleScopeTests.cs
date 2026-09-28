@@ -41,6 +41,7 @@ namespace Aspid.FastTools.Types.Editors.Tests
             Assert.IsNotNull(openButton, "The field's open-in-script-editor button must carry its own class.");
             Assert.AreEqual(18f, openButton.resolvedStyle.maxWidth.value);
             Assert.AreEqual(18f, openButton.resolvedStyle.maxHeight.value);
+            Assert.IsNotNull(openButton[0].resolvedStyle.backgroundImage.texture, "The open button must keep its folder icon.");
         }
 
         [UnityTest]

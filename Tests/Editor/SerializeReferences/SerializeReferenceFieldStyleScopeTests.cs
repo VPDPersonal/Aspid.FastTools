@@ -71,6 +71,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreSame(header.Q<Toggle>(), openButton.parent, "The open button must sit in the header toggle.");
             Assert.AreEqual(18f, openButton.resolvedStyle.maxWidth.value);
             Assert.AreEqual(18f, openButton.resolvedStyle.maxHeight.value);
+            Assert.IsNotNull(openButton[0].resolvedStyle.backgroundImage.texture, "The open button must keep its folder icon.");
             Assert.AreEqual(0f, header.Q(className: Foldout.inputUssClassName).resolvedStyle.flexGrow,
                 "The header rules must reach the real field's foldout arrow.");
         }
@@ -82,6 +83,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.AreEqual(18f, _openButton.resolvedStyle.maxWidth.value);
             Assert.AreEqual(18f, _openButton.resolvedStyle.maxHeight.value);
+            Assert.IsNotNull(_openButton[0].resolvedStyle.backgroundImage.texture, "The open button must keep its folder icon.");
         }
 
         [UnityTest]
