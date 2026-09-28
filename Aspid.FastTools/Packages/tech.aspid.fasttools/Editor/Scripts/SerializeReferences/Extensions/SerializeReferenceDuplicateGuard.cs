@@ -11,8 +11,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Unity reports -2 for an empty reference and -1 for a missing type; only ids >= 0 can alias.
         private const long FirstValidReferenceId = 0;
 
-        private const string ArrayElementMarker = ".Array.data[";
-
         // On overflow the whole cache is dropped. A re-snapshot never auto-fixes, so at worst a fix is lost.
         private const int MaxTrackedArrays = 512;
 
@@ -34,7 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // The live SerializedObject walks only the first target, so the guard cannot reason about the others.
             if (elementProperty.serializedObject.isEditingMultipleObjects) return false;
 
-            if (!TryGetArrayPath(elementProperty.propertyPath, out var arrayPath)) return false;
+            if (!SerializeReferenceHelpers.TryGetArrayPath(elementProperty.propertyPath, out var arrayPath)) return false;
 
             EnsureUndoHook();
 
@@ -42,7 +40,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var target = serializedObject.targetObject;
             if (target == null) return false;
 
-            var key = new ArrayKey(target.GetInstanceID(), arrayPath);
+            var key = new ArrayKey(target, arrayPath);
 
             if (_pending.Contains(key)) return false;
 
@@ -224,22 +222,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _snapshots[key] = new Snapshot(size, signature, map);
         }
 
-        private static bool TryGetArrayPath(string elementPath, out string arrayPath)
-        {
-            arrayPath = null;
-            if (string.IsNullOrEmpty(elementPath)) return false;
-
-            var marker = elementPath.LastIndexOf(ArrayElementMarker, StringComparison.Ordinal);
-            if (marker < 0) return false;
-
-            // Only the array entry itself carries the element's reference, so a sub-field path must not match.
-            var close = elementPath.IndexOf(']', marker + ArrayElementMarker.Length);
-            if (close < 0 || close != elementPath.Length - 1) return false;
-
-            arrayPath = elementPath[..marker];
-            return arrayPath.Length > 0;
-        }
-
         private static void EnsureUndoHook()
         {
             if (_undoHooked) return;
@@ -257,17 +239,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private readonly struct ArrayKey : IEquatable<ArrayKey>
         {
-            private readonly int _targetInstanceId;
+            private readonly Object _target;
             private readonly string _arrayPath;
 
-            public ArrayKey(int targetInstanceId, string arrayPath)
+            public ArrayKey(Object target, string arrayPath)
             {
-                _targetInstanceId = targetInstanceId;
+                _target = target;
                 _arrayPath = arrayPath;
             }
 
             public bool Equals(ArrayKey other) =>
-                _targetInstanceId == other._targetInstanceId && _arrayPath == other._arrayPath;
+                _target == other._target && _arrayPath == other._arrayPath;
 
             public override bool Equals(object obj) => obj is ArrayKey other && Equals(other);
 
@@ -275,7 +257,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 unchecked
                 {
-                    return (_targetInstanceId * 397) ^ (_arrayPath?.GetHashCode() ?? 0);
+                    return ((_target is null ? 0 : _target.GetHashCode()) * 397) ^ (_arrayPath?.GetHashCode() ?? 0);
                 }
             }
         }
