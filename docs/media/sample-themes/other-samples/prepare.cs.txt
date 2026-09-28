@@ -8,10 +8,12 @@ using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 public static class PrepareSamples {
  const BindingFlags Flags=BindingFlags.NonPublic|BindingFlags.Public|BindingFlags.Static|BindingFlags.Instance;
+ static readonly string Samples="Assets/Samples/Aspid.FastTools/"+UnityEditor.PackageManager.PackageInfo.FindForAssetPath("Packages/tech.aspid.fasttools/package.json").version+"/";
  public static object Main(string sample) {
   var scene=SceneManager.GetActiveScene();
   if(scene.isDirty||EditorApplication.isPlaying)throw new Exception("Scene must be clean and stopped");
-  var saved="/Users/vladislavpanin/Documents/Codex/2026-09-20/localhost-3001-aspid-fasttools-ru-docs/work/other-samples/original-scene.txt";
+  var work=Path.Combine(Path.GetDirectoryName(Application.dataPath),"Temp","SampleThemes","other-samples");Directory.CreateDirectory(work);
+  var saved=Path.Combine(work,"original-scene.txt");
   if(!File.Exists(saved))File.WriteAllText(saved,scene.path);
   var assembly=AppDomain.CurrentDomain.GetAssemblies().First(a=>a.GetName().Name=="Aspid.FastTools.Editor");
   var settingsType=assembly.GetType("Aspid.FastTools.Editors.Internal.SampleThemeSettings");
@@ -26,7 +28,7 @@ public static class PrepareSamples {
   var preview=assembly.GetType("Aspid.FastTools.Editors.Internal.SampleThemePreview");
   var mode=preview.GetMethod("SetMode",Flags);
   mode.Invoke(null,new[]{Enum.ToObject(mode.GetParameters()[0].ParameterType,0)});
-  scene=EditorSceneManager.OpenScene("Assets/Samples/Aspid.FastTools/1.0.0-rc.8/"+sample+"/Scenes/"+sample+".unity");
+  scene=EditorSceneManager.OpenScene(Samples+sample+"/Scenes/"+sample+".unity");
   mode.Invoke(null,new[]{Enum.ToObject(mode.GetParameters()[0].ParameterType,2)});
   return new{sample,scene=scene.path,dirty=scene.isDirty};
  }
