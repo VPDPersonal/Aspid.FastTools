@@ -598,7 +598,9 @@ html.docs-doc-page body { background: transparent; }
   font-variant-numeric: tabular-nums;
   color: var(--venom-ripple, var(--venom-accent));
   opacity: 0;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.6s ease, text-shadow 0.3s ease;
+  /* The jumps grow from the screen corner, so a big one stays on screen. */
+  transform-origin: 100% 100%;
 }
 .dot-ripple-counter[data-on] { opacity: 0.9; transition-duration: 0.15s; }
 /* When the floating TOC button holds the corner, the number is laid over it (src/components/DotRipple) and its icon
@@ -610,8 +612,27 @@ html.docs-doc-page body { background: transparent; }
   display: grid;
   place-items: center;
   font-size: 0.875rem;
+  transform-origin: center;
 }
 .dot-ripple-counter[data-in-button][data-long] { font-size: 0.6875rem; }
+/* A burst makes the number glow while it counts up. */
+.dot-ripple-counter[data-burst] { text-shadow: 0 0 10px color-mix(in srgb, var(--venom-ripple, var(--venom-accent)) 70%, transparent); }
+/* "+N" rising from the counter after a fully charged wave or a burst. */
+.dot-ripple-gain {
+  position: fixed;
+  z-index: 202;
+  pointer-events: none;
+  font: 600 0.875rem/1 var(--ifm-font-family-monospace);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--venom-ripple, var(--venom-accent));
+  opacity: 0;
+}
+.dot-ripple-gain--burst {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-shadow: 0 0 12px color-mix(in srgb, var(--venom-ripple, var(--venom-accent)) 70%, transparent);
+}
 .floating-toc__button svg { transition: opacity 0.6s ease; }
 .floating-toc__button[data-counting] svg { opacity: 0; transition-duration: 0.15s; }
 /* Around the pointer the dots take the accent colour (src/components/DotSpotlight): a fixed canvas redraws the dots
@@ -1037,9 +1058,11 @@ html[data-theme='light'] .sample-scene img { filter: url('#sample-scene-backgrou
 .theme-doc-footer [class*='lastUpdated_'] b { font-weight: 500; }
 /* Dev builds append a "(Simulated during dev…)" note; only the date line is wanted. */
 .theme-doc-footer [class*='lastUpdated_'] small { display: none; }
-.theme-edit-this-page { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 10px; color: var(--venom-muted); font-size: 0; line-height: 0; }
+.theme-edit-this-page { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 10px; color: var(--venom-muted); font-size: 0; line-height: 0; transition: color 0.15s ease, background-color 0.15s ease, transform 0.12s ease; }
 .theme-edit-this-page:hover { color: var(--venom-accent); background: var(--venom-glow-soft); }
 .theme-edit-this-page svg { width: 18px; height: 18px; margin: 0; }
+.theme-edit-this-page:active { transform: scale(0.9); }
+@media (prefers-reduced-motion: reduce) { .theme-edit-this-page { transition: none; } }
 .pagination-nav { margin-top: 2.5rem; }
 :where(a, button, [role='button']):focus-visible { outline: 2px solid var(--venom-accent-mark); outline-offset: 4px; }
 

@@ -32,7 +32,8 @@
 .switcherOption svg { flex: none; width: 1.125rem; height: 1.125rem; }
 .menuSeparator { margin: 0.35rem 0.25rem; border-top: 1px solid var(--venom-line-strong); }
 .themeRow { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem; padding: 0.1rem 0.35rem; }
-.themeOption { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 2rem; padding: 0 0.3rem; color: var(--venom-fg); background: transparent; border: 0; border-radius: 6px; font: 500 0.8125rem/1 var(--ifm-font-family-base); white-space: nowrap; cursor: pointer; }
+.themeOption { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; height: 2rem; padding: 0 0.3rem; color: var(--venom-fg); background: transparent; border: 0; border-radius: 6px; font: 500 0.8125rem/1 var(--ifm-font-family-base); white-space: nowrap; cursor: pointer; transition: color 0.15s ease, background-color 0.15s ease, transform 0.12s ease; }
+.themeOption:active { transform: scale(0.95); }
 .themeOption svg { width: 1rem; height: 1rem; flex: none; }
 .themeOption:hover { color: var(--venom-fg-strong); background: var(--venom-glow-soft); }
 .themeOption[aria-checked='true'] { color: var(--venom-accent); background: var(--venom-glow-soft); box-shadow: inset 0 0 0 1.5px var(--venom-accent-mark); }
@@ -56,3 +57,15 @@
 .locale svg { width: 20px; height: 20px; }
 /* The appearance button shows the current theme; both icons render so the static page is right before hydration. */
 html[data-theme='dark'] .themeIconLight, html[data-theme='light'] .themeIconDark { display: none; }
+
+/* Icon buttons ease into their hover tint and press in on click, like the floating TOC button. */
+.icon, .footer :global(.clean-btn), .locale { transition: color 0.15s ease, background-color 0.15s ease, transform 0.12s ease; }
+.icon:active, .footer :global(.clean-btn:active), .locale:active { transform: scale(0.9); }
+/* Unity: the cube turns a third, which lands it back on the same shape. */
+.unity:is(:hover, :focus-visible) svg { animation: turn 0.7s cubic-bezier(0.3, 1.4, 0.5, 1); }
+@keyframes turn { to { transform: rotate(120deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .icon, .footer :global(.clean-btn), .locale { transition: none; }
+  .unity svg { animation: none; }
+  .themeOption { transition: none; }
+}

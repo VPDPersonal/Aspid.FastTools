@@ -35,7 +35,11 @@ html[data-theme='light'] .badge {
   color: var(--badge-text);
   text-decoration: none;
 }
-:global(.markdown) a.badge:hover { border-color: var(--venom-accent-mark); }
+/* The hover outline takes the badge's own icon colour, not the site accent. */
+.unity { --badge-mark: var(--badge-unity); }
+.preview { --badge-mark: var(--badge-gold); }
+.license { --badge-mark: var(--badge-shield); }
+:global(.markdown) a.badge:hover { border-color: var(--badge-mark); }
 
 /* Unity: the mark turns a third, onto itself. */
 .unity .icon { transition: transform 0.6s cubic-bezier(0.3, 1.4, 0.5, 1); }
