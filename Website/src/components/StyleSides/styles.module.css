@@ -1,0 +1,102 @@
+/* The "Call | Sets" table as an element diagram: site tokens, one frame, no shadow, like ProfilerHierarchy. */
+.panel {
+  container-type: inline-size;
+  margin-bottom: var(--ifm-leading);
+}
+.window {
+  --ss-bg: var(--ifm-code-background);
+  --ss-line: var(--venom-line);
+  --ss-muted: var(--venom-muted);
+  --ss-accent: var(--venom-accent);
+  --ss-fill: color-mix(in srgb, var(--venom-accent) 22%, transparent);
+  --ss-selected: color-mix(in srgb, var(--venom-accent) 12%, var(--ifm-code-background));
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+  color: var(--venom-fg);
+  background: var(--ss-bg);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: var(--ifm-pre-border-radius);
+}
+
+.calls {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Beats the article's `li + li` spacing, so each row is exactly its button. */
+.calls li, .calls li + li { margin: 0; }
+.call {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0.3rem 0.8rem;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--ss-line);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.calls li:last-child .call { border-bottom: 0; }
+.call:not([aria-selected='true']):hover { background: color-mix(in srgb, var(--venom-fg) 5%, var(--ss-bg)); }
+.call[aria-selected='true'] { background: var(--ss-selected); box-shadow: inset 2px 0 0 var(--ss-accent); }
+.call:focus-visible { outline: 2px solid var(--ss-accent); outline-offset: -2px; }
+/* The calls read as rows of a list, not as chips in a table cell. */
+.calls .call code { padding: 0; font-size: 0.8rem; background: transparent; border: 0; }
+
+/* The calls with the picked one's description at the bottom, where the short list leaves room. */
+.side {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-width: 0;
+  border-right: 1px solid var(--ss-line);
+}
+.diagram {
+  display: block;
+  align-self: start;
+  min-width: 0;
+  width: 100%;
+  height: auto;
+  padding: 0.75rem;
+}
+.diagram text {
+  fill: var(--ss-muted);
+  font: 500 11px var(--ifm-font-family-monospace);
+  transition: fill 0.25s, opacity 0.25s;
+}
+.parent { fill: none; stroke: var(--venom-line-strong); stroke-dasharray: 4 4; transition: stroke 0.25s; }
+.parent.on { stroke: var(--ss-muted); }
+.label { opacity: 0.6; }
+.label.shown { opacity: 1; }
+.band { fill: transparent; stroke: var(--ss-line); transition: fill 0.25s; }
+.band.on { fill: var(--ss-fill); }
+.content { fill: color-mix(in srgb, var(--ss-muted) 10%, transparent); stroke: var(--ss-line); }
+.edge { fill: none; stroke: var(--venom-line-strong); stroke-width: 1.5; }
+.corner { fill: none; stroke: var(--ss-accent); stroke-width: 2.5; stroke-linecap: round; opacity: 0; transition: opacity 0.25s; }
+.corner.on { opacity: 1; }
+.dim { fill: none; stroke: var(--ss-accent); stroke-width: 1.2; opacity: 0; transition: opacity 0.25s; }
+.dim.on { opacity: 1; }
+.diagram .value { opacity: 0; }
+.diagram .value.shown { opacity: 1; }
+.diagram .value.on { fill: var(--ss-accent); }
+
+/* The table's second column: what the picked call writes. */
+.sets {
+  align-self: end;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  border-top: 1px solid var(--ss-line);
+}
+
+@container (max-width: 560px) {
+  .window { grid-template-columns: 1fr; }
+  .side { order: 2; border-top: 1px solid var(--ss-line); border-right: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .call, .diagram text, .parent, .band, .corner, .dim { transition: none; }
+}
