@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="498" viewBox="0 0 1120 498" fill="none">
+  <title>Agent session with the aspid-profiler-marker skill</title>
+  <desc>The request "Profile Simulate and the neighbor search" loads the aspid-profiler-marker skill by itself, and the agent edits FlockSimulation.cs.</desc>
+  <rect x="1" y="1" width="1118" height="496" rx="12" fill="#0e1015" stroke="#272b35"/>
+  <path d="M13 1H1107A12 12 0 0 1 1119 13V56H1V13A12 12 0 0 1 13 1Z" fill="#14171e"/>
+  <path d="M1 56H1119M1 222H1119" stroke="#272b35"/>
+  <g font-family="'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace">
+    <text x="28" y="36" font-size="17" letter-spacing="2" fill="#92959f">AGENT</text>
+    <text x="1092" y="36" font-size="17" letter-spacing="2" text-anchor="end" fill="#92959f">FLOCKSIMULATION.CS</text>
+    <rect x="24" y="78" width="1072" height="50" rx="8" stroke="#272b35" stroke-width="2"/>
+    <text x="44" y="111" font-size="20" font-weight="600" fill="#d97757">&gt;</text>
+    <text x="72" y="111" font-size="20" fill="#e1e2e6">Profile Simulate and the neighbor search</text>
+    <circle cx="36" cy="145" r="6" fill="#75c584"/>
+    <text x="56" y="152" font-size="19" fill="#bfbdb6">Skill <tspan font-weight="600" fill="#e1e2e6">aspid-profiler-marker</tspan></text>
+    <circle cx="36" cy="185" r="6" fill="#75c584"/>
+    <text x="56" y="192" font-size="19" fill="#bfbdb6">Update <tspan font-weight="600" fill="#e1e2e6">FlockSimulation.cs</tspan> <tspan fill="#75c584">+2</tspan></text>
+    <text x="28" y="256" font-size="20" xml:space="preserve"><tspan fill="#f29750">public</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#f29750">void</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#ffb454">Simulate</tspan><tspan fill="#bfbdb6">(</tspan><tspan fill="#bfbdb6">)</tspan></text>
+    <text x="28" y="292" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">{</tspan></text>
+    <rect x="1" y="303" width="1118" height="36" fill="#75c584" fill-opacity="0.12"/>
+    <path d="M2 303V339" stroke="#75c584" stroke-width="3"/>
+    <text x="28" y="328" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">    </tspan><tspan fill="#f29750">using</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#f29750">var</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#bfbdb6">_</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#f29750">=</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#f29750">this</tspan><tspan fill="#bfbdb6">.</tspan><tspan fill="#ffb454">Marker</tspan><tspan fill="#bfbdb6">(</tspan><tspan fill="#bfbdb6">)</tspan><tspan fill="#bfbdb6">;</tspan></text>
+    <rect x="1" y="339" width="1118" height="36" fill="#75c584" fill-opacity="0.12"/>
+    <path d="M2 339V375" stroke="#75c584" stroke-width="3"/>
+    <text x="28" y="364" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">    </tspan><tspan fill="#f29750">using</tspan><tspan fill="#bfbdb6"> </tspan><tspan fill="#bfbdb6">(</tspan><tspan fill="#f29750">this</tspan><tspan fill="#bfbdb6">.</tspan><tspan fill="#ffb454">Marker</tspan><tspan fill="#bfbdb6">(</tspan><tspan fill="#bfbdb6">)</tspan><tspan fill="#bfbdb6">.</tspan><tspan fill="#ffb454">WithName</tspan><tspan fill="#bfbdb6">(</tspan><tspan fill="#b0d860">"Neighbors"</tspan><tspan fill="#bfbdb6">)</tspan><tspan fill="#bfbdb6">)</tspan></text>
+    <text x="28" y="400" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">        </tspan><tspan fill="#ffb454">FindNeighbors</tspan><tspan fill="#bfbdb6">(</tspan><tspan fill="#bfbdb6">)</tspan><tspan fill="#bfbdb6">;</tspan></text>
+    <text x="28" y="436" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">    </tspan><tspan fill="#ffb454">Integrate</tspan><tspan fill="#bfbdb6">(</tspan><tspan fill="#bfbdb6">)</tspan><tspan fill="#bfbdb6">;</tspan></text>
+    <text x="28" y="472" font-size="20" xml:space="preserve"><tspan fill="#bfbdb6">}</tspan></text>
+  </g>
+</svg>
