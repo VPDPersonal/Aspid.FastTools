@@ -1,8 +1,8 @@
 #!/bin/sh
-# Set the package version everywhere it is written by hand: package.json, the version badge and the install URLs
-# in both README translations. The root README is regenerated from the package one. The version also picks the
-# channel .github/workflows/release.yml publishes to: a prerelease (1.0.0-rc.9) installs from `upm-preview` under
-# a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one.
+# Set the package version everywhere it is written by hand: package.json, the badge SVG and the badge alt text,
+# release link and install URLs in both README translations. The root README is regenerated from the package one.
+# The version also picks the channel .github/workflows/release.yml publishes to: a prerelease (1.0.0-rc.9) installs
+# from `upm-preview` under a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one.
 #   scripts/set-version.sh 1.0.0-rc.9
 set -eu
 cd "$(dirname "$0")/.."
