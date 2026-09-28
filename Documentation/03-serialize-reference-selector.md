@@ -22,7 +22,7 @@ A ready-made scene with weapons, effects, and nested modifiers is included in th
 
 ## Configuring selection
 
-The field type sets the base compatibility: `IWeapon` offers its implementations, while an abstract class offers concrete subclasses. Apply `[Serializable]` to classes whose data Unity should persist.
+The field type sets the base compatibility: `IWeapon` offers its implementations, while an abstract class offers concrete subclasses. In the Inspector of a runtime object, classes from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders) are left out: a player build cannot create them. Apply `[Serializable]` to classes whose data Unity should persist.
 
 | Task | Configuration |
 |---|---|
