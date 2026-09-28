@@ -193,7 +193,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Missing-reference probes run repeatedly during repaint; same-frame repairs explicitly invalidate this memo.
         private static int _missingProbeFrame = -1;
-        private static readonly Dictionary<(int instanceId, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
+        private static readonly Dictionary<(Object target, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
             _missingProbeMemo = new();
 
         public static void InvalidateMissingTypeMemo() => _missingProbeFrame = -1;
@@ -214,7 +214,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             var target = property.serializedObject.targetObject;
-            var key = (target != null ? target.GetInstanceID() : 0, property.propertyPath);
+            var key = (target, property.propertyPath);
 
             if (_missingProbeMemo.TryGetValue(key, out var cached))
             {

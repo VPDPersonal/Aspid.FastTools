@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditorInternal;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -19,16 +20,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // A revealed member only gets a rect once painted; the reveal is dropped if no repaint reports one in time.
         private const double RevealTimeoutSeconds = 1.0;
 
-        private static int _revealTarget;
+        private static Object _revealTarget;
         private static long _revealRid;
         private static string _revealPath;
         private static double _revealUntil;
 
         // Advancing from a per-group cursor rather than the clicked field lets repeated clicks on the same notice
         // walk the whole group.
-        private static readonly Dictionary<(int target, long rid), string> NavigationCursor = new();
+        private static readonly Dictionary<(Object target, long rid), string> NavigationCursor = new();
 
-        private static int _flashTarget;
+        private static Object _flashTarget;
         private static long _flashRid;
         private static string _flashExceptPath;
         private static double _flashUntil;
@@ -53,7 +54,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (path != selfPath)
                     ExpandAncestors(property.serializedObject, path);
 
-            var key = (target.GetInstanceID(), rid);
+            var key = (target, rid);
             var start = NavigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
             if (start < 0) start = IndexOf(group, selfPath);
 
@@ -67,9 +68,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (nextPath is null) return;
             NavigationCursor[key] = nextPath;
 
-            StartFlash(target.GetInstanceID(), rid, selfPath);
+            StartFlash(target, rid, selfPath);
 
-            _revealTarget = target.GetInstanceID();
+            _revealTarget = target;
             _revealRid = rid;
             _revealPath = nextPath;
             _revealUntil = EditorApplication.timeSinceStartup + RevealTimeoutSeconds;
@@ -81,7 +82,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (_revealPath is null || EditorApplication.timeSinceStartup > _revealUntil) return;
 
             var target = property.serializedObject.targetObject;
-            if (target == null || target.GetInstanceID() != _revealTarget) return;
+            if (target == null || target != _revealTarget) return;
             if (property.managedReferenceId != _revealRid) return;
             if (property.propertyPath != _revealPath) return;
 
@@ -100,7 +101,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (remaining <= 0) return false;
 
             var target = property.serializedObject.targetObject;
-            if (target == null || target.GetInstanceID() != _flashTarget) return false;
+            if (target == null || target != _flashTarget) return false;
             if (property.managedReferenceId != _flashRid) return false;
             if (property.propertyPath == _flashExceptPath) return false;
 
@@ -131,7 +132,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        private static void StartFlash(int target, long rid, string exceptPath)
+        private static void StartFlash(Object target, long rid, string exceptPath)
         {
             _flashTarget = target;
             _flashRid = rid;
