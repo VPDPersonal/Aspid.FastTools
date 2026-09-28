@@ -19,6 +19,8 @@ The same fields in the Inspector for `Data/SurfacePalette.asset`: `_tileColors` 
 2. Open `Scenes/EnumValues.unity` inside the imported sample folder.
 3. Enter Play Mode: the **Walker** crosses seven tiles, leaving a continuous colored trail whose older end recedes after two seconds. Movement is faster on hot metal and slower on wet grass. Soft sand uses a `0.4` speed multiplier, below both dry stone (`1`) and wet, slippery stone (`0.5`).
 
+The sample needs Unity's built-in **Physics** module, which is enabled by default; without it the sample scripts are not compiled and the scene shows missing scripts.
+
 For recording, use **Light / Dark / Authored** in `Tools → Aspid 🐍 → FastTools → Sample Themes`.
 
 ![The walker crosses different surfaces and leaves a continuous colored trail.](Images/demo.gif)

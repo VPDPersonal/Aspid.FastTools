@@ -18,9 +18,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             fullTypeName = null;
             if (baseType is null) return false;
 
-            var suggested = "New" + (baseType.IsInterface ? baseType.Name.TrimStart('I') : baseType.Name);
             var path = EditorUtility.SaveFilePanelInProject(
-                "Create Managed-Reference Script", suggested, "cs",
+                "Create Managed-Reference Script", SuggestClassName(baseType), "cs",
                 $"Create a new class deriving from {baseType.Name}.");
             if (string.IsNullOrEmpty(path)) return false;
 
@@ -43,6 +42,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             assetPath = path;
             fullTypeName = string.IsNullOrEmpty(nspace) ? className : $"{nspace}.{className}";
             return true;
+        }
+
+        // Only a single interface prefix is dropped (IInteractable -> NewInteractable, not Newnteractable), and the
+        // generic arity suffix goes, since "NewEffect`1" is not a valid class name.
+        internal static string SuggestClassName(Type baseType)
+        {
+            var name = baseType.Name;
+
+            var aritySeparator = name.IndexOf('`');
+            if (aritySeparator >= 0) name = name[..aritySeparator];
+
+            if (baseType.IsInterface && name.Length > 1 && name[0] == 'I' && char.IsUpper(name[1]))
+                name = name[1..];
+
+            return "New" + name;
         }
 
         private static string GenerateStub(string className, string nspace, Type baseType)
