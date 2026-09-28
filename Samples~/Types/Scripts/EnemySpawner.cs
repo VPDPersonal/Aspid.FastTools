@@ -92,7 +92,7 @@ namespace Aspid.FastTools.Samples.Types
                 var enemy = (Enemy)go.AddComponent(type);
                 if (enemy == null)
                 {
-                    Destroy(go);
+                    if (Application.isPlaying) Destroy(go); else DestroyImmediate(go);
                     continue;
                 }
 
