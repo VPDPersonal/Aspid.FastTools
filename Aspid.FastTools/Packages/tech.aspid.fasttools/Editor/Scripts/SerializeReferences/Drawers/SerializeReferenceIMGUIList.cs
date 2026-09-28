@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditorInternal;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -100,8 +101,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Swept on cache misses only, which are already the slow path.
             EvictDeadEntries();
 
-            // Every target, so "+" under a multi-object selection appends to each object, not only the first.
-            var targets = serializedObject.targetObjects;
+            var targets = GetAppendTargets(listProperty);
             var arrayPath = listProperty.propertyPath;
 
             var list = new ReorderableList(serializedObject, listProperty,
@@ -160,6 +160,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Lists[key] = list;
             return list;
         }
+
+        // Every target, so "+" under a multi-object selection appends to each object, not only the first.
+        internal static Object[] GetAppendTargets(SerializedProperty listProperty) =>
+            listProperty.serializedObject.targetObjects;
 
         private static float ElementHeight(SerializedProperty element, int depth) =>
             SerializeReferenceNesting.DrawsOwnHeader(element, depth)

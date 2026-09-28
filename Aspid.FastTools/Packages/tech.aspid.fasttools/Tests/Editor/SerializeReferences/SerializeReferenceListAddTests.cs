@@ -165,6 +165,54 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void Append_MultipleTargets_UndoesInOneStep()
+        {
+            var first = ScriptableObject.CreateInstance<ListAddTestObject>();
+            var second = ScriptableObject.CreateInstance<ListAddTestObject>();
+            try
+            {
+                first.sidearms.Add(new TestSword());
+                second.sidearms.Add(new TestSword());
+
+                SerializeReferenceListAddBehavior.Append(new Object[] { first, second }, "sidearms", SwordName);
+                Assert.AreEqual(2, first.sidearms.Count);
+                Assert.AreEqual(2, second.sidearms.Count);
+
+                Undo.PerformUndo();
+
+                Assert.AreEqual(1, first.sidearms.Count, "One undo must revert the append on every selected object.");
+                Assert.AreEqual(1, second.sidearms.Count, "One undo must revert the append on every selected object.");
+            }
+            finally
+            {
+                Undo.ClearUndo(first);
+                Undo.ClearUndo(second);
+                Object.DestroyImmediate(first);
+                Object.DestroyImmediate(second);
+            }
+        }
+
+        [Test]
+        public void IMGUIList_MultipleObjects_AppendsToEveryTarget()
+        {
+            var first = ScriptableObject.CreateInstance<ListAddTestObject>();
+            var second = ScriptableObject.CreateInstance<ListAddTestObject>();
+            try
+            {
+                var serialized = new SerializedObject(new Object[] { first, second });
+
+                CollectionAssert.AreEqual(new Object[] { first, second },
+                    SerializeReferenceIMGUIList.GetAppendTargets(serialized.FindProperty("sidearms")),
+                    "The IMGUI \"+\" under a multi-object selection must append to every selected object.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(first);
+                Object.DestroyImmediate(second);
+            }
+        }
+
+        [Test]
         public void Append_None_AppendsAnEmptyEntryToEachTarget()
         {
             var first = ScriptableObject.CreateInstance<ListAddTestObject>();
