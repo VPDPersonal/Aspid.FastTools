@@ -1,4 +1,5 @@
 import React from 'react';
+import DotAmbient from '../../components/DotAmbient';
 import DotRipple from '../../components/DotRipple';
 import DotSpotlight from '../../components/DotSpotlight';
 
@@ -47,6 +48,7 @@ export default function Root({children}) {
           <SceneBackgroundFilter id="scene-footage-background-dark" color={[6, 10, 15]} surface="var(--venom-reading-surface)" />
         </defs>
       </svg>
+      <DotAmbient />
       <DotSpotlight />
       <DotRipple />
       {children}
