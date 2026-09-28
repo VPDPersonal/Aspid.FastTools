@@ -71,6 +71,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var elementProperty = GetElementProperty(index);
             if (elementProperty is null) return;
 
+            // The same per-element hand-off as the IMGUI list, so both backends draw an element with the same drawer.
+            if (!SerializeReferenceNesting.DrawsOwnHeader(elementProperty, _depth))
+            {
+                var field = new PropertyField(elementProperty);
+                field.BindProperty(elementProperty);
+                element.Add(field);
+                return;
+            }
+
             element.Add(new SerializeReferenceField(elementProperty.displayName, elementProperty, _baseTypes, _depth));
         }
 

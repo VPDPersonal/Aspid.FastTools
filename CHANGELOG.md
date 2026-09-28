@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".
 - A `[TypeSelector(nameof(...))]` member reference on a field inside a `[Serializable]` class or a list element now resolves on the instance that declares the field, as analyzers `AFT0006`–`AFT0008` already check it; it used to be looked up on the inspected component or asset and showed a warning. The same applies to the picker of the Asset References window.
+- A nested `[SerializeReference]` field now keeps a custom drawer registered for its declared type through an open generic type (`typeof(Effect<>)`), a base class or an interface, even without `useForChildren`, and a drawer registered for a base attribute class; the package used to draw its own header and type picker over them. In a nested list such a drawer draws each element in both IMGUI and UI Toolkit, and **+** keeps the type picker. A drawer of the stored type alone does not replace the type picker.
 - The per-user settings reset no longer lists the removed "Dropdown without [TypeSelector]" option in its tooltip and confirmation dialog.
 - `ComponentTypeSelector` now adds the components the new class requires with `[RequireComponent]`, and refuses the switch with a Console warning when it would duplicate a `[DisallowMultipleComponent]` class, remove a class another component requires, or need a component that cannot be added. The required components are added before the new class, so its `OnValidate` finds them. It used to leave the object without the required components or with duplicates.
 - **Create New Script…** on a `[SerializeReference]` field suggests `NewInteractable` for `IInteractable` (was `Newnteractable`) and `NewEffect` for `IEffect<T>` or a generic base class (was the invalid ``NewEffect`1``, rejected on accept).
@@ -98,6 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A type deriving from a type of another assembly that shares its namespace through `InternalsVisibleTo` now gets markers of its own; its calls used to bind to the base type's overload and open nothing.
 - `WithName($"Br{{ace}}")` gives `Br{ace}`, `WithName` text with U+2028, U+2029 or U+0085 compiles, and a user's own `WithName` extension no longer renames the marker.
 - `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
+- `Persistent()` keeps the `context` of the source `SerializedObject`, so an `ExposedReference` read or written through the copy resolves in the same table (for example a `PlayableDirector`) instead of the default value in the asset.
 
 ## [1.0.0-rc.8] — 2026-09-06
 
