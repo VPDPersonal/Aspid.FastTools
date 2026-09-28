@@ -125,7 +125,7 @@ On `[SerializeReference]`, the field type is the first constraint, so this field
 [SerializeReference] private MeleeWeapon _heldWeapon;
 ```
 
-To allow a fixed set of classes, give them a common interface or base class and pass it: listing the classes themselves (`typeof(Sword), typeof(Axe)`) leaves the picker empty, and analyzer `AFT0009` reports it. See [instance selector configuration](03-serialize-reference-selector.md#configuring-selection).
+To allow a fixed set of classes, give them a common interface or base class and pass it: listing the classes themselves (`typeof(Sword), typeof(Axe)`) leaves the picker empty, and analyzer `AFT0009` reports it. See [instance selector configuration](03-serialize-reference-selector.md#which-classes-are-offered).
 
 ### Constructors and properties
 
@@ -253,7 +253,7 @@ Picking an open generic type opens its argument pages and returns a constructed 
 
 Choosing a generic type argument in the picker
 
-Arguments must satisfy the generic parameter's constraints; interfaces, abstract classes, and hidden types are not offered as arguments, and `[Serializable]` is not required. For `[SerializeReference]`, see the [serialization and inference rules](03-serialize-reference-selector.md#generic-types).
+Arguments must satisfy the generic parameter's constraints; interfaces, abstract classes, and hidden types are not offered as arguments, and `[Serializable]` is not required. For `[SerializeReference]`, arguments are inferred from the field type — see [SerializeReference Selector](03-serialize-reference-selector.md#which-classes-are-offered).
 
 ### Opening from code
 
