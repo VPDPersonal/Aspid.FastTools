@@ -339,4 +339,4 @@ that no dot of a ring is dropped.
 
 `.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package `Documentation/`,
 a sample's `Documentation/`, the root `README.md` or `CHANGELOG*.md`, and on PRs (build only); it runs
-`check-readme` before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
+`check-readme` and the site tests (`node --test scripts/*.test.mjs`) before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
