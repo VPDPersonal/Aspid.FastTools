@@ -6,7 +6,8 @@
         "UnityEditor.TestRunner",
         "Aspid.FastTools",
         "Aspid.FastTools.Editor",
-        "Aspid.FastTools.Editor.SerializeReferences.Yaml"
+        "Aspid.FastTools.Editor.SerializeReferences.Yaml",
+        "Aspid.FastTools.Tests.Fixtures"
     ],
     "includePlatforms": [
         "Editor"

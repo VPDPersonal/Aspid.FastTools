@@ -106,7 +106,7 @@ public class BurnEffect : IAbilityEffect { public float Damage = 5f; }
 
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>var independentObject =&#10;    new SerializedObject(manaCost&#10;        .serializedObject.targetObjects);&#10;var independent = independentObject&#10;    .FindProperty(manaCost.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = manaCost.Persistent();</code></pre> |
+| <pre lang="csharp"><code>var source = manaCost.serializedObject;&#10;var independentObject = new SerializedObject(&#10;    source.targetObjects, source.context);&#10;var independent = independentObject&#10;    .FindProperty(manaCost.propertyPath);</code></pre> | <pre lang="csharp"><code>var independent = manaCost.Persistent();</code></pre> |
 
 - копия принадлежит вызывающему коду: освободите её вместе с её <code lang="csharp">serializedObject</code>;
 - неприменённые записи исходного свойства в копию не попадают;
