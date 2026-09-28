@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEditor;
+using System.Collections.Generic;
 using UnityEngine;
 using NUnit.Framework;
 using UnityEngine.Serialization;
@@ -8,21 +9,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
     /// <summary>
     /// Coverage for repairs on a loaded asset with unsaved changes. A file rewrite reimports the asset, which reloads
-    /// it from disk and silently drops those changes, so the Inspector Fix, the in-memory clear and the open-copy guard
-    /// must treat such an asset as an open copy.
+    /// it from disk and silently drops those changes, so the Inspector Fix must refuse until the asset is saved, the
+    /// batch filters must hold it back and the in-memory clear must reach it.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceUnsavedAssetRepairTests
     {
         private const string ProbeAssetPath = "Assets/__AspidUnsavedAssetRepairProbe__.asset";
-        private const int StoredDamage = 1;
+        private const float StoredDelay = 1.5f;
         private const int SavedDamage = 5;
         private const int UnsavedDamage = 42;
 
+        private static readonly List<int> _storedWaves = new() { 1, 2, 3 };
+
         private static readonly ManagedTypeName _goneType = new(
-            ManagedTypeName.FromType(typeof(TestSword)).Assembly,
-            ManagedTypeName.FromType(typeof(TestSword)).Namespace,
-            "TestSwordGone");
+            ManagedTypeName.FromType(typeof(UnsavedRepairSpawnAction)).Assembly,
+            ManagedTypeName.FromType(typeof(UnsavedRepairSpawnAction)).Namespace,
+            "UnsavedRepairSpawnActionGone");
 
         private UnsavedRepairTestObject _probe;
 
@@ -30,7 +33,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void SetUp()
         {
             var probe = ScriptableObject.CreateInstance<UnsavedRepairTestObject>();
-            probe.a = new TestSword { damage = StoredDamage };
+            probe.a = new UnsavedRepairSpawnAction { delay = StoredDelay, waves = new List<int>(_storedWaves) };
             probe.b = new TestSword { damage = SavedDamage };
             AssetDatabase.CreateAsset(probe, ProbeAssetPath);
 
@@ -57,30 +60,58 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void TearDown() => AssetDatabase.DeleteAsset(ProbeAssetPath);
 
         [Test]
-        public void Guard_DirtyLoadedAsset_IsNotWritableUntilSaved()
+        public void Guard_DirtyLoadedAsset_IsNotRewriteSafeUntilSaved()
         {
             Assert.IsTrue(SerializeReferenceOpenCopyGuard.HasUnsavedChanges(ProbeAssetPath));
-            Assert.IsFalse(SerializeReferenceOpenCopyGuard.IsWritable(ProbeAssetPath, null),
+            Assert.IsTrue(SerializeReferenceOpenCopyGuard.IsWritable(ProbeAssetPath, null),
+                "IsWritable is an open-copy check: an asset being saved is still dirty and must stay guarded.");
+            Assert.IsFalse(SerializeReferenceOpenCopyGuard.IsRewriteSafe(ProbeAssetPath, null),
                 "A file rewrite would reload the asset and discard its unsaved changes.");
 
             AssetDatabase.SaveAssetIfDirty(_probe);
 
             Assert.IsFalse(SerializeReferenceOpenCopyGuard.HasUnsavedChanges(ProbeAssetPath));
-            Assert.IsTrue(SerializeReferenceOpenCopyGuard.IsWritable(ProbeAssetPath, null));
+            Assert.IsTrue(SerializeReferenceOpenCopyGuard.IsRewriteSafe(ProbeAssetPath, null));
         }
 
         [Test]
-        public void TryFixMissingType_DirtyAsset_KeepsUnsavedChanges()
+        public void TryFixMissingType_DirtyAsset_RefusesAndKeepsUnsavedChanges()
         {
+            // Outside batch mode the Save and Continue prompt would wait for a click.
+            if (!Application.isBatchMode) Assert.Ignore("Runs in batch mode only.");
+
+            var before = File.ReadAllText(ProbeAssetPath);
+
             using (var serializedObject = new SerializedObject(_probe))
             {
-                Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(serializedObject.FindProperty("a"), typeof(TestSword)));
+                Assert.IsFalse(SerializeReferenceHelpers.TryFixMissingType(serializedObject.FindProperty("a"), typeof(UnsavedRepairSpawnAction)));
+            }
+
+            Assert.AreEqual(before, File.ReadAllText(ProbeAssetPath));
+            Assert.AreEqual(UnsavedDamage, ((TestSword)_probe.b).damage, "The refused fix must not discard the unsaved edit.");
+            Assert.IsTrue(SerializationUtility.HasManagedReferencesWithMissingTypes(_probe),
+                "The refused fix must not repair the reference in memory, where its nested data would be lost.");
+        }
+
+        [Test]
+        public void TryFixMissingType_AssetSavedFirst_KeepsNestedDataAndUnsavedChanges()
+        {
+            // What Save and Continue does before the file rewrite.
+            AssetDatabase.SaveAssetIfDirty(_probe);
+
+            using (var serializedObject = new SerializedObject(_probe))
+            {
+                Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingType(serializedObject.FindProperty("a"), typeof(UnsavedRepairSpawnAction)));
             }
 
             var probe = AssetDatabase.LoadAssetAtPath<UnsavedRepairTestObject>(ProbeAssetPath);
-            Assert.AreEqual(UnsavedDamage, ((TestSword)probe.b).damage, "The repair must not discard the unsaved edit.");
-            Assert.IsInstanceOf<TestSword>(probe.a);
-            Assert.AreEqual(StoredDamage, ((TestSword)probe.a).damage, "The repair must keep the reference's stored data.");
+            Assert.AreEqual(UnsavedDamage, ((TestSword)probe.b).damage, "The repair must not discard the saved edit.");
+            Assert.IsFalse(SerializationUtility.HasManagedReferencesWithMissingTypes(probe));
+
+            var action = probe.a as UnsavedRepairSpawnAction;
+            Assert.IsNotNull(action);
+            Assert.AreEqual(StoredDelay, action.delay);
+            CollectionAssert.AreEqual(_storedWaves, action.waves, "The repair must keep the reference's nested data.");
         }
 
         [Test]
@@ -93,7 +124,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             AssetDatabase.TryGetGUIDAndLocalFileIdentifier(_probe, out _, out long fileId);
             var before = File.ReadAllText(ProbeAssetPath);
 
-            Assert.IsFalse(SerializeReferenceGraphEditor.ApplyFix(ProbeAssetPath, fileId, rid, typeof(TestSword).AssemblyQualifiedName));
+            Assert.IsFalse(SerializeReferenceGraphEditor.ApplyFix(ProbeAssetPath, fileId, rid, typeof(UnsavedRepairSpawnAction).AssemblyQualifiedName));
 
             Assert.AreEqual(before, File.ReadAllText(ProbeAssetPath));
             var probe = AssetDatabase.LoadAssetAtPath<UnsavedRepairTestObject>(ProbeAssetPath);

@@ -17,7 +17,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var entry in source)
             {
-                if (SerializeReferenceOpenCopyGuard.IsWritable(entry.AssetPath, prefabStagePath)) onDisk.Add(entry);
+                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath)) onDisk.Add(entry);
                 else inMemory.Add(entry);
             }
         }
@@ -32,7 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var entry in source)
             {
-                if (SerializeReferenceOpenCopyGuard.IsWritable(entry.AssetPath, prefabStagePath)) writable.Add(entry);
+                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath)) writable.Add(entry);
                 else skipped++;
             }
 

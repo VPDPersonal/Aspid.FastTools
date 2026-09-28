@@ -14,7 +14,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // prefabStagePath is a pre-resolved CurrentPrefabStagePath, hoisted out of a batch loop.
         public static bool IsWritable(string assetPath, string prefabStagePath) =>
-            !IsOpenInScene(assetPath) && !IsOpenInPrefabMode(assetPath, prefabStagePath) && !HasUnsavedChanges(assetPath);
+            !IsOpenInScene(assetPath) && !IsOpenInPrefabMode(assetPath, prefabStagePath);
+
+        // A file rewrite reimports the asset, which reloads it from disk and silently drops its unsaved changes, so a
+        // dirty asset is held back as well. IsWritable stays an open-copy check: an asset being saved is still dirty.
+        public static bool IsRewriteSafe(string assetPath, string prefabStagePath) =>
+            IsWritable(assetPath, prefabStagePath) && !HasUnsavedChanges(assetPath);
 
         // True — and explained through a dialog — when the edit must be abandoned.
         public static bool BlockedByOpenCopy(string assetPath, string title = "Asset References")
@@ -33,13 +38,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // True when the edit must be abandoned: the asset has unsaved changes and was not saved first. A file rewrite
         // reimports the asset, which reloads it from disk and silently drops those changes.
-        public static bool BlockedByUnsavedChanges(string assetPath)
+        public static bool BlockedByUnsavedChanges(string assetPath, string title = "Asset References")
         {
             if (!HasUnsavedChanges(assetPath)) return false;
             if (Application.isBatchMode) return true;
 
             if (!EditorUtility.DisplayDialog(
-                    "Asset References",
+                    title,
                     $"{assetPath} has unsaved changes — a file rewrite reimports the asset and would discard them.\n\n" +
                     "Save the asset first?",
                     "Save and Continue",
