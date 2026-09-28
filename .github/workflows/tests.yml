@@ -21,6 +21,9 @@ jobs:
             path: Aspid.FastTools.Generators
           - name: Analyzers
             path: Aspid.FastTools.Analyzers
+          # The SerializeReference YAML engine and its NUnit tests, compiled from the package sources without Unity.
+          - name: YAML engine
+            path: Aspid.FastTools.YamlTests
     steps:
       - uses: actions/checkout@v4
 
@@ -33,3 +36,82 @@ jobs:
 
       - name: Run ${{ matrix.name }} tests
         run: dotnet test "${{ matrix.path }}" --nologo
+
+  # Secrets are unavailable to fork PRs and until the owner adds them; the Unity job is then skipped, not failed.
+  # Secrets for a Personal license (Unity no longer issues one through manual .alf activation):
+  #   UNITY_LICENSE   contents of the .ulf that Unity Hub writes after signing in and activating a Personal license
+  #                   (macOS /Library/Application Support/Unity/Unity_lic.ulf, Windows C:\ProgramData\Unity\Unity_lic.ulf,
+  #                   Linux ~/.local/share/unity3d/Unity/Unity_lic.ulf); repeat when Hub renews it
+  #   UNITY_EMAIL, UNITY_PASSWORD   that Unity account
+  unity-license:
+    name: Unity license
+    runs-on: ubuntu-latest
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - id: check
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        run: |
+          if [ -n "$UNITY_LICENSE" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::UNITY_LICENSE is not available; the Unity EditMode tests are skipped."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Compiles the package, its tests and all samples in a throwaway project and runs the EditMode tests, on the
+  # minimum Unity that package.json promises and on the dev project's version.
+  unity-tests:
+    name: Unity EditMode (${{ matrix.name }})
+    needs: unity-license
+    if: needs.unity-license.outputs.available == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: minimum
+            unity: 6000.0.64f1
+          - name: dev project
+            unity: project
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create the test project
+        id: project
+        env:
+          UNITY: ${{ matrix.unity }}
+        # Assigned first: a failure inside $(...) passed straight to echo would not fail the step.
+        run: |
+          version="$(scripts/make-unity-test-project.sh ci-unity-project "$UNITY")"
+          [ -n "$version" ] || { echo "::error::make-unity-test-project.sh printed no Unity version"; exit 1; }
+          echo "unity=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        with:
+          path: ci-unity-project/Library
+          key: unity-library-${{ steps.project.outputs.unity }}-${{ hashFiles('Aspid.FastTools/Packages/tech.aspid.fasttools/**') }}
+          restore-keys: unity-library-${{ steps.project.outputs.unity }}-
+
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: ${{ steps.project.outputs.unity }}
+          projectPath: ci-unity-project
+          testMode: editmode
+          artifactsPath: unity-test-results
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: Unity EditMode results (${{ steps.project.outputs.unity }})
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-test-results-${{ steps.project.outputs.unity }}
+          path: unity-test-results
