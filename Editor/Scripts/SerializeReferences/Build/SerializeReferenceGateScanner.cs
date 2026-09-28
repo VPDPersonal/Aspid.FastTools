@@ -9,6 +9,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceGateScanner
     {
+        // How many files the required-field sweep loads before it releases the ones nothing references any more.
+        // Not const so tests can lower it.
+        internal static int UnloadEveryLoadedFiles = 64;
+
         // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only
         // for assets whose unresolved entries carry a [MovedFrom] claim. Null marks an asset whose map failed to build.
         private static readonly Dictionary<string, Dictionary<(long fileId, long rid), Type>> _constraintMapCache =
@@ -27,10 +31,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _scriptRequiredFieldsCache.Clear();
             _constraintMapCache.Clear();
 
+            var loadedSinceUnload = 0;
+
             for (var i = 0; i < paths.Length; i++)
             {
                 var path = paths[i];
                 onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
+
+                // Scenes are read as YAML. Any other file is loaded by the required sweep, or earlier by the
+                // constraint map of a pending migration, and either load counts toward the next unload.
+                var wasLoaded = !options.ScanRequiredFields || SerializeReferenceHelpers.IsScene(path) ||
+                    AssetDatabase.IsMainAssetAtPathLoaded(path);
 
                 if (options.ScanMissingTypes)
                 {
@@ -46,7 +57,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (SerializeReferenceHelpers.IsScene(path)) CollectSceneRequiredViolations(path, violations);
                     else CollectRequiredViolations(path, violations);
                 }
+
+                if (!wasLoaded && AssetDatabase.IsMainAssetAtPathLoaded(path)) loadedSinceUnload++;
+
+                // Every loaded file stays in memory until unloaded, so a sweep of a large project would otherwise hold
+                // all of its prefabs and assets at once.
+                if (loadedSinceUnload < UnloadEveryLoadedFiles) continue;
+
+                EditorUtility.UnloadUnusedAssetsImmediate();
+                loadedSinceUnload = 0;
             }
+
+            if (loadedSinceUnload > 0) EditorUtility.UnloadUnusedAssetsImmediate();
 
             return violations;
         }
@@ -63,6 +85,40 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return violations;
         }
+
+        // Re-audits the files an edit touched and swaps their entries in a cached project audit; every other file's
+        // violations are kept as they were.
+        public static IReadOnlyList<GateViolation> RescanRequiredFields(
+            IReadOnlyList<GateViolation> cached, IEnumerable<string> assetPaths)
+        {
+            var paths = new HashSet<string>(assetPaths, StringComparer.Ordinal);
+            AddDependentPrefabs(paths);
+
+            var violations = cached.Where(violation => !paths.Contains(violation.AssetPath)).ToList();
+
+            foreach (var path in paths)
+                violations.AddRange(ScanAssetRequiredFields(path));
+
+            return violations;
+        }
+
+        // A variant of an edited prefab, or a prefab nesting it, inherits the edited values, so its required fields
+        // may have changed as well. Scenes store only their overrides of a prefab instance, so they are not affected.
+        private static void AddDependentPrefabs(HashSet<string> paths)
+        {
+            var editedPrefabs = new HashSet<string>(paths.Where(IsPrefab), StringComparer.Ordinal);
+            if (editedPrefabs.Count == 0) return;
+
+            foreach (var path in AssetDatabase.GetAllAssetPaths())
+            {
+                if (!IsPrefab(path) || paths.Contains(path) || !SerializeReferenceHelpers.IsScanCandidate(path)) continue;
+
+                if (AssetDatabase.GetDependencies(path, recursive: true).Any(editedPrefabs.Contains))
+                    paths.Add(path);
+            }
+        }
+
+        private static bool IsPrefab(string path) => path.EndsWith(".prefab", StringComparison.OrdinalIgnoreCase);
 
         // A stored name claimed by exactly one declared [MovedFrom] is a pending migration, not a violation —
         // Unity migrates it in memory at load — provided the target still fits the field's declared type.
