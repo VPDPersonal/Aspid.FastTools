@@ -3,10 +3,11 @@
   "configurations": [
     {
       "name": "website-dev",
-      "runtimeExecutable": "npx",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "docusaurus",
+        "run",
         "start",
+        "--",
         "--no-open"
       ],
       "cwd": "Website",
@@ -16,12 +17,11 @@
     },
     {
       "name": "website-dev-ru",
-      "runtimeExecutable": "npx",
+      "runtimeExecutable": "npm",
       "runtimeArgs": [
-        "docusaurus",
-        "start",
-        "--locale",
-        "ru",
+        "run",
+        "start:ru",
+        "--",
         "--no-open"
       ],
       "cwd": "Website",
