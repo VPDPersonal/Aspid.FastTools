@@ -17,6 +17,17 @@ public class ProfilerMarkersTypeShapeTests
         return run;
     }
 
+    // The class each Marker() call of the first source binds to, in source order.
+    private static string[] BoundClasses(GeneratorRun run)
+    {
+        var tree = run.OutputCompilation.SyntaxTrees.First();
+        var model = run.OutputCompilation.GetSemanticModel(tree);
+        return tree.GetRoot().DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax>()
+            .Select(call => ((IMethodSymbol)model.GetSymbolInfo(call).Symbol!).ContainingType.Name)
+            .ToArray();
+    }
+
     [Fact]
     public void KeywordNamespace_Compiles() => AssertCompilesAndBinds("""
         namespace Game.@event
@@ -274,5 +285,50 @@ public class ProfilerMarkersTypeShapeTests
 
         GeneratorTestHost.AssertNoErrors(run);
         GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Theory]
+    [InlineData("namespace Sample {", "}", "__ViewBaseProfilerMarkerExtensions")]
+    [InlineData("", "", "ProfilerMarkerExtensionsForGenerator")]
+    public void PrivateNestedSubclass_BindsToTheBaseOverloadOnlyInANamespace(string open, string close, string expected)
+    {
+        // In a namespace, extension lookup meets the base type's overload before the global fallback.
+        // In the global namespace both are candidates, and Marker<T> wins by its identity conversion.
+        var run = GeneratorTestHost.RunProfilerMarkers($$"""
+            {{open}}
+            public class ViewBase { public void Show() { using var _ = this.Marker(); } }
+            public class Host
+            {
+                private sealed class Popup : ViewBase { public void Open() { using var _ = this.Marker(); } }
+            }
+            {{close}}
+            """);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        Assert.Equal(new[] { "__ViewBaseProfilerMarkerExtensions", expected }, BoundClasses(run));
+    }
+
+    [Theory]
+    [InlineData("namespace App {", "}", "namespace Lib {", "}", "Lib.Other", "ProfilerMarkerExtensionsForGenerator")]
+    [InlineData("namespace App {", "}", "", "", "Other", "__OtherProfilerMarkerExtensions")]
+    [InlineData("namespace App {", "}", "namespace App.Sub {", "}", "App.Sub.Other", "ProfilerMarkerExtensionsForGenerator")]
+    [InlineData("namespace App.Sub {", "}", "namespace App {", "}", "App.Other", "__OtherProfilerMarkerExtensions")]
+    public void OtherTypeReceiver_BindsToItsOverloadOnlyFromTheCallersOrAnEnclosingNamespace(
+        string open, string close, string oOpen, string oClose, string otherName, string expected)
+    {
+        // other.Marker() is an identity conversion for both candidates, so the non-generic overload wins
+        // wherever lookup meets it, the global namespace included.
+        var run = GeneratorTestHost.RunProfilerMarkers(new[] { $$"""
+            {{open}}
+            public class Caller { public void Run({{otherName}} o) { using var _ = o.Marker(); } }
+            {{close}}
+            """, $$"""
+            {{oOpen}}
+            public class Other { public void Show() { using var _ = this.Marker(); } }
+            {{oClose}}
+            """ });
+
+        GeneratorTestHost.AssertNoErrors(run);
+        Assert.Equal(new[] { expected }, BoundClasses(run));
     }
 }
