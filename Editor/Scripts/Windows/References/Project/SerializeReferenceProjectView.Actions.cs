@@ -49,15 +49,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 EditorUtility.DisplayDialog(
                     "Repair Missing References",
-                    "All references in this group live in open scene(s) or Prefab Mode. Close them and rescan, " +
-                    "or repair the fields directly in the Inspector.",
+                    "All references in this group live in open scene(s), Prefab Mode or assets with unsaved changes. " +
+                    "Save or close them and rescan, or repair the fields directly in the Inspector.",
                     "OK");
                 return;
             }
 
             var files = SerializeReferenceBatchEditor.CountFiles(entries);
             var skippedNote = skipped > 0
-                ? $"\n\n{skipped} reference(s) in open scene(s) or Prefab Mode will be skipped."
+                ? $"\n\n{skipped} reference(s) in open scene(s), Prefab Mode or assets with unsaved changes " +
+                  "will be skipped."
                 : string.Empty;
 
             group.ResolveConstraint(out var mixedFieldTypes);
@@ -86,7 +87,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var summaryTitle = rewritten == 1 ? "Rewrote 1 reference" : $"Rewrote {rewritten} references";
             var summaryBody = $"Replaced missing '{group.DisplayName}' with '{newType.FullName}'.";
             if (skipped > 0)
-                summaryBody += $" Skipped {skipped} in open scene(s) or Prefab Mode.";
+                summaryBody += $" Skipped {skipped} in open scene(s), Prefab Mode or assets with unsaved changes.";
 
             var originalType = group.StoredType;
             var missingName = group.DisplayName;
@@ -108,8 +109,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var total = onDisk.Count + inMemory.Count;
 
             var openNote = inMemory.Count > 0
-                ? $"\n\n{inMemory.Count} reference(s) are open in Prefab Mode or a scene — those are nulled on the live " +
-                  "object and saved with the asset (the audit keeps listing them until you save)."
+                ? $"\n\n{inMemory.Count} reference(s) are open in Prefab Mode or a scene, or in assets with unsaved " +
+                  "changes — those are nulled on the live object and saved with the asset (the audit keeps listing " +
+                  "them until you save)."
                 : string.Empty;
             var diskNote = onDisk.Count > 0
                 ? $" {onDisk.Count} on disk in {fileCount} file(s) are edited directly."
@@ -170,14 +172,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     diverged > 0
                         ? "These references no longer hold the type this fix applied (they were re-pointed or removed " +
                           "since), so there is nothing this undo can safely revert."
-                        : "These references now live in open scene(s) or Prefab Mode. Close them and try the undo again.",
+                        : "These references now live in open scene(s), Prefab Mode or assets with unsaved changes. " +
+                          "Save or close them and try the undo again.",
                     "OK");
                 return;
             }
 
             var files = SerializeReferenceBatchEditor.CountFiles(revertible);
             var skippedNote = skipped > 0
-                ? $"\n\n{skipped} reference(s) in open scene(s) or Prefab Mode will be skipped."
+                ? $"\n\n{skipped} reference(s) in open scene(s), Prefab Mode or assets with unsaved changes " +
+                  "will be skipped."
                 : string.Empty;
             var divergedNote = diverged > 0
                 ? $"\n\n{diverged} reference(s) no longer hold '{appliedName}' (changed since this fix) and will be left alone."

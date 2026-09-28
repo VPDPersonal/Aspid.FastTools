@@ -17,12 +17,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var entry in source)
             {
-                if (SerializeReferenceOpenCopyGuard.IsWritable(entry.AssetPath, prefabStagePath)) onDisk.Add(entry);
+                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath)) onDisk.Add(entry);
                 else inMemory.Add(entry);
             }
         }
 
-        // skipped counts the entries held back because an open copy would clobber the file edit on its next save.
+        // skipped counts the entries held back because an open copy would clobber the file edit on its next save, or
+        // the edit's reimport would discard an asset's unsaved changes.
         public static List<MissingReferenceLocation> FilterWritable(IReadOnlyList<MissingReferenceLocation> source, out int skipped)
         {
             var prefabStagePath = SerializeReferenceOpenCopyGuard.CurrentPrefabStagePath();
@@ -31,7 +32,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var entry in source)
             {
-                if (SerializeReferenceOpenCopyGuard.IsWritable(entry.AssetPath, prefabStagePath)) writable.Add(entry);
+                if (SerializeReferenceOpenCopyGuard.IsRewriteSafe(entry.AssetPath, prefabStagePath)) writable.Add(entry);
                 else skipped++;
             }
 

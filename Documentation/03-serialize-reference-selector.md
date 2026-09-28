@@ -222,6 +222,8 @@ For an asset on disk, Fix rewrites the stored type and reimports the asset; that
 
 If Fix is unavailable, select one object and ensure the scene or Prefab Mode is saved with no pending changes. For a prefab instance in a scene, open its source prefab. If the problem is inside a missing parent and the field is inaccessible, use [Asset References](04-serialize-reference-tooling.md#asset-references-inspect-one-asset).
 
+If the asset has unsaved changes, Fix first offers to save it: the reimport would discard them. While a prefab is open in Prefab Mode, Fix on its asset in the Project window is refused; repair the field in Prefab Mode instead.
+
 Accompany planned renames with [`[MovedFrom]`](04-serialize-reference-tooling.md#migrations-with-movedfrom). For auditing and repairing multiple assets, see [SerializeReference Tooling](04-serialize-reference-tooling.md).
 
 ## Custom IMGUI inspectors
