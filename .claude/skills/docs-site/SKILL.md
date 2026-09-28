@@ -91,18 +91,17 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   (`demo`/`scene` captures, SVG diagrams, gallery previews). `src/remark/themedImages.js` swaps them per theme.
   **Editor UI captures (Inspector, windows, pickers) do not** — they stay in the dark editor theme in both site
   themes; never report a missing `-light` for them.
-- **Editor captures are framed automatically.** In `/docs` and `/tutorials` an image renders inside the
-  window frame (`doc-image-panel`, `src/theme/MDXComponents/Img`). The exception is `demo`/`scene`
-  (`.gif`/`.png`) on a *tutorial* page, which keeps the bare scene look; the same file on a doc page is framed.
-  So name inspector captures anything but `demo`/`scene`, and name scene footage exactly that.
-  A sample's `demo`/`scene` linked from a doc page is never framed either: a scene sample's gets `.scene-footage`,
-  any other sample's (an editor window, e.g. EditorTools) gets `.window-footage` — the capture is the only frame.
+- **Editor captures have no frame around them.** In `/docs` and `/tutorials` an image renders in a plain
+  full-width wrapper (`doc-image-panel`, `src/theme/MDXComponents/Img`): no window, padding or shadow, the
+  capture's own 1px edge is the only frame. The exception is `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page,
+  which keeps the bare scene look. So name inspector captures anything but `demo`/`scene`, and name scene footage
+  exactly that. A scene sample's `demo`/`scene` linked from a doc page gets `.scene-footage` (recoloured background).
 - Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
   `Samples~/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
-  and `.scene-footage`; a sample missing from it gets `.window-footage` on doc pages. Nothing fails the build.
+  and `.scene-footage`; a sample missing from it just keeps its own background. Nothing fails the build.
 - A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
-- Click or Enter opens the image in a modal (Esc closes). Unframed images are capped at 640×520;
-  framed and `.sample-scene` media fill the article.
+- Click or Enter opens the image in a modal (Esc closes). Bare images are capped at 640×520;
+  captures in `doc-image-panel` and `.sample-scene` media fill the article.
 - Status badges (`Images/status-badge-*.svg`) are links, not captures: they keep their size and do not zoom.
 - A static picture can have a live site version: `src/remark/liveDiagrams.js` maps the file name to a component
   (`profiler-markers-hierarchy.svg` → `ProfilerHierarchy`). Markdown
@@ -295,8 +294,9 @@ The theme is shared with Aspid.MVVM: dark graphite with the Unity badge green as
 sidebar footer appearance menu, next to the theme (`NavigationPanel/AppearanceSwitcher.js`). The variants live in `src/css/accents.css` under
 `html[data-accent]`, the list and the pre-paint boot script in `src/accents.js`. Colour things with `--venom-accent*`
 / `--ifm-color-primary*`, never a literal green, unless it mimics Unity or means success (`--venom-emerald`).
-Fonts: IBM Plex Serif/Mono from Google Fonts, iA Writer Quattro body self-hosted in `src/fonts/` (OFL, keep the
-licence file). Prism themes are Ayu-based, in `src/prism/venom.js`.
+Fonts: IBM Plex Serif (headings), Plex Sans (text) and Plex Mono (code) from Google Fonts; iA Writer Quattro, the
+samples' editor font, is self-hosted in `src/fonts/` (OFL, keep the licence file) for navigation labels only — sidebar
+and TOC, `--venom-font-family-nav`. Prism themes are Ayu-based, in `src/prism/venom.js`, with a transparent background.
 
 ### Introduction feature cards
 
@@ -333,9 +333,39 @@ below 997px the navigation uses Docusaurus' mobile menu. On desktop (≥997px) t
 switcher built from the navbar's left items, search), scrolling document list, pinned footer (GitHub,
 language, theme).
 
-Admonitions are outline-only: a coloured border and heading on the article surface, inline code in the neutral chip.
-`src/components/BackgroundWindows` cuts windows into the reading surface only for framed images
-(`.doc-background-window`); `DotRipple` draws the click ripple in the accent colour everywhere.
+Blocks follow the admonitions: a frame on the article surface, no fill of their own. Admonitions carry a coloured
+2px border and heading; code blocks, tables, `<details>`, cards, panels and the diagrams (`StyleSides`,
+`ProfilerHierarchy`, the feature previews) a 2px `--venom-line-strong` frame with the 12px `--ifm-pre-border-radius`.
+Their surface is `--venom-block-surface` (transparent), or `--venom-reading-surface` where it must stay opaque (sticky
+cells). A fill is kept only where content needs it: inline code chips (`--ifm-code-background`), Unity mock-ups (their editor
+skin) and the letterbox behind captures. Controls and popovers (section switcher, search, floating TOC, the install
+version list) are opaque in the article's own `--venom-reading-surface`, so the page has one surface colour, with a
+1px frame. Radii come in three steps: 12px for blocks, 10px for buttons, popovers, dialogs and selected items (sidebar,
+search results), 6px for small plaques (the Esc/Close keys, `kbd`, status badges, accent swatches, items inside a
+popover); inline code keeps 4px so it does not turn into a pill. Unity mock-ups keep the editor's own radii. Table rows have no zebra; the header is muted and closed by a 2px rule, its inline code without a chip.
+Captures have no frame around them (see Images).
+`DotRipple` draws the click ripple in the accent colour on the empty canvas around the article.
+
+A selection mark sits on the frame line, not inside it, and matches its 2px: the picked call in `StyleSides`, the
+selected row in `ProfilerHierarchy`, the marked code lines in `AgentSession` and the introduction's animated previews,
+the install panel's tab underline (which runs the strip's side padding past its label on both sides, the first one
+from the card's edge). At a rounded corner the mark stops where the straight edge ends. Where the block scrolls or
+clips (Hierarchy, the feature cards), this needs `overflow: clip; overflow-clip-margin: border-box` inside
+`@supports`; Safari lacks it and keeps the mark just inside the frame.
+
+Colours in the **light theme** have roles, so nothing is darkened more than contrast needs (a darker tone reads muddy);
+the dark theme's colours are bright enough to serve every role and are left alone:
+
+- `--venom-accent`: text (links, the picked item) — the mark hue darkened only to 4.5:1 on white;
+- `--venom-canvas-accent`: text on the grey canvas (the sidebar's active item, the TOC) — 4.5:1 there;
+- `--venom-accent-mark`: marks and tints (frame bars, underlines, outlines, focus rings, dots, `--venom-glow*`) — 3:1;
+- `--venom-accent-fill` / `-fill-ink`: filled surfaces with text (the primary button, the active install step) —
+  the text accent with white ink, except yellow (bright amber with dark ink) and mono (a mid grey).
+
+Light yellow leans amber, since a darkened true yellow turns olive. Status colours split the same way:
+`--venom-{emerald,sapphire,ruby,amber}` for an admonition's heading and icon, `…-mark` for its frame. The light Prism
+theme (`src/prism/venom.js`) is Ayu Light's hues darkened only to 4.6:1 on the inline-code chip. Static light SVGs that
+draw code or marks (`Documentation/Images/*-light.svg`) use the same values; update them when the palette changes.
 
 `src/plugins/search` builds a locale-specific index from Docusaurus' resolved document sources and permalinks.
 `src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow

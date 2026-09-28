@@ -4,31 +4,38 @@
   margin-bottom: var(--ifm-leading);
 }
 .window {
-  --ss-bg: var(--ifm-code-background);
+  /* The article surface, like code blocks: the frame carries the window, not a fill. */
+  --ss-bg: var(--venom-reading-surface);
   --ss-line: var(--venom-line);
   --ss-muted: var(--venom-muted);
-  --ss-accent: var(--venom-accent);
-  --ss-fill: color-mix(in srgb, var(--venom-accent) 22%, transparent);
-  --ss-selected: color-mix(in srgb, var(--venom-accent) 12%, var(--ifm-code-background));
+  --ss-accent: var(--venom-accent-mark);
+  --ss-fill: color-mix(in srgb, var(--venom-accent-mark) 22%, transparent);
+  --ss-selected: color-mix(in srgb, var(--venom-accent-mark) 12%, var(--ss-bg));
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  overflow: hidden;
+  /* No overflow clip: the picked call's bar is drawn on the frame itself (below), which a clip would cut off. */
   color: var(--venom-fg);
   background: var(--ss-bg);
-  border: 1px solid var(--venom-line-strong);
+  border: 2px solid var(--venom-line-strong);
   border-radius: var(--ifm-pre-border-radius);
 }
 
 .calls {
+  /* The rows share the column's height, so a list shorter than the diagram leaves no empty band below it. */
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 /* Beats the article's `li + li` spacing, so each row is exactly its button. */
-.calls li, .calls li + li { margin: 0; }
+.calls li, .calls li + li { display: flex; flex: 1 1 auto; margin: 0; }
 .call {
   position: relative;
-  display: block;
+  display: flex;
+  align-items: center;
+  flex: 1;
   width: 100%;
   padding: 0.3rem 0.8rem;
   color: inherit;
@@ -43,15 +50,29 @@
 }
 .calls li:last-child .call { border-bottom: 0; }
 .call:not([aria-selected='true']):hover { background: color-mix(in srgb, var(--venom-fg) 5%, var(--ss-bg)); }
-.call[aria-selected='true'] { background: var(--ss-selected); box-shadow: inset 2px 0 0 var(--ss-accent); }
+.call[aria-selected='true'] { background: var(--ss-selected); }
+/* The picked call's bar replaces that stretch of the window's left frame instead of sitting inside it. */
+.call[aria-selected='true']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -2px;
+  width: 2px;
+  background: var(--ss-accent);
+}
+/* The top row meets the frame's rounded corner: its fill follows the inner curve, and the bar stops where the frame's
+   straight edge ends, so it never runs onto the curve. */
+.calls li:first-child .call { border-top-left-radius: calc(var(--ifm-pre-border-radius) - 2px); }
+.calls li:first-child .call::before { top: calc(var(--ifm-pre-border-radius) - 2px); }
 .call:focus-visible { outline: 2px solid var(--ss-accent); outline-offset: -2px; }
 /* The calls read as rows of a list, not as chips in a table cell. */
 .calls .call code { padding: 0; font-size: 0.8rem; background: transparent; border: 0; }
 
-/* The calls with the picked one's description at the bottom, where the short list leaves room. */
+/* The calls; the picked one's description runs under both columns. */
 .side {
-  display: grid;
-  grid-template-rows: auto 1fr;
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   border-right: 1px solid var(--ss-line);
 }
@@ -82,19 +103,25 @@
 .dim.on { opacity: 1; }
 .diagram .value { opacity: 0; }
 .diagram .value.shown { opacity: 1; }
-.diagram .value.on { fill: var(--ss-accent); }
+.diagram .value.on { fill: var(--venom-accent); }
 
-/* The table's second column: what the picked call writes. */
+/* The table's second column, what the picked call writes: a status line under the calls and the diagram, closed off
+   by the same 2px rule as the site's table headers. */
 .sets {
-  align-self: end;
+  grid-column: 1 / -1;
+  order: 3;
   padding: 0.6rem 0.8rem;
+  color: var(--ss-muted);
   font-size: 0.85rem;
-  border-top: 1px solid var(--ss-line);
+  border-top: 2px solid var(--venom-line-strong);
 }
 
 @container (max-width: 560px) {
   .window { grid-template-columns: 1fr; }
   .side { order: 2; border-top: 1px solid var(--ss-line); border-right: 0; }
+  /* Below the diagram the top row no longer touches a corner. */
+  .calls li:first-child .call { border-top-left-radius: 0; }
+  .calls li:first-child .call::before { top: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

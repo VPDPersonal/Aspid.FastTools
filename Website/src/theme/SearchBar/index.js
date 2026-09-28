@@ -10,6 +10,10 @@ let indexPromise;
 const instances = [];
 const loadIndex = () => indexPromise ??= import('@fasttools-search-index').then((module) => prepareIndex(module.default));
 
+function CloseIcon() {
+  return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>;
+}
+
 function SearchIcon() {
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m16 16 5 5" /></svg>;
 }
@@ -99,7 +103,7 @@ export default function SearchBar() {
               // The dialog's own cancel covers Esc in most browsers; this also covers synthetic key events.
               if (event.key === 'Escape') { event.preventDefault(); close(); }
             }} />
-          <button type="button" className={styles.close} onClick={close} aria-label={ru ? 'Закрыть поиск' : 'Close search'}>Esc</button>
+          <button type="button" className={styles.close} onClick={close} aria-label={ru ? 'Закрыть поиск' : 'Close search'} title={ru ? 'Закрыть (Esc)' : 'Close (Esc)'}><CloseIcon /></button>
         </div>
         <p className={styles.status} role="status">{error ? (ru ? 'Не удалось загрузить поиск. Закройте и попробуйте снова.' : 'Search could not load. Close and try again.')
           : !entries ? (ru ? 'Загрузка…' : 'Loading…')
@@ -113,7 +117,6 @@ export default function SearchBar() {
             <span className={styles.description}>{result.snippet || result.description}</span>
           </li>)}
         </ul>
-        <div className={styles.footer}>{ru ? '↑ ↓ выбор · Enter открыть · Esc закрыть' : '↑ ↓ navigate · Enter open · Esc close'}<span>{ru ? 'Документация · Примеры · API' : 'Docs · Samples · API'}</span></div>
       </div>
     </dialog>, document.body)}
   </>;

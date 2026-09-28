@@ -2,7 +2,7 @@
 
 <img src="https://raw.githubusercontent.com/VPDPersonal/Aspid.FastTools/main/docs/images/aspid_fasttools_readme_banner.gif" alt="Aspid.FastTools" />
 
-![Unity 6.0+](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-unity.svg)
+[![Unity 6.0+](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-unity.svg)](https://assetstore.unity.com/packages/slug/365584)
 [![Preview 1.0.0-rc.8](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](Aspid.FastTools/Packages/tech.aspid.fasttools/Documentation/Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 

@@ -16,20 +16,22 @@ html[data-accent='mono'] .accent-logo:not([data-accent-logo='mono']) {
 /* ---------- Red ---------- */
 
 html[data-theme='light'][data-accent='red'] {
-  --venom-accent: #c23b3b;
-  --venom-accent-2: #b03434;
-  --venom-accent-deep: #a12f2f;
+  /* Text accent: the mark hue darkened only to 4.5:1 on white; the mark itself only needs a UI mark's 3:1. */
+  --venom-accent: #d24343;
+  --venom-accent-2: #d24343;
+  --venom-accent-deep: #b23939;
   --venom-accent-ink: #ffffff;
-  --venom-glow: rgba(194, 59, 59, 0.18);
-  --venom-glow-2: rgba(161, 47, 47, 0.14);
-  --venom-glow-soft: rgba(194, 59, 59, 0.09);
-  --ifm-color-primary: #c23b3b;
-  --ifm-color-primary-dark: #af3535;
-  --ifm-color-primary-darker: #a53232;
-  --ifm-color-primary-darkest: #882929;
-  --ifm-color-primary-light: #c94d4d;
-  --ifm-color-primary-lighter: #cc5757;
-  --ifm-color-primary-lightest: #d57474;
+  --venom-accent-mark: #e04848;
+  --venom-glow: rgba(224, 72, 72, 0.2);
+  --venom-glow-2: rgba(210, 67, 67, 0.14);
+  --venom-glow-soft: rgba(224, 72, 72, 0.11);
+  --ifm-color-primary: #d24343;
+  --ifm-color-primary-dark: #bd3c3c;
+  --ifm-color-primary-darker: #b23939;
+  --ifm-color-primary-darkest: #932f2f;
+  --ifm-color-primary-light: #d65656;
+  --ifm-color-primary-lighter: #d95f5f;
+  --ifm-color-primary-lightest: #e07b7b;
 }
 
 html[data-theme='dark'][data-accent='red'] {
@@ -51,27 +53,30 @@ html[data-theme='dark'][data-accent='red'] {
 }
 
 html[data-theme='light'][data-accent='red'].docs-doc-page {
-  --venom-accent: #a12f2f;
+  /* Text on the grey canvas (sidebar, TOC) keeps 4.5:1 there. */
+  --venom-canvas-accent: #b93c3c;
   --venom-ripple: #e06464;
 }
 
 /* ---------- Blue ---------- */
 
 html[data-theme='light'][data-accent='blue'] {
-  --venom-accent: #1f74b0;
-  --venom-accent-2: #1b68a0;
-  --venom-accent-deep: #185f92;
+  /* Text accent: the mark hue darkened only to 4.5:1 on white; the mark itself only needs a UI mark's 3:1. */
+  --venom-accent: #287ac0;
+  --venom-accent-2: #287ac0;
+  --venom-accent-deep: #2268a3;
   --venom-accent-ink: #ffffff;
-  --venom-glow: rgba(31, 116, 176, 0.18);
-  --venom-glow-2: rgba(24, 95, 146, 0.14);
-  --venom-glow-soft: rgba(31, 116, 176, 0.09);
-  --ifm-color-primary: #1f74b0;
-  --ifm-color-primary-dark: #1c689e;
-  --ifm-color-primary-darker: #1a6396;
-  --ifm-color-primary-darkest: #16517b;
-  --ifm-color-primary-light: #2280c2;
-  --ifm-color-primary-lighter: #2485ca;
-  --ifm-color-primary-lightest: #3295db;
+  --venom-accent-mark: #2f8fe0;
+  --venom-glow: rgba(47, 143, 224, 0.2);
+  --venom-glow-2: rgba(40, 122, 192, 0.14);
+  --venom-glow-soft: rgba(47, 143, 224, 0.11);
+  --ifm-color-primary: #287ac0;
+  --ifm-color-primary-dark: #246ead;
+  --ifm-color-primary-darker: #2268a3;
+  --ifm-color-primary-darkest: #1c5586;
+  --ifm-color-primary-light: #3e87c6;
+  --ifm-color-primary-lighter: #488ec9;
+  --ifm-color-primary-lightest: #68a2d3;
 }
 
 html[data-theme='dark'][data-accent='blue'] {
@@ -93,27 +98,33 @@ html[data-theme='dark'][data-accent='blue'] {
 }
 
 html[data-theme='light'][data-accent='blue'].docs-doc-page {
-  --venom-accent: #185f92;
+  /* Text on the grey canvas (sidebar, TOC) keeps 4.5:1 there. */
+  --venom-canvas-accent: #236ba8;
   --venom-ripple: #4ea5da;
 }
 
 /* ---------- Yellow ---------- */
 
 html[data-theme='light'][data-accent='yellow'] {
-  --venom-accent: #8f6f00;
-  --venom-accent-2: #826500;
-  --venom-accent-deep: #765c00;
+  /* Light yellow leans amber: a darkened true yellow turns olive, a darkened amber stays golden. Text is that hue at
+     4.5:1 on white, marks at 3:1; filled buttons use the bright amber itself with dark ink. */
+  --venom-accent: #9e6d00;
+  --venom-accent-2: #9e6d00;
+  --venom-accent-deep: #865d00;
   --venom-accent-ink: #ffffff;
-  --venom-glow: rgba(143, 111, 0, 0.18);
-  --venom-glow-2: rgba(118, 92, 0, 0.14);
-  --venom-glow-soft: rgba(143, 111, 0, 0.09);
-  --ifm-color-primary: #8f6f00;
-  --ifm-color-primary-dark: #816400;
-  --ifm-color-primary-darker: #7a5e00;
-  --ifm-color-primary-darkest: #644e00;
-  --ifm-color-primary-light: #9d7a00;
-  --ifm-color-primary-lighter: #a48000;
-  --ifm-color-primary-lightest: #ba9000;
+  --venom-accent-mark: #c68800;
+  --venom-accent-fill: #f0a500;
+  --venom-accent-fill-ink: #1f1600;
+  --venom-glow: rgba(198, 136, 0, 0.2);
+  --venom-glow-2: rgba(158, 109, 0, 0.14);
+  --venom-glow-soft: rgba(198, 136, 0, 0.12);
+  --ifm-color-primary: #9e6d00;
+  --ifm-color-primary-dark: #8e6200;
+  --ifm-color-primary-darker: #865d00;
+  --ifm-color-primary-darkest: #6f4c00;
+  --ifm-color-primary-light: #a87c1a;
+  --ifm-color-primary-lighter: #ad8326;
+  --ifm-color-primary-lightest: #bb994c;
 }
 
 html[data-theme='dark'][data-accent='yellow'] {
@@ -135,8 +146,9 @@ html[data-theme='dark'][data-accent='yellow'] {
 }
 
 html[data-theme='light'][data-accent='yellow'].docs-doc-page {
-  --venom-accent: #765c00;
-  --venom-ripple: #c9a52a;
+  /* Text on the grey canvas (sidebar, TOC) keeps 4.5:1 there. */
+  --venom-canvas-accent: #8b6000;
+  --venom-ripple: #f0a500;
 }
 
 /* ---------- Mono: graphite and paper, no hue ---------- */
@@ -146,9 +158,14 @@ html[data-theme='light'][data-accent='mono'] {
   --venom-accent-2: #121316;
   --venom-accent-deep: #3a3d45;
   --venom-accent-ink: #ffffff;
-  --venom-glow: rgba(42, 44, 49, 0.14);
+  /* Mono keeps the body colour for text; marks (bars, underlines, outlines) and tints use a mid grey, so a selection
+     still stands out from the text and the lines around it. */
+  --venom-accent-mark: #8a8f99;
+  /* A filled button in the body colour reads as a black slab; it takes a mid grey instead. */
+  --venom-accent-fill: #6b7079;
+  --venom-glow: rgba(138, 143, 153, 0.22);
   --venom-glow-2: rgba(58, 61, 69, 0.12);
-  --venom-glow-soft: rgba(42, 44, 49, 0.07);
+  --venom-glow-soft: rgba(138, 143, 153, 0.14);
   --ifm-color-primary: #2a2c31;
   --ifm-color-primary-dark: #26282c;
   --ifm-color-primary-darker: #24252a;
@@ -181,8 +198,10 @@ html[data-theme='light'][data-accent='mono'].docs-doc-page {
   --venom-ripple: #8a8e98;
 }
 
-/* Without a hue, article links would read as body text: underline them at rest. */
-html[data-accent='mono'] .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link) {
+/* Without a hue, article links would read as body text: underline them at rest. In the light theme buttons and card
+   titles are already framed as links, so they stay plain there. */
+html[data-theme='dark'][data-accent='mono'] .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link),
+html[data-theme='light'][data-accent='mono'] .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):not([class*='primary_']):not([class*='secondary_']):not(:is(.feature-card__title, .feature-card__more, .resource-card__title) a) {
   text-decoration: underline;
   text-decoration-color: var(--venom-divider);
 }

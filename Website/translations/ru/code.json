@@ -5,6 +5,7 @@
   "appearance.label": {"message": "Оформление"},
   "appearance.dark": {"message": "Тёмная"},
   "appearance.light": {"message": "Светлая"},
+  "appearance.theme": {"message": "Тема"},
   "accent.label": {"message": "Акцент"},
   "accent.green": {"message": "Зелёный"},
   "accent.red": {"message": "Красный"},

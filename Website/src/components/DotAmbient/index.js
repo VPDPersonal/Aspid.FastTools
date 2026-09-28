@@ -89,7 +89,8 @@ export default function DotAmbient() {
           if (u > 1.6) break;
           const i = Math.exp(-u * u * 1.8) * (0.6 + 0.4 * Math.sin(now * 0.0015 + hash(gx, gy) * 2 * Math.PI));
           if (i < 0.05) continue;
-          ctx.globalAlpha = colors.dark ? Math.min(0.06 + i * 0.6, 0.7) : Math.min(0.05 + i * 0.42, 0.5);
+          // The light canvas is pale grey, where the light ripple green shows faintly: it needs about twice the opacity.
+          ctx.globalAlpha = colors.dark ? Math.min(0.06 + i * 0.6, 0.7) : Math.min(0.1 + i * 0.8, 0.9);
           ctx.beginPath();
           ctx.arc(cx, cy, 1 + 0.8 * i, 0, Math.PI * 2);
           ctx.fill();
