@@ -5,6 +5,7 @@ import venom from './src/prism/venom.js';
 import remarkGithubAdmonitionsToDirectives from 'remark-github-admonitions-to-directives';
 import remarkCrossInstanceLinks from './src/remark/crossInstanceLinks.js';
 import remarkThemedImages from './src/remark/themedImages.js';
+import remarkAgentPrompt from './src/remark/agentPrompt.js';
 import remarkLiveDiagrams from './src/remark/liveDiagrams.js';
 import remarkIntroBanner, {remarkStatusBadges} from './src/remark/introBanner.js';
 import {ACCENT_BOOT_SCRIPT} from './src/accents.js';
@@ -68,7 +69,7 @@ function samplePrefixParser(filename) {
  * between the two plugin instances become site routes.
  */
 const markdownOptions = {
-  beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives, remarkCrossInstanceLinks, remarkLiveDiagrams, remarkThemedImages],
+  beforeDefaultRemarkPlugins: [remarkGithubAdmonitionsToDirectives, remarkCrossInstanceLinks, remarkAgentPrompt, remarkLiveDiagrams, remarkThemedImages],
   showLastUpdateTime: true,
   // Translations live next to the English sources: `Documentation/<locale>/<file>`.
   editUrl: ({ docPath, locale }) =>

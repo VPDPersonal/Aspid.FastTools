@@ -403,6 +403,8 @@ pre {
   border-radius: 12px;
   box-shadow: none;
 }
+/* Outline only: the block sits on the article surface; its colour stays in the border and the heading. */
+.theme-doc-markdown .theme-admonition.alert { background-color: transparent; }
 
 .alert--success { --ifm-alert-border-color: var(--venom-emerald); --ifm-alert-background-color: var(--ifm-color-success-contrast-background); }
 .alert--info { --ifm-alert-border-color: var(--venom-sapphire); --ifm-alert-background-color: var(--ifm-color-info-contrast-background); }
@@ -520,27 +522,20 @@ html[data-theme='light'].docs-doc-page {
   --ifm-color-warning-contrast-background: color-mix(in srgb, var(--venom-amber) 10%, rgb(255 255 255 / 0.85));
   --ifm-color-danger-contrast-background: color-mix(in srgb, var(--venom-ruby) 9%, rgb(255 255 255 / 0.85));
 }
-/* Inline code inside a light admonition: an opaque chip tinted by the block's colour instead of Infima's translucent wash. */
-html[data-theme='light'] .theme-admonition {
-  --ifm-alert-background-color-highlight: color-mix(in srgb, var(--ifm-alert-border-color) 12%, var(--venom-panel));
-}
-/* Dark: the same idea, a wash of the block's colour instead of Infima's fixed yellow. */
-html[data-theme='dark'] .theme-admonition {
-  --ifm-alert-background-color-highlight: color-mix(in srgb, var(--ifm-alert-border-color) 26%, transparent);
-}
-/* The chip's outline follows the block too, not the neutral article line. */
-.markdown .theme-admonition :not(pre) > code {
-  border-color: color-mix(in srgb, var(--ifm-alert-border-color) 35%, transparent);
-}
-html[data-theme='dark'] .markdown .theme-admonition :not(pre) > code {
-  border-color: color-mix(in srgb, var(--ifm-alert-border-color) 60%, transparent);
+/* Inline code inside an admonition keeps the article's neutral chip, so highlighted code reads the same everywhere. */
+.theme-admonition {
+  --ifm-alert-background-color-highlight: var(--ifm-pre-background); /* Infima aliases --ifm-code-background to this inside .alert */
 }
 
 /* The root paints the full canvas even when body is only one viewport tall. */
 html.docs-doc-page body { background: transparent; }
 
-/* A click on the empty canvas sends a ripple through the dot texture: src/components/DotRipple redraws the touched
-   dots on this fixed canvas — lifted, pushed outwards and accent-coloured at the crests, sunk in the troughs. */
+/* An uneven glow lights the dot texture along the bottom edge (src/components/DotAmbient); it sits under the spotlight
+   and the ripples, and only on screens wide enough for the canvas to show past the article. */
+.dot-ambient-canvas { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+/* Pressing and releasing the empty canvas sends a ripple through the dot texture, the stronger the longer the hold:
+   src/components/DotRipple redraws the touched dots on this fixed canvas — lifted, pushed outwards and accent-coloured
+   at the crests, sunk in the troughs. */
 .dot-ripple-canvas { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
 /* The number of canvas clicks so far, kept across visits; it shows up on a click and fades out after a pause. */
 .dot-ripple-counter {
@@ -557,18 +552,29 @@ html.docs-doc-page body { background: transparent; }
   transition: opacity 0.6s ease;
 }
 .dot-ripple-counter[data-on] { opacity: 0.9; transition-duration: 0.15s; }
-/* Around the pointer the dots take the accent colour (src/components/DotSpotlight): the same texture in green, masked
-   to a circle at --spot-x/--spot-y, shown while any of that circle is over the empty canvas; content above it covers
-   the rest. It sits under the ripples. */
+/* When the floating TOC button holds the corner, the number is laid over it (src/components/DotRipple) and its icon
+   steps aside for as long as the number shows. */
+.dot-ripple-counter[data-in-button] {
+  right: auto;
+  bottom: auto;
+  z-index: 201;
+  display: grid;
+  place-items: center;
+  font-size: 0.875rem;
+}
+.dot-ripple-counter[data-in-button][data-long] { font-size: 0.6875rem; }
+.floating-toc__button svg { transition: opacity 0.6s ease; }
+.floating-toc__button[data-counting] svg { opacity: 0; transition-duration: 0.15s; }
+/* Around the pointer the dots take the accent colour (src/components/DotSpotlight): a fixed canvas redraws the dots
+   there, fading out towards a wobbling edge, shown while any of the light is over the empty canvas; content above it
+   covers the rest. It sits under the ripples. */
 .dot-spotlight {
   position: fixed;
   inset: 0;
   z-index: -1;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  background-image: radial-gradient(circle, var(--venom-ripple, var(--venom-accent)) 1.3px, transparent 1.6px);
-  background-size: 20px 20px;
-  -webkit-mask-image: radial-gradient(circle 150px at var(--spot-x, -999px) var(--spot-y, -999px), #000, transparent);
-  mask-image: radial-gradient(circle 150px at var(--spot-x, -999px) var(--spot-y, -999px), #000, transparent);
   opacity: 0;
   transition: opacity 0.4s ease;
 }
@@ -1008,22 +1014,6 @@ html.docs-background-windows.docs-doc-page {
   mask-repeat: no-repeat;
   pointer-events: none;
 }
-/* Notices tint the real canvas visible through the article's cutout. */
-@media (min-width: 997px) {
-  /* Light: a translucent paper tint, so the ripple dots still show through and the fill does not turn grey-blue over the canvas. */
-  .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
-    background: color-mix(in srgb, var(--venom-sapphire) 9%, rgb(255 255 255 / 55%));
-  }
-  html[data-theme='dark'] .doc-column-with-windows .theme-admonition:is(.theme-admonition-info, .theme-admonition-note) {
-    background: rgb(15 45 85 / 45%);
-  }
-  .doc-column-with-windows .theme-admonition-warning {
-    background: color-mix(in srgb, var(--venom-amber) 10%, rgb(255 255 255 / 55%));
-  }
-  html[data-theme='dark'] .doc-column-with-windows .theme-admonition-warning {
-    background: rgb(90 62 7 / 45%);
-  }
-}
 /* Keep the frame and image above the shared background. */
 .theme-doc-markdown .doc-image-panel {
   display: block;
@@ -1196,13 +1186,15 @@ html[data-theme='light'] .scene-footage img { filter: url('#scene-footage-backgr
 .markdown .feature-card__more a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link):hover { color: var(--venom-accent); text-decoration: none; }
 .markdown .feature-card__more a:hover::after { transform: translateX(3px); }
 /* Resource tiles: the intro's list of further links as a grid; the title link covers the whole tile. */
+/* Wrapping flex rather than a grid: a card left alone on the last row stretches across it instead of leaving a gap. */
 .theme-doc-markdown .resource-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 14px;
   margin-bottom: 2.5rem;
 }
 .theme-doc-markdown .resource-card {
+  flex: 1 1 220px;
   position: relative;
   display: flex;
   flex-direction: column;
