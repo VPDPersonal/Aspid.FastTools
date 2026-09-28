@@ -8,9 +8,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static partial class SerializeReferenceYamlEditor
     {
-        // "--- !u!114 &11400000" — a MonoBehaviour document header (class id 114), the only kind that carries m_Script
-        // and serialized user fields, so the scene required-field scan iterates these alone.
-        private static readonly Regex _monoBehaviourHeader = new(@"^--- !u!114 &(\d+)", RegexOptions.Compiled);
+        // A MonoBehaviour document (class id 114) is the only kind that carries m_Script and serialized user fields, so
+        // the scene required-field scan iterates these alone.
+        private const string MonoBehaviourClassId = "114";
 
         // "  m_Script: {fileID: 11500000, guid: <guid>, type: 3}" — the script reference whose guid maps to the C# type;
         // its indent is the document's top-level field indent (every direct field of the MonoBehaviour aligns with it).
@@ -37,13 +37,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         headers.Add((fileId, i));
                 }
 
-                var ridPattern = new Regex(@"^(?<indent>\s*)-\s+rid:\s*(?<rid>-?\d+)\s*$");
                 var typePattern = new Regex(@"^\s*type:\s*\{(?<body>.*)\}\s*$");
 
-                for (var h = 0; h < headers.Count; h++)
+                foreach (var (fileId, start) in headers)
                 {
-                    var (fileId, start) = headers[h];
-                    var end = h + 1 < headers.Count ? headers[h + 1].start : lines.Length;
+                    var end = NextDocumentStart(lines, start + 1);
 
                     var refIdsStart = FindRefIdsStart(lines, start, end);
                     if (refIdsStart < 0) continue;
@@ -56,22 +54,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                     for (var i = refIdsStart + 1; i < end; i++)
                     {
-                        var ridMatch = ridPattern.Match(lines[i]);
-                        if (!ridMatch.Success || ridMatch.Groups["indent"].Length != entryIndent ||
-                            !long.TryParse(ridMatch.Groups["rid"].Value, out var rid)) continue;
+                        if (!SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var rid)) continue;
 
-                        for (var j = i + 1; j < end && j <= i + 4; j++)
+                        var typeLine = FindEntryTypeLine(lines, i, FindEntryEnd(lines, i, end, entryIndent));
+                        if (typeLine < 0) continue;
+
+                        var typeMatch = typePattern.Match(lines[typeLine]);
+                        if (typeMatch.Success && TryParseInlineType(typeMatch.Groups["body"].Value, out var type) &&
+                            !type.IsEmpty && !resolves(type))
                         {
-                            var typeMatch = typePattern.Match(lines[j]);
-                            if (!typeMatch.Success) continue;
-
-                            if (TryParseInlineType(typeMatch.Groups["body"].Value, out var type) &&
-                                !type.IsEmpty && !resolves(type))
-                            {
-                                result.Add(new MissingReferenceEntry(fileId, rid, type));
-                            }
-
-                            break;
+                            result.Add(new MissingReferenceEntry(fileId, rid, type));
                         }
                     }
                 }
@@ -107,8 +99,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 for (var i = 0; i < lines.Length; i++)
                 {
-                    var header = _monoBehaviourHeader.Match(lines[i]);
-                    if (!header.Success || !long.TryParse(header.Groups[1].Value, out var fileId)) continue;
+                    var header = DocumentHeader.Match(lines[i]);
+                    if (!header.Success || header.Groups["class"].Value != MonoBehaviourClassId ||
+                        !long.TryParse(header.Groups["id"].Value, out var fileId)) continue;
 
                     var docEnd = NextDocumentStart(lines, i + 1);
                     if (!TryReadScriptGuid(lines, i + 1, docEnd, out var guid, out var fieldIndent)) continue;
@@ -151,16 +144,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        private static int NextDocumentStart(string[] lines, int from)
-        {
-            for (var i = from; i < lines.Length; i++)
-            {
-                if (lines[i].StartsWith("--- ", StringComparison.Ordinal))
-                    return i;
-            }
-
-            return lines.Length;
-        }
+        private static int NextDocumentStart(string[] lines, int from) =>
+            SerializeReferenceYaml.FindDocumentEnd(lines, from);
 
         // Reads the m_Script guid (and the document's top-level field indent) within [start, end). False for a stripped
         // component or any document carrying no script reference.

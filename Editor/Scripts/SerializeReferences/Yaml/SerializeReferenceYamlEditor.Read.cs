@@ -102,25 +102,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var refIdsStart = FindRefIdsStart(lines, start, end);
                 if (refIdsStart < 0) return false;
 
-                var ridPattern = new Regex($@"^\s*-\s+rid:\s*{rid}\s*$");
-                var typePattern = new Regex(@"^\s*type:\s*\{(?<body>.*)\}\s*$");
+                var headerIndex = FindEntryHeader(lines, refIdsStart, end, rid, out var entryIndent);
+                if (headerIndex < 0) return false;
 
-                for (var i = refIdsStart; i < end; i++)
-                {
-                    if (!ridPattern.IsMatch(lines[i])) continue;
+                var typeLine = FindEntryTypeLine(lines, headerIndex, FindEntryEnd(lines, headerIndex, end, entryIndent));
+                if (typeLine < 0) return false;
 
-                    for (var j = i + 1; j < end && j <= i + 4; j++)
-                    {
-                        var match = typePattern.Match(lines[j]);
-                        if (!match.Success) continue;
-
-                        return TryParseInlineType(match.Groups["body"].Value, out type);
-                    }
-
-                    return false;
-                }
-
-                return false;
+                var match = new Regex(@"^\s*type:\s*\{(?<body>.*)\}\s*$").Match(lines[typeLine]);
+                return match.Success && TryParseInlineType(match.Groups["body"].Value, out type);
             }
             catch (Exception)
             {
@@ -320,49 +309,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static bool TryGetDataBlockRange(string[] lines, int refIdsStart, int docEnd, long rid, out int blockStart, out int blockEnd, out int childIndent)
         {
             blockStart = blockEnd = childIndent = -1;
-            var ridPattern = new Regex($@"^(?<indent>\s*)-\s+rid:\s*{rid}\s*$");
             var dataPattern = new Regex(@"^\s*data:\s*$");
 
-            for (var i = refIdsStart; i < docEnd; i++)
+            var headerIndex = FindEntryHeader(lines, refIdsStart, docEnd, rid, out var entryIndent);
+            if (headerIndex < 0) return false;
+
+            var entryEnd = FindEntryEnd(lines, headerIndex, docEnd, entryIndent);
+
+            for (var j = headerIndex + 1; j < entryEnd; j++)
             {
-                var match = ridPattern.Match(lines[i]);
-                if (!match.Success) continue;
+                if (!dataPattern.IsMatch(lines[j])) continue;
 
-                var entryIndent = match.Groups["indent"].Length;
-                var entryEnd = docEnd;
+                blockStart = j + 1;
+                blockEnd = entryEnd;
 
-                for (var j = i + 1; j < docEnd; j++)
+                for (var k = blockStart; k < blockEnd; k++)
                 {
-                    if (lines[j].Trim().Length == 0) continue;
-
-                    var indent = IndentOf(lines[j]);
-                    if (indent < entryIndent || (indent == entryIndent && lines[j].TrimStart().StartsWith("- ")))
+                    if (lines[k].Trim().Length > 0)
                     {
-                        entryEnd = j;
+                        childIndent = IndentOf(lines[k]);
                         break;
                     }
                 }
 
-                for (var j = i + 1; j < entryEnd; j++)
-                {
-                    if (!dataPattern.IsMatch(lines[j])) continue;
-
-                    blockStart = j + 1;
-                    blockEnd = entryEnd;
-
-                    for (var k = blockStart; k < blockEnd; k++)
-                    {
-                        if (lines[k].Trim().Length > 0)
-                        {
-                            childIndent = IndentOf(lines[k]);
-                            break;
-                        }
-                    }
-
-                    return blockStart < blockEnd && childIndent >= 0;
-                }
-
-                return false;
+                return blockStart < blockEnd && childIndent >= 0;
             }
 
             return false;
