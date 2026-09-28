@@ -1,8 +1,17 @@
 import {useEffect} from 'react';
 import {BACKGROUND_WINDOWS} from '../BackgroundWindows';
-import {isCanvas} from '../DotRipple';
+import {chargeLevel, isCanvas} from '../DotRipple';
 
-const RADIUS = 130; // px, the visible part of the 150px spotlight mask in custom.css
+const RADIUS = 130;       // px, the visible part of the spotlight
+const EDGE = 150;         // px, mean distance at which the light fades out
+const CHARGED_EDGE = 45;  // px, the same once a wave is fully charged: the light gathers around the pointer
+const GRID = 20;          // px, must match the CSS dot texture (background-size)
+const DOT = 1.4;          // px, radius of a lit dot
+const FADE = 400;         // ms, must match the opacity transition of .dot-spotlight in custom.css
+// Waves running round the edge of the light: [lobes, angular speed per ms, relative amplitude]. Their different lobe
+// counts and speeds keep the outline from ever closing into a circle or repeating visibly.
+const WOBBLE = [[2, 0.00031, 0.07], [3, -0.00047, 0.09], [5, 0.00083, 0.05]];
+const REACH = EDGE * (1 + WOBBLE.reduce((sum, [, , amplitude]) => sum + amplitude, 0));
 const ARTICLE = '[class*="docMainContainer_"] > .container > .row > .col:first-child';
 
 const inViewport = (x, y) => x >= 0 && y >= 0 && x < innerWidth && y < innerHeight;
@@ -32,26 +41,100 @@ function nearCanvas(x, y) {
     .some((element) => !element.closest('details:not([open])') && distanceToRect(x, y, element.getBoundingClientRect()) < RADIUS);
 }
 
-/** Lights the dot texture around the pointer while it is over or close to the empty canvas of a docs page. */
+// Distance from the centre to the edge of the light in direction `angle` at time `now`, for a light of mean radius `edge`.
+const edgeAt = (angle, now, edge) =>
+  edge * (1 + WOBBLE.reduce((sum, [lobes, speed, amplitude]) => sum + amplitude * Math.sin(lobes * angle + now * speed * lobes), 0));
+
+function readColor() {
+  const style = getComputedStyle(document.documentElement);
+  return style.getPropertyValue('--venom-ripple').trim() || style.getPropertyValue('--venom-accent').trim();
+}
+
+/** Lights the dot texture around the pointer while it is over or close to the empty canvas of a docs page. The lit patch
+ *  fades out towards a slowly wobbling edge, so it never reads as a perfect circle. */
 export default function DotSpotlight() {
   useEffect(() => {
     if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return undefined;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
 
-    const spot = document.createElement('div');
+    const spot = document.createElement('canvas');
     spot.className = 'dot-spotlight';
     spot.setAttribute('aria-hidden', 'true');
     document.body.appendChild(spot);
+    const ctx = spot.getContext('2d');
+
+    const resize = () => {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      spot.width = Math.ceil(innerWidth * dpr);
+      spot.height = Math.ceil(innerHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+    resize();
 
     let x = -1;
     let y = -1;
+    // Where the light is drawn: the last position over the page, kept while it fades out after the pointer leaves.
+    let lightX = -1;
+    let lightY = -1;
+    let on = false;
+    let offAt = 0;
     let frame = 0;
+    let draw = 0;
+    let color = readColor();
+    let colorAt = 0;
+
+    const render = (now) => {
+      ctx.clearRect(0, 0, innerWidth, innerHeight);
+      if (!on && now - offAt > FADE) {
+        draw = 0;
+        return;
+      }
+      draw = requestAnimationFrame(render);
+      // The theme or accent may change while the page is open.
+      if (now - colorAt > 1000) {
+        color = readColor();
+        colorAt = now;
+      }
+
+      // Holding the button shrinks the light and makes its dots bigger and brighter.
+      const shrink = chargeLevel(now);
+      const edge = EDGE - (EDGE - CHARGED_EDGE) * shrink;
+      const dot = DOT * (1 + 0.4 * shrink);
+      ctx.fillStyle = color;
+      const gx0 = Math.max(0, Math.floor((lightX - REACH) / GRID));
+      const gx1 = Math.min(Math.ceil(innerWidth / GRID), Math.ceil((lightX + REACH) / GRID));
+      const gy0 = Math.max(0, Math.floor((lightY - REACH) / GRID));
+      const gy1 = Math.min(Math.ceil(innerHeight / GRID), Math.ceil((lightY + REACH) / GRID));
+      for (let gy = gy0; gy <= gy1; gy++) {
+        const cy = gy * GRID + GRID / 2;
+        for (let gx = gx0; gx <= gx1; gx++) {
+          const cx = gx * GRID + GRID / 2;
+          const dx = cx - lightX;
+          const dy = cy - lightY;
+          const light = 1 - Math.hypot(dx, dy) / edgeAt(Math.atan2(dy, dx), now, edge);
+          if (light <= 0.02) continue;
+          ctx.globalAlpha = Math.min(light * (1 + 0.5 * shrink), 1);
+          ctx.beginPath();
+          ctx.arc(cx, cy, dot, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.globalAlpha = 1;
+    };
+
     // Scrolling moves the page under a resting pointer, so the element under it is looked up again.
-    const update = () => {
+    const update = (now) => {
       frame = 0;
-      spot.style.setProperty('--spot-x', `${x}px`);
-      spot.style.setProperty('--spot-y', `${y}px`);
-      spot.toggleAttribute('data-on', x >= 0 && nearCanvas(x, y));
+      const lit = x >= 0 && nearCanvas(x, y);
+      if (lit) {
+        lightX = x;
+        lightY = y;
+      } else if (on) {
+        offAt = now;
+      }
+      on = lit;
+      spot.toggleAttribute('data-on', lit);
+      if ((lit || now - offAt <= FADE) && !draw) draw = requestAnimationFrame(render);
     };
     const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
     const onMove = (event) => {
@@ -68,11 +151,14 @@ export default function DotSpotlight() {
     document.addEventListener('pointermove', onMove, {passive: true});
     document.documentElement.addEventListener('pointerleave', onLeave);
     addEventListener('scroll', schedule, {passive: true});
+    addEventListener('resize', resize);
     return () => {
       document.removeEventListener('pointermove', onMove);
       document.documentElement.removeEventListener('pointerleave', onLeave);
       removeEventListener('scroll', schedule);
+      removeEventListener('resize', resize);
       if (frame) cancelAnimationFrame(frame);
+      if (draw) cancelAnimationFrame(draw);
       spot.remove();
     };
   }, []);
