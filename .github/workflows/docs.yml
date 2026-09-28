@@ -58,7 +58,7 @@ jobs:
       - run: npm run check-readme
         if: steps.changes.outputs.build
         working-directory: Website
-      - run: node --test scripts/search.test.mjs
+      - run: node --test scripts/*.test.mjs
         if: steps.changes.outputs.build
         working-directory: Website
       - run: npm run build
