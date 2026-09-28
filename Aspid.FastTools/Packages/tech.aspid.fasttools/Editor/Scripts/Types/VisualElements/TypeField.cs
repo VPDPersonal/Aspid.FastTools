@@ -18,6 +18,7 @@ namespace Aspid.FastTools.Types.Editors
     public partial class TypeField : BaseField<Type>
     {
         private const string StyleSheetPath = "UI/Types/Aspid-FastTools-SerializableType";
+        private const string OpenButtonClass = "aspid-fasttools-type-field__open-button";
 
         private readonly Button _openButton;
         private readonly TextElement _textElement;
@@ -112,6 +113,7 @@ namespace Aspid.FastTools.Types.Editors
             visualInput.RegisterCallback<PointerDownEvent>(OnDropdownClicked);
             
             _openButton = new Button()
+                .AddClass(OpenButtonClass)
                 .AddChild(new VisualElement())
                 .AddClicked(() => value.OpenInScriptEditor());
 
