@@ -17,6 +17,17 @@ public class ProfilerMarkersTypeShapeTests
         return run;
     }
 
+    // The class each Marker() call of the first source binds to, in source order.
+    private static string[] BoundClasses(GeneratorRun run)
+    {
+        var tree = run.OutputCompilation.SyntaxTrees.First();
+        var model = run.OutputCompilation.GetSemanticModel(tree);
+        return tree.GetRoot().DescendantNodes()
+            .OfType<Microsoft.CodeAnalysis.CSharp.Syntax.InvocationExpressionSyntax>()
+            .Select(call => ((IMethodSymbol)model.GetSymbolInfo(call).Symbol!).ContainingType.Name)
+            .ToArray();
+    }
+
     [Fact]
     public void KeywordNamespace_Compiles() => AssertCompilesAndBinds("""
         namespace Game.@event
@@ -84,6 +95,42 @@ public class ProfilerMarkersTypeShapeTests
         }
         """);
 
+    // In the global namespace the generated overloads and the fallback meet in one overload resolution.
+    [Fact]
+    public void GlobalNamespaceTypes_BindToTheirOverloads() => AssertCompilesAndBinds("""
+        public class Foo { public void Run() { using var _ = this.Marker(); } }
+        public class Derived : Foo { public void Open() { using var _ = this.Marker(); } }
+        public class Box<T> { public void Run() { using var _ = this.Marker(); } }
+        public class Outer<T> { public class Inner { public void Run() { using var _ = this.Marker(); } } }
+        public struct Job { public void Execute() { using var _ = this.Marker(); } }
+        public ref struct Span { public void Execute() { using var _ = this.Marker(); } }
+        """);
+
+    [Fact]
+    public void ObsoleteTypes_CompileWithoutObsoleteDiagnostics()
+    {
+        var run = AssertCompilesAndBinds("""
+            namespace Sample
+            {
+                [System.Obsolete("x")] public class Foo { public void Run() { using var _ = this.Marker(); } }
+                [System.Obsolete] public struct Job { public void Execute() { using var _ = this.Marker(); } }
+                [System.Obsolete("x", true)] public class Bar<T> { public void Run() { using var _ = this.Marker(); } }
+                [System.Obsolete("x", true)] public class Outer { public class Inner { public void Run() { using var _ = this.Marker(); } } }
+
+                [System.Obsolete("x")] public interface IOld { }
+                public class Box<T> where T : IOld { public void Run() { using var _ = this.Marker(); } }
+                public class Pool<T> where T : System.Collections.Generic.List<IOld[]> { public void Run() { using var _ = this.Marker(); } }
+            }
+            """);
+
+        // The only obsolete warnings are the user's own constraints on IOld.
+        var obsolete = run.OutputCompilation.GetDiagnostics()
+            .Where(d => d.Id is "CS0612" or "CS0618" or "CS0619")
+            .Select(d => d.Location.SourceTree!.GetText().ToString(d.Location.SourceSpan))
+            .ToArray();
+        Assert.Equal(new[] { "IOld", "IOld" }, obsolete);
+    }
+
     [Fact]
     public void StaticClass_GetsNoOverloadAndCompiles()
     {
@@ -134,7 +181,7 @@ public class ProfilerMarkersTypeShapeTests
     }
 
     [Fact]
-    public void ExpressionTree_GetsNoOverloadAndCompiles()
+    public void ExpressionTree_GetsNoOverload()
     {
         var run = GeneratorTestHost.RunProfilerMarkers("""
             namespace Sample
@@ -146,14 +193,17 @@ public class ProfilerMarkersTypeShapeTests
             }
             """);
 
-        GeneratorTestHost.AssertNoErrors(run);
+        // The fallback's line parameter is optional too, so the user's line is the only error.
+        Assert.Equal(
+            new[] { "CS0854" },
+            run.OutputCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.Id));
         Assert.Empty(run.RunResult.Results[0].GeneratedSources);
     }
 
     [Fact]
     public void ExplicitLineArgument_IsNotMarked()
     {
-        // Alone, Marker(5) matches no overload (CS1501); next to a real call it binds to the generated one,
+        // Alone, Marker(5) binds to the fallback; next to a real call it binds to the generated one,
         // which only knows the real call's line — AFT0010 reports the argument.
         var run = GeneratorTestHost.RunProfilerMarkers("""
             namespace Sample
@@ -235,5 +285,50 @@ public class ProfilerMarkersTypeShapeTests
 
         GeneratorTestHost.AssertNoErrors(run);
         GeneratorTestHost.AssertCallsBindToGenerated(run);
+    }
+
+    [Theory]
+    [InlineData("namespace Sample {", "}", "__ViewBaseProfilerMarkerExtensions")]
+    [InlineData("", "", "ProfilerMarkerExtensionsForGenerator")]
+    public void PrivateNestedSubclass_BindsToTheBaseOverloadOnlyInANamespace(string open, string close, string expected)
+    {
+        // In a namespace, extension lookup meets the base type's overload before the global fallback.
+        // In the global namespace both are candidates, and Marker<T> wins by its identity conversion.
+        var run = GeneratorTestHost.RunProfilerMarkers($$"""
+            {{open}}
+            public class ViewBase { public void Show() { using var _ = this.Marker(); } }
+            public class Host
+            {
+                private sealed class Popup : ViewBase { public void Open() { using var _ = this.Marker(); } }
+            }
+            {{close}}
+            """);
+
+        GeneratorTestHost.AssertNoErrors(run);
+        Assert.Equal(new[] { "__ViewBaseProfilerMarkerExtensions", expected }, BoundClasses(run));
+    }
+
+    [Theory]
+    [InlineData("namespace App {", "}", "namespace Lib {", "}", "Lib.Other", "ProfilerMarkerExtensionsForGenerator")]
+    [InlineData("namespace App {", "}", "", "", "Other", "__OtherProfilerMarkerExtensions")]
+    [InlineData("namespace App {", "}", "namespace App.Sub {", "}", "App.Sub.Other", "ProfilerMarkerExtensionsForGenerator")]
+    [InlineData("namespace App.Sub {", "}", "namespace App {", "}", "App.Other", "__OtherProfilerMarkerExtensions")]
+    public void OtherTypeReceiver_BindsToItsOverloadOnlyFromTheCallersOrAnEnclosingNamespace(
+        string open, string close, string oOpen, string oClose, string otherName, string expected)
+    {
+        // other.Marker() is an identity conversion for both candidates, so the non-generic overload wins
+        // wherever lookup meets it, the global namespace included.
+        var run = GeneratorTestHost.RunProfilerMarkers(new[] { $$"""
+            {{open}}
+            public class Caller { public void Run({{otherName}} o) { using var _ = o.Marker(); } }
+            {{close}}
+            """, $$"""
+            {{oOpen}}
+            public class Other { public void Show() { using var _ = this.Marker(); } }
+            {{oClose}}
+            """ });
+
+        GeneratorTestHost.AssertNoErrors(run);
+        Assert.Equal(new[] { expected }, BoundClasses(run));
     }
 }
