@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -27,9 +26,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             try
             {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
+                var lines = SerializeReferenceYaml.ReadLines(assetPath);
+                if (lines is null) return result;
 
-                var lines = File.ReadAllLines(assetPath);
                 AddDocuments(lines, resolveTypeNames ? ResolveTypeNames(assetPath) : null, result);
             }
             catch (Exception)

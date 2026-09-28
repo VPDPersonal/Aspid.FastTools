@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using UnityEditor;
 using System.Collections.Generic;
@@ -168,7 +167,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static IEnumerable<Usage> CollectUsages(string path, string guid)
         {
             // One read feeds both passes, so a project sweep reads each file once.
-            var lines = ReadLines(path);
+            var lines = SerializeReferenceYaml.ReadLines(path);
             if (lines is null) yield break;
 
             // Data-only: resolving display names would load every asset.
@@ -186,19 +185,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 yield return new Usage(guid, entry.FileId, entry.Rid,
                     SerializeReferenceHelpers.StoredTypeResolves(entry.StoredType), entry.StoredType, isOverride: true,
                     entry.TargetFileId, entry.TargetGuid);
-            }
-        }
-
-        private static string[] ReadLines(string path)
-        {
-            try
-            {
-                return string.IsNullOrEmpty(path) || !File.Exists(path) ? null : File.ReadAllLines(path);
-            }
-            catch (Exception)
-            {
-                // Best effort, like the scanners: an unreadable file contributes no usages.
-                return null;
             }
         }
 
