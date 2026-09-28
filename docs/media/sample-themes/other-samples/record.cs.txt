@@ -7,7 +7,7 @@ using UnityEditor;
 [DefaultExecutionOrder(10000)]
 public sealed class SampleThemeRecorder : MonoBehaviour
 {
- private static string Output="/Users/vladislavpanin/Documents/Codex/2026-09-20/localhost-3001-aspid-fasttools-ru-docs/work/other-samples/clean-frames";
+ private static string Output;
  private Camera _camera;
  private RenderTexture _target;
  private Texture2D _image;
@@ -17,7 +17,7 @@ public sealed class SampleThemeRecorder : MonoBehaviour
  private int _length;
  public static object Main() {
   if(!EditorApplication.isPlaying)throw new Exception("Play Mode required");
-  Output=Path.Combine(Output,UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
+  Output=Path.Combine(Path.GetDirectoryName(Application.dataPath),"Temp","SampleThemes","other-samples","clean-frames",UnityEngine.SceneManagement.SceneManager.GetActiveScene().name);
   Directory.CreateDirectory(Output);
   var scene=UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
   if(scene=="Types") {

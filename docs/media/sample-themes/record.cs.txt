@@ -6,7 +6,7 @@ using UnityEditor;
 [DefaultExecutionOrder(10000)]
 public sealed class SampleThemeRecorder : MonoBehaviour
 {
- private const string Output="/Users/vladislavpanin/Documents/Codex/2026-09-20/localhost-3001-aspid-fasttools-ru-docs/work/sample-themes-brighter/frames";
+ private static string Output;
  private Camera _camera;
  private RenderTexture _target;
  private Texture2D _image;
@@ -14,6 +14,7 @@ public sealed class SampleThemeRecorder : MonoBehaviour
  private int _previousRate;
  public static object Main() {
   if(!EditorApplication.isPlaying)throw new Exception("Play Mode required");
+  Output=Path.Combine(Path.GetDirectoryName(Application.dataPath),"Temp","SampleThemes","frames");
   Directory.CreateDirectory(Output);
   var walker=GameObject.Find("Walker");
   walker.transform.position=new Vector3(-8,1,0);

@@ -1,5 +1,8 @@
 name: Release
 
+# Publishes a release: a pushed v* tag, or a manual run on main. Everything is checked before anything is published:
+# the upm branch, the UPM tag and the release tag go out in one atomic push, then the GitHub release is created.
+
 on:
   push:
     tags:
@@ -26,11 +29,16 @@ jobs:
 
     steps:
       - name: Determine version
-        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            VERSION="${{ inputs.version }}"
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            if [[ "$GITHUB_REF" != "refs/heads/main" ]]; then
+              echo "::error::Run the release from main, not $GITHUB_REF."
+              exit 1
+            fi
+            VERSION="$INPUT_VERSION"
           else
             VERSION="${GITHUB_REF_NAME}"
           fi
@@ -39,15 +47,21 @@ jobs:
             echo "::error::Version '$VERSION' is not a valid SemVer string."
             exit 1
           fi
-          TAG="v$VERSION"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           if [[ "$VERSION" == *-* ]]; then
-            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            PRERELEASE=true
+            UPM_BRANCH=upm-preview
           else
-            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            PRERELEASE=false
+            UPM_BRANCH=upm
           fi
-          echo "Releasing $TAG"
+          # Validated as SemVer above, so the later steps can read these from the environment.
+          {
+            echo "VERSION=$VERSION"
+            echo "TAG=v$VERSION"
+            echo "PRERELEASE=$PRERELEASE"
+            echo "UPM_BRANCH=$UPM_BRANCH"
+          } >> "$GITHUB_ENV"
+          echo "Releasing v$VERSION"
 
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,24 +73,28 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Check tag does not already exist
-        if: github.event_name == 'workflow_dispatch'
+      - name: Check tags do not already exist
         run: |
           set -euo pipefail
-          TAG="${{ steps.version.outputs.tag }}"
-          if git rev-parse --verify --quiet "refs/tags/$TAG" >/dev/null; then
-            echo "::error::Tag $TAG already exists locally. Delete it or pick another version."
-            exit 1
+          # A pushed v* tag is the trigger itself; only the UPM tag must be new then.
+          TAGS=("$UPM_BRANCH/$VERSION")
+          if [[ "$GITHUB_REF_TYPE" != "tag" ]]; then
+            TAGS+=("$TAG")
           fi
-          if git ls-remote --exit-code --tags origin "$TAG" >/dev/null 2>&1; then
-            echo "::error::Tag $TAG already exists on origin."
-            exit 1
-          fi
+          for T in "${TAGS[@]}"; do
+            if git rev-parse --verify --quiet "refs/tags/$T" >/dev/null; then
+              echo "::error::Tag $T already exists locally. Delete it or pick another version."
+              exit 1
+            fi
+            if git ls-remote --exit-code --tags origin "$T" >/dev/null 2>&1; then
+              echo "::error::Tag $T already exists on origin. Refusing to overwrite a published tag."
+              exit 1
+            fi
+          done
 
       - name: Validate package.json version
         run: |
           set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
           PKG_VERSION=$(jq -r .version "$PACKAGE_PATH/package.json")
           if [[ "$PKG_VERSION" != "$VERSION" ]]; then
             echo "::error file=$PACKAGE_PATH/package.json::package.json version ($PKG_VERSION) does not match release version ($VERSION). Bump it before tagging."
@@ -84,23 +102,18 @@ jobs:
           fi
           echo "package.json version matches: $PKG_VERSION"
 
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # The version files must carry the whole version and its channel (badge label, #upm or #upm-preview URLs).
       - name: Validate documentation version
-        run: |
-          set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
-          for f in README.md "$PACKAGE_PATH/Documentation/README.md" "$PACKAGE_PATH/Documentation/ru/README.md" \
-                   "$PACKAGE_PATH/Documentation/Images/status-badge-preview.svg"; do
-            if ! grep -qF "$VERSION" "$f"; then
-              echo "::error file=$f::$f does not mention $VERSION. Run scripts/set-version.sh $VERSION."
-              exit 1
-            fi
-          done
+        run: node scripts/check-version.mjs
 
       - name: Extract CHANGELOG section
-        id: changelog
         run: |
           set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
           NOTES=$(awk -v ver="$VERSION" '
             BEGIN { capture = 0 }
             /^## \[/ {
@@ -115,12 +128,7 @@ jobs:
             exit 1
           fi
 
-          {
-            echo "notes<<__CHANGELOG_EOF__"
-            echo "$NOTES"
-            echo "__CHANGELOG_EOF__"
-          } >> "$GITHUB_OUTPUT"
-
+          printf '%s\n' "$NOTES" > "$RUNNER_TEMP/release-notes.md"
           echo "CHANGELOG section for $VERSION extracted ($(echo "$NOTES" | wc -l) lines)."
 
       - name: Verify package CHANGELOG is in sync
@@ -156,6 +164,9 @@ jobs:
         run: dotnet test --nologo
         working-directory: ${{ env.ANALYZERS_SOLUTION_DIR }}
 
+      - name: Run YAML engine tests
+        run: dotnet test Aspid.FastTools.YamlTests --nologo
+
       # Rebuilding in Release re-deploys both DLLs into the package checkout
       # (Directory.Build.targets); a clean `git diff` then proves the committed
       # DLLs were built from the sources being released.
@@ -172,53 +183,28 @@ jobs:
           fi
           echo "Committed Roslyn DLLs match a fresh Release build."
 
-      - name: Create and push release tag
-        if: github.event_name == 'workflow_dispatch'
+      # One atomic push: the upm branch, the UPM tag and the release tag are all published, or none of them is.
+      - name: Publish release tag and UPM subtree
         run: |
           set -euo pipefail
-          TAG="${{ steps.version.outputs.tag }}"
-          git tag -a "$TAG" -m "Release $TAG"
-          git push origin "$TAG"
-
-      - name: Checkout release tag
-        run: |
-          set -euo pipefail
-          git fetch origin "refs/tags/${{ steps.version.outputs.tag }}:refs/tags/${{ steps.version.outputs.tag }}" || true
-          git checkout "${{ steps.version.outputs.tag }}"
-
-      - name: Publish UPM subtree
-        run: |
-          set -euo pipefail
-          VERSION="${{ steps.version.outputs.version }}"
-          PRERELEASE="${{ steps.version.outputs.prerelease }}"
-
-          if [[ "$PRERELEASE" == "true" ]]; then
-            UPM_BRANCH="upm-preview"
-          else
-            UPM_BRANCH="upm"
-          fi
-
           UPM_TAG="$UPM_BRANCH/$VERSION"
-
-          if git ls-remote --exit-code --tags origin "$UPM_TAG" >/dev/null 2>&1; then
-            echo "::error::Tag $UPM_TAG already exists on origin. Refusing to overwrite a published UPM tag."
-            exit 1
-          fi
-
           SPLIT_SHA=$(git subtree split --prefix="$PACKAGE_PATH" HEAD)
           echo "Subtree split SHA: $SPLIT_SHA"
-
-          git push --force origin "$SPLIT_SHA:refs/heads/$UPM_BRANCH"
-
           git tag "$UPM_TAG" "$SPLIT_SHA"
-          git push origin "$UPM_TAG"
+          REFS=("+$SPLIT_SHA:refs/heads/$UPM_BRANCH" "refs/tags/$UPM_TAG")
+          if [[ "$GITHUB_REF_TYPE" != "tag" ]]; then
+            git tag -a "$TAG" -m "Release $TAG"
+            REFS+=("refs/tags/$TAG")
+          fi
+          git push --atomic origin "${REFS[@]}"
+          echo "Published $TAG, $UPM_TAG and the $UPM_BRANCH branch."
 
-          echo "Published $UPM_TAG and updated $UPM_BRANCH branch."
-
+      # The gh CLI instead of a third-party action, which would run with this job's contents: write token.
+      # If only this step fails, the tags are already out: create the release by hand with
+      #   gh release create v<version> --verify-tag --notes-file <the version's section of CHANGELOG.md>
       - name: Create GitHub release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.version.outputs.tag }}
-          name: ${{ steps.version.outputs.tag }}
-          body: ${{ steps.changelog.outputs.notes }}
-          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/release-notes.md" --prerelease="$PRERELEASE"

@@ -1,7 +1,7 @@
 var path="Assets/FastToolsDocumentationCapture";
 if(UnityEditor.AssetDatabase.IsValidFolder(path)) throw new System.Exception("Capture folder already exists");
 UnityEditor.AssetDatabase.CreateFolder("Assets","FastToolsDocumentationCapture");
-if(!UnityEditor.AssetDatabase.CopyAsset("Assets/Samples/Aspid.FastTools/1.0.0-rc.8/SerializeReferences/Presets/BrokenWeaponPreset.asset",path+"/WeaponPreset.asset")) throw new System.Exception("Copy failed");
+if(!UnityEditor.AssetDatabase.CopyAsset("Assets/Samples/Aspid.FastTools/"+UnityEditor.PackageManager.PackageInfo.FindForAssetPath("Packages/tech.aspid.fasttools/package.json").version+"/SerializeReferences/Presets/BrokenWeaponPreset.asset",path+"/WeaponPreset.asset")) throw new System.Exception("Copy failed");
 var target=UnityEditor.AssetDatabase.LoadMainAssetAtPath(path+"/WeaponPreset.asset");
 var asm=typeof(Aspid.FastTools.Types.Editors.TypeSelectorWindow).Assembly;
 var wt=asm.GetType("Aspid.FastTools.Editors.TabWindow");

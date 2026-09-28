@@ -13,7 +13,9 @@ existing component's members can break those packages.
 
 Read and mirror, in full, before writing:
 - `PKG/Editor/Scripts/VisualElements/Internal/Components/AspidContainers/AspidBox*.cs` - theme + status only;
-- `.../Components/AspidLabels/` - child components, nested preset, own style structs in `Styles/`;
+- `.../Components/AspidDividingLines/` - own style structs in `Styles/`, one `Set<Property>` per `[UxmlAttribute]`;
+- `.../Components/AspidLabels/` - child components, nested preset. Its extensions lack `SetLabelFontStyle` and
+  `SetLineDirection`: do not copy that gap;
 - `.../Internal/Styles/` - `ThemeStyle`, `StatusStyle`, `InlineStyle<T>`, `AspidStyles`;
 - the component's sheet in `PKG/Editor/Resources/UI/Components/Aspid-FastTools-Aspid<Name>.uss`.
 
@@ -22,6 +24,10 @@ Read and mirror, in full, before writing:
 `Components/<Group>/Aspid<Name>.cs`, `Aspid<Name>Preset.cs`, `Aspid<Name>Extensions.cs`, optional
 `Styles/Aspid<Name><Property>Style.cs`, plus the `.uss` and every `.meta`. Namespace
 `Aspid.FastTools.UIElements.Editors.Internal` with `// ReSharper disable once CheckNamespace`.
+
+Preset and Extensions are skipped only when there is nothing to configure (`AspidSwitch` is a `BaseField<bool>`,
+`AspidWindowFooter` takes one constructor flag) or the element is a child that its owner configures through the
+owner's style struct (`AspidHoverGradientOverlay` inside `AspidInspectorHeader` / `AspidGradientButton`).
 
 ## Rules
 

@@ -26,18 +26,22 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
+# Deploys queue in one group so none is cancelled halfway; a PR build only competes with newer pushes to its own PR.
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.event_name == 'pull_request' && format('docs-{0}', github.ref) || 'pages' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      # A deploy needs the full history: Docusaurus and sync-i18n read each page's "Last updated" date from git log,
+      # which needs only commits and trees, so the blob filter skips the old DLLs and media.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: ${{ github.event_name == 'pull_request' && 1 || 0 }}
+          filter: blob:none
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -46,6 +50,8 @@ jobs:
       - run: npm ci
         working-directory: Website
       - run: npm run check-readme
+        working-directory: Website
+      - run: node --test scripts/*.test.mjs
         working-directory: Website
       - run: npm run build
         working-directory: Website
@@ -58,6 +64,9 @@ jobs:
     if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
