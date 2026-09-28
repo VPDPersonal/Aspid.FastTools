@@ -47,12 +47,13 @@ namespace Aspid.FastTools.Editors
             return false;
         }
 
-        internal static bool DeclaresDrawnAttribute(FieldInfo field)
+        // Unity looks up attribute drawers the same way, managed-reference flag included.
+        internal static bool DeclaresDrawnAttribute(FieldInfo field, bool isManagedReference = false)
         {
             if (field is null) return false;
 
             foreach (var attribute in field.GetCustomAttributes<PropertyAttribute>(inherit: true))
-                if (HasDrawerFor(attribute.GetType()))
+                if (HasDrawerFor(attribute.GetType(), isManagedReference))
                     return true;
 
             return false;
