@@ -65,11 +65,11 @@ Button.aspid-fasttools-serialize-reference__open-button {
     background-image:                                       resource("d_FolderOpened Icon");
 }
 
-.aspid-fasttools-serialize-reference.aspid-fasttools-skin--light Button > VisualElement {
+.aspid-fasttools-serialize-reference.aspid-fasttools-skin--light .aspid-fasttools-serialize-reference__open-button > VisualElement {
     background-image:                                       resource("Folder Icon");
 }
 
-.aspid-fasttools-serialize-reference.aspid-fasttools-skin--light Button > VisualElement:enabled:hover {
+.aspid-fasttools-serialize-reference.aspid-fasttools-skin--light .aspid-fasttools-serialize-reference__open-button > VisualElement:enabled:hover {
     background-image:                                       resource("FolderOpened Icon");
 }
 

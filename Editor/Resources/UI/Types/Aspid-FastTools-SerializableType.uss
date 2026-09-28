@@ -17,10 +17,10 @@ Button.aspid-fasttools-type-field__open-button {
     background-image:       resource("d_FolderOpened Icon");
 }
 
-.aspid-fasttools-skin--light Button > VisualElement {
+.aspid-fasttools-skin--light .aspid-fasttools-type-field__open-button > VisualElement {
     background-image:       resource("Folder Icon");
 }
 
-.aspid-fasttools-skin--light Button > VisualElement:enabled:hover {
+.aspid-fasttools-skin--light .aspid-fasttools-type-field__open-button > VisualElement:enabled:hover {
     background-image:       resource("FolderOpened Icon");
 }
