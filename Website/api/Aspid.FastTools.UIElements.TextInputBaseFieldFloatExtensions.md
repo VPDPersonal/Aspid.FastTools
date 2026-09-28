@@ -23,10 +23,6 @@ public static class TextInputBaseFieldFloatExtensions
 [TextInputBaseFieldFloatExtensions](Aspid.FastTools.UIElements.TextInputBaseFieldFloatExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### SetAutoCorrection\<T\>\(T, bool\) {#Aspid_FastTools_UIElements_TextInputBaseFieldFloatExtensions_SetAutoCorrection__1___0_System_Boolean_}

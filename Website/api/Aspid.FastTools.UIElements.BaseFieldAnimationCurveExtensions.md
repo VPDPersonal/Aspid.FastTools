@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldAnimationCurveExtensions.SetLabel%60<T>`](Aspid.FastTools.UIElements.BaseFieldAnimationCurveExtensions.md) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`AnimationCurve`](https://docs.unity3d.com/ScriptReference/AnimationCurve.html).
+Provides [`BaseFieldAnimationCurveExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldAnimationCurveExtensions.md#Aspid_FastTools_UIElements_BaseFieldAnimationCurveExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`AnimationCurve`](https://docs.unity3d.com/ScriptReference/AnimationCurve.html).
 
 ```csharp
 public static class BaseFieldAnimationCurveExtensions
@@ -22,10 +22,6 @@ public static class BaseFieldAnimationCurveExtensions
 [object](https://learn.microsoft.com/dotnet/api/system.object) ← 
 [BaseFieldAnimationCurveExtensions](Aspid.FastTools.UIElements.BaseFieldAnimationCurveExtensions.md)
 
-
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
 
 ## Methods
 

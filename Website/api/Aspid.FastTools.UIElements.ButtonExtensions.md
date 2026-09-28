@@ -23,10 +23,6 @@ public static class ButtonExtensions
 [ButtonExtensions](Aspid.FastTools.UIElements.ButtonExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### AddClicked\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_ButtonExtensions_AddClicked__1___0_System_Action_}

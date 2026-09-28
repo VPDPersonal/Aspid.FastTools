@@ -31,11 +31,12 @@ The receiver constraint is given per section. Version-guarded members are marked
 | `InsertChild` | `int index, VisualElement child` |
 | `InsertChildren` | `int index` + the same collection overloads as `AddChildren` |
 | `RemoveChild` | `VisualElement child` |
+| `RemoveChildren` | the same collection overloads as `AddChildren` |
 | `RemoveChildAt` | `int index` |
 | `ClearChildren` | — |
 
 Every method has an `…If(bool condition, …)` variant: `AddChildIf`, `AddChildrenIf`, `InsertChildIf`,
-`InsertChildrenIf`, `RemoveChildIf`, `RemoveChildAtIf`, `ClearChildrenIf`. Collection overloads keep
+`InsertChildrenIf`, `RemoveChildIf`, `RemoveChildrenIf`, `RemoveChildAtIf`, `ClearChildrenIf`. Collection overloads keep
 order and ignore a `null` collection.
 
 ## USS classes and style sheets (`where T : VisualElement`)
@@ -154,7 +155,7 @@ Typed overloads (no type arguments needed): `int`, `uint`, `nint`, `nuint`, `lon
 `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal`, `bool`, `char`, `string`, `object`,
 `UnityEngine.Object`, `Enum`, `Delegate`, `Color`, `Rect`, `RectInt`, `Bounds`, `BoundsInt`,
 `Hash128`, `Vector2`, `Vector2Int`, `Vector3`, `Vector3Int`, `Vector4`, `Quaternion`, `Matrix4x4`,
-`Gradient`, `AnimationCurve`, `GUID` *(6000.4+)*.
+`Gradient`, `AnimationCurve`, `ToggleButtonGroupState`, `GUID` *(6000.4+)*.
 Any other type: `SetValue<TField, TValue>` (infers from the argument),
 `AddValueChanged<TField, TValue>` / `RemoveValueChanged<TField, TValue>` (explicit type arguments).
 
@@ -169,7 +170,7 @@ Any other type: `SetValue<TField, TValue>` (infers from the argument),
 
 | Receiver | Methods |
 |---|---|
-| `BaseField<X>` for `int`, `uint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal`, `char`, `string`, `Enum`, `Object`, `Color`, `Color32`, `Rect`, `Bounds`, `BoundsInt`, `Hash128`, `Vector2`, `Vector2Int`, `Vector3`, `Vector3Int`, `Vector4`, `Quaternion`, `Gradient`, `AnimationCurve` | `SetLabel(string)` |
+| `BaseField<X>` for `int`, `uint`, `long`, `ulong`, `short`, `ushort`, `byte`, `sbyte`, `float`, `double`, `decimal`, `char`, `string`, `Enum`, `Object`, `Color`, `Color32`, `Rect`, `Bounds`, `BoundsInt`, `Hash128`, `Vector2`, `Vector2Int`, `Vector3`, `Vector3Int`, `Vector4`, `Quaternion`, `Gradient`, `AnimationCurve`, `ToggleButtonGroupState` | `SetLabel(string)` |
 | any other `BaseField<TValue>` | `SetLabel<TField, TValue>(string)` |
 | `BaseBoolField` (`Toggle`) | `SetLabel`, `SetText`, `SetToggleOnLabelClick(bool)` |
 | `EnumField` | `Initialize(Enum defaultValue, bool includeObsoleteValues = false)` |

@@ -12,13 +12,16 @@ const CHANGELOG_RU = 'CHANGELOG.ru.md';
 const PKG_CHANGELOG = `${PKG}/CHANGELOG.md`;
 const VERSION_FILES = ['README.md', `${PKG}/Documentation/README.md`, `${PKG}/Documentation/ru/README.md`,
   `${PKG}/Documentation/Images/status-badge-preview.svg`];
-// Each Roslyn component and the DLL its Release build deploys into the package (Directory.Build.targets).
+// Each Roslyn component, the DLL its Release build deploys into the package (Directory.Build.targets) and the
+// sources it compiles: its project, Directory.Build.* and files linked from another project (<Compile Include>).
 const ROSLYN = [
   { solution: 'Aspid.FastTools.Generators', project: 'Aspid.FastTools.Generators/Aspid.FastTools.Generators',
     dll: `${PKG}/Aspid.FastTools.Generators.dll` },
   { solution: 'Aspid.FastTools.Analyzers', project: 'Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers',
-    dll: `${PKG}/Aspid.FastTools.Analyzers.dll` },
+    dll: `${PKG}/Aspid.FastTools.Analyzers.dll`,
+    linked: ['Aspid.FastTools.Generators/Aspid.FastTools.Generators/Generators/ProfilerMarkers/MarkerCallRules.cs'] },
 ];
+const sources = r => [`${r.project}/`, `${r.solution}/Directory.Build.`, ...(r.linked ?? [])];
 // A user-visible change: package code or the sources of the shipped Roslyn DLLs.
 const USER_VISIBLE = [`${PKG}/Runtime/`, `${PKG}/Editor/`, ...ROSLYN.map(r => `${r.project}/`)];
 const TITLE = /^(feat|fix|docs|perf|refactor|test|chore|build|ci|style|revert)(\([a-z0-9-]+(, ?[a-z0-9-]+)*\))?(!)?: \S.*$/;
@@ -135,7 +138,13 @@ if (process.env.PR_TITLE) {
 // A staged change to a Roslyn component must ship its rebuilt DLL.
 if (staged) {
   for (const r of ROSLYN) {
-    if (!changed.some(file => file.startsWith(`${r.project}/`) || file.startsWith(`${r.solution}/Directory.Build.`))) continue;
+    if (!changed.some(file => sources(r).some(prefix => file.startsWith(prefix)))) continue;
+    // dotnet builds the working tree: with unstaged source edits the result would not match the staged sources.
+    const unstaged = lines(git('diff', '--name-only', '--', ...sources(r).map(prefix => `:(glob)${prefix}**`)));
+    if (unstaged.length) {
+      warning(r.dll, `not checked: unstaged changes in ${unstaged.join(', ')}; stage them or set them aside to check it`);
+      continue;
+    }
     try {
       execFileSync('dotnet', ['build', r.project, '-c', 'Release', '--nologo', '-v', 'q'], { encoding: 'utf8' });
     } catch (e) {

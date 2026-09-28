@@ -23,10 +23,6 @@ public static class ImageExtensions
 [ImageExtensions](Aspid.FastTools.UIElements.ImageExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### SetImage\<T\>\(T, Texture\) {#Aspid_FastTools_UIElements_ImageExtensions_SetImage__1___0_UnityEngine_Texture_}

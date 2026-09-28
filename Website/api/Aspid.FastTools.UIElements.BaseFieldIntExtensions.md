@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldIntExtensions.SetLabel%60<T>`](Aspid.FastTools.UIElements.BaseFieldIntExtensions.md) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Int32`](https://learn.microsoft.com/dotnet/api/system.int32).
+Provides [`BaseFieldIntExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldIntExtensions.md#Aspid_FastTools_UIElements_BaseFieldIntExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Int32`](https://learn.microsoft.com/dotnet/api/system.int32).
 
 ```csharp
 public static class BaseFieldIntExtensions
@@ -22,10 +22,6 @@ public static class BaseFieldIntExtensions
 [object](https://learn.microsoft.com/dotnet/api/system.object) ← 
 [BaseFieldIntExtensions](Aspid.FastTools.UIElements.BaseFieldIntExtensions.md)
 
-
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
 
 ## Methods
 
