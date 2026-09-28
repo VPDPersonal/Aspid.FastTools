@@ -116,6 +116,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(0, SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false).Count);
         }
 
+        [Test]
+        public void FindPrefabOverrideReferences_NotTextYaml_IsSkipped()
+        {
+            var path = Write(StripPreamble(SerializeReferenceYamlPrefabOverrideTests.VariantPrefab));
+            Assert.AreEqual(0, SerializeReferenceYamlEditor.FindPrefabOverrideReferences(path).Count);
+        }
+
+        // The usage index and both delete-guard sweeps read through CollectUsages: its RefIds pass (the prefab) and
+        // its override pass (the variant) share one read, which skips the preamble-less body before either runs.
+        [TestCase(false)]
+        [TestCase(true)]
+        public void CollectUsages_NotTextYaml_IsSkipped(bool variant)
+        {
+            var yaml = variant ? SerializeReferenceYamlPrefabOverrideTests.VariantPrefab : YamlFixtures.MissingTypePrefab;
+
+            Assert.IsNotEmpty(SerializeReferenceTypeUsageIndex.CollectUsages(Write(yaml), guid: null).ToList());
+            Assert.IsEmpty(SerializeReferenceTypeUsageIndex.CollectUsages(Write(StripPreamble(yaml)), guid: null).ToList());
+        }
+
         private static string StripPreamble(string yaml) =>
             string.Join("\n", yaml.Split('\n').Where(line => !line.StartsWith("%", StringComparison.Ordinal)));
 

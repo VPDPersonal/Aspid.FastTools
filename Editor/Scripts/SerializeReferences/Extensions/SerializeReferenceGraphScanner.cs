@@ -26,8 +26,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             try
             {
-                if (!SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
-
                 var lines = SerializeReferenceYaml.ReadLines(assetPath);
                 if (lines is null) return result;
 
