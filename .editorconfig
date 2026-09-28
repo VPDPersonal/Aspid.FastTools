@@ -5,7 +5,7 @@
 # (Generators, Analyzers) override only the namespace style at the bottom.
 #
 # Conventions that can't be expressed here (named-argument house style, usings
-# sorted by length, sealed-by-default, XML-doc richness) live in CLAUDE.md files.
+# sorted by length, sealed-by-default, XML docs) live in AGENTS.md.
 
 root = true
 

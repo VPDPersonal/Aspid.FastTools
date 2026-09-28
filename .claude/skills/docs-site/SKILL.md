@@ -97,8 +97,9 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   So name inspector captures anything but `demo`/`scene`, and name scene footage exactly that.
   A sample's `demo`/`scene` linked from a doc page is never framed either: a scene sample's gets `.scene-footage`,
   any other sample's (an editor window, e.g. EditorTools) gets `.window-footage` — the capture is the only frame.
-- `.sample-scene` (the background-recolouring filter) is applied by `themedImages.js` only to `demo`/`scene`
-  files inside a **hardcoded list of sample folders** — a new sample must be added to that regex.
+- Which samples are scenes is the **hardcoded `SCENE_SAMPLES` list** in `themedImages.js` (folder names under
+  `Samples~/`). It drives both `.sample-scene` (the background-recolouring filter on the sample's tutorial page)
+  and `.scene-footage`; a sample missing from it gets `.window-footage` on doc pages. Nothing fails the build.
 - A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
 - Click or Enter opens the image in a modal (Esc closes). Unframed images are capped at 640×520;
   framed and `.sample-scene` media fill the article.
@@ -183,8 +184,8 @@ to refresh the root `README.md`.
 2. `Website/sidebarsTutorials.js`: add `{ type: 'doc', id: '<slug>/readme', label: '<Name>' }`.
 3. `Website/src/components/SamplesGallery/index.js`: add an entry (id = slug, feature name, en/ru title and
    description) and put its preview at `Website/static/img/samples/<slug>.png` + `<slug>-light.png`.
-4. If the sample ships `demo`/`scene` captures, add its folder to the sample regex in
-   `Website/src/remark/themedImages.js`.
+4. If the sample's `demo`/`scene` captures show a scene (not an editor window), add its `Samples~/` folder name
+   to `SCENE_SAMPLES` in `Website/src/remark/themedImages.js`.
 5. List it in the samples overview (`Samples~/README.md`, `README.ru.md`) and register it in the package
    `package.json` → `samples`.
 
@@ -220,6 +221,10 @@ Dev servers serve one locale at a time and are only for quick hot-reload iterati
 don't reload config or remark plugins, and the user does not look at them: `website-dev` / `website-dev-ru` in
 `.claude/launch.json`, started with `preview_start`. They use `autoPort`, so dev servers of different worktrees get
 different ports. There is no launch entry for the production build on purpose: only `serve-all.sh` starts it.
+Both run `npm run start` / `start:ru`, so `prestart` runs `sync-i18n` first: it creates `Website/tutorials/`,
+`changelog/` and `i18n/`, without which a fresh worktree's `docusaurus start` fails. `Documentation/ru/**`, sample
+READMEs and the changelogs reach the site as copies: after editing them run `npm --prefix Website run sync-i18n`
+for a running dev server to see the change.
 
 `onBrokenLinks` and `onBrokenMarkdownLinks` are `throw`: a bad relative link breaks the build on purpose
 (`onBrokenAnchors` only warns — check the log for `#anchor` typos).
@@ -270,17 +275,18 @@ regenerate or `git checkout Website/api` before building:
 3. `docfx-postprocess.mjs` makes it MDX-safe: `<xref>` → links (own pages, learn.microsoft.com, Unity Scripting
    Reference), `<pre><code>` → fenced code, heading anchors as `{#id}`, escaped `<T`/`{}`, no "Inherited Members",
    front matter with a short `sidebar_label`, and `toc.yml` → `sidebar.js` (namespace → Classes/Interfaces/…
-   groups). A type name that appears in two namespaces (`TypeExtensions`, `VisualElementExtensions`) gets a
-   namespace suffix in its label — Docusaurus derives one translation key per label and the `ru` build fails
-   on duplicates. Unity links point at the Scripting Reference of the Editor in
+   groups). A type name that appears in two namespaces (`VisualElementExtensions` in `UIElements` and
+   `UIElements.Editors`) gets a namespace suffix in its label — Docusaurus derives one translation key per label
+   and the `ru` build fails on duplicates. Unity links point at the Scripting Reference of the Editor in
    `Aspid.FastTools/ProjectSettings/ProjectVersion.txt` (members move between versions);
    `node --test scripts/unity-script-reference.test.mjs` checks the URL builder.
 
 `Website/sidebarsApi.js` adapts the generated sidebar for display (drops the repeated `Aspid.FastTools.`
 prefix, folds the `SetLabel` overloads). Never edit files in `Website/api/` by hand; fix the XML comment or the
 postprocess script and regenerate. Translations are not generated; the `ru` locale falls back to the English
-pages. The Math satellite assembly is not documented — it compiles only when `com.unity.mathematics` is
-installed, which this project does not.
+pages. The Math satellite assembly (`Aspid.FastTools.VisualElements.Math`, `INotifyValueChangedMathExtensions`) is
+not in `/api` only because `ASSEMBLIES` in `docfx-projects.mjs` does not list it; it compiles in this project
+(`com.unity.mathematics` comes in transitively), so documenting it means adding it there.
 
 ## Design
 
@@ -339,4 +345,4 @@ that no dot of a ring is dropped.
 
 `.github/workflows/docs.yml` builds on every push to `main` touching `Website/`, the package `Documentation/`,
 a sample's `Documentation/`, the root `README.md` or `CHANGELOG*.md`, and on PRs (build only); it runs
-`check-readme` before the build. Pages source must be set to "GitHub Actions" once in the repository settings.
+`check-readme` and the site tests (`node --test scripts/*.test.mjs`) before the build. Pages source must be set to "GitHub Actions" once in the repository settings.

@@ -1,7 +1,7 @@
 #!/bin/sh
-# Set the package version everywhere it is written by hand: package.json, the version badge and the install URLs
-# in both README translations. The root README is regenerated from the package one; on a stable version the unshipped
-# analyzer rules move to AnalyzerReleases.Shipped.md.
+# Set the package version everywhere it is written by hand: package.json, the badge SVG and the badge alt text and
+# release link in both README translations. The root README is regenerated from the package one; on a stable version
+# the unshipped analyzer rules move to AnalyzerReleases.Shipped.md.
 #   scripts/set-version.sh 1.0.0-rc.9
 set -eu
 cd "$(dirname "$0")/.."

@@ -1,5 +1,5 @@
 var selection=UnityEditor.Selection.instanceIDs;
-var src=UnityEditor.AssetDatabase.LoadMainAssetAtPath("Assets/Samples/Aspid.FastTools/1.0.0-rc.8/EnumValues/Data/SurfacePalette.asset");
+var src=UnityEditor.AssetDatabase.LoadMainAssetAtPath("Assets/Samples/Aspid.FastTools/"+UnityEditor.PackageManager.PackageInfo.FindForAssetPath("Packages/tech.aspid.fasttools/package.json").version+"/EnumValues/Data/SurfacePalette.asset");
 var obj=UnityEngine.Object.Instantiate(src);obj.name="Surface Palette";obj.hideFlags=UnityEngine.HideFlags.DontSave;
 var so=new UnityEditor.SerializedObject(obj);var values=so.FindProperty("_tileColors._values");values.DeleteArrayElementAtIndex(4);values.DeleteArrayElementAtIndex(1);so.FindProperty("_tileColors").isExpanded=true;values.isExpanded=true;so.FindProperty("_footprintColors").isExpanded=false;so.ApplyModifiedPropertiesWithoutUndo();
 UnityEditor.Selection.activeObject=obj;
