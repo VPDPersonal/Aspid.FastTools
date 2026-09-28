@@ -58,6 +58,7 @@ namespace Aspid.FastTools.Types.Editors
         private readonly Type[] _fieldTypes;
         private readonly string _currentAqn;
         private readonly bool _includeHidden;
+        private readonly bool _excludeEditorOnly;
 
         private NavigationController Nav => _pages[^1].Navigation;
 
@@ -76,11 +77,12 @@ namespace Aspid.FastTools.Types.Editors
             _currentAqn = currentAqn;
             _fieldTypes = types;
             _includeHidden = filter.IncludeHidden;
+            _excludeEditorOnly = filter.ExcludeEditorOnly;
 
             BuildUI();
 
             var hierarchy = HierarchyBuilder.Build(types, filter.Allow, filter.Predicate, filter.AdditionalTypes,
-                includeNoneOption: !filter.HideNoneOption, includeHidden: _includeHidden);
+                includeNoneOption: !filter.HideNoneOption, includeHidden: _includeHidden, excludeEditorOnly: _excludeEditorOnly);
             var navigation = new NavigationController(hierarchy, composeSections: true);
 
             if (!string.IsNullOrWhiteSpace(_currentAqn))
@@ -100,32 +102,25 @@ namespace Aspid.FastTools.Types.Editors
         }
 
         // Prefer the current value or None so an immediate Enter cannot commit an arbitrary first row; null
-        // means there is no current value.
+        // means there is no current value. A stored name missing from the list (a renamed or deleted type) selects
+        // nothing either: highlighting None would let that Enter wipe the name the value could be repaired from.
         private void PreselectCurrent()
         {
             if (_currentAqn is null) return;
 
             var items = Nav.CurrentItems;
-
-            if (!string.IsNullOrEmpty(_currentAqn))
-            {
-                for (var i = 0; i < items.Count; i++)
-                {
-                    if (items[i].IsType && items[i].AssemblyQualifiedName == _currentAqn)
-                    {
-                        _listView.selectedIndex = i;
-                        return;
-                    }
-                }
-            }
+            var isEmpty = string.IsNullOrEmpty(_currentAqn);
 
             for (var i = 0; i < items.Count; i++)
             {
-                if (items[i].IsNoneOption)
-                {
-                    _listView.selectedIndex = i;
-                    return;
-                }
+                var isCurrent = isEmpty
+                    ? items[i].IsNoneOption
+                    : items[i].IsType && items[i].AssemblyQualifiedName == _currentAqn;
+
+                if (!isCurrent) continue;
+
+                _listView.selectedIndex = i;
+                return;
             }
         }
 

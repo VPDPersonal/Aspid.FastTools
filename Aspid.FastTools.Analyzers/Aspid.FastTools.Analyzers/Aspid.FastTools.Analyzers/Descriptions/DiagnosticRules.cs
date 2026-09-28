@@ -58,7 +58,7 @@ public static class DiagnosticRules
     public static readonly Descriptor TypeSelectorMemberUnsuitableRule = new(
         id: "AFT0007",
         title: "[TypeSelector] member reference cannot supply base types",
-        messageFormat: "[TypeSelector] on '{0}': member '{1}' cannot supply base types — it must be an instance field or property of type Type, string, SerializableType (or an array of these)",
+        messageFormat: "[TypeSelector] on '{0}': member '{1}' cannot supply base types — it must be an instance field or readable property of type Type, string, SerializableType or SerializableMonoScript (or an array of these)",
         category: UsageCategory,
         defaultSeverity: Severity.Error,
         isEnabledByDefault: true);

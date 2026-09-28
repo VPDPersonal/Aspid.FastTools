@@ -6,6 +6,7 @@ using UnityEngine;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -66,6 +67,154 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     "Unset [SerializeReference, TypeSelector(Required = true)] field must be reported.");
                 Assert.IsTrue(forProbe.Any(v => v.FieldPath == nameof(RequiredTestObject.requiredString)),
                     "Unset [TypeSelector(Required = true)] string field must be reported.");
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        // A project sweep loads every prefab and asset it audits; it must release them, or a large project ends up
+        // holding all of its content in memory at once.
+        [Test]
+        public void Scan_RequiredOnly_UnloadsAssetsItLoaded()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                Resources.UnloadAsset(probe);
+                Assume.That(AssetDatabase.IsMainAssetAtPathLoaded(ProbeAssetPath), Is.False);
+
+                SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly);
+
+                Assert.IsFalse(AssetDatabase.IsMainAssetAtPathLoaded(ProbeAssetPath),
+                    "An asset the sweep loaded for its audit must not stay loaded after the scan.");
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        // The sweep must also unload during the loop, not only at its end, or its peak memory still grows with the
+        // project. With a batch of one file, the first probe is released before the sweep reaches the second.
+        [Test]
+        public void Scan_RequiredOnly_UnloadsLoadedAssetsDuringTheSweep()
+        {
+            const string secondProbePath = "Assets/__AspidGateScannerRequiredProbe2__.asset";
+
+            var batchSize = SerializeReferenceGateScanner.UnloadEveryLoadedFiles;
+            var probes = new[] { ProbeAssetPath, secondProbePath };
+            try
+            {
+                foreach (var path in probes)
+                {
+                    var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+                    AssetDatabase.CreateAsset(probe, path);
+                    Resources.UnloadAsset(probe);
+                    Assume.That(AssetDatabase.IsMainAssetAtPathLoaded(path), Is.False);
+                }
+
+                SerializeReferenceGateScanner.UnloadEveryLoadedFiles = 1;
+
+                string firstVisited = null;
+                bool? firstLoadedAtSecond = null;
+
+                SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly, (_, path) =>
+                {
+                    if (!probes.Contains(path)) return;
+
+                    if (firstVisited is null) firstVisited = path;
+                    else firstLoadedAtSecond = AssetDatabase.IsMainAssetAtPathLoaded(firstVisited);
+                });
+
+                Assert.AreEqual(false, firstLoadedAtSecond,
+                    "An asset loaded earlier in the sweep must be unloaded before the sweep ends.");
+            }
+            finally
+            {
+                SerializeReferenceGateScanner.UnloadEveryLoadedFiles = batchSize;
+                foreach (var path in probes) AssetDatabase.DeleteAsset(path);
+            }
+        }
+
+        // A prefab variant or a prefab nesting an edited prefab inherits the edit, so a rescan after a bulk edit of a
+        // prefab must re-audit them too; an unrelated prefab keeps its cached entries.
+        [Test]
+        public void RescanRequiredFields_EditedPrefab_AlsoRescansItsVariantsAndNestingPrefabs()
+        {
+            const string basePath = "Assets/__AspidGateScannerBase__.prefab";
+            const string variantPath = "Assets/__AspidGateScannerVariant__.prefab";
+            const string nestingPath = "Assets/__AspidGateScannerNesting__.prefab";
+            const string unrelatedPath = "Assets/__AspidGateScannerUnrelated__.prefab";
+
+            var temporary = new List<GameObject>();
+            try
+            {
+                var baseRoot = new GameObject("Base");
+                temporary.Add(baseRoot);
+                var basePrefab = PrefabUtility.SaveAsPrefabAsset(baseRoot, basePath);
+
+                var variantRoot = (GameObject)PrefabUtility.InstantiatePrefab(basePrefab);
+                temporary.Add(variantRoot);
+                PrefabUtility.SaveAsPrefabAsset(variantRoot, variantPath);
+
+                var nestingRoot = new GameObject("Nesting");
+                temporary.Add(nestingRoot);
+                ((GameObject)PrefabUtility.InstantiatePrefab(basePrefab)).transform.SetParent(nestingRoot.transform);
+                PrefabUtility.SaveAsPrefabAsset(nestingRoot, nestingPath);
+
+                var unrelatedRoot = new GameObject("Unrelated");
+                temporary.Add(unrelatedRoot);
+                PrefabUtility.SaveAsPrefabAsset(unrelatedRoot, unrelatedPath);
+
+                var cached = new[]
+                {
+                    new GateViolation(variantPath, 1, 0, default, GateViolationKind.RequiredUnset, "stale"),
+                    new GateViolation(nestingPath, 1, 0, default, GateViolationKind.RequiredUnset, "stale"),
+                    new GateViolation(unrelatedPath, 1, 0, default, GateViolationKind.RequiredUnset, "kept"),
+                };
+
+                var refreshed = SerializeReferenceGateScanner.RescanRequiredFields(cached, new[] { basePath });
+
+                Assert.IsFalse(refreshed.Any(v => v.FieldPath == "stale"),
+                    "A variant or a nesting prefab of the edited prefab must be re-audited.");
+                Assert.IsTrue(refreshed.Any(v => v.AssetPath == unrelatedPath && v.FieldPath == "kept"),
+                    "An unrelated prefab keeps its cached violations.");
+            }
+            finally
+            {
+                foreach (var gameObject in temporary) Object.DestroyImmediate(gameObject);
+                foreach (var path in new[] { nestingPath, variantPath, unrelatedPath, basePath }) AssetDatabase.DeleteAsset(path);
+            }
+        }
+
+        // After a bulk edit the Project References window re-audits only the rewritten files; the cached entries of
+        // those files are replaced and every other file's are kept.
+        [Test]
+        public void RescanRequiredFields_ReplacesOnlyTheRescannedFiles()
+        {
+            const string otherPath = "Assets/__AspidGateScannerUntouched__.asset";
+
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+
+                var cached = new[]
+                {
+                    new GateViolation(ProbeAssetPath, 1, 0, default, GateViolationKind.RequiredUnset, "stale"),
+                    new GateViolation(otherPath, 1, 0, default, GateViolationKind.RequiredUnset, "kept"),
+                };
+
+                var refreshed = SerializeReferenceGateScanner.RescanRequiredFields(cached, new[] { ProbeAssetPath });
+
+                Assert.IsTrue(refreshed.Any(v => v.AssetPath == otherPath && v.FieldPath == "kept"),
+                    "A file outside the rescan keeps its cached violations.");
+                Assert.IsFalse(refreshed.Any(v => v.FieldPath == "stale"), "A rescanned file drops its cached entries.");
+                Assert.IsTrue(refreshed.Any(v => v.AssetPath == ProbeAssetPath && v.FieldPath == nameof(RequiredTestObject.requiredRef)),
+                    "A rescanned file reports its current violations.");
             }
             finally
             {

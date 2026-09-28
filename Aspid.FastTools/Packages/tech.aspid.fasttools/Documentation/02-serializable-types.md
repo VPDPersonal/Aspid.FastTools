@@ -89,9 +89,12 @@ A missing type is a stored name that no longer resolves after a class, namespace
 | Name update after a script rename | Manual | From the stored MonoScript during serialization |
 | Construction from a `Type` in code | Public constructor | No public constructor |
 
-A suitable script is a file in a runtime assembly that declares a top-level, non-generic class named after the file: `Sword.cs` for `Sword`. Keep the asset and its `.meta` when renaming. If Unity can no longer resolve the class, the wrapper retains the last known name.
+A suitable script is a file in a runtime assembly that declares a top-level, non-generic class named after the file: `Sword.cs` for `Sword`. Keep the asset and its `.meta` when renaming. Until an asset is saved again after the rename, the editor takes the type from the script, so Play Mode gets it too. If Unity can no longer resolve the class, the wrapper retains the last known name.
 
 Read the selected type through `.Type` or implicit conversion to `System.Type`, as with `SerializableType`. In a player, the wrapper also stores just the type name.
+
+> [!WARNING]
+> In a player, `SerializableType` and `SerializableMonoScript` find the type by its stored name, and managed code stripping does not see names stored in scenes and assets. From **Managed Stripping Level** Low up, the build may drop a class referenced only from the Inspector, and `.Type` then returns `null` while the editor resolves it. Mark such classes `[Preserve]` (`UnityEngine.Scripting`) or list them in `link.xml`. The same applies to `[TypeSelector]` on a `string`.
 
 ## TypeSelectorAttribute
 
@@ -135,6 +138,8 @@ To allow a fixed set of classes, give them a common interface or base class and 
 | `Required` | `false` | Warns about an empty type name or a `null` managed reference |
 
 Static classes are excluded. On a string or wrapper, `Allow` filters type categories without checking for a parameterless constructor.
+
+In the Inspector of a runtime object, the picker also leaves out types from editor-only assemblies (`UnityEditor`, Editor-only asmdefs and `Editor` folders): a player build cannot resolve them. Fields of editor-only objects, such as editor windows and settings, still offer every type. The rule follows the object's class, so a runtime object's field declared under `#if UNITY_EDITOR` leaves them out too.
 
 <details>
 <summary>TypeSelector argument forms</summary>
@@ -276,7 +281,7 @@ TypeSelectorWindow.Show(
 
 The callback receives an assembly-qualified name, or `null` for `<None>`. Dismissing the window without a choice does not invoke it.
 
-`currentAqn` controls the current mark: an empty string (the default) marks `<None>`, while `null` leaves selection unmarked.
+`currentAqn` controls the current mark: an empty string (the default) marks `<None>`, while `null` leaves selection unmarked, as does a name missing from the list, so Enter right after opening cannot erase a missing type's stored name.
 
 ### Window filters
 

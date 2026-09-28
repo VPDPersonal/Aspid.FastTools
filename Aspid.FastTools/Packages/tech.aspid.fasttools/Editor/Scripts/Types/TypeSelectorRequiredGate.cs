@@ -98,6 +98,10 @@ namespace Aspid.FastTools.Types.Editors
                             if (!seen.Add(parents.Length == 0 ? field.Name : string.Join(".", parents) + "." + field.Name))
                                 continue;
 
+                            // Scene YAML writes collection entries on the key's own indent, so a leaf matcher would read
+                            // any list, empty or filled, as unset; its entries are left to the SerializedObject path.
+                            if (IsCollection(field.FieldType)) continue;
+
                             if (field.FieldType == typeof(string))
                                 result.Add(new RequiredFieldDescriptor(parents, field.Name, RequiredFieldKind.String));
                             else if (IsSerializableTypeField(field.FieldType))
@@ -131,7 +135,7 @@ namespace Aspid.FastTools.Types.Editors
 
             var type = field.FieldType;
             if (type.IsPrimitive || type.IsEnum || type == typeof(string)) return false;
-            if (type.IsArray || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))) return false;
+            if (IsCollection(type)) return false;
             if (typeof(UnityEngine.Object).IsAssignableFrom(type)) return false;
             if (IsSerializableTypeField(type)) return false;
 
@@ -140,6 +144,9 @@ namespace Aspid.FastTools.Types.Editors
 
         // Per-type memo for GetRequiredFields — the reflected field set is stable until a domain reload clears statics.
         private static readonly Dictionary<Type, IReadOnlyList<RequiredFieldDescriptor>> RequiredFieldCache = new();
+
+        private static bool IsCollection(Type type) =>
+            type.IsArray || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>));
 
         private static bool IsSerializableTypeField(Type fieldType) =>
             SerializableTypeUtility.IsSerializableTypeField(fieldType);

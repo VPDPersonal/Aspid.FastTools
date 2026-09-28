@@ -16,6 +16,14 @@ export function plainText(markdown) {
     .replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * Docusaurus' `Link` applies `trailingSlash`, but the search bar pushes index URLs as they are: an index page's
+ * permalink (`/tutorials/types/`) would open a URL that the static host does not serve when trailingSlash is false.
+ */
+export function indexUrl(permalink, {trailingSlash, baseUrl}) {
+  return trailingSlash === false && permalink !== baseUrl ? permalink.replace(/\/$/, '') : permalink;
+}
+
 export default function searchPlugin(context) {
   let indexPath;
   return {
@@ -31,7 +39,7 @@ export default function searchPlugin(context) {
             const heading = markdown.match(/^# (.+)$/m)?.[1];
             entries.push({
               title: plainText(heading || doc.title),
-              url: doc.permalink,
+              url: indexUrl(doc.permalink, {trailingSlash: context.siteConfig.trailingSlash, baseUrl: context.baseUrl}),
               section: {default: 'Docs', tutorials: 'Samples', api: 'API', changelog: 'Changelog'}[id] ?? id,
               description: plainText(doc.description || ''),
               text: plainText(markdown),
