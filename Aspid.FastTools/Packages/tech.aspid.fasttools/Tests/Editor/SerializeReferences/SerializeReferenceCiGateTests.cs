@@ -74,7 +74,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             CollectionAssert.Contains(lines, "# Not scanned (not text YAML): 2");
             CollectionAssert.Contains(lines, "#   Binary\tAssets/Scene/LightingData.asset");
             CollectionAssert.Contains(lines, "#   LfsPointer\tAssets/B.prefab");
-            CollectionAssert.Contains(lines, "MissingType\tAssets/A.prefab\t1\t2\tGhost\t");
+            CollectionAssert.Contains(lines, "MissingType\tAssets/A.prefab\t1\t2\tGhost\t\t");
         }
     }
 }

@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `RemoveChildren` and `RemoveChildrenIf` remove several children in one call and take the same `params`, `IEnumerable`, `List`, `Span` and `ReadOnlySpan` overloads as `AddChildren`.
 - `ToggleButtonGroup` gets typed `SetValue`, `AddValueChanged`, `RemoveValueChanged` and `SetLabel` overloads for `ToggleButtonGroupState`, so calls such as `AddValueChanged(evt => …)` need no type arguments.
 - Added `AndApplyWithoutUndo` counterparts for every `SerializedProperty` setter with immediate application, including `SetValue` overloads, object references, enums, and array size helpers.
 - Analyzer `AFT0009` (warning) — two `[TypeSelector]` base types have no type in common, so the selector is empty.
 - Analyzer `AFT0010` (warning) — a `this.Marker()` call opens no profiler marker because the generator cannot support its type: the type is `private` or `protected` (or nested in such a type), or it reuses a type parameter name of a containing type.
 - Analyzer `AFT0011` (warning) — the scope of `this.Marker()` is discarded (`this.Marker();` as a statement, `_ = this.Marker();`, a local nothing reads), so the sample it begins never ends.
+- Missing `[SerializeReference]` types set by prefab instance overrides (prefab variants, nested prefabs, prefab instances in scenes) are now found: the build / CI gate counts them as missing types, Project References lists them in a **Prefab instance overrides** card, and the delete guard and breakage detection count them. They are not rewritten; fix them on the instance or revert the override. An old name that `[MovedFrom]` maps is listed there as a pending migration, since **Migrate all** does not rewrite overrides. The CI report gains a trailing `origin` column, `override` for these rows.
 
 ### Changed
 
@@ -38,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A `[TypeSelector(nameof(...))]` member reference on a field inside a `[Serializable]` class or a list element now resolves on the instance that declares the field, as analyzers `AFT0006`–`AFT0008` already check it; it used to be looked up on the inspected component or asset and showed a warning. The same applies to the picker of the Asset References window.
 - Fix, Fix all and the summary's Undo no longer rewrite the type of a healthy managed reference when a `[SerializeReference]` list inside another reference points at the broken one (a parent with a list of children). The Inspector reads the right stored type and fields of such references, and the Project References graph no longer shows phantom nodes whose Clear deleted healthy entries.
 - The missing-list guard now snapshots a missing list element that another reference's list also points at, and restores it into the object's own list instead of a same-named list nested in another field.
+- A list element restored by the missing-list guard keeps its original reference id when it is free, otherwise gets a random one. It used to take the next id after the file's maximum, which an override in a variant, nested prefab or scene often already used: that override lost its type and shared data with the restored element.
 - Objects with a negative fileID (prefab components, sub-assets) are now read as separate documents: their missing references and unset required fields reach the scans and the build gate, and Fix, Clear and orphan removal no longer edit or delete entries of the neighbouring object.
 - The SerializeReference scans skip binary assets and Git LFS pointers after reading their first bytes, instead of decoding every file as text on each build. The build gate and the CI check warn when files went unchecked because the project is not in **Force Text** or a pointer was never pulled, and the CI report counts and lists them; before, such a project passed with 0 violations.
 - `this.Marker()` inside a `private` or `protected` nested type no longer breaks compilation with CS0122. The generated overload cannot see such a type, so the generator now skips it: the call compiles, opens no marker, and `AFT0010` reports it — make the type `internal` or `public` to profile it.

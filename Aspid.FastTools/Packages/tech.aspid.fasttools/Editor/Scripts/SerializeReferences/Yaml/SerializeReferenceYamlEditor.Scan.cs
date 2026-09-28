@@ -27,10 +27,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             try
             {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
                 if (!knownTextYaml && !SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
 
-                var lines = File.ReadAllLines(assetPath);
+                var lines = SerializeReferenceYaml.ReadLines(assetPath);
+                if (lines is null) return result;
 
                 var headers = new List<(long fileId, int start)>();
                 for (var i = 0; i < lines.Length; i++)
@@ -69,6 +69,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                             result.Add(new MissingReferenceEntry(fileId, rid, type));
                         }
                     }
+                }
+
+                // A variant, a nested prefab or a scene instance keeps an overridden type in its PrefabInstance
+                // document, which has no RefIds block.
+                foreach (var entry in CollectPrefabOverrides(lines))
+                {
+                    if (!resolves(entry.StoredType))
+                        result.Add(new MissingReferenceEntry(entry.FileId, entry.Rid, entry.StoredType, isOverride: true, entry.FieldPath));
                 }
             }
             catch (Exception)

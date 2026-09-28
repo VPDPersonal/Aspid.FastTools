@@ -46,6 +46,7 @@ namespace Aspid.FastTools.DevTests.Editors
                     storedType = violation.StoredType.Class,
                     fileId = violation.FileId,
                     rid = violation.Rid,
+                    isOverride = violation.IsOverride,
                 }).ToArray(),
             };
         }

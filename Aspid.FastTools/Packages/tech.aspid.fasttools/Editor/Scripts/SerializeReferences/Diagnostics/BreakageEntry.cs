@@ -10,7 +10,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public readonly string AssetPath;
         public readonly ManagedTypeName StoredType;
 
-        // False for entries the per-asset repair flow cannot reach (currently scene-hosted references).
+        // False for entries the per-asset repair flow cannot reach: scene-hosted references and types set by a prefab
+        // instance override.
         public readonly bool IsRepairable;
 
         public readonly SerializeReferenceRepairSuggestions.RepairCandidate? TopSuggestion;
