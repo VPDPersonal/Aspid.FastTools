@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
@@ -149,8 +150,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     : $" {clearedInMemory} were nulled in memory — save the assets to persist them (still listed until saved).";
             }
 
-            // Clearing can create required-field violations; invalidate the cached audit after nulling references.
-            _requiredIsWarm = false;
+            // Clearing can create required-field violations. The files edited on disk are re-audited; a reference nulled
+            // only in memory reaches disk on save, so that audit is stale until the next Rescan.
+            if (clearedInMemory > 0) _requiredIsWarm = false;
+            else RefreshRequiredViolations(onDisk.Select(entry => entry.AssetPath));
 
             RerenderAfterBulkEdit();
 

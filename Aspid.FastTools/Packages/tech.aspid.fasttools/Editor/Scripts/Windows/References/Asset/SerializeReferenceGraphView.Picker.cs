@@ -58,12 +58,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 assemblyQualifiedName => ApplyRequiredString(violation, assemblyQualifiedName));
         }
 
-        private static TypeSelectorFilter BuildRequiredStringFilter(SerializedObject serializedObject, SerializedProperty property)
+        internal static TypeSelectorFilter BuildRequiredStringFilter(SerializedObject serializedObject, SerializedProperty property)
         {
             if (!TypeSelectorRequiredGate.TryGetRequired(property, out var selector)) return default;
 
             var types = new List<Type>();
             var owner = property.GetDeclaringInstance();
+            var scriptBacked = false;
 
             var path = property.propertyPath;
             var lastDotIndex = path.LastIndexOf('.');
@@ -76,6 +77,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 {
                     // The attribute sits on the wrapper field, so its members belong to the wrapper's owner.
                     owner = parentProperty.GetDeclaringInstance();
+                    scriptBacked = SerializableMonoScriptUtility.IsMonoScriptWrapperField(parentField.FieldType);
 
                     if (wrapperBase is not null && wrapperBase != typeof(object))
                         types.Add(wrapperBase);
@@ -89,6 +91,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 Types = types.Count > 0 ? types.ToArray() : null,
                 Allow = selector.Allow,
+                // A SerializableMonoScript keeps its type through the script asset, so only script-backed types fit it.
+                Predicate = scriptBacked ? SerializableMonoScriptUtility.HasScript : null,
             };
         }
 

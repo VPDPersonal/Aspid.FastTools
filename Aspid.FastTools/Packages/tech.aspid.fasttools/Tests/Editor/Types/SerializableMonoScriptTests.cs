@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using Aspid.FastTools.SerializeReferences.Editors;
 
 namespace Aspid.FastTools.Types.Editors.Tests
 {
@@ -28,6 +29,10 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
             [TypeSelector(Required = true)]
             [SerializeField] public SerializableMonoScript<SerializableType> required;
+
+            // A plain wrapper, the picker's contrast case: it stores only the name, so any type fits it.
+            [TypeSelector(Required = true)]
+            [SerializeField] public SerializableType requiredType;
         }
 
         // Unity's serializer, not a constructor, creates the wrappers, and it only runs once the object is
@@ -229,6 +234,30 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
                 Assert.IsFalse(TypeSelectorRequiredGate.IsViolation(
                     serialized.FindProperty($"{nameof(Holder.required)}.{SerializableTypeUtility.BackingFieldName}")));
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        // The Asset References "Assign Required" picker must offer a script-backed wrapper the same types as its
+        // inspector, never one without a script asset.
+        [Test]
+        public void RequiredPickerFilter_MonoScriptWrapper_OffersOnlyScriptBackedTypes()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                var serialized = new SerializedObject(holder);
+                var monoScript = serialized.FindProperty($"{nameof(Holder.required)}.{SerializableTypeUtility.BackingFieldName}");
+                var plain = serialized.FindProperty($"{nameof(Holder.requiredType)}.{SerializableTypeUtility.BackingFieldName}");
+
+                var filter = SerializeReferenceGraphView.BuildRequiredStringFilter(serialized, monoScript);
+
+                Assert.IsNotNull(filter.Predicate, "A script-backed wrapper needs the script predicate.");
+                Assert.IsTrue(filter.Predicate(ScriptedType));
+                Assert.IsFalse(filter.Predicate(typeof(Holder)), "A nested type owns no script asset.");
+
+                Assert.IsNull(SerializeReferenceGraphView.BuildRequiredStringFilter(serialized, plain).Predicate,
+                    "A plain SerializableType accepts types without a script.");
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
         }
