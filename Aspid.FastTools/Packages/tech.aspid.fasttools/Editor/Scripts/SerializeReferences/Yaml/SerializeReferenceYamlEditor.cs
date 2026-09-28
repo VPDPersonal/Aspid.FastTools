@@ -76,19 +76,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var original = ReadAllText(assetPath, out var encoding);
 
-            // Check out through the version control provider, as Unity's own saves do. Without a provider this returns
-            // true even for a read-only file, so the read-only flag is checked on its own.
-            if (!AssetDatabase.MakeEditable(assetPath))
-            {
-                Debug.LogError($"[Aspid FastTools] '{assetPath}' could not be checked out in version control; it was not changed.");
-                return false;
-            }
-
-            if ((File.GetAttributes(assetPath) & FileAttributes.ReadOnly) != 0)
-            {
-                Debug.LogError($"[Aspid FastTools] '{assetPath}' is read-only; check it out or make it writable, then retry. It was not changed.");
-                return false;
-            }
+            if (!TryMakeEditable(assetPath)) return false;
 
             // A checkout may fetch a newer revision; the edit was computed from the old one, so it must not be applied.
             if (ReadAllText(assetPath, out _) != original)
@@ -109,6 +97,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (original.Length > 0 && original[^1] == '\n') builder.Append(newline);
 
             WriteAtomically(assetPath, builder.ToString(), encoding);
+            return true;
+        }
+
+        // Checks the asset out through the version control provider, as Unity's own saves do, and logs why when it
+        // stays unwritable. Without a provider MakeEditable returns true even for a read-only file, so the read-only
+        // flag is checked on its own.
+        public static bool TryMakeEditable(string assetPath)
+        {
+            if (!AssetDatabase.MakeEditable(assetPath))
+            {
+                Debug.LogError($"[Aspid FastTools] '{assetPath}' could not be checked out in version control; it was not changed.");
+                return false;
+            }
+
+            if ((File.GetAttributes(assetPath) & FileAttributes.ReadOnly) != 0)
+            {
+                Debug.LogError($"[Aspid FastTools] '{assetPath}' is read-only; check it out or make it writable, then retry. It was not changed.");
+                return false;
+            }
+
             return true;
         }
 

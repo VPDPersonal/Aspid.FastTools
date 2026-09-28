@@ -103,15 +103,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         $"{file.Key}  ({i + 1}/{byFile.Length})",
                         (float)i / byFile.Length);
 
+                    // Checked out once up front: a read-only file is reported once and skipped, and a checkout makes
+                    // it writable before its first entry, even when that entry turns out stale.
+                    if (File.Exists(file.Key) && !SerializeReferenceYamlEditor.TryMakeEditable(file.Key)) continue;
+
                     var changed = false;
                     foreach (var entry in file)
                     {
-                        if (!edit(file.Key, entry))
-                        {
-                            // The rest of a read-only file's entries would each be refused with the same error.
-                            if (IsReadOnly(file.Key)) break;
-                            continue;
-                        }
+                        if (!edit(file.Key, entry)) continue;
 
                         applied++;
                         changed = true;
@@ -128,8 +127,5 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return applied;
         }
-
-        private static bool IsReadOnly(string path) =>
-            File.Exists(path) && (File.GetAttributes(path) & FileAttributes.ReadOnly) != 0;
     }
 }
