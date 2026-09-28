@@ -1,4 +1,5 @@
 import {useEffect} from 'react';
+import {rowWaves} from './waves';
 
 // Anything that reads as "content" rather than canvas. Only the filled parts of the navigation panel and the TOC count,
 // so the empty space under a short menu still behaves like background.
@@ -172,15 +173,18 @@ export default function DotRipple() {
 
       for (let gy = y0; gy <= y1; gy++) {
         const cy = gy * GRID + GRID / 2;
+        const row = rowWaves(live, cy);
+        if (!row.length) continue;
         for (let gx = x0; gx <= x1; gx++) {
           const cx = gx * GRID + GRID / 2;
           // Every wave lifts the dot and pushes it away from its own origin; the dot is drawn once with the sum.
           let h = 0;
           let pushX = 0;
           let pushY = 0;
-          for (const wave of live) {
+          for (const {wave, dy, near, far} of row) {
             const dx = cx - wave.x;
-            const dy = cy - wave.y;
+            const adx = Math.abs(dx);
+            if (adx > far || adx < near) continue;
             const d = Math.hypot(dx, dy);
             if (d < wave.inner || d > wave.outer) continue;
             // A stronger wave is also taller and carries further.

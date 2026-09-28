@@ -30,6 +30,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public int plain;
     }
 
+    // Required collections of every kind the gate classifies: the scene scan cannot read their entries, so none of
+    // them may become a leaf descriptor.
+    internal sealed class CollectionRequiredObject : ScriptableObject
+    {
+        [SerializeReference, TypeSelector(Required = true)]
+        public List<ITestWeapon> weapons;
+
+        [SerializeReference, TypeSelector(Required = true)]
+        public ITestWeapon[] weaponArray;
+
+        [TypeSelector(Required = true)]
+        public SerializableType[] types;
+
+        [TypeSelector(Required = true)]
+        public List<SerializableType> typeList;
+
+        [TypeSelector(Required = true)]
+        public string[] names;
+    }
+
     /// <summary>
     /// Coverage for the scene-safe required-field gate: <see cref="TypeSelectorRequiredGate.GetRequiredFields"/>
     /// (reflection over a type's required fields) and <see cref="SerializeReferenceYamlEditor.FindUnsetRequiredFields"/>
@@ -157,6 +177,28 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, ResolveSerializableType);
 
             Assert.AreEqual(0, violations.Count, "A populated SerializableType is not a violation.");
+        }
+
+        [Test]
+        public void GetRequiredFields_CollectionFields_ReturnsNone()
+        {
+            var paths = TypeSelectorRequiredGate.GetRequiredFields(typeof(CollectionRequiredObject))
+                .Select(field => field.Path).ToList();
+
+            CollectionAssert.IsEmpty(paths, "Required arrays and lists must not become scene leaf descriptors.");
+        }
+
+        [Test]
+        public void FindUnsetRequiredFields_RequiredCollections_ReportsNone()
+        {
+            _path = YamlFixtures.WriteTemp(YamlFixtures.RequiredSceneCollections);
+
+            var violations = SerializeReferenceYamlEditor.FindUnsetRequiredFields(_path, guid =>
+                guid == YamlFixtures.RequiredSceneScriptGuid
+                    ? TypeSelectorRequiredGate.GetRequiredFields(typeof(CollectionRequiredObject))
+                    : Array.Empty<RequiredFieldDescriptor>());
+
+            Assert.AreEqual(0, violations.Count, "Filled and empty required collections are not unset fields.");
         }
 
         // ---- required fields nested inside plain [Serializable] containers (ASP-52) ------------------------------------

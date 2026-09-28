@@ -79,7 +79,7 @@ AspidAnimatedTitle {
     border-radius: 8px;
     border-width: 1px;
     border-color: var(--aspid-colors-shade-darkness);
-    background-color: rgba(20, 20, 20, 0.55);
+    background-color: var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-welcome__sample-header-row {

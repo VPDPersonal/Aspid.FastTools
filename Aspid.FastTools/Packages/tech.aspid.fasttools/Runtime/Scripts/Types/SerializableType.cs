@@ -55,18 +55,19 @@ namespace Aspid.FastTools.Types
     /// <remarks>
     /// Unity serializes a field by its declared type, so a <see cref="SerializableType{T}"/> assigned from code to a
     /// field declared as <see cref="SerializableType"/> is reloaded unconstrained: the type survives, the constraint
-    /// does not.
+    /// does not. Only the picker and the constructor check <typeparamref name="T"/>: a loaded name is not re-checked,
+    /// so after <typeparamref name="T"/> or the stored class's base changes, the type may no longer be assignable to it.
     /// </remarks>
     /// <typeparam name="T">Base constraint type; the picker offers only types assignable to it.</typeparam>
     /// <example>
     /// <code><![CDATA[
     /// public class MyComponent : MonoBehaviour
     /// {
-    ///     [SerializeField] private SerializableType<MonoBehaviour>; _behaviorType;
+    ///     [SerializeField] private SerializableType<MonoBehaviour> _behaviorType;
     ///
     ///     private void Start()
     ///     {
-    ///         Type type = _behaviorType;  // always a MonoBehaviour subtype or null
+    ///         Type type = _behaviorType;
     ///         if (type != null)
     ///             gameObject.AddComponent(type);
     ///     }
