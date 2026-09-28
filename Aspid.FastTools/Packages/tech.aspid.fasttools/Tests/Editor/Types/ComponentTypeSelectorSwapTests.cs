@@ -41,6 +41,33 @@ namespace Aspid.FastTools.Types.Editors.Tests
         }
 
         [Test]
+        public void SwapScript_AddsTheRequiredComponentsBeforeTheNewTypeValidates()
+        {
+            var component = _gameObject.AddComponent<ComponentSwapPlain>();
+
+            Swap(component, typeof(ComponentSwapNeedsRequirement));
+
+            Assert.IsNotNull(_gameObject.GetComponent<ComponentSwapNeedsRequirement>().Requirement,
+                "OnValidate of the new class must already find its [RequireComponent].");
+        }
+
+        [Test]
+        public void SwapScript_RequirementThatCannotBeAdded_RevertsTheSwap()
+        {
+            _gameObject.AddComponent<MeshRenderer>();
+            var component = _gameObject.AddComponent<ComponentSwapPlain>();
+
+            LogAssert.Expect(LogType.Log, new Regex("conflicts with the existing 'MeshRenderer'"));
+            LogAssert.Expect(LogType.Warning, new Regex($"{nameof(SpriteRenderer)}, which cannot be added"));
+
+            Swap(component, typeof(ComponentSwapNeedsSpriteRenderer));
+
+            Assert.IsNotNull(_gameObject.GetComponent<ComponentSwapPlain>(), "The swap must be reverted.");
+            Assert.IsNull(_gameObject.GetComponent<ComponentSwapNeedsSpriteRenderer>());
+            Assert.IsNull(_gameObject.GetComponent<SpriteRenderer>());
+        }
+
+        [Test]
         public void SwapScript_OneUndoRevertsTheSwapAndTheAddedComponents()
         {
             var component = _gameObject.AddComponent<ComponentSwapPlain>();
@@ -74,6 +101,17 @@ namespace Aspid.FastTools.Types.Editors.Tests
             LogAssert.Expect(LogType.Warning, new Regex($"{nameof(ComponentSwapPlainDependent)} requires {nameof(ComponentSwapPlain)}"));
 
             Assert.IsFalse(Replace(component, typeof(ComponentSwapNeedsRequirement)));
+        }
+
+        [TestCase(typeof(ComponentSwapNeedsAbstractRequirement), nameof(ComponentSwapAbstractRequirement))]
+        [TestCase(typeof(ComponentSwapNeedsRenderer), nameof(Renderer))]
+        public void ReplaceComponentScript_AbstractRequirement_IsRefused(Type newType, string requiredName)
+        {
+            var component = _gameObject.AddComponent<ComponentSwapPlain>();
+
+            LogAssert.Expect(LogType.Warning, new Regex($"{newType.Name} requires {requiredName}, which is abstract"));
+
+            Assert.IsFalse(Replace(component, newType));
         }
 
         [Test]
