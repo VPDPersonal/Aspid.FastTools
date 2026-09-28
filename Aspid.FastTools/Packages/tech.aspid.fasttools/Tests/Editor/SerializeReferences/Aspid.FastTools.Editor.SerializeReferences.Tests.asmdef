@@ -7,7 +7,7 @@
         "Aspid.FastTools",
         "Aspid.FastTools.Editor",
         "Aspid.FastTools.Editor.SerializeReferences.Yaml",
-        "Aspid.FastTools.SerializeReferences.Tests"
+        "Aspid.FastTools.Tests.Fixtures"
     ],
     "includePlatforms": [
         "Editor"

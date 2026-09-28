@@ -1,5 +1,5 @@
 {
-    "name": "Aspid.FastTools.SerializeReferences.Tests",
+    "name": "Aspid.FastTools.Tests.Fixtures",
     "rootNamespace": "",
     "references": [
         "Aspid.FastTools"
@@ -7,10 +7,8 @@
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": true,
-    "precompiledReferences": [
-        "nunit.framework.dll"
-    ],
+    "overrideReferences": false,
+    "precompiledReferences": [],
     "autoReferenced": false,
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
