@@ -1,5 +1,6 @@
 using System.Text;
 using System.Collections.Generic;
+using Aspid.FastTools.UIElements.Editors.Internal;
 using static Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceAuditUI;
 
 // ReSharper disable once CheckNamespace
@@ -11,11 +12,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private const string RequiredNotScannedText = "Required fields have not been checked yet — Rescan to include them.";
         private const string RequiredDisabledText =
-            "Required fields are not checked while gate severity is Off (Project Settings → Aspid.FastTools → SerializeReference).";
+            "Required fields are not checked while gate severity is Off — set it to Warn or Fail in Project Settings → " +
+            "Aspid.FastTools → SerializeReference, then Rescan.";
 
-        // Only a sweep that actually ran the required check can call the project clean.
-        public static RequiredAuditState GetRequiredAuditState(bool scanned, bool checkDisabled) =>
-            !scanned ? RequiredAuditState.NotScanned
+        // Only a sweep that actually ran the required check can call the project clean. A sweep skipped because
+        // severity was Off has not checked anything once severity is on again.
+        public static RequiredAuditState GetRequiredAuditState(bool scanned, bool checkDisabled, bool severityOff) =>
+            !scanned || (checkDisabled && !severityOff) ? RequiredAuditState.NotScanned
             : checkDisabled ? RequiredAuditState.Disabled
             : RequiredAuditState.Checked;
 
@@ -28,10 +31,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : (false, "No missing references",
                     "No missing managed references found anywhere under Assets/. " + BuildRequiredNotCheckedText(state));
 
-        public static string BuildMissingReferencesCleanHintText(RequiredAuditState state) =>
-            state == RequiredAuditState.Checked
-                ? "Nothing left to repair. Rescan to sweep the project again and confirm it's clean."
-                : BuildRequiredNotCheckedText(state);
+        public static StatusStyle.Type GetMissingReferencesCleanStatus(RequiredAuditState state, bool hasRequiredViolations) =>
+            hasRequiredViolations ? StatusStyle.Type.Warning
+            : state == RequiredAuditState.Checked ? StatusStyle.Type.Success
+            : StatusStyle.Type.Info;
+
+        public static string BuildMissingReferencesCleanHintText(RequiredAuditState state, bool hasRequiredViolations) =>
+            state != RequiredAuditState.Checked ? BuildRequiredNotCheckedText(state)
+            : hasRequiredViolations ? "Click a required-violation row to jump to its asset."
+            : "Nothing left to repair. Rescan to sweep the project again and confirm it's clean.";
 
         public static string BuildResultsHeaderText(int brokenCount, int migrationCount, int requiredCount)
         {
