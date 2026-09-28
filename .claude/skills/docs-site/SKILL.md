@@ -294,7 +294,11 @@ licence file). Prism themes are Ayu-based, in `src/prism/venom.js`.
 
 ### Introduction feature cards
 
-There is no landing page: `/` redirects to `/docs`. On the introduction, `src/remark/introBanner.js` turns the README's
+There is no landing page: `/` redirects to `/docs`. The README banner GIF (6 MB) stays for GitHub only: the plugin
+renders it as `src/components/IntroBanner`, which plays `media/banner.mp4` with the poster `media/banner-poster.jpg`.
+Both are encoded from the GIF — re-encode them when it changes (`ffmpeg -i <gif> -movflags +faststart -c:v libx264
+-pix_fmt yuv420p -preset veryslow -crf 22 -tune animation -an -vf fps=25 banner.mp4`, poster: `-frames:v 1 -q:v 4`).
+On the introduction, `src/remark/introBanner.js` also turns the README's
 Features section into card grids. A card whose page has an entry in `src/components/FeaturePreview` (EnumValues and
 the Editor & tooling features) shows that animated preview instead of the README capture; its code is hand-written
 there, so update it when the page's quick start changes. The EnumValues clip is `FeaturePreview/media/enum.mp4`.
@@ -326,6 +330,10 @@ Admonitions are outline-only: a coloured border and heading on the article surfa
 `src/plugins/search` builds a locale-specific index from Docusaurus' resolved document sources and permalinks.
 `src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow
 keys, Enter and Esc. `node --test scripts/*.test.mjs` in `Website/` (`npm test`) checks matching, Markdown extraction and index URLs.
+
+`src/components/DotRipple` draws the click ripples on the dot background; the number of waves is unlimited, and
+`waves.js` culls, per grid row, the waves whose ring misses it. `node --test scripts/dot-ripple.test.mjs` checks
+that no dot of a ring is dropped.
 
 ## Deploy
 
