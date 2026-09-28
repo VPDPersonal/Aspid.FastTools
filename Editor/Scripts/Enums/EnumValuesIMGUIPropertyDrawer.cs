@@ -13,9 +13,19 @@ namespace Aspid.FastTools.Enums.Editors
         private const float CardPadding = 5f;
         private const float SeamPadding = 2f;
 
-        private static readonly Color _borderColor = new Color32(36, 36, 36, 255);
-        private static readonly Color _headerColor = new Color32(46, 46, 46, 255);
-        private static readonly Color _containerColor = new Color32(56, 56, 56, 255);
+        // Keep these colors aligned with the UI Toolkit drawer: --unity-colors-inspector_titlebar-border,
+        // --unity-colors-inspector_titlebar-background and --unity-colors-helpbox-background.
+        internal static Color BorderColor => EditorGUIUtility.isProSkin
+            ? new Color32(26, 26, 26, 255)
+            : new Color32(127, 127, 127, 255);
+
+        internal static Color HeaderColor => EditorGUIUtility.isProSkin
+            ? new Color32(62, 62, 62, 255)
+            : new Color32(203, 203, 203, 255);
+
+        internal static Color ContainerColor => EditorGUIUtility.isProSkin
+            ? new Color32(96, 96, 96, 52)
+            : new Color32(235, 235, 235, 52);
 
         public static float GetHeight(SerializedProperty property)
         {
@@ -99,7 +109,7 @@ namespace Aspid.FastTools.Enums.Editors
                 ScaleMode.StretchToFill,
                 false,
                 0f,
-                _headerColor,
+                HeaderColor,
                 Vector4.zero,
                 new Vector4(CornerRadius, CornerRadius, 0f, 0f));
 
@@ -107,9 +117,9 @@ namespace Aspid.FastTools.Enums.Editors
                 containerRect,
                 Texture2D.whiteTexture,
                 ScaleMode.StretchToFill,
-                false,
+                true,
                 0f,
-                _containerColor,
+                ContainerColor,
                 Vector4.zero,
                 new Vector4(0f, 0f, CornerRadius, CornerRadius));
 
@@ -119,7 +129,7 @@ namespace Aspid.FastTools.Enums.Editors
                 ScaleMode.StretchToFill,
                 true,
                 0f,
-                _borderColor,
+                BorderColor,
                 Vector4.one * BorderWidth,
                 Vector4.one * CornerRadius);
         }
