@@ -97,6 +97,25 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
+        public void BatchNull_ReadOnlyFile_StaleFirstEntry_StillReportsTheRefusal()
+        {
+            File.SetAttributes(_path, FileAttributes.ReadOnly);
+            var entries = new[]
+            {
+                new MissingReferenceLocation(_path,
+                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, 999999, Pistol)),
+                new MissingReferenceLocation(_path,
+                    new MissingReferenceEntry(YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid, Pistol)),
+            };
+
+            // A stale entry fails before any write, so the file must be checked out before the entry loop, not by it.
+            LogAssert.Expect(LogType.Error, new Regex("is read-only"));
+            var applied = SerializeReferenceBatchEditor.Null(entries, "Test");
+
+            Assert.AreEqual(0, applied, "Nothing can be applied to a read-only file.");
+        }
+
+        [Test]
         public void TryRewriteType_PreservesUtf8ByteOrderMark()
         {
             File.WriteAllText(_path, YamlFixtures.MissingTypePrefab, new UTF8Encoding(true));
