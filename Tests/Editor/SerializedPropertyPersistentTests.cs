@@ -45,6 +45,28 @@ namespace Aspid.FastTools.Editors.Tests
         }
 
         [Test]
+        public void Persistent_KeepsTheSourceContext()
+        {
+            var context = ScriptableObject.CreateInstance<PersistentTarget>();
+            var source = new SerializedObject(new Object[] { _target }, context);
+            SerializedProperty persistent = null;
+            try
+            {
+                persistent = source.FindProperty(nameof(PersistentTarget.Items)).Persistent();
+
+                Assert.IsNotNull(persistent);
+                Assert.AreSame(context, persistent.serializedObject.context,
+                    "ExposedReference values resolve through the context, so the copy must keep it.");
+            }
+            finally
+            {
+                persistent?.serializedObject.Dispose();
+                source.Dispose();
+                Object.DestroyImmediate(context);
+            }
+        }
+
+        [Test]
         public void Persistent_ReturnsNullWhenPathNoLongerExists()
         {
             var property = _serializedObject.FindProperty(nameof(PersistentTarget.Items)).GetArrayElementAtIndex(1);

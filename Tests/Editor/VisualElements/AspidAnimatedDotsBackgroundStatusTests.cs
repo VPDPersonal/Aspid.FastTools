@@ -1,5 +1,3 @@
-using UnityEditor;
-using UnityEngine;
 using NUnit.Framework;
 using System.Collections;
 using UnityEngine.TestTools;
@@ -19,28 +17,24 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
     [TestFixture]
     internal sealed class AspidAnimatedDotsBackgroundStatusTests
     {
-        private EditorWindow _window;
+        private TestPanel _panel;
         private AspidAnimatedDotsBackground _canvas;
 
         [SetUp]
         public void SetUp()
         {
-            _window = ScriptableObject.CreateInstance<EditorWindow>();
-            _window.ShowUtility();
+            _panel = new TestPanel();
 
             // The default gradient resolves through the shared palette, so the host needs the theme sheets — the
             // status washes themselves are component-scoped and come with the canvas' own stylesheet.
-            _window.rootVisualElement.AddAspidThemeStyleSheets();
+            _panel.Root.AddAspidThemeStyleSheets();
 
             _canvas = new AspidAnimatedDotsBackground();
-            _window.rootVisualElement.Add(_canvas);
+            _panel.Root.Add(_canvas);
         }
 
         [TearDown]
-        public void TearDown()
-        {
-            if (_window) Object.DestroyImmediate(_window);
-        }
+        public void TearDown() => _panel.Dispose();
 
         [UnityTest]
         public IEnumerator None_ResolvesTheThreeToneSignalGradient()
