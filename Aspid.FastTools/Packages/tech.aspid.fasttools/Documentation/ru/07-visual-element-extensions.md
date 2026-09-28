@@ -1,147 +1,138 @@
 # VisualElement Extensions
 
-В UI Toolkit каждое свойство элемента — отдельная инструкция: четыре строки на отступы, переменная на каждый дочерний элемент и `Add` в конце. FastTools превращает свойства, стили и события в методы, которые возвращают сам элемент, поэтому заголовок инспектора собирается одним выражением, а `SetPaddingX(12)` заменяет пару `style.paddingLeft` и `style.paddingRight`.
+Интерфейс UI Toolkit одной цепочкой вызовов — без отдельной строки на каждое свойство и стиль.
 
 ## Быстрый старт
-
-Примеры на этой странице собирают инспектор ассета `AbilityConfig` из [примера EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md). Добавьте `using Aspid.FastTools.UIElements;`:
 
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>var title = new Label("Ability Config");&#10;title.style.fontSize = 14;&#10;&#10;var header = new VisualElement();&#10;header.style.paddingLeft = 12;&#10;header.style.paddingRight = 12;&#10;header.style.paddingTop = 10;&#10;header.style.paddingBottom = 10;&#10;header.Add(title);</code></pre> | <pre lang="csharp"><code>var header = new VisualElement()&#10;    .SetPaddingX(12)&#10;    .SetPaddingY(10)&#10;    .AddChild(new Label("Ability Config")&#10;        .SetFontSize(14));</code></pre> |
 
-Сеттер возвращает тот же тип: `new Button().SetText("Create")` — это `Button`. `AddChild` и другие операции с дочерними элементами возвращают родителя. Методы на `style`, `textEdition` и `textSelection` возвращают этот объект, а не элемент.
+Цепочка сохраняет тип: <code lang="csharp">new Button().SetText("Create")</code> — это <code lang="class-name">Button</code>, а <code lang="function">AddChild</code> возвращает родителя, а не добавленный элемент.
 
 ## Имена методов
 
-Имена методов строятся по одному правилу:
-
-| Unity | FastTools | Примеры |
-|---|---|---|
-| свойство `x` | `SetX(value)` | `tooltip` → `SetTooltip` |
-| свойство `isX` | `SetX(value)`, без `is` | `isDelayed` → `SetDelayed` |
-| свойство стиля `style.x` | `SetX(value)` на элементе и на `style` | `style.fontSize` → `SetFontSize` |
-| событие `x` | `AddX` / `RemoveX` | `clicked` → `AddClicked` |
-| свойство-делегат `x` | `SetX`; у `Action` ещё `AddX` / `RemoveX` | `bindItem` → `SetBindItem`, `AddBindItem` |
-| метод `M()` | `MSelf()` | `Focus()` → `FocusSelf()` |
-
-Правило покрывает свойства и события всех элементов — от `VisualElement` до `MultiColumnTreeView`; полный список — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements). Исключения:
-
-- `EnumField` и `EnumFlagsField` (в редакторе) получают `Initialize` вместо `Init`;
-- `Button.SetClickable` принимает и `Clickable`, и `Action`.
-
-`IsFocused()` проверяет фокус:
-
-| До — Unity API | После — FastTools |
+| Unity | FastTools |
 |---|---|
-| <pre lang="csharp"><code>bool focused = search.focusController?&#10;    .focusedElement == search;</code></pre> | <pre lang="csharp"><code>bool focused = search.IsFocused();</code></pre> |
+| <code lang="csharp">tooltip = "Mana cost"</code> | <code lang="csharp">SetTooltip("Mana cost")</code> |
+| <code lang="csharp">isDelayed = true</code> | <code lang="csharp">SetDelayed(true)</code> |
+| <code lang="csharp">style.fontSize = 14</code> | <code lang="csharp">SetFontSize(14)</code> |
+| <code lang="csharp">clicked += Refresh</code> | <code lang="csharp">AddClicked(Refresh)</code> |
+| <code lang="csharp">bindItem = BindRow</code> | <code lang="csharp">SetBindItem(BindRow)</code> |
+| <code lang="csharp">Focus()</code> | <code lang="csharp">FocusSelf()</code> |
+| <code lang="csharp">Init(theme)</code> | <code lang="csharp">Initialize(theme)</code> |
+
+Остальные методы Unity переименованы по смыслу — они в разделах ниже. Полный список методов — в [справочнике API](https://vpdpersonal.github.io/Aspid.FastTools/ru/api/Aspid.FastTools.UIElements).
 
 ## Дочерние элементы
 
+| Unity | FastTools |
+|---|---|
+| <code lang="function">Add</code> | <code lang="function">AddChild</code>, <code lang="function">AddChildren</code> |
+| <code lang="function">Insert</code> | <code lang="function">InsertChild</code>, <code lang="function">InsertChildren</code> |
+| <code lang="function">Remove</code> | <code lang="function">RemoveChild</code>, <code lang="function">RemoveChildren</code> |
+| <code lang="function">RemoveAt</code> | <code lang="function">RemoveChildAt</code> |
+| <code lang="function">Clear</code> | <code lang="function">ClearChildren</code> |
+
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>header.Add(title);</code></pre> | <pre lang="csharp"><code>header.AddChild(title);</code></pre> |
-| <pre lang="csharp"><code>header.Add(title);&#10;header.Add(badge);</code></pre> | <pre lang="csharp"><code>header.AddChildren(title, badge);</code></pre> |
-| <pre lang="csharp"><code>header.Insert(0, badge);</code></pre> | <pre lang="csharp"><code>header.InsertChild(0, badge);</code></pre> |
-| <pre lang="csharp"><code>header.Insert(0, title);&#10;header.Insert(1, badge);</code></pre> | <pre lang="csharp"><code>header.InsertChildren(0, title, badge);</code></pre> |
-| <pre lang="csharp"><code>header.Remove(badge);</code></pre> | <pre lang="csharp"><code>header.RemoveChild(badge);</code></pre> |
-| <pre lang="csharp"><code>header.RemoveAt(0);</code></pre> | <pre lang="csharp"><code>header.RemoveChildAt(0);</code></pre> |
-| <pre lang="csharp"><code>header.Clear();</code></pre> | <pre lang="csharp"><code>header.ClearChildren();</code></pre> |
 | <pre lang="csharp"><code>if (isFree)&#10;    body.Add(helpBox);</code></pre> | <pre lang="csharp"><code>body.AddChildIf(isFree, helpBox);</code></pre> |
 
-У каждого метода есть вариант `…If(condition, …)`. `AddChildren` и `InsertChildren` принимают `params`, `IEnumerable`, `List`, `Span` или `ReadOnlySpan`, сохраняют порядок элементов и пропускают `null`-коллекцию.
+Вариант <code lang="csharp">…If</code> есть у каждого метода из первой таблицы.
 
 ## Стили
 
-Одно значение задаёт все стороны, `X` — левую и правую, `Y` — верхнюю и нижнюю. Пропущенные именованные параметры оставляют прежнее значение:
-
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>header.style.paddingLeft = 12;&#10;header.style.paddingRight = 12;&#10;header.style.borderBottomWidth = 1;</code></pre> | <pre lang="csharp"><code>header&#10;    .SetPaddingX(12)&#10;    .SetBorderWidth(bottom: 1);</code></pre> |
+| <pre lang="csharp"><code>header.style.marginTop = 4;&#10;header.style.marginBottom = 4;&#10;header.style.borderBottomWidth = 1;</code></pre> | <pre lang="csharp"><code>header&#10;    .SetMarginY(4)&#10;    .SetBorderWidth(bottom: 1);</code></pre> |
 
-| Метод | Задаёт | Варианты |
-|---|---|---|
-| `SetMargin`, `SetPadding` | `margin…`, `padding…` | `X`, `Y`, `Top`, `Right`, `Bottom`, `Left` |
-| `SetBorderWidth`, `SetBorderColor` | `border…Width`, `border…Color` | `X`, `Y`, `Top`, `Right`, `Bottom`, `Left` |
-| `SetUnitySlice` | `unitySlice…` | `X`, `Y`, `Top`, `Right`, `Bottom`, `Left` |
-| `SetDistance` | `top`, `right`, `bottom`, `left` | `X`, `Y`; одна сторона: `SetTop`, `SetRight`, `SetBottom`, `SetLeft` |
-| `SetBorderRadius` | `border…Radius` | `Top`, `Bottom`, `Left`, `Right`, `TopLeft`, `TopRight`, `BottomRight`, `BottomLeft` |
-| `SetSize`, `SetMinSize`, `SetMaxSize` | `width` и `height`, `min…`, `max…` | одно значение, два или одно именованное |
-| `SetBackgroundPosition` | `backgroundPositionX`, `backgroundPositionY` | `X`, `Y` |
+| Вызов | Задаёт |
+|---|---|
+| <code lang="csharp">SetPadding(8)</code> | все стороны |
+| <code lang="csharp">SetPaddingX(8)</code> | левую и правую |
+| <code lang="csharp">SetPaddingY(8)</code> | верхнюю и нижнюю |
+| <code lang="csharp">SetPadding(top: 8, left: 4)</code> | верхнюю и левую, остальные не меняет |
+| <code lang="csharp">SetBorderRadiusTop(6)</code> | оба верхних угла |
+| <code lang="csharp">SetSize(24, 16)</code> | <code lang="csharp">width</code> и <code lang="csharp">height</code> |
+| <code lang="csharp">SetTop(8)</code> | <code lang="csharp">top</code>, как <code lang="csharp">SetDistance(top: 8)</code> |
 
-Сеттеры цвета принимают и строку hex, а сеттеры ассетов — путь в `Resources`:
+Остальные методы стилей работают по тому же принципу.
+
+### Цвет из строки и ассеты из Resources
 
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>if (ColorUtility.TryParseHtmlString(&#10;        "#FFC24D", out var color))&#10;    badge.style.color = color;</code></pre> | <pre lang="csharp"><code>badge.SetColor("#FFC24D");</code></pre> |
 | <pre lang="csharp"><code>root.style.backgroundImage = Resources&#10;    .Load&lt;Texture2D&gt;("UI/Card");</code></pre> | <pre lang="csharp"><code>root.SetBackgroundImageFromResources(&#10;    "UI/Card");</code></pre> |
 
-Если строка не разбирается как цвет или по пути нет ассета, метод пишет предупреждение в консоль и оставляет элемент без изменений. Путь в `Resources` принимают также `SetImageFromResources`, `SetSpriteFromResources`, `SetVectorImageFromResources` и `AddStyleSheetFromResources`.
+Вариант <code lang="csharp">…FromResources</code> есть также у <code lang="function">SetImage</code>, <code lang="function">SetSprite</code>, <code lang="function">SetVectorImage</code>, <code lang="function">AddStyleSheet</code> и <code lang="function">RemoveStyleSheet</code>.
 
-### Bold и italic
+### Жирный и курсив
 
-`SetNormalUnityFontStyleAndWeight()` сбрасывает оба флага; остальные пресеты меняют один флаг и сохраняют второй:
+<code lang="csharp">SetNormalUnityFontStyleAndWeight()</code> сбрасывает оба флага; остальные пресеты меняют один флаг и сохраняют второй:
 
 | Метод | Меняет |
 |---|---|
-| `AddBold…` | `Normal` → `Bold`, `Italic` → `BoldAndItalic` |
-| `RemoveBold…` | `Bold` → `Normal`, `BoldAndItalic` → `Italic` |
-| `AddItalic…` | `Normal` → `Italic`, `Bold` → `BoldAndItalic` |
-| `RemoveItalic…` | `Italic` → `Normal`, `BoldAndItalic` → `Bold` |
-
-Остальные значения не меняются.
+| <code lang="function">AddBold…</code> | <code lang="csharp">Normal</code> → <code lang="csharp">Bold</code>, <code lang="csharp">Italic</code> → <code lang="csharp">BoldAndItalic</code> |
+| <code lang="function">RemoveBold…</code> | <code lang="csharp">Bold</code> → <code lang="csharp">Normal</code>, <code lang="csharp">BoldAndItalic</code> → <code lang="csharp">Italic</code> |
+| <code lang="function">AddItalic…</code> | <code lang="csharp">Normal</code> → <code lang="csharp">Italic</code>, <code lang="csharp">Bold</code> → <code lang="csharp">BoldAndItalic</code> |
+| <code lang="function">RemoveItalic…</code> | <code lang="csharp">Italic</code> → <code lang="csharp">Normal</code>, <code lang="csharp">BoldAndItalic</code> → <code lang="csharp">Bold</code> |
 
 > [!NOTE]
-> Пресеты читают текущее значение из `style` элемента, а не итоговый стиль: начертание, заданное в USS, считается `Normal`.
+> Пресеты читают текущее значение из <code lang="csharp">style</code> элемента, а не итоговый стиль: начертание, заданное в USS, считается <code lang="csharp">Normal</code>.
 
 ## USS-классы и таблицы стилей
 
-| До — Unity API | После — FastTools |
+| Unity | FastTools |
 |---|---|
-| <pre lang="csharp"><code>badge.AddToClassList("free");</code></pre> | <pre lang="csharp"><code>badge.AddClass("free");</code></pre> |
-| <pre lang="csharp"><code>badge.RemoveFromClassList("free");</code></pre> | <pre lang="csharp"><code>badge.RemoveClass("free");</code></pre> |
-| <pre lang="csharp"><code>badge.ToggleInClassList("free");</code></pre> | <pre lang="csharp"><code>badge.ToggleClass("free");</code></pre> |
-| <pre lang="csharp"><code>badge.EnableInClassList(&#10;    "free", isFree);</code></pre> | <pre lang="csharp"><code>badge.EnableClass("free", isFree);</code></pre> |
-| <pre lang="csharp"><code>badge.ClearClassList();</code></pre> | <pre lang="csharp"><code>badge.ClearClasses();</code></pre> |
-| <pre lang="csharp"><code>root.styleSheets.Add(styleSheet);</code></pre> | <pre lang="csharp"><code>root.AddStyleSheet(styleSheet);</code></pre> |
-| <pre lang="csharp"><code>root.styleSheets.Remove(styleSheet);</code></pre> | <pre lang="csharp"><code>root.RemoveStyleSheet(styleSheet);</code></pre> |
-| <pre lang="csharp"><code>root.styleSheets.Remove(Resources&#10;    .Load&lt;StyleSheet&gt;("UI/Ability"));</code></pre> | <pre lang="csharp"><code>root.RemoveStyleSheetFromResources(&#10;    "UI/Ability");</code></pre> |
+| <code lang="function">AddToClassList</code> | <code lang="function">AddClass</code> |
+| <code lang="function">RemoveFromClassList</code> | <code lang="function">RemoveClass</code> |
+| <code lang="function">ToggleInClassList</code> | <code lang="function">ToggleClass</code> |
+| <code lang="function">EnableInClassList</code> | <code lang="function">EnableClass</code> |
+| <code lang="function">ClearClassList</code> | <code lang="function">ClearClasses</code> |
+| <code lang="function">styleSheets.Add</code> | <code lang="function">AddStyleSheet</code> |
+| <code lang="function">styleSheets.Remove</code> | <code lang="function">RemoveStyleSheet</code> |
 
 ## Значения и события
 
+| Unity | FastTools |
+|---|---|
+| <code lang="csharp">value = 10</code> | <code lang="csharp">SetValue(10)</code> |
+| <code lang="csharp">SetValueWithoutNotify(10)</code> | <code lang="csharp">SetValue(10, notify: false)</code> |
+| <code lang="function">RegisterValueChangedCallback</code> | <code lang="function">AddValueChanged</code> |
+| <code lang="function">UnregisterValueChangedCallback</code> | <code lang="function">RemoveValueChanged</code> |
+
+- <code lang="csharp">AddValueChanged(evt =&gt; …)</code> не требует аргументов типа: перегрузки есть для всех полей Unity, а при установленном <code lang="csharp">com.unity.mathematics</code> — и для его типов;
+- для своих типов — <code lang="csharp">SetValue&lt;T, TValue&gt;(…)</code> и <code lang="csharp">AddValueChanged&lt;TField, TValue&gt;(…)</code>.
+
+## Фокус
+
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>manaCost.value = 10;</code></pre> | <pre lang="csharp"><code>manaCost.SetValue(10);</code></pre> |
-| <pre lang="csharp"><code>manaCost.SetValueWithoutNotify(10);</code></pre> | <pre lang="csharp"><code>manaCost.SetValue(10, notify: false);</code></pre> |
-| <pre lang="csharp"><code>manaCost.RegisterValueChangedCallback(&#10;    OnManaCostChanged);</code></pre> | <pre lang="csharp"><code>manaCost.AddValueChanged(&#10;    OnManaCostChanged);</code></pre> |
-| <pre lang="csharp"><code>manaCost.UnregisterValueChangedCallback(&#10;    OnManaCostChanged);</code></pre> | <pre lang="csharp"><code>manaCost.RemoveValueChanged(&#10;    OnManaCostChanged);</code></pre> |
-
-Типизированные перегрузки покрывают числа, `string`, `bool`, векторы, типы Unity вроде `Color` и `Gradient`, а при установленном `com.unity.mathematics` — его векторы, матрицы и `quaternion`, поэтому `AddValueChanged(evt => …)` не требует аргументов типа. Для остальных типов — `SetValue<TField, TValue>` и `AddValueChanged<TField, TValue>`.
+| <pre lang="csharp"><code>if (manaCost.focusController?&#10;        .focusedElement == manaCost)&#10;    Refresh();</code></pre> | <pre lang="csharp"><code>if (manaCost.IsFocused())&#10;    Refresh();</code></pre> |
 
 ## Манипуляторы
 
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>title.AddManipulator(&#10;    new Clickable(Refresh));</code></pre> | <pre lang="csharp"><code>title.AddClickable(Refresh);</code></pre> |
-| <pre lang="csharp"><code>var clickable = new Clickable(Refresh);&#10;title.AddManipulator(clickable);</code></pre> | <pre lang="csharp"><code>title.AddClickable(&#10;    Refresh, out var clickable);</code></pre> |
 | <pre lang="csharp"><code>title.AddManipulator(&#10;    new KeyboardNavigationManipulator(&#10;        OnNavigate));</code></pre> | <pre lang="csharp"><code>title.AddKeyboardNavigationManipulator(&#10;    OnNavigate);</code></pre> |
 | <pre lang="csharp"><code>title.AddManipulator(&#10;    new ContextualMenuManipulator(&#10;        BuildMenu));</code></pre> | <pre lang="csharp"><code>title.AddContextualMenuManipulator(&#10;    BuildMenu);</code></pre> |
-
-У `AddClickable` и методов `Add…Manipulator` есть перегрузка с `out`, которая сохраняет манипулятор для `RemoveManipulatorSelf`. `AddClickable` принимает и `Action<EventBase>`, и `Action` с `delay` и `interval`.
+| <pre lang="csharp"><code>var clickable = new Clickable(Refresh);&#10;title.AddManipulator(clickable);&#10;title.RemoveManipulator(clickable);</code></pre> | <pre lang="csharp"><code>title.AddClickable(&#10;    Refresh, out var clickable);&#10;title.RemoveManipulatorSelf(clickable);</code></pre> |
 
 ## Расширения редактора
 
-Эти методы лежат в сборке `Aspid.FastTools.Editor` и работают только в редакторе. Добавьте `using Aspid.FastTools.UIElements.Editors;`:
-
 | До — Unity API | После — FastTools |
 |---|---|
-| <pre lang="csharp"><code>title.bindingPath = "_abilityName";&#10;title.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>title.BindTo(&#10;    serializedObject, "_abilityName");</code></pre> |
-| <pre lang="csharp"><code>title.bindingPath = "_abilityName";</code></pre> | <pre lang="csharp"><code>title.SetBindingPath("_abilityName");</code></pre> |
-| <pre lang="csharp"><code>title.BindProperty(abilityName);</code></pre> | <pre lang="csharp"><code>title.BindPropertyTo(abilityName);</code></pre> |
-| <pre lang="csharp"><code>root.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>root.BindTo(serializedObject);</code></pre> |
-| <pre lang="csharp"><code>root.Unbind();</code></pre> | <pre lang="csharp"><code>root.UnbindFrom();</code></pre> |
+| <pre lang="csharp"><code>manaCost.bindingPath = "_manaCost";&#10;manaCost.Bind(serializedObject);</code></pre> | <pre lang="csharp"><code>manaCost.BindTo(&#10;    serializedObject, "_manaCost");</code></pre> |
 
-У `PropertyField` есть `SetLabel` и `AddValueChanged` / `RemoveValueChanged` с `SerializedPropertyChangeEvent`:
+| Unity | FastTools |
+|---|---|
+| <code lang="csharp">bindingPath</code> | <code lang="function">SetBindingPath</code> |
+| <code lang="function">BindProperty</code> | <code lang="function">BindPropertyTo</code> |
+| <code lang="function">Unbind</code> | <code lang="function">UnbindFrom</code> |
+
+У <code lang="class-name">PropertyField</code> есть <code lang="function">SetLabel</code> и <code lang="function">AddValueChanged</code> / <code lang="function">RemoveValueChanged</code> с <code lang="class-name">SerializedPropertyChangeEvent</code>:
 
 ```csharp
 var manaCost = new PropertyField(
@@ -152,19 +143,21 @@ var manaCost = new PropertyField(
 
 Для записи в свойство из собственного кода используйте [SerializedProperty Extensions](08-serialized-property-extensions.md).
 
-### Скрипт и окно-владелец
+### Открыть скрипт по двойному клику
 
-`AddOpenScriptCommand` открывает в IDE скрипт `MonoBehaviour` или `ScriptableObject` по двойному клику левой кнопкой; для других объектов ничего не добавляет:
+<code lang="function">AddOpenScriptCommand</code> открывает в IDE скрипт <code lang="class-name">MonoBehaviour</code> или <code lang="class-name">ScriptableObject</code> по двойному клику левой кнопкой; для других объектов ничего не добавляет:
 
 ```csharp
 title.AddOpenScriptCommand(target);
 ```
 
-`GetOwnerWindow()` возвращает окно, на панели которого лежит элемент; иначе — окно в фокусе, затем окно под курсором или `null`.
+### Окно элемента
+
+| До — Unity API | После — FastTools |
+|---|---|
+| <pre lang="csharp"><code>var panel = title.panel;&#10;var window = Resources&#10;    .FindObjectsOfTypeAll&lt;EditorWindow&gt;()&#10;    .FirstOrDefault(w =&gt; panel ==&#10;        w.rootVisualElement.panel);&#10;if (!window)&#10;    window = EditorWindow.focusedWindow;&#10;if (!window)&#10;    window = EditorWindow.mouseOverWindow;</code></pre> | <pre lang="csharp"><code>var window = title.GetOwnerWindow();</code></pre> |
 
 ## Собственные свойства USS
-
-`TryGetByEnum` читает строковое свойство USS и разбирает его как enum без учёта регистра:
 
 | До — Unity API | После — FastTools |
 |---|---|
@@ -172,8 +165,6 @@ title.AddOpenScriptCommand(target);
 
 ## Пример в пакете
 
-В [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) окно каталога и инспектор `AbilityConfig` собраны на этих расширениях: `ListView` одной цепочкой, `BindTo` для полей, `AddOpenScriptCommand` на заголовке.
+Окно каталога и инспектор <code lang="class-name">AbilityConfig</code> в примере [EditorTools](../../Samples~/EditorTools/Documentation/README.ru.md) собраны на этих расширениях.
 
-![Halve cooldown, +5 MP обновляет поля и описание эффекта; Undo возвращает прежние значения.](../../Samples~/EditorTools/Documentation/Images/demo.gif)
-
-Halve cooldown, +5 MP обновляет поля и описание эффекта; Undo возвращает прежние значения.
+![Окно Ability Catalog из примера EditorTools](../../Samples~/EditorTools/Documentation/Images/demo.gif)

@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using UnityEditor.Compilation;
 using Assembly = System.Reflection.Assembly;
+using AssemblyFlags = UnityEditor.Compilation.AssemblyFlags;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.Types.Editors
