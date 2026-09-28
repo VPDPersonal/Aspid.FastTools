@@ -35,10 +35,16 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
-        /// Returns whether the element currently has keyboard focus.
+        /// Returns whether the element is the <see cref="FocusController.focusedElement"/> of its panel.
         /// </summary>
+        /// <remarks>
+        /// <see cref="FocusController.focusedElement"/> reports the outermost composite element, so a field inside another
+        /// field (a <see cref="FloatField"/> of a <see cref="Vector3Field"/>) or inside a <see cref="ListView"/>,
+        /// <see cref="TreeView"/> or <see cref="MultiColumnListView"/> row returns <see langword="false"/> while it has focus.
+        /// Track such a field with <see cref="FocusInEvent"/> and <see cref="FocusOutEvent"/> instead.
+        /// </remarks>
         /// <param name="element">The element to check.</param>
-        /// <returns><see langword="true"/> if the element holds keyboard focus; otherwise, <see langword="false"/>.</returns>
+        /// <returns><see langword="true"/> if the element is the panel's focused element; otherwise, <see langword="false"/>.</returns>
         public static bool IsFocused(this Focusable element) =>
             element.focusController?.focusedElement == element;
 

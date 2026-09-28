@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `RemoveChildren` and `RemoveChildrenIf` remove several children in one call and take the same `params`, `IEnumerable`, `List`, `Span` and `ReadOnlySpan` overloads as `AddChildren`.
 - `ToggleButtonGroup` gets typed `SetValue`, `AddValueChanged`, `RemoveValueChanged` and `SetLabel` overloads for `ToggleButtonGroupState`, so calls such as `AddValueChanged(evt => …)` need no type arguments.
+- `RectIntField` gets a typed `SetLabel`, so `SetLabel("Area")` needs no type arguments, as on `RectField`.
+- `SetRootItemsSelf` fills a `TreeView` or `MultiColumnTreeView` in a chain: `tree.SetAutoExpand(true).SetRootItemsSelf(items)`.
 - `TextField`, `IntegerField`, `LongField`, `UnsignedIntegerField`, `UnsignedLongField`, `FloatField`, `DoubleField` and `Hash128Field` get chainable setters: `SetMaxLength`, `SetMaskChar`, `SetDelayed`, `SetReadOnly`, `SetPassword`, `SetPlaceholder`, `SetHidePlaceholderOnFocus`, `SetKeyboardType`, `SetAutoCorrection`, `SetHideMobileInput`, `SetHideSoftKeyboard`, and for text selection `SetSelectable`, `SetSelectAllOnFocus`, `SetSelectAllOnMouseUp`, `SetDoubleClickSelectsWord`, `SetTripleClickSelectsLine`, `SetCursorIndex`, `SetSelectIndex`, `AddOnCursorIndexChange` / `RemoveOnCursorIndexChange`, `AddOnSelectIndexChange` / `RemoveOnSelectIndexChange`. The `ITextEdition` and `ITextSelection` setters do not reach these fields. Other value types use `TextInputBaseFieldExtensions` and `TextInputBaseFieldTextSelectionExtensions`.
 - Added `AndApplyWithoutUndo` counterparts for every `SerializedProperty` setter with immediate application, including `SetValue` overloads, object references, enums, and array size helpers.
 - Analyzer `AFT0009` (warning) — two `[TypeSelector]` base types have no type in common, so the selector is empty.
@@ -101,6 +103,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A type deriving from a type of another assembly that shares its namespace through `InternalsVisibleTo` now gets markers of its own; its calls used to bind to the base type's overload and open nothing.
 - `WithName($"Br{{ace}}")` gives `Br{ace}`, `WithName` text with U+2028, U+2029 or U+0085 compiles, and a user's own `WithName` extension no longer renames the marker.
 - `Persistent()` no longer leaks the `SerializedObject` it creates when the property path no longer exists on the targets; it disposes that object before returning `null`.
+- `AddChildren`, `InsertChildren` and their `…If` variants with an `IEnumerable` no longer throw `InvalidOperationException` ("Collection was modified") when given `Children()` of another element: `target.AddChildren(source.Children())` moves every child.
 - Types sample: the `Enemy Type` picker no longer offers the abstract `Enemy`, which spawned empty capsules and an error per enemy; the rename step of the README now uses the IDE's Rename refactoring, so `ArmoredGrunt` keeps compiling.
 - SerializeReferences sample: no more CS0414 warning on import, and deleting the Training Dummy in Play Mode no longer throws `MissingReferenceException` on every shot.
 - EditorTools sample: the Ability Catalog window follows assets created or deleted in the Project window, and **Create** selects the new asset even while a search is active.

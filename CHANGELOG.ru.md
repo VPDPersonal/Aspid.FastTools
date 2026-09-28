@@ -13,6 +13,8 @@
 
 - Добавлены `RemoveChildren` и `RemoveChildrenIf`: удаляют несколько дочерних элементов за один вызов и принимают те же перегрузки `params`, `IEnumerable`, `List`, `Span` и `ReadOnlySpan`, что и `AddChildren`.
 - Для `ToggleButtonGroup` добавлены типизированные перегрузки `SetValue`, `AddValueChanged`, `RemoveValueChanged` и `SetLabel` для `ToggleButtonGroupState`, поэтому вызовы вроде `AddValueChanged(evt => …)` не требуют аргументов типа.
+- Для `RectIntField` добавлен типизированный `SetLabel`, поэтому `SetLabel("Area")` не требует аргументов типа, как и у `RectField`.
+- `SetRootItemsSelf` заполняет `TreeView` или `MultiColumnTreeView` в цепочке: `tree.SetAutoExpand(true).SetRootItemsSelf(items)`.
 - `TextField`, `IntegerField`, `LongField`, `UnsignedIntegerField`, `UnsignedLongField`, `FloatField`, `DoubleField` и `Hash128Field` получили цепочечные сеттеры: `SetMaxLength`, `SetMaskChar`, `SetDelayed`, `SetReadOnly`, `SetPassword`, `SetPlaceholder`, `SetHidePlaceholderOnFocus`, `SetKeyboardType`, `SetAutoCorrection`, `SetHideMobileInput`, `SetHideSoftKeyboard`, а для выделения текста — `SetSelectable`, `SetSelectAllOnFocus`, `SetSelectAllOnMouseUp`, `SetDoubleClickSelectsWord`, `SetTripleClickSelectsLine`, `SetCursorIndex`, `SetSelectIndex`, `AddOnCursorIndexChange` / `RemoveOnCursorIndexChange`, `AddOnSelectIndexChange` / `RemoveOnSelectIndexChange`. Сеттеры `ITextEdition` и `ITextSelection` к этим полям не применяются. Для других типов значений есть `TextInputBaseFieldExtensions` и `TextInputBaseFieldTextSelectionExtensions`.
 - Добавлены варианты `AndApplyWithoutUndo` для всех сеттеров `SerializedProperty` с немедленным применением, включая перегрузки `SetValue`, ссылки на объекты, перечисления и методы изменения размера массивов.
 - Анализатор `AFT0009` (предупреждение) — два базовых типа `[TypeSelector]` не имеют общего типа, поэтому селектор пуст.
@@ -101,6 +103,7 @@
 - Тип, унаследованный от типа другой сборки, с которой он делит пространство имён через `InternalsVisibleTo`, теперь получает собственные маркеры; раньше его вызовы попадали в перегрузку базового типа и ничего не открывали.
 - `WithName($"Br{{ace}}")` даёт `Br{ace}`, текст `WithName` с U+2028, U+2029 или U+0085 компилируется, а собственное расширение `WithName` пользователя больше не переименовывает маркер.
 - `Persistent()` больше не оставляет неосвобождённым созданный `SerializedObject`, если путь свойства больше не существует на целевых объектах: он освобождается перед возвратом `null`.
+- `AddChildren`, `InsertChildren` и их варианты `…If` с `IEnumerable` больше не бросают `InvalidOperationException` («Collection was modified»), когда получают `Children()` другого элемента: `target.AddChildren(source.Children())` переносит всех детей.
 - Пример Types: селектор `Enemy Type` больше не предлагает абстрактный `Enemy`, из-за которого появлялись пустые капсулы и ошибка на каждого врага; шаг README с переименованием теперь использует Rename-рефакторинг IDE, и `ArmoredGrunt` продолжает компилироваться.
 - Пример SerializeReferences: при импорте больше нет предупреждения CS0414, а удаление Training Dummy в Play Mode больше не бросает `MissingReferenceException` на каждом выстреле.
 - Пример EditorTools: окно Ability Catalog отслеживает ассеты, созданные или удалённые в окне Project, а **Create** выделяет новый ассет и при активном поиске.
