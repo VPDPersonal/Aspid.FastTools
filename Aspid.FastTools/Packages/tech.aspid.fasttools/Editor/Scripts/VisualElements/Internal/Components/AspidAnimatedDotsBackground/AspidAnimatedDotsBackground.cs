@@ -1,5 +1,7 @@
+using System;
 using UnityEditor;
 using UnityEngine;
+using UnityEditorInternal;
 using UnityEngine.UIElements;
 
 // ReSharper disable once CheckNamespace
@@ -9,6 +11,12 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
     internal sealed partial class AspidAnimatedDotsBackground : VisualElement
     {
         private const int BlobCount = 3;
+        private const int DotSegments = 10;
+        private const float MinVisibleAlpha = 1f / 255f;
+
+        internal const int VerticesPerDot = DotSegments * 2 + 1;
+        internal const int IndicesPerDot = DotSegments * 9;
+        internal const int MaxDotsPerMesh = ushort.MaxValue / VerticesPerDot;
         private const string StyleSheetPath = "UI/Components/Aspid-FastTools-AspidAnimatedDotsBackground";
 
         private readonly Vector2[] _blobRadii = new Vector2[BlobCount];
@@ -17,6 +25,9 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
         private readonly StatusStyle _status;
         private readonly AspidAnimatedDotsBackgroundColorsStyle _colors;
         private readonly AspidAnimatedDotsBackgroundSizeStyle _size;
+
+        private Vertex[] _vertices = Array.Empty<Vertex>();
+        private ushort[] _indices = Array.Empty<ushort>();
 
         private IVisualElementScheduledItem _animation;
 
@@ -85,10 +96,17 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             _size = new AspidAnimatedDotsBackgroundSizeStyle(
                 this, preset.DotRadius, preset.DotSpacing, preset.ScaleReferenceSize, MarkDirtyRepaint);
 
-            _animation = schedule.Execute(MarkDirtyRepaint).Every(33);
+            _animation = schedule.Execute(Tick).Every(33);
 
             RegisterCallback<AttachToPanelEvent>(_ => _animation.Resume());
             RegisterCallback<DetachFromPanelEvent>(_ => _animation.Pause());
+        }
+
+        private void Tick()
+        {
+            // The field only drifts with time, so there is nothing new to show while Unity is in the background.
+            if (InternalEditorUtility.isApplicationActive)
+                MarkDirtyRepaint();
         }
 
         private void OnGenerateVisualContent(MeshGenerationContext context)
@@ -97,7 +115,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             if (rect.width <= 0f || rect.height <= 0f) return;
             if (!(_size.ScaleReference > 0f)) return;
 
-            var painter = context.painter2D;
             var time = (float)EditorApplication.timeSinceStartup;
 
             var scale = Mathf.Sqrt(Mathf.Min(rect.width, rect.height) / _size.ScaleReference);
@@ -105,11 +122,17 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
             var radius = _size.DotRadius * scale;
             if (!(spacing > 0f) || !(radius > 0f)) return;
 
+            var fringe = 1f / Mathf.Max(EditorGUIUtility.pixelsPerPoint, 1f);
+
             for (var i = 0; i < BlobCount; i++)
             {
                 _blobCenters[i] = GetBlobCenter(i, rect.size, time);
                 _blobRadii[i] = GetBlobRadius(i, rect.size);
             }
+
+            // Every dot goes into one hand-built mesh: a Painter2D path and Fill per dot re-tessellated
+            // a thousand-plus paths on every frame.
+            var dotCount = 0;
 
             for (var y = spacing * 0.5f; y < rect.height; y += spacing)
             {
@@ -120,12 +143,99 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
 
                     var color = blendedHighlight;
                     color.a = blendedHighlight.a * strength;
+                    if (color.a < MinVisibleAlpha) continue;
 
-                    painter.fillColor = color;
-                    DrawDot(painter, new Vector2(x, y), radius);
+                    EnsureCapacity(dotCount + 1);
+                    WriteDot(_vertices, _indices, dotCount, new Vector2(x, y), radius, fringe, color);
+
+                    if (++dotCount is MaxDotsPerMesh)
+                    {
+                        Flush(context, dotCount);
+                        dotCount = 0;
+                    }
                 }
             }
+
+            if (dotCount > 0)
+                Flush(context, dotCount);
         }
+
+        private void EnsureCapacity(int dotCount)
+        {
+            var vertexCount = dotCount * VerticesPerDot;
+            if (_vertices.Length >= vertexCount) return;
+
+            var capacity = Mathf.Min(Mathf.Max(dotCount, _vertices.Length / VerticesPerDot * 2, 64), MaxDotsPerMesh);
+            Array.Resize(ref _vertices, capacity * VerticesPerDot);
+            Array.Resize(ref _indices, capacity * IndicesPerDot);
+        }
+
+        private void Flush(MeshGenerationContext context, int dotCount)
+        {
+            var vertexCount = dotCount * VerticesPerDot;
+            var indexCount = dotCount * IndicesPerDot;
+            var mesh = context.Allocate(vertexCount, indexCount);
+
+            for (var i = 0; i < vertexCount; i++)
+                mesh.SetNextVertex(_vertices[i]);
+
+            for (var i = 0; i < indexCount; i++)
+                mesh.SetNextIndex(_indices[i]);
+        }
+
+        // A solid fan out to half a pixel inside the radius and a ring fading to transparent half a pixel outside it,
+        // which stands in for the anti-aliased edge Painter2D gave each dot.
+        internal static void WriteDot(
+            Vertex[] vertices, ushort[] indices, int slot, Vector2 center, float radius, float fringe, Color color)
+        {
+            var firstVertex = slot * VerticesPerDot;
+            var firstIndex = slot * IndicesPerDot;
+
+            var innerRadius = Mathf.Max(radius - fringe * 0.5f, 0f);
+            var outerRadius = radius + fringe * 0.5f;
+            var transparent = new Color(color.r, color.g, color.b, 0f);
+
+            vertices[firstVertex] = CreateVertex(center, color);
+
+            for (var i = 0; i < DotSegments; i++)
+            {
+                var angle = Mathf.PI * 2f * i / DotSegments;
+                var direction = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+
+                vertices[firstVertex + 1 + i] = CreateVertex(center + direction * innerRadius, color);
+                vertices[firstVertex + 1 + DotSegments + i] = CreateVertex(center + direction * outerRadius, transparent);
+            }
+
+            var centerIndex = (ushort)firstVertex;
+            var index = firstIndex;
+
+            for (var i = 0; i < DotSegments; i++)
+            {
+                var next = (i + 1) % DotSegments;
+                var inner = (ushort)(centerIndex + 1 + i);
+                var innerNext = (ushort)(centerIndex + 1 + next);
+                var outer = (ushort)(centerIndex + 1 + DotSegments + i);
+                var outerNext = (ushort)(centerIndex + 1 + DotSegments + next);
+
+                indices[index++] = centerIndex;
+                indices[index++] = inner;
+                indices[index++] = innerNext;
+
+                indices[index++] = inner;
+                indices[index++] = outer;
+                indices[index++] = outerNext;
+
+                indices[index++] = inner;
+                indices[index++] = outerNext;
+                indices[index++] = innerNext;
+            }
+        }
+
+        private static Vertex CreateVertex(Vector2 position, Color color) => new()
+        {
+            position = new Vector3(position.x, position.y, Vertex.nearZ),
+            tint = color,
+        };
 
         private (float strength, Color blendedHighlight) SampleBlobField(Vector2 point, float time)
         {
@@ -190,28 +300,6 @@ namespace Aspid.FastTools.UIElements.Editors.Internal
                 + Mathf.Sin(point.y * 0.019f + time * 0.67f + index * 1.3f) * 6f;
 
             return new Vector2(point.x + offsetX, point.y + offsetY);
-        }
-
-        private static void DrawDot(Painter2D painter, Vector2 center, float radius)
-        {
-            const int segments = 10;
-
-            painter.BeginPath();
-            {
-                for (var i = 0; i < segments; i++)
-                {
-                    var angle = Mathf.PI * 2f * i / segments;
-                    var point = new Vector2(
-                        center.x + Mathf.Cos(angle) * radius,
-                        center.y + Mathf.Sin(angle) * radius);
-
-                    if (i is 0) painter.MoveTo(point);
-                    else painter.LineTo(point);
-                }
-            }
-            painter.ClosePath();
-
-            painter.Fill();
         }
     }
 }
