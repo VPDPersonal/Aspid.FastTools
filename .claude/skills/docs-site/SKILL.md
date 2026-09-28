@@ -91,17 +91,17 @@ Generated and gitignored: `Website/tutorials/`, `Website/i18n/`, `Website/change
   (`demo`/`scene` captures, SVG diagrams, gallery previews). `src/remark/themedImages.js` swaps them per theme.
   **Editor UI captures (Inspector, windows, pickers) do not** — they stay in the dark editor theme in both site
   themes; never report a missing `-light` for them.
-- **Editor captures are framed automatically.** In `/docs` and `/tutorials` an image renders inside the
-  window frame (`doc-image-panel`, `src/theme/MDXComponents/Img`). The exception is `demo`/`scene`
-  (`.gif`/`.png`) on a *tutorial* page, which keeps the bare scene look; the same file on a doc page is framed.
+- **Editor captures have no frame around them.** In `/docs` and `/tutorials` an image renders in a plain
+  `doc-image-panel` wrapper (`src/theme/MDXComponents/Img`): it fills the article, and the capture's own 1px edge and
+  rounded corners are the only frame — never add a window, padding or shadow around it. The exception is
+  `demo`/`scene` (`.gif`/`.png`) on a *tutorial* page, which keeps the bare scene look.
   So name inspector captures anything but `demo`/`scene`, and name scene footage exactly that.
-  A sample's `demo`/`scene` linked from a doc page is never framed either: a scene sample's gets `.scene-footage`,
-  any other sample's (an editor window, e.g. EditorTools) gets `.window-footage` — the capture is the only frame.
+  A scene sample's `demo`/`scene` linked from a doc page gets `.scene-footage` (background recoloured, no edge).
 - `.sample-scene` (the background-recolouring filter) is applied by `themedImages.js` only to `demo`/`scene`
   files inside a **hardcoded list of sample folders** — a new sample must be added to that regex.
 - A paragraph that repeats the image's alt text right below it becomes the caption (`doc-media-caption`).
-- Click or Enter opens the image in a modal (Esc closes). Unframed images are capped at 640×520;
-  framed and `.sample-scene` media fill the article.
+- Click or Enter opens the image in a modal (Esc closes). Images outside
+  `/docs` and `/tutorials` are capped at 640×520; article captures and `.sample-scene` media fill the article.
 - Status badges (`Images/status-badge-*.svg`) are links, not captures: they keep their size and do not zoom.
 - A static picture can have a live site version: `src/remark/liveDiagrams.js` maps the file name to a component
   (`profiler-markers-hierarchy.svg` → `ProfilerHierarchy`). Markdown
@@ -164,7 +164,7 @@ to every main doc page, always to the English file and its `ru/` twin together.
 - **Code blocks fit the article width** without horizontal scrolling. Site table columns are equal and fixed, so
   long code in a cell breaks mid-word: keep cells short, move a long attribute into the column header.
 - **A picture must show something the text does not.** A capture that repeats the lead or a table goes. Diagrams
-  and previews follow the Introduction's feature cards: site tokens, one frame, no shadow, no frame in a frame.
+  and previews follow the Introduction's feature cards: site tokens, one edge, no shadow, no frame around a capture.
 - Text stays left-aligned (never justified) and fills the article width.
 - A bug found in package code while writing docs is not fixed on the docs branch: report it and offer a separate
   task in its own worktree.
@@ -318,8 +318,8 @@ switcher built from the navbar's left items, search), scrolling document list, p
 language, theme).
 
 Admonitions are outline-only: a coloured border and heading on the article surface, inline code in the neutral chip.
-`src/components/BackgroundWindows` cuts windows into the reading surface only for framed images
-(`.doc-background-window`); `DotRipple` draws the click ripple in the accent colour everywhere.
+`src/components/BackgroundWindows` cuts windows into the reading surface for `.doc-background-window` elements;
+since captures lost their frame nothing carries that class. `DotRipple` draws the click ripple in the accent colour everywhere.
 
 `src/plugins/search` builds a locale-specific index from Docusaurus' resolved document sources and permalinks.
 `src/theme/SearchBar` loads it on demand, searches Docs/Samples/API/Changelog, and supports Cmd/Ctrl+K, arrow

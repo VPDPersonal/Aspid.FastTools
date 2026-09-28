@@ -10,12 +10,12 @@ export default function DocImage(props) {
   const [preview, setPreview] = useState(null);
   const dialog = useRef(null);
   const opener = useRef(null);
-  // Every editor capture in a guide or tutorial sits in a framed window; scene and demo
-  // captures keep the plain sample-scene look in tutorials and get the frame only in guides.
+  // Editor captures in a guide or tutorial fill the article with their own edge; scene and demo
+  // captures keep the plain sample-scene look in tutorials and are treated as captures only in guides.
   const article = /\/(?:docs|tutorials)\/./.test(pathname);
   const sceneCapture = typeof props.src === 'string'
     && /\/(?:demo|scene)(?:-light)?(?:-[0-9a-f]{8,})?\.(?:gif|png)$/i.test(props.src);
-  const framedCapture = article && (!sceneCapture || /\/docs\//.test(pathname));
+  const articleCapture = article && (!sceneCapture || /\/docs\//.test(pathname));
   useEffect(() => {
     if (!preview) return undefined;
     const overflow = document.body.style.overflow;
@@ -42,8 +42,8 @@ export default function DocImage(props) {
         if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); show(event); }
       }} />;
   return <>
-    {framedCapture
-      ? <span className="doc-image-panel doc-background-window">{image}</span>
+    {articleCapture
+      ? <span className="doc-image-panel">{image}</span>
       : image}
     {preview && createPortal(<dialog ref={dialog} className="doc-image-dialog" aria-label={props.alt || (ru ? 'Просмотр изображения' : 'Image preview')}
       onCancel={() => setPreview(null)} onClick={() => setPreview(null)}>
