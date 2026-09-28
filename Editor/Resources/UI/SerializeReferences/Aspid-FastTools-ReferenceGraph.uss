@@ -405,11 +405,6 @@
     align-items:                                          center;
 }
 
-.aspid-fasttools-reference-graph__badge--missing {
-    color:                                                var(--aspid-colors-status-warning-text-lightness);
-    background-color:                                     var(--aspid-colors-status-warning-dark);
-}
-
 .aspid-fasttools-reference-graph__badge--shared {
     color:                                                var(--aspid-colors-status-info-text-lightness);
     background-color:                                     var(--aspid-colors-status-info-dark);
@@ -469,7 +464,7 @@
 }
 
 .aspid-fasttools-reference-graph__picker .aspid-fasttools-type-selector__header {
-    background-color:                                     #00000000;
+    background-color:                                     rgba(0, 0, 0, 0);
     margin:                                               0;
     margin-bottom:                                        5px;
 }
