@@ -40,14 +40,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 else
                 {
                     var options = scanRequired ? GateOptions.Full : GateOptions.MissingOnly;
-                    var violations = SerializeReferenceGateScanner.Scan(options);
+                    var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+                    var violations = SerializeReferenceGateScanner.Scan(options, unscanned: unscanned);
 
-                    File.WriteAllText(reportPath, BuildReport(violations));
+                    File.WriteAllText(reportPath, BuildReport(violations, unscanned));
                     foreach (var violation in violations)
                         Debug.LogError($"[Aspid FastTools] {violation}");
 
+                    var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, EditorSettings.serializationMode);
+                    if (notice is not null) Debug.LogWarning(notice);
+
                     exitCode = ComputeExitCode(violations.Count, severity);
-                    Debug.Log($"[Aspid FastTools] Gate check complete: {violations.Count} violation(s), severity {severity}, exit code {exitCode}. Report: {reportPath}");
+                    Debug.Log($"[Aspid FastTools] Gate check complete: {violations.Count} violation(s), {unscanned.Count} file(s) not scanned, severity {severity}, exit code {exitCode}. Report: {reportPath}");
                 }
             }
             catch (Exception exception)
@@ -68,22 +72,35 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static int ComputeExitCode(int violationCount, GateSeverity severity) =>
             violationCount > 0 && severity == GateSeverity.Fail ? 1 : 0;
 
-        private static string BuildReport(IReadOnlyList<GateViolation> violations)
+        public static string BuildReport(
+            IReadOnlyList<GateViolation> violations,
+            IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
             var builder = new StringBuilder();
             builder.AppendLine($"# SerializeReference Gate Report");
             builder.AppendLine($"# Violations: {violations.Count}");
+            builder.AppendLine($"# Not scanned (not text YAML): {unscanned?.Count ?? 0}");
+
+            // Comment lines, so a parser of the violation lines below is unaffected.
+            if (unscanned is not null)
+            {
+                foreach (var (assetPath, format) in unscanned)
+                    builder.Append("#   ").Append(format).Append('\t').Append(assetPath).AppendLine();
+            }
+
             builder.AppendLine();
 
             foreach (var violation in violations)
             {
-                // Machine-readable line: KIND<TAB>assetPath<TAB>fileId<TAB>rid<TAB>StoredType<TAB>fieldPath
+                // Machine-readable line: KIND<TAB>assetPath<TAB>fileId<TAB>rid<TAB>StoredType<TAB>fieldPath<TAB>origin.
+                // "override" marks a type set by a prefab instance override, whose fileId is the PrefabInstance.
                 builder.Append(violation.Kind).Append('\t')
                     .Append(violation.AssetPath).Append('\t')
                     .Append(violation.FileId).Append('\t')
                     .Append(violation.Rid).Append('\t')
                     .Append(violation.StoredType.Class ?? string.Empty).Append('\t')
-                    .Append(violation.FieldPath ?? string.Empty)
+                    .Append(violation.FieldPath ?? string.Empty).Append('\t')
+                    .Append(violation.IsOverride ? "override" : string.Empty)
                     .AppendLine();
             }
 

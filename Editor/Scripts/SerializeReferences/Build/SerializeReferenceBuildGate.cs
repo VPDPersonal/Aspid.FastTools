@@ -1,4 +1,5 @@
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 using UnityEditor.Build;
 using System.Collections.Generic;
@@ -16,7 +17,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var severity = SerializeReferenceSettings.BuildSeverity;
             if (severity == GateSeverity.Off) return;
 
-            var violations = SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly);
+            var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+            var violations = SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned);
+
+            var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, EditorSettings.serializationMode);
+            if (notice is not null) Debug.LogWarning(notice);
+
             if (violations.Count is 0) return;
 
             var summary = BuildSummary(violations);

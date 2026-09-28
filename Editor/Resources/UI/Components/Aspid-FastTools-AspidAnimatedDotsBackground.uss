@@ -9,10 +9,10 @@
     --aspid-fasttools-colors-dot_blob-color_2:                  var(--aspid-colors-status-warning-text-dark);
     --aspid-fasttools-colors-dot_blob-color_3:                  var(--aspid-colors-status-error-text-dark);
 
-    --aspid-fasttools-colors-dot_blob-info:                     rgb(38, 54, 77);
-    --aspid-fasttools-colors-dot_blob-success:                  rgb(41, 71, 54);
-    --aspid-fasttools-colors-dot_blob-warning:                  rgb(77, 64, 31);
-    --aspid-fasttools-colors-dot_blob-error:                    rgb(82, 41, 41);
+    --aspid-fasttools-colors-dot_blob-info:                     var(--aspid-colors-status-info-blob);
+    --aspid-fasttools-colors-dot_blob-success:                  var(--aspid-colors-status-success-blob);
+    --aspid-fasttools-colors-dot_blob-warning:                  var(--aspid-colors-status-warning-blob);
+    --aspid-fasttools-colors-dot_blob-error:                    var(--aspid-colors-status-error-blob);
 
     --aspid-fasttools-metrics-dot_radius:                       1.55;
     --aspid-fasttools-metrics-dot_spacing:                      18;
