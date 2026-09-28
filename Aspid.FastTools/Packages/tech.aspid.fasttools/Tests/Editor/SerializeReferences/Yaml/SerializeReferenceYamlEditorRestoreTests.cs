@@ -175,7 +175,7 @@ MonoBehaviour:
             // The reader resolves the element back to a real, GhostPistol-typed reference (no longer <None>).
             Assert.IsTrue(SerializeReferenceYamlEditor.TryReadStoredType(
                 _degradedPath, YamlFixtures.MonoBehaviourFileId, ElementPath, out var rid, out var type));
-            Assert.Greater(rid, 0, "The restored element must point at a fresh positive rid.");
+            Assert.Greater(rid, 0, "The restored element must point at a positive rid.");
             Assert.AreEqual("GhostPistol", type.Class, "The restored reference must carry the original missing type.");
 
             var after = File.ReadAllText(_degradedPath);
@@ -183,15 +183,47 @@ MonoBehaviour:
         }
 
         [Test]
-        public void TryRestoreArrayElementReference_UsesFreshRid_NotCollidingWithSurvivors()
+        public void TryRestoreArrayElementReference_OriginalRidFree_ReusesIt()
         {
             RestoreGhostPistolIntoDegraded();
 
             SerializeReferenceYamlEditor.TryReadStoredType(
                 _degradedPath, YamlFixtures.MonoBehaviourFileId, ElementPath, out var rid, out _);
 
-            // The document's max surviving id is 1005 (BurnEffect); the fresh id must be past it.
-            Assert.AreEqual(1006, rid, "The fresh rid must be one past the document's maximum surviving id.");
+            // Unity dropped 1002 with the resize, so the restore takes it back: instance overrides keyed to
+            // managedReferences[1002] keep applying, and no id a derived asset may hold is taken.
+            Assert.AreEqual(YamlFixtures.GhostPistolRid, rid, "A free original rid must be reused.");
+        }
+
+        [Test]
+        public void TryRestoreArrayElementReference_OriginalRidTaken_AvoidsMaxPlusOne()
+        {
+            // The snapshot's rid is now Shotgun's. The document's max is 1005, and a variant made right after the base
+            // in the same session holds its override at managedReferences[1006] — Unity allocates ids sequentially, so
+            // max + 1 would merge the restored element with that override.
+            var entryLines = new[]
+            {
+                "    - rid: 1003",
+                "      type: {class: GhostPistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}",
+                "      data:",
+                "        _damage: 15",
+            };
+
+            Assert.IsTrue(SerializeReferenceYamlEditor.TryRestoreArrayElementReference(
+                _degradedPath, YamlFixtures.MonoBehaviourFileId, ElementPath, entryLines));
+
+            Assert.IsTrue(SerializeReferenceYamlEditor.TryReadStoredType(
+                _degradedPath, YamlFixtures.MonoBehaviourFileId, ElementPath, out var rid, out var type));
+            Assert.AreEqual("GhostPistol", type.Class);
+            Assert.Greater(rid, 0, "The restored rid must be a positive id.");
+            Assert.AreNotEqual(1006, rid, "The restored rid must not be the document's max + 1.");
+            CollectionAssert.DoesNotContain(new long[] { 1001, 1003, 1004, 1005 }, rid,
+                "The restored rid must not alias a surviving reference.");
+
+            Assert.IsTrue(SerializeReferenceYamlEditor.TryReadStoredType(
+                _degradedPath, YamlFixtures.MonoBehaviourFileId, "_sidearms.Array.data[1]", out var shotgunRid, out var shotgunType));
+            Assert.AreEqual(YamlFixtures.ShotgunRid, shotgunRid);
+            Assert.AreEqual("Shotgun", shotgunType.Class, "The Shotgun entry must keep its own type.");
         }
 
         [Test]
