@@ -133,11 +133,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 .AddClass(GroupClass);
 
             var files = overrides.Select(entry => entry.AssetPath).Distinct(StringComparer.Ordinal).Count();
+            var allPending = overrides.All(entry => MissingReferenceGroup.OverrideMigrationTarget(entry) is not null);
 
             card.AddChild(BuildGroupHeaderRow(
                 "Prefab instance overrides",
                 $"{BuildCountText(overrides.Count, "entry")} · {(files == 1 ? "1 file" : $"{files} files")}",
-                StatusStyle.Type.Warning,
+                allPending ? StatusStyle.Type.Info : StatusStyle.Type.Warning,
                 isStatic: true));
 
             AddGroupDivider(card, withSweep: false);
@@ -153,10 +154,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var path = MakeSelectable(new Label(entry.AssetPath).AddClass(GroupEntryPathClass));
             path.tooltip = entry.AssetPath;
 
-            var type = MakeSelectable(new Label($"{entry.Entry.StoredType.Class} · rid {entry.Entry.Rid}")
+            var stored = entry.Entry.StoredType;
+            var target = MissingReferenceGroup.OverrideMigrationTarget(entry);
+
+            var type = MakeSelectable(new Label(target is null
+                    ? $"{stored.Class} · rid {entry.Entry.Rid}"
+                    : $"{stored.Class} → {target.Name} · rid {entry.Entry.Rid}")
                 .AddClass(GroupEntryFieldClass));
-            type.tooltip = $"{entry.Entry.StoredType.DisplayName}\nSet by a prefab instance override. Select the " +
-                "instance and pick a new type in its Inspector, or Revert the override.";
+            type.tooltip = target is null
+                ? $"{stored.DisplayName}\nSet by a prefab instance override. Select the instance and pick a new type " +
+                  "in its Inspector, or Revert the override."
+                : $"{stored.DisplayName}\nPending migration to {target.FullName}: Unity migrates it at load through " +
+                  "[MovedFrom], but Migrate all does not rewrite prefab instance overrides. Keep the attribute until " +
+                  "the instance is saved with the new name, or Revert the override.";
 
             return BuildEntryRow(entry.AssetPath, path, type);
         }

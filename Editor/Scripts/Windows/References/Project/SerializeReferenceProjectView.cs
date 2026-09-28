@@ -199,6 +199,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             ResetNavTargets();
 
             var overrides = MissingReferenceGroup.CollectOverridesFromIndex();
+            var pendingOverrides = overrides.Count(entry => MissingReferenceGroup.OverrideMigrationTarget(entry) is not null);
             var missingCount = groups.Sum(group => group.Entries.Count) + overrides.Count;
             var requiredCount = requiredViolations.Count;
 
@@ -219,14 +220,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 else _list.AddChild(BuildGroupCard(group, migration));
             }
 
-            var migrationCount = migrations.Sum(entry => entry.Group.Entries.Count);
+            var migrationCount = migrations.Sum(entry => entry.Group.Entries.Count) + pendingOverrides;
             ShowResults(
                 SerializeReferenceProjectSummary.BuildResultsHeaderText(missingCount - migrationCount, migrationCount, requiredCount),
                 StatusStyle.Type.Warning);
             _resultsHint.text = SerializeReferenceProjectSummary.BuildResultsHintText(requiredCount > 0, overrides.Count > 0);
 
-            var hasAmber = groups.Count > migrations.Count || requiredCount > 0 || overrides.Count > 0;
-            _legend.EnableInClassList(LegendHiddenClass, migrations.Count == 0 || !hasAmber);
+            var hasAmber = groups.Count > migrations.Count || requiredCount > 0 || overrides.Count > pendingOverrides;
+            _legend.EnableInClassList(LegendHiddenClass, migrationCount == 0 || !hasAmber);
 
             if (overrides.Count > 0)
                 _list.AddChild(BuildOverrideGroupCard(overrides));
