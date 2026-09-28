@@ -1,0 +1,9 @@
+/* An unset palette token leaves the property unresolved, so the switch keeps its skin-aware C# default.
+   The always-set prop keeps CustomStyleResolvedEvent coming when no token is set, so the defaults follow a skin switch. */
+:root {
+    --aspid-fasttools-prop-switch:                              1;
+    --aspid-fasttools-colors-switch-accent:                     var(--aspid-colors-switch-accent);
+    --aspid-fasttools-colors-switch-track_border:               var(--aspid-colors-switch-track-border);
+    --aspid-fasttools-colors-switch-handle:                     var(--aspid-colors-switch-handle);
+    --aspid-fasttools-colors-switch-handle_shadow:              var(--aspid-colors-switch-handle-shadow);
+}
