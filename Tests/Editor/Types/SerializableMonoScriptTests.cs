@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
@@ -41,6 +42,20 @@ namespace Aspid.FastTools.Types.Editors.Tests
         // The script reference is a private editor-only field, so a test reads it the way the drawers do.
         private static MonoScript ScriptOf(SerializedProperty wrapperProperty) =>
             wrapperProperty.FindPropertyRelative(SerializableMonoScriptUtility.ScriptFieldName).objectReferenceValue as MonoScript;
+
+        // FromJsonOverwrite only deserializes, like loading an asset not saved since a class rename: the wrapper's
+        // OnBeforeSerialize gets no chance to re-sync the name.
+        private static void LoadWithStaleName(Holder holder)
+        {
+            const string staleName = "Old.Name, Old";
+
+            SerializableMonoScriptUtility.Assign(new SerializedObject(holder).FindProperty(nameof(Holder.wrapper)), ScriptedType);
+
+            var json = EditorJsonUtility.ToJson(holder).Replace(ScriptedType.AssemblyQualifiedName, staleName);
+            EditorJsonUtility.FromJsonOverwrite(json, holder);
+
+            Assert.AreEqual(staleName, holder.wrapper.AssemblyQualifiedName, "Precondition: the stored name is stale.");
+        }
 
         [Test]
         public void ImplicitConversion_NullWrapper_YieldsNull()
@@ -146,6 +161,35 @@ namespace Aspid.FastTools.Types.Editors.Tests
 
                 Assert.AreEqual(ScriptedType.AssemblyQualifiedName, name, "The script asset is the source of truth for the stored name.");
                 Assert.AreEqual(ScriptedType, holder.wrapper.Type);
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void StaleName_LoadedWithoutSerialization_ResolvesFromTheScript()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                LoadWithStaleName(holder);
+
+                Assert.AreEqual(ScriptedType, holder.wrapper.Type, "The editor falls back to the script's class.");
+            }
+            finally { UnityEngine.Object.DestroyImmediate(holder); }
+        }
+
+        [Test]
+        public void StaleName_ReadOffTheMainThread_YieldsNullUntilAMainThreadRead()
+        {
+            var holder = CreateHolder();
+            try
+            {
+                LoadWithStaleName(holder);
+
+                // MonoScript.GetClass throws off the main thread, so a worker gets no fallback and nothing is cached.
+                Assert.IsNull(Task.Run(() => holder.wrapper.Type).Result);
+                Assert.IsNull(Task.Run(() => holder.wrapper.Type).Result);
+                Assert.AreEqual(ScriptedType, holder.wrapper.Type, "A main-thread read still falls back to the script's class.");
             }
             finally { UnityEngine.Object.DestroyImmediate(holder); }
         }

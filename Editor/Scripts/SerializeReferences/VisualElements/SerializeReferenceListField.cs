@@ -48,16 +48,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 unbindItem = (element, _) => element.Clear(),
             };
 
-            // Single-object only: under a multi-object selection the native add stays and the duplicate guard
-            // de-aliases the copies. Set before any attach, so the item fields' own install short-circuits on it.
+            // Under a multi-object selection too: the native add would copy the last element's rid into every object,
+            // and the duplicate guard does not watch multi-object selections. Set before any attach, so the item
+            // fields' own install short-circuits on it.
             var serializedObject = property.serializedObject;
-            if (!serializedObject.isEditingMultipleObjects)
-            {
-                var target = serializedObject.targetObject;
-                var arrayPath = property.propertyPath;
-                listView.overridingAddButtonBehavior = (_, button) =>
-                    SerializeReferenceListAddBehavior.OpenAppendPicker(target, arrayPath, elementType, _baseTypes, button);
-            }
+            var targets = serializedObject.targetObjects;
+            var arrayPath = property.propertyPath;
+            listView.overridingAddButtonBehavior = (_, button) =>
+                SerializeReferenceListAddBehavior.OpenAppendPicker(targets, arrayPath, elementType, _baseTypes, button);
 
             this.AddChild(listView);
 
@@ -72,6 +70,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var elementProperty = GetElementProperty(index);
             if (elementProperty is null) return;
+
+            // The same per-element hand-off as the IMGUI list, so both backends draw an element with the same drawer.
+            if (!SerializeReferenceNesting.DrawsOwnHeader(elementProperty, _depth))
+            {
+                var field = new PropertyField(elementProperty);
+                field.BindProperty(elementProperty);
+                element.Add(field);
+                return;
+            }
 
             element.Add(new SerializeReferenceField(elementProperty.displayName, elementProperty, _baseTypes, _depth));
         }

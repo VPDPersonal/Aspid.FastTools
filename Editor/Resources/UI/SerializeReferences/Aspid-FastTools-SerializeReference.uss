@@ -2,13 +2,15 @@
     margin:                                                 0;
 }
 
-.aspid-fasttools-serialize-reference .unity-foldout__toggle {
+/* Child combinators keep the header rules off the foldouts of nested properties. */
+.aspid-fasttools-serialize-reference > .unity-foldout > .unity-foldout__toggle {
     flex-direction:                                         row;
     align-items:                                            center;
 }
 
 .aspid-fasttools-serialize-reference
-    .unity-foldout__toggle
+    > .unity-foldout
+    > .unity-foldout__toggle
     > .unity-foldout__input {
     flex-grow:                                              0;
     flex-shrink:                                            0;
@@ -29,19 +31,22 @@
     white-space:                                            nowrap;
     text-overflow:                                          ellipsis;
     -unity-text-overflow-position:                          start;
-    color:                                                  var(--aspid-colors-status-warning-text-light);
+    color:                                                  var(--unity-colors-warning-text);
 }
 
 .aspid-fasttools-serialize-reference--empty
-    .unity-foldout__toggle
+    > .unity-foldout
+    > .unity-foldout__toggle
     .unity-foldout__checkmark,
 .aspid-fasttools-serialize-reference--childless
-    .unity-foldout__toggle
+    > .unity-foldout
+    > .unity-foldout__toggle
     .unity-foldout__checkmark {
     display:                                                none;
 }
 
-.aspid-fasttools-serialize-reference Button {
+/* A class, not a type selector: buttons of nested drawers and lists share this subtree. */
+Button.aspid-fasttools-serialize-reference__open-button {
     padding:                                                0;
     min-width:                                              18px;
     max-width:                                              18px;
@@ -50,14 +55,22 @@
     margin:                                                 0 0 0 1px;
 }
 
-.aspid-fasttools-serialize-reference Button > VisualElement {
+.aspid-fasttools-serialize-reference__open-button > VisualElement {
     width:                                                  100%;
     height:                                                 100%;
     background-image:                                       resource("d_Folder Icon");
 }
 
-.aspid-fasttools-serialize-reference Button > VisualElement:enabled:hover {
+.aspid-fasttools-serialize-reference__open-button > VisualElement:enabled:hover {
     background-image:                                       resource("d_FolderOpened Icon");
+}
+
+.aspid-fasttools-serialize-reference.aspid-fasttools-skin--light .aspid-fasttools-serialize-reference__open-button > VisualElement {
+    background-image:                                       resource("Folder Icon");
+}
+
+.aspid-fasttools-serialize-reference.aspid-fasttools-skin--light .aspid-fasttools-serialize-reference__open-button > VisualElement:enabled:hover {
+    background-image:                                       resource("FolderOpened Icon");
 }
 
 /* Use padding to preserve Unity's margin-based foldout nesting indent. */
@@ -80,7 +93,7 @@
 }
 
 .aspid-fasttools-serialize-reference__stripe--warning {
-    background-color:                                      var(--aspid-colors-status-warning-text-light);
+    background-color:                                      var(--unity-colors-warning-text);
 }
 
 .aspid-fasttools-serialize-reference__flash {
@@ -92,7 +105,9 @@
     bottom:                                                0;
 }
 
-.aspid-fasttools-serialize-reference--striped .aspid-fasttools-serialize-reference__notices {
+.aspid-fasttools-serialize-reference--striped
+    > .unity-foldout
+    > .aspid-fasttools-serialize-reference__notices {
     margin-left:                                           -14px;
 }
 
@@ -111,7 +126,7 @@
     border-radius:                                        8px;
     border-width:                                         1px;
     border-color:                                         var(--aspid-colors-shade-darkness);
-    background-color:                                     rgba(20, 20, 20, 0.55);
+    background-color:                                     var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-repair-references__panel-title {
@@ -232,7 +247,7 @@
 /* The status-qualified selector outranks the help box's warning background rule. */
 .aspid-fasttools-repair-references__results
     .aspid-fasttools-repair-references__summary.aspid-fasttools-status--warning {
-    background-color:                                      rgba(90, 65, 30, 0.25);
+    background-color:                                      var(--aspid-colors-status-warning-tint);
     border-color:                                          var(--aspid-colors-status-warning-shade-dark);
 }
 
@@ -282,7 +297,7 @@
     border-radius:                                         8px;
     border-width:                                          1px;
     border-color:                                          var(--aspid-colors-shade-dark);
-    background-color:                                      rgba(20, 20, 20, 0.55);
+    background-color:                                      var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-repair-references__picker--attached.aspid-fasttools-background {
@@ -293,7 +308,7 @@
 
 .aspid-fasttools-repair-references__picker
     .aspid-fasttools-type-selector__header {
-    background-color:                                       #00000000;
+    background-color:                                       rgba(0, 0, 0, 0);
     margin:                                                 0;
     margin-bottom:                                          5px;
 }
@@ -327,7 +342,7 @@
     border-radius:                                         8px;
     border-width:                                          1px;
     border-color:                                          var(--aspid-colors-shade-darkness);
-    background-color:                                      rgba(20, 20, 20, 0.55);
+    background-color:                                      var(--aspid-colors-surface-card);
 }
 
 .aspid-fasttools-repair-references__group--picking.aspid-fasttools-background {
@@ -559,7 +574,7 @@
 }
 
 .aspid-fasttools-serialize-reference--drop-target {
-    background-color:                                      var(--aspid-colors-bg-light);
+    background-color:                                      var(--unity-colors-helpbox-background);
     border-left-width:                                     2px;
     border-left-color:                                     var(--aspid-colors-status-info-light);
 }
