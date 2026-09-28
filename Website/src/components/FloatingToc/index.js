@@ -2,18 +2,23 @@ import React, {useEffect, useRef, useState} from 'react';
 import clsx from 'clsx';
 import {translate} from '@docusaurus/Translate';
 import {useDoc} from '@docusaurus/plugin-content-docs/client';
+import {useNavbarMobileSidebar} from '@docusaurus/theme-common/internal';
 import TOCItems from '@theme/TOCItems';
 
 /**
  * Laptop-width table of contents (997–1400px, see custom.css): a pinned button in the lower right corner of the
  * viewport opens a popover with the same outline as the desktop column. Picking a section, Esc or a click
- * outside closes it.
+ * outside closes it. It steps aside while the mobile drawer is open, whose footer buttons it would cover.
  */
 export default function FloatingToc() {
   const {toc, frontMatter} = useDoc();
   const [open, setOpen] = useState(false);
+  const mobileSidebar = useNavbarMobileSidebar();
   const root = useRef(null);
   const label = translate({id: 'theme.TOCCollapsible.toggleButtonLabel', message: 'On this page'});
+
+  // Opening the drawer also closes the outline, so it does not pop back up when the drawer closes.
+  useEffect(() => { if (mobileSidebar.shown) setOpen(false); }, [mobileSidebar.shown]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -27,7 +32,7 @@ export default function FloatingToc() {
     };
   }, [open]);
 
-  if (frontMatter.hide_table_of_contents || toc.length === 0) return null;
+  if (frontMatter.hide_table_of_contents || toc.length === 0 || mobileSidebar.shown) return null;
   return (
     <div ref={root} className={clsx('floating-toc', open && 'floating-toc--open')}>
       <div
