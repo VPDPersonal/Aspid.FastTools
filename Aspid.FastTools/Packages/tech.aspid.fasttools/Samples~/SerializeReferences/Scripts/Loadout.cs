@@ -18,7 +18,8 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         [Tooltip("Seconds between attacks before slowing effects.")]
         [SerializeField, Min(0.1f)] private float _fireInterval = 1f;
 
-        // Any IWeapon. Required = true: an empty field shows a notice and fails the build/CI gate when enabled.
+        // Any IWeapon. Required = true: an empty field shows a notice and is reported by Project References →
+        // Scan Project and by CI runs with -srGateRequired; a player build does not check it.
         [Header("Weapons")]
         [TypeSelector(Required = true)]
         [Tooltip("Primary weapon in the attack cycle.")]
@@ -63,7 +64,7 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         {
             while (true)
             {
-                yield return new WaitForSeconds(_fireInterval * (1f + (_target?.Slow ?? 0f)));
+                yield return new WaitForSeconds(_fireInterval * (1f + (_target != null ? _target.Slow : 0f)));
                 FireOnce();
             }
         }
@@ -71,7 +72,8 @@ namespace Aspid.FastTools.Samples.SerializeReferences
         [ContextMenu("Fire Once")]
         private void FireOnce()
         {
-            if (_target is null)
+            // Unity's == also catches a destroyed or unassigned dummy; `is null` would not.
+            if (_target == null)
                 return;
 
             var weapon = PickWeapon();
