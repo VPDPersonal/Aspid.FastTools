@@ -227,6 +227,42 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Removes a span of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildren<T>(this T element, Span<VisualElement> children)
+            where T : VisualElement
+        {
+            foreach (var child in children)
+                element.Remove(child);
+
+            return element;
+        }
+
+        /// <summary>
+        /// Conditionally removes a span of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildrenIf<T>(this T element, bool condition, Span<VisualElement> children)
+            where T : VisualElement
+        {
+            if (condition)
+            {
+                foreach (var child in children)
+                    element.Remove(child);
+            }
+
+            return element;
+        }
+
+        /// <summary>
         /// Adds a list of child elements to the <see cref="VisualElement.contentContainer"/> of this element.
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
@@ -303,6 +339,46 @@ namespace Aspid.FastTools.UIElements
             {
                 foreach (var child in children)
                     element.Insert(index++, child);
+            }
+
+            return element;
+        }
+
+        /// <summary>
+        /// Removes a list of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildren<T>(this T element, List<VisualElement> children)
+            where T : VisualElement
+        {
+            if (children is null) return element;
+
+            foreach (var child in children)
+                element.Remove(child);
+
+            return element;
+        }
+
+        /// <summary>
+        /// Conditionally removes a list of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildrenIf<T>(this T element, bool condition, List<VisualElement> children)
+            where T : VisualElement
+        {
+            if (children is null) return element;
+
+            if (condition)
+            {
+                foreach (var child in children)
+                    element.Remove(child);
             }
 
             return element;
@@ -391,6 +467,46 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Removes an array of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildren<T>(this T element, params VisualElement[] children)
+            where T : VisualElement
+        {
+            if (children is null) return element;
+
+            foreach (var child in children)
+                element.Remove(child);
+
+            return element;
+        }
+
+        /// <summary>
+        /// Conditionally removes an array of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildrenIf<T>(this T element, bool condition, params VisualElement[] children)
+            where T : VisualElement
+        {
+            if (children is null) return element;
+
+            if (condition)
+            {
+                foreach (var child in children)
+                    element.Remove(child);
+            }
+
+            return element;
+        }
+
+        /// <summary>
         /// Adds an enumerable of child elements to the <see cref="VisualElement.contentContainer"/> of this element.
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
@@ -473,6 +589,46 @@ namespace Aspid.FastTools.UIElements
         }
 
         /// <summary>
+        /// Removes an enumerable of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildren<T>(this T element, IEnumerable<VisualElement> children)
+            where T : VisualElement
+        {
+            if (children is null) return element;
+
+            foreach (var child in children)
+                element.Remove(child);
+
+            return element;
+        }
+
+        /// <summary>
+        /// Conditionally removes an enumerable of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildrenIf<T>(this T element, bool condition, IEnumerable<VisualElement> children)
+            where T : VisualElement
+        {
+            if (children is null) return element;
+
+            if (condition)
+            {
+                foreach (var child in children)
+                    element.Remove(child);
+            }
+
+            return element;
+        }
+
+        /// <summary>
         /// Adds a read-only span of child elements to the <see cref="VisualElement.contentContainer"/> of this element.
         /// </summary>
         /// <typeparam name="T">The element type.</typeparam>
@@ -541,6 +697,42 @@ namespace Aspid.FastTools.UIElements
             {
                 foreach (var child in children)
                     element.Insert(index++, child);
+            }
+
+            return element;
+        }
+
+        /// <summary>
+        /// Removes a read-only span of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildren<T>(this T element, ReadOnlySpan<VisualElement> children)
+            where T : VisualElement
+        {
+            foreach (var child in children)
+                element.Remove(child);
+
+            return element;
+        }
+
+        /// <summary>
+        /// Conditionally removes a read-only span of child elements from the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="condition">When <see langword="true"/>, the operation is performed; otherwise, the element is returned unchanged.</param>
+        /// <param name="children">The children to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveChildrenIf<T>(this T element, bool condition, ReadOnlySpan<VisualElement> children)
+            where T : VisualElement
+        {
+            if (condition)
+            {
+                foreach (var child in children)
+                    element.Remove(child);
             }
 
             return element;
