@@ -22,7 +22,10 @@
         <Compile Include="$(_YamlSources)*.cs"
                  Exclude="$(_YamlSources)SerializeReferenceYamlProbeCacheInvalidator.cs"
                  Link="Yaml/%(Filename)%(Extension)" />
-        <Compile Include="$(_YamlTests)*.cs" Link="Tests/%(Filename)%(Extension)" />
+        <!-- These two also drive the graph scanner and the type usage index, which need UnityEditor; the Unity job runs them. -->
+        <Compile Include="$(_YamlTests)*.cs"
+                 Exclude="$(_YamlTests)SerializeReferenceYamlNestedEntryTests.cs;$(_YamlTests)SerializeReferenceYamlNegativeAnchorTests.cs"
+                 Link="Tests/%(Filename)%(Extension)" />
     </ItemGroup>
 
     <ItemGroup>
