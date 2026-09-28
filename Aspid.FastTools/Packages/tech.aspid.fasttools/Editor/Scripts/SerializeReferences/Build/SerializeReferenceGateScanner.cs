@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using UnityEditor;
+using UnityEngine;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 
@@ -11,7 +12,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceGateScanner
     {
-        private const int MaxListedPointers = 10;
+        private const int MaxListedPaths = 10;
 
         // Per-run memo of BuildConstraintMap (LoadAllAssetsAtPath + full SerializedObject walk — heavy), built only
         // for assets whose unresolved entries carry a [MovedFrom] claim. Null marks an asset whose map failed to build.
@@ -74,42 +75,71 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return violations;
         }
 
-        // A warning for the log, or null when nothing worth one was skipped. Under Force Text, Unity still writes a few
-        // assets binary (LightingData, NavMesh); they hold no managed references, so binary files alone warn only in
-        // the other modes. An LFS pointer always warns: the real file was never pulled.
+        // A warning for the log, or null when nothing worth one was skipped. Outside Force Text every binary file warns.
+        // Under Force Text, Unity still writes a few assets binary (LightingData, NavMesh) that cannot hold managed
+        // references, so only a binary file that can (CanHoldManagedReferences) warns: a prefab or scene saved before
+        // the switch, a [PreferBinarySerialization] ScriptableObject. An LFS pointer always warns: the real file was
+        // never pulled.
         public static string DescribeUnscanned(
             IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
         {
             if (unscanned is null || unscanned.Count == 0) return null;
+
+            var forceText = serializationMode == SerializationMode.ForceText;
 
             var pointers = unscanned
                 .Where(file => file.Format == AssetFileFormat.LfsPointer)
                 .Select(file => file.AssetPath)
                 .ToList();
 
-            var binaryCount = unscanned.Count - pointers.Count;
-            var warnBinary = binaryCount > 0 && serializationMode != SerializationMode.ForceText;
-            if (pointers.Count == 0 && !warnBinary) return null;
+            var binaries = unscanned
+                .Where(file => file.Format == AssetFileFormat.Binary)
+                .Select(file => file.AssetPath)
+                .Where(path => !forceText || CanHoldManagedReferences(path))
+                .ToList();
+
+            if (pointers.Count == 0 && binaries.Count == 0) return null;
 
             var builder = new StringBuilder();
-            var count = warnBinary ? unscanned.Count : pointers.Count;
-            builder.AppendLine($"[Aspid FastTools] {count} file(s) were not checked for SerializeReference problems because they are not text YAML:");
+            builder.AppendLine($"[Aspid FastTools] {pointers.Count + binaries.Count} file(s) were not checked for SerializeReference problems because they are not text YAML:");
 
-            if (warnBinary)
-                builder.AppendLine($"  {binaryCount} binary file(s): Asset Serialization Mode is {serializationMode}. Set it to Force Text and save the assets again.");
+            if (binaries.Count > 0 && forceText)
+            {
+                builder.AppendLine($"  {binaries.Count} binary prefab, scene or ScriptableObject file(s): save them again to write them as text. A [PreferBinarySerialization] asset stays binary.");
+                AppendPaths(builder, binaries);
+            }
+            else if (binaries.Count > 0)
+            {
+                builder.AppendLine($"  {binaries.Count} binary file(s): Asset Serialization Mode is {serializationMode}. Set it to Force Text and save the assets again.");
+            }
 
             if (pointers.Count > 0)
             {
                 builder.AppendLine($"  {pointers.Count} Git LFS pointer(s): fetch the LFS objects before the check.");
-
-                foreach (var path in pointers.Take(MaxListedPointers))
-                    builder.AppendLine($"    {path}");
-
-                if (pointers.Count > MaxListedPointers)
-                    builder.AppendLine($"    … and {pointers.Count - MaxListedPointers} more");
+                AppendPaths(builder, pointers);
             }
 
             return builder.ToString();
+        }
+
+        // Whether a binary file may hide managed references: a prefab or scene always may; an .asset when its main
+        // asset is a ScriptableObject, or of an unknown type. The binaries Unity writes under Force Text (LightingData,
+        // NavMesh) derive from UnityEngine.Object directly.
+        public static bool CanHoldManagedReferences(string assetPath)
+        {
+            if (!assetPath.EndsWith(".asset", StringComparison.OrdinalIgnoreCase)) return true;
+
+            var mainType = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+            return mainType is null || typeof(ScriptableObject).IsAssignableFrom(mainType);
+        }
+
+        private static void AppendPaths(StringBuilder builder, IReadOnlyList<string> paths)
+        {
+            foreach (var path in paths.Take(MaxListedPaths))
+                builder.AppendLine($"    {path}");
+
+            if (paths.Count > MaxListedPaths)
+                builder.AppendLine($"    … and {paths.Count - MaxListedPaths} more");
         }
 
         public static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath)
