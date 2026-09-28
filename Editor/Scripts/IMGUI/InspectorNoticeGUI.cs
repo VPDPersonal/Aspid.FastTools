@@ -7,15 +7,23 @@ namespace Aspid.FastTools.Editors
 {
     internal static class InspectorNoticeGUI
     {
-        // Keep these colors aligned with --aspid-colors-status-warning-text-light / -lightness.
-        internal static readonly Color NoticeColor = new(245f / 255f, 185f / 255f, 85f / 255f);
-        internal static readonly Color NoticeColorHover = new(255f / 255f, 235f / 255f, 175f / 255f);
+        // Keep these colors aligned with the UI Toolkit notice: --unity-colors-warning-text, the hover tokens
+        // --aspid-colors-status-warning-text-lightness / -darkness, and --unity-colors-helpbox-text.
+        internal static Color NoticeColor => EditorGUIUtility.isProSkin
+            ? new Color32(244, 188, 2, 255)
+            : new Color32(51, 51, 8, 255);
+
+        internal static Color NoticeColorHover => EditorGUIUtility.isProSkin
+            ? new Color32(255, 235, 175, 255)
+            : new Color32(120, 85, 35, 255);
+
+        internal static Color InfoNoticeColor => EditorGUIUtility.isProSkin
+            ? new Color32(189, 189, 189, 255)
+            : new Color32(22, 22, 22, 255);
 
         private const float ActionHoverLighten = 0.35f;
 
         private const float DotSize = 8f;
-
-        private static readonly Color _infoNoticeColor = new(150f / 255f, 150f / 255f, 150f / 255f);
 
         private static GUIStyle _messageStyle;
         private static GUIStyle _actionStyle;
@@ -24,7 +32,7 @@ namespace Aspid.FastTools.Editors
         internal static void DrawInfoNotice(Rect rect, string message, string detail)
         {
             _infoMessageStyle ??= new GUIStyle(EditorStyles.label) { wordWrap = false };
-            _infoMessageStyle.normal.textColor = _infoNoticeColor;
+            _infoMessageStyle.normal.textColor = InfoNoticeColor;
 
             const float iconSize = 16f;
             var iconRect = new Rect(rect.x, rect.y + (rect.height - iconSize) * 0.5f, iconSize, iconSize);
