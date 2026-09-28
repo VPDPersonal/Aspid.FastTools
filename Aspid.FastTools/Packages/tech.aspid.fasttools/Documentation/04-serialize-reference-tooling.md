@@ -66,6 +66,12 @@ Bulk replacement produces a summary with an **Undo** button. It restores the old
 
 Bulk clearing may null references in open scenes or Prefab Mode in memory. Save those objects: file-based scans continue to show the old entries until they are saved.
 
+### Prefab instance overrides
+
+A prefab variant, a nested prefab, or a prefab instance in a scene can set a field's type through an override. Unity stores that type in the instance's modifications, not in the managed-reference list. Missing types found there appear in a separate **Prefab instance overrides** card, and pre-build checks count them as missing types. An old name that `[MovedFrom]` maps is listed as a pending migration: Unity migrates it at load, and pre-build checks accept it.
+
+**Fix all**, **Smart Fix**, and `<None>` do not rewrite overrides. Select the instance, then choose a new type in its Inspector or revert the override. Asset References does not show references that exist only as overrides.
+
 ## Asset References: inspect one asset
 
 Open **Asset References** and assign a saved prefab, ScriptableObject, or scene file to the object field beside **Rescan**. You can also arrive here from a **Project References** result row.
@@ -109,7 +115,9 @@ After compilation:
 
 A pending migration does not count as a missing type for build checks. If multiple types claim one old identity, the tool does not automatically choose a winner. Stored closed generic types are not recognized as unambiguous migrations by this mechanism either.
 
-Remove `[MovedFrom]` only after migrating all data that must remain loadable, including assets outside the current project and folders excluded from scanning.
+**Migrate all** does not rewrite prefab instance overrides: they keep the old name until the instance is saved with the new one, and stay in the **Prefab instance overrides** card until then.
+
+Remove `[MovedFrom]` only after migrating all data that must remain loadable, including prefab instance overrides, assets outside the current project and folders excluded from scanning.
 
 <a id="project-settings--the-buildci-gate"></a>
 
@@ -200,19 +208,20 @@ This limitation applies to unset required fields. Missing-type detection separat
 After the header, each violation occupies one line. Fields are tab-separated:
 
 ```text
-KIND    assetPath    fileId    rid    className    fieldPath
+KIND    assetPath    fileId    rid    className    fieldPath    origin
 ```
 
 | Field | Contents |
 |---|---|
 | `KIND` | `MissingType` or `RequiredUnset` |
 | `assetPath` | File path, such as `Assets/Weapons/Pistol.prefab` |
-| `fileId` | Host object ID within the file |
+| `fileId` | Host object ID within the file; for a prefab instance override, the ID of the prefab instance |
 | `rid` | Managed-reference ID; `0` for a required string field |
 | `className` | Stored class name for `MissingType`, without separate namespace or assembly fields |
-| `fieldPath` | Required field path; empty for `MissingType` |
+| `fieldPath` | Required field path; for a `MissingType` override, the overridden field when the instance overrides it; otherwise empty |
+| `origin` | `override` for a type set by a prefab instance override; otherwise empty |
 
-Save the report as a CI artifact. The asset path, `fileId`, and `rid` together help locate the entry in Asset References.
+Save the report as a CI artifact. The asset path, `fileId`, and `rid` together help locate the entry in Asset References. A row with the `override` origin is not there: find it in the **Prefab instance overrides** card of Project References.
 
 | Code | Meaning |
 |---|---|

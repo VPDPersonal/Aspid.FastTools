@@ -55,10 +55,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
                 if (string.IsNullOrEmpty(path)) continue;
 
-                var id = $"{usage.Guid}:{usage.FileId}:{usage.Rid}";
+                var id = ItemId(usage);
                 var missing = usage.Resolves ? string.Empty : "  (missing)";
                 var label = $"{className}{missing}";
-                var description = $"{path}  —  rid {usage.Rid}";
+                var description = $"{path}  —  rid {usage.Rid}{(usage.IsOverride ? "  (prefab override)" : string.Empty)}";
 
                 var item = provider.CreateItem(context, id, label, description, null, path);
                 items.Add(item);
@@ -66,6 +66,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             return null;
         }
+
+        // Unity Search dedupes items by id, so it carries the Usage identity: two components of one instance can
+        // override the same rid.
+        public static string ItemId(SerializeReferenceTypeUsageIndex.Usage usage) => usage.IsOverride
+            ? $"{usage.Guid}:{usage.FileId}:{usage.Rid}:{usage.TargetGuid}:{usage.TargetFileId}"
+            : $"{usage.Guid}:{usage.FileId}:{usage.Rid}";
 
         private static Object LoadAsset(SearchItem item) =>
             item?.data is string path ? AssetDatabase.LoadAssetAtPath<Object>(path) : null;
