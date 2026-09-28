@@ -1,4 +1,5 @@
 using System;
+using UnityEditor;
 using System.Reflection;
 using System.Collections.Generic;
 
@@ -41,6 +42,14 @@ namespace Aspid.FastTools.Types.Editors
             _customDisplayNames[value] = name;
             return name;
         }
+
+        // Whether the property's value ends up in a player build: its object's class lives outside editor-only
+        // assemblies. Values of editor windows, editor settings and other editor-only objects may hold any type.
+        internal static bool IsStoredInRuntimeObject(SerializedProperty property) =>
+            IsRuntimeObject(property?.serializedObject.targetObject);
+
+        internal static bool IsRuntimeObject(UnityEngine.Object target) =>
+            target != null && !TypeUtility.IsEditorOnlyAssembly(target.GetType().Assembly);
 
         internal static bool IsHiddenFromPicker(Type value) =>
             value?.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false)?.Hidden ?? false;

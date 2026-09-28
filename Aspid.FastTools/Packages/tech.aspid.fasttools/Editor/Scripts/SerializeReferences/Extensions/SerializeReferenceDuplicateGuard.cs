@@ -11,8 +11,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Unity reports -2 for an empty reference and -1 for a missing type; only ids >= 0 can alias.
         private const long FirstValidReferenceId = 0;
 
-        private const string ArrayElementMarker = ".Array.data[";
-
         // On overflow the whole cache is dropped. A re-snapshot never auto-fixes, so at worst a fix is lost.
         private const int MaxTrackedArrays = 512;
 
@@ -21,6 +19,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Arrays whose fix is queued: the layout still shows the alias until it runs, so without this every
         // intervening repaint would re-detect and re-schedule.
         private static readonly HashSet<ArrayKey> _pending = new();
+
+        // Observe runs for every element on every IMGUI event. Growth is the only layout change that can trigger a
+        // fix, so within one editor tick an array is rescanned only when its size changes. A same-size edit that
+        // skips InvalidateObservationMemo (a native drag reorder, raw user code) reaches the baseline only next tick,
+        // so a growth in that same tick is judged against the pre-edit layout.
+        private static readonly Dictionary<ArrayKey, int> _scannedSizes = new();
+        private static long _scannedTick = -1;
 
         private static bool _undoHooked;
 
@@ -34,7 +39,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // The live SerializedObject walks only the first target, so the guard cannot reason about the others.
             if (elementProperty.serializedObject.isEditingMultipleObjects) return false;
 
-            if (!TryGetArrayPath(elementProperty.propertyPath, out var arrayPath)) return false;
+            if (!SerializeReferenceHelpers.TryGetArrayPath(elementProperty.propertyPath, out var arrayPath)) return false;
 
             EnsureUndoHook();
 
@@ -42,7 +47,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var target = serializedObject.targetObject;
             if (target == null) return false;
 
-            var key = new ArrayKey(target.GetInstanceID(), arrayPath);
+            var key = new ArrayKey(target, arrayPath);
 
             if (_pending.Contains(key)) return false;
 
@@ -50,6 +55,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (arrayProperty is null || !arrayProperty.isArray) return false;
 
             var size = arrayProperty.arraySize;
+            if (WasScannedThisTick(key, size)) return false;
+
             var signature = ComputeSignature(arrayProperty, size);
 
             if (_snapshots.TryGetValue(key, out var snapshot) &&
@@ -111,8 +118,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             element.managedReferenceValue = SerializeReferenceHelpers.CloneManagedReferenceGraph(current);
             serializedObject.ApplyModifiedProperties();
 
-            // The alias memo is keyed by frame, not content, so same-frame repaints must not read the stale one.
-            SerializeReferenceHelpers.InvalidateSharedReferenceCache();
+            // The memos are keyed by tick, not content, so same-tick repaints must not read the stale ones.
+            SerializeReferenceHelpers.InvalidateReferenceMemos();
+        }
+
+        // A same-size edit (reorder, Link to Existing) must reach the baseline before a later growth is judged.
+        public static void InvalidateObservationMemo() => _scannedSizes.Clear();
+
+        private static bool WasScannedThisTick(ArrayKey key, int size)
+        {
+            var tick = SerializeReferenceHelpers.MemoTick;
+            if (_scannedTick != tick)
+            {
+                _scannedSizes.Clear();
+                _scannedTick = tick;
+            }
+
+            if (_scannedSizes.TryGetValue(key, out var scannedSize) && scannedSize == size) return true;
+
+            _scannedSizes[key] = size;
+            return false;
         }
 
         private static bool SharesReferenceWithEarlierElement(SerializedProperty arrayProperty, int index, long rid)
@@ -130,7 +155,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Require both a new index-to-ID binding and an increased occurrence count to exclude reorders.
-        private static bool TryFindFreshDuplicate(
+        internal static bool TryFindFreshDuplicate(
             IReadOnlyDictionary<int, long> previous,
             IReadOnlyDictionary<int, long> current,
             out int duplicateIndex)
@@ -224,22 +249,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _snapshots[key] = new Snapshot(size, signature, map);
         }
 
-        private static bool TryGetArrayPath(string elementPath, out string arrayPath)
-        {
-            arrayPath = null;
-            if (string.IsNullOrEmpty(elementPath)) return false;
-
-            var marker = elementPath.LastIndexOf(ArrayElementMarker, StringComparison.Ordinal);
-            if (marker < 0) return false;
-
-            // Only the array entry itself carries the element's reference, so a sub-field path must not match.
-            var close = elementPath.IndexOf(']', marker + ArrayElementMarker.Length);
-            if (close < 0 || close != elementPath.Length - 1) return false;
-
-            arrayPath = elementPath[..marker];
-            return arrayPath.Length > 0;
-        }
-
         private static void EnsureUndoHook()
         {
             if (_undoHooked) return;
@@ -253,21 +262,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // both makes the next observation re-record instead of auto-fixing.
             _snapshots.Clear();
             _pending.Clear();
+            _scannedSizes.Clear();
         }
 
         private readonly struct ArrayKey : IEquatable<ArrayKey>
         {
-            private readonly int _targetInstanceId;
+            private readonly Object _target;
             private readonly string _arrayPath;
 
-            public ArrayKey(int targetInstanceId, string arrayPath)
+            public ArrayKey(Object target, string arrayPath)
             {
-                _targetInstanceId = targetInstanceId;
+                _target = target;
                 _arrayPath = arrayPath;
             }
 
             public bool Equals(ArrayKey other) =>
-                _targetInstanceId == other._targetInstanceId && _arrayPath == other._arrayPath;
+                _target == other._target && _arrayPath == other._arrayPath;
 
             public override bool Equals(object obj) => obj is ArrayKey other && Equals(other);
 
@@ -275,7 +285,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 unchecked
                 {
-                    return (_targetInstanceId * 397) ^ (_arrayPath?.GetHashCode() ?? 0);
+                    return ((_target is null ? 0 : _target.GetHashCode()) * 397) ^ (_arrayPath?.GetHashCode() ?? 0);
                 }
             }
         }

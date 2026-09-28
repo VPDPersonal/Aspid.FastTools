@@ -1,6 +1,7 @@
 {
   "theme.TOCCollapsible.toggleButtonLabel": {"message": "Содержание"},
   "featureCard.more": {"message": "Подробнее"},
+  "homepage.description": {"message": "Инструменты для Unity, которые убирают шаблонный код"},
   "appearance.label": {"message": "Оформление"},
   "appearance.dark": {"message": "Тёмная"},
   "appearance.light": {"message": "Светлая"},
