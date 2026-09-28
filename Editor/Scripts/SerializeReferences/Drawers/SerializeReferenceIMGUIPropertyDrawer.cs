@@ -403,6 +403,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
+                SerializeReferenceMissingListGuard.NoteReplaced(persistent);
+
                 // Each target gets its own instance built from that target's previous value, so the reference is
                 // never aliased across objects. One Undo step covers them all.
                 if (SerializeReferenceHelpers.IsEditingMultipleObjects(persistent))
@@ -507,6 +509,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Paste(SerializedProperty target)
             {
+                SerializeReferenceMissingListGuard.NoteReplaced(target);
+
                 if (SerializeReferenceHelpers.IsEditingMultipleObjects(target))
                 {
                     SerializeReferenceHelpers.ApplyManagedReferencePerTarget(

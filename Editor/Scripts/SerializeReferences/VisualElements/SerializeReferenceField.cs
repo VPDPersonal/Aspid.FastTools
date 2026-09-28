@@ -827,6 +827,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
+                SerializeReferenceMissingListGuard.NoteReplaced(_property);
+
                 // Multi-object: each target gets its OWN instance, created from that target's previous value, so the
                 // managed reference is never aliased across objects; <None> clears all. One Undo step covers them all.
                 if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
@@ -1018,6 +1020,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void PasteFromClipboard()
         {
+            SerializeReferenceMissingListGuard.NoteReplaced(_property);
+
             // Multi-object: rebuild a fresh instance from the clipboard for EACH target so no two objects share
             // the same managed reference; one Undo step covers all.
             if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
