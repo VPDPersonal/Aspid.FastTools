@@ -10,8 +10,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Consumed once by the post-save pass and dropped, so a later save re-snapshots from the then-current file.
         private static readonly Dictionary<string, List<Snapshot>> PendingByPath = new();
 
-        // Missing elements the user set to <None> since the last save, by asset path; the next save lets them go.
-        private static readonly Dictionary<string, HashSet<(long fileId, long rid)>> ClearedByPath = new();
+        // Missing elements the user replaced (<None>, another type, a paste) since the last save, by asset path; the
+        // next save lets them go.
+        private static readonly Dictionary<string, HashSet<(long fileId, long rid)>> ReplacedByPath = new();
+
+        // A note is not tied to one Undo step, and a replace on a missing element may record none, so any Undo or
+        // Redo drops every note: the next save then keeps the element rather than lose it.
+        [InitializeOnLoadMethod]
+        private static void ForgetReplacementsOnUndo() => Undo.undoRedoPerformed += ReplacedByPath.Clear;
 
         // Fires with the file still in its pre-save state; the returned set is never altered.
         private static string[] OnWillSaveAssets(string[] paths)
@@ -20,7 +26,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (!IsGuarded(path))
                 {
-                    if (!string.IsNullOrEmpty(path)) ClearedByPath.Remove(path);
+                    if (!string.IsNullOrEmpty(path)) ReplacedByPath.Remove(path);
                     continue;
                 }
 
@@ -42,16 +48,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal static bool IsGuarded(string path) =>
             SerializeReferenceYaml.IsCandidateAssetPath(path) && SerializeReferenceOpenCopyGuard.IsWritable(path);
 
-        // Called before a missing element is set to <None>, so the next save does not bring it back. The note outlives
-        // an Undo of the clear until that save, which then leaves the element to Unity.
-        public static void NoteIntentionalClear(SerializedProperty property)
+        // Called before a missing element is replaced, so the next save does not bring it back; a healthy element is
+        // not noted.
+        public static void NoteReplaced(SerializedProperty property)
         {
             if (property is null) return;
 
             var serializedObject = property.serializedObject;
             if (!serializedObject.isEditingMultipleObjects)
             {
-                NoteIntentionalClearOfTarget(property);
+                NoteReplacedTarget(property);
                 return;
             }
 
@@ -59,23 +65,23 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 using var single = new SerializedObject(target);
                 var targetProperty = single.FindProperty(property.propertyPath);
-                if (targetProperty is not null) NoteIntentionalClearOfTarget(targetProperty);
+                if (targetProperty is not null) NoteReplacedTarget(targetProperty);
             }
         }
 
-        private static void NoteIntentionalClearOfTarget(SerializedProperty property)
+        private static void NoteReplacedTarget(SerializedProperty property)
         {
             if (!SerializeReferenceHelpers.TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return;
             if (inMemory) return; // an open copy is never rewritten by the guard
             if (!SerializeReferenceHelpers.TryGetMissingReferenceId(property, out var rid)) return;
 
-            NoteIntentionalClear(assetPath, fileId, rid);
+            NoteReplaced(assetPath, fileId, rid);
         }
 
-        internal static void NoteIntentionalClear(string assetPath, long fileId, long rid)
+        internal static void NoteReplaced(string assetPath, long fileId, long rid)
         {
-            if (!ClearedByPath.TryGetValue(assetPath, out var cleared))
-                ClearedByPath[assetPath] = cleared = new HashSet<(long fileId, long rid)>();
+            if (!ReplacedByPath.TryGetValue(assetPath, out var cleared))
+                ReplacedByPath[assetPath] = cleared = new HashSet<(long fileId, long rid)>();
 
             cleared.Add((fileId, rid));
         }
@@ -84,8 +90,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             var result = new List<Snapshot>();
 
-            ClearedByPath.TryGetValue(assetPath, out var cleared);
-            ClearedByPath.Remove(assetPath);
+            ReplacedByPath.TryGetValue(assetPath, out var cleared);
+            ReplacedByPath.Remove(assetPath);
 
             var missing = SerializeReferenceYamlEditor.FindMissingReferences(assetPath, resolves);
             if (missing.Count == 0) return result;
@@ -159,7 +165,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // Where the missing element before[index] sits after the save, if the save dropped it and nothing else. Unity
         // may write a missing element as a null id on any save (a prefab never keeps one), so an unchanged size keeps
         // it in its slot, as Unity does itself for a ScriptableObject. A grown list prefers the old index, since "+"
-        // appends; a shrunk list follows the alignment that ShrunkAlignment picks.
+        // appends; a shrunk list follows the alignment that ShrunkAlignment picks. When no alignment explains the save
+        // (a healthy element set to <None>, or a reorder, in the same save), the element goes back to its old slot.
         internal static bool TryResolveRestoreIndex(ArrayState before, IReadOnlyList<long> after, int index, out int target)
         {
             target = -1;
@@ -167,9 +174,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             var candidate = after.Count == before.Count ? index
                 : after.Count > before.Count ? GrownCandidate(before, after, index)
-                : ShrunkAlignment(before, after)?[index] ?? -1;
+                : ShrunkAlignment(before, after) is { } positions ? positions[index] : index;
 
-            if (candidate < 0) return false;
+            if (candidate < 0 || candidate >= after.Count) return false;
             if (after[candidate] >= 0) return false; // the element survived, or the slot was re-assigned
 
             target = candidate;
@@ -177,7 +184,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The only place in after that before[index] can take while every other element of before keeps its order;
-        // the old index when it is one of several.
+        // the old index when it is one of several, and the old index too when no such place exists.
         private static int GrownCandidate(ArrayState before, IReadOnlyList<long> after, int index)
         {
             // prefix[a, b]: the first b elements of before embed into the first a of after; suffix[a, b]: before from
@@ -208,7 +215,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 candidate = j;
             }
 
-            return candidate;
+            return candidate >= 0 ? candidate : index;
         }
 
         // Where each element of before sits in after, or -1 where it was deleted; null when no deletion gives after.
@@ -248,11 +255,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // The pre-save pointers of one array: which slots hold a missing element that the save may write as a null id.
-        // A missing element the user cleared counts as a plain null.
+        // A missing element the user replaced counts as a plain null.
         internal sealed class ArrayState
         {
             public readonly long[] Rids;
             public readonly bool[] Collapsible;
+
+            private readonly HashSet<long> _held = new();
 
             public int Count => Rids.Length;
 
@@ -260,6 +269,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 Rids = rids;
                 Collapsible = collapsible;
+
+                foreach (var rid in rids)
+                    if (rid >= 0) _held.Add(rid);
             }
 
             public static ArrayState Build(List<long> rids, long fileId,
@@ -283,12 +295,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // A <None> element: a null the user left, not a missing element.
             public bool IsNull(int index) => !Collapsible[index] && Rids[index] < 0;
 
-            // Whether the slot may hold this id after a save that only deleted or added elements.
+            // Whether the slot may hold this id after a save that deleted or added elements. A healthy or null slot may
+            // also take an id the array did not hold: a type pick, Paste or Make Unique in the same save. A missing
+            // slot may not, since replacing a missing element is noted and turns it into a null.
             public bool Accepts(int index, long rid)
             {
                 var previous = Rids[index];
-                if (Collapsible[index]) return rid < 0 || rid == previous;
-                return previous < 0 ? rid < 0 : rid == previous;
+                if (rid == previous) return true;
+                if (Collapsible[index]) return rid < 0;
+                return rid < 0 ? previous < 0 : !_held.Contains(rid);
             }
         }
 
