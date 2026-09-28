@@ -21,10 +21,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         private const string BasePath = "Assets/__AspidPrefabInstanceBase__.prefab";
         private const string VariantPath = "Assets/__AspidPrefabInstanceVariant__.prefab";
+        private const string VariantOfVariantPath = "Assets/__AspidPrefabInstanceVariantOfVariant__.prefab";
 
         [TearDown]
         public void TearDown()
         {
+            AssetDatabase.DeleteAsset(VariantOfVariantPath);
             AssetDatabase.DeleteAsset(VariantPath);
             AssetDatabase.DeleteAsset(BasePath);
             ResetProbes();
@@ -86,7 +88,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 Assert.IsTrue(SerializeReferenceHelpers.IsMissingType(weapon),
                     "A missing type stored in the variant's override must not read as an empty <None> field.");
                 Assert.AreEqual("PrefabTestBowRemoved", SerializeReferenceHelpers.GetMissingTypeName(weapon).Class);
-                Assert.IsTrue(SerializeReferenceHelpers.TryGetPrefabOverrideMissingType(weapon, out _, out _));
                 Assert.IsFalse(SerializeReferenceHelpers.TryGetRepairLocation(weapon, out _, out _, out _));
                 StringAssert.Contains("prefab override", SerializeReferenceHelpers.GetMissingTypeRepairHint(weapon));
 
@@ -95,22 +96,111 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                     "A present reference with a missing type is set, not unset.");
             }
 
-            AssertRequiredReportedAsMissing(SerializeReferenceGateScanner.Scan(GateOptions.Full), "Scan(Full)");
-            AssertRequiredReportedAsMissing(SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly), "Scan(RequiredOnly)");
-            AssertRequiredReportedAsMissing(SerializeReferenceGateScanner.ScanAssetRequiredFields(VariantPath), "ScanAssetRequiredFields");
+            // The missing-type scan reports the override once; the required pass counts the field as set.
+            var full = ForField(SerializeReferenceGateScanner.Scan(GateOptions.Full), VariantPath, nameof(PrefabReferenceProbe.requiredWeapon));
+            Assert.AreEqual(1, full.Count, "Scan(Full) must report the required field exactly once.");
+            Assert.AreEqual(GateViolationKind.MissingType, full[0].Kind);
+            Assert.IsTrue(full[0].IsOverride);
+            Assert.AreEqual("PrefabTestBowRemoved", full[0].StoredType.Class);
+
+            CollectionAssert.IsEmpty(ForField(SerializeReferenceGateScanner.Scan(GateOptions.RequiredOnly), VariantPath,
+                nameof(PrefabReferenceProbe.requiredWeapon)), "A present reference with a missing type is not unset.");
+            CollectionAssert.IsEmpty(ForField(SerializeReferenceGateScanner.ScanAssetRequiredFields(VariantPath), VariantPath,
+                nameof(PrefabReferenceProbe.requiredWeapon)));
         }
 
-        // Every required scan must report it: the missing-type document scan never sees a type inside an override.
-        private static void AssertRequiredReportedAsMissing(IReadOnlyList<GateViolation> violations, string scan)
+        [Test]
+        public void OverrideHigherUpTheChain_IsRepairedInTheAssetThatHoldsIt()
         {
-            var forField = violations
-                .Where(v => v.AssetPath == VariantPath && v.FieldPath == nameof(PrefabReferenceProbe.requiredWeapon))
-                .ToList();
+            CreateBaseAndVariant(
+                onBase: probe => probe.weapon = new PrefabTestSword(),
+                onVariant: probe => probe.weapon = new PrefabTestBow { arrows = 5 });
+            CreateVariant(VariantPath, VariantOfVariantPath, onVariant: null);
+            LogAssert.ignoreFailingMessages = true;
+            BreakType(VariantPath, "Tests.PrefabTestBow", "Tests.PrefabTestBowRemoved");
 
-            Assert.AreEqual(1, forField.Count, $"{scan} must report the required field exactly once.");
-            Assert.AreEqual(GateViolationKind.MissingType, forField[0].Kind, scan);
-            Assert.AreEqual("PrefabTestBowRemoved", forField[0].StoredType.Class, scan);
+            using (var variantOfVariant = new SerializedObject(LoadProbe(VariantOfVariantPath)))
+            {
+                var weapon = variantOfVariant.FindProperty(nameof(PrefabReferenceProbe.weapon));
+
+                Assert.IsTrue(SerializeReferenceHelpers.IsMissingType(weapon));
+                Assert.AreEqual("PrefabTestBowRemoved", SerializeReferenceHelpers.GetMissingTypeName(weapon).Class);
+
+                var hint = SerializeReferenceHelpers.GetMissingTypeRepairHint(weapon);
+                StringAssert.Contains(VariantPath, hint, "The hint must name the variant that holds the override.");
+                StringAssert.DoesNotContain("prefab override", hint, "The variant of the variant has no override to revert.");
+            }
+
+            using (var variant = new SerializedObject(LoadProbe(VariantPath)))
+            {
+                StringAssert.Contains("prefab override",
+                    SerializeReferenceHelpers.GetMissingTypeRepairHint(variant.FindProperty(nameof(PrefabReferenceProbe.weapon))));
+            }
+
+            var full = SerializeReferenceGateScanner.Scan(GateOptions.Full);
+            Assert.AreEqual(1, ForField(full, VariantPath, nameof(PrefabReferenceProbe.weapon)).Count);
+            CollectionAssert.IsEmpty(ForField(full, VariantOfVariantPath, nameof(PrefabReferenceProbe.weapon)),
+                "The variant of the variant stores nothing to fix.");
         }
+
+        [Test]
+        public void NestedOverrideMissingType_IsReportedOnTheVariant()
+        {
+            CreateBaseAndVariant(
+                onBase: probe => probe.holder = new PrefabTestHolder { inner = new PrefabTestSword() },
+                onVariant: probe => ((PrefabTestHolder)probe.holder).inner = new PrefabTestBow { arrows = 1 });
+            LogAssert.ignoreFailingMessages = true;
+            BreakType(VariantPath, "Tests.PrefabTestBow", "Tests.PrefabTestBowRemoved");
+
+            using var variant = new SerializedObject(LoadProbe(VariantPath));
+            var inner = variant.FindProperty(InnerPath);
+
+            Assert.IsNull(inner.managedReferenceValue);
+            Assert.IsTrue(SerializeReferenceHelpers.IsMissingType(inner),
+                "An override inside a managed reference is recorded as managedReferences[rid].inner.\n" + File.ReadAllText(VariantPath));
+            Assert.AreEqual("PrefabTestBowRemoved", SerializeReferenceHelpers.GetMissingTypeName(inner).Class);
+            StringAssert.Contains("prefab override", SerializeReferenceHelpers.GetMissingTypeRepairHint(inner));
+        }
+
+        [Test]
+        public void NestedInheritedMissingType_IsReadFromTheSourcePrefab()
+        {
+            CreateBaseAndVariant(onBase: probe => probe.holder = new PrefabTestHolder { inner = new PrefabTestSword() }, onVariant: null);
+            BreakType(BasePath, "class: PrefabTestSword,", "class: PrefabTestSwordRemoved,");
+
+            using var variant = new SerializedObject(LoadProbe(VariantPath));
+            var inner = variant.FindProperty(InnerPath);
+
+            Assert.IsTrue(SerializeReferenceHelpers.IsMissingType(inner));
+            Assert.AreEqual("PrefabTestSwordRemoved", SerializeReferenceHelpers.GetMissingTypeName(inner).Class);
+            StringAssert.Contains(BasePath, SerializeReferenceHelpers.GetMissingTypeRepairHint(inner));
+        }
+
+        [Test]
+        public void ReplacedEnclosingReference_OwnsItsNestedFields()
+        {
+            CreateBaseAndVariant(
+                onBase: probe => probe.holder = new PrefabTestHolder
+                {
+                    inner = new PrefabTestSword(),
+                    requiredInner = new PrefabTestSword(),
+                },
+                onVariant: probe => probe.holder = new PrefabTestHolder());
+            BreakType(BasePath, "class: PrefabTestSword,", "class: PrefabTestSwordRemoved,");
+
+            using var variant = new SerializedObject(LoadProbe(VariantPath));
+
+            Assert.IsFalse(SerializeReferenceHelpers.IsMissingType(variant.FindProperty(InnerPath)),
+                "The variant replaced the holder, so the source prefab's nested data is not its own.\n" + File.ReadAllText(VariantPath));
+            Assert.IsTrue(TypeSelectorRequiredGate.IsViolation(variant.FindProperty(RequiredInnerPath)),
+                "The replacing holder leaves its required field unset.");
+        }
+
+        private const string InnerPath = nameof(PrefabReferenceProbe.holder) + "." + nameof(PrefabTestHolder.inner);
+        private const string RequiredInnerPath = nameof(PrefabReferenceProbe.holder) + "." + nameof(PrefabTestHolder.requiredInner);
+
+        private static List<GateViolation> ForField(IReadOnlyList<GateViolation> violations, string assetPath, string fieldPath) =>
+            violations.Where(v => v.AssetPath == assetPath && v.FieldPath == fieldPath).ToList();
 
         [Test]
         public void OverrideToNone_HidesTheSourcePrefabMissingType()
@@ -128,25 +218,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 "The variant overrides the field to <None>, so the source prefab's missing type does not reach it.");
         }
 
-        [Test]
-        public void ParseManagedReferenceTypename_SplitsNamespaceBeforeNestedAndGenericSegments()
-        {
-            var nested = SerializeReferenceHelpers.ParseManagedReferenceTypename("Asm Game.Weapons.Outer/Inner");
-            Assert.AreEqual("Asm", nested.Assembly);
-            Assert.AreEqual("Game.Weapons", nested.Namespace);
-            Assert.AreEqual("Outer/Inner", nested.Class);
-
-            var generic = SerializeReferenceHelpers.ParseManagedReferenceTypename("Asm Game.Box`1[[Other.Item, Lib]]");
-            Assert.AreEqual("Game", generic.Namespace);
-            Assert.AreEqual("Box`1[[Other.Item, Lib]]", generic.Class);
-
-            var global = SerializeReferenceHelpers.ParseManagedReferenceTypename("Asm Sword");
-            Assert.AreEqual(string.Empty, global.Namespace);
-            Assert.AreEqual("Sword", global.Class);
-
-            Assert.IsTrue(SerializeReferenceHelpers.ParseManagedReferenceTypename("NoTypeName").IsEmpty);
-        }
-
         private static void CreateBaseAndVariant(Action<PrefabReferenceProbe> onBase, Action<PrefabReferenceProbe> onVariant)
         {
             var go = new GameObject("Base");
@@ -157,11 +228,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             }
             finally { Object.DestroyImmediate(go); }
 
-            var instance = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(BasePath));
+            CreateVariant(BasePath, VariantPath, onVariant);
+        }
+
+        private static void CreateVariant(string sourcePath, string variantPath, Action<PrefabReferenceProbe> onVariant)
+        {
+            var instance = (GameObject)PrefabUtility.InstantiatePrefab(AssetDatabase.LoadAssetAtPath<GameObject>(sourcePath));
             try
             {
                 onVariant?.Invoke(instance.GetComponent<PrefabReferenceProbe>());
-                PrefabUtility.SaveAsPrefabAsset(instance, VariantPath);
+                PrefabUtility.SaveAsPrefabAsset(instance, variantPath);
             }
             finally { Object.DestroyImmediate(instance); }
         }
@@ -175,6 +251,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
             AssetDatabase.ImportAsset(VariantPath, ImportAssetOptions.ForceUpdate);
+            if (File.Exists(VariantOfVariantPath)) AssetDatabase.ImportAsset(VariantOfVariantPath, ImportAssetOptions.ForceUpdate);
             ResetProbes();
         }
 

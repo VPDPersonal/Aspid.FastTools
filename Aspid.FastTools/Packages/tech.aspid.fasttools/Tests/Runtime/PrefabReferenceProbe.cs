@@ -18,6 +18,14 @@ namespace Aspid.FastTools.SerializeReferences.Tests
         public int arrows;
     }
 
+    // A reference with references of its own, whose overrides Unity records as managedReferences[rid].<field>.
+    [Serializable]
+    public sealed class PrefabTestHolder : IPrefabTestWeapon
+    {
+        [SerializeReference] public IPrefabTestWeapon inner;
+        [SerializeReference, TypeSelector(Required = true)] public IPrefabTestWeapon requiredInner;
+    }
+
     // A component the EditMode tests save into prefabs and variants. Unity attaches only a runtime script whose file
     // carries its name, so it cannot live beside the editor-only tests.
     [AddComponentMenu("")]
@@ -25,5 +33,6 @@ namespace Aspid.FastTools.SerializeReferences.Tests
     {
         [SerializeReference] public IPrefabTestWeapon weapon;
         [SerializeReference, TypeSelector(Required = true)] public IPrefabTestWeapon requiredWeapon;
+        [SerializeReference] public IPrefabTestWeapon holder;
     }
 }
