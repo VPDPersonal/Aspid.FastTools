@@ -12,7 +12,8 @@ namespace Aspid.FastTools.Editors.Tests
     {
         private const string PackageName = "tech.aspid.fasttools";
 
-        private static readonly Regex GetInstanceIdCall = new(@"\.GetInstanceID\s*\(");
+        // A word boundary, not a dot, so the unqualified call inside an Object subclass is caught as well.
+        private static readonly Regex GetInstanceIdCall = new(@"\bGetInstanceID\s*\(");
 
         [Test]
         public void PackageSource_DoesNotCallGetInstanceID()
