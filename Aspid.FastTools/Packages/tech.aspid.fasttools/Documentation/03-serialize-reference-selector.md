@@ -82,7 +82,7 @@ For arrays and lists, apply both attributes to the collection field. One list ca
 [SerializeReference] private IWeapon[] _slots = new IWeapon[2];
 ```
 
-In a UI Toolkit list, **+** opens the type picker and appends a new instance. Choosing `<None>` appends an empty entry. For the same behaviour in a custom IMGUI Inspector, use `SerializeReferenceIMGUIList.Draw` — see the [example below](#custom-imgui-inspectors).
+In a UI Toolkit list, **+** opens the type picker and appends a new instance. Choosing `<None>` appends an empty entry. With multiple objects selected, each object gets its own instance in one Undo group. For the same behaviour in a custom IMGUI Inspector, use `SerializeReferenceIMGUIList.Draw` — see the [example below](#custom-imgui-inspectors).
 
 ### Nested selectors without repeated attributes
 

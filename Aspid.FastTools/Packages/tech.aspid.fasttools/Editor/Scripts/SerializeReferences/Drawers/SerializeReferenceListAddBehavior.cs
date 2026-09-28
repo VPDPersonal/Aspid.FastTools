@@ -16,18 +16,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // provider consulted when the picker opens, since a member-referenced constraint can re-resolve later.
         public static void TryInstall(VisualElement elementField, SerializedProperty elementProperty, Type elementType, Func<Type[]> baseTypesProvider)
         {
-            if (elementField is null || elementProperty is null) return;
-
-            var serializedObject = elementProperty.serializedObject;
-            if (serializedObject is null || serializedObject.isEditingMultipleObjects) return;
-
-            var path = elementProperty.propertyPath;
-            var arrayMarker = path.IndexOf(".Array.data[", StringComparison.Ordinal);
-            if (arrayMarker < 0) return;
-
-            var arrayPath = path[..arrayMarker];
-            var target = serializedObject.targetObject;
-            if (target == null) return;
+            if (elementField is null) return;
+            if (!TryResolveAppendTarget(elementProperty, out var targets, out var arrayPath)) return;
 
             var listView = elementField.GetFirstAncestorOfType<ListView>();
             if (listView is null || listView.overridingAddButtonBehavior != null) return;
@@ -39,11 +29,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (listView.overridingAddButtonBehavior != null) return;
 
                 listView.overridingAddButtonBehavior = (_, button) =>
-                    OpenAppendPicker(target, arrayPath, elementType, baseTypesProvider(), button);
+                    OpenAppendPicker(targets, arrayPath, elementType, baseTypesProvider(), button);
             });
         }
 
-        public static void OpenAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, VisualElement anchor)
+        // The objects and the array an element's "+" appends to: every selected object, and the innermost array, so a
+        // list nested in another array's element appends to itself, not the outer one.
+        public static bool TryResolveAppendTarget(SerializedProperty elementProperty, out Object[] targets, out string arrayPath)
+        {
+            targets = null;
+            arrayPath = null;
+
+            var serializedObject = elementProperty?.serializedObject;
+            if (serializedObject is null) return false;
+            if (!SerializeReferenceHelpers.TryGetArrayPath(elementProperty.propertyPath, out arrayPath)) return false;
+
+            targets = serializedObject.targetObjects;
+            return targets.Length > 0 && targets[0] != null;
+        }
+
+        public static void OpenAppendPicker(Object[] targets, string arrayPath, Type elementType, Type[] baseTypes, VisualElement anchor)
         {
             var window = anchor.GetOwnerWindow();
             if (window == null) return;
@@ -62,10 +67,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 width,
                 anchor.worldBound.height);
 
-            ShowAppendPicker(target, arrayPath, elementType, baseTypes, screenRect);
+            ShowAppendPicker(targets, arrayPath, elementType, baseTypes, screenRect);
         }
 
-        public static void ShowAppendPicker(Object target, string arrayPath, Type elementType, Type[] baseTypes, Rect screenRect)
+        public static void ShowAppendPicker(Object[] targets, string arrayPath, Type elementType, Type[] baseTypes, Rect screenRect)
         {
             TypeSelectorWindow.Show(
                 screenRect: screenRect,
@@ -78,26 +83,39 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
                 },
                 currentAqn: null, // a "+" append has no current value — nothing (not even <None>) wears the check
-                onSelected: aqn => Append(target, arrayPath, aqn));
+                onSelected: aqn => Append(targets, arrayPath, aqn));
         }
 
-        private static void Append(Object target, string arrayPath, string assemblyQualifiedName)
+        // Appends to every target, so a multi-object selection gets one independent instance per object instead of
+        // the native add's copied rid. A target without a managed-reference array at the path is skipped.
+        public static void Append(Object[] targets, string arrayPath, string assemblyQualifiedName)
         {
-            if (target == null) return;
+            if (targets is null) return;
 
             var type = string.IsNullOrEmpty(assemblyQualifiedName) ? null : Type.GetType(assemblyQualifiedName, throwOnError: false);
 
-            // A fresh SerializedObject avoids a stale-binding hazard; the bound ListView refreshes on its next update.
-            using var serializedObject = new SerializedObject(target);
-            var array = serializedObject.FindProperty(arrayPath);
-            if (array is null || !array.isArray) return;
+            Undo.IncrementCurrentGroup();
+            var undoGroup = Undo.GetCurrentGroup();
 
-            // arraySize++ copies the previous last element's rid, so overwrite it in the same modification —
-            // an explicit null for <None> too — collapsing both into one Undo step.
-            var index = array.arraySize;
-            array.arraySize = index + 1;
-            array.GetArrayElementAtIndex(index).SetManagedReference(type is null ? null : SerializeReferenceHelpers.CreateInstance(type));
-            serializedObject.ApplyModifiedProperties();
+            foreach (var target in targets)
+            {
+                if (target == null) continue;
+
+                // A fresh SerializedObject avoids a stale-binding hazard; the bound list refreshes on its next update.
+                using var serializedObject = new SerializedObject(target);
+                var array = serializedObject.FindProperty(arrayPath);
+                if (array is null || !SerializeReferenceHelpers.IsManagedReferenceArray(array)) continue;
+
+                // arraySize++ copies the previous last element's rid, so overwrite it in the same modification —
+                // an explicit null for <None> too.
+                var index = array.arraySize;
+                array.arraySize = index + 1;
+                array.GetArrayElementAtIndex(index).SetManagedReference(type is null ? null : SerializeReferenceHelpers.CreateInstance(type));
+                serializedObject.ApplyModifiedProperties();
+            }
+
+            // One Undo step for the whole selection.
+            Undo.CollapseUndoOperations(undoGroup);
         }
     }
 }
