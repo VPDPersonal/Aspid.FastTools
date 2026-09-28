@@ -1,14 +1,6 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {MAX_WAVES, addWave, rowWaves} from '../src/components/DotRipple/waves.js';
-
-test('a burst of clicks keeps only the newest waves', () => {
-  const waves = [];
-  for (let i = 0; i < MAX_WAVES * 3; i++) addWave(waves, {start: i});
-  assert.equal(waves.length, MAX_WAVES);
-  assert.equal(waves[0].start, MAX_WAVES * 2);
-  assert.equal(waves.at(-1).start, MAX_WAVES * 3 - 1);
-});
+import {rowWaves} from '../src/components/DotRipple/waves.js';
 
 test('the row span keeps every dot inside a ring and skips the rows it misses', () => {
   const live = [

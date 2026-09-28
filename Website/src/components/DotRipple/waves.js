@@ -1,13 +1,3 @@
-/** Most waves alive at once: a burst of clicks past this drops the oldest, so the cost of a frame stays bounded. */
-export const MAX_WAVES = 24;
-
-/** Adds `wave` to `waves` in place, dropping the oldest ones past {@link MAX_WAVES}. */
-export function addWave(waves, wave) {
-  waves.push(wave);
-  if (waves.length > MAX_WAVES) waves.splice(0, waves.length - MAX_WAVES);
-  return waves;
-}
-
 /**
  * The waves whose ring crosses the grid row at `y`, each with the horizontal span of that crossing: a dot whose
  * `|x - wave.x|` lies outside `[near, far]` is outside the ring, so it is skipped without a square root. The span is

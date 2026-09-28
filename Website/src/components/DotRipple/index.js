@@ -1,6 +1,6 @@
 import {useEffect} from 'react';
 import {BACKGROUND_WINDOWS} from '../BackgroundWindows';
-import {addWave, rowWaves} from './waves';
+import {rowWaves} from './waves';
 
 // Anything that reads as "content" rather than canvas. Only the filled parts of the navigation panel and the TOC count,
 // so the empty space under a short menu still behaves like background.
@@ -276,7 +276,7 @@ export default function DotRipple() {
       const level = chargeLevel(now);
       stopCharging(now);
       colors = readColors();
-      addWave(waves, {x: event.clientX, y: event.clientY, start: now, power: MIN_POWER + (MAX_POWER - MIN_POWER) * level});
+      waves.push({x: event.clientX, y: event.clientY, start: now, power: MIN_POWER + (MAX_POWER - MIN_POWER) * level});
 
       clicks += 1;
       saveClicks(clicks);
