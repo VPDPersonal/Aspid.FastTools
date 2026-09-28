@@ -182,6 +182,34 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
             AssertSerializeReferenceFolderIcon(lightSkin: true, "Folder Icon");
 
         [UnityTest]
+        public IEnumerator SerializeReference_NestedButton_LightSkin_HasNoFolderIcon()
+        {
+            // A drawer's own button below the field must not take the open button's light-skin icon.
+            var icon = new VisualElement();
+            _window.rootVisualElement.Add(new VisualElement()
+                .AddStyleSheetFromResources(SerializeReferenceStyleSheet)
+                .AddClass("aspid-fasttools-serialize-reference")
+                .AddClass(AspidStyles.SkinLightClass)
+                .AddChild(new Button().AddChild(icon)));
+            yield return null;
+
+            Assert.IsNull(icon.resolvedStyle.backgroundImage.texture, "A nested button must keep its own look.");
+        }
+
+        [UnityTest]
+        public IEnumerator TypeField_NestedButton_LightSkin_HasNoFolderIcon()
+        {
+            var icon = new VisualElement();
+            _window.rootVisualElement.Add(new VisualElement()
+                .AddClass(AspidStyles.SkinLightClass)
+                .AddChild(new TypeField("Type")
+                    .AddChild(new Button().AddChild(icon))));
+            yield return null;
+
+            Assert.IsNull(icon.resolvedStyle.backgroundImage.texture, "A button inside a TypeField must keep its own look.");
+        }
+
+        [UnityTest]
         public IEnumerator EnumValues_Background_FollowsEditorSkin()
         {
             var header = new VisualElement().AddClass("aspid-fasttools-enum-values__header");
@@ -223,6 +251,26 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
         }
 
         [UnityTest]
+        public IEnumerator Switch_UnsetPaletteTokens_RestyleRestoresSkinDefaults()
+        {
+            // A skin switch only restyles the panel, so the defaults must come back from a style resolve.
+            var toggle = new AspidSwitch("Switch");
+            _window.rootVisualElement.AddAspidThemeStyleSheets().Add(toggle);
+            yield return null;
+
+            var handle = toggle.Q(className: BaseField<bool>.inputUssClassName)[0][0];
+            handle.style.backgroundColor = Color.magenta;
+            toggle.AddToClassList("aspid-fasttools-test-restyle");
+            yield return null;
+
+            var expected = EditorGUIUtility.isProSkin
+                ? new Color(0.74f, 0.74f, 0.77f, 0.85f)
+                : new Color(0.35f, 0.35f, 0.38f, 0.9f);
+
+            AssertColor(expected, handle.resolvedStyle.backgroundColor, "switch handle");
+        }
+
+        [UnityTest]
         public IEnumerator Switch_PaletteTokens_RecolorSwitch()
         {
             var toggle = new AspidSwitch("Switch");
@@ -247,7 +295,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 .AddChild(field));
             yield return null;
 
-            var texture = field.Q<Button>()[0].resolvedStyle.backgroundImage.texture;
+            var texture = field.Q<Button>(className: "aspid-fasttools-type-field__open-button")[0].resolvedStyle.backgroundImage.texture;
             Assert.IsNotNull(texture, "The folder icon must resolve.");
             Assert.AreEqual(expected, texture.name);
         }
@@ -260,7 +308,7 @@ namespace Aspid.FastTools.UIElements.Editors.Internal.Tests
                 .AddStyleSheetFromResources(SerializeReferenceStyleSheet)
                 .AddClass("aspid-fasttools-serialize-reference")
                 .EnableClass(AspidStyles.SkinLightClass, lightSkin)
-                .AddChild(new Button().AddChild(icon)));
+                .AddChild(new Button().AddClass("aspid-fasttools-serialize-reference__open-button").AddChild(icon)));
             yield return null;
 
             var texture = icon.resolvedStyle.backgroundImage.texture;
