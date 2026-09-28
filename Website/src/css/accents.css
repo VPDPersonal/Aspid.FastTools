@@ -1,0 +1,188 @@
+/*
+ * Accent variants of the Venom theme, picked in the sidebar footer appearance menu (src/components/NavigationPanel/AppearanceSwitcher.js).
+ * Green is the default and lives in custom.css; each variant below redefines the accent tokens for both themes and
+ * takes its hues from the matching package logo (mono: a greyscale copy of the green one). Success admonitions stay green (--venom-emerald) whatever the accent.
+ */
+
+/* Only the logo in the current accent is shown (src/theme/Logo). */
+html:not([data-accent]) .accent-logo:not([data-accent-logo='green']),
+html[data-accent='red'] .accent-logo:not([data-accent-logo='red']),
+html[data-accent='blue'] .accent-logo:not([data-accent-logo='blue']),
+html[data-accent='yellow'] .accent-logo:not([data-accent-logo='yellow']),
+html[data-accent='mono'] .accent-logo:not([data-accent-logo='mono']) {
+  display: none;
+}
+
+/* ---------- Red ---------- */
+
+html[data-theme='light'][data-accent='red'] {
+  --venom-accent: #c23b3b;
+  --venom-accent-2: #b03434;
+  --venom-accent-deep: #a12f2f;
+  --venom-accent-ink: #ffffff;
+  --venom-glow: rgba(194, 59, 59, 0.18);
+  --venom-glow-2: rgba(161, 47, 47, 0.14);
+  --venom-glow-soft: rgba(194, 59, 59, 0.09);
+  --ifm-color-primary: #c23b3b;
+  --ifm-color-primary-dark: #af3535;
+  --ifm-color-primary-darker: #a53232;
+  --ifm-color-primary-darkest: #882929;
+  --ifm-color-primary-light: #c94d4d;
+  --ifm-color-primary-lighter: #cc5757;
+  --ifm-color-primary-lightest: #d57474;
+}
+
+html[data-theme='dark'][data-accent='red'] {
+  --venom-accent: #e06464;
+  --venom-accent-2: #f2b4b4;
+  --venom-accent-deep: #973636;
+  --venom-accent-ink: #1c0707;
+  --venom-glow: rgba(224, 100, 100, 0.2);
+  --venom-glow-2: rgba(151, 54, 54, 0.22);
+  --venom-glow-soft: rgba(224, 100, 100, 0.1);
+  --venom-ripple: #e06464;
+  --ifm-color-primary: #e06464;
+  --ifm-color-primary-dark: #db4949;
+  --ifm-color-primary-darker: #d83b3b;
+  --ifm-color-primary-darkest: #bd2626;
+  --ifm-color-primary-light: #e57f7f;
+  --ifm-color-primary-lighter: #e88c8c;
+  --ifm-color-primary-lightest: #f0b5b5;
+}
+
+html[data-theme='light'][data-accent='red'].docs-doc-page {
+  --venom-accent: #a12f2f;
+  --venom-ripple: #e06464;
+}
+
+/* ---------- Blue ---------- */
+
+html[data-theme='light'][data-accent='blue'] {
+  --venom-accent: #1f74b0;
+  --venom-accent-2: #1b68a0;
+  --venom-accent-deep: #185f92;
+  --venom-accent-ink: #ffffff;
+  --venom-glow: rgba(31, 116, 176, 0.18);
+  --venom-glow-2: rgba(24, 95, 146, 0.14);
+  --venom-glow-soft: rgba(31, 116, 176, 0.09);
+  --ifm-color-primary: #1f74b0;
+  --ifm-color-primary-dark: #1c689e;
+  --ifm-color-primary-darker: #1a6396;
+  --ifm-color-primary-darkest: #16517b;
+  --ifm-color-primary-light: #2280c2;
+  --ifm-color-primary-lighter: #2485ca;
+  --ifm-color-primary-lightest: #3295db;
+}
+
+html[data-theme='dark'][data-accent='blue'] {
+  --venom-accent: #4ea5da;
+  --venom-accent-2: #acd6f0;
+  --venom-accent-deep: #27628e;
+  --venom-accent-ink: #04121d;
+  --venom-glow: rgba(78, 165, 218, 0.2);
+  --venom-glow-2: rgba(39, 98, 142, 0.22);
+  --venom-glow-soft: rgba(78, 165, 218, 0.1);
+  --venom-ripple: #4ea5da;
+  --ifm-color-primary: #4ea5da;
+  --ifm-color-primary-dark: #3699d5;
+  --ifm-color-primary-darker: #2c92d0;
+  --ifm-color-primary-darkest: #2478ab;
+  --ifm-color-primary-light: #66b1df;
+  --ifm-color-primary-lighter: #73b8e2;
+  --ifm-color-primary-lightest: #97cae9;
+}
+
+html[data-theme='light'][data-accent='blue'].docs-doc-page {
+  --venom-accent: #185f92;
+  --venom-ripple: #4ea5da;
+}
+
+/* ---------- Yellow ---------- */
+
+html[data-theme='light'][data-accent='yellow'] {
+  --venom-accent: #8f6f00;
+  --venom-accent-2: #826500;
+  --venom-accent-deep: #765c00;
+  --venom-accent-ink: #ffffff;
+  --venom-glow: rgba(143, 111, 0, 0.18);
+  --venom-glow-2: rgba(118, 92, 0, 0.14);
+  --venom-glow-soft: rgba(143, 111, 0, 0.09);
+  --ifm-color-primary: #8f6f00;
+  --ifm-color-primary-dark: #816400;
+  --ifm-color-primary-darker: #7a5e00;
+  --ifm-color-primary-darkest: #644e00;
+  --ifm-color-primary-light: #9d7a00;
+  --ifm-color-primary-lighter: #a48000;
+  --ifm-color-primary-lightest: #ba9000;
+}
+
+html[data-theme='dark'][data-accent='yellow'] {
+  --venom-accent: #dcbc45;
+  --venom-accent-2: #f0e0a2;
+  --venom-accent-deep: #826b1a;
+  --venom-accent-ink: #161103;
+  --venom-glow: rgba(220, 188, 69, 0.2);
+  --venom-glow-2: rgba(130, 107, 26, 0.22);
+  --venom-glow-soft: rgba(220, 188, 69, 0.1);
+  --venom-ripple: #dcbc45;
+  --ifm-color-primary: #dcbc45;
+  --ifm-color-primary-dark: #d7b32d;
+  --ifm-color-primary-darker: #cfab27;
+  --ifm-color-primary-darkest: #aa8d20;
+  --ifm-color-primary-light: #e1c55d;
+  --ifm-color-primary-lighter: #e3c969;
+  --ifm-color-primary-lightest: #ead68e;
+}
+
+html[data-theme='light'][data-accent='yellow'].docs-doc-page {
+  --venom-accent: #765c00;
+  --venom-ripple: #c9a52a;
+}
+
+/* ---------- Mono: graphite and paper, no hue ---------- */
+
+html[data-theme='light'][data-accent='mono'] {
+  --venom-accent: #2a2c31;
+  --venom-accent-2: #121316;
+  --venom-accent-deep: #3a3d45;
+  --venom-accent-ink: #ffffff;
+  --venom-glow: rgba(42, 44, 49, 0.14);
+  --venom-glow-2: rgba(58, 61, 69, 0.12);
+  --venom-glow-soft: rgba(42, 44, 49, 0.07);
+  --ifm-color-primary: #2a2c31;
+  --ifm-color-primary-dark: #26282c;
+  --ifm-color-primary-darker: #24252a;
+  --ifm-color-primary-darkest: #1d1f22;
+  --ifm-color-primary-light: #2e3036;
+  --ifm-color-primary-lighter: #303338;
+  --ifm-color-primary-lightest: #373940;
+}
+
+html[data-theme='dark'][data-accent='mono'] {
+  --venom-accent: #e2e3e8;
+  --venom-accent-2: #f0f0f2;
+  --venom-accent-deep: #5a5f6b;
+  --venom-accent-ink: #0a0b0f;
+  --venom-glow: rgba(226, 227, 232, 0.16);
+  --venom-glow-2: rgba(90, 95, 107, 0.22);
+  --venom-glow-soft: rgba(226, 227, 232, 0.08);
+  --venom-ripple: #c8c9d0;
+  --ifm-color-primary: #e2e3e8;
+  --ifm-color-primary-dark: #c8cad4;
+  --ifm-color-primary-darker: #bcbeca;
+  --ifm-color-primary-darkest: #9599ab;
+  --ifm-color-primary-light: #fcfcfc;
+  --ifm-color-primary-lighter: #ffffff;
+  --ifm-color-primary-lightest: #ffffff;
+}
+
+html[data-theme='light'][data-accent='mono'].docs-doc-page {
+  --venom-accent: #2a2c31;
+  --venom-ripple: #8a8e98;
+}
+
+/* Without a hue, article links would read as body text: underline them at rest. */
+html[data-accent='mono'] .markdown a:not(.card):not(.pagination-nav__link):not([class*='card_']):not(.table-of-contents__link) {
+  text-decoration: underline;
+  text-decoration-color: var(--venom-divider);
+}
