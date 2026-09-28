@@ -1040,6 +1040,36 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
         
+        #region ToggleButtonGroupState
+        /// <summary>
+        /// Subscribes to the value-changed event of the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to subscribe.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T AddValueChanged<T>(this T element, EventCallback<ChangeEvent<ToggleButtonGroupState>> callback)
+            where T : INotifyValueChanged<ToggleButtonGroupState>
+        {
+            element.RegisterValueChangedCallback(callback);
+            return element;
+        }
+        
+        /// <summary>
+        /// Unsubscribes from the value-changed event of the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="callback">The callback to remove.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T RemoveValueChanged<T>(this T element, EventCallback<ChangeEvent<ToggleButtonGroupState>> callback)
+            where T : INotifyValueChanged<ToggleButtonGroupState>
+        {
+            element.UnregisterValueChangedCallback(callback);
+            return element;
+        }
+        #endregion
+        
         #region UnityEngine.Object
         /// <summary>
         /// Subscribes to the value-changed event of the element.

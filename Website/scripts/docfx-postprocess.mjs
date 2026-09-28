@@ -34,7 +34,8 @@ function shortName(uid, keepParent) {
   const withoutParams = uid.replace(/\(.*$/, '');
   const parts = withoutParams.split('.');
   const name = keepParent ? parts.slice(-2).join('.') : parts[parts.length - 1];
-  return name.replace(/%60(\d+)/g, (_, n) => {
+  // A type's arity is `%60N`, a method's `%60%60N`.
+  return name.replace(/(?:%60){1,2}(\d+)/g, (_, n) => {
     const count = Number(n);
     return count === 1 ? '<T>' : `<${Array.from({ length: count }, (_, i) => `T${i + 1}`).join(', ')}>`;
   });
@@ -66,7 +67,7 @@ function resolveXref(uid) {
 
 function convertXrefs(markdown) {
   return markdown.replace(/<xref href="([^"]+)"[^>]*><\/xref>/g, (_, rawUid) => {
-    const uid = rawUid.replace(/%7B/gi, '{').replace(/%7D/gi, '}');
+    const uid = rawUid.replace(/%7B/gi, '{').replace(/%7D/gi, '}').replace(/%2C/gi, ',');
     const { href, text } = resolveXref(uid);
     const label = `\`${text}\``;
     return href ? `[${label}](${href})` : label;
