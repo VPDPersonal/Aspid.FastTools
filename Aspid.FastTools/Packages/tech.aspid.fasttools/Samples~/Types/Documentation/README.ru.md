@@ -23,10 +23,10 @@
 
 ## Попробуйте
 
-1. **Тип компонента, переживающий переименование.** `Enemy Type` — это `SerializableMonoScript<Enemy>`: поле ссылается на ассет скрипта, а не на имя класса. Переименуйте класс в `Scripts/Enemies/Grunt.cs` в `Footman` (вместе с файлом), дождитесь компиляции — поле по-прежнему показывает `Footman`. `SerializableType` в той же ситуации стал бы `<Missing>`.
+1. **Тип компонента, переживающий переименование.** `Enemy Type` — это `SerializableMonoScript<Enemy>`: поле ссылается на ассет скрипта, а не на имя класса. Переименуйте класс в `Scripts/Enemies/Grunt.cs` в `Footman` (вместе с файлом) через Rename-рефакторинг IDE, чтобы обновился и унаследованный от него `ArmoredGrunt`. Дождитесь компиляции — поле по-прежнему показывает `Footman`. `SerializableType` в той же ситуации стал бы `<Missing>`.
 2. **Зависимый пикер.** `Elite Type` — обычная `string` с `[TypeSelector(nameof(_enemyType))]`, поэтому её пикер предлагает только подтипы того, что сейчас лежит в `Enemy Type`. Переключите `Enemy Type` на `Archer` и откройте `Elite Type`: появился `Sniper`, исчез `ArmoredGrunt`.
 3. **Внешний вид в пикере.** Откройте `Pattern`. Кандидаты лежат в одной группе **Spawn Patterns** с понятными именами, подсказками и иконками — всё это `[TypeSelectorDisplay]` на классах паттернов. `OriginPattern` не показан, потому что он `Hidden`; `Allow = TypeAllow.None` на поле убирает из списка и сам интерфейс `ISpawnPattern`. Выберите **Grid** и заспавните волну.
-4. **Required.** Поставьте `Enemy Type` в `<None>`: появится встроенное предупреждение, а поле станет нарушением для build/CI-гейта из [SerializeReference Tooling](../../../Documentation/ru/04-serialize-reference-tooling.md).
+4. **Required.** Поставьте `Enemy Type` в `<None>`: появится встроенное предупреждение, а **Project References → Scan Project** и CI с `-srGateRequired` покажут поле как нарушение. Сборка плеера его не проверяет, см. [где проверяются обязательные поля](../../../Documentation/ru/04-serialize-reference-tooling.md#где-проверяются-обязательные-поля).
 5. **Замена компонента на месте.** Выберите **Placed Enemy (swap its type)**. Выпадающий список вверху инспектора даёт поле `ComponentTypeSelector` в `Enemy`. Переключите `Archer` на `Brute`: `Health` и `Speed`, объявленные в общей базе, сохранят значения, а `Keep Distance` (только у Archer) исчезнет.
 
 ## Куда смотреть

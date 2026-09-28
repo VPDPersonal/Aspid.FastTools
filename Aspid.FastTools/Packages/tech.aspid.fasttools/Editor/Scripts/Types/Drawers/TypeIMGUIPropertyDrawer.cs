@@ -8,8 +8,9 @@ namespace Aspid.FastTools.Types.Editors
 {
     internal static class TypeIMGUIPropertyDrawer
     {
-        private const string FolderClosedIconPath = "d_Folder Icon";
-        private const string FolderOpenedIconPath = "d_FolderOpened Icon";
+        // IconContent picks the d_ variant on the dark skin itself.
+        internal const string FolderClosedIconPath = "Folder Icon";
+        internal const string FolderOpenedIconPath = "FolderOpened Icon";
 
         internal static void DrawOpenScriptButton(Rect rect, Type type)
         {
@@ -68,6 +69,7 @@ namespace Aspid.FastTools.Types.Editors
                 {
                     Types = types,
                     Allow = allow,
+                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 };
 
                 TypeSelectorWindow.Show(

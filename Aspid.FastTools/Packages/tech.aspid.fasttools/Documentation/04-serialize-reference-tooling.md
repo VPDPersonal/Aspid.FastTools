@@ -14,7 +14,7 @@ After renaming or deleting a class, check which assets still store its old name:
 4. Click **Fix all** in the relevant group, choose a replacement, and review the changes in the **Rewrite** dialog.
 5. Review the summary and the affected assets' values. If needed, use **Undo** in the operation summary; then click **Rescan** to check again.
 
-File rewrites skip references in open scenes and Prefab Mode. Save and close those scenes or prefabs before repair, or repair a visible field using [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types).
+File rewrites skip references in open scenes, Prefab Mode and assets with unsaved changes: the rewrite reimports the asset and would discard those changes. **Asset References** offers to save such an asset first. Save and close those scenes, prefabs and assets before repair, or repair a visible field using [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types).
 
 > [!NOTE]
 > Analysis requires text YAML assets. In Unity's editor settings, select **Asset Serialization → Mode → Force Text**. Existing binary assets need to be saved again; changing the mode alone does not make them scannable.
@@ -64,7 +64,7 @@ Bulk replacement produces a summary with an **Undo** button. It restores the old
 
 `<None>` clears references and deletes their stored data. If several fields share a `rid`, all pointers to that instance are cleared. The tool asks for confirmation; this operation cannot be undone.
 
-Bulk clearing may null references in open scenes or Prefab Mode in memory. Save those objects: file-based scans continue to show the old entries until they are saved.
+Bulk clearing may null references in open scenes, Prefab Mode or assets with unsaved changes in memory. Save those objects: file-based scans continue to show the old entries until they are saved.
 
 ### Prefab instance overrides
 
@@ -80,14 +80,14 @@ The graph groups references by host object and field path:
 
 | Label | Meaning |
 |---|---|
-| **MISSING** | The reference's stored type cannot be found |
+| Warning band with **Fix Missing ▼** | The reference's stored type cannot be found |
 | **SHARED** | Several fields use the same managed-reference instance |
 | **Orphaned** | A YAML entry remains with no field pointing to it |
 | `rid` | A managed-reference identifier within its host object |
 
 `SHARED` does not inherently mean an error: sharing can be intentional. Matching colours help locate connected fields; the colour is derived from the ID and has no separate setting.
 
-Open **Fix** on a missing-reference card and choose a replacement. In this example, `GhostWeapon` becomes `Pistol`:
+Open **Fix Missing** on a missing-reference card and choose a replacement. In this example, `GhostWeapon` becomes `Pistol`:
 
 ![Repairing GhostWeapon as Pistol while preserving reference data](Images/aspid_fasttools_serialize_reference_tooling.gif)
 
@@ -123,7 +123,7 @@ Remove `[MovedFrom]` only after migrating all data that must remain loadable, in
 
 ## Pre-build checks
 
-Open **Project Settings → Aspid FastTools → SerializeReference** and set **Build / CI gate**:
+Open **Project Settings → Aspid.FastTools → SerializeReference** and set **Build / CI gate**:
 
 | Mode | Player build | Standalone CI run |
 |---|---|---|
@@ -158,7 +158,7 @@ Shared settings are saved in `ProjectSettings/SerializeReferenceSharedSettings.a
 <details>
 <summary>Other window and selector settings</summary>
 
-The same options are available in the FastTools window's **Settings** tab and **Preferences → Aspid FastTools**. Personal settings are nearby:
+The same options are available in the FastTools window's **Settings** tab and **Preferences → Aspid.FastTools**. Personal settings are nearby:
 
 - **Favorites** — shows or hides favourites.
 - **Recent items** — history capacity from 0 to 20. Setting 0 hides the section and pauses recording while retaining history.
