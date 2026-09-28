@@ -63,7 +63,10 @@ The generator creates one static field per call site, so measuring allocates not
 - **A discarded scope.** <code lang="csharp">this.Marker();</code> without <code lang="csharp">using</code> begins a sample that never ends — analyzer `AFT0011` warns about it.
 
 > [!WARNING]
-> <code lang="csharp">this.Marker()</code> calls in different <code lang="csharp">partial</code> files of one type that sit on the same line share the first one's marker — the second one's measurements land in someone else's Profiler row.
+> Measurements land in someone else's Profiler row when:
+>
+> - <code lang="csharp">this.Marker()</code> calls in different <code lang="csharp">partial</code> files of one type sit on the same line — they share the first one's marker;
+> - a call without a marker has the line number of a call in a type declared in the caller's namespace or an enclosing one — <code lang="csharp">other.Marker()</code> opens that type's marker, and a call in a <code lang="csharp">private</code> or <code lang="csharp">protected</code> nested type opens its base type's marker unless the base type is in the global namespace.
 
 ## Package sample
 

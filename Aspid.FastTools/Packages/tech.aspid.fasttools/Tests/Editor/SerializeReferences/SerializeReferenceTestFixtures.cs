@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Aspid.FastTools.Types;
+using System.Collections.Generic;
 using UnityEngine.Scripting.APIUpdating;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -40,6 +41,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         [SerializeReference] public ITestWeapon a;
         [SerializeReference] public ITestWeapon b;
+    }
+
+    // A managed-reference list, used to note a clear on one of its elements.
+    internal sealed class ReferenceListTestObject : ScriptableObject
+    {
+        [SerializeReference] public List<ITestWeapon> weapons = new();
     }
 
     // A required managed reference and a required string type field.

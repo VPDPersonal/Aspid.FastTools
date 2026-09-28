@@ -7,12 +7,12 @@ import AgentPrompt from '@site/src/components/AgentPrompt';
 import AgentSession from '@site/src/components/AgentSession';
 import AnimatedPreview from '@site/src/components/FeaturePreview';
 import InlineCode from '@site/src/components/InlineCode';
+import IntroBanner from '@site/src/components/IntroBanner';
 import InstallPanel from '@site/src/components/InstallPanel';
 import ProfilerHierarchy from '@site/src/components/ProfilerHierarchy';
 import StyleSides, {StyleSidesRow} from '@site/src/components/StyleSides';
 import SupportPanel from '@site/src/components/SupportPanel';
 import StatusBadge from '@site/src/components/StatusBadge';
-import banner from '@site/../docs/images/aspid_fasttools_readme_banner.gif';
 
 function ReadmeLink(props) {
   return <Link {...props} autoAddBaseUrl={false} target="_self" />;
@@ -20,12 +20,6 @@ function ReadmeLink(props) {
 
 function DocTable(props) {
   return <div className="doc-table-scroll"><table {...props} /></div>;
-}
-
-// The package README links the banner from GitHub so the GIF stays out of the UPM package;
-// the site bundles the same file from the repository, so it renders offline too.
-function IntroBanner(props) {
-  return <img {...props} src={banner} className="readme-banner" />;
 }
 
 // EnumValues and the tooling features get an animated preview; the rest keep their README capture.

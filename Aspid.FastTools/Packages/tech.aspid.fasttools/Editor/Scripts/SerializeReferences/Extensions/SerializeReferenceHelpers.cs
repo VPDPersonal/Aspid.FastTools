@@ -45,6 +45,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 : typeof(object);
         }
 
+        private const string ArrayElementMarker = ".Array.data[";
+
+        // The array that directly owns an element: the last marker, so a list nested in another array's element
+        // resolves to the inner list. Only the array entry itself carries the element's reference, so a sub-field
+        // path must not match.
+        public static bool TryGetArrayPath(string elementPath, out string arrayPath)
+        {
+            arrayPath = null;
+            if (string.IsNullOrEmpty(elementPath)) return false;
+
+            var marker = elementPath.LastIndexOf(ArrayElementMarker, StringComparison.Ordinal);
+            if (marker < 0) return false;
+
+            var close = elementPath.IndexOf(']', marker + ArrayElementMarker.Length);
+            if (close < 0 || close != elementPath.Length - 1) return false;
+
+            arrayPath = elementPath[..marker];
+            return arrayPath.Length > 0;
+        }
+
         #region Project scan helpers
         public static bool IsScanCandidate(string path) =>
             SerializeReferenceYaml.IsCandidateAssetPath(path) && !SerializeReferenceSettings.IsExcluded(path);
@@ -180,6 +200,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Update() pulls the per-target writes back in; applying instead would write the live object's stale
             // reference back over them.
             serializedObject.Update();
+            InvalidateReferenceMemos();
         }
 
         // Repair notices operate on one backing asset and cannot represent a multi-object selection.
@@ -191,6 +212,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool IsMissingType(SerializedProperty property) =>
             TryGetMissingType(property, out _, out _);
 
+        // The type picker's current mark. A missing type marks nothing, so Enter right after opening cannot clear the
+        // reference together with the data a Fix could still recover.
+        public static string GetSelectorCurrentAqn(SerializedProperty property, Type currentType) =>
+            currentType is null && IsMissingType(property) ? null : currentType?.AssemblyQualifiedName ?? string.Empty;
+
         // Where a missing reference's stored type lives, which decides whether it can be repaired from this object.
         private enum MissingTypeOrigin
         {
@@ -199,8 +225,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             PrefabOverride,
         }
 
-        // Missing-reference probes run repeatedly during repaint; same-frame repairs explicitly invalidate this memo.
-        private static int _missingProbeFrame = -1;
+        // Missing-reference probes run repeatedly during repaint; same-tick repairs explicitly invalidate this memo.
+        private static long _missingProbeFrame = -1;
         private static readonly Dictionary<(Object target, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
             _missingProbeMemo = new();
 
@@ -228,7 +254,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (property.propertyType != SerializedPropertyType.ManagedReference) return false;
             if (property.managedReferenceValue is not null) return false;
 
-            var frame = Time.frameCount;
+            var frame = MemoTick;
             if (_missingProbeFrame != frame)
             {
                 _missingProbeMemo.Clear();
@@ -894,6 +920,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ArgumentFilter = IsValidGenericArgument,
                     InferredArgumentFilter = IsAcceptableGenericArgument,
                     IncludeHidden = true,
+                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
                 currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>
@@ -907,12 +934,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 });
         }
 
-        // Repair saved assets through YAML and open Prefab Mode objects through their live serialized state.
+        // Repair assets through YAML and open Prefab Mode objects and loaded scenes through their live serialized state.
         public static bool TryFixMissingType(SerializedProperty property, Type newType)
         {
             if (newType is null) return false;
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return false;
             if (!TryGetMissingReferenceId(property, out var referenceId)) return false;
+
+            // Prefab Mode saves over the asset file, so neither route would survive. The reimport would drop unsaved
+            // changes, so a dirty asset is saved first: the YAML route keeps the whole stored payload, which the
+            // in-memory route cannot recover.
+            if (!inMemory &&
+                (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath, "Fix Missing Type") ||
+                 SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath, "Fix Missing Type")))
+                return false;
 
             bool repaired;
             if (inMemory)
@@ -952,9 +987,92 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             };
         }
 
+        // Missing-type entries are not part of Unity's Undo snapshot: clearing one with the fix would leave Ctrl+Z
+        // pointing at a deleted rid. The replaced entry stays orphaned until its scene or prefab is saved.
+        private static List<SerializeReferencePendingRepairs.Entry> PendingRepairs =>
+            SerializeReferencePendingRepairs.instance.Entries;
+
+        [InitializeOnLoadMethod]
+        private static void TrackRepairedEntries()
+        {
+            EditorSceneManager.sceneSaving += (scene, _) => ClearRepairedMissingEntries(scene);
+            PrefabStage.prefabSaving += root => ClearRepairedMissingEntries(root.scene);
+            Undo.undoRedoEvent += OnRepairUndoRedo;
+        }
+
+        // Only an undo step can take the fix back: overwriting or deleting the repaired value afterwards leaves it
+        // applied. Steps run through the groups in order, so undoing the fix's group or an earlier one takes it back,
+        // and only redoing that group restores it: an edit recorded after the undo drops the fix from the redo stack.
+        // The repaired rid is new, so its use means the fix is applied.
+        private static void OnRepairUndoRedo(in UndoRedoInfo info)
+        {
+            foreach (var entry in PendingRepairs)
+            {
+                if (entry.target == null) continue;
+
+                if (IsManagedReferenceUsed(entry.target, entry.repairedId)) entry.undone = false;
+                else if (!info.isRedo && info.undoGroup <= entry.undoGroup) entry.undone = true;
+                else if (info.isRedo && info.undoGroup == entry.undoGroup) entry.undone = false;
+            }
+        }
+
+        // Undo can no longer restore a cleared entry, so the owner's Undo history is dropped along with it. The entry
+        // of an undone fix stays pending in case the fix is redone.
+        private static void ClearRepairedMissingEntries(UnityEngine.SceneManagement.Scene scene)
+        {
+            var cleared = false;
+            var pending = PendingRepairs;
+
+            for (var i = pending.Count - 1; i >= 0; i--)
+            {
+                var entry = pending[i];
+                if (entry.target == null)
+                {
+                    pending.RemoveAt(i);
+                    continue;
+                }
+
+                if (entry.undone || GetOwningScene(entry.target) != scene) continue;
+
+                if (ClearMissingSubtree(entry.target, entry.referenceId) > 0)
+                {
+                    Undo.ClearUndo(entry.target);
+                    cleared = true;
+                }
+
+                if (!HasMissingEntry(entry.target, entry.referenceId))
+                    pending.RemoveAt(i);
+            }
+
+            if (!cleared) return;
+
+            InvalidateMissingTypeMemo();
+            ScheduleInspectorRebuild();
+        }
+
+        private static UnityEngine.SceneManagement.Scene GetOwningScene(Object target) =>
+            (target as Component)?.gameObject.scene ?? (target as GameObject)?.scene ?? default;
+
+        private static bool IsManagedReferenceUsed(Object target, long referenceId)
+        {
+            var used = false;
+            using var serializedObject = new SerializedObject(target);
+            TraverseManagedReferences(serializedObject, property => used = property.managedReferenceId == referenceId);
+            return used;
+        }
+
+        private static bool HasMissingEntry(Object target, long referenceId)
+        {
+            foreach (var entry in SerializationUtility.GetManagedReferencesWithMissingTypes(target))
+                if (entry.referenceId == referenceId) return true;
+
+            return false;
+        }
+
         // The open stage holds a copy that does not refresh on reimport and would overwrite a file rewrite on save,
-        // so the reference is reassigned on the live object and the now-unused missing-type entry cleared.
-        private static bool TryFixMissingTypeInMemory(SerializedProperty property, Type newType, long referenceId)
+        // so the reference is reassigned on the live object; the replaced missing-type entry is cleared on save.
+        // An asset has no scene or prefab save to wait for, so its entry is cleared at once and the fix has no Undo.
+        public static bool TryFixMissingTypeInMemory(SerializedProperty property, Type newType, long referenceId)
         {
             var target = property.serializedObject.targetObject;
             var instance = CreateInstance(newType);
@@ -968,12 +1086,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
 
             property.SetManagedReferenceAndApply(instance);
-            ClearMissingSubtree(target, referenceId);
             EditorUtility.SetDirty(target);
             property.serializedObject.Update();
 
-            var scene = (target as Component)?.gameObject.scene ?? (target as GameObject)?.scene ?? default;
-            if (scene.IsValid()) EditorSceneManager.MarkSceneDirty(scene);
+            var scene = GetOwningScene(target);
+            if (!scene.IsValid())
+            {
+                ClearMissingSubtree(target, referenceId);
+                return true;
+            }
+
+            PendingRepairs.Add(new SerializeReferencePendingRepairs.Entry
+            {
+                target = target,
+                repairedId = property.managedReferenceId,
+                referenceId = referenceId,
+                undoGroup = Undo.GetCurrentGroup(),
+            });
+            EditorSceneManager.MarkSceneDirty(scene);
 
             return true;
         }
@@ -1024,10 +1154,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var root in scene.GetRootGameObjects())
                     foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
                         if (mb != null) yield return mb;
+
+            // A loaded asset with unsaved changes is its own open copy: a file rewrite would reload it from disk.
+            if (SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath))
+                foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
+                    if (obj is MonoBehaviour or ScriptableObject) yield return obj;
         }
 
         // Preserve any repaired-subtree member referenced from outside it, including that member's descendants.
-        private static void ClearMissingSubtree(Object target, long rootReferenceId)
+        private static int ClearMissingSubtree(Object target, long rootReferenceId)
         {
             var dataByRid = new Dictionary<long, string>();
             foreach (var entry in SerializationUtility.GetManagedReferencesWithMissingTypes(target))
@@ -1079,11 +1214,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         pending.Push(child);
             }
 
+            var cleared = 0;
             foreach (var rid in closure)
             {
-                if (!keep.Contains(rid) && dataByRid.ContainsKey(rid))
-                    SerializationUtility.ClearManagedReferenceWithMissingType(target, rid);
+                if (keep.Contains(rid) || !dataByRid.ContainsKey(rid)) continue;
+
+                SerializationUtility.ClearManagedReferenceWithMissingType(target, rid);
+                cleared++;
             }
+
+            return cleared;
         }
 
         private static IEnumerable<long> EnumerateRidPointers(string data, long self)
@@ -1218,7 +1358,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return GetSharedReferenceIndices(property.serializedObject).TryGetValue(id, out var index) ? index : 0;
         }
 
-        private static int _aliasFrame = -1;
+        private static long _aliasFrame = -1;
         private static SerializedObject _aliasSerializedObject;
         private static readonly Dictionary<long, int> AliasCounts = new();
 
@@ -1226,7 +1366,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static Dictionary<long, int> GetReferenceIdCounts(SerializedObject serializedObject)
         {
-            var frame = Time.frameCount;
+            var frame = MemoTick;
             if (_aliasFrame == frame && ReferenceEquals(_aliasSerializedObject, serializedObject))
                 return AliasCounts;
 
@@ -1250,7 +1390,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return AliasCounts;
         }
 
-        private static int _sharedIndicesFrame = -1;
+        private static long _sharedIndicesFrame = -1;
         private static SerializedObject _sharedIndicesObject;
         private static readonly Dictionary<long, int> SharedIndices = new();
 
@@ -1259,7 +1399,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Refreshing the counts first also resets this memo's frame when it rebuilds.
             var counts = GetReferenceIdCounts(serializedObject);
 
-            var frame = Time.frameCount;
+            var frame = MemoTick;
             if (_sharedIndicesFrame == frame && ReferenceEquals(_sharedIndicesObject, serializedObject))
                 return SharedIndices;
 
@@ -1365,7 +1505,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return DisplayPathCache[propertyPath] = builder.ToString();
         }
 
-        private static int _sharedPathsFrame = -1;
+        private static long _sharedPathsFrame = -1;
         private static SerializedObject _sharedPathsObject;
         private static readonly Dictionary<long, List<string>> SharedPathsById = new();
 
@@ -1374,7 +1514,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Refreshing the counts first also resets this memo's frame when it rebuilds.
             var counts = GetReferenceIdCounts(serializedObject);
 
-            var frame = Time.frameCount;
+            var frame = MemoTick;
             if (_sharedPathsFrame == frame && ReferenceEquals(_sharedPathsObject, serializedObject))
                 return SharedPathsById;
 
@@ -1394,7 +1534,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return SharedPathsById;
         }
 
-        // Call after a same-frame reassignment: the memo is keyed by frame, so a synchronous re-query would
+        // Call after a same-tick reassignment: the memo is keyed by tick, so a synchronous re-query would
         // otherwise return the pre-mutation snapshot and still report the just-broken alias as shared.
         public static void InvalidateSharedReferenceCache()
         {
@@ -1403,11 +1543,27 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _sharedPathsFrame = -1;
         }
 
-        // A same-frame repaint after an undo would read the pre-undo snapshot. Registered at domain load, before any
+        // Call after any managed-reference write: the next repaint can land in the same tick, and the mixed-types
+        // cache is keyed by selection, so none of them would notice the change on their own.
+        public static void InvalidateReferenceMemos()
+        {
+            InvalidateSharedReferenceCache();
+            InvalidateMissingTypeMemo();
+            InvalidateMixedTypesCache();
+            SerializeReferenceDuplicateGuard.InvalidateObservationMemo();
+        }
+
+        // Time.frameCount barely moves in Edit Mode, so the per-frame memos are keyed by editor update ticks instead.
+        public static long MemoTick { get; private set; }
+
+        // A same-tick repaint after an undo would read the pre-undo snapshot. Registered at domain load, before any
         // per-field handler subscribes, so it always runs first.
         [InitializeOnLoadMethod]
-        private static void InvalidateAliasMemoOnUndoRedo() =>
-            Undo.undoRedoPerformed += InvalidateSharedReferenceCache;
+        private static void TrackMemoLifetime()
+        {
+            EditorApplication.update += () => MemoTick++;
+            Undo.undoRedoPerformed += InvalidateReferenceMemos;
+        }
 
         public static void MakeReferenceUnique(SerializedProperty property)
         {
@@ -1417,7 +1573,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             persistent.SetManagedReferenceAndApply(CloneManagedReferenceGraph(current));
 
-            InvalidateSharedReferenceCache();
+            InvalidateReferenceMemos();
         }
 
         // Report revisited IDs but do not enter their children, so cyclic reference graphs terminate.
