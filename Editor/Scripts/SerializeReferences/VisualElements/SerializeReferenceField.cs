@@ -22,6 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EmptyClass = BlockClass + "--empty";
         private const string ChildlessClass = BlockClass + "--childless";
         private const string DropdownClass = BlockClass + "__dropdown";
+        private const string OpenButtonClass = BlockClass + "__open-button";
 
         // Missing stored type: tints the caption the warning amber and flips its ellipsis to the start,
         // so the class name — the informative tail of "<Missing Namespace.Class>" — survives truncation.
@@ -125,7 +126,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The per-group navigation cursor: the member the last click revealed, keyed by (target object, rid).
         // Advancing from the cursor — not the clicked field — lets repeated clicks on the same notice walk the group.
-        private static readonly Dictionary<(int target, long rid), string> _navigationCursor = new();
+        private static readonly Dictionary<(UnityEngine.Object target, long rid), string> _navigationCursor = new();
 
         public SerializeReferenceField(string label, SerializedProperty property, Type[] baseTypes = null, int depth = 0)
         {
@@ -172,6 +173,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _dropdown.RegisterCallback<PointerDownEvent>(OnDropdownClicked);
 
             _openButton = new Button()
+                .AddClass(OpenButtonClass)
                 .AddChild(new VisualElement())
                 .AddClicked(() => SerializeReferenceHelpers.GetCurrentType(_property)?.OpenInScriptEditor());
 
@@ -576,7 +578,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            var key = (target.GetInstanceID(), rid);
+            var key = (target, rid);
             var start = _navigationCursor.TryGetValue(key, out var cursor) ? IndexOf(group, cursor) : -1;
             if (start < 0) start = IndexOf(group, selfPath);
 
@@ -813,8 +815,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     AdditionalTypes = GenericTypeResolver.GetAssignableGenericDefinitions(_fieldType, _baseTypes, SerializeReferenceHelpers.IsAcceptableGenericArgument),
                     ArgumentFilter = SerializeReferenceHelpers.IsValidGenericArgument,
                     InferredArgumentFilter = SerializeReferenceHelpers.IsAcceptableGenericArgument,
+                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(_property),
                 },
-                currentAqn: currentType?.AssemblyQualifiedName ?? string.Empty,
+                currentAqn: SerializeReferenceHelpers.GetSelectorCurrentAqn(_property, currentType),
                 onSelected: assemblyQualifiedName => Apply(string.IsNullOrEmpty(assemblyQualifiedName)
                     ? null
                     : Type.GetType(assemblyQualifiedName, throwOnError: false)));
@@ -824,6 +827,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             void Apply(Type type)
             {
+                SerializeReferenceMissingListGuard.NoteReplaced(_property);
+
                 // Multi-object: each target gets its OWN instance, created from that target's previous value, so the
                 // managed reference is never aliased across objects; <None> clears all. One Undo step covers them all.
                 if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))
@@ -886,12 +891,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (usagesType != null)
                 evt.menu.AppendAction("Save as Template…", _ => SaveAsTemplate(usagesType));
 
+            var hasTemplates = false;
             foreach (var template in SerializeReferenceTemplates.LoadResolved())
             {
                 if (_fieldType != null && !_fieldType.IsAssignableFrom(template.Type)) continue;
                 if (!_filter(template.Type)) continue;
                 var name = template.Name;
                 evt.menu.AppendAction($"Paste Template/{name}", _ => ApplyTemplate(name));
+                hasTemplates = true;
+            }
+
+            var missingTemplates = SerializeReferenceTemplates.UnresolvedNames().Count;
+            if (missingTemplates > 0)
+            {
+                if (hasTemplates) evt.menu.AppendSeparator("Paste Template/");
+                evt.menu.AppendAction($"Paste Template/Remove Missing ({missingTemplates})…",
+                    _ => SerializeReferenceTemplates.RemoveUnresolvedConfirmed());
             }
         }
 
@@ -977,10 +992,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private void ApplyReferenceChange()
         {
             // Mutations apply through a throwaway SerializedObject, leaving this field's LIVE object stale — pull
-            // the change in, then drop the per-frame alias memo (keyed by frame + instance, so it survives the
-            // Update); otherwise the re-query and the siblings still see the pre-mutation snapshot.
-            _property.serializedObject.Update();
-            SerializeReferenceHelpers.InvalidateSharedReferenceCache();
+            // the change in, then drop the per-tick memos (keyed by tick + instance, so they survive the Update);
+            // otherwise the re-query and the siblings still see the pre-mutation snapshot. A saved-asset repair
+            // reimports the asset and kills the live object, so only the siblings are notified then.
+            if (IsPropertyAlive()) _property.serializedObject.Update();
+            SerializeReferenceHelpers.InvalidateReferenceMemos();
             Refresh(forceRebuild: true);
             ManagedReferencesChanged?.Invoke();
         }
@@ -994,7 +1010,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Refresh(forceRebuild: false);
         }
 
-        // The reverted managed reference may have re- or un-aliased this field. The per-frame alias memo is dropped
+        // The reverted managed reference may have re- or un-aliased this field. The per-tick alias memo is dropped
         // ONCE globally by the static hook in SerializeReferenceHelpers, which runs before any field handler.
         private void OnUndoRedo()
         {
@@ -1005,6 +1021,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private void PasteFromClipboard()
         {
+            SerializeReferenceMissingListGuard.NoteReplaced(_property);
+
             // Multi-object: rebuild a fresh instance from the clipboard for EACH target so no two objects share
             // the same managed reference; one Undo step covers all.
             if (SerializeReferenceHelpers.IsEditingMultipleObjects(_property))

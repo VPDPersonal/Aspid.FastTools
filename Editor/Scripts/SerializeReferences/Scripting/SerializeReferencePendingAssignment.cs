@@ -129,6 +129,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (property is null || property.propertyType != SerializedPropertyType.ManagedReference) return ApplyOutcome.Dead;
 
             property.SetManagedReferenceAndApply(SerializeReferenceHelpers.CreateInstance(type));
+            SerializeReferenceHelpers.InvalidateReferenceMemos();
             return ApplyOutcome.Applied;
         }
 

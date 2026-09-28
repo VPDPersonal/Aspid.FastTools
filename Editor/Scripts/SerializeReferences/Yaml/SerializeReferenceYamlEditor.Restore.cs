@@ -96,13 +96,46 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (i == refIdsStart) result.AddRange(entry);
                 }
 
-                WritePreservingNewlines(assetPath, result);
+                if (!TryWritePreservingNewlines(assetPath, result)) return false;
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return true;
             }
             catch (Exception exception)
             {
                 Debug.LogError($"[Aspid FastTools] Failed to restore managed reference at '{elementPath}' in '{assetPath}': {exception}");
+                return false;
+            }
+        }
+
+        // The element pointers of a top-level array field, in order. Read straight from disk, never through the probe
+        // cache, because the missing-list guard compares the file before a save with the file after it.
+        public static bool TryReadTopLevelArrayRids(string assetPath, long fileId, string fieldName, out List<long> rids)
+        {
+            rids = null;
+
+            try
+            {
+                if (string.IsNullOrEmpty(fieldName)) return false;
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return false;
+
+                var lines = File.ReadAllLines(assetPath);
+                if (!LooksLikeUnityYaml(lines)) return false;
+
+                var (start, end) = FindDocumentRange(lines, fileId);
+                if (start < 0) return false;
+
+                var refIdsStart = FindRefIdsStart(lines, start, end);
+                if (refIdsStart < 0) return false;
+
+                var found = new List<long>();
+                if (!TryCollectArrayElementPointers(lines, start, refIdsStart, fieldName, null, found)) return false;
+
+                rids = found;
+                return true;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"[Aspid FastTools] Failed to read array '{fieldName}' in '{assetPath}': {exception}");
                 return false;
             }
         }
@@ -201,6 +234,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             pointerLine = -1;
             currentRid = 0;
 
+            var pointerLines = new List<int>();
+            var rids = new List<long>();
+            if (!TryCollectArrayElementPointers(lines, start, fieldsEnd, fieldName, pointerLines, rids)) return false;
+            if (index < 0 || index >= rids.Count) return false;
+
+            pointerLine = pointerLines[index];
+            currentRid = rids[index];
+            return true;
+        }
+
+        // Collects the "- rid: N" element lines of the top-level array field; false when the field is not found or an
+        // element id does not parse. pointerLines is optional.
+        private static bool TryCollectArrayElementPointers(string[] lines, int start, int fieldsEnd, string fieldName,
+            List<int> pointerLines, List<long> rids)
+        {
             var fieldPattern = new Regex($@"^(?<lead>\s*){Regex.Escape(fieldName)}:\s*$");
             var itemPattern = new Regex(@"^(?<lead>\s*)-\s+rid:\s*(?<rid>-?\d+)\s*$");
 
@@ -217,7 +265,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 var fieldIndent = field.Groups["lead"].Length;
                 if (topIndent >= 0 && fieldIndent != topIndent) continue;
-                var count = 0;
 
                 for (var j = i + 1; j < fieldsEnd; j++)
                 {
@@ -231,16 +278,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         continue;
                     }
 
-                    if (count == index)
-                    {
-                        pointerLine = j;
-                        return long.TryParse(item.Groups["rid"].Value, out currentRid);
-                    }
+                    if (!long.TryParse(item.Groups["rid"].Value, out var rid)) return false;
 
-                    count++;
+                    pointerLines?.Add(j);
+                    rids.Add(rid);
                 }
 
-                return false;
+                return true;
             }
 
             return false;
