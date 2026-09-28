@@ -677,12 +677,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 });
         }
 
-        // Repair saved assets through YAML and open Prefab Mode objects through their live serialized state.
+        // Repair assets through YAML and open Prefab Mode objects and loaded scenes through their live serialized state.
         public static bool TryFixMissingType(SerializedProperty property, Type newType)
         {
             if (newType is null) return false;
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return false;
             if (!TryGetMissingReferenceId(property, out var referenceId)) return false;
+
+            // Prefab Mode saves over the asset file, so neither route would survive. The reimport would drop unsaved
+            // changes, so a dirty asset is saved first: the YAML route keeps the whole stored payload, which the
+            // in-memory route cannot recover.
+            if (!inMemory &&
+                (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath, "Fix Missing Type") ||
+                 SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath, "Fix Missing Type")))
+                return false;
 
             bool repaired;
             if (inMemory)
@@ -794,6 +802,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 foreach (var root in scene.GetRootGameObjects())
                     foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
                         if (mb != null) yield return mb;
+
+            // A loaded asset with unsaved changes is its own open copy: a file rewrite would reload it from disk.
+            if (SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath))
+                foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(assetPath))
+                    if (obj is MonoBehaviour or ScriptableObject) yield return obj;
         }
 
         // Preserve any repaired-subtree member referenced from outside it, including that member's descendants.
