@@ -84,6 +84,42 @@ public class ProfilerMarkersTypeShapeTests
         }
         """);
 
+    // In the global namespace the generated overloads and the fallback meet in one overload resolution.
+    [Fact]
+    public void GlobalNamespaceTypes_BindToTheirOverloads() => AssertCompilesAndBinds("""
+        public class Foo { public void Run() { using var _ = this.Marker(); } }
+        public class Derived : Foo { public void Open() { using var _ = this.Marker(); } }
+        public class Box<T> { public void Run() { using var _ = this.Marker(); } }
+        public class Outer<T> { public class Inner { public void Run() { using var _ = this.Marker(); } } }
+        public struct Job { public void Execute() { using var _ = this.Marker(); } }
+        public ref struct Span { public void Execute() { using var _ = this.Marker(); } }
+        """);
+
+    [Fact]
+    public void ObsoleteTypes_CompileWithoutObsoleteDiagnostics()
+    {
+        var run = AssertCompilesAndBinds("""
+            namespace Sample
+            {
+                [System.Obsolete("x")] public class Foo { public void Run() { using var _ = this.Marker(); } }
+                [System.Obsolete] public struct Job { public void Execute() { using var _ = this.Marker(); } }
+                [System.Obsolete("x", true)] public class Bar<T> { public void Run() { using var _ = this.Marker(); } }
+                [System.Obsolete("x", true)] public class Outer { public class Inner { public void Run() { using var _ = this.Marker(); } } }
+
+                [System.Obsolete("x")] public interface IOld { }
+                public class Box<T> where T : IOld { public void Run() { using var _ = this.Marker(); } }
+                public class Pool<T> where T : System.Collections.Generic.List<IOld[]> { public void Run() { using var _ = this.Marker(); } }
+            }
+            """);
+
+        // The only obsolete warnings are the user's own constraints on IOld.
+        var obsolete = run.OutputCompilation.GetDiagnostics()
+            .Where(d => d.Id is "CS0612" or "CS0618" or "CS0619")
+            .Select(d => d.Location.SourceTree!.GetText().ToString(d.Location.SourceSpan))
+            .ToArray();
+        Assert.Equal(new[] { "IOld", "IOld" }, obsolete);
+    }
+
     [Fact]
     public void StaticClass_GetsNoOverloadAndCompiles()
     {
@@ -134,7 +170,7 @@ public class ProfilerMarkersTypeShapeTests
     }
 
     [Fact]
-    public void ExpressionTree_GetsNoOverloadAndCompiles()
+    public void ExpressionTree_GetsNoOverload()
     {
         var run = GeneratorTestHost.RunProfilerMarkers("""
             namespace Sample
@@ -146,14 +182,17 @@ public class ProfilerMarkersTypeShapeTests
             }
             """);
 
-        GeneratorTestHost.AssertNoErrors(run);
+        // The fallback's line parameter is optional too, so the user's line is the only error.
+        Assert.Equal(
+            new[] { "CS0854" },
+            run.OutputCompilation.GetDiagnostics().Where(d => d.Severity == DiagnosticSeverity.Error).Select(d => d.Id));
         Assert.Empty(run.RunResult.Results[0].GeneratedSources);
     }
 
     [Fact]
     public void ExplicitLineArgument_IsNotMarked()
     {
-        // Alone, Marker(5) matches no overload (CS1501); next to a real call it binds to the generated one,
+        // Alone, Marker(5) binds to the fallback; next to a real call it binds to the generated one,
         // which only knows the real call's line — AFT0010 reports the argument.
         var run = GeneratorTestHost.RunProfilerMarkers("""
             namespace Sample
