@@ -34,6 +34,9 @@ namespace Aspid.FastTools.Sample
     }
 }
 
+// The fallback is in the global namespace too, so here the two overloads tie: the generated one wins
+// only when the fallback also takes a [CallerLineNumber] int; otherwise the call binds to the fallback
+// and records nothing.
 public class GlobalSpawner
 {
     public void Spawn()
