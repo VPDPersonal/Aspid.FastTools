@@ -10,13 +10,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public readonly GateViolationKind Kind;
         public readonly ManagedTypeName StoredType;
 
+        // A missing type set by a prefab instance override; FileId is then the PrefabInstance document.
+        public readonly bool IsOverride;
+
         public GateViolation(
             string assetPath,
             long fileId,
             long rid,
             ManagedTypeName storedType,
             GateViolationKind kind,
-            string fieldPath)
+            string fieldPath,
+            bool isOverride = false)
         {
             Rid = rid;
             Kind = kind;
@@ -24,12 +28,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             AssetPath = assetPath;
             StoredType = storedType;
             FieldPath = fieldPath;
+            IsOverride = isOverride;
         }
 
         public override string ToString()
         {
             var where = string.IsNullOrEmpty(FieldPath) ? $"rid {Rid}" : FieldPath;
             var what = Kind == GateViolationKind.MissingType ? $"missing type {StoredType.Class}" : "required value not set";
+            if (IsOverride) what += " (prefab instance override)";
 
             return $"{AssetPath} : {where} -> {what}";
         }

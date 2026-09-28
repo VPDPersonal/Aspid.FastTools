@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -11,7 +10,6 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     internal static class SerializeReferenceGraphScanner
     {
         private static readonly Regex _referencesKey = new(@"^\s*references:\s*$", RegexOptions.Compiled);
-        private static readonly Regex _entryRid = new(@"^(?<indent>\s*)-\s+rid:\s*(?<id>-?\d+)\s*$", RegexOptions.Compiled);
         private static readonly Regex _typeLine = new(@"^\s*type:\s*\{(?<body>.*)\}\s*$", RegexOptions.Compiled);
         private static readonly Regex _dataKey = new(@"^\s*data:\s*$", RegexOptions.Compiled);
 
@@ -22,37 +20,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Regex _mappingKey = new(@"^\s*(?:-\s+)?(?<key>[A-Za-z_][\w\-]*)\s*:", RegexOptions.Compiled);
 
         // Resolving document labels loads assets; project sweeps pass false to keep the scan text-only.
-        public static List<ReferenceGraphDocument> Build(string assetPath, bool resolveTypeNames = true) =>
-            Build(assetPath, text: null, resolveTypeNames);
-
-        // text is the asset's content when the caller has already read it, e.g. to probe it before parsing.
-        public static List<ReferenceGraphDocument> Build(string assetPath, string text, bool resolveTypeNames)
+        public static List<ReferenceGraphDocument> Build(string assetPath, bool resolveTypeNames = true)
         {
             var result = new List<ReferenceGraphDocument>();
 
             try
             {
-                if (string.IsNullOrEmpty(assetPath)) return result;
-                if (text is null && !File.Exists(assetPath)) return result;
+                var lines = SerializeReferenceYaml.ReadLines(assetPath);
+                if (lines is null) return result;
 
-                var lines = text is null ? File.ReadAllLines(assetPath) : SplitLines(text);
-                var headers = CollectHeaders(lines);
-                var typeNames = resolveTypeNames ? ResolveTypeNames(assetPath) : null;
-
-                for (var h = 0; h < headers.Count; h++)
-                {
-                    var (fileId, classId, start) = headers[h];
-                    var end = h + 1 < headers.Count ? headers[h + 1].start : lines.Length;
-
-                    var document = BuildDocument(lines, fileId, start, end);
-                    if (document is null) continue;
-
-                    document.TypeName = typeNames != null && typeNames.TryGetValue(fileId, out var name) && !string.IsNullOrEmpty(name)
-                        ? name
-                        : $"!u!{classId}";
-
-                    result.Add(document);
-                }
+                AddDocuments(lines, resolveTypeNames ? ResolveTypeNames(assetPath) : null, result);
             }
             catch (Exception)
             {
@@ -62,16 +39,41 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return result;
         }
 
-        // The same line breaks File.ReadAllLines splits on.
-        private static string[] SplitLines(string text)
+        // Text-only, for a sweep that already read the file for another pass.
+        public static List<ReferenceGraphDocument> Build(string[] lines)
         {
-            var lines = new List<string>();
-            using var reader = new StringReader(text);
+            var result = new List<ReferenceGraphDocument>();
 
-            while (reader.ReadLine() is { } line)
-                lines.Add(line);
+            try
+            {
+                if (lines is not null) AddDocuments(lines, typeNames: null, result);
+            }
+            catch (Exception)
+            {
+                // Best effort, like the path overload.
+            }
 
-            return lines.ToArray();
+            return result;
+        }
+
+        private static void AddDocuments(string[] lines, Dictionary<long, string> typeNames, List<ReferenceGraphDocument> result)
+        {
+            var headers = CollectHeaders(lines);
+
+            for (var h = 0; h < headers.Count; h++)
+            {
+                var (fileId, classId, start) = headers[h];
+                var end = SerializeReferenceYaml.FindDocumentEnd(lines, start + 1);
+
+                var document = BuildDocument(lines, fileId, start, end);
+                if (document is null) continue;
+
+                document.TypeName = typeNames != null && typeNames.TryGetValue(fileId, out var name) && !string.IsNullOrEmpty(name)
+                    ? name
+                    : $"!u!{classId}";
+
+                result.Add(document);
+            }
         }
 
         // Documents without reference entries or field pointers contribute no graph.
@@ -99,25 +101,31 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return document;
         }
 
+        // Only "- rid:" lines at the entry indent are entries; a deeper one is a list element in another entry's data
+        // block and would otherwise become a phantom node carrying the next entry's type.
         private static void CollectNodes(string[] lines, int refIdsStart, int end, ReferenceGraphDocument document)
         {
+            var entryIndent = SerializeReferenceYaml.FindRefIdsEntryIndent(lines, refIdsStart, end);
+            if (entryIndent < 0) return;
+
+            var seen = new HashSet<long>();
+
             for (var i = refIdsStart + 1; i < end; i++)
             {
-                var ridMatch = _entryRid.Match(lines[i]);
-                if (!ridMatch.Success || !long.TryParse(ridMatch.Groups["id"].Value, out var rid)) continue;
+                if (!SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var rid)) continue;
 
                 // Negative rids are Unity's null/unknown sentinels, not managed objects, so they are not nodes.
-                if (rid < 0) continue;
+                if (rid < 0 || !seen.Add(rid)) continue;
 
                 var type = default(ManagedTypeName);
-                for (var j = i + 1; j < end && j <= i + 4; j++)
-                {
-                    var typeMatch = _typeLine.Match(lines[j]);
-                    if (!typeMatch.Success) continue;
+                var typeLine = SerializeReferenceYaml.FindEntryTypeLine(
+                    lines, i, SerializeReferenceYaml.FindEntryEnd(lines, i, end, entryIndent));
 
-                    if (!SerializeReferenceYaml.TryParseInlineType(typeMatch.Groups["body"].Value, out type))
+                if (typeLine >= 0)
+                {
+                    var typeMatch = _typeLine.Match(lines[typeLine]);
+                    if (!typeMatch.Success || !SerializeReferenceYaml.TryParseInlineType(typeMatch.Groups["body"].Value, out type))
                         type = default;
-                    break;
                 }
 
                 var resolves = !type.IsEmpty && SerializeReferenceHelpers.StoredTypeResolves(type);
@@ -151,13 +159,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static void CollectEdges(string[] lines, int refIdsStart, int end, HashSet<long> knownRids, ReferenceGraphDocument document)
         {
+            var entryIndent = SerializeReferenceYaml.FindRefIdsEntryIndent(lines, refIdsStart, end);
+            if (entryIndent < 0) return;
+
             for (var i = refIdsStart + 1; i < end; i++)
             {
-                var ridMatch = _entryRid.Match(lines[i]);
-                if (!ridMatch.Success || !long.TryParse(ridMatch.Groups["id"].Value, out var parent)) continue;
+                if (!SerializeReferenceYaml.TryMatchEntryHeader(lines[i], entryIndent, out var parent)) continue;
                 if (parent < 0) continue; // a sentinel entry carries no data block of its own
 
-                var entryIndent = ridMatch.Groups["indent"].Length;
                 var entryEnd = SerializeReferenceYaml.FindEntryEnd(lines, i, end, entryIndent);
 
                 var dataStart = FindKey(lines, _dataKey, i + 1, entryEnd);

@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
@@ -16,13 +15,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         internal const string BaselineKey = "Aspid.FastTools.SerializeReferences.Breakage.AssetBaseline";
         private const char EntrySeparator = '\n';
         private const char KeySeparator = '\t';
-        private const string RefIdsMarker = "RefIds:";
         private const double SweepBudgetMilliseconds = 8;
 
         private static readonly Queue<string> _pending = new();
         private static readonly Dictionary<string, HashSet<string>> _swept = new(StringComparer.Ordinal);
         private static bool _establishing;
         private static bool _pumping;
+        private static bool _reportPending;
 
         public static event Action<BreakageReport> BreakageDetected;
 
@@ -107,8 +106,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 return;
             }
 
-            if (report) ReportBrokenBaselineTypes();
+            // The changed assets are re-read before judging the baseline: a pulled rename whose assets were re-saved
+            // with the new name must not alarm on the entries they held before.
             Enqueue(changedAssets);
+            if (!report) return;
+
+            if (_pending.Count == 0) ReportBrokenBaselineTypes();
+            else _reportPending = true;
         }
 
         private static void ReportBrokenBaselineTypes()
@@ -198,6 +202,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!_establishing && !IsEstablished)
             {
                 _swept.Clear();
+                _reportPending = false;
                 return;
             }
 
@@ -214,10 +219,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _swept.Clear();
             SaveBaseline(baseline);
 
-            if (!_establishing) return;
+            if (_establishing)
+            {
+                _establishing = false;
+                SessionState.SetBool(EstablishedKey, true);
+                return;
+            }
 
-            _establishing = false;
-            SessionState.SetBool(EstablishedKey, true);
+            if (!_reportPending) return;
+
+            _reportPending = false;
+            ReportBrokenBaselineTypes();
         }
 
         private static void CancelSweep()
@@ -226,7 +238,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _pending.Clear();
             _swept.Clear();
             _establishing = false;
+            _reportPending = false;
         }
+
+        // Tests start from no sweep in flight, whatever the session's own sweep was doing.
+        internal static void ResetForTests() => CancelSweep();
 
         private static void StopPump()
         {
@@ -236,43 +252,30 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             EditorApplication.update -= Pump;
         }
 
-        // A deleted, moved-away or no longer scanned asset yields an empty set, which drops its entry.
+        // A deleted, moved-away or no longer scanned asset yields an empty set, which drops its entry. The keys come
+        // from the same usages the warm index holds, prefab instance overrides included.
         private static HashSet<string> CollectResolvableKeys(string path)
         {
             var keys = new HashSet<string>(StringComparer.Ordinal);
             if (!SerializeReferenceHelpers.IsScanCandidate(path)) return keys;
 
-            var text = ReadIfMayHoldReferences(path);
-            if (text is null) return keys;
-
-            // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
-            foreach (var document in SerializeReferenceGraphScanner.Build(path, text, resolveTypeNames: false))
-            {
-                foreach (var node in document.Nodes)
-                {
-                    if (node.StoredType.IsEmpty || !node.Resolves) continue;
-                    keys.Add(SerializeReferenceHelpers.StoredTypeKey(node.StoredType));
-                }
-            }
+            foreach (var usage in SerializeReferenceTypeUsageIndex.CollectUsages(ReadIfMayHoldReferences(path), guid: null))
+                if (usage.Resolves) keys.Add(SerializeReferenceHelpers.StoredTypeKey(usage.StoredType));
 
             return keys;
         }
 
-        // A substring probe before the line-by-line parse, since most assets hold no managed references at all. Returns
-        // the text for the parse, so each asset is read once, or null when the asset can be skipped.
-        private static string ReadIfMayHoldReferences(string path)
+        // A line probe before the parse, since most assets hold no managed references at all. Returns the lines for the
+        // parse, so each asset is read once, or null when the asset can be skipped.
+        private static string[] ReadIfMayHoldReferences(string path)
         {
-            try
-            {
-                if (!File.Exists(path)) return null;
+            var lines = SerializeReferenceYaml.ReadLines(path);
+            if (lines is null) return null;
 
-                var text = File.ReadAllText(path);
-                return text.IndexOf(RefIdsMarker, StringComparison.Ordinal) >= 0 ? text : null;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            foreach (var line in lines)
+                if (SerializeReferenceTypeUsageIndex.MayHoldUsages(line)) return lines;
+
+            return null;
         }
 
         private static bool TryParseStoredTypeKey(string key, out ManagedTypeName storedType)
@@ -287,7 +290,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        private static BreakageReport BuildReport(
+        public static BreakageReport BuildReport(
             List<SerializeReferenceTypeUsageIndex.Usage> unresolved,
             HashSet<string> baseline)
         {
@@ -332,8 +335,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     }
                 }
 
+                // The YAML repair edits RefIds blocks, so it cannot reach a type set by a prefab instance override.
                 foreach (var usage in pair.Value)
-                    entries.Add(BuildEntry(usage, path, repairable, constraints));
+                    entries.Add(BuildEntry(usage, path, repairable && !usage.IsOverride, constraints));
             }
 
             return entries.Count == 0 ? default : new BreakageReport(entries, types.Count);

@@ -41,6 +41,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var usage in SerializeReferenceTypeUsageIndex.EnumerateUnresolved())
             {
+                // Fix all rewrites RefIds entries; an override has none, so it is listed by CollectOverridesFromIndex.
+                if (usage.IsOverride) continue;
+
                 var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
                 if (string.IsNullOrEmpty(path)) continue;
 
@@ -58,6 +61,33 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             groups.Sort((a, b) => b.Entries.Count.CompareTo(a.Entries.Count));
             return groups;
         }
+
+        // Missing types set by prefab instance overrides. They are reported but not repaired: the fix is a new type or
+        // Revert on the instance itself. An old name a [MovedFrom] claims stays listed (see OverrideMigrationTarget).
+        public static List<MissingReferenceLocation> CollectOverridesFromIndex()
+        {
+            var result = new List<MissingReferenceLocation>();
+
+            foreach (var usage in SerializeReferenceTypeUsageIndex.EnumerateUnresolved())
+            {
+                if (!usage.IsOverride) continue;
+
+                var path = AssetDatabase.GUIDToAssetPath(usage.Guid);
+                if (string.IsNullOrEmpty(path)) continue;
+
+                result.Add(new MissingReferenceLocation(path,
+                    new MissingReferenceEntry(usage.FileId, usage.Rid, usage.StoredType, isOverride: true)));
+            }
+
+            result.Sort((a, b) => string.CompareOrdinal(a.AssetPath, b.AssetPath));
+            return result;
+        }
+
+        // The type a [MovedFrom] maps an override's old name to, or null. The gate treats it as a pending migration
+        // (an override has no field constraint to reject the target), but Migrate all rewrites RefIds entries only, so
+        // the instance keeps the old name, and needs the attribute, until it is saved with the new one.
+        public static Type OverrideMigrationTarget(MissingReferenceLocation location) =>
+            SerializeReferenceMovedFromResolver.TryResolve(location.Entry.StoredType, out var target) ? target : null;
 
         public void Add(string assetPath, MissingReferenceEntry entry)
         {

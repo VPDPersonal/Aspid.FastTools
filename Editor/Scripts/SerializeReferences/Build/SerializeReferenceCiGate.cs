@@ -68,7 +68,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static int ComputeExitCode(int violationCount, GateSeverity severity) =>
             violationCount > 0 && severity == GateSeverity.Fail ? 1 : 0;
 
-        private static string BuildReport(IReadOnlyList<GateViolation> violations)
+        public static string BuildReport(IReadOnlyList<GateViolation> violations)
         {
             var builder = new StringBuilder();
             builder.AppendLine($"# SerializeReference Gate Report");
@@ -77,13 +77,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var violation in violations)
             {
-                // Machine-readable line: KIND<TAB>assetPath<TAB>fileId<TAB>rid<TAB>StoredType<TAB>fieldPath
+                // Machine-readable line: KIND<TAB>assetPath<TAB>fileId<TAB>rid<TAB>StoredType<TAB>fieldPath<TAB>origin.
+                // "override" marks a type set by a prefab instance override, whose fileId is the PrefabInstance.
                 builder.Append(violation.Kind).Append('\t')
                     .Append(violation.AssetPath).Append('\t')
                     .Append(violation.FileId).Append('\t')
                     .Append(violation.Rid).Append('\t')
                     .Append(violation.StoredType.Class ?? string.Empty).Append('\t')
-                    .Append(violation.FieldPath ?? string.Empty)
+                    .Append(violation.FieldPath ?? string.Empty).Append('\t')
+                    .Append(violation.IsOverride ? "override" : string.Empty)
                     .AppendLine();
             }
 
