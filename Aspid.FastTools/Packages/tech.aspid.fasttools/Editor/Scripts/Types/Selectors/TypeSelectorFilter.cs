@@ -53,5 +53,9 @@ namespace Aspid.FastTools.Types.Editors
         /// Gets or sets a value indicating whether the empty selection is hidden on the root page.
         /// </summary>
         public bool HideNoneOption { get; set; }
+
+        // Set by the Inspector drawers for a value stored in a runtime object: a player cannot resolve a type from an
+        // editor-only assembly, so neither the list nor the generic-argument pages offer one.
+        internal bool ExcludeEditorOnly { get; set; }
     }
 }

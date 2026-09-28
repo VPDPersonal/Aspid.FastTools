@@ -36,14 +36,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             }
         }
 
-        private static string Key => KeyPrefix + PlayerSettings.productGUID;
+        internal static string Key => KeyPrefix + PlayerSettings.productGUID;
 
         public static bool Contains(string name) => Load().entries.Exists(entry => entry.name == name);
 
         public static void SaveConfirmed(string name, object value)
         {
-            if (Contains(name) && !EditorUtility.DisplayDialog("Overwrite Template?",
-                    $"A template named \"{name}\" already exists. Overwrite it?", "Overwrite", "Cancel")) return;
+            var existing = Load().entries.Find(entry => entry.name == name);
+            if (existing is not null && !EditorUtility.DisplayDialog("Overwrite Template?",
+                    Resolve(existing) is null
+                        ? $"A template named \"{name}\" already exists, but its type {TypeName(existing)} does not load, so Paste Template does not list it. Overwrite it?"
+                        : $"A template named \"{name}\" already exists. Overwrite it?",
+                    "Overwrite", "Cancel")) return;
 
             Save(name, value);
         }
@@ -59,26 +63,43 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             Persist(store);
         }
 
+        // An entry whose type does not resolve is only skipped, never pruned: the type may be missing just for now
+        // (another branch, a removed package), and the store is shared by every copy of the project.
         public static List<Template> LoadResolved()
         {
             var store = Load();
             var result = new List<Template>(store.entries.Count);
-            var changed = false;
 
             foreach (var entry in store.entries)
             {
-                var type = string.IsNullOrEmpty(entry.aqn) ? null : Type.GetType(entry.aqn, throwOnError: false);
+                var type = Resolve(entry);
                 if (type is not null) result.Add(new Template(entry.name, type));
-                else changed = true;
-            }
-
-            if (changed)
-            {
-                store.entries.RemoveAll(entry => string.IsNullOrEmpty(entry.aqn) || Type.GetType(entry.aqn, throwOnError: false) is null);
-                Persist(store);
             }
 
             return result;
+        }
+
+        // The only way to drop such entries now that LoadResolved keeps them: the user decides the type is gone for good.
+        public static List<string> UnresolvedNames() =>
+            Load().entries.FindAll(entry => Resolve(entry) is null).ConvertAll(entry => entry.name);
+
+        public static void RemoveUnresolvedConfirmed()
+        {
+            var names = UnresolvedNames();
+            if (names.Count == 0 || !EditorUtility.DisplayDialog("Remove Missing Templates?",
+                    $"These templates refer to types that do not load right now: {string.Join(", ", names)}.\n\n" +
+                    "A type missing only for now (another branch, a removed package) loses its template too. Remove them?",
+                    "Remove", "Cancel")) return;
+
+            RemoveUnresolved();
+        }
+
+        public static int RemoveUnresolved()
+        {
+            var store = Load();
+            var removed = store.entries.RemoveAll(entry => Resolve(entry) is null);
+            if (removed > 0) Persist(store);
+            return removed;
         }
 
         public static object CreateInstance(string name)
@@ -86,7 +107,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var entry = Load().entries.Find(e => e.name == name);
             if (entry is null) return null;
 
-            var type = string.IsNullOrEmpty(entry.aqn) ? null : Type.GetType(entry.aqn, throwOnError: false);
+            var type = Resolve(entry);
             if (type is null) return null;
 
             var instance = SerializeReferenceHelpers.CreateInstance(type);
@@ -106,6 +127,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var candidate = $"{baseName} {i}";
                 if (!existing.Contains(candidate)) return candidate;
             }
+        }
+
+        private static Type Resolve(Entry entry) =>
+            string.IsNullOrEmpty(entry.aqn) ? null : Type.GetType(entry.aqn, throwOnError: false);
+
+        private static string TypeName(Entry entry)
+        {
+            if (string.IsNullOrEmpty(entry.aqn)) return "(none)";
+            var comma = entry.aqn.IndexOf(',');
+            return comma < 0 ? entry.aqn : entry.aqn[..comma];
         }
 
         private static Store Load()

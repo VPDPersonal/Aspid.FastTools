@@ -1,5 +1,6 @@
 using System;
 using UnityEngine.UIElements;
+using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.UIElements
@@ -38,6 +39,21 @@ namespace Aspid.FastTools.UIElements
             return element;
         }
         #endregion
+
+        /// <summary>
+        /// Sets the root items of the tree via <see cref="BaseTreeView.SetRootItems{T}"/>.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <typeparam name="TData">The type of the data stored in each tree item.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The root items, each with its children; <see langword="null"/> clears the tree.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetRootItemsSelf<T, TData>(this T element, IList<TreeViewItemData<TData>> value)
+            where T : BaseTreeView
+        {
+            element.SetRootItems(value);
+            return element;
+        }
 
         /// <summary>
         /// Sets <see cref="BaseTreeView.autoExpand"/>.
