@@ -1,4 +1,6 @@
+using System;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -8,5 +10,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     {
         [SerializeReference] public ITestWeapon a;
         [SerializeReference] public ITestWeapon b;
+    }
+
+    // A sequence the in-memory recovery skips, so only the lossless file route keeps it.
+    [Serializable]
+    internal sealed class UnsavedRepairSpawnAction : ITestWeapon
+    {
+        public float delay;
+        public List<int> waves = new();
     }
 }

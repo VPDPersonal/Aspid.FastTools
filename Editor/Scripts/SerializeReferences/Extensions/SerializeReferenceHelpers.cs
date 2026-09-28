@@ -677,21 +677,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 });
         }
 
-        // Repair saved assets through YAML; Prefab Mode objects, loaded scenes and assets with unsaved changes through
-        // their live serialized state.
+        // Repair assets through YAML and open Prefab Mode objects and loaded scenes through their live serialized state.
         public static bool TryFixMissingType(SerializedProperty property, Type newType)
         {
             if (newType is null) return false;
             if (!TryGetRepairLocation(property, out var assetPath, out var fileId, out var inMemory)) return false;
             if (!TryGetMissingReferenceId(property, out var referenceId)) return false;
 
-            if (!inMemory)
-            {
-                // Prefab Mode saves over the asset file, so neither route would survive. Unsaved changes would be
-                // dropped by the reimport, so a dirty asset is repaired in memory and saved along with them.
-                if (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath, "Fix Missing Type")) return false;
-                inMemory = SerializeReferenceOpenCopyGuard.HasUnsavedChanges(assetPath);
-            }
+            // Prefab Mode saves over the asset file, so neither route would survive. The reimport would drop unsaved
+            // changes, so a dirty asset is saved first: the YAML route keeps the whole stored payload, which the
+            // in-memory route cannot recover.
+            if (!inMemory &&
+                (SerializeReferenceOpenCopyGuard.BlockedByOpenCopy(assetPath, "Fix Missing Type") ||
+                 SerializeReferenceOpenCopyGuard.BlockedByUnsavedChanges(assetPath, "Fix Missing Type")))
+                return false;
 
             bool repaired;
             if (inMemory)

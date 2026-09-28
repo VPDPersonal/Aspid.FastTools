@@ -67,7 +67,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         {
             // Outside batch mode the refusal dialog would wait for a click; in batch mode Unity cancels it with a log.
             if (!Application.isBatchMode) Assert.Ignore("Runs in batch mode only.");
-            LogAssert.Expect(LogType.Assert, new Regex("Cancelling DisplayDialog: Fix Missing Type"));
+            // Unity 6000.0 logs "Cancelling", later versions "Canceling".
+            LogAssert.Expect(LogType.Assert, new Regex("Cancell?ing DisplayDialog: Fix Missing Type"));
 
             Assert.IsNotNull(PrefabStageUtility.OpenPrefab(ProbePrefabPath), "Precondition: the prefab must open.");
             var before = File.ReadAllText(ProbePrefabPath);
