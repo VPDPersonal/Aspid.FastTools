@@ -23,7 +23,8 @@ namespace Aspid.FastTools.Enums
     /// <para>
     /// For <c>[Flags]</c> enums <see cref="Equals(Enum,Enum)"/> uses flag-containment semantics
     /// with special handling for the zero (<c>None</c>) value — two values are considered equal
-    /// only when both are zero or both are non-zero and one has all bits of the other set.
+    /// only when both are zero or both are non-zero and the first (the lookup value) has all bits
+    /// of the second (the stored key) set.
     /// </para>
     /// <para>
     /// <see cref="GetValue"/> returns the configured default value when no entry matches the lookup key.
