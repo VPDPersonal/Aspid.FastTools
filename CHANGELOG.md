@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".
 - A `[TypeSelector(nameof(...))]` member reference on a field inside a `[Serializable]` class or a list element now resolves on the instance that declares the field, as analyzers `AFT0006`–`AFT0008` already check it; it used to be looked up on the inspected component or asset and showed a warning. The same applies to the picker of the Asset References window.
 - On Unity 6000.0–6000.2 the `[SerializeReference]` field, the picker and the Project References and Asset References windows are styled again: two stylesheets used a color syntax these versions cannot parse, so each was dropped whole and the import logged an error.
+- Buttons and foldouts inside a `[SerializeReference]` field drawn with UI Toolkit keep their own look: a button of a custom drawer or a nested list's `+` / `−` is no longer shrunk to 18×18 with a folder icon, and a nested foldout no longer takes the field header's layout.
 - Fix, Fix all and the summary's Undo no longer rewrite the type of a healthy managed reference when a `[SerializeReference]` list inside another reference points at the broken one (a parent with a list of children). The Inspector reads the right stored type and fields of such references, and the Project References graph no longer shows phantom nodes whose Clear deleted healthy entries.
 - The missing-list guard now snapshots a missing list element that another reference's list also points at, and restores it into the object's own list instead of a same-named list nested in another field.
 - A list element restored by the missing-list guard keeps its original reference id when it is free, otherwise gets a random one. It used to take the next id after the file's maximum, which an override in a variant, nested prefab or scene often already used: that override lost its type and shared data with the restored element.
@@ -89,7 +90,7 @@ First release. Unity **6000.0**, assemblies `Aspid.FastTools` / `Aspid.FastTools
 #### Workbench window (`Tools → Aspid 🐍 → FastTools`)
 
 - **Welcome** — samples with install markers; auto-opens once per package version.
-- **Asset References** — the asset's whole `[SerializeReference]` graph from YAML with `MISSING` / `SHARED` badges, inline Fix, Clear for orphans, Open Source Prefab.
+- **Asset References** — the asset's whole `[SerializeReference]` graph from YAML with a warning band on missing types and `SHARED` badges, inline Fix, Clear for orphans, Open Source Prefab.
 - **Project References** — `Scan Project` over `Assets/`, **Fix all** per type with Undo, Smart Fix, Migrate all, Required violations.
 - **Settings** — all package settings with shared / per-user scope stripes and per-scope reset.
 - Keyboard navigation, legends, row context menus on every tab.

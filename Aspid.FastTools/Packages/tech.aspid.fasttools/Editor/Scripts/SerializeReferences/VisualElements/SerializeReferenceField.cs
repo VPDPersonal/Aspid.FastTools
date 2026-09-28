@@ -22,6 +22,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private const string EmptyClass = BlockClass + "--empty";
         private const string ChildlessClass = BlockClass + "--childless";
         private const string DropdownClass = BlockClass + "__dropdown";
+        private const string OpenButtonClass = BlockClass + "__open-button";
 
         // Missing stored type: tints the caption the warning amber and flips its ellipsis to the start,
         // so the class name — the informative tail of "<Missing Namespace.Class>" — survives truncation.
@@ -172,6 +173,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _dropdown.RegisterCallback<PointerDownEvent>(OnDropdownClicked);
 
             _openButton = new Button()
+                .AddClass(OpenButtonClass)
                 .AddChild(new VisualElement())
                 .AddClicked(() => SerializeReferenceHelpers.GetCurrentType(_property)?.OpenInScriptEditor());
 
