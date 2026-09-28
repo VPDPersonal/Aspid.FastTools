@@ -52,6 +52,9 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
                 .SetPlaceholder("Search abilities…")
                 .AddValueChanged<TextField, string>(evt => ApplyFilter(evt.newValue));
 
+            // _filter survives a domain reload like other window fields, so show it in the new search box.
+            _search.SetValueWithoutNotify(_filter);
+
             var create = new Button()
                 .SetText("Create")
                 .SetTooltip("Creates a new AbilityConfig asset next to the selected one")
