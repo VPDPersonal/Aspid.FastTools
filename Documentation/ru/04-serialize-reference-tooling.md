@@ -115,7 +115,7 @@
 
 ## Проверка перед сборкой
 
-Откройте **Project Settings → Aspid FastTools → SerializeReference** и задайте **Build / CI gate**:
+Откройте **Project Settings → Aspid.FastTools → SerializeReference** и задайте **Build / CI gate**:
 
 | Режим | Сборка плеера | Отдельный CI-запуск |
 |---|---|---|
@@ -150,7 +150,7 @@
 <details>
 <summary>Другие настройки окна и селектора</summary>
 
-Те же параметры доступны во вкладке **Settings** окна FastTools и в **Preferences → Aspid FastTools**. Рядом находятся личные настройки:
+Те же параметры доступны во вкладке **Settings** окна FastTools и в **Preferences → Aspid.FastTools**. Рядом находятся личные настройки:
 
 - **Favorites** — отображение избранного.
 - **Recent items** — ёмкость истории от 0 до 20. Значение 0 скрывает секцию и приостанавливает запись, сохраняя историю.
