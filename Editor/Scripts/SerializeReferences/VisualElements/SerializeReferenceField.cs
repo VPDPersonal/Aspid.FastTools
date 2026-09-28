@@ -993,8 +993,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         {
             // Mutations apply through a throwaway SerializedObject, leaving this field's LIVE object stale — pull
             // the change in, then drop the per-tick memos (keyed by tick + instance, so they survive the Update);
-            // otherwise the re-query and the siblings still see the pre-mutation snapshot.
-            _property.serializedObject.Update();
+            // otherwise the re-query and the siblings still see the pre-mutation snapshot. A saved-asset repair
+            // reimports the asset and kills the live object, so only the siblings are notified then.
+            if (IsPropertyAlive()) _property.serializedObject.Update();
             SerializeReferenceHelpers.InvalidateReferenceMemos();
             Refresh(forceRebuild: true);
             ManagedReferencesChanged?.Invoke();
