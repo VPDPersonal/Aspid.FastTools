@@ -22,6 +22,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         // intervening repaint would re-detect and re-schedule.
         private static readonly HashSet<ArrayKey> _pending = new();
 
+        // Observe runs for every element on every IMGUI event. Growth is the only layout change that can trigger a
+        // fix, so within one editor tick an array is rescanned only when its size changes. A same-size edit that
+        // skips InvalidateObservationMemo (a native drag reorder, raw user code) reaches the baseline only next tick,
+        // so a growth in that same tick is judged against the pre-edit layout.
+        private static readonly Dictionary<ArrayKey, int> _scannedSizes = new();
+        private static long _scannedTick = -1;
+
         private static bool _undoHooked;
 
         // Only changed array layouts need a full duplicate scan during repaint.
@@ -50,6 +57,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (arrayProperty is null || !arrayProperty.isArray) return false;
 
             var size = arrayProperty.arraySize;
+            if (WasScannedThisTick(key, size)) return false;
+
             var signature = ComputeSignature(arrayProperty, size);
 
             if (_snapshots.TryGetValue(key, out var snapshot) &&
@@ -111,8 +120,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             element.managedReferenceValue = SerializeReferenceHelpers.CloneManagedReferenceGraph(current);
             serializedObject.ApplyModifiedProperties();
 
-            // The alias memo is keyed by frame, not content, so same-frame repaints must not read the stale one.
-            SerializeReferenceHelpers.InvalidateSharedReferenceCache();
+            // The memos are keyed by tick, not content, so same-tick repaints must not read the stale ones.
+            SerializeReferenceHelpers.InvalidateReferenceMemos();
+        }
+
+        // A same-size edit (reorder, Link to Existing) must reach the baseline before a later growth is judged.
+        public static void InvalidateObservationMemo() => _scannedSizes.Clear();
+
+        private static bool WasScannedThisTick(ArrayKey key, int size)
+        {
+            var tick = SerializeReferenceHelpers.MemoTick;
+            if (_scannedTick != tick)
+            {
+                _scannedSizes.Clear();
+                _scannedTick = tick;
+            }
+
+            if (_scannedSizes.TryGetValue(key, out var scannedSize) && scannedSize == size) return true;
+
+            _scannedSizes[key] = size;
+            return false;
         }
 
         private static bool SharesReferenceWithEarlierElement(SerializedProperty arrayProperty, int index, long rid)
@@ -130,7 +157,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // Require both a new index-to-ID binding and an increased occurrence count to exclude reorders.
-        private static bool TryFindFreshDuplicate(
+        internal static bool TryFindFreshDuplicate(
             IReadOnlyDictionary<int, long> previous,
             IReadOnlyDictionary<int, long> current,
             out int duplicateIndex)
@@ -253,6 +280,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // both makes the next observation re-record instead of auto-fixing.
             _snapshots.Clear();
             _pending.Clear();
+            _scannedSizes.Clear();
         }
 
         private readonly struct ArrayKey : IEquatable<ArrayKey>
