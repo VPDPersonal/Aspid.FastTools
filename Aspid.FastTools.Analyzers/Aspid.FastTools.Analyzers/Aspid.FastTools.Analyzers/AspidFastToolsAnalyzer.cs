@@ -431,14 +431,15 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             ? typeofBases.Select(entry => entry.Type).ToImmutableArray()
             : ImmutableArray.Create(elementType);
 
-        // A type parameter (or a type built from one) is only known once the generic type is closed.
-        if (IsOpen(elementType) || bases.Any(IsOpen)) return;
+        // A type parameter (or a type built from one) is only known once the generic type is closed. An unbound
+        // typeof(Foo<>) is searched: only an open generic candidate built on Foo meets it (see ClosesToUnbound).
+        if (IsOpen(elementType) || bases.Any(baseType => !IsUnbound(baseType) && IsOpen(baseType))) return;
 
         // Skip the search when a base is a concrete instantiable class meeting the other bases — it is its own
-        // candidate.
+        // candidate. An unbound one is not: the picker offers the definition only once it can be closed.
         foreach (var baseType in bases)
         {
-            if (!IsConcreteInstantiable(baseType) || IsUnityObjectDerived(baseType)) continue;
+            if (IsUnbound(baseType) || !IsConcreteInstantiable(baseType) || IsUnityObjectDerived(baseType)) continue;
             if (bases.All(other => IsAssignableTo(baseType, other, context.Compilation))) return;
         }
 
@@ -542,8 +543,8 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
         // A candidate is a concrete, non-abstract, non-static class, not derived from UnityEngine.Object, not string,
         // not a delegate, assignable to every constraint type. An open generic candidate qualifies when some closed
         // form of it could be (the drawer closes it on selection), so its supertypes are unified with each constraint
-        // rather than converted. Cheapest checks first: the UnityEngine.Object walk only runs on a type that already
-        // matched every constraint.
+        // rather than converted; an unbound typeof(Foo<>) admits only such a candidate. Cheapest checks first: the
+        // UnityEngine.Object walk only runs on a type that already matched every constraint.
         private bool IsCandidate(INamedTypeSymbol type, Constraints constraints)
         {
             if (!IsConcreteInstantiable(type)) return false;
@@ -557,49 +558,11 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
             return !IsUnityObjectDerived(type);
         }
 
-        private bool CanBeAssignedTo(INamedTypeSymbol type, ITypeSymbol target) =>
-            IsOpen(type) ? CanCloseTo(type, target) : IsAssignableTo(type, target, _compilation);
-
-        // Some supertype of the open candidate matches the target once the candidate's type parameters are bound.
-        private static bool CanCloseTo(INamedTypeSymbol type, ITypeSymbol target)
+        private bool CanBeAssignedTo(INamedTypeSymbol type, ITypeSymbol target)
         {
-            for (var current = type; current is not null; current = current.BaseType)
-                if (CanUnify(current, target)) return true;
+            if (IsUnbound(target)) return IsOpen(type) && ClosesToUnbound(type, target);
 
-            foreach (var contract in type.AllInterfaces)
-                if (CanUnify(contract, target)) return true;
-
-            return false;
-        }
-
-        // A type parameter binds to anything (its constraints are not checked, which can only hide a warning).
-        private static bool CanUnify(ITypeSymbol open, ITypeSymbol closed)
-        {
-            if (open is ITypeParameterSymbol) return true;
-            if (SymbolEqualityComparer.Default.Equals(open, closed)) return true;
-
-            switch (open)
-            {
-                case IArrayTypeSymbol openArray when closed is IArrayTypeSymbol closedArray:
-                    return openArray.Rank == closedArray.Rank && CanUnify(openArray.ElementType, closedArray.ElementType);
-
-                case INamedTypeSymbol { IsGenericType: true } openNamed when closed is INamedTypeSymbol { IsGenericType: true } closedNamed:
-                {
-                    if (!SymbolEqualityComparer.Default.Equals(openNamed.OriginalDefinition, closedNamed.OriginalDefinition))
-                        return false;
-
-                    for (var i = 0; i < openNamed.TypeArguments.Length; i++)
-                        if (!CanUnify(openNamed.TypeArguments[i], closedNamed.TypeArguments[i])) return false;
-
-                    // Outer<List<T>>.Inner and Outer<int>.Inner share a definition but not the outer arguments.
-                    return openNamed.ContainingType is not { } openOuter ||
-                        closedNamed.ContainingType is not { } closedOuter ||
-                        CanUnify(openOuter, closedOuter);
-                }
-
-                default:
-                    return false;
-            }
+            return IsOpen(type) ? CanCloseTo(type, target, _compilation) : IsAssignableTo(type, target, _compilation);
         }
 
         // True when the assembly is (or references) the target, i.e. its metadata can declare a type derived from a
@@ -744,15 +707,16 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
     // so the selector would be empty. An interface paired with a class is only provably disjoint when the class is
     // sealed and does not implement it — no further subtype can add the interface. Two interfaces are never provably
     // disjoint (one class can implement both), so they are left alone to avoid false positives. An unbound
-    // typeof(Foo<>) against a closed type is matched by generic definition: related when some Foo<X> is in the other
-    // type's hierarchy, or the other type is in Foo's.
+    // typeof(Foo<>) meets no closed type, only an open generic class built on Foo (see ClosesToUnbound): the closed
+    // type's own definition (Derived<T> : Foo<T> for Derived<int>), or Foo's definition when it reaches the closed type.
     private static bool AreProvablyDisjoint(ITypeSymbol baseType, ITypeSymbol fieldType, Compilation compilation)
     {
         var unboundBase = IsUnbound(baseType);
         var unboundField = IsUnbound(fieldType);
         var byDefinition = unboundBase != unboundField;
 
-        // A type parameter stands for a type that is only known once the generic type is closed.
+        // A type parameter stands for a type that is only known once the generic type is closed, and one open
+        // generic class can be built on two unbound definitions.
         if (byDefinition ? IsOpen(unboundBase ? fieldType : baseType) : IsOpen(baseType) || IsOpen(fieldType))
             return false;
 
@@ -771,32 +735,117 @@ public sealed class AspidFastToolsAnalyzer : DiagnosticAnalyzer
 
         return !Reaches(baseType, fieldType) && !Reaches(fieldType, baseType);
 
-        bool Reaches(ITypeSymbol from, ITypeSymbol to) =>
-            byDefinition ? HasDefinitionInHierarchy(from, to) : IsAssignableTo(from, to, compilation);
+        bool Reaches(ITypeSymbol from, ITypeSymbol to)
+        {
+            if (!byDefinition) return IsAssignableTo(from, to, compilation);
+
+            return IsUnbound(to)
+                ? ClosesToUnbound(from, to)
+                : CanCloseTo((INamedTypeSymbol)from.OriginalDefinition, to, compilation);
+        }
     }
 
     private static bool IsUnbound(ITypeSymbol type) => type is INamedTypeSymbol { IsUnboundGenericType: true };
 
-    // True when the type, a base class or an implemented interface shares the target's generic definition.
-    private static bool HasDefinitionInHierarchy(ITypeSymbol from, ITypeSymbol to)
+    // An unbound typeof(Foo<>) is assignable from no closed type (Type.IsAssignableFrom), so the drawer meets it only
+    // with an open generic class it can close against the definition: one with a Foo<...> built from its own type
+    // parameters in its hierarchy (Foo<T>, not Foo<int>). Checked on the generic definition, so a closed Derived<int>
+    // answers for the Derived<T> the picker offers.
+    private static bool ClosesToUnbound(ITypeSymbol type, ITypeSymbol unbound)
     {
-        var definition = to.OriginalDefinition;
+        var definition = unbound.OriginalDefinition;
 
-        for (ITypeSymbol? current = from.OriginalDefinition; current is not null; current = current.BaseType)
-            if (SymbolEqualityComparer.Default.Equals(current.OriginalDefinition, definition)) return true;
+        for (ITypeSymbol? current = type.OriginalDefinition; current is not null; current = current.BaseType)
+            if (IsOpenFormOf(current)) return true;
 
-        foreach (var contract in from.OriginalDefinition.AllInterfaces)
-            if (SymbolEqualityComparer.Default.Equals(contract.OriginalDefinition, definition)) return true;
+        foreach (var contract in type.OriginalDefinition.AllInterfaces)
+            if (IsOpenFormOf(contract)) return true;
+
+        return false;
+
+        bool IsOpenFormOf(ITypeSymbol candidate) =>
+            candidate is INamedTypeSymbol named &&
+            SymbolEqualityComparer.Default.Equals(named.OriginalDefinition, definition) &&
+            named.TypeArguments.All(IsOpen);
+    }
+
+    // Some supertype of the open candidate matches the target once the candidate's type parameters are bound.
+    private static bool CanCloseTo(INamedTypeSymbol type, ITypeSymbol target, Compilation compilation)
+    {
+        for (var current = type; current is not null; current = current.BaseType)
+            if (CanUnify(current, target, compilation)) return true;
+
+        foreach (var contract in type.AllInterfaces)
+            if (CanUnify(contract, target, compilation)) return true;
 
         return false;
     }
 
+    // A type parameter binds to anything (its constraints are not checked, which can only hide a warning). With a
+    // compilation, the target's own out/in positions also take what the drawer's CanCloseArguments takes there (see
+    // IsVariantMatch); nested positions and a call without one must match exactly, as in the drawer.
+    private static bool CanUnify(ITypeSymbol open, ITypeSymbol closed, Compilation? compilation = null)
+    {
+        if (open is ITypeParameterSymbol) return true;
+        if (SymbolEqualityComparer.Default.Equals(open, closed)) return true;
+
+        switch (open)
+        {
+            case IArrayTypeSymbol openArray when closed is IArrayTypeSymbol closedArray:
+                return openArray.Rank == closedArray.Rank && CanUnify(openArray.ElementType, closedArray.ElementType);
+
+            case INamedTypeSymbol { IsGenericType: true } openNamed when closed is INamedTypeSymbol { IsGenericType: true } closedNamed:
+            {
+                if (!SymbolEqualityComparer.Default.Equals(openNamed.OriginalDefinition, closedNamed.OriginalDefinition))
+                    return false;
+
+                var parameters = openNamed.OriginalDefinition.TypeParameters;
+                for (var i = 0; i < openNamed.TypeArguments.Length; i++)
+                {
+                    var openArgument = openNamed.TypeArguments[i];
+                    var closedArgument = closedNamed.TypeArguments[i];
+
+                    if (CanUnify(openArgument, closedArgument)) continue;
+                    if (compilation is null || !IsVariantMatch(parameters[i].Variance, openArgument, closedArgument, compilation))
+                        return false;
+                }
+
+                // Outer<List<T>>.Inner and Outer<int>.Inner share a definition but not the outer arguments.
+                return openNamed.ContainingType is not { } openOuter ||
+                    closedNamed.ContainingType is not { } closedOuter ||
+                    CanUnify(openOuter, closedOuter);
+            }
+
+            default:
+                return false;
+        }
+    }
+
+    // An out/in position closed over a reference type (a value type pins it, as CLR variance stops there) takes an
+    // argument still built from type parameters, or a reference type convertible in the variance direction:
+    // DogProducer<TExtra> : IProducer<Dog> fills an IProducer<IAnimal> field, ListProducer<T> : IProducer<List<T>>
+    // an IProducer<IEnumerable<int>> one.
+    private static bool IsVariantMatch(
+        VarianceKind variance, ITypeSymbol openArgument, ITypeSymbol closedArgument, Compilation compilation)
+    {
+        if (variance == VarianceKind.None || closedArgument.IsValueType) return false;
+        if (IsOpen(openArgument)) return true;
+
+        var conversion = variance == VarianceKind.Out
+            ? compilation.ClassifyCommonConversion(openArgument, closedArgument)
+            : compilation.ClassifyCommonConversion(closedArgument, openArgument);
+
+        return conversion.IsImplicit && conversion.IsReference;
+    }
+
     // Type.IsAssignableFrom for closed types: identity, a base class, or an implemented interface — the latter also
     // through out/in variance (IProducer<Dog> to IProducer<IAnimal>). The hierarchy walk stays the fast path; the
-    // compiler is asked only about an interface of the same variant generic definition.
+    // compiler is asked only about an interface of the same variant generic definition. Nothing but itself is
+    // assignable to an unbound typeof(Foo<>).
     private static bool IsAssignableTo(ITypeSymbol from, ITypeSymbol to, Compilation compilation)
     {
         if (SymbolEqualityComparer.Default.Equals(from, to)) return true;
+        if (IsUnbound(to)) return false;
 
         for (var baseType = from.BaseType; baseType is not null; baseType = baseType.BaseType)
             if (SymbolEqualityComparer.Default.Equals(baseType, to)) return true;

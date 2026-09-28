@@ -600,6 +600,46 @@ interface IProducer<out T> { }
 class DogProducer : IProducer<Dog> { }
 class C { [SerializeReference, TypeSelector] private IProducer<IAnimal> _producer; }");
 
+    [Fact]
+    public Task VariantField_OpenImplOfConvertibleArgument_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IAnimal { }
+class Dog : IAnimal { }
+interface IProducer<out T> { }
+interface IConsumer<in T> { }
+class DogProducer<TExtra> : IProducer<Dog> { }
+class AnimalConsumer<TExtra> : IConsumer<IAnimal> { }
+class C
+{
+    [SerializeReference, TypeSelector] private IProducer<IAnimal> _producer;
+    [SerializeReference, TypeSelector] private IConsumer<Dog> _consumer;
+}");
+
+    [Fact]
+    public Task CovariantField_OpenImplOfOpenArgument_NoAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+using System.Collections.Generic;
+interface IProducer<out T> { }
+class ListProducer<T> : IProducer<List<T>> { }
+class C { [SerializeReference, TypeSelector] private IProducer<IEnumerable<int>> _producer; }");
+
+    [Fact]
+    public Task CovariantField_OpenImplOfBaseArgument_ReportsAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IAnimal { }
+class Dog : IAnimal { }
+interface IProducer<out T> { }
+class AnimalProducer<TExtra> : IProducer<IAnimal> { }
+class ObjectProducer<TExtra> : IProducer<object> { }
+class C
+{
+    [SerializeReference, {|AFT0005:TypeSelector|}] private IProducer<Dog> _producer;
+    [SerializeReference, {|AFT0005:TypeSelector|}] private IProducer<int> _value;
+}");
+
     // A type-parameter field is only known once the containing generic type is closed.
 
     [Fact]
@@ -634,7 +674,8 @@ class Outer<T> { public class Inner { } }
 class Impl<T> : IBar<Outer<T>.Inner> { }
 class C { [SerializeReference, TypeSelector] private IBar<Outer<int>.Inner> _bar; }");
 
-    // An unbound typeof(Foo<>) is related to a type whose hierarchy contains some Foo<X>.
+    // An unbound typeof(Foo<>) accepts no closed type (Type.IsAssignableFrom): only an open generic class that
+    // has a Foo<...> of its own type parameters in its hierarchy.
 
     [Fact]
     public Task UnboundGenericBase_SealedTypeWithoutIt_ReportsAFT0003AndAFT0009() => Verify(@"
@@ -649,15 +690,51 @@ class C
 }");
 
     [Fact]
-    public Task UnboundGenericBase_SealedTypeImplementingIt_NoDiagnostic() => Verify(@"
+    public Task UnboundGenericBase_SealedTypeImplementingClosedForm_ReportsAFT0003AndAFT0009() => Verify(@"
 using UnityEngine;
 using Aspid.FastTools.Types;
 interface IFoo<T> { }
 sealed class IntFoo : IFoo<int> { }
 class C
 {
-    [SerializeReference, TypeSelector(typeof(IFoo<>))] private IntFoo _foo;
-    [TypeSelector(typeof(IFoo<>), typeof(IntFoo))] private string _type;
+    [SerializeReference, TypeSelector({|AFT0003:typeof(IFoo<>)|})] private IntFoo _foo;
+    [TypeSelector(typeof(IFoo<>), {|AFT0009:typeof(IntFoo)|})] private string _type;
+}");
+
+    [Fact]
+    public Task UnboundGenericClassBase_TypeDerivedFromClosedForm_ReportsAFT0003() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+abstract class Base<T> { }
+class Derived : Base<int> { }
+class C { [SerializeReference, TypeSelector({|AFT0003:typeof(Base<>)|})] private Derived _value; }");
+
+    [Fact]
+    public Task UnboundGenericBase_OnlyClosedFormImpls_ReportsAFT0005() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IAny { }
+interface IFoo<T> { }
+class IntFoo : IFoo<int>, IAny { }
+class IntBar<T> : IFoo<int>, IAny { }
+class C { [SerializeReference, {|AFT0005:TypeSelector(typeof(IFoo<>))|}] private IAny _value; }");
+
+    [Fact]
+    public Task UnboundGenericBase_OpenImpl_NoDiagnostic() => Verify(@"
+using UnityEngine;
+using Aspid.FastTools.Types;
+interface IAny { }
+interface IFoo<T> { }
+abstract class Base<T> { }
+class Derived<T> : Base<T> { }
+sealed class SealedFoo<T> : IFoo<T> { }
+class Foo<T> : IFoo<T>, IAny { }
+class C
+{
+    [SerializeReference, TypeSelector(typeof(IFoo<>))] private IAny _any;
+    [SerializeReference, TypeSelector(typeof(IFoo<>))] private SealedFoo<int> _sealed;
+    [SerializeReference, TypeSelector(typeof(Base<>))] private Base<int> _base;
+    [SerializeReference, TypeSelector(typeof(Base<>))] private Derived<string> _derived;
 }");
 
     // AFT0003 on SerializableType<T> / SerializableMonoScript<T>: the picker also requires T.
