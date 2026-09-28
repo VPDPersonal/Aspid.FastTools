@@ -177,6 +177,180 @@ MonoBehaviour:
         _magazineSize: 12
 ";
 
+        // The document and rids of the nested-children fixture below.
+        public const long NestedChildrenFileId = 8900000000000000003L;
+        public const long NestedChildrenSequenceRid = 100; // _root                         (Sequence)
+        public const long NestedChildrenChildRid = 101;    // _root._children[0]            (ChildA)
+        public const long NestedChildrenGhostRid = 102;    // _root._children[1], _weapons[0] (MISSING — GhostChild)
+
+        // A MonoBehaviour whose Sequence entry (rid 100) comes FIRST and lists both children in its data block
+        // ("_children: - rid: 101 - rid: 102"), followed by the healthy ChildA entry (101) and the missing GhostChild entry
+        // (102), which a top-level list (_weapons) also points at. Each nested "- rid: N" pointer is followed by the entry
+        // of a DIFFERENT rid, so a lookup that takes the first "- rid: N" at any indent lands on the wrong entry.
+        public const string NestedChildrenPrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &8900000000000000003
+MonoBehaviour:
+  m_GameObject: {fileID: 8900000000000000001}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name:
+  _root:
+    rid: 100
+  _weapons:
+  - rid: 102
+  references:
+    version: 2
+    RefIds:
+    - rid: 100
+      type: {class: Sequence, ns: Game, asm: Assembly-CSharp}
+      data:
+        _children:
+        - rid: 101
+        - rid: 102
+    - rid: 101
+      type: {class: ChildA, ns: Game, asm: Assembly-CSharp}
+      data:
+        _a: 1
+    - rid: 102
+      type: {class: GhostChild, ns: Game, asm: Assembly-CSharp}
+      data:
+        _b: 2
+";
+
+        // The document of the shadowed-list fixture below.
+        public const long ShadowedListFileId = 9100000000000000003L;
+
+        // A MonoBehaviour where an EARLIER field's list of structs (_presets) holds a nested list named exactly like the
+        // later TOP-LEVEL list (_weapons), with a null slot at index 0 and rid 300 at index 1. The top-level _weapons is
+        // [-2, -2, 300], so only a lookup at the m_Script indent reaches the real top-level slots.
+        public const string ShadowedListPrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &9100000000000000003
+MonoBehaviour:
+  m_GameObject: {fileID: 9100000000000000001}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: 884d53b5154744d3af6948b1eef02505, type: 3}
+  m_Name:
+  _presets:
+  - _name: a
+    _weapons:
+    - rid: -2
+    - rid: 300
+  _weapons:
+  - rid: -2
+  - rid: -2
+  - rid: 300
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
+    - rid: 300
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 10
+";
+
+        // The documents of the negative-anchor fixtures below. Unity writes signed 64-bit fileIDs, and sub-assets
+        // (AddObjectToAsset) and prefab components often get a negative one.
+        public const long NegativeSubAssetFileId = -5000000000000000001L;
+        public const long NegativeMainFileId = 11400000L;
+        public const long NegativeSharedRid = 1000;
+
+        // A .asset sorted by fileID the way Unity writes it: the negative sub-asset comes BEFORE the main object. Both
+        // documents use rid 1000; the sub-asset's is MISSING (GhostNode), the main object's is healthy (HealthyNode).
+        public const string NegativeSubAssetBeforeMainAsset =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-5000000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: SubNode
+  _payload:
+    rid: 1000
+  references:
+    version: 2
+    RefIds:
+    - rid: 1000
+      type: {class: GhostNode, ns: Game, asm: Assembly-CSharp}
+      data:
+        _n: 1
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7874533c7294db1b8aa77e7d4102c9f, type: 3}
+  m_Name: MainNode
+  _payload:
+    rid: 1000
+  references:
+    version: 2
+    RefIds:
+    - rid: 1000
+      type: {class: HealthyNode, ns: Game, asm: Assembly-CSharp}
+      data:
+        _n: 2
+";
+
+        // The components of the negative-anchor prefab below, and the rids of the second component's references.
+        public const long NegativePrefabFirstFileId = 101L;
+        public const long NegativePrefabSecondFileId = -4000000000000000002L;
+        public const string NegativePrefabSecondScriptGuid = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+        public const long NegativePrefabPayloadRid = 7000; // _payload (healthy ChildA)
+        public const long NegativePrefabGhostRid = 7001;   // _list[0] (MISSING — GhostNode)
+
+        // A prefab, whose documents Unity does NOT sort: a MonoBehaviour with a positive fileID and its own references
+        // block, followed by a second MonoBehaviour with a NEGATIVE fileID holding a healthy reference, a list element
+        // pointing at a missing one and an empty required string field.
+        public const string NegativeComponentAfterPositivePrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  - component: {fileID: -4000000000000000002}
+  m_Name: Player
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+  _main:
+    rid: 1000
+  references:
+    version: 2
+    RefIds:
+    - rid: 1000
+      type: {class: HealthyNode, ns: Game, asm: Assembly-CSharp}
+      data:
+        _n: 1
+--- !u!114 &-4000000000000000002
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Script: {fileID: 11500000, guid: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb, type: 3}
+  m_Name:
+  requiredString:
+  _payload:
+    rid: 7000
+  _list:
+  - rid: 7001
+  references:
+    version: 2
+    RefIds:
+    - rid: 7000
+      type: {class: ChildA, ns: Game, asm: Assembly-CSharp}
+      data:
+        _n: 1
+    - rid: 7001
+      type: {class: GhostNode, ns: Game, asm: Assembly-CSharp}
+      data:
+        _n: 2
+";
+
         // The Railgun entry of the empty-fields fixture below: _primaryWeapon, resolvable, holds a cleared nested _chargeEffect.
         public const long EmptyRailgunRid = 1001;
 

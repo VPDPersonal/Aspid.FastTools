@@ -50,7 +50,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             _search = new TextField()
                 .SetFlexGrow(1)
                 .SetPlaceholder("Search abilities…")
-                .AddValueChanged<TextField, string>(evt => ApplyFilter(evt.newValue));
+                .AddValueChanged(evt => ApplyFilter(evt.newValue));
 
             // _filter survives a domain reload like other window fields, so show it in the new search box.
             _search.SetValueWithoutNotify(_filter);
