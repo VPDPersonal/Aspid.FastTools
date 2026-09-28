@@ -66,7 +66,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void NotedClear_WithoutResize_DoesNotRestore()
         {
             Write(1002, 1003);
-            SerializeReferenceMissingListGuard.NoteIntentionalClear(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+            SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
 
             var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
             Save(-2, 1003);
@@ -89,7 +89,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void NotedClear_WithAppend_DoesNotRestore()
         {
             Write(1002, 1003);
-            SerializeReferenceMissingListGuard.NoteIntentionalClear(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+            SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
 
             var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
             Save(-2, 1003, -2);
@@ -99,7 +99,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         }
 
         [Test]
-        public void NoteIntentionalClear_OnElementProperty_KeepsItOutOfTheSnapshot()
+        public void NoteReplaced_OnElementProperty_KeepsItOutOfTheSnapshot()
         {
             const string assetPath = "Assets/__AspidMissingListGuardClearProbe__.asset";
             var probe = ScriptableObject.CreateInstance<ReferenceListTestObject>();
@@ -118,7 +118,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
                 Assert.AreEqual(1, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(assetPath, Resolves).Count);
 
-                SerializeReferenceMissingListGuard.NoteIntentionalClear(element);
+                SerializeReferenceMissingListGuard.NoteReplaced(element);
 
                 Assert.AreEqual(0, SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(assetPath, Resolves).Count);
             }
@@ -132,12 +132,83 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void NotedClear_IsConsumedByOneSave()
         {
             Write(1002, 1003);
-            SerializeReferenceMissingListGuard.NoteIntentionalClear(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+            SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
 
             SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
             var next = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
 
             Assert.AreEqual(1, next.Count);
+        }
+
+        [Test]
+        public void NotedClear_IsDroppedByUndo()
+        {
+            // An Undo after a <None> pick is taken as undoing it, so the element comes back after the save.
+            Write(1002, 1003);
+            SerializeReferenceMissingListGuard.NoteReplaced(_path, YamlFixtures.MonoBehaviourFileId, YamlFixtures.GhostPistolRid);
+
+            PerformUndo();
+
+            var snapshots = SerializeReferenceMissingListGuard.SnapshotMissingArrayElements(_path, Resolves);
+            Save(-2, 1003);
+
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            AssertGhostPistolAt(0);
+        }
+
+        [Test]
+        public void RetypedSiblingAndDelete_RestoresInPlace()
+        {
+            // [GhostPistol, Shotgun, 1005]: Shotgun retyped, the last element deleted.
+            var snapshots = Snapshot(1002, 1003, 1005);
+            Save(-2, 5000);
+
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            AssertGhostPistolAt(0);
+        }
+
+        [Test]
+        public void RetypedSiblingAndAppend_RestoresInPlace()
+        {
+            var snapshots = Snapshot(1002, 1003);
+            Save(-2, 5000, -2);
+
+            Assert.AreEqual(1, SerializeReferenceMissingListGuard.RestoreSnapshots(_path, snapshots));
+            AssertGhostPistolAt(0);
+        }
+
+        [Test]
+        public void TryResolveRestoreIndex_RetypedMissingAndAppend_RestoresTheOtherInPlace()
+        {
+            // [Ghost1, Ghost2]: Ghost1 retyped through the picker (noted), then "+".
+            const long fileId = YamlFixtures.MonoBehaviourFileId;
+            var before = SerializeReferenceMissingListGuard.ArrayState.Build(new List<long> { 1002, 1004 }, fileId,
+                new HashSet<(long, long)> { (fileId, 1002), (fileId, 1004) }, new HashSet<(long, long)> { (fileId, 1002) });
+            var after = new long[] { 5000, -2, -2 };
+
+            Assert.IsFalse(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 0, out _));
+            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, after, 1, out var target));
+            Assert.AreEqual(1, target);
+        }
+
+        [Test]
+        public void TryResolveRestoreIndex_DuplicatedSibling_FollowsTheShiftedElement()
+        {
+            // [Shotgun, GhostPistol], Shotgun duplicated and de-aliased: the copy has a new id.
+            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { 1003, 1002 }, new[] { false, true });
+
+            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, new long[] { 1003, 5000, -2 }, 1, out var target));
+            Assert.AreEqual(2, target);
+        }
+
+        [Test]
+        public void TryResolveRestoreIndex_NoAlignment_FallsBackToTheOldSlot()
+        {
+            // [GhostPistol, Shotgun, 1005]: Shotgun deleted and 1005 set to <None> in one save.
+            var before = new SerializeReferenceMissingListGuard.ArrayState(new long[] { 1002, 1003, 1005 }, new[] { true, false, false });
+
+            Assert.IsTrue(SerializeReferenceMissingListGuard.TryResolveRestoreIndex(before, new long[] { -2, -2 }, 0, out var target));
+            Assert.AreEqual(0, target);
         }
 
         [Test]
@@ -221,6 +292,60 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             finally
             {
                 AssetDatabase.DeleteAsset(scenePath);
+            }
+        }
+
+        [Test]
+        public void PrefabInPrefabMode_IsNotGuarded()
+        {
+            const string prefabPath = "Assets/AspidMissingListGuardTests.prefab";
+            var root = new GameObject("AspidMissingListGuardTests");
+            try
+            {
+                PrefabUtility.SaveAsPrefabAsset(root, prefabPath);
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(root);
+            }
+
+            try
+            {
+                Assert.IsTrue(SerializeReferenceMissingListGuard.IsGuarded(prefabPath), "A prefab closed in Prefab Mode is guarded.");
+
+                PrefabStageUtility.OpenPrefab(prefabPath);
+                try
+                {
+                    Assert.IsFalse(SerializeReferenceMissingListGuard.IsGuarded(prefabPath),
+                        "The prefab open in Prefab Mode must not be rewritten under the editor.");
+                }
+                finally
+                {
+                    StageUtility.GoToMainStage();
+                }
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(prefabPath);
+            }
+        }
+
+        // Records and undoes a change of its own, so the editor's Undo stack is left as it was.
+        private static void PerformUndo()
+        {
+            var probe = ScriptableObject.CreateInstance<ReferenceListTestObject>();
+            try
+            {
+                Undo.IncrementCurrentGroup();
+                Undo.RecordObject(probe, "Missing list guard test");
+                probe.name = "Changed";
+                Undo.FlushUndoRecordObjects();
+                Undo.PerformUndo();
+            }
+            finally
+            {
+                Undo.ClearUndo(probe);
+                UnityEngine.Object.DestroyImmediate(probe);
             }
         }
 
