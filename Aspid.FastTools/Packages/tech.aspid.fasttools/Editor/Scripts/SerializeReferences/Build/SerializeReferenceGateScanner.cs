@@ -48,7 +48,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves))
                     {
                         if (IsPendingMigration(path, entry)) continue;
-                        violations.Add(new GateViolation(path, entry.FileId, entry.Rid, entry.StoredType, GateViolationKind.MissingType, string.Empty));
+                        violations.Add(new GateViolation(path, entry.FileId, entry.Rid, entry.StoredType,
+                            GateViolationKind.MissingType, entry.FieldPath, entry.IsOverride));
                     }
                 }
 

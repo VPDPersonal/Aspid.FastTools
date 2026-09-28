@@ -51,9 +51,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return string.Join(", ", parts);
         }
 
-        public static string BuildResultsHintText(bool hasRequiredViolations, RequiredAuditState state)
+        public static string BuildResultsHintText(bool hasRequiredViolations, RequiredAuditState state, bool hasOverrides = false)
         {
-            const string hint = "Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.";
+            var hint = "Each group is a broken stored type — Fix all re-points its every entry to one replacement, or to <None>.";
+
+            if (hasOverrides)
+                hint += " Prefab instance overrides are fixed on the instance: pick a new type or Revert the override.";
 
             if (state != RequiredAuditState.Checked) return hint + " " + BuildRequiredNotCheckedText(state);
 

@@ -118,7 +118,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        private static BreakageReport BuildReport(
+        public static BreakageReport BuildReport(
             List<SerializeReferenceTypeUsageIndex.Usage> unresolved,
             HashSet<string> baseline)
         {
@@ -163,8 +163,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     }
                 }
 
+                // The YAML repair edits RefIds blocks, so it cannot reach a type set by a prefab instance override.
                 foreach (var usage in pair.Value)
-                    entries.Add(BuildEntry(usage, path, repairable, constraints));
+                    entries.Add(BuildEntry(usage, path, repairable && !usage.IsOverride, constraints));
             }
 
             return entries.Count == 0 ? default : new BreakageReport(entries, types.Count);
