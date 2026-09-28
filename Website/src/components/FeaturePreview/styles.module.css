@@ -7,11 +7,11 @@
 .featurePreview {
   --preview-surface: #0d0f14;
   --preview-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --preview-accent-soft: rgb(92 180 107 / 0.12);
+  --preview-accent-soft: color-mix(in srgb, var(--venom-accent) 12%, transparent);
 }
 html[data-theme='light'] .featurePreview {
   --preview-surface: #ffffff;
-  --preview-accent-soft: rgb(47 138 69 / 0.1);
+  --preview-accent-soft: color-mix(in srgb, var(--venom-accent) 10%, transparent);
 }
 
 .snippet {
@@ -106,7 +106,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .inspectorRow { display: grid; grid-template-columns: 1fr 1.1fr; align-items: center; gap: 8px; padding: 6px 10px; }
 .inspectorField { padding: 2px 7px; color: #e6e6e6; background: #2a2a2a; border: 1px solid #202020; border-radius: 3px; font-variant-numeric: tabular-nums; }
 .inspectorField[data-flash] { animation: flash 1s ease; }
-@keyframes flash { 0% { background: rgb(92 180 107 / 0.6); border-color: #5cb46b; } 100% { background: #2a2a2a; border-color: #202020; } }
+@keyframes flash { 0% { background: color-mix(in srgb, var(--venom-accent) 60%, transparent); border-color: var(--venom-accent); } 100% { background: #2a2a2a; border-color: #202020; } }
 .toast { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: #d6d6d6; background: #262626; border: 1px solid #1a1a1a; border-radius: 6px; opacity: 0; transform: translateY(10px); transition: opacity 0.35s ease, transform 0.35s var(--preview-ease); }
 .toast[data-show] { opacity: 1; transform: none; }
 .toast kbd { padding: 0 5px; color: #eee; background: #3a3a3a; border: 1px solid #1a1a1a; border-radius: 4px; box-shadow: none; font: 600 11px/1.5 var(--ifm-font-family-monospace); }
@@ -156,6 +156,41 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .promptTyped[data-typed] { max-width: 100%; transition: max-width 1s steps(40); }
 .caret { flex: none; width: 6px; height: 1.1em; margin-left: 1px; background: var(--venom-fg); animation: blink 1s steps(1) infinite; }
 .caret[data-hide] { visibility: hidden; }
+/* The Agent Skills page: the request waits for Send (an arrow, like a chat's send button), which turns into Replay
+   once the edit has landed. Send glows now and then, so the reader sees it can be pressed. */
+.promptSend {
+  display: grid;
+  flex: none;
+  place-items: center;
+  /* The button is the prompt's right end: it stretches over the field's padding and border, so their outlines coincide. */
+  align-self: stretch;
+  width: 32px;
+  margin: -5px -9px -5px auto;
+  padding: 0;
+  color: var(--venom-accent);
+  background: var(--preview-accent-soft);
+  border: 1px solid var(--venom-line-strong);
+  border-radius: 0 6px 6px 0;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+.promptSend svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.promptSend:hover { background: color-mix(in srgb, var(--venom-accent) 24%, transparent); }
+/* The pulse fills the button from inside, so its outline stays the same 1px line as the prompt's. */
+.promptSend:not([data-replay]):not(:disabled) { animation: sendPulse 2.6s ease-in-out infinite; }
+.promptSend:not([data-replay]):not(:disabled):hover { animation: none; }
+@keyframes sendPulse {
+  0%, 60%, 100% { background-color: var(--preview-accent-soft); }
+  30% { background-color: color-mix(in srgb, var(--venom-accent) 32%, transparent); }
+}
+.promptSend[data-replay] { color: var(--venom-muted); background: transparent; }
+.promptSend[data-replay]:hover { color: var(--venom-fg-strong); background: var(--preview-accent-soft); }
+.promptSend:disabled { cursor: default; opacity: 0.35; }
+.promptSend:focus-visible { outline: 2px solid var(--venom-accent); outline-offset: 2px; }
+/* Nothing moves until Send: the caret waits without blinking. */
+.prompt:has(.promptSend) .caret { animation: none; }
+/* The request is already typed, so on a narrow screen it wraps instead of pushing Send out of the field. */
+.prompt:has(.promptSend) .promptTyped { flex: 0 1 auto; min-width: 0; white-space: normal; }
 @keyframes blink { 50% { opacity: 0; } }
 .event { display: flex; align-items: center; gap: 8px; padding-left: 9px; opacity: 0; transform: translateY(4px); transition: opacity 0.3s ease, transform 0.3s var(--preview-ease); }
 .event[data-show] { opacity: 1; transform: none; }
@@ -190,6 +225,6 @@ html[data-theme='light'] .inspectorHead { background: #cbcbcb; border-bottom-col
 html[data-theme='light'] .inspectorIcon { background: #f0f0f0; box-shadow: inset 0 0 0 1px #aaa; }
 html[data-theme='light'] .inspectorField { color: #090909; background: #f0f0f0; border-color: #b7b7b7; }
 html[data-theme='light'] .inspectorField[data-flash] { animation-name: flashLight; }
-@keyframes flashLight { 0% { background: rgb(47 138 69 / 0.35); border-color: #2f8a45; } 100% { background: #f0f0f0; border-color: #b7b7b7; } }
+@keyframes flashLight { 0% { background: color-mix(in srgb, var(--venom-accent) 35%, transparent); border-color: var(--venom-accent); } 100% { background: #f0f0f0; border-color: #b7b7b7; } }
 html[data-theme='light'] .toast { color: #090909; background: #e4e4e4; border-color: #b2b2b2; }
 html[data-theme='light'] .toast kbd { color: #090909; background: #f0f0f0; border-color: #b2b2b2; }

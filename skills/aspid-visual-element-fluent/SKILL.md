@@ -27,7 +27,7 @@ rootVisualElement.AddChild(new VisualElement()
 ## Chain rules
 
 - Setters return the same static type (`T : SomeElement`), so subtype methods stay available mid-chain.
-- Child operations (`AddChild`, `AddChildren`, `InsertChild`, `RemoveChild`, `ClearChildren`, and their `...If`
+- Child operations (`AddChild`, `AddChildren`, `InsertChild`, `RemoveChild`, `RemoveChildren`, `ClearChildren`, and their `...If`
   variants) return the **parent**.
 - `element.style.SetX(...)` overloads return the `IStyle`; call the element overload to keep chaining.
 - Start from the concrete type: after `Q<VisualElement>()` subtype methods (`AddClicked`, `SetLabel`) do not resolve.
