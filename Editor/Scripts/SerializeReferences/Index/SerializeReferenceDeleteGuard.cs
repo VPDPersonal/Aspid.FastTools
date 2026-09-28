@@ -78,7 +78,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A warm index answers per type; a cold one falls back to a single combined sweep matching every type's open
         // key, since one sweep per contained script would freeze the editor on a folder delete.
-        private static IEnumerable<(Type type, int count)> CountUsagesBatch(List<Type> types)
+        public static IEnumerable<(Type type, int count)> CountUsagesBatch(List<Type> types)
         {
             if (SerializeReferenceTypeUsageIndex.IsWarm)
             {
@@ -96,16 +96,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             {
                 if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
-                // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
-                foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
+                // A pure text pass rather than an asset load; prefab instance overrides count like RefIds entries.
+                foreach (var usage in SerializeReferenceTypeUsageIndex.CollectUsages(path, guid: null))
                 {
-                    foreach (var node in document.Nodes)
-                    {
-                        if (node.StoredType.IsEmpty) continue;
-
-                        var key = SerializeReferenceHelpers.OpenTypeKey(node.StoredType);
-                        if (countsByKey.TryGetValue(key, out var count)) countsByKey[key] = count + 1;
-                    }
+                    var key = SerializeReferenceHelpers.OpenTypeKey(usage.StoredType);
+                    if (countsByKey.TryGetValue(key, out var count)) countsByKey[key] = count + 1;
                 }
             }
 
@@ -115,7 +110,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A cold index is never warmed just to answer one delete, since that is a modal full-project build; a
         // targeted scan for this single type runs instead.
-        private static SortedSet<string> GatherUsageSample(Type type, out int count)
+        public static SortedSet<string> GatherUsageSample(Type type, out int count)
         {
             var paths = new SortedSet<string>(StringComparer.Ordinal);
             count = 0;
@@ -141,17 +136,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 if (!SerializeReferenceHelpers.IsScanCandidate(path)) continue;
 
                 var usedHere = false;
-                // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
-                foreach (var document in SerializeReferenceGraphScanner.Build(path, resolveTypeNames: false))
+                // A pure text pass rather than an asset load; prefab instance overrides count like RefIds entries.
+                foreach (var usage in SerializeReferenceTypeUsageIndex.CollectUsages(path, guid: null))
                 {
-                    foreach (var node in document.Nodes)
-                    {
-                        if (node.StoredType.IsEmpty) continue;
-                        if (!string.Equals(SerializeReferenceHelpers.OpenTypeKey(node.StoredType), key, StringComparison.Ordinal)) continue;
+                    if (!string.Equals(SerializeReferenceHelpers.OpenTypeKey(usage.StoredType), key, StringComparison.Ordinal)) continue;
 
-                        count++;
-                        usedHere = true;
-                    }
+                    count++;
+                    usedHere = true;
                 }
 
                 if (usedHere && paths.Count < SamplePathCount) paths.Add(path);
