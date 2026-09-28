@@ -39,6 +39,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A `[TypeSelector(nameof(...))]` member reference on a field inside a `[Serializable]` class or a list element now resolves on the instance that declares the field, as analyzers `AFT0006`–`AFT0008` already check it; it used to be looked up on the inspected component or asset and showed a warning. The same applies to the picker of the Asset References window.
 - Fields drawn in a regular Inspector, UI Toolkit or IMGUI, now follow the light editor skin: the `EnumValues` drawer takes its backgrounds from Unity's theme, reference notices and the missing-type caption of `[SerializeReference]` fields use Unity's warning colour, and the warning, info and folder icons switch to their light-skin variants.
 - The theme override now recolours the cards, panels, status tints, scrollbars, dots background and switches of the Aspid windows: their colours moved into `--aspid-colors-*` tokens, and switches read the optional `--aspid-colors-switch-*` tokens.
+- On Unity 6000.0–6000.2 the `[SerializeReference]` field, the picker and the Project References and Asset References windows are styled again: two stylesheets used a color syntax these versions cannot parse, so each was dropped whole and the import logged an error.
+- Buttons and foldouts inside a `[SerializeReference]` field drawn with UI Toolkit keep their own look: a button of a custom drawer or a nested list's `+` / `−` is no longer shrunk to 18×18 with a folder icon, and a nested foldout no longer takes the field header's layout.
+- Fix, Fix all and the summary's Undo no longer rewrite the type of a healthy managed reference when a `[SerializeReference]` list inside another reference points at the broken one (a parent with a list of children). The Inspector reads the right stored type and fields of such references, and the Project References graph no longer shows phantom nodes whose Clear deleted healthy entries.
+- The missing-list guard now snapshots a missing list element that another reference's list also points at, and restores it into the object's own list instead of a same-named list nested in another field.
+- A list element restored by the missing-list guard keeps its original reference id when it is free, otherwise gets a random one. It used to take the next id after the file's maximum, which an override in a variant, nested prefab or scene often already used: that override lost its type and shared data with the restored element.
+- Objects with a negative fileID (prefab components, sub-assets) are now read as separate documents: their missing references and unset required fields reach the scans and the build gate, and Fix, Clear and orphan removal no longer edit or delete entries of the neighbouring object.
 - `this.Marker()` inside a `private` or `protected` nested type no longer breaks compilation with CS0122. The generated overload cannot see such a type, so the generator now skips it: the call compiles, opens no marker, and `AFT0010` reports it — make the type `internal` or `public` to profile it.
 - `this.Marker()` in a type nested in a generic type (`Outer<T>.Inner`) now compiles; the generated overload used to miss the outer type parameters (CS0246).
 - `this.Marker()` in an indexer accessor or a static constructor now compiles; the generated field names were invalid. The markers are named `Type.Indexer (line)` and `Type.StaticCtor (line)`.
@@ -86,7 +92,7 @@ First release. Unity **6000.0**, assemblies `Aspid.FastTools` / `Aspid.FastTools
 #### Workbench window (`Tools → Aspid 🐍 → FastTools`)
 
 - **Welcome** — samples with install markers; auto-opens once per package version.
-- **Asset References** — the asset's whole `[SerializeReference]` graph from YAML with `MISSING` / `SHARED` badges, inline Fix, Clear for orphans, Open Source Prefab.
+- **Asset References** — the asset's whole `[SerializeReference]` graph from YAML with a warning band on missing types and `SHARED` badges, inline Fix, Clear for orphans, Open Source Prefab.
 - **Project References** — `Scan Project` over `Assets/`, **Fix all** per type with Undo, Smart Fix, Migrate all, Required violations.
 - **Settings** — all package settings with shared / per-user scope stripes and per-scope reset.
 - Keyboard navigation, legends, row context menus on every tab.
