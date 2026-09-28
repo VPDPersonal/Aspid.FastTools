@@ -7,11 +7,11 @@
       "runtimeArgs": [
         "docusaurus",
         "start",
-        "--port",
-        "3100",
         "--no-open"
       ],
       "cwd": "Website",
+      "_note": "Hot-reload dev server for one page, English; the app picks a free port (PORT), so worktrees never collide.",
+      "autoPort": true,
       "port": 3100
     },
     {
@@ -22,23 +22,12 @@
         "start",
         "--locale",
         "ru",
-        "--port",
-        "3101",
         "--no-open"
       ],
       "cwd": "Website",
+      "_note": "Same as website-dev for the Russian locale.",
+      "autoPort": true,
       "port": 3101
-    },
-    {
-      "name": "website-serve-all",
-      "runtimeExecutable": "sh",
-      "runtimeArgs": [
-        "-c",
-        "npm run build && npx docusaurus serve --port 3001 --no-open"
-      ],
-      "cwd": "Website",
-      "_note": "Only when Website/scripts/serve-all.sh is unusable: this ties the shared 3001 server to one session.",
-      "port": 3001
     }
   ]
 }

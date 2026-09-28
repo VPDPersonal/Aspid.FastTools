@@ -1,4 +1,4 @@
-# One grouped PR per ecosystem a month. The Roslyn packages of Aspid.FastTools.Generators/Analyzers are not
+# One grouped PR per ecosystem a month (npm majors in their own group). The Roslyn packages of Aspid.FastTools.Generators/Analyzers are not
 # listed: their versions must match the compiler Unity ships.
 version: 2
 updates:
@@ -22,6 +22,9 @@ updates:
       website:
         patterns: ['*']
         update-types: [minor, patch]
+      website-major:
+        patterns: ['*']
+        update-types: [major]
     commit-message:
       prefix: chore
       include: scope

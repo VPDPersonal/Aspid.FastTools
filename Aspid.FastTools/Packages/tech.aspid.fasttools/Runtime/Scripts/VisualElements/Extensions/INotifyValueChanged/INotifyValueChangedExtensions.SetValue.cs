@@ -658,6 +658,25 @@ namespace Aspid.FastTools.UIElements
         }
         #endregion
         
+        #region ToggleButtonGroupState
+        /// <summary>
+        /// Sets the value of the element.
+        /// </summary>
+        /// <typeparam name="T">The element type.</typeparam>
+        /// <param name="element">The element to modify.</param>
+        /// <param name="value">The value to set.</param>
+        /// <param name="notify">When <see langword="true"/>, a change notification is raised.</param>
+        /// <returns>The element, for chaining.</returns>
+        public static T SetValue<T>(this T element, ToggleButtonGroupState value, bool notify = true)
+            where T : INotifyValueChanged<ToggleButtonGroupState>
+        {
+            if (notify) element.value = value;
+            else element.SetValueWithoutNotify(value);
+            
+            return element;
+        }
+        #endregion
+        
         #region UnityEngine.Object
         /// <summary>
         /// Sets the value of the element.

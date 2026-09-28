@@ -15,11 +15,8 @@ Agent Skills for projects that consume the package in `skills/`.
 - A change to generator or analyzer source reaches Unity **only** after `dotnet build -c Release` in that solution;
   `dotnet test` (Debug) deliberately does not copy the DLL, so it is safe to run.
 - The version lives in `package.json`, the badge SVG and the badge alt text and release link of both READMEs; bump
-  all of them with `scripts/set-version.sh <version>`. The install URLs carry the branch (`#upm-preview`), not the
-  version: the first stable release switches them and `UPM_BRANCH` in `Website/docusaurus.config.js` to `upm`, and
-  the Preview badge to a release one, by hand.
-  A release is prepared with `scripts/prepare-release.mjs` (the `release` skill), and merging the PR that changes
-  the `package.json` version publishes it.
+  all of them with `scripts/set-version.sh <version>`. A release is prepared with `scripts/prepare-release.mjs`
+  (the `release` skill), and merging the PR that changes the `package.json` version publishes it.
 - `CHANGELOG.ru.md` translates `CHANGELOG.md` bullet for bullet and the package ships a byte-for-byte copy of
   `CHANGELOG.md`; `scripts/check-changes.mjs` checks this and the rest of what CI requires. Run it before committing, or
   enable it as a pre-commit hook once per clone with `git config core.hooksPath .githooks`.

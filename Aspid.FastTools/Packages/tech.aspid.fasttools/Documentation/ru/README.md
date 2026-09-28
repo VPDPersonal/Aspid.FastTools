@@ -4,7 +4,7 @@
 [![Preview 1.0.0-rc.8](../Images/status-badge-preview.svg)](https://github.com/VPDPersonal/Aspid.FastTools/releases/tag/v1.0.0-rc.8)
 [![MIT License](../Images/status-badge-license.svg)](https://github.com/VPDPersonal/Aspid.FastTools/blob/main/LICENSE)
 
-Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации и редакторского кода. Unity не сериализует `System.Type`, не даёт выбрать класс для поля `[SerializeReference]` в инспекторе и ломает эту ссылку при переименовании класса. Пакет добавляет в инспектор выбор типа и класса из списка и редактор таблиц «enum → значение», а сломанные ссылки находит и восстанавливает по всему проекту без потери данных. Маркер профилировщика ставится одной строкой, а имя ему генератор берёт из кода; деревья UI Toolkit и запись в `SerializedProperty` умещаются в одну fluent-цепочку вместо отдельных присваиваний.
+Aspid.FastTools — пакет для Unity, который убирает рутину из сериализации, профилирования и редакторского кода.
 
 [Документация](https://vpdpersonal.github.io/Aspid.FastTools/ru/docs) · [Исходный код](https://github.com/VPDPersonal/Aspid.FastTools) · [Релизы](https://github.com/VPDPersonal/Aspid.FastTools/releases)
 
@@ -24,7 +24,7 @@ URL указывает на последнюю preview-версию; кнопк�
 
 #### [Serializable Type System](02-serializable-types.md)
 
-Сохраняет `System.Type` в компоненте/ассете и даёт выбрать его в инспекторе из совместимых типов.
+Сохраняет <code lang="class-name">System.Type</code> в компоненте/ассете и даёт выбрать его в инспекторе из совместимых типов.
 
 <img src="../Images/serializable-type-quick-start.gif" alt="Выбор сериализуемого типа в инспекторе" width="640" />
 
@@ -36,13 +36,13 @@ URL указывает на последнюю preview-версию; кнопк�
 
 #### [SerializeReference Selector](03-serialize-reference-selector.md)
 
-Даёт выбрать класс для поля `[SerializeReference]` в инспекторе и переносит совместимые данные при смене класса.
+Даёт выбрать класс для поля <code lang="csharp">[SerializeReference]</code> в инспекторе и переносит совместимые данные при смене класса.
 
 <img src="../Images/aspid_fasttools_serialize_reference_selector.gif" alt="Смена Pistol на Shotgun с сохранением Damage = 37" width="640" />
 
 #### [SerializeReference Tooling](04-serialize-reference-tooling.md)
 
-Находит потерянные `[SerializeReference]` по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами — вручную, перед сборкой или в CI.
+Находит потерянные <code lang="csharp">[SerializeReference]</code> по всему проекту (префабы, сцены, ассеты) и восстанавливает их группами — вручную, перед сборкой или в CI.
 
 <img src="../Images/aspid_fasttools_serialize_reference_tooling.gif" alt="Восстановление потерянного типа оружия с сохранением данных" width="640" />
 
@@ -78,7 +78,7 @@ new VisualElement()
 
 #### [SerializedProperty Extensions](08-serialized-property-extensions.md)
 
-Записывает значение вместе с `Update` и `Apply` одной цепочкой, а ещё находит тип поля C# и объект, которому это поле принадлежит.
+Записывает значение вместе с <code lang="function">Update</code> и <code lang="function">Apply</code> одной цепочкой, а ещё находит тип поля C# и объект, которому это поле принадлежит.
 
 ```csharp
 manaCost
@@ -91,12 +91,12 @@ manaCost
 Решает мелкие задачи редакторских инструментов, например подписывает объекты и компоненты читаемыми именами.
 
 ```csharp
-config.GetDisplayName();
-// "Ability Config"
+caster.GetDisplayName();
+// "Ability Caster"
 
-config
+caster
   .GetDisplayNameWithIndex();
-// "Ability Config (2)"
+// "Ability Caster (2)"
 ```
 
 #### [Agent Skills](10-agent-skills.md)
@@ -104,8 +104,7 @@ config
 Учит coding-агента API пакета; Claude Code, Codex, Cursor и другие получают скиллы одной командой.
 
 ```text
-Добавь маркер на весь метод Simulate
-и отдельный на поиск соседей.
+Замерь Simulate и отдельно поиск соседей
 ```
 
 ## Ресурсы

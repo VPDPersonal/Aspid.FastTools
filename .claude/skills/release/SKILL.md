@@ -26,4 +26,6 @@ prepares that PR.
 7. **After the merge:** `gh run list --workflow release.yml --limit 1` and report the release URL.
 
 A failed release run leaves nothing published before its "Create and push release tag" step: fix it in a new PR
-that keeps the version (the next merge re-runs the release), or rerun the workflow.
+that keeps the version, then start the release from main: `gh workflow run release.yml --ref main -f version=<version>`.
+A merge that leaves `package.json` alone does not trigger it, and rerunning the failed run replays the old commit, so
+that helps only with a transient failure.

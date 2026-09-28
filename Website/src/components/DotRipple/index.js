@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {BACKGROUND_WINDOWS, TINTED_WINDOWS} from '../BackgroundWindows';
+import {BACKGROUND_WINDOWS} from '../BackgroundWindows';
 
 // Anything that reads as "content" rather than canvas. Only the filled parts of the navigation panel and the TOC count,
 // so the empty space under a short menu still behaves like background.
@@ -14,9 +14,14 @@ const CONTENT = [
   'dialog', '[role="dialog"]', '[role="menu"]',
 ].join(', ');
 
+// Below 997px the page is painted with the reading surface instead of the dots (custom.css), so there is no canvas.
+let narrow = null;
+
 /** True when `target` is the empty canvas of a docs page: the dots show there, and a click or the pointer may light them. */
 export function isCanvas(target) {
   if (!document.documentElement.classList.contains('docs-doc-page')) return false;
+  narrow ??= matchMedia('(max-width: 996px)');
+  if (narrow.matches) return false;
   if (!(target instanceof Element)) return false;
   // Only windows the article surface is actually cut out for: below 997px the mask is dropped, so notices and image
   // panels are opaque content again and the dots under them are hidden.
@@ -34,9 +39,32 @@ const PUSH = 3.5;         // px, how far a dot is pushed outwards at a full-stre
 const FALLOFF = 700;      // px, distance at which a wave has lost half its energy
 const SWAY_CYCLES = 3;    // the crest swells and sinks this many times as it travels
 const SWAY = 0.4;         // relative amplitude of that swaying; it damps out with the wave
-const MAX_WAVES = 4;
+// Overlapping waves add up; the sum is clamped to what a single wave can reach, so a burst of clicks does not blow the dots up.
+const MIN_HEIGHT = -1;
+const MAX_HEIGHT = 1 + SWAY;
 // Trailing crests behind the main one: [delay in px behind the front, relative amplitude].
 const CRESTS = [[0, 1], [2.4 * WIDTH, 0.45], [4.6 * WIDTH, 0.18]];
+
+// Holding the button charges the wave: the spotlight shrinks, and the smaller it is at release, the stronger the wave.
+const CHARGE = 1000;      // ms of holding to charge fully
+const RECOVER = 300;      // ms for the spotlight to grow back after release
+const MIN_POWER = 1;      // strength of a wave released at once, the same as a plain click
+const MAX_POWER = 2;      // strength of a fully charged wave
+
+const COUNTER_KEY = 'aspid-dot-ripple-clicks';
+const COUNTER_IDLE = 2500; // ms after the last click before the counter fades out
+
+// Shared with the spotlight, which shrinks while the wave charges.
+const charge = {pressAt: -1, releaseAt: -Infinity, released: 0};
+
+/** How far the current wave is charged, 0–1, easing out so the last part takes longer; after release it falls back to 0. */
+export function chargeLevel(now) {
+  if (charge.pressAt >= 0) {
+    const p = Math.min((now - charge.pressAt) / CHARGE, 1);
+    return 1 - (1 - p) * (1 - p);
+  }
+  return charge.released * Math.max(0, 1 - (now - charge.releaseAt) / RECOVER);
+}
 
 const gauss = (u) => Math.exp(-u * u);
 const radiusAt = (elapsed) => elapsed * (SPEED + ACCEL * elapsed);
@@ -49,14 +77,6 @@ function readColors() {
     accent: [(value >> 16) & 255, (value >> 8) & 255, value & 255],
     canvas: style.getPropertyValue('--venom-canvas').trim() || '#000',
   };
-}
-
-// Read once per frame, outside the dot loop: scrolling and resizing can move a window during a wave.
-function readTintedWindows() {
-  return [...document.querySelectorAll(`.doc-column-with-windows :is(${TINTED_WINDOWS})`)]
-    .filter((element) => !element.closest('details:not([open])'))
-    .map((element) => ({rect: element.getBoundingClientRect(), color: getComputedStyle(element).borderTopColor}))
-    .filter(({rect}) => rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth);
 }
 
 // Signed height of the water at distance `d` from the origin of a wave whose front is at radius `r`.
@@ -72,7 +92,24 @@ function height(d, r) {
   return h;
 }
 
-/** Sends a wave through the dot background when the user clicks the empty canvas of a docs page. */
+function readClicks() {
+  try {
+    return Number(localStorage.getItem(COUNTER_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveClicks(clicks) {
+  try {
+    localStorage.setItem(COUNTER_KEY, String(clicks));
+  } catch {
+    // Storage may be blocked; the counter then only lasts for this page.
+  }
+}
+
+/** Sends a wave through the dot background when the user presses and releases the empty canvas of a docs page — the
+ *  longer the hold, the stronger the wave — and counts the waves. */
 export default function DotRipple() {
   useEffect(() => {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -82,6 +119,13 @@ export default function DotRipple() {
     canvas.setAttribute('aria-hidden', 'true');
     document.body.appendChild(canvas);
     const ctx = canvas.getContext('2d');
+
+    const counter = document.createElement('div');
+    counter.className = 'dot-ripple-counter';
+    counter.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(counter);
+    let clicks = readClicks();
+    let counterTimer = 0;
 
     let waves = [];
     let frame = 0;
@@ -99,60 +143,86 @@ export default function DotRipple() {
       ctx.clearRect(0, 0, innerWidth, innerHeight);
       const farthest = Math.hypot(innerWidth, innerHeight) + CRESTS[CRESTS.length - 1][0] + WIDTH * 3;
       waves = waves.filter((wave) => radiusAt(now - wave.start) < farthest);
-      const tintedWindows = waves.length ? readTintedWindows() : [];
 
-      for (const wave of waves) {
+      // Per-frame state of every live wave: its front, how much it currently sways, and the ring of the grid it touches.
+      const live = waves.map((wave) => {
         const r = radiusAt(now - wave.start);
         const progress = r / farthest;
-        const sway = 1 + SWAY * (1 - progress) * Math.sin(progress * SWAY_CYCLES * 2 * Math.PI);
-        // Only the band of the grid the wave currently touches is visited.
-        const outer = r + WIDTH * 3;
-        const inner = Math.max(r - CRESTS[CRESTS.length - 1][0] - WIDTH * 3, 0);
-        const x0 = Math.max(Math.floor((wave.x - outer) / GRID), 0);
-        const x1 = Math.min(Math.ceil((wave.x + outer) / GRID), Math.ceil(innerWidth / GRID));
-        const y0 = Math.max(Math.floor((wave.y - outer) / GRID), 0);
-        const y1 = Math.min(Math.ceil((wave.y + outer) / GRID), Math.ceil(innerHeight / GRID));
+        return {
+          x: wave.x,
+          y: wave.y,
+          power: wave.power,
+          r,
+          sway: 1 + SWAY * (1 - progress) * Math.sin(progress * SWAY_CYCLES * 2 * Math.PI),
+          outer: r + WIDTH * 3,
+          inner: Math.max(r - CRESTS[CRESTS.length - 1][0] - WIDTH * 3, 0),
+        };
+      });
 
-        for (let gy = y0; gy <= y1; gy++) {
-          const cy = gy * GRID + GRID / 2;
-          for (let gx = x0; gx <= x1; gx++) {
-            const cx = gx * GRID + GRID / 2;
+      const limit = Math.max(...live.map((wave) => wave.power));
+
+      // Only the part of the grid some wave currently touches is visited.
+      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity;
+      for (const wave of live) {
+        x0 = Math.min(x0, Math.floor((wave.x - wave.outer) / GRID));
+        x1 = Math.max(x1, Math.ceil((wave.x + wave.outer) / GRID));
+        y0 = Math.min(y0, Math.floor((wave.y - wave.outer) / GRID));
+        y1 = Math.max(y1, Math.ceil((wave.y + wave.outer) / GRID));
+      }
+      x0 = Math.max(x0, 0);
+      x1 = Math.min(x1, Math.ceil(innerWidth / GRID));
+      y0 = Math.max(y0, 0);
+      y1 = Math.min(y1, Math.ceil(innerHeight / GRID));
+
+      for (let gy = y0; gy <= y1; gy++) {
+        const cy = gy * GRID + GRID / 2;
+        for (let gx = x0; gx <= x1; gx++) {
+          const cx = gx * GRID + GRID / 2;
+          // Every wave lifts the dot and pushes it away from its own origin; the dot is drawn once with the sum.
+          let h = 0;
+          let pushX = 0;
+          let pushY = 0;
+          for (const wave of live) {
             const dx = cx - wave.x;
             const dy = cy - wave.y;
             const d = Math.hypot(dx, dy);
-            if (d < inner || d > outer) continue;
-            const energy = sway / (1 + d / FALLOFF);
-            const h = height(d, r) * energy;
-            if (Math.abs(h) < 0.03) continue;
-
-            const nx = d > 0 ? dx / d : 0;
-            const ny = d > 0 ? dy / d : 0;
-            const px = cx + nx * PUSH * h;
-            const py = cy + ny * PUSH * h;
-            const tint = tintedWindows.find(({rect}) => px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom);
-
-            if (h > 0) {
-              // Crest: the dot rises — bigger, brighter, pushed outwards. The resting dot is hidden underneath it.
-              const [cr, cg, cb] = colors.accent;
-              ctx.fillStyle = tint?.color ?? `rgb(${cr}, ${cg}, ${cb})`;
-              ctx.globalAlpha = Math.min(0.15 + h * 0.75, 0.9);
-              ctx.beginPath();
-              ctx.arc(px, py, BASE_DOT + LIFT * h, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.globalAlpha = 1;
-            } else {
-              // Trough: the dot sinks — the resting dot is covered with the canvas colour and a fainter one drawn.
-              ctx.fillStyle = colors.canvas;
-              ctx.beginPath();
-              ctx.arc(cx, cy, BASE_DOT + 0.6, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.fillStyle = tint?.color ?? 'rgb(120, 128, 140)';
-              ctx.globalAlpha = Math.max(0.12 + h * 0.12, 0.02);
-              ctx.beginPath();
-              ctx.arc(px, py, Math.max(BASE_DOT + h * 0.6, 0.3), 0, Math.PI * 2);
-              ctx.fill();
-              ctx.globalAlpha = 1;
+            if (d < wave.inner || d > wave.outer) continue;
+            // A stronger wave is also taller and carries further.
+            const waveHeight = wave.power * height(d, wave.r) * wave.sway / (1 + d / (FALLOFF * wave.power));
+            h += waveHeight;
+            if (d > 0) {
+              pushX += dx / d * waveHeight;
+              pushY += dy / d * waveHeight;
             }
+          }
+          if (Math.abs(h) < 0.03) continue;
+
+          const scale = Math.min(Math.max(h, MIN_HEIGHT * limit), MAX_HEIGHT * limit) / h;
+          h *= scale;
+          const px = cx + PUSH * pushX * scale;
+          const py = cy + PUSH * pushY * scale;
+
+          if (h > 0) {
+            // Crest: the dot rises — bigger, brighter, pushed outwards. The resting dot is hidden underneath it.
+            const [cr, cg, cb] = colors.accent;
+            ctx.fillStyle = `rgb(${cr}, ${cg}, ${cb})`;
+            ctx.globalAlpha = Math.min(0.15 + h * 0.75, 0.9);
+            ctx.beginPath();
+            ctx.arc(px, py, BASE_DOT + LIFT * h, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+          } else {
+            // Trough: the dot sinks — the resting dot is covered with the canvas colour and a fainter one drawn.
+            ctx.fillStyle = colors.canvas;
+            ctx.beginPath();
+            ctx.arc(cx, cy, BASE_DOT + 0.6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'rgb(120, 128, 140)';
+            ctx.globalAlpha = Math.max(0.12 + h * 0.12, 0.02);
+            ctx.beginPath();
+            ctx.arc(px, py, Math.max(BASE_DOT + h * 0.6, 0.3), 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
           }
         }
       }
@@ -160,21 +230,76 @@ export default function DotRipple() {
       frame = waves.length ? requestAnimationFrame(render) : 0;
     };
 
+    // On laptop widths the floating TOC button takes the corner, so the number shows inside it in place of its icon.
+    let tocButton = null;
+    const showCount = () => {
+      tocButton?.removeAttribute('data-counting');
+      tocButton = document.querySelector('.floating-toc__button');
+      if (tocButton && !tocButton.getClientRects().length) tocButton = null;
+      if (tocButton) {
+        const rect = tocButton.getBoundingClientRect();
+        Object.assign(counter.style, {left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px`});
+        tocButton.setAttribute('data-counting', '');
+      } else {
+        counter.removeAttribute('style');
+      }
+      counter.toggleAttribute('data-in-button', Boolean(tocButton));
+      counter.textContent = clicks.toLocaleString();
+      counter.toggleAttribute('data-long', counter.textContent.length > 3);
+      counter.toggleAttribute('data-on', true);
+      counter.animate([{transform: 'scale(1.25)'}, {transform: 'scale(1)'}], {duration: 250, easing: 'ease-out'});
+      clearTimeout(counterTimer);
+      counterTimer = setTimeout(() => {
+        counter.removeAttribute('data-on');
+        tocButton?.removeAttribute('data-counting');
+      }, COUNTER_IDLE);
+    };
+
     const onPointerDown = (event) => {
       if (event.button !== 0 || !isCanvas(event.target)) return;
+      charge.pressAt = performance.now();
+    };
+
+    const stopCharging = (now) => {
+      charge.released = chargeLevel(now);
+      charge.releaseAt = now;
+      charge.pressAt = -1;
+    };
+
+    const onPointerUp = (event) => {
+      if (charge.pressAt < 0 || event.button !== 0) return;
+      const now = performance.now();
+      const level = chargeLevel(now);
+      stopCharging(now);
       colors = readColors();
-      waves.push({x: event.clientX, y: event.clientY, start: performance.now()});
-      if (waves.length > MAX_WAVES) waves.shift();
+      waves.push({x: event.clientX, y: event.clientY, start: now, power: MIN_POWER + (MAX_POWER - MIN_POWER) * level});
+
+      clicks += 1;
+      saveClicks(clicks);
+      showCount();
       if (!frame) frame = requestAnimationFrame(render);
     };
 
+    // A press the browser takes over (a touch scroll) or a lost window lets the charge go without a wave.
+    const onCancel = () => { if (charge.pressAt >= 0) stopCharging(performance.now()); };
+
     document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('pointerup', onPointerUp);
+    document.addEventListener('pointercancel', onCancel);
+    addEventListener('blur', onCancel);
     addEventListener('resize', resize);
     return () => {
       document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('pointerup', onPointerUp);
+      document.removeEventListener('pointercancel', onCancel);
+      removeEventListener('blur', onCancel);
+      charge.pressAt = -1;
       removeEventListener('resize', resize);
       if (frame) cancelAnimationFrame(frame);
+      clearTimeout(counterTimer);
+      tocButton?.removeAttribute('data-counting');
       canvas.remove();
+      counter.remove();
     };
   }, []);
   return null;

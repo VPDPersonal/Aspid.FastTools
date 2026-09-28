@@ -23,10 +23,6 @@ public static class ManipulatorExtensions
 [ManipulatorExtensions](Aspid.FastTools.UIElements.ManipulatorExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### AddClickable\<T\>\(T, Action\) {#Aspid_FastTools_UIElements_ManipulatorExtensions_AddClickable__1___0_System_Action_}
