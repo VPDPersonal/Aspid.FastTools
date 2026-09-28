@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using UnityEngine.UIElements;
@@ -20,10 +21,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceSettingsTests
     {
+        // Every shared setter saves this file, so restoring the values alone would still leave a new or rewritten file.
+        private const string SharedSettingsPath = "ProjectSettings/SerializeReferenceSharedSettings.asset";
+
         private bool _autoDeAlias;
         private bool _breakageDetection;
         private string[] _excludedFolders;
         private GateSeverity _buildSeverity;
+        private byte[] _sharedSettingsFile;
 
         [SetUp]
         public void SetUp()
@@ -33,15 +38,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             _breakageDetection = SerializeReferenceSettings.BreakageDetectionEnabled;
             _excludedFolders = SerializeReferenceSettings.ExcludedFolders;
             _buildSeverity = SerializeReferenceSettings.BuildSeverity;
+            _sharedSettingsFile = File.Exists(SharedSettingsPath) ? File.ReadAllBytes(SharedSettingsPath) : null;
         }
 
         [TearDown]
         public void TearDown()
         {
-            SerializeReferenceSettings.AutoDeAliasEnabled = _autoDeAlias;
-            SerializeReferenceSettings.BreakageDetectionEnabled = _breakageDetection;
-            SerializeReferenceSettings.ExcludedFolders = _excludedFolders;
-            SerializeReferenceSettings.BuildSeverity = _buildSeverity;
+            try
+            {
+                SerializeReferenceSettings.AutoDeAliasEnabled = _autoDeAlias;
+                SerializeReferenceSettings.BreakageDetectionEnabled = _breakageDetection;
+                SerializeReferenceSettings.ExcludedFolders = _excludedFolders;
+                SerializeReferenceSettings.BuildSeverity = _buildSeverity;
+            }
+            finally
+            {
+                // The values above already match the snapshot in memory; this puts the file back byte for byte,
+                // even if one of the setters threw.
+                if (_sharedSettingsFile is null) File.Delete(SharedSettingsPath);
+                else File.WriteAllBytes(SharedSettingsPath, _sharedSettingsFile);
+            }
         }
 
         // -----------------------------------------------------------------------------------------------------
@@ -237,5 +253,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsNotNull(container.Q<EnumField>(), "The build gate is shared and must render on the shared page.");
             Assert.IsNotNull(container.Q<SerializeReferenceExcludedFoldersField>(), "Excluded folders are shared and must render on the shared page.");
         }
+
+        // -----------------------------------------------------------------------------------------------------
+        // E — the folder picker accepts only folders the project scans walk
+        // -----------------------------------------------------------------------------------------------------
+
+        [TestCase("Assets", ExpectedResult = true)]
+        [TestCase("Assets/Plugins", ExpectedResult = true)]
+        [TestCase("Packages/com.example.tool", ExpectedResult = false)]
+        [TestCase("Library/PackageCache/com.example.tool", ExpectedResult = false)]
+        [TestCase("ProjectSettings", ExpectedResult = false)]
+        [TestCase("AssetsBackup", ExpectedResult = false)]
+        [TestCase("", ExpectedResult = false)]
+        [TestCase(null, ExpectedResult = false)]
+        public bool IsScannedFolder_AcceptsOnlyAssets(string relative) =>
+            SerializeReferenceExcludedFoldersField.IsScannedFolder(relative);
     }
 }

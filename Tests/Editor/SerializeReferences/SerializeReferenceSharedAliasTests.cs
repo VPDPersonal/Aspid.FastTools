@@ -1,6 +1,8 @@
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
+using System.Collections;
+using UnityEngine.TestTools;
 using System.Collections.Generic;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -82,6 +84,59 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
                 Assert.IsEmpty(SerializeReferenceHelpers.GetSharedReferenceAliasPaths(serialized.FindProperty("primary")),
                     "A reference used by a single field is not part of any shared group.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
+        [Test]
+        public void HasSharedReference_SeesALinkMadeThroughAnotherSerializedObjectInTheSameTick()
+        {
+            var obj = ScriptableObject.CreateInstance<SharedAliasTestObject>();
+            try
+            {
+                var serialized = new SerializedObject(obj);
+                serialized.FindProperty("primary").managedReferenceValue = new TestSword();
+                serialized.FindProperty("sidearms").arraySize = 1;
+                serialized.ApplyModifiedProperties();
+                Assert.IsFalse(SerializeReferenceHelpers.HasSharedReference(serialized.FindProperty("primary")));
+
+                // The drawers write through their own copy of the SerializedObject, like Persistent() does.
+                using (var persistent = new SerializedObject(obj))
+                    Assert.IsTrue(SerializeReferenceLinker.LinkTo(persistent.FindProperty("sidearms.Array.data[0]"), "primary"));
+
+                serialized.Update();
+                Assert.IsTrue(SerializeReferenceHelpers.HasSharedReference(serialized.FindProperty("primary")),
+                    "A write through Link to Existing must not leave the pre-link snapshot behind.");
+            }
+            finally
+            {
+                Object.DestroyImmediate(obj);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator HasSharedReference_ExpiresOnTheNextEditorTick()
+        {
+            var obj = CreateSharedPair(out var serialized);
+            try
+            {
+                Assert.IsTrue(SerializeReferenceHelpers.HasSharedReference(serialized.FindProperty("primary")));
+
+                // A raw write that bypasses every explicit invalidation; only the memo's lifetime can pick it up.
+                using (var other = new SerializedObject(obj))
+                {
+                    other.FindProperty("sidearms.Array.data[0]").managedReferenceValue = new TestSword();
+                    other.ApplyModifiedProperties();
+                }
+
+                serialized.Update();
+                yield return null;
+
+                Assert.IsFalse(SerializeReferenceHelpers.HasSharedReference(serialized.FindProperty("primary")),
+                    "Edit Mode barely advances Time.frameCount, so the memo must expire with the editor tick instead.");
             }
             finally
             {
