@@ -1,40 +1,32 @@
 # ProfilerMarkers
 
-Ручной `ProfilerMarker` требует поля и строки с именем на каждый замеряемый участок — и это имя устаревает при первом переименовании. `this.Marker()` размечает участок одной строкой `using`, а имя маркера генератор берёт из кода.
+Маркеры профилировщика одной строкой, без полей и имён, которые приходится поддерживать вручную.
 
 ## Быстрый старт
-
-Примеры на этой странице работают с классом `FlockSimulation` из [примера ProfilerMarkers](../../Samples~/ProfilerMarkers/Documentation/README.ru.md):
 
 | До — Unity API | После — FastTools |
 |---|---|
 | <pre lang="csharp"><code>private static readonly&#10;    ProfilerMarker _marker =&#10;    new("FlockSimulation.Step");&#10;&#10;public void Step()&#10;&#123;&#10;    using var _ = _marker.Auto();&#10;    Integrate();&#10;&#125;</code></pre> | <pre lang="csharp"><code>public void Step()&#10;&#123;&#10;    using var _ = this.Marker();&#10;    Integrate();&#10;&#125;</code></pre> |
 
-Атрибуты и `partial` не нужны: вызов работает в `MonoBehaviour` и обычных C#-классах.
-
-> [!NOTE]
-> Если ваши скрипты лежат под своим Assembly Definition, добавьте в его **Assembly Definition References** сборку `Aspid.FastTools` — иначе `this.Marker()` не найдётся.
-
 ## Marker()
 
-Возвращает `ProfilerMarker.AutoScope` маркера `Тип.Метод (строка)` для текущей точки вызова: замер идёт до конца блока `using`. Части `Тип` и `Метод` зависят от того, где стоит вызов:
+Имя маркера собирается из типа, метода и номера строки вызова:
 
-| Где вызван `this.Marker()` | Имя маркера |
+| Где вызван <code lang="csharp">this.Marker()</code> | Имя маркера |
 |---|---|
-| Метод `Step()` | `FlockSimulation.Step (строка)` |
-| Конструктор | `FlockSimulation.Ctor (строка)` |
-| Аксессор свойства `Speed` | `FlockSimulation.Speed (строка)` |
-| Аксессор индексатора | `FlockSimulation.Indexer (строка)` |
-| Лямбда или локальная функция внутри `Step()` | `FlockSimulation.Step (строка)` |
-| Явная реализация `IUpdatable.Tick()` | `FlockSimulation.Tick (строка)` |
-| Метод `Move()` вложенного типа `FlockSimulation.Agent` | `Agent.Move (строка)` |
-| Метод `Run()` в `Worker<int>`, свой маркер на каждый закрытый тип | `Worker<Int32>.Run (строка)` |
+| <code lang="csharp">void Step()</code> | <code lang="string">FlockSimulation.Step (строка)</code> |
+| <code lang="csharp">FlockSimulation()</code> | <code lang="string">FlockSimulation.Ctor (строка)</code> |
+| <code lang="csharp">float Speed &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Speed (строка)</code> |
+| <code lang="csharp">Agent this[int i] &#123; get; &#125;</code> | <code lang="string">FlockSimulation.Indexer (строка)</code> |
+| <code lang="csharp">event Action Changed</code> | <code lang="string">FlockSimulation.Changed (строка)</code> |
+| <code lang="csharp">class FlockSimulation.Agent &#123; void Move() &#125;</code> | <code lang="string">Agent.Move (строка)</code> |
+| <code lang="csharp">class Worker&lt;T&gt; &#123; void Run() &#125;</code> | <code lang="string">Worker&lt;Int32&gt;.Run (строка)</code><br /><code lang="string">Worker&lt;Single&gt;.Run (строка)</code> |
+| <code lang="csharp">struct Job&lt;T&gt; &#123; void Execute() &#125;</code> | <code lang="string">Job&lt;T&gt;.Execute (строка)</code> для любого <code lang="class-name">T</code> |
+| <code lang="csharp">void Run&lt;T&gt;()</code> | <code lang="string">FlockSimulation.Run (строка)</code> для любого <code lang="class-name">T</code> |
 
 ## WithName()
 
-`.WithName("Steering")` меняет в имени маркера метод на свой текст: `FlockSimulation.Step (5)` → `FlockSimulation.Steering (5)`. Тип и строка остаются.
-
-Имя берётся из текста исходника, поэтому подходит только строковый литерал: `"Steering"`, `@"Steering"` или `$"Steering"` без подстановок. С переменной, `const`, `nameof`, конкатенацией или `$"Agent {index}"` маркер сохраняет имя метода, а аргумент всё равно вычисляется при каждом вызове.
+<code lang="csharp">.WithName("Steering")</code> заменяет в имени маркера метод на свой текст: <code lang="string">FlockSimulation.Step (5)</code> → <code lang="string">FlockSimulation.Steering (5)</code>.
 
 ```csharp
 public void Step()
@@ -42,75 +34,39 @@ public void Step()
     using var _ = this.Marker();
 
     using (this.Marker().WithName("Steering"))
+    {
         foreach (var agent in _agents)
+        {
             using (this.Marker().WithName("Steering.Agent"))
                 ComputeSteering(agent);
+        }
+    }
 
     using (this.Marker().WithName("Integrate"))
         Integrate();
 }
 ```
 
+> [!NOTE]
+> Работает только строковый литерал: имя генератор читает из исходника. С переменной, <code lang="csharp">const</code>, <code lang="csharp">nameof</code> или <code lang="csharp">$"Agent &#123;index&#125;"</code> останется имя метода, а аргумент всё равно будет вычисляться при каждом вызове.
+
 ## В Profiler
 
-Дерево в **CPU Usage → Hierarchy** повторяет вложенность `using`. Маркер внутри цикла остаётся одной строкой со счётчиком `Calls`: у каждой точки вызова одно статическое поле — его видно в сгенерированном коде ниже. Время на схеме условное.
+На каждую точку вызова генератор создаёт одно статическое поле, поэтому замер не выделяет память.
 
 ![Схема маркеров FlockSimulation: Steering и Integrate вложены в Step, у Steering.Agent — 120 вызовов. Время приведено для примера.](../Images/profiler-markers-hierarchy.svg)
 
-<details>
-<summary>Сгенерированный код</summary>
-
-Сокращённо: без `global::` и повторов атрибута, с укороченными именами полей — генератор пишет `Step_Marker_Line_3`, а не `Line_3`. Номера строк считаются от начала примера `Step()` из раздела `WithName()`; в реальном файле это строки исходника.
-
-```csharp
-// <auto-generated>
-[GeneratedCode(
-    "Aspid.FastTools.Generators.ProfilerMarkersGenerator", "1.0.0")]
-internal static class __FlockSimulationProfilerMarkerExtensions
-{
-#if ENABLE_PROFILER
-    private static readonly ProfilerMarker Line_3 =
-        new("FlockSimulation.Step (3)");
-    private static readonly ProfilerMarker Line_5 =
-        new("FlockSimulation.Steering (5)");
-    private static readonly ProfilerMarker Line_7 =
-        new("FlockSimulation.Steering.Agent (7)");
-    private static readonly ProfilerMarker Line_10 =
-        new("FlockSimulation.Integrate (10)");
-#endif
-
-    public static ProfilerMarker.AutoScope Marker(
-        this FlockSimulation _, [CallerLineNumber] int line = -1)
-    {
-#if ENABLE_PROFILER
-        switch (line)
-        {
-            case 3: return Line_3.Auto();
-            case 5: return Line_5.Auto();
-            case 7: return Line_7.Auto();
-            case 10: return Line_10.Auto();
-        }
-#endif
-        return default;
-    }
-}
-```
-
-</details>
-
 ## Ограничения
 
-- **Только `this`.** Маркеры генерируются для типа, в котором написан вызов: `other.Marker()` на объекте другого типа ничего не измеряет. В статических методах `this` нет, поэтому маркер там не поставить.
-- **Суффикс строки.** Номер в имени меняется, когда вызов переезжает на другую строку, поэтому захваты до и после правки сравнивайте по имени без суффикса.
-- **Вложенные типы `private` и `protected`.** Сгенерированная перегрузка не видит вложенный тип `private` или `protected`, а также тип, вложенный в него: вызов компилируется, но маркер не открывается, и анализатор `AFT0010` предупреждает об этом. Сделайте тип `internal` или `public`.
+- **Номер строки в имени** меняется, когда вызов переезжает: сравнивайте захваты до и после правки по имени без номера.
+- **Вызов без маркера.** Если маркер для вызова не создаётся — на объекте другого типа (<code lang="csharp">other.Marker()</code>), в статическом классе, во вложенном <code lang="csharp">private</code> или <code lang="csharp">protected</code> типе, — анализатор `AFT0010` предупредит об этом.
+- **Выброшенный замер.** <code lang="csharp">this.Marker();</code> без <code lang="csharp">using</code> начинает замер, который никогда не заканчивается, — анализатор `AFT0011` предупредит об этом.
 
 > [!WARNING]
-> Вызовы `this.Marker()` на одной и той же строке типа, в том числе в разных файлах `partial`, делят маркер первого из них — замеры второго попадут в чужую строку Profiler.
+> Вызовы <code lang="csharp">this.Marker()</code> в разных файлах <code lang="csharp">partial</code> одного типа, стоящие на одной и той же строке, делят маркер первого из них — замеры второго попадут в чужую строку Profiler.
 
 ## Пример в пакете
 
-Все маркеры с этой страницы работают в сцене примера: [ProfilerMarkers](../../Samples~/ProfilerMarkers/Documentation/README.ru.md).
+Маркеры из [WithName()](#withname) работают в сцене [ProfilerMarkers](../../Samples~/ProfilerMarkers/Documentation/README.ru.md).
 
-![Стая из 120 агентов — те самые 120 вызовов Steering.Agent.](../../Samples~/ProfilerMarkers/Documentation/Images/demo.gif)
-
-Стая из 120 агентов — те самые 120 вызовов Steering.Agent.
+![Стая агентов в сцене ProfilerMarkers](../../Samples~/ProfilerMarkers/Documentation/Images/demo.gif)
