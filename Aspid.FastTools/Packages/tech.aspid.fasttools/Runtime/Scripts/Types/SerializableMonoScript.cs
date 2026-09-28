@@ -3,6 +3,7 @@ using System;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
+using UnityEditorInternal;
 #endif
 
 // ReSharper disable once CheckNamespace
@@ -17,7 +18,8 @@ namespace Aspid.FastTools.Types
     /// In the editor the script asset is the source of truth: on every serialization the stored assembly-qualified
     /// name is re-read from the script's class. The script reference is editor-only, so a player build carries just
     /// the name and resolves it exactly as <see cref="SerializableType"/> does. When that name no longer resolves in
-    /// the editor, the type comes from the script, so an asset not saved since a class rename still works in Play Mode.
+    /// the editor, a main-thread read takes the type from the script, so an asset not saved since a class rename still
+    /// works in Play Mode; another thread gets <see langword="null"/> then.
     /// </para>
     /// <para>
     /// Only types Unity maps to a script asset can be referenced this way — a top-level, non-generic class declared
@@ -66,15 +68,21 @@ namespace Aspid.FastTools.Types
         }
 
 #if UNITY_EDITOR
-        private protected sealed override Type? ResolveType(string? assemblyQualifiedName)
+        private protected sealed override Type? ResolveType(string? assemblyQualifiedName, out bool cacheable)
         {
             // Only OnBeforeSerialize re-syncs the name, and an object loaded in Play Mode may never run it — e.g. an
-            // additional scene or Resources.Load after a class rename whose owners were not saved again. GetClass is
-            // main-thread only, so the fallback is too.
-            var type = base.ResolveType(assemblyQualifiedName);
-            if (type is not null || !_script) return type;
+            // additional scene or Resources.Load after a class rename whose owners were not saved again.
+            var type = base.ResolveType(assemblyQualifiedName, out cacheable);
+            if (type is not null) return type;
 
-            return _script!.GetClass();
+            // GetClass throws off the main thread: a worker gets null and leaves the fallback to a main-thread read.
+            if (!InternalEditorUtility.CurrentThreadIsMainThread())
+            {
+                cacheable = false;
+                return null;
+            }
+
+            return _script ? _script!.GetClass() : null;
         }
 #endif
 
