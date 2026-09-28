@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -27,9 +26,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             try
             {
-                if (!knownTextYaml && !SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
-
-                var lines = SerializeReferenceYaml.ReadLines(assetPath);
+                var lines = SerializeReferenceYaml.ReadLines(assetPath, knownTextYaml);
                 if (lines is null) return result;
 
                 var headers = new List<(long fileId, int start)>();
@@ -104,12 +101,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             try
             {
-                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return result;
-                if (!knownTextYaml && !SerializeReferenceYaml.IsTextYamlFile(assetPath)) return result;
-
                 // One-shot bulk read like FindMissingReferences — bypass the probe cache so large scene files don't evict
                 // the interactive per-property entries (see SerializeReferenceYamlProbeCache remarks).
-                var lines = File.ReadAllLines(assetPath);
+                var lines = SerializeReferenceYaml.ReadLines(assetPath, knownTextYaml);
+                if (lines is null) return result;
 
                 for (var i = 0; i < lines.Length; i++)
                 {

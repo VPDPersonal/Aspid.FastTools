@@ -64,13 +64,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool IsTextYamlFile(string path) =>
             SniffFileFormat(path) == AssetFileFormat.TextYaml;
 
-        // The one file read of the text scans (graph, missing types, overrides, usage index): the asset's lines, or
-        // null when the path is empty, missing or unreadable.
-        public static string[] ReadLines(string assetPath)
+        // The one file read of the text scans (graph, missing types, overrides, usage index, scene required fields):
+        // the asset's lines, or null when the path is empty, missing, unreadable or not text YAML. The first bytes are
+        // sniffed before the full read, so a binary asset or an LFS pointer is never decoded; `knownTextYaml` skips
+        // that sniff for a caller that has already made it (the gate's Scan).
+        public static string[] ReadLines(string assetPath, bool knownTextYaml = false)
         {
             try
             {
-                return string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath) ? null : File.ReadAllLines(assetPath);
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return null;
+                if (!knownTextYaml && !IsTextYamlFile(assetPath)) return null;
+
+                return File.ReadAllLines(assetPath);
             }
             catch (Exception)
             {
