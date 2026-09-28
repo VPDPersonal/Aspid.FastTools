@@ -1,5 +1,4 @@
 import {useEffect} from 'react';
-import {BACKGROUND_WINDOWS} from '../BackgroundWindows';
 
 // Anything that reads as "content" rather than canvas. Only the filled parts of the navigation panel and the TOC count,
 // so the empty space under a short menu still behaves like background.
@@ -23,9 +22,6 @@ export function isCanvas(target) {
   narrow ??= matchMedia('(max-width: 996px)');
   if (narrow.matches) return false;
   if (!(target instanceof Element)) return false;
-  // Only windows the article surface is actually cut out for: below 997px the mask is dropped, so notices and image
-  // panels are opaque content again and the dots under them are hidden.
-  if (target.closest(`.doc-column-with-windows :is(${BACKGROUND_WINDOWS})`)) return !target.closest('a, button, [role="button"]');
   return !target.closest(CONTENT);
 }
 

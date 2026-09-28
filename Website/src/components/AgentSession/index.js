@@ -15,7 +15,7 @@ export default function AgentSession({alt, skill}) {
   const scene = AGENT_SCENES.find((item) => item.skill === skill) ?? AGENT_SCENES[0];
   return (
     <figure className={styles.panel} aria-label={alt}>
-      <div className={clsx(previewStyles.featurePreview, styles.window)}>
+      <div className={clsx(previewStyles.featurePreview, previewStyles.framed, styles.window)}>
         <PluginPreview ru={i18n.currentLocale === 'ru'} scene={scene} lines={scene.code.split('\n').length} manual />
       </div>
     </figure>

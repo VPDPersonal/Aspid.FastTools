@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import clsx from 'clsx';
 import {translate} from '@docusaurus/Translate';
 import {useColorMode} from '@docusaurus/theme-common';
 import useBaseUrl, {useBaseUrlUtils} from '@docusaurus/useBaseUrl';
@@ -37,18 +36,19 @@ export default function AppearanceSwitcher() {
 
   const menu = (
     <>
-      {themes.map(({mode, Icon, label}) => (
-        <li key={mode} role="none">
-          <button type="button" role="menuitemradio" aria-checked={colorMode === mode}
-            className={clsx(styles.switcherItem, styles.switcherOption, colorMode === mode && styles.switcherItemActive)}
-            onClick={() => setColorMode(mode)}>
-            <Icon aria-hidden />{label}
-          </button>
-        </li>
-      ))}
+      {/* The theme is a two-part switch as wide as the accent row below it, marked the way the picked accent is. */}
+      <li role="none">
+        <div role="group" aria-label={translate({id: 'appearance.theme', message: 'Theme'})} className={styles.themeRow}>
+          {themes.map(({mode, Icon, label}) => (
+            <button key={mode} type="button" role="menuitemradio" aria-checked={colorMode === mode}
+              className={styles.themeOption} onClick={() => setColorMode(mode)}>
+              <Icon aria-hidden />{label}
+            </button>
+          ))}
+        </div>
+      </li>
       <li role="separator" className={styles.menuSeparator} />
       <li role="none">
-        <div className={styles.menuCaption} aria-hidden>{accentLabel}</div>
         <div role="group" aria-label={accentLabel} className={styles.accentRow}>
           {ACCENTS.map((option) => (
             <button key={option} type="button" role="menuitemradio" aria-checked={option === accent}

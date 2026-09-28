@@ -23,6 +23,13 @@ test('search supports Cyrillic and generic type names', () => {
 test('index strips Markdown markup while preserving searchable code', () => {
   assert.equal(plainText('---\ntitle: Hidden\n---\n# Types\n![Screenshot](image.png)\n[Guide](guide.md)\n```csharp\nSerializableType<T> field;\n```'), 'Types Guide SerializableType<T> field;');
 });
+test('index decodes entities and drops table rules and MDX machinery', () => {
+  const table = '| До — Unity API | После — FastTools |\n| --- | --- |\n| <pre>private static readonly&#10;ProfilerMarker _m;</pre> | <pre>if (x) &#123; y(); &#125;</pre> |';
+  assert.equal(plainText(table), 'До — Unity API После — FastTools private static readonly ProfilerMarker _m; if (x) { y(); }');
+  assert.equal(plainText('Intro\n\n---\n\nNext &lt;T&gt; &amp; more'), 'Intro Next <T> & more');
+  assert.equal(plainText("import SamplesGallery from '@site/src/components/SamplesGallery';\n\n<SamplesGallery />\n\nUse <None> or List<float>."), 'Use <None> or List<float>.');
+  assert.equal(plainText('<ol className="enum-lookup-flow"><li><b>Exact</b> match</li></ol>'), 'Exact match');
+});
 test('empty queries suggest documentation and samples', () => {
   assert.equal(searchEntries(entries, '  ').length, 3);
   assert.ok(searchEntries(entries, '').every((entry) => entry.section !== 'API'));

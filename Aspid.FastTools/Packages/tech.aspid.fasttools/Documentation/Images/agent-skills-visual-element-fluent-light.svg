@@ -10,27 +10,27 @@
     <rect x="24" y="78" width="1072" height="50" rx="8" stroke="#e3e4e8" stroke-width="2"/>
     <text x="44" y="111" font-size="20" font-weight="600" fill="#c2603f">&gt;</text>
     <text x="72" y="111" font-size="20" fill="#2a2c31">Build the inspector header with a title</text>
-    <circle cx="36" cy="145" r="6" fill="#2f8a45"/>
+    <circle cx="36" cy="145" r="6" fill="#22a04b"/>
     <text x="56" y="152" font-size="19" fill="#2a2c31">Skill <tspan font-weight="600" fill="#2a2c31">aspid-visual-element-fluent</tspan></text>
-    <circle cx="36" cy="185" r="6" fill="#2f8a45"/>
-    <text x="56" y="192" font-size="19" fill="#2a2c31">Update <tspan font-weight="600" fill="#2a2c31">AbilityConfigEditor.cs</tspan> <tspan fill="#2f8a45">+5</tspan></text>
-    <text x="28" y="256" font-size="20" xml:space="preserve"><tspan fill="#9b4209">public</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#9b4209">override</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#1e6091">VisualElement</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#805200">CreateInspectorGUI</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#2a2c31">)</tspan></text>
+    <circle cx="36" cy="185" r="6" fill="#22a04b"/>
+    <text x="56" y="192" font-size="19" fill="#2a2c31">Update <tspan font-weight="600" fill="#2a2c31">AbilityConfigEditor.cs</tspan> <tspan fill="#1d8840">+5</tspan></text>
+    <text x="28" y="256" font-size="20" xml:space="preserve"><tspan fill="#b24d05">public</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#b24d05">override</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#1670b0">VisualElement</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#916204">CreateInspectorGUI</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#2a2c31">)</tspan></text>
     <text x="28" y="292" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">{</tspan></text>
-    <rect x="1" y="303" width="1118" height="36" fill="#2f8a45" fill-opacity="0.1"/>
-    <path d="M2 303V339" stroke="#2f8a45" stroke-width="3"/>
-    <text x="28" y="328" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">    </tspan><tspan fill="#9b4209">return</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#9b4209">new</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#1e6091">VisualElement</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#2a2c31">)</tspan></text>
-    <rect x="1" y="339" width="1118" height="36" fill="#2f8a45" fill-opacity="0.1"/>
-    <path d="M2 339V375" stroke="#2f8a45" stroke-width="3"/>
-    <text x="28" y="364" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">        </tspan><tspan fill="#2a2c31">.</tspan><tspan fill="#805200">SetPaddingX</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#714a94">12</tspan><tspan fill="#2a2c31">)</tspan></text>
-    <rect x="1" y="375" width="1118" height="36" fill="#2f8a45" fill-opacity="0.1"/>
-    <path d="M2 375V411" stroke="#2f8a45" stroke-width="3"/>
-    <text x="28" y="400" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">        </tspan><tspan fill="#2a2c31">.</tspan><tspan fill="#805200">SetPaddingY</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#714a94">10</tspan><tspan fill="#2a2c31">)</tspan></text>
-    <rect x="1" y="411" width="1118" height="36" fill="#2f8a45" fill-opacity="0.1"/>
-    <path d="M2 411V447" stroke="#2f8a45" stroke-width="3"/>
-    <text x="28" y="436" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">        </tspan><tspan fill="#2a2c31">.</tspan><tspan fill="#805200">AddChild</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#9b4209">new</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#1e6091">Label</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#47640f">"Ability Config"</tspan><tspan fill="#2a2c31">)</tspan></text>
-    <rect x="1" y="447" width="1118" height="36" fill="#2f8a45" fill-opacity="0.1"/>
-    <path d="M2 447V483" stroke="#2f8a45" stroke-width="3"/>
-    <text x="28" y="472" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">            </tspan><tspan fill="#2a2c31">.</tspan><tspan fill="#805200">SetFontSize</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#714a94">14</tspan><tspan fill="#2a2c31">)</tspan><tspan fill="#2a2c31">)</tspan><tspan fill="#2a2c31">;</tspan></text>
+    <rect x="1" y="303" width="1118" height="36" fill="#22a04b" fill-opacity="0.12"/>
+    <path d="M2 303V339" stroke="#22a04b" stroke-width="3"/>
+    <text x="28" y="328" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">    </tspan><tspan fill="#b24d05">return</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#b24d05">new</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#1670b0">VisualElement</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#2a2c31">)</tspan></text>
+    <rect x="1" y="339" width="1118" height="36" fill="#22a04b" fill-opacity="0.12"/>
+    <path d="M2 339V375" stroke="#22a04b" stroke-width="3"/>
+    <text x="28" y="364" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">        </tspan><tspan fill="#2a2c31">.</tspan><tspan fill="#916204">SetPaddingX</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#8752bd">12</tspan><tspan fill="#2a2c31">)</tspan></text>
+    <rect x="1" y="375" width="1118" height="36" fill="#22a04b" fill-opacity="0.12"/>
+    <path d="M2 375V411" stroke="#22a04b" stroke-width="3"/>
+    <text x="28" y="400" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">        </tspan><tspan fill="#2a2c31">.</tspan><tspan fill="#916204">SetPaddingY</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#8752bd">10</tspan><tspan fill="#2a2c31">)</tspan></text>
+    <rect x="1" y="411" width="1118" height="36" fill="#22a04b" fill-opacity="0.12"/>
+    <path d="M2 411V447" stroke="#22a04b" stroke-width="3"/>
+    <text x="28" y="436" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">        </tspan><tspan fill="#2a2c31">.</tspan><tspan fill="#916204">AddChild</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#b24d05">new</tspan><tspan fill="#2a2c31"> </tspan><tspan fill="#1670b0">Label</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#3d7a00">"Ability Config"</tspan><tspan fill="#2a2c31">)</tspan></text>
+    <rect x="1" y="447" width="1118" height="36" fill="#22a04b" fill-opacity="0.12"/>
+    <path d="M2 447V483" stroke="#22a04b" stroke-width="3"/>
+    <text x="28" y="472" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">            </tspan><tspan fill="#2a2c31">.</tspan><tspan fill="#916204">SetFontSize</tspan><tspan fill="#2a2c31">(</tspan><tspan fill="#8752bd">14</tspan><tspan fill="#2a2c31">)</tspan><tspan fill="#2a2c31">)</tspan><tspan fill="#2a2c31">;</tspan></text>
     <text x="28" y="508" font-size="20" xml:space="preserve"><tspan fill="#2a2c31">}</tspan></text>
   </g>
 </svg>

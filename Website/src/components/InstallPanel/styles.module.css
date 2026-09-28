@@ -5,15 +5,15 @@
 
 .install {
   --install-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --install-accent-soft: color-mix(in srgb, var(--venom-accent) 12%, transparent);
+  --install-accent-soft: color-mix(in srgb, var(--venom-accent-mark) 12%, transparent);
   margin-bottom: 2.5rem;
   overflow: hidden;
   container-type: inline-size;
-  background: var(--ifm-code-background);
+  background: var(--venom-block-surface);
   border: 2px solid var(--venom-line-strong);
   border-radius: 12px;
 }
-html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, var(--venom-accent) 10%, transparent); }
+html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, var(--venom-accent-mark) 12%, transparent); }
 
 .top { display: flex; border-bottom: 1px solid var(--venom-line-strong); }
 /* The steps take the width their menu paths need on one line; the mock-up gets the rest. */
@@ -41,7 +41,7 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
 .steps button:hover { color: var(--venom-fg); }
 .steps button:focus-visible { outline-offset: -1px; }
 .steps b { color: inherit; font-weight: 600; white-space: nowrap; }
-.steps li[data-active] button { color: var(--venom-fg-strong); background: var(--install-accent-soft); border-color: color-mix(in srgb, var(--venom-accent) 40%, transparent); }
+.steps li[data-active] button { color: var(--venom-fg-strong); background: var(--install-accent-soft); border-color: color-mix(in srgb, var(--venom-accent-mark) 50%, transparent); }
 .steps li[data-done] button { color: var(--venom-fg); }
 .stepIndex {
   display: inline-grid;
@@ -56,7 +56,7 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
   font: 600 0.72rem/1 var(--ifm-font-family-monospace);
   transition: color 0.35s ease, background-color 0.35s ease, border-color 0.35s ease;
 }
-.steps li[data-active] .stepIndex { color: var(--venom-accent-ink); background: var(--venom-accent); border-color: var(--venom-accent); }
+.steps li[data-active] .stepIndex { color: var(--venom-accent-fill-ink); background: var(--venom-accent-fill); border-color: var(--venom-accent-fill); }
 .steps li[data-done] .stepIndex { color: var(--venom-accent); border-color: var(--venom-accent); }
 
 /* ---------- URL bar ---------- */
@@ -69,10 +69,20 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
 .field :global(.theme-code-block) pre { padding-inline: 0; border-radius: 0; }
 .field :global(.theme-code-block) code { padding-inline: 18px; }
 /* The version tabs head the code block they switch, as a tab strip; the walk-through types the same URL. */
-.meta { display: flex; align-items: stretch; justify-content: space-between; gap: 14px; padding: 0 18px; border-bottom: 1px solid var(--venom-line-strong); }
-.segmented { display: flex; gap: 22px; }
+/* The tab strip closes with a 2px rule like the site's table headers; the picked tab's underline replaces that stretch
+   of the rule, the same thickness and on the same line. */
+.meta { --meta-pad: 18px; display: flex; align-items: stretch; justify-content: space-between; gap: 14px; padding: 0 var(--meta-pad); border-bottom: 2px solid var(--venom-line-strong); }
+/* Every tab's underline runs the strip's side padding past its label on both sides, so each label sits centred on its
+   underline and the first one starts at the card's edge, where the rule does. The paddings keep the labels where they
+   were, the negative margins keep the tabs in place, and the gap is exactly two overhangs, so the underlines meet. */
+.segmented > button:first-child,
+.segmented .versionTab > button {
+  margin-inline: calc(-1 * var(--meta-pad));
+  padding-inline: var(--meta-pad);
+}
+.segmented { display: flex; gap: calc(2 * var(--meta-pad)); }
 .segmented button {
-  margin-bottom: -1px;
+  margin-bottom: -2px;
   padding: 13px 0 11px;
   color: var(--venom-muted);
   background: none;
@@ -86,7 +96,7 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
   transition: color 0.2s ease, border-color 0.2s ease;
 }
 .segmented button:hover { color: var(--venom-fg); }
-.segmented button[aria-checked='true'] { color: var(--venom-fg-strong); border-bottom-color: var(--venom-accent); }
+.segmented button[aria-checked='true'] { color: var(--venom-fg-strong); border-bottom-color: var(--venom-accent-mark); }
 /* The pinned tab opens its version list upwards: the card clips anything below the URL. */
 .versionTab { position: relative; display: flex; }
 .segmented .versionTab > button { display: inline-flex; align-items: center; gap: 7px; }
@@ -104,7 +114,7 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
   margin: 0;
   padding: 4px;
   overflow-y: auto;
-  background: var(--ifm-code-background);
+  background: var(--venom-reading-surface);
   border: 1px solid var(--venom-line-strong);
   border-radius: 10px;
   box-shadow: 0 10px 28px rgb(0 0 0 / 0.35);
@@ -131,7 +141,7 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
 .versionMenu li[aria-selected='true'] button { color: var(--venom-accent); }
 /* The site's focus ring sits 4px out and the card clips it; the tab's own underline marks focus instead. */
 .segmented button:focus-visible { outline: none; color: var(--venom-fg-strong); }
-.segmented button:focus-visible:not([aria-checked='true']) { border-bottom-color: color-mix(in srgb, var(--venom-accent) 50%, transparent); }
+.segmented button:focus-visible:not([aria-checked='true']) { border-bottom-color: color-mix(in srgb, var(--venom-accent-mark) 50%, transparent); }
 /* Outranks the accent colour of the global `.markdown a:not(...)` rule, like the feature cards' links. */
 :global(.markdown) a.versions:not(:global(.card)):not(:global(.pagination-nav__link)):not([class*='card_']):not(:global(.table-of-contents__link)) {
   color: var(--venom-muted);
@@ -226,8 +236,13 @@ html[data-theme='light'] .install { --install-accent-soft: color-mix(in srgb, va
   .top { flex-direction: column; }
   .preview { flex-basis: auto; border-right: 0; border-bottom: 1px solid var(--venom-line-strong); }
   .steps { padding: 12px; }
-  .segmented { gap: 16px; }
   .segmented button { font-size: 0.68rem; }
+}
+/* A phone-width card has no room for the tabs and the "all versions" link side by side: the link moves above the tabs,
+   right-aligned, so the tabs keep their underline on the strip's bottom rule. */
+@container (max-width: 420px) {
+  .meta { --meta-pad: 14px; flex-wrap: wrap; row-gap: 0; }
+  .versions { order: -1; flex-basis: 100%; padding-top: 10px; text-align: right; }
 }
 
 @media (prefers-reduced-motion: reduce) {

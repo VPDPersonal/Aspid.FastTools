@@ -1,24 +1,23 @@
 /*
  * Animated previews inside the docs introduction's feature cards, edge to edge: the code on top and its effect below,
- * split by one rule. Unity mock-ups (Inspector) stay dark in both themes, like the captures; the Profiler timeline and the
- * Claude Code session follow the site theme.
+ * split by one rule. Unity mock-ups (Inspector) keep the editor skin, like the captures; everything else (snippet, Profiler
+ * timeline, Claude Code session, names list) sits on the article surface inside the card's frame.
  */
 
 .featurePreview {
-  --preview-surface: #0d0f14;
+  --preview-surface: var(--venom-reading-surface);
   --preview-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
-  --preview-accent-soft: color-mix(in srgb, var(--venom-accent) 12%, transparent);
+  --preview-accent-soft: color-mix(in srgb, var(--venom-accent-mark) 12%, transparent);
 }
 html[data-theme='light'] .featurePreview {
-  --preview-surface: #ffffff;
-  --preview-accent-soft: color-mix(in srgb, var(--venom-accent) 10%, transparent);
+  --preview-accent-soft: color-mix(in srgb, var(--venom-accent-mark) 12%, transparent);
 }
 
 .snippet {
   margin: 0;
   padding: 14px 0;
   overflow-x: auto;
-  background: var(--ifm-code-background);
+  background: var(--venom-block-surface);
   border: 0;
   border-bottom: 1px solid var(--venom-line-strong);
   border-radius: 0;
@@ -26,12 +25,32 @@ html[data-theme='light'] .featurePreview {
   white-space: pre;
 }
 .snippetLine { display: block; padding: 0 12px; border-left: 2px solid transparent; transition: background-color 0.35s ease, border-color 0.35s ease; }
-.snippetLine[data-active] { background: var(--preview-accent-soft); border-left-color: var(--venom-accent); }
+.snippetLine[data-active] { background: var(--preview-accent-soft); border-left-color: var(--venom-accent-mark); }
+/* In a frame of its own (AgentSession), the snippet reaches 2px over the frame's left edge, so the marked lines' bars sit
+   on the frame line rather than inside it; the extra padding keeps the code where it was. */
+.framed .snippet { margin-left: -2px; }
+.framed .snippetLine { padding-left: 14px; }
+.framed .diff[data-edited] .snippetLine[data-indented] { padding-left: calc(14px + 4ch); }
+/* In an introduction card the snippet keeps its place (its divider meets the frame cleanly) and only the lines reach over
+   the frame; the card clips at its outer edge where the browser can (custom.css), so the snippet no longer scrolls. */
+@supports (overflow-clip-margin: border-box) {
+  :global(.feature-card__live).featurePreview .snippet { overflow: visible; }
+  :global(.feature-card__live).featurePreview .snippetLine { margin-left: -2px; padding-left: 14px; }
+  :global(.feature-card__live).featurePreview .diff[data-edited] .snippetLine[data-indented] { padding-left: calc(14px + 4ch); }
+}
+/* With the card clipping at its outer edge, a filled or gridded bottom row would reach over the frame's inner curve at the
+   card's bottom-left corner (the preview is the card's left column only on wide layouts): it rounds that corner itself. */
+@supports (overflow-clip-margin: border-box) {
+  @media (min-width: 701px) {
+    :global(.feature-card__live).featurePreview .inspector,
+    :global(.feature-card__live).featurePreview .uiStage { border-bottom-left-radius: calc(var(--ifm-pre-border-radius) - 2px); }
+  }
+}
 
 /* ---------- ProfilerMarkers ---------- */
 
 .profilerBody { display: grid; height: 100%; }
-.timeline { --timeline-grid: rgb(255 255 255 / 0.05); --timeline-ring: rgb(255 255 255 / 0.5); --timeline-glow: rgb(255 255 255 / 0.18); overflow: hidden; background: var(--ifm-code-background); }
+.timeline { --timeline-grid: rgb(255 255 255 / 0.05); --timeline-ring: rgb(255 255 255 / 0.5); --timeline-glow: rgb(255 255 255 / 0.18); overflow: hidden; }
 html[data-theme='light'] .timeline { --timeline-grid: rgb(0 0 0 / 0.07); --timeline-ring: rgb(0 0 0 / 0.35); --timeline-glow: rgb(0 0 0 / 0.1); }
 .timelineBar { display: flex; justify-content: space-between; padding: 7px 12px; color: var(--venom-muted); border-bottom: 1px solid var(--venom-line); font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
 .timelineTrack {
@@ -67,12 +86,11 @@ html[data-theme='light'] .timeline { --timeline-grid: rgb(0 0 0 / 0.07); --timel
   min-height: 120px;
   /* `round` fits a whole number of ~16px cells into the box. Each cell draws its top and left line; the grid layers are
      clipped to the content box, which the 1px padding starts one pixel in, so the first lines give way to the snippet's
-     rule and the card's edge, and no half cell is left at any edge. The solid bottom layer paints the full padding box. */
+     rule and the card's edge, and no half cell is left at any edge. */
   padding: 1px 0 0 1px;
   background:
     linear-gradient(var(--venom-line) 1px, transparent 1px) 0 0 / 16px 16px round padding-box content-box,
-    linear-gradient(90deg, var(--venom-line) 1px, transparent 1px) 0 0 / 16px 16px round padding-box content-box,
-    linear-gradient(var(--ifm-code-background), var(--ifm-code-background)) padding-box;
+    linear-gradient(90deg, var(--venom-line) 1px, transparent 1px) 0 0 / 16px 16px round padding-box content-box;
 }
 .uiPanel {
   position: relative;
@@ -114,7 +132,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 /* ---------- Editor Helpers ---------- */
 
 .namesBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
-.names { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 0; padding: 12px; background: var(--ifm-code-background); list-style: none; }
+.names { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; margin: 0; padding: 12px; list-style: none; }
 .names li {
   display: flex;
   align-items: center;
@@ -124,13 +142,12 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
   margin: 0;
   padding: 8px 10px;
   text-align: center;
-  background: var(--ifm-code-background);
   border: 1px solid var(--venom-line);
   border-radius: 10px;
   transition: border-color 0.4s ease, background-color 0.4s ease;
 }
 /* The row whose call the snippet highlights; a resolved row keeps its label but not the highlight. */
-.names li[data-active] { background: color-mix(in srgb, var(--venom-accent) 6%, var(--ifm-code-background)); border-color: color-mix(in srgb, var(--venom-accent) 40%, var(--venom-line)); }
+.names li[data-active] { background: color-mix(in srgb, var(--venom-accent-mark) 8%, transparent); border-color: color-mix(in srgb, var(--venom-accent-mark) 50%, var(--venom-line)); }
 .names code { display: inline-flex; flex: none; align-items: center; gap: 6px; max-width: 100%; overflow: hidden; padding: 0; color: var(--venom-muted); background: none; border: 0; font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; vertical-align: baseline; transition: color 0.4s ease; }
 .namesIcon { display: inline-grid; flex: none; place-items: center; width: 15px; height: 15px; color: #2d6b39; background: #e6e6e6; border-radius: 3px; font: 700 10px/1 var(--ifm-font-family-monospace); }
 .names li[data-done] code { color: var(--venom-fg); }
@@ -146,7 +163,7 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 /* ---------- Agent Skills ---------- */
 
 .pluginBody { display: grid; flex: 1; grid-template-rows: auto 1fr; height: 100%; }
-.session { color: var(--venom-fg); background: var(--ifm-code-background); border-bottom: 1px solid var(--venom-line-strong); font: 400 0.7rem/1.6 var(--ifm-font-family-monospace); }
+.session { color: var(--venom-fg); border-bottom: 1px solid var(--venom-line-strong); font: 400 0.7rem/1.6 var(--ifm-font-family-monospace); }
 .sessionBar { display: flex; justify-content: space-between; padding: 7px 12px; color: var(--venom-muted); border-bottom: 1px solid var(--venom-line); font: 500 0.66rem/1 var(--ifm-font-family-monospace); letter-spacing: 0.08em; text-transform: uppercase; }
 .sessionLog { display: grid; gap: 4px; padding: 10px 12px 12px; }
 .prompt { display: flex; align-items: center; min-width: 0; padding: 4px 8px; border: 1px solid var(--venom-line-strong); border-radius: 6px; }
@@ -175,18 +192,18 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
   transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
 }
 .promptSend svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.promptSend:hover { background: color-mix(in srgb, var(--venom-accent) 24%, transparent); }
+.promptSend:hover { background: color-mix(in srgb, var(--venom-accent-mark) 24%, transparent); }
 /* The pulse fills the button from inside, so its outline stays the same 1px line as the prompt's. */
 .promptSend:not([data-replay]):not(:disabled) { animation: sendPulse 2.6s ease-in-out infinite; }
 .promptSend:not([data-replay]):not(:disabled):hover { animation: none; }
 @keyframes sendPulse {
   0%, 60%, 100% { background-color: var(--preview-accent-soft); }
-  30% { background-color: color-mix(in srgb, var(--venom-accent) 32%, transparent); }
+  30% { background-color: color-mix(in srgb, var(--venom-accent-mark) 32%, transparent); }
 }
 .promptSend[data-replay] { color: var(--venom-muted); background: transparent; }
 .promptSend[data-replay]:hover { color: var(--venom-fg-strong); background: var(--preview-accent-soft); }
 .promptSend:disabled { cursor: default; opacity: 0.35; }
-.promptSend:focus-visible { outline: 2px solid var(--venom-accent); outline-offset: 2px; }
+.promptSend:focus-visible { outline: 2px solid var(--venom-accent-mark); outline-offset: 2px; }
 /* Nothing moves until Send: the caret waits without blinking. */
 .prompt:has(.promptSend) .caret { animation: none; }
 /* The request is already typed, so on a narrow screen it wraps instead of pushing Send out of the field. */
@@ -196,14 +213,14 @@ html[data-theme='light'] .uiPadX, html[data-theme='light'] .uiPadY { color: #1f6
 .event[data-show] { opacity: 1; transform: none; }
 .event b { color: var(--venom-fg-strong); font-weight: 600; }
 .eventDot { flex: none; width: 7px; height: 7px; background: #d97757; border-radius: 50%; animation: pulse 0.9s ease-in-out infinite alternate; }
-.eventDot[data-done] { background: var(--venom-accent); animation: none; }
+.eventDot[data-done] { background: var(--venom-accent-mark); animation: none; }
 @keyframes pulse { to { opacity: 0.35; } }
 .eventDiff { color: var(--venom-accent); }
 /* The edit: new lines open up in the diff colour and the body shifts into the new block. */
 /* Keeps the edited method's eight lines of room throughout, so the card does not grow when the edit lands. */
 .diff { min-height: calc(7 * 1.75em + 28px); border-bottom: 0; }
 .diff .snippetLine[data-added] { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.45s var(--preview-ease), opacity 0.35s ease, background-color 0.35s ease; }
-.diff[data-edited] .snippetLine[data-added] { max-height: 2em; opacity: 1; background: var(--preview-accent-soft); border-left-color: var(--venom-accent); }
+.diff[data-edited] .snippetLine[data-added] { max-height: 2em; opacity: 1; background: var(--preview-accent-soft); border-left-color: var(--venom-accent-mark); }
 .diff .snippetLine[data-indented] { transition: padding 0.45s var(--preview-ease); }
 .diff[data-edited] .snippetLine[data-indented] { padding-left: calc(12px + 4ch); }
 

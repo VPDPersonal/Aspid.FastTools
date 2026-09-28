@@ -1,5 +1,4 @@
 import {useEffect} from 'react';
-import {BACKGROUND_WINDOWS} from '../BackgroundWindows';
 import {chargeLevel, isCanvas} from '../DotRipple';
 
 const RADIUS = 130;       // px, the visible part of the spotlight
@@ -15,11 +14,9 @@ const REACH = EDGE * (1 + WOBBLE.reduce((sum, [, , amplitude]) => sum + amplitud
 const ARTICLE = '[class*="docMainContainer_"] > .container > .row > .col:first-child';
 
 const inViewport = (x, y) => x >= 0 && y >= 0 && x < innerWidth && y < innerHeight;
-const distanceToRect = (x, y, rect) =>
-  Math.hypot(Math.max(rect.left - x, 0, x - rect.right), Math.max(rect.top - y, 0, y - rect.bottom));
 
 // True when any part of the spotlight around (x, y) falls on the empty canvas. The opaque article surface lies above the
-// spotlight, so over the article it is lit near the surface's edge or one of its windows, and only the part past them is seen.
+// spotlight, so over the article it is lit near the surface's edge, and only the part past it is seen.
 function nearCanvas(x, y) {
   const target = document.elementFromPoint(x, y);
   if (isCanvas(target)) return true;
@@ -33,12 +30,7 @@ function nearCanvas(x, y) {
     [x, rect.top - 1, y - rect.top],
     [x, rect.bottom + 1, rect.bottom - y],
   ];
-  if (beyondEdges.some(([px, py, distance]) => distance < RADIUS && inViewport(px, py) && isCanvas(document.elementFromPoint(px, py)))) {
-    return true;
-  }
-  if (!article.matches('.doc-column-with-windows')) return false;
-  return [...article.querySelectorAll(`:is(${BACKGROUND_WINDOWS})`)]
-    .some((element) => !element.closest('details:not([open])') && distanceToRect(x, y, element.getBoundingClientRect()) < RADIUS);
+  return beyondEdges.some(([px, py, distance]) => distance < RADIUS && inViewport(px, py) && isCanvas(document.elementFromPoint(px, py)));
 }
 
 // Distance from the centre to the edge of the light in direction `angle` at time `now`, for a light of mean radius `edge`.
@@ -81,6 +73,8 @@ export default function DotSpotlight() {
     let frame = 0;
     let draw = 0;
     let color = readColor();
+    // The pale light canvas shows the light green faintly: its dots light up half again as strongly.
+    let boost = document.documentElement.dataset.theme === 'light' ? 1.5 : 1;
     let colorAt = 0;
 
     const render = (now) => {
@@ -93,6 +87,7 @@ export default function DotSpotlight() {
       // The theme or accent may change while the page is open.
       if (now - colorAt > 1000) {
         color = readColor();
+        boost = document.documentElement.dataset.theme === 'light' ? 1.5 : 1;
         colorAt = now;
       }
 
@@ -113,7 +108,7 @@ export default function DotSpotlight() {
           const dy = cy - lightY;
           const light = 1 - Math.hypot(dx, dy) / edgeAt(Math.atan2(dy, dx), now, edge);
           if (light <= 0.02) continue;
-          ctx.globalAlpha = Math.min(light * (1 + 0.5 * shrink), 1);
+          ctx.globalAlpha = Math.min(light * boost * (1 + 0.5 * shrink), 1);
           ctx.beginPath();
           ctx.arc(cx, cy, dot, 0, Math.PI * 2);
           ctx.fill();

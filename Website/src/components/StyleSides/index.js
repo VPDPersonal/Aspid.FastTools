@@ -166,9 +166,9 @@ export default function StyleSides({alt, children}) {
               </li>
             ))}
           </ul>
-          <div className={styles.sets} aria-live="polite">{row.sets}</div>
         </div>
         <Diagram spec={row.spec} />
+        <div className={styles.sets} aria-live="polite">{row.sets}</div>
       </div>
     </div>
   );
