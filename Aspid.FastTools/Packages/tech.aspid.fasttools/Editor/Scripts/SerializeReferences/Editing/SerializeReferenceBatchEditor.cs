@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using UnityEditor;
 using System.Linq;
 using System.Collections.Generic;
@@ -102,6 +103,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         progressTitle,
                         $"{file.Key}  ({i + 1}/{byFile.Length})",
                         (float)i / byFile.Length);
+
+                    // Checked out once up front: a read-only file is reported once and skipped, and a checkout makes
+                    // it writable before its first entry, even when that entry turns out stale.
+                    if (File.Exists(file.Key) && !SerializeReferenceYamlEditor.TryMakeEditable(file.Key)) continue;
 
                     var changed = false;
                     foreach (var entry in file)
