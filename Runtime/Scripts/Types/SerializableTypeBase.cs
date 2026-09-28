@@ -67,7 +67,13 @@ namespace Aspid.FastTools.Types
 #endif
                 {
                     // A failed lookup is cached too: a missing assembly makes every Type.GetType call probe for it.
-                    var type = _type ??= ResolveType(_assemblyQualifiedName) ?? _unresolved;
+                    var type = _type;
+                    if (type is null)
+                    {
+                        type = ResolveType(_assemblyQualifiedName, out var cacheable) ?? _unresolved;
+                        if (cacheable) _type = type;
+                    }
+
                     return ReferenceEquals(type, _unresolved) ? null : type;
                 }
             }
@@ -88,8 +94,12 @@ namespace Aspid.FastTools.Types
             _assemblyQualifiedName = assemblyQualifiedName;
         }
 
-        private protected virtual Type? ResolveType(string? assemblyQualifiedName) =>
-            GetTypeFromAssemblyQualifiedName(assemblyQualifiedName);
+        // cacheable is false when the calling thread could not finish the lookup, so a later read tries again.
+        private protected virtual Type? ResolveType(string? assemblyQualifiedName, out bool cacheable)
+        {
+            cacheable = true;
+            return GetTypeFromAssemblyQualifiedName(assemblyQualifiedName);
+        }
 
         void ISerializationCallbackReceiver.OnAfterDeserialize() =>
             ResetResolvedType();
