@@ -134,6 +134,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             SerializeReferenceRepairSuggestions.ClearCache();
             SerializeReferenceYamlProbeCache.ClearCache();
+            SerializeReferenceHelpers.InvalidateReferenceMemos();
             return true;
         }
 
