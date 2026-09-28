@@ -181,9 +181,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.That(File.ReadAllText(ScenePath), Does.Not.Contain(MissingClass));
         }
 
-        // A later edit cannot redo an undone fix, so undoing that edit leaves the fix undone.
+        // A later edit cannot redo an undone fix, so undoing or redoing that edit leaves the fix undone.
         [Test]
-        public void FixInMemory_ThenUndoEditAndUndoEditAndSave_KeepsMissingEntryInFile()
+        public void FixInMemory_ThenUndoEditUndoRedoAndSave_KeepsMissingEntryInFile()
         {
             using var serializedObject = new SerializedObject(_component);
             var property = serializedObject.FindProperty(nameof(InMemoryRepairTestComponent.value));
@@ -196,6 +196,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Undo.IncrementCurrentGroup();
             AddListElement(serializedObject);
             Undo.PerformUndo();
+            Undo.PerformRedo();
+            Assert.AreEqual(1, _component.list.Count);
             Assert.IsTrue(EditorSceneManager.SaveScene(_scene));
 
             var text = File.ReadAllText(ScenePath).Replace("\r\n", "\n");
@@ -227,6 +229,45 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsFalse(SerializationUtility.HasManagedReferencesWithMissingTypes(_component));
             Assert.AreEqual(1, _component.list.Count);
             Assert.That(File.ReadAllText(ScenePath), Does.Not.Contain(MissingClass));
+        }
+
+        // No scene or prefab save hook fires for an asset, so a dirty asset repaired in memory must drop the replaced
+        // entry right away, or the next save writes it back.
+        [Test]
+        public void FixDirtyAssetInMemory_ThenSave_DropsReplacedEntryFromFile()
+        {
+            const string assetPath = "Assets/AspidInMemoryRepairTest.asset";
+            var asset = UnityEngine.ScriptableObject.CreateInstance<InMemoryRepairTestObject>();
+            asset.value = new InMemoryRepairPayload { x = 3 };
+            AssetDatabase.CreateAsset(asset, assetPath);
+
+            try
+            {
+                var text = File.ReadAllText(assetPath);
+                File.WriteAllText(assetPath, text.Replace($"class: {nameof(InMemoryRepairPayload)},", $"class: {MissingClass},"));
+                AssetDatabase.ImportAsset(assetPath, ImportAssetOptions.ForceUpdate);
+                asset = AssetDatabase.LoadAssetAtPath<InMemoryRepairTestObject>(assetPath);
+                Assert.IsTrue(SerializationUtility.HasManagedReferencesWithMissingTypes(asset), "The fixture must load as a missing type.");
+                EditorUtility.SetDirty(asset);
+
+                using (var serializedObject = new SerializedObject(asset))
+                {
+                    var property = serializedObject.FindProperty(nameof(InMemoryRepairTestObject.value));
+                    Assert.IsTrue(SerializeReferenceHelpers.TryGetMissingReferenceId(property, out var referenceId));
+                    Assert.IsTrue(SerializeReferenceHelpers.TryFixMissingTypeInMemory(property, typeof(InMemoryRepairReplacement), referenceId));
+                }
+
+                AssetDatabase.SaveAssetIfDirty(asset);
+
+                Assert.IsFalse(SerializationUtility.HasManagedReferencesWithMissingTypes(asset));
+                Assert.AreEqual(3, ((InMemoryRepairReplacement)asset.value).x);
+                Assert.That(File.ReadAllText(assetPath), Does.Not.Contain(MissingClass));
+            }
+            finally
+            {
+                if (asset != null) Undo.ClearUndo(asset);
+                AssetDatabase.DeleteAsset(assetPath);
+            }
         }
 
         private static void SetValue(SerializedObject serializedObject, object value)

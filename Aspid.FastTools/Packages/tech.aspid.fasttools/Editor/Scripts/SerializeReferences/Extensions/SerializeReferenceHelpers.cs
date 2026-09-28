@@ -737,7 +737,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // Only an undo step can take the fix back: overwriting or deleting the repaired value afterwards leaves it
         // applied. Steps run through the groups in order, so undoing the fix's group or an earlier one takes it back,
-        // and redoing it or a later one restores it. The repaired rid is new, so its use means the fix is applied.
+        // and only redoing that group restores it: an edit recorded after the undo drops the fix from the redo stack.
+        // The repaired rid is new, so its use means the fix is applied.
         private static void OnRepairUndoRedo(in UndoRedoInfo info)
         {
             foreach (var entry in PendingRepairs)
@@ -746,7 +747,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (IsManagedReferenceUsed(entry.target, entry.repairedId)) entry.undone = false;
                 else if (!info.isRedo && info.undoGroup <= entry.undoGroup) entry.undone = true;
-                else if (info.isRedo && info.undoGroup >= entry.undoGroup) entry.undone = false;
+                else if (info.isRedo && info.undoGroup == entry.undoGroup) entry.undone = false;
             }
         }
 
@@ -805,7 +806,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // The open stage holds a copy that does not refresh on reimport and would overwrite a file rewrite on save,
         // so the reference is reassigned on the live object; the replaced missing-type entry is cleared on save.
-        private static bool TryFixMissingTypeInMemory(SerializedProperty property, Type newType, long referenceId)
+        // An asset has no scene or prefab save to wait for, so its entry is cleared at once and the fix has no Undo.
+        public static bool TryFixMissingTypeInMemory(SerializedProperty property, Type newType, long referenceId)
         {
             var target = property.serializedObject.targetObject;
             var instance = CreateInstance(newType);
@@ -821,6 +823,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             property.SetManagedReferenceAndApply(instance);
             EditorUtility.SetDirty(target);
             property.serializedObject.Update();
+
+            var scene = GetOwningScene(target);
+            if (!scene.IsValid())
+            {
+                ClearMissingSubtree(target, referenceId);
+                return true;
+            }
+
             PendingRepairs.Add(new SerializeReferencePendingRepairs.Entry
             {
                 target = target,
@@ -828,9 +838,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 referenceId = referenceId,
                 undoGroup = Undo.GetCurrentGroup(),
             });
-
-            var scene = GetOwningScene(target);
-            if (scene.IsValid()) EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.MarkSceneDirty(scene);
 
             return true;
         }
