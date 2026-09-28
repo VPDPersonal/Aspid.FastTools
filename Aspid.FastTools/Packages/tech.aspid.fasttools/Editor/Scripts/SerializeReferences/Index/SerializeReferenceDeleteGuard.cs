@@ -19,16 +19,18 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     {
         private const int SamplePathCount = 8;
         private const long ProgressDelayMilliseconds = 250;
-        private const string RefIdsMarker = "RefIds:";
 
-        // "record struct" / "record class" come first, or the bare "record" alternative would swallow the keyword.
-        // The type parameter list is captured so that Command and Command<T> of another file are not confused.
-        private static readonly Regex _typeDeclaration = new(
-            @"\b(?:record\s+(?:class|struct)|class|struct|record)\s+@?(?<name>[A-Za-z_]\w*)(?:\s*<(?<parameters>[^<>]*)>)?",
-            RegexOptions.Compiled);
+        // A C# identifier, which may start with any Unicode letter ("Оружие").
+        private const string Identifier = @"@?[\p{L}\p{Nl}_][\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Nl}\p{Pc}\p{Cf}]*";
 
-        private static readonly Regex _namespaceDeclaration = new(
-            @"\bnamespace\s+@?(?<name>[A-Za-z_][\w.]*)",
+        // Declarations and the braces and semicolons that scope them. "record struct" / "record class" come first, or
+        // the bare "record" alternative would swallow the keyword; "where" after "class" or "struct" is a constraint
+        // clause, not a name. The type parameter list is captured so that Command and Command<T> are not confused.
+        private static readonly Regex _declarationToken = new(
+            @"\bnamespace\s+(?<namespace>" + Identifier + @"(?:\s*\.\s*" + Identifier + @")*)" +
+            @"|(?<partial>\bpartial\s+)?\b(?:record\s+(?:class|struct)|class|struct|record|interface)\s+(?!where\b)" +
+            @"(?<name>" + Identifier + @")(?:\s*<(?<parameters>[^<>]*)>)?" +
+            @"|(?<open>\{)|(?<close>\})|(?<end>;)",
             RegexOptions.Compiled);
 
         // Comments and string or char literals, so that "class Foo" written in them is not taken for a declaration.
@@ -47,7 +49,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (!assetPath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
                 return AssetDeleteResult.DidNotDelete;
 
-            var types = ResolveCandidateTypes(assetPath);
+            var types = ResolveCandidateTypes(new[] { assetPath });
             if (types.Count == 0) return AssetDeleteResult.DidNotDelete;
 
             var sample = new SortedSet<string>(StringComparer.Ordinal);
@@ -75,15 +77,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         private static AssetDeleteResult GuardFolder(string folderPath)
         {
-            var types = new List<Type>();
-            var assemblyTypes = new Dictionary<string, Type[]>(StringComparer.Ordinal);
+            var scriptPaths = AssetDatabase.FindAssets("t:MonoScript", new[] { folderPath })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .ToList();
 
-            foreach (var guid in AssetDatabase.FindAssets("t:MonoScript", new[] { folderPath }))
-            {
-                foreach (var type in ResolveCandidateTypes(AssetDatabase.GUIDToAssetPath(guid), assemblyTypes))
-                    if (!types.Contains(type)) types.Add(type);
-            }
-
+            var types = ResolveCandidateTypes(scriptPaths);
             if (types.Count == 0) return AssetDeleteResult.DidNotDelete;
 
             var counts = CountUsages(types, samplePaths: null);
@@ -112,63 +110,154 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return proceed ? AssetDeleteResult.DidNotDelete : AssetDeleteResult.FailedDelete;
         }
 
-        internal static List<Type> ResolveCandidateTypes(string scriptPath) =>
-            ResolveCandidateTypes(scriptPath, new Dictionary<string, Type[]>(StringComparer.Ordinal));
-
-        // MonoScript.GetClass() only knows the class named after the file, so every type the script text declares is
-        // looked up in the script's assembly, then their nested types. Only types that can be a managed-reference
-        // value are kept: a script holding just components or ScriptableObjects never needs the project sweep.
-        private static List<Type> ResolveCandidateTypes(string scriptPath, Dictionary<string, Type[]> assemblyTypes)
+        // MonoScript.GetClass() only knows the class named after the file, so every type the scripts declare is looked
+        // up in their assembly by namespace and nesting path. Only types that can be a managed-reference value are
+        // kept: a script holding just components or ScriptableObjects never needs the project sweep. A partial type is
+        // kept only when no script left after the delete declares another part of it.
+        internal static List<Type> ResolveCandidateTypes(IReadOnlyCollection<string> scriptPaths)
         {
             var result = new List<Type>();
+            var deleted = new HashSet<string>(scriptPaths, StringComparer.Ordinal);
+            var assemblyTypes = new Dictionary<string, Type[]>(StringComparer.Ordinal);
+            Dictionary<string, string[]> assemblySources = null;
 
-            var script = AssetDatabase.LoadAssetAtPath<MonoScript>(scriptPath);
-            if (script == null) return result;
-
-            var text = _commentOrLiteral.Replace(script.text ?? string.Empty, " ");
-
-            // Names carry the generic arity the way Type.Name does ("Command`1").
-            var declaredNames = new HashSet<string>(StringComparer.Ordinal);
-            foreach (Match match in _typeDeclaration.Matches(text))
-                declaredNames.Add(GetDeclaredName(match));
-
-            var declaredNamespaces = new HashSet<string>(StringComparer.Ordinal);
-            foreach (Match match in _namespaceDeclaration.Matches(text))
-                declaredNamespaces.Add(match.Groups["name"].Value);
-
-            var declared = new List<Type>();
-            // GetClass() ignores generic arity: for a script declaring only Command<T> it can return a Command of
-            // another file.
-            if (script.GetClass() is { } mainType && declaredNames.Contains(mainType.Name)) declared.Add(mainType);
-
-            foreach (var type in GetAssemblyTypes(scriptPath, assemblyTypes))
+            foreach (var scriptPath in scriptPaths)
             {
-                if (type.DeclaringType is not null || declared.Contains(type)) continue;
-                if (!declaredNames.Contains(type.Name)) continue;
-                if (!DeclaresNamespace(declaredNamespaces, type.Namespace)) continue;
+                var script = AssetDatabase.LoadAssetAtPath<MonoScript>(scriptPath);
+                if (script == null) continue;
 
-                declared.Add(type);
-            }
+                var declarations = ScanDeclarations(script.text);
+                if (declarations.Count == 0) continue;
 
-            for (var i = 0; i < declared.Count; i++)
-            {
-                foreach (var nested in declared[i].GetNestedTypes(BindingFlags.Public | BindingFlags.NonPublic))
+                var assemblyName = Path.GetFileNameWithoutExtension(CompilationPipeline.GetAssemblyNameFromScriptPath(scriptPath));
+                foreach (var type in GetAssemblyTypes(assemblyName, assemblyTypes))
                 {
-                    // The name check drops compiler-generated closures and nested types of another partial file.
-                    if (declared.Contains(nested) || !declaredNames.Contains(nested.Name)) continue;
-                    declared.Add(nested);
+                    if (result.Contains(type) || !CanBeManagedReference(type)) continue;
+                    if (!declarations.TryGetValue(DeclarationKey(type), out var isPartial)) continue;
+
+                    if (isPartial)
+                    {
+                        assemblySources ??= CompilationPipeline.GetAssemblies(AssembliesType.Editor)
+                            .GroupBy(assembly => assembly.name, StringComparer.Ordinal)
+                            .ToDictionary(group => group.Key, group => group.First().sourceFiles, StringComparer.Ordinal);
+
+                        if (HasPartInOtherScript(type, assemblyName, assemblySources, deleted)) continue;
+                    }
+
+                    result.Add(type);
                 }
             }
-
-            foreach (var type in declared)
-                if (CanBeManagedReference(type)) result.Add(type);
 
             return result;
         }
 
-        private static IEnumerable<Type> GetAssemblyTypes(string scriptPath, Dictionary<string, Type[]> cache)
+        // Every type declaration keyed the way DeclarationKey names a type ("Namespace|Outer`1/Inner"), with whether it
+        // is partial. Namespace blocks nest, and a file-scoped namespace covers the rest of the file.
+        private static Dictionary<string, bool> ScanDeclarations(string source)
         {
-            var assemblyName = Path.GetFileNameWithoutExtension(CompilationPipeline.GetAssemblyNameFromScriptPath(scriptPath));
+            var declarations = new Dictionary<string, bool>(StringComparer.Ordinal);
+            var text = _commentOrLiteral.Replace(source ?? string.Empty, " ");
+
+            // Each open brace pushes what it opens: a namespace, a type path, or neither for any other block.
+            var scopes = new List<(string @namespace, string typePath)>();
+            var fileNamespace = string.Empty;
+            string pendingNamespace = null;
+            string pendingType = null;
+
+            foreach (Match match in _declarationToken.Matches(text))
+            {
+                if (match.Groups["namespace"].Success)
+                {
+                    pendingNamespace = Regex.Replace(match.Groups["namespace"].Value, @"[\s@]", string.Empty);
+                    pendingType = null;
+                }
+                else if (match.Groups["name"].Success)
+                {
+                    var outer = scopes.LastOrDefault(scope => scope.typePath is not null).typePath;
+                    var name = GetDeclaredName(match);
+                    pendingType = outer is null ? name : $"{outer}/{name}";
+
+                    var key = $"{CurrentNamespace(fileNamespace, scopes)}|{pendingType}";
+                    var isPartial = match.Groups["partial"].Success;
+                    declarations[key] = isPartial || (declarations.TryGetValue(key, out var partial) && partial);
+                }
+                else if (match.Groups["open"].Success)
+                {
+                    scopes.Add((pendingNamespace, pendingNamespace is null ? pendingType : null));
+                    pendingNamespace = null;
+                    pendingType = null;
+                }
+                else if (match.Groups["close"].Success)
+                {
+                    if (scopes.Count > 0) scopes.RemoveAt(scopes.Count - 1);
+                }
+                else
+                {
+                    // "namespace A;" is file-scoped; a declaration ending in ';' (a positional record) has no body.
+                    if (pendingNamespace is not null) fileNamespace = pendingNamespace;
+                    pendingNamespace = null;
+                    pendingType = null;
+                }
+            }
+
+            return declarations;
+        }
+
+        private static string CurrentNamespace(string fileNamespace, List<(string @namespace, string typePath)> scopes)
+        {
+            var parts = new List<string>();
+            if (fileNamespace.Length > 0) parts.Add(fileNamespace);
+
+            foreach (var scope in scopes)
+                if (scope.@namespace is not null) parts.Add(scope.@namespace);
+
+            return string.Join(".", parts);
+        }
+
+        private static string DeclarationKey(Type type)
+        {
+            var path = type.Name;
+            for (var declaring = type.DeclaringType; declaring is not null; declaring = declaring.DeclaringType)
+                path = $"{declaring.Name}/{path}";
+
+            return $"{type.Namespace ?? string.Empty}|{path}";
+        }
+
+        private static bool HasPartInOtherScript(
+            Type type,
+            string assemblyName,
+            Dictionary<string, string[]> assemblySources,
+            HashSet<string> deleted)
+        {
+            if (string.IsNullOrEmpty(assemblyName) || !assemblySources.TryGetValue(assemblyName, out var sources)) return false;
+
+            var key = DeclarationKey(type);
+            var name = TypeUtility.StripArity(type.Name);
+
+            foreach (var source in sources)
+            {
+                if (deleted.Contains(source)) continue;
+
+                string text;
+                try
+                {
+                    text = File.ReadAllText(source);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                // Most scripts never name the type, so the declaration scan runs on few of them.
+                if (text.IndexOf(name, StringComparison.Ordinal) < 0) continue;
+                if (ScanDeclarations(text).ContainsKey(key)) return true;
+            }
+
+            return false;
+        }
+
+        private static IEnumerable<Type> GetAssemblyTypes(string assemblyName, Dictionary<string, Type[]> cache)
+        {
             if (string.IsNullOrEmpty(assemblyName)) return Array.Empty<Type>();
             if (cache.TryGetValue(assemblyName, out var cached)) return cached;
 
@@ -189,32 +278,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return types;
         }
 
+        // Names carry the generic arity the way Type.Name does ("Command`1").
         private static string GetDeclaredName(Match match)
         {
-            var name = match.Groups["name"].Value;
+            var name = match.Groups["name"].Value.TrimStart('@');
             var parameters = match.Groups["parameters"];
             if (!parameters.Success || parameters.Value.Trim().Length == 0) return name;
 
             return $"{name}`{parameters.Value.Count(character => character == ',') + 1}";
-        }
-
-        // Nested blocks (namespace A { namespace B { } }) declare A.B piece by piece.
-        private static bool DeclaresNamespace(HashSet<string> declaredNamespaces, string @namespace)
-        {
-            if (string.IsNullOrEmpty(@namespace) || declaredNamespaces.Contains(@namespace)) return true;
-
-            foreach (var declared in declaredNamespaces)
-            {
-                if (@namespace.Length > declared.Length + 1 &&
-                    @namespace[declared.Length] == '.' &&
-                    @namespace.StartsWith(declared, StringComparison.Ordinal) &&
-                    DeclaresNamespace(declaredNamespaces, @namespace[(declared.Length + 1)..]))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         // Unlike IsAssignableManagedReference, an open generic definition passes: its script is matched against every
@@ -286,21 +357,17 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                         return null;
                     }
 
-                    var text = ReadIfMayHoldUsages(path, classTokens);
-                    if (text is null) continue;
+                    var lines = ReadIfMayHoldUsages(path, classTokens);
+                    if (lines is null) continue;
 
                     var usedHere = false;
-                    // Skipping display-name resolution keeps this a pure text pass rather than an asset load.
-                    foreach (var document in SerializeReferenceGraphScanner.Build(path, text, resolveTypeNames: false))
+                    // A pure text pass rather than an asset load; prefab instance overrides count like RefIds entries.
+                    foreach (var usage in SerializeReferenceTypeUsageIndex.CollectUsages(lines, guid: null))
                     {
-                        foreach (var node in document.Nodes)
-                        {
-                            if (node.StoredType.IsEmpty) continue;
-                            if (!typesByKey.TryGetValue(SerializeReferenceHelpers.OpenTypeKey(node.StoredType), out var type)) continue;
+                        if (!typesByKey.TryGetValue(SerializeReferenceHelpers.OpenTypeKey(usage.StoredType), out var type)) continue;
 
-                            counts[type]++;
-                            usedHere = true;
-                        }
+                        counts[type]++;
+                        usedHere = true;
                     }
 
                     if (usedHere) AddSample(samplePaths, path);
@@ -314,25 +381,24 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return counts;
         }
 
-        // A substring probe before the line-by-line parse: most assets hold no managed references at all, and the rest
-        // rarely name the class being deleted. Returns the text for the parse, so each asset is read once, or null when
-        // the asset can be skipped.
-        private static string ReadIfMayHoldUsages(string path, HashSet<string> classTokens)
+        // A line probe before the parse: most assets hold no managed references at all, and the rest rarely name the
+        // class being deleted. Returns the lines for the parse, so each asset is read once, or null when the asset can
+        // be skipped.
+        private static string[] ReadIfMayHoldUsages(string path, HashSet<string> classTokens)
         {
-            string text;
-            try
-            {
-                text = File.ReadAllText(path);
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            var lines = SerializeReferenceYaml.ReadLines(path);
+            if (lines is null) return null;
 
-            if (text.IndexOf(RefIdsMarker, StringComparison.Ordinal) < 0) return null;
+            var mayHoldUsages = false;
+            var namesType = false;
 
-            foreach (var token in classTokens)
-                if (text.IndexOf(token, StringComparison.Ordinal) >= 0) return text;
+            foreach (var line in lines)
+            {
+                mayHoldUsages = mayHoldUsages || SerializeReferenceTypeUsageIndex.MayHoldUsages(line);
+                namesType = namesType || classTokens.Any(token => line.IndexOf(token, StringComparison.Ordinal) >= 0);
+
+                if (mayHoldUsages && namesType) return lines;
+            }
 
             return null;
         }

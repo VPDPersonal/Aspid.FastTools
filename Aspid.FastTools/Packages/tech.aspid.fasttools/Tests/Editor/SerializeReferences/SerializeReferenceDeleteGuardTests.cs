@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
@@ -16,6 +18,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private const string FixturesScriptGuid = "e6234341c7874a99b575757146d497c8";
         private const string SettingsScriptGuid = "16332bb6fc28429f8b7968f66638aadd";
         private const string GenericScriptGuid = "0d4aeac1171c40c59cd879d9b181d89a";
+        private const string NamesakeScriptGuid = "5b0e3c7a9d2f4e18a6c1b7d3e9f02a41";
+        private const string PartialScriptGuid = "8c2f4a61e7b94d0fa3e5c9b1d6a7f203";
+        private const string PartialPartScriptGuid = "a4d91e7c3b6f482e9c0a5f1b7e2d8c64";
         private const string ProbeAssetPath = "Assets/__AspidDeleteGuardProbe__.asset";
 
         [TearDown]
@@ -28,9 +33,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void ResolveCandidateTypes_FileWithoutClassNamedAfterIt_ReturnsEveryDeclaredReferenceType()
         {
-            var types = SerializeReferenceDeleteGuard.ResolveCandidateTypes(AssetDatabase.GUIDToAssetPath(FixturesScriptGuid));
+            var types = Resolve(FixturesScriptGuid);
 
-            // DeleteGuardPistol<T> of another script shares the name, not the arity, so it stays out.
+            // DeleteGuardPistol<T> of another script shares the name, not the arity, and the global DeleteGuardPistol
+            // the name, not the namespace, so both stay out.
             CollectionAssert.AreEquivalent(
                 new[] { typeof(DeleteGuardPistol), typeof(DeleteGuardRifle), typeof(DeleteGuardArmory.Crate) },
                 types);
@@ -39,7 +45,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         [Test]
         public void ResolveCandidateTypes_GenericTypeInNestedNamespaceBlocks_ReturnsOnlyThatType()
         {
-            var types = SerializeReferenceDeleteGuard.ResolveCandidateTypes(AssetDatabase.GUIDToAssetPath(GenericScriptGuid));
+            var types = Resolve(GenericScriptGuid);
 
             CollectionAssert.AreEquivalent(new[] { typeof(DeleteGuardPistol<>) }, types);
         }
@@ -48,9 +54,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void ResolveCandidateTypes_ScriptWithOnlyUnityObjectTypes_ReturnsNothing()
         {
             // The script names other fixture types in a comment and a string, which declare nothing.
-            var types = SerializeReferenceDeleteGuard.ResolveCandidateTypes(AssetDatabase.GUIDToAssetPath(SettingsScriptGuid));
+            var types = Resolve(SettingsScriptGuid);
 
             CollectionAssert.IsEmpty(types);
+        }
+
+        [Test]
+        public void ResolveCandidateTypes_GlobalAndUnicodeNamedTypes_ReturnsThemWithoutNamespacedNamesake()
+        {
+            var types = Resolve(NamesakeScriptGuid);
+
+            CollectionAssert.AreEquivalent(new[] { typeof(global::DeleteGuardPistol), typeof(ОружиеDeleteGuard) }, types);
+        }
+
+        [Test]
+        public void ResolveCandidateTypes_PartialTypeWithAnotherPart_IsKeptOnlyWhenEveryPartIsDeleted()
+        {
+            CollectionAssert.AreEquivalent(new[] { typeof(DeleteGuardRevolver) }, Resolve(PartialScriptGuid));
+            CollectionAssert.IsEmpty(Resolve(PartialPartScriptGuid));
+            CollectionAssert.AreEquivalent(new[] { typeof(DeleteGuardRevolver), typeof(DeleteGuardShotgun) },
+                Resolve(PartialScriptGuid, PartialPartScriptGuid));
         }
 
         [TestCase(false)]
@@ -62,7 +85,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             Assert.AreEqual(warmIndex, SerializeReferenceTypeUsageIndex.IsWarm);
 
-            var types = SerializeReferenceDeleteGuard.ResolveCandidateTypes(AssetDatabase.GUIDToAssetPath(FixturesScriptGuid));
+            var types = Resolve(FixturesScriptGuid);
             var samples = new List<string>();
             var counts = SerializeReferenceDeleteGuard.CountUsages(types, samples);
 
@@ -72,6 +95,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.AreEqual(0, counts[typeof(DeleteGuardRifle)]);
             CollectionAssert.AreEqual(new[] { ProbeAssetPath }, samples);
         }
+
+        private static List<Type> Resolve(params string[] scriptGuids) =>
+            SerializeReferenceDeleteGuard.ResolveCandidateTypes(scriptGuids.Select(AssetDatabase.GUIDToAssetPath).ToList());
 
         private static void CreateProbe(ITestWeapon a, ITestWeapon b)
         {
