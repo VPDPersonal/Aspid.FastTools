@@ -566,7 +566,7 @@ namespace Aspid.FastTools.UIElements
         /// </summary>
         /// <remarks>
         /// <paramref name="children"/> is copied before the first change, so it may be the live
-        /// <see cref="VisualElement.Children"/> of this or another element.
+        /// <see cref="VisualElement.Children"/> of another element.
         /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
@@ -592,7 +592,7 @@ namespace Aspid.FastTools.UIElements
         /// </summary>
         /// <remarks>
         /// <paramref name="children"/> is copied before the first change, so it may be the live
-        /// <see cref="VisualElement.Children"/> of this or another element.
+        /// <see cref="VisualElement.Children"/> of another element.
         /// </remarks>
         /// <typeparam name="T">The element type.</typeparam>
         /// <param name="element">The element to modify.</param>
