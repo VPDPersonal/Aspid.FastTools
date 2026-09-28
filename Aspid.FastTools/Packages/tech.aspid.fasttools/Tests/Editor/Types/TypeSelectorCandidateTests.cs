@@ -42,13 +42,25 @@ namespace Aspid.FastTools.Types.Editors.Tests
         {
             var leaf = FindLeaf(BuildProbeHierarchy(), typeof(GroupedSearchProbe));
 
-            Assert.IsTrue(leaf.MatchesFilter("Types.Editors.Tests.GroupedSearch"),
+            Assert.IsTrue(leaf.MatchesFilter("Types.Editors.Tests.TypeSelectorCandidateTests.GroupedSearch"),
                 "A type placed in a group must stay findable by its namespace.");
+        }
+
+        [Test]
+        public void Search_MatchesTheDeclaringType_OfANestedType()
+        {
+            var leaf = FindLeaf(BuildProbeHierarchy(), typeof(PlainSearchProbe));
+
+            Assert.IsTrue(leaf.MatchesFilter(nameof(TypeSelectorCandidateTests)),
+                "A nested type must stay findable by its outer class.");
+            Assert.IsTrue(leaf.MatchesFilter($"{nameof(TypeSelectorCandidateTests)}.{nameof(PlainSearchProbe)}"));
         }
 
         [Test]
         public void Build_WithoutPredicate_ReusesTheHierarchy()
         {
+            // The first sweep of a fresh domain can load assemblies lazily, and a load drops the cache by design.
+            HierarchyBuilder.Build(new[] { typeof(ISearchProbe) }, TypeAllow.All);
             var first = HierarchyBuilder.Build(new[] { typeof(ISearchProbe) }, TypeAllow.All);
 
             Assert.AreSame(first, HierarchyBuilder.Build(new[] { typeof(ISearchProbe) }, TypeAllow.All),

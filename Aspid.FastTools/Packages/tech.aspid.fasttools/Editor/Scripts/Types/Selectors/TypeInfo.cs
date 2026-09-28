@@ -18,7 +18,7 @@ namespace Aspid.FastTools.Types.Editors
         internal readonly string Namespace;
         internal readonly string AssemblyQualifiedName;
 
-        // Namespace.Name without the assembly part, which search matches instead of the assembly-qualified name.
+        // Namespace.Outer.Name without the assembly part, which search matches instead of the assembly-qualified name.
         internal readonly string QualifiedName;
 
         internal readonly string Tooltip;
@@ -46,7 +46,7 @@ namespace Aspid.FastTools.Types.Editors
             Name = TypeUtility.FormatGenericName(type);
             Assembly = GetAssemblyName(type.Assembly);
             AssemblyQualifiedName = type.AssemblyQualifiedName;
-            QualifiedName = string.IsNullOrEmpty(type.Namespace) ? Name : $"{type.Namespace}.{Name}";
+            QualifiedName = GetQualifiedName(type, Name);
             Namespace = string.IsNullOrEmpty(type.Namespace) ? TypeSelectorHelpers.GlobalNamespace : type.Namespace;
 
             var item = type.GetCustomAttribute<TypeSelectorDisplayAttribute>(inherit: false);
@@ -63,6 +63,16 @@ namespace Aspid.FastTools.Types.Editors
 
             if (!string.IsNullOrWhiteSpace(item.Tooltip))
                 Tooltip = item.Tooltip;
+        }
+
+        // The declaring types stay in, so a nested type is found by its outer class and two nested types of the same
+        // name can be told apart.
+        private static string GetQualifiedName(Type type, string name)
+        {
+            for (var declaring = type.DeclaringType; declaring is not null; declaring = declaring.DeclaringType)
+                name = $"{TypeUtility.FormatGenericName(declaring)}.{name}";
+
+            return string.IsNullOrEmpty(type.Namespace) ? name : $"{type.Namespace}.{name}";
         }
 
         private static string GetAssemblyName(System.Reflection.Assembly assembly)

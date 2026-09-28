@@ -40,7 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `GetDisplayName()` and `GetDisplayNameWithIndex()` no longer append " (Script)" when `[AddComponentMenu]` is inherited from a base class or its path is empty or ends with `/`; such types get the nicified type name. The title now comes from the attribute declared on the type itself, and an `[Obsolete]` type no longer gets " (Deprecated)".
 - A `[TypeSelector(nameof(...))]` member reference on a field inside a `[Serializable]` class or a list element now resolves on the instance that declares the field, as analyzers `AFT0006`–`AFT0008` already check it; it used to be looked up on the inspected component or asset and showed a warning. The same applies to the picker of the Asset References window.
-- Type picker search no longer matches the assembly part of a type name: short queries such as `Key`, `Token`, `ver` or `null` used to match every type. Search compares the label, the type name and `Namespace.Name`.
+- Type picker search no longer matches the assembly part of a type name: short queries such as `Key`, `Token`, `ver` or `null` used to match every type. Search compares the label, the type name and the full name with the namespace and declaring types (`Namespace.Outer.Name`).
 - Typing and Backspace in the type picker edit the query again after the Down arrow moves into the results; they used to be ignored until the search field was clicked.
 - For a missing type the type picker no longer highlights `<None>`, so Enter right after opening does not erase the stored name.
 - In a UI Toolkit Inspector, choosing `<None>` now clears a `SerializableMonoScript` whose type is missing; the field used to keep showing `<Missing …>`.
