@@ -82,7 +82,7 @@ namespace Aspid.FastTools.Enums.Editors
             {
                 var caption = EnumValuesPropertyDrawerHelper.GetKeyCaption(keyProperty.stringValue, enumValue);
 
-                if (EditorGUI.DropdownButton(rect, new GUIContent(caption), FocusType.Keyboard))
+                if (EditorGUI.DropdownButton(rect, new GUIContent(caption), FocusType.Keyboard, EditorStyles.popup))
                 {
                     EnumValuesPropertyDrawerHelper.ShowKeyMenu(
                         rect, keyProperty.serializedObject, keyProperty.propertyPath, enumTypeProperty.propertyPath);
