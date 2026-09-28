@@ -211,6 +211,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool IsMissingType(SerializedProperty property) =>
             TryGetMissingType(property, out _, out _);
 
+        // The type picker's current mark. A missing type marks nothing, so Enter right after opening cannot clear the
+        // reference together with the data a Fix could still recover.
+        public static string GetSelectorCurrentAqn(SerializedProperty property, Type currentType) =>
+            currentType is null && IsMissingType(property) ? null : currentType?.AssemblyQualifiedName ?? string.Empty;
+
         // Missing-reference probes run repeatedly during repaint; same-frame repairs explicitly invalidate this memo.
         private static int _missingProbeFrame = -1;
         private static readonly Dictionary<(Object target, string path), (bool missing, long referenceId, ManagedTypeName storedType)>
@@ -684,6 +689,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     ArgumentFilter = IsValidGenericArgument,
                     InferredArgumentFilter = IsAcceptableGenericArgument,
                     IncludeHidden = true,
+                    ExcludeEditorOnly = TypeSelectorHelpers.IsStoredInRuntimeObject(property),
                 },
                 currentAqn: null, // a missing-type Fix has no current value — nothing (not even <None>) wears the check
                 onSelected: assemblyQualifiedName =>
