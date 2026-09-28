@@ -51,8 +51,12 @@ namespace Aspid.FastTools.UIElements.Tests
         [Test]
         public void PackageStyleSheets_DoNotUseAlphaHexColors()
         {
-            // Walks the folder on disk rather than the AssetDatabase, so Samples~ is covered too.
-            var files = Directory.GetFiles(Path.GetFullPath(PackagePath), "*.uss", SearchOption.AllDirectories);
+            // Walks the folder on disk rather than the AssetDatabase, so Samples~ is covered too. The resolved path is
+            // Library/PackageCache/... when the package is installed from git or a registry, not embedded.
+            var package = UnityEditor.PackageManager.PackageInfo.FindForAssetPath(PackagePath);
+            Assert.IsNotNull(package, $"{PackagePath} is not a package.");
+
+            var files = Directory.GetFiles(package.resolvedPath, "*.uss", SearchOption.AllDirectories);
             Assert.IsNotEmpty(files, "No stylesheets found in the package.");
 
             foreach (var file in files)
