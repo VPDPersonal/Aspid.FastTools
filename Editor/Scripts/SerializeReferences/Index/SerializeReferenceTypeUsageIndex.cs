@@ -164,10 +164,12 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         }
 
         // RefIds entries plus the types set by prefab instance overrides, which live outside any RefIds block.
-        public static IEnumerable<Usage> CollectUsages(string path, string guid)
+        public static IEnumerable<Usage> CollectUsages(string path, string guid) =>
+            CollectUsages(SerializeReferenceYaml.ReadLines(path), guid);
+
+        // One read feeds both passes, so a project sweep reads each file once; lines is null for an unreadable file.
+        public static IEnumerable<Usage> CollectUsages(string[] lines, string guid)
         {
-            // One read feeds both passes, so a project sweep reads each file once.
-            var lines = SerializeReferenceYaml.ReadLines(path);
             if (lines is null) yield break;
 
             // Data-only: resolving display names would load every asset.
@@ -187,6 +189,11 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     entry.TargetFileId, entry.TargetGuid);
             }
         }
+
+        // A cheap probe a sweep may run before CollectUsages: a file with no such line holds no usage at all.
+        public static bool MayHoldUsages(string line) =>
+            line.IndexOf("RefIds:", StringComparison.Ordinal) >= 0 ||
+            line.IndexOf("managedReferences[", StringComparison.Ordinal) >= 0;
 
         private static void AddUsage(string key, Usage usage)
         {

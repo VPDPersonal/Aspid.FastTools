@@ -53,15 +53,44 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 
             WithColdIndex(() =>
             {
-                var (_, folderCount) = SerializeReferenceDeleteGuard
-                    .CountUsagesBatch(new List<Type> { typeof(OverrideWiringProbe) })
-                    .Single();
-                Assert.AreEqual(1, folderCount, "The folder delete sweep.");
-
-                var sample = SerializeReferenceDeleteGuard.GatherUsageSample(typeof(OverrideWiringProbe), out var count);
-                Assert.AreEqual(1, count, "The script delete sweep.");
+                var sample = new List<string>();
+                var counts = SerializeReferenceDeleteGuard.CountUsages(new List<Type> { typeof(OverrideWiringProbe) }, sample);
+                Assert.AreEqual(1, counts[typeof(OverrideWiringProbe)], "The variant holds no RefIds block, only the override.");
                 CollectionAssert.Contains(sample, ProbePath);
             });
+        }
+
+        [Test]
+        public void BreakageBaseline_ColdSweep_KeepsOverrideType()
+        {
+            ImportProbe();
+
+            var established = SessionState.GetBool(SerializeReferenceBreakageDetector.EstablishedKey, false);
+            var baseline = SessionState.GetString(SerializeReferenceBreakageDetector.BaselineKey, string.Empty);
+            var enabled = SerializeReferenceSettings.BreakageDetectionEnabled;
+            try
+            {
+                SerializeReferenceSettings.BreakageDetectionEnabled = true;
+                SerializeReferenceBreakageDetector.ResetForTests();
+                SessionState.EraseBool(SerializeReferenceBreakageDetector.EstablishedKey);
+                SessionState.EraseString(SerializeReferenceBreakageDetector.BaselineKey);
+
+                WithColdIndex(() =>
+                {
+                    SerializeReferenceBreakageDetector.Scan();
+                    SerializeReferenceBreakageDetector.CompleteSweep();
+                });
+
+                var key = SerializeReferenceHelpers.StoredTypeKey(ManagedTypeName.FromType(typeof(OverrideWiringProbe)));
+                CollectionAssert.Contains(SerializeReferenceBreakageDetector.GetBaselineKeys(ProbePath), key);
+            }
+            finally
+            {
+                SerializeReferenceBreakageDetector.ResetForTests();
+                SerializeReferenceSettings.BreakageDetectionEnabled = enabled;
+                SessionState.SetBool(SerializeReferenceBreakageDetector.EstablishedKey, established);
+                SessionState.SetString(SerializeReferenceBreakageDetector.BaselineKey, baseline);
+            }
         }
 
         [Test]

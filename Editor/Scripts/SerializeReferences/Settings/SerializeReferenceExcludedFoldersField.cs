@@ -166,14 +166,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (string.IsNullOrEmpty(absolute)) return null;
 
             var relative = FileUtil.GetProjectRelativePath(absolute);
-            if (!string.IsNullOrEmpty(relative)) return relative;
+            if (IsScannedFolder(relative)) return relative;
 
             EditorUtility.DisplayDialog(
-                "Folder outside project",
-                "Pick a folder inside the project (under Assets/ or Packages/).",
+                "Folder not scanned",
+                "Project scans cover only Assets/. Pick Assets or a folder under it.",
                 "OK");
             return null;
         }
+
+        // Scans walk only Assets/, so an exclusion anywhere else would be a dead entry in the shared settings.
+        internal static bool IsScannedFolder(string relative) =>
+            string.Equals(relative, "Assets", StringComparison.Ordinal) ||
+            (relative?.StartsWith("Assets/", StringComparison.Ordinal) ?? false);
 
         private void Remove(string folder) =>
             SerializeReferenceSettings.ExcludedFolders = SerializeReferenceSettings.ExcludedFolders

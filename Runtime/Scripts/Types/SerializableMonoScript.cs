@@ -3,6 +3,7 @@ using System;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEngine;
+using UnityEditorInternal;
 #endif
 
 // ReSharper disable once CheckNamespace
@@ -16,7 +17,9 @@ namespace Aspid.FastTools.Types
     /// <para>
     /// In the editor the script asset is the source of truth: on every serialization the stored assembly-qualified
     /// name is re-read from the script's class. The script reference is editor-only, so a player build carries just
-    /// the name and resolves it exactly as <see cref="SerializableType"/> does.
+    /// the name and resolves it exactly as <see cref="SerializableType"/> does. When that name no longer resolves in
+    /// the editor, a main-thread read takes the type from the script, so an asset not saved since a class rename still
+    /// works in Play Mode; another thread gets <see langword="null"/> then.
     /// </para>
     /// <para>
     /// Only types Unity maps to a script asset can be referenced this way — a top-level, non-generic class declared
@@ -64,6 +67,25 @@ namespace Aspid.FastTools.Types
 #endif
         }
 
+#if UNITY_EDITOR
+        private protected sealed override Type? ResolveType(string? assemblyQualifiedName, out bool cacheable)
+        {
+            // Only OnBeforeSerialize re-syncs the name, and an object loaded in Play Mode may never run it — e.g. an
+            // additional scene or Resources.Load after a class rename whose owners were not saved again.
+            var type = base.ResolveType(assemblyQualifiedName, out cacheable);
+            if (type is not null) return type;
+
+            // GetClass throws off the main thread: a worker gets null and leaves the fallback to a main-thread read.
+            if (!InternalEditorUtility.CurrentThreadIsMainThread())
+            {
+                cacheable = false;
+                return null;
+            }
+
+            return _script ? _script!.GetClass() : null;
+        }
+#endif
+
         /// <summary>
         /// Converts the wrapper to the type it holds.
         /// </summary>
@@ -81,17 +103,22 @@ namespace Aspid.FastTools.Types
     /// <remarks>
     /// Unity serializes a field by its declared type, so a <see cref="SerializableMonoScript{T}"/> assigned from code
     /// to a field declared as <see cref="SerializableMonoScript"/> is reloaded unconstrained: the type survives, the
-    /// constraint does not.
+    /// constraint does not. Only the Inspector checks <typeparamref name="T"/> when a type is picked or dropped: a
+    /// loaded name is not re-checked, so after <typeparamref name="T"/> or the stored class's base changes, the type
+    /// may no longer be assignable to it.
     /// </remarks>
     /// <typeparam name="T">Base constraint type; the picker offers only types assignable to it.</typeparam>
     /// <example>
     /// <code><![CDATA[
     /// public class EnemySpawner : MonoBehaviour
     /// {
-    ///     [SerializeField] private SerializableMonoScript<Enemy>; _enemyType;
+    ///     [SerializeField] private SerializableMonoScript<Enemy> _enemyType;
     ///
-    ///     private void Spawn() =>
-    ///         gameObject.AddComponent(_enemyType.Type);
+    ///     private void Spawn()
+    ///     {
+    ///         if (_enemyType.Type is { } type)
+    ///             gameObject.AddComponent(type);
+    ///     }
     /// }
     /// ]]></code>
     /// </example>
