@@ -78,7 +78,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A warm index answers per type; a cold one falls back to a single combined sweep matching every type's open
         // key, since one sweep per contained script would freeze the editor on a folder delete.
-        private static IEnumerable<(Type type, int count)> CountUsagesBatch(List<Type> types)
+        public static IEnumerable<(Type type, int count)> CountUsagesBatch(List<Type> types)
         {
             if (SerializeReferenceTypeUsageIndex.IsWarm)
             {
@@ -110,7 +110,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         // A cold index is never warmed just to answer one delete, since that is a modal full-project build; a
         // targeted scan for this single type runs instead.
-        private static SortedSet<string> GatherUsageSample(Type type, out int count)
+        public static SortedSet<string> GatherUsageSample(Type type, out int count)
         {
             var paths = new SortedSet<string>(StringComparer.Ordinal);
             count = 0;

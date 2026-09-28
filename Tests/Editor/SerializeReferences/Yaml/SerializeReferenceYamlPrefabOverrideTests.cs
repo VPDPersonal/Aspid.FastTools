@@ -4,6 +4,7 @@ using UnityEditor;
 using NUnit.Framework;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
@@ -14,13 +15,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [TestFixture]
     internal sealed class SerializeReferenceYamlPrefabOverrideTests
     {
-        private const long VariantInstanceFileId = 7223051798917698576L;
-        private const long HolderFileId = 6049313956132244469L;
-        private const string BaseGuid = "1d4d79cb574804cd3967d8baa572e9fd";
+        internal const long VariantInstanceFileId = 7223051798917698576L;
+        internal const long HolderFileId = 6049313956132244469L;
+        internal const string BaseGuid = "1d4d79cb574804cd3967d8baa572e9fd";
 
-        private const long BowRid = 7288618111259901954L;
-        private const long BoxRid = 7288618111259901955L;
-        private const long InnerRid = 7288618111259901956L;
+        internal const long BowRid = 7288618111259901954L;
+        internal const long BoxRid = 7288618111259901955L;
+        internal const long InnerRid = 7288618111259901956L;
 
         private const long SceneInstanceFileId = 1327606217L;
         private const long SceneBowRid = 7288618111259901958L;
@@ -30,7 +31,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         private const long NestedGhostRid = 1000L;
         private const long NestedBowRid = 7288618111259901957L;
 
-        private const string VariantPrefab =
+        internal const string VariantPrefab =
 @"%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1001 &7223051798917698576
@@ -209,6 +210,33 @@ PrefabInstance:
     m_RemovedComponents: []
 ";
 
+        // An item whose target has no fileID is dropped, so its fields cannot overwrite the modification before it.
+        private const string UnreadableTargetPrefab =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &100
+PrefabInstance:
+  m_Modification:
+    m_Modifications:
+    - target: {fileID: 200, guid: 1d4d79cb574804cd3967d8baa572e9fd, type: 3}
+      propertyPath: 'managedReferences[1]'
+      value: Assembly-CSharp P05.Game.Bow
+      objectReference: {fileID: 0}
+    - target: {guid: 1d4d79cb574804cd3967d8baa572e9fd, type: 3}
+      propertyPath: 'managedReferences[2]'
+      value: Assembly-CSharp P05.Game.Other
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+";
+
+        // Editors before Unity 6 wrap a long target onto the next line: "guid: <guid>,\n        type: 3}". All targets
+        // wrapped, or only the holder's between short ones, which used to fold the wrapped items into the short one.
+        private static string WrapTargets(bool all) => Regex.Replace(VariantPrefab,
+            all
+                ? @"(?m)^(    - target: \{fileID: -?\d+, guid: [0-9a-f]+,) type: 3\}"
+                : $@"(?m)^(    - target: \{{fileID: {HolderFileId}, guid: [0-9a-f]+,) type: 3\}}",
+            "$1\n        type: 3}");
+
         // Two components of one instance that override the same (legacy 1000-based) rid; each gets its own type.
         private static string TwoTargetsSameRid(string firstType, string secondType) =>
 $@"%YAML 1.1
@@ -312,6 +340,35 @@ PrefabInstance:
             Assert.AreEqual(string.Empty, overrides[0].FieldPath, "No modification points at rid 42.");
         }
 
+        [TestCase(true)]
+        [TestCase(false)]
+        public void FindPrefabOverrideReferences_WrappedTargets_ReadLikeShortOnes(bool wrapAll)
+        {
+            var yaml = WrapTargets(wrapAll);
+            StringAssert.Contains(",\n        type: 3}", yaml, "The fixture must actually wrap.");
+            _path = YamlFixtures.WriteTemp(yaml);
+
+            var overrides = SerializeReferenceYamlEditor.FindPrefabOverrideReferences(_path);
+
+            CollectionAssert.AreEqual(new[] { BowRid, BoxRid, InnerRid }, overrides.Select(entry => entry.Rid).ToArray());
+            Assert.IsTrue(overrides.All(entry => entry.TargetFileId == HolderFileId && entry.TargetGuid == BaseGuid));
+            CollectionAssert.AreEqual(new[] { "weapon", "list.Array.data[0]", "list.Array.data[1]" },
+                overrides.Select(entry => entry.FieldPath).ToArray());
+        }
+
+        [Test]
+        public void FindPrefabOverrideReferences_UnreadableTarget_DoesNotOverwritePrevious()
+        {
+            _path = YamlFixtures.WriteTemp(UnreadableTargetPrefab);
+
+            var overrides = SerializeReferenceYamlEditor.FindPrefabOverrideReferences(_path);
+
+            Assert.AreEqual(1, overrides.Count);
+            Assert.AreEqual(1L, overrides[0].Rid);
+            Assert.AreEqual(200L, overrides[0].TargetFileId);
+            Assert.AreEqual("Bow", overrides[0].StoredType.Class);
+        }
+
         [TestCase("Assembly-CSharp Bow", "Assembly-CSharp", "", "Bow")]
         [TestCase("Game Ns.Sub.Outer/Inner", "Game", "Ns.Sub", "Outer/Inner")]
         [TestCase("Game Ns.Box`1[[Other.Ns.T, Other]]", "Game", "Ns", "Box`1[[Other.Ns.T, Other]]")]
@@ -363,10 +420,11 @@ PrefabInstance:
             });
         }
 
-        // The gate treats a [MovedFrom]-claimed override as a pending migration, so Project References must not list
-        // it as missing either. (RenamedRanged is the shared [MovedFrom(..., "OldRenamedRanged")] fixture.)
+        // The gate treats a [MovedFrom]-claimed override as a pending migration, and Migrate all does not rewrite it,
+        // so Project References lists it with its target. (RenamedRanged is the shared [MovedFrom(..., "OldRenamedRanged")]
+        // fixture.)
         [Test]
-        public void CollectOverridesFromIndex_MovedFromClaimedName_IsLeftOut()
+        public void CollectOverridesFromIndex_MovedFromClaimedName_IsListedAsPendingMigration()
         {
             var renamed = $"{typeof(RenamedRanged).Assembly.GetName().Name} {typeof(RenamedRanged).Namespace}.OldRenamedRanged";
             _path = YamlFixtures.WriteTemp(TwoTargetsSameRid(renamed, "Assembly-CSharp P05.Game.Bow"));
@@ -378,9 +436,12 @@ PrefabInstance:
             WithSeededIndex(_path, guid, () =>
             {
                 var overrides = MissingReferenceGroup.CollectOverridesFromIndex();
+                Assert.AreEqual(2, overrides.Count);
 
-                Assert.AreEqual(1, overrides.Count);
-                Assert.AreEqual("Bow", overrides[0].Entry.StoredType.Class);
+                var renamedEntry = overrides.Single(entry => entry.Entry.StoredType.Class == "OldRenamedRanged");
+                var bowEntry = overrides.Single(entry => entry.Entry.StoredType.Class == "Bow");
+                Assert.AreEqual(typeof(RenamedRanged), MissingReferenceGroup.OverrideMigrationTarget(renamedEntry));
+                Assert.IsNull(MissingReferenceGroup.OverrideMigrationTarget(bowEntry));
             });
         }
 
@@ -403,6 +464,36 @@ PrefabInstance:
             {
                 indexField.SetValue(null, previous);
             }
+        }
+
+        [Test]
+        public void SearchItemId_SameRidOnTwoTargets_Differs()
+        {
+            var bow = new ManagedTypeName("Assembly-CSharp", "P05.Game", "Bow");
+            var first = new SerializeReferenceTypeUsageIndex.Usage("guid", 100, 1000, false, bow, isOverride: true, 200, BaseGuid);
+            var second = new SerializeReferenceTypeUsageIndex.Usage("guid", 100, 1000, false, bow, isOverride: true, 201, BaseGuid);
+
+            Assert.AreNotEqual(SerializeReferenceUsageSearchProvider.ItemId(first), SerializeReferenceUsageSearchProvider.ItemId(second),
+                "Unity Search dedupes by id, so one of the two usages would vanish.");
+            Assert.AreEqual("guid:100:1000",
+                SerializeReferenceUsageSearchProvider.ItemId(new SerializeReferenceTypeUsageIndex.Usage("guid", 100, 1000, false, bow)));
+        }
+
+        [Test]
+        public void CiReport_Override_IsMarkedInOriginColumn()
+        {
+            var bow = new ManagedTypeName("Assembly-CSharp", "P05.Game", "Bow");
+            var report = SerializeReferenceCiGate.BuildReport(new[]
+            {
+                new GateViolation("Assets/Variant.prefab", VariantInstanceFileId, BowRid, bow, GateViolationKind.MissingType,
+                    "weapon", isOverride: true),
+                new GateViolation("Assets/Base.prefab", HolderFileId, BowRid, bow, GateViolationKind.MissingType, string.Empty),
+            });
+
+            var rows = report.Split('\n').Select(line => line.TrimEnd('\r')).Where(line => line.StartsWith("MissingType")).ToArray();
+            Assert.AreEqual(2, rows.Length);
+            Assert.AreEqual($"MissingType\tAssets/Variant.prefab\t{VariantInstanceFileId}\t{BowRid}\tBow\tweapon\toverride", rows[0]);
+            Assert.AreEqual($"MissingType\tAssets/Base.prefab\t{HolderFileId}\t{BowRid}\tBow\t\t", rows[1]);
         }
 
         [Test]

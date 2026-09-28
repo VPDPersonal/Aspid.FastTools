@@ -118,7 +118,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return true;
         }
 
-        private static BreakageReport BuildReport(
+        public static BreakageReport BuildReport(
             List<SerializeReferenceTypeUsageIndex.Usage> unresolved,
             HashSet<string> baseline)
         {
