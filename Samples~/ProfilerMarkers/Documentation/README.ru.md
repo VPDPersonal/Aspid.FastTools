@@ -18,6 +18,8 @@ using (this.Marker().WithName("Steering"))     // "FlockSimulation.Steering (lin
 2. Откройте **Window → Analysis → Profiler**, войдите в Play Mode и выберите кадр в модуле CPU.
 3. В режиме **Hierarchy** разверните `PlayerLoop → Update.ScriptRunBehaviourUpdate → Flock.Update (…)`.
 
+Примеру нужен встроенный модуль Unity **Physics**, он включён по умолчанию; без него скрипты примера не компилируются, а в сцене остаются пропавшие скрипты.
+
 Для записи переключайте **Light / Dark / Authored** в `Tools → Aspid 🐍 → FastTools → Sample Themes`.
 
 ![Симуляция стаи, фазы которой измеряют показанные выше маркеры.](Images/demo.gif)

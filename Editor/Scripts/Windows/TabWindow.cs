@@ -41,8 +41,6 @@ namespace Aspid.FastTools.Editors
         private Button _projectButton;
         private Button _settingsButton;
 
-        private bool _forceProjectScan;
-
         internal TabType CurrentTabType { get; private set; }
 
         #region Open Methods
@@ -185,17 +183,7 @@ namespace Aspid.FastTools.Editors
                     OnCanvasStatus = SetCanvasStatus,
                 };
                 _container.AddChild(project);
-
-                // Only a breakage deep-link may force a blocking project scan on a cold index.
-                if (_forceProjectScan)
-                {
-                    _forceProjectScan = false;
-                    project.ScanProject();
-                }
-                else
-                {
-                    project.Initialize();
-                }
+                project.Initialize();
             }
 
             UpdateToolbar();

@@ -678,6 +678,45 @@ MonoBehaviour:
         _damage: 5
 ";
 
+        // A scene whose MonoBehaviour holds required collections the way Unity writes them: a filled managed-reference
+        // list and a filled SerializableType array put their "- " entries on the key's own indent, the empty ones are
+        // inline []. None of them is an unset field, so no violations are expected.
+        public const string RequiredSceneCollections =
+@"%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &100
+GameObject:
+  m_Component:
+  - component: {fileID: 101}
+  m_Name: Hero
+--- !u!114 &101
+MonoBehaviour:
+  m_GameObject: {fileID: 100}
+  m_Enabled: 1
+  m_Script: {fileID: 11500000, guid: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa, type: 3}
+  m_Name:
+  weapons:
+  - rid: 7001
+  - rid: 7002
+  weaponArray: []
+  types:
+  - _assemblyQualifiedName: Aspid.FastTools.Samples.SerializeReferences.Pistol, Aspid.FastTools.Samples.SerializeReferences
+  typeList: []
+  names:
+  - Pistol
+  references:
+    version: 2
+    RefIds:
+    - rid: 7001
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 5
+    - rid: 7002
+      type: {class: Pistol, ns: Aspid.FastTools.Samples.SerializeReferences, asm: Aspid.FastTools.Samples.SerializeReferences}
+      data:
+        _damage: 7
+";
+
         // The nested-container scene with the WHOLE _loadout key absent (object saved before the container field was
         // added). Like a top-level absent key, this needs a reserialize, not a build failure — no violations expected.
         public const string RequiredSceneNestedContainerAbsent =
