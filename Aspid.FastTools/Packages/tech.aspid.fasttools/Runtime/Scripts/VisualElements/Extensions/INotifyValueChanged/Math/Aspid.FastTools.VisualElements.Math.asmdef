@@ -10,7 +10,9 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "ASPID_FASTTOOLS_UNITY_MATHEMATICS_INTEGRATION"
+    ],
     "versionDefines": [
         {
             "name": "com.unity.mathematics",

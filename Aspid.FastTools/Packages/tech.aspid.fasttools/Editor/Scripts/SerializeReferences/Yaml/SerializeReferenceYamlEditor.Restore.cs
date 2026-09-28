@@ -96,7 +96,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                     if (i == refIdsStart) result.AddRange(entry);
                 }
 
-                WritePreservingNewlines(assetPath, result);
+                if (!TryWritePreservingNewlines(assetPath, result)) return false;
                 SerializeReferenceYamlProbeCache.ClearCache();
                 return true;
             }
