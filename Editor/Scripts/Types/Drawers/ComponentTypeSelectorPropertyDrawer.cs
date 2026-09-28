@@ -98,7 +98,7 @@ namespace Aspid.FastTools.Types.Editors
             }
 
             // m_Script is written directly, so Unity checks none of the attributes AddComponent would: refuse the
-            // swaps AddComponent or Remove Component would refuse, and add what the new class requires afterwards.
+            // swaps AddComponent or Remove Component would refuse, and add what the new class requires in SwapScript.
             foreach (var target in property.serializedObject.targetObjects)
             {
                 if (target is not Component component) continue;
@@ -137,41 +137,51 @@ namespace Aspid.FastTools.Types.Editors
                 }
             }
 
+            foreach (var required in GetRequiredTypes(newType))
+            {
+                if (IsRequirementMet(component, newType, required) || !IsAbstractComponent(required)) continue;
+                return $"{newType.Name} requires {required.Name}, which is abstract and cannot be added.";
+            }
+
             return null;
         }
 
         internal static void SwapScript(SerializedObject serializedObject, MonoScript script, Type newType)
         {
-            // Read before the swap: the target is rebound to the new class once m_Script is applied.
-            var gameObjects = serializedObject.targetObjects
-                .OfType<Component>()
-                .Select(component => component.gameObject)
-                .ToArray();
-
             Undo.IncrementCurrentGroup();
             Undo.SetCurrentGroupName($"Change Type to {newType.Name}");
             var undoGroup = Undo.GetCurrentGroup();
 
-            serializedObject.FindProperty("m_Script").SetObjectReferenceAndApply(script);
-
-            foreach (var gameObject in gameObjects)
+            // As AddComponent does, the requirements come first: applying m_Script already runs the new class's
+            // OnValidate (and Awake/OnEnable where they run), which must find them.
+            foreach (var component in serializedObject.targetObjects.OfType<Component>())
             {
                 foreach (var required in GetRequiredTypes(newType))
                 {
-                    if (gameObject.GetComponent(required)) continue;
+                    if (IsRequirementMet(component, newType, required)) continue;
+                    if (Undo.AddComponent(component.gameObject, required)) continue;
 
-                    if (required.IsAbstract)
-                    {
-                        Debug.LogWarning($"[ComponentTypeSelector] {newType.Name} requires {required.Name}, which is abstract and cannot be added to {gameObject.name}.", gameObject);
-                        continue;
-                    }
-
-                    Undo.AddComponent(gameObject, required);
+                    // Unity has logged why (e.g. it conflicts with an existing component); keep the object as it was.
+                    Undo.RevertAllDownToGroup(undoGroup);
+                    Debug.LogWarning($"[ComponentTypeSelector] Cannot change {component.name} to {newType.Name}: it requires {required.Name}, which cannot be added.", component);
+                    return;
                 }
             }
 
+            serializedObject.FindProperty("m_Script").SetObjectReferenceAndApply(script);
             Undo.CollapseUndoOperations(undoGroup);
         }
+
+        // The component being swapped does not count: it is about to become newType.
+        private static bool IsRequirementMet(Component component, Type newType, Type required) =>
+            required.IsAssignableFrom(newType) || HasOtherComponent(component, required);
+
+        // Engine base classes such as Collider, Renderer or Joint are abstract only natively; on the managed side they
+        // are the built-in components that other component classes derive from. (Transform matches too, but every
+        // GameObject already has one.)
+        private static bool IsAbstractComponent(Type type) =>
+            type.IsAbstract
+            || (!typeof(MonoBehaviour).IsAssignableFrom(type) && TypeCache.GetTypesDerivedFrom(type).Count > 0);
 
         private static bool HasOtherComponent(Component component, Type type)
         {
