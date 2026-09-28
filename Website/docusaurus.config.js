@@ -19,8 +19,11 @@ const REPO = 'https://github.com/VPDPersonal/Aspid.FastTools';
 const ASSET_STORE = 'https://assetstore.unity.com/packages/slug/365584';
 /** The docs in the working tree describe the package version in the working tree. */
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL(`${PACKAGE}/package.json`, import.meta.url), 'utf8')).version;
-/** The UPM branch the install URL points at; each release tags it `<branch>/<version>`. */
-const UPM_BRANCH = 'upm-preview';
+/**
+ * The UPM branch the install URL points at; each release tags it `<branch>/<version>`. A prerelease publishes to
+ * `upm-preview`, a stable version to `upm` (.github/workflows/release.yml).
+ */
+const UPM_BRANCH = PACKAGE_VERSION.includes('-') ? 'upm-preview' : 'upm';
 
 /** Orders `1.0.0-rc.10` after `1.0.0-rc.9`, and a release after its prereleases. */
 function compareVersions(a, b) {
@@ -34,8 +37,10 @@ function compareVersions(a, b) {
 }
 
 /**
- * The versions the install panel can pin, newest first: the UPM branch's tags on GitHub, or the local ones when offline.
- * The working-tree version is always offered, since its tag may be pushed after the docs are built.
+ * The versions the install panel can pin, per UPM branch and newest first: each branch's tags on GitHub, or the local
+ * ones when offline. A page pins from the branch its own README URL names, which for a docs snapshot can differ from
+ * the working tree's. The working-tree version is always offered on its branch, since its tag may be pushed after
+ * the docs are built.
  */
 function readPackageVersions() {
   const read = (args) => {
@@ -45,10 +50,15 @@ function readPackageVersions() {
       return '';
     }
   };
-  const prefix = `${UPM_BRANCH}/`;
-  const tags = read(['ls-remote', '--tags', '--refs', `${REPO}.git`, `${prefix}*`]) || read(['tag', '-l', `${prefix}*`]);
-  const versions = tags.split('\n').map((line) => line.split(prefix)[1]?.trim()).filter(Boolean);
-  return [...new Set([PACKAGE_VERSION, ...versions])].sort(compareVersions).reverse();
+  const branches = ['upm', 'upm-preview'];
+  const patterns = branches.map((branch) => `${branch}/*`);
+  const tags = read(['ls-remote', '--tags', '--refs', `${REPO}.git`, ...patterns]) || read(['tag', '-l', ...patterns]);
+  const refs = tags.split('\n').map((line) => line.trim().split(/\s/).pop().replace(/^refs\/tags\//, ''));
+  return Object.fromEntries(branches.map((branch) => {
+    const versions = refs.filter((ref) => ref.startsWith(`${branch}/`)).map((ref) => ref.slice(branch.length + 1));
+    if (branch === UPM_BRANCH) versions.push(PACKAGE_VERSION);
+    return [branch, [...new Set(versions)].sort(compareVersions).reverse()];
+  }));
 }
 
 /**

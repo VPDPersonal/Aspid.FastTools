@@ -1,24 +1,54 @@
 #!/bin/sh
-# Set the package version everywhere it is written by hand: package.json, the badge SVG and the badge alt text and
-# release link in both README translations. The root README is regenerated from the package one; on a stable version
-# the unshipped analyzer rules move to AnalyzerReleases.Shipped.md.
+# Set the package version everywhere it is written by hand: package.json, the badge SVG and the badge alt text,
+# release link and install URLs in both README translations. The root README is regenerated from the package one; on a
+# stable version the unshipped analyzer rules move to AnalyzerReleases.Shipped.md.
+# The version also picks the channel .github/workflows/release.yml publishes to: a prerelease (1.0.0-rc.9) installs
+# from `upm-preview` under a "Preview" badge, a stable version (1.0.0) from `upm` under a "Release" one.
+# Running it again with the version already set repairs files that drifted (a hand-edited package.json, say).
 #   scripts/set-version.sh 1.0.0-rc.9
 set -eu
 cd "$(dirname "$0")/.."
 NEW="${1:?usage: scripts/set-version.sh <version>}"
+# \A..\z on the whole argument: a line-by-line grep would let "1.0.0<newline>x" through into package.json.
+perl -e 'exit($ARGV[0] !~ /\A[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?\z/)' "$NEW" || { echo "$NEW is not a SemVer version" >&2; exit 1; }
+# Checked before any file changes, so a missing install never leaves the root README out of step.
+[ -d Website/node_modules ] || { echo "Website/node_modules is missing; run: npm --prefix Website ci" >&2; exit 1; }
 PKG=Aspid.FastTools/Packages/tech.aspid.fasttools
 OLD=$(sed -n 's/^  "version": "\(.*\)",$/\1/p' "$PKG/package.json")
 [ -n "$OLD" ] || { echo "package.json version not found" >&2; exit 1; }
-[ "$OLD" != "$NEW" ] || { echo "already at $NEW"; exit 0; }
-for f in "$PKG/package.json" "$PKG/Documentation/README.md" "$PKG/Documentation/ru/README.md" \
-         "$PKG/Documentation/Images/status-badge-preview.svg"; do
-  sed -i '' "s/$OLD/$NEW/g" "$f"
+case "$NEW" in
+  *-*) BRANCH=upm-preview LABEL=Preview EN='latest preview' RU='последнюю preview-версию' ;;
+  *) BRANCH=upm LABEL=Release EN='latest release' RU='последнюю версию' ;;
+esac
+export NEW BRANCH LABEL EN RU
+# Only the "version" line: a dependency can be at the same number.
+OLD=$OLD perl -pi -e 's/^(  "version": ")\Q$ENV{OLD}\E(",)$/$1$ENV{NEW}$2/' "$PKG/package.json"
+# Each file replaces the version its own badge carries, whole: 1.0.0 does not rewrite 1.0.0-rc.8 or 11.0.0.
+# shellcheck disable=SC2016 # perl code, expanded by perl
+WHOLE='s/(?<![0-9.])\Q$old\E(?![0-9A-Za-z-]|\.[0-9A-Za-z])/$ENV{NEW}/g if defined $old'
+for f in "$PKG/Documentation/README.md" "$PKG/Documentation/ru/README.md"; do
+  perl -0pi -e 'my ($old) = /\[!\[(?:Preview|Release) ([^\]]+)\]/; '"$WHOLE"';
+    s/\[!\[(?:Preview|Release) /[![$ENV{LABEL} /g;
+    s/\.git#upm(?:-preview)?\b/.git#$ENV{BRANCH}/g;
+    s/the latest (?:preview|release);/the $ENV{EN};/;
+    s/на последнюю (?:preview-)?версию;/на $ENV{RU};/' "$f"
 done
+# The badge is as wide as its version text: an estimated 13px glyph width per character, plus 14px of padding,
+# which keeps 1.0.0-rc.8 at the original 162.
+perl -0pi -e 'my ($old) = /aria-label="(?:Preview|Release) ([^"]+)"/; '"$WHOLE"';
+  s/(?:Preview|Release)( \Q$ENV{NEW}\E|<\/text>)/$ENV{LABEL}$1/g;
+  if (my ($t) = /class="text" x="90" y="20\.5">([^<]*)</) {
+    my $e = 0; $e += /[0-9]/ ? 7.4 : /\./ ? 3.6 : /-/ ? 4.6 : /[A-Z]/ ? 8.5 : 6.6 for split //, $t;
+    my $w = 90 + int($e + 0.5) + 14; my $r = $w - 1;
+    s/width="\d+" height="32" viewBox="0 0 \d+ 32"/width="$w" height="32" viewBox="0 0 $w 32"/;
+    s/(<rect class="outline"[^>]* width=")\d+/$1$r/;
+  }' "$PKG/Documentation/Images/status-badge-preview.svg"
 # Analyzer release tracking: the unshipped rules ship with a stable version. Its release headers accept only
-# System.Version numbers (RS2007), so pre-releases keep them unshipped.
+# System.Version numbers (RS2007), so pre-releases keep them unshipped. A version that already has its header is
+# never given a second one.
 REL=Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/Aspid.FastTools.Analyzers/AnalyzerReleases
 case "$NEW" in *-*) ;; *)
-  if grep -q '^AFT[0-9]' "$REL.Unshipped.md"; then
+  if grep -q '^AFT[0-9]' "$REL.Unshipped.md" && ! grep -qxF "## Release $NEW" "$REL.Shipped.md"; then
     { printf '\n## Release %s\n\n' "$NEW"
       awk '/^;/ { next } /^$/ { if (body) blank++; next } { body = 1; for (; blank; blank--) print ""; print }' "$REL.Unshipped.md"
     } >> "$REL.Shipped.md"
@@ -27,5 +57,7 @@ case "$NEW" in *-*) ;; *)
   fi ;;
 esac
 npm --prefix Website run --silent sync-readme
-echo "$OLD -> $NEW"
+# Whatever a pattern above missed (a reworded badge, say) fails here instead of at the release.
+node scripts/check-version.mjs
+echo "$OLD -> $NEW ($BRANCH)"
 git status --short
