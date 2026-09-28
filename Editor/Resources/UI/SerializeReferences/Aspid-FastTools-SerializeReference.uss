@@ -301,7 +301,7 @@
 
 .aspid-fasttools-repair-references__picker
     .aspid-fasttools-type-selector__header {
-    background-color:                                       rgba(0, 0, 0, 0);
+    background-color:                                       #00000000;
     margin:                                                 0;
     margin-bottom:                                          5px;
 }
