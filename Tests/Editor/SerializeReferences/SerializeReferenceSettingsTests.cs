@@ -237,5 +237,20 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
             Assert.IsNotNull(container.Q<EnumField>(), "The build gate is shared and must render on the shared page.");
             Assert.IsNotNull(container.Q<SerializeReferenceExcludedFoldersField>(), "Excluded folders are shared and must render on the shared page.");
         }
+
+        // -----------------------------------------------------------------------------------------------------
+        // E — the folder picker accepts only folders the project scans walk
+        // -----------------------------------------------------------------------------------------------------
+
+        [TestCase("Assets", ExpectedResult = true)]
+        [TestCase("Assets/Plugins", ExpectedResult = true)]
+        [TestCase("Packages/com.example.tool", ExpectedResult = false)]
+        [TestCase("Library/PackageCache/com.example.tool", ExpectedResult = false)]
+        [TestCase("ProjectSettings", ExpectedResult = false)]
+        [TestCase("AssetsBackup", ExpectedResult = false)]
+        [TestCase("", ExpectedResult = false)]
+        [TestCase(null, ExpectedResult = false)]
+        public bool IsScannedFolder_AcceptsOnlyAssets(string relative) =>
+            SerializeReferenceExcludedFoldersField.IsScannedFolder(relative);
     }
 }

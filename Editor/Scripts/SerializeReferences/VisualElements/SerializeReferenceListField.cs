@@ -48,16 +48,14 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 unbindItem = (element, _) => element.Clear(),
             };
 
-            // Single-object only: under a multi-object selection the native add stays and the duplicate guard
-            // de-aliases the copies. Set before any attach, so the item fields' own install short-circuits on it.
+            // Under a multi-object selection too: the native add would copy the last element's rid into every object,
+            // and the duplicate guard does not watch multi-object selections. Set before any attach, so the item
+            // fields' own install short-circuits on it.
             var serializedObject = property.serializedObject;
-            if (!serializedObject.isEditingMultipleObjects)
-            {
-                var target = serializedObject.targetObject;
-                var arrayPath = property.propertyPath;
-                listView.overridingAddButtonBehavior = (_, button) =>
-                    SerializeReferenceListAddBehavior.OpenAppendPicker(target, arrayPath, elementType, _baseTypes, button);
-            }
+            var targets = serializedObject.targetObjects;
+            var arrayPath = property.propertyPath;
+            listView.overridingAddButtonBehavior = (_, button) =>
+                SerializeReferenceListAddBehavior.OpenAppendPicker(targets, arrayPath, elementType, _baseTypes, button);
 
             this.AddChild(listView);
 
