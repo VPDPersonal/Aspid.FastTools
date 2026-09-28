@@ -1,6 +1,9 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Text;
 using UnityEditor;
+using UnityEngine;
 using System.Collections.Generic;
 using Aspid.FastTools.Types.Editors;
 
@@ -9,6 +12,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 {
     internal static class SerializeReferenceGateScanner
     {
+        private const int MaxListedPaths = 10;
+
         // How many files the required-field sweep loads before it releases the ones nothing references any more.
         // Not const so tests can lower it.
         internal static int UnloadEveryLoadedFiles = 64;
@@ -23,7 +28,13 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         private static readonly Dictionary<string, IReadOnlyList<RequiredFieldDescriptor>> _scriptRequiredFieldsCache =
             new(StringComparer.Ordinal);
 
-        public static IReadOnlyList<GateViolation> Scan(GateOptions options, Action<float, string> onProgress = null)
+        // `unscanned` collects the candidates the YAML pass had to skip (binary files, LFS pointers): their missing
+        // types, and a scene's required fields, were not checked. Prefabs and assets still get the object-load
+        // required check, which does not depend on the file format.
+        public static IReadOnlyList<GateViolation> Scan(
+            GateOptions options,
+            Action<float, string> onProgress = null,
+            ICollection<(string AssetPath, AssetFileFormat Format)> unscanned = null)
         {
             var violations = new List<GateViolation>();
             var paths = AssetDatabase.GetAllAssetPaths().Where(SerializeReferenceHelpers.IsScanCandidate).ToArray();
@@ -38,14 +49,26 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 var path = paths[i];
                 onProgress?.Invoke((float)i / Math.Max(1, paths.Length), path);
 
+                var isScene = SerializeReferenceHelpers.IsScene(path);
+
                 // Scenes are read as YAML. Any other file is loaded by the required sweep, or earlier by the
                 // constraint map of a pending migration, and either load counts toward the next unload.
-                var wasLoaded = !options.ScanRequiredFields || SerializeReferenceHelpers.IsScene(path) ||
-                    AssetDatabase.IsMainAssetAtPathLoaded(path);
+                var wasLoaded = !options.ScanRequiredFields || isScene || AssetDatabase.IsMainAssetAtPathLoaded(path);
 
-                if (options.ScanMissingTypes)
+                // Sniffed once here; the YAML scanners below are told the result instead of opening the file again.
+                var needsYaml = options.ScanMissingTypes || (options.ScanRequiredFields && isScene);
+                var isTextYaml = true;
+
+                if (needsYaml && File.Exists(path))
                 {
-                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves))
+                    var format = SerializeReferenceYaml.SniffFileFormat(path);
+                    isTextYaml = format == AssetFileFormat.TextYaml;
+                    if (!isTextYaml) unscanned?.Add((path, format));
+                }
+
+                if (options.ScanMissingTypes && isTextYaml)
+                {
+                    foreach (var entry in SerializeReferenceYamlEditor.FindMissingReferences(path, SerializeReferenceHelpers.StoredTypeResolves, knownTextYaml: true))
                     {
                         if (IsPendingMigration(path, entry)) continue;
                         violations.Add(new GateViolation(path, entry.FileId, entry.Rid, entry.StoredType,
@@ -55,8 +78,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
                 if (options.ScanRequiredFields)
                 {
-                    if (SerializeReferenceHelpers.IsScene(path)) CollectSceneRequiredViolations(path, violations);
-                    else CollectRequiredViolations(path, violations);
+                    if (!isScene) CollectRequiredViolations(path, violations);
+                    else if (isTextYaml) CollectSceneRequiredViolations(path, violations, knownTextYaml: true);
                 }
 
                 if (!wasLoaded && AssetDatabase.IsMainAssetAtPathLoaded(path)) loadedSinceUnload++;
@@ -72,6 +95,73 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (loadedSinceUnload > 0) EditorUtility.UnloadUnusedAssetsImmediate();
 
             return violations;
+        }
+
+        // A warning for the log, or null when nothing worth one was skipped. Outside Force Text every binary file warns.
+        // Under Force Text, Unity still writes a few assets binary (LightingData, NavMesh) that cannot hold managed
+        // references, so only a binary file that can (CanHoldManagedReferences) warns: a prefab or scene saved before
+        // the switch, a [PreferBinarySerialization] ScriptableObject. An LFS pointer always warns: the real file was
+        // never pulled.
+        public static string DescribeUnscanned(
+            IReadOnlyCollection<(string AssetPath, AssetFileFormat Format)> unscanned, SerializationMode serializationMode)
+        {
+            if (unscanned is null || unscanned.Count == 0) return null;
+
+            var forceText = serializationMode == SerializationMode.ForceText;
+
+            var pointers = unscanned
+                .Where(file => file.Format == AssetFileFormat.LfsPointer)
+                .Select(file => file.AssetPath)
+                .ToList();
+
+            var binaries = unscanned
+                .Where(file => file.Format == AssetFileFormat.Binary)
+                .Select(file => file.AssetPath)
+                .Where(path => !forceText || CanHoldManagedReferences(path))
+                .ToList();
+
+            if (pointers.Count == 0 && binaries.Count == 0) return null;
+
+            var builder = new StringBuilder();
+            builder.AppendLine($"[Aspid FastTools] {pointers.Count + binaries.Count} file(s) were not checked for SerializeReference problems because they are not text YAML:");
+
+            if (binaries.Count > 0 && forceText)
+            {
+                builder.AppendLine($"  {binaries.Count} binary prefab, scene or ScriptableObject file(s): save them again to write them as text. A [PreferBinarySerialization] asset stays binary.");
+                AppendPaths(builder, binaries);
+            }
+            else if (binaries.Count > 0)
+            {
+                builder.AppendLine($"  {binaries.Count} binary file(s): Asset Serialization Mode is {serializationMode}. Set it to Force Text and save the assets again.");
+            }
+
+            if (pointers.Count > 0)
+            {
+                builder.AppendLine($"  {pointers.Count} Git LFS pointer(s): fetch the LFS objects before the check.");
+                AppendPaths(builder, pointers);
+            }
+
+            return builder.ToString();
+        }
+
+        // Whether a binary file may hide managed references: a prefab or scene always may; an .asset when its main
+        // asset is a ScriptableObject, or of an unknown type. The binaries Unity writes under Force Text (LightingData,
+        // NavMesh) derive from UnityEngine.Object directly.
+        public static bool CanHoldManagedReferences(string assetPath)
+        {
+            if (!assetPath.EndsWith(".asset", StringComparison.OrdinalIgnoreCase)) return true;
+
+            var mainType = AssetDatabase.GetMainAssetTypeAtPath(assetPath);
+            return mainType is null || typeof(ScriptableObject).IsAssignableFrom(mainType);
+        }
+
+        private static void AppendPaths(StringBuilder builder, IReadOnlyList<string> paths)
+        {
+            foreach (var path in paths.Take(MaxListedPaths))
+                builder.AppendLine($"    {path}");
+
+            if (paths.Count > MaxListedPaths)
+                builder.AppendLine($"    … and {paths.Count - MaxListedPaths} more");
         }
 
         public static IReadOnlyList<GateViolation> ScanAssetRequiredFields(string assetPath)
@@ -155,9 +245,10 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return map;
         }
 
-        private static void CollectSceneRequiredViolations(string assetPath, List<GateViolation> violations)
+        private static void CollectSceneRequiredViolations(
+            string assetPath, List<GateViolation> violations, bool knownTextYaml = false)
         {
-            foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(assetPath, RequiredFieldsForScript))
+            foreach (var entry in SerializeReferenceYamlEditor.FindUnsetRequiredFields(assetPath, RequiredFieldsForScript, knownTextYaml))
             {
                 violations.Add(new GateViolation(assetPath, entry.FileId, entry.Rid, default,
                     GateViolationKind.RequiredUnset, entry.FieldName));

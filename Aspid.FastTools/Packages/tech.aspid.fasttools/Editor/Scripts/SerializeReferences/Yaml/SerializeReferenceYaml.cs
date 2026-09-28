@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 // ReSharper disable once CheckNamespace
@@ -24,13 +25,57 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
         public static readonly string[] ScanExtensions = { ".prefab", ".asset", ".unity" };
 
-        // The one file read of the text scans (graph, missing types, overrides, usage index): the asset's lines, or
-        // null when the path is empty, missing or unreadable.
-        public static string[] ReadLines(string assetPath)
+        private const int FormatSniffLength = 64;
+
+        private const string LfsPointerPrefix = "version https://git-lfs.github.com/spec/";
+
+        // Reads only the first bytes, so a scanner can skip a binary asset (LightingData, NavMesh, anything in a
+        // Force Binary / Mixed project) or an LFS pointer without decoding the whole file. A file that cannot be
+        // opened counts as Binary: it is just as unreadable to the YAML pass.
+        public static AssetFileFormat SniffFileFormat(string path)
+        {
+            var buffer = new byte[FormatSniffLength];
+            var read = 0;
+
+            try
+            {
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+
+                int count;
+                while (read < buffer.Length && (count = stream.Read(buffer, read, buffer.Length - read)) > 0)
+                    read += count;
+            }
+            catch (Exception)
+            {
+                return AssetFileFormat.Binary;
+            }
+
+            var offset = read >= 3 && buffer[0] == 0xEF && buffer[1] == 0xBB && buffer[2] == 0xBF ? 3 : 0;
+            var head = Encoding.ASCII.GetString(buffer, offset, read - offset).TrimStart();
+
+            if (head.StartsWith("%YAML", StringComparison.Ordinal) || head.StartsWith("%TAG !u!", StringComparison.Ordinal))
+                return AssetFileFormat.TextYaml;
+
+            return head.StartsWith(LfsPointerPrefix, StringComparison.Ordinal)
+                ? AssetFileFormat.LfsPointer
+                : AssetFileFormat.Binary;
+        }
+
+        public static bool IsTextYamlFile(string path) =>
+            SniffFileFormat(path) == AssetFileFormat.TextYaml;
+
+        // The one file read of the text scans (graph, missing types, overrides, usage index, scene required fields):
+        // the asset's lines, or null when the path is empty, missing, unreadable or not text YAML. The first bytes are
+        // sniffed before the full read, so a binary asset or an LFS pointer is never decoded; `knownTextYaml` skips
+        // that sniff for a caller that has already made it (the gate's Scan).
+        public static string[] ReadLines(string assetPath, bool knownTextYaml = false)
         {
             try
             {
-                return string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath) ? null : File.ReadAllLines(assetPath);
+                if (string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath)) return null;
+                if (!knownTextYaml && !IsTextYamlFile(assetPath)) return null;
+
+                return File.ReadAllLines(assetPath);
             }
             catch (Exception)
             {

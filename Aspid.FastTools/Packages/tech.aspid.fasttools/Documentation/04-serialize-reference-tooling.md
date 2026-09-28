@@ -17,7 +17,7 @@ After renaming or deleting a class, check which assets still store its old name:
 File rewrites skip references in open scenes, Prefab Mode and assets with unsaved changes: the rewrite reimports the asset and would discard those changes. **Asset References** offers to save such an asset first. Save and close those scenes, prefabs and assets before repair, or repair a visible field using [Fix in the Inspector](03-serialize-reference-selector.md#repairing-missing-types).
 
 > [!NOTE]
-> Analysis requires text YAML assets. In Unity's editor settings, select **Asset Serialization → Mode → Force Text**. Existing binary assets need to be saved again; changing the mode alone does not make them scannable.
+> Analysis requires text YAML assets. In Unity's editor settings, select **Asset Serialization → Mode → Force Text**. Existing binary assets need to be saved again; changing the mode alone does not make them scannable. Binary files and Git LFS pointers are skipped, and the build gate and the CI check warn about them. In **Force Text** the warning leaves out binary assets that cannot hold managed references, such as LightingData and NavMesh.
 
 <a id="bulk-repair-tabs"></a>
 
@@ -204,6 +204,8 @@ For prefabs and ScriptableObjects, validation traverses serialized properties, i
 This limitation applies to unset required fields. Missing-type detection separately reads stored managed-reference entries.
 
 ### Report and exit codes
+
+The header counts violations and files that were not scanned because they are not text YAML; each such file follows as a `#` comment line with `Binary` or `LfsPointer` and its path. Skipped files do not change the exit code. Even in **Force Text**, Unity writes some assets binary (LightingData, NavMesh), so a healthy project can list them. They cannot hold managed references, and the log warning leaves them out. A binary prefab, scene or ScriptableObject is still named in the warning: it was saved before the switch to **Force Text** or is marked `[PreferBinarySerialization]`, and its references went unchecked.
 
 After the header, each violation occupies one line. Fields are tab-separated:
 

@@ -1,9 +1,12 @@
+using System;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using NUnit.Framework;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Object = UnityEngine.Object;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -16,6 +19,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     internal sealed class SerializeReferenceGateScannerTests
     {
         private const string ProbeAssetPath = "Assets/__AspidGateScannerRequiredProbe__.asset";
+        private const string EngineAssetPath = "Assets/__AspidGateScannerEngineProbe__.asset";
 
         // Scan(RequiredOnly) is the exact call the Project References "Required violations" group makes; this proves
         // it surfaces both an unset managed reference and an unset [TypeSelector(Required = true)] string field on a
@@ -217,6 +221,123 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
                 AssetDatabase.DeleteAsset(ProbeAssetPath);
             }
         }
+
+        // An asset whose file is an LFS pointer (a checkout without the LFS objects) cannot be checked for missing
+        // types; the scan must hand it back as unscanned instead of passing it silently.
+        [Test]
+        public void Scan_MissingOnly_ReportsLfsPointerAsUnscanned()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                File.WriteAllText(ProbeAssetPath, "version https://git-lfs.github.com/spec/v1\noid sha256:0\nsize 1\n");
+
+                var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+                SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned);
+
+                CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.LfsPointer));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        // A binary ScriptableObject under Force Text (never re-saved, or [PreferBinarySerialization]) can hold managed
+        // references the scan could not read, so the warning names it.
+        [Test]
+        public void Scan_BinaryScriptableObjectUnderForceText_Warns()
+        {
+            var probe = ScriptableObject.CreateInstance<RequiredTestObject>();
+            try
+            {
+                AssetDatabase.CreateAsset(probe, ProbeAssetPath);
+                File.WriteAllBytes(ProbeAssetPath, new byte[] { 0x00, 0x00, 0x00, 0x00, 0x16, 0x00, 0x00, 0x00, 0x11 });
+
+                var unscanned = new List<(string AssetPath, AssetFileFormat Format)>();
+                SerializeReferenceGateScanner.Scan(GateOptions.MissingOnly, unscanned: unscanned);
+                CollectionAssert.Contains(unscanned, (ProbeAssetPath, AssetFileFormat.Binary));
+
+                var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText);
+                StringAssert.Contains(ProbeAssetPath, notice);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(ProbeAssetPath);
+            }
+        }
+
+        [TestCase("Assets/Weapons/Pistol.prefab")]
+        [TestCase("Assets/Scenes/Arena.unity")]
+        public void DescribeUnscanned_BinaryPrefabOrSceneUnderForceText_Warns(string path)
+        {
+            var unscanned = new[] { (path, AssetFileFormat.Binary) };
+            var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText);
+
+            StringAssert.Contains("1 binary prefab, scene or ScriptableObject file(s)", notice);
+            StringAssert.Contains(path, notice);
+        }
+
+        // A main asset that is not a ScriptableObject, like the LightingData and NavMesh files Unity writes binary
+        // under Force Text, cannot hold managed references and stays out of the warning.
+        [Test]
+        public void DescribeUnscanned_BinaryEngineAssetUnderForceText_IsSilent()
+        {
+            try
+            {
+                AssetDatabase.CreateAsset(new Mesh(), EngineAssetPath);
+
+                var unscanned = new[] { (EngineAssetPath, AssetFileFormat.Binary) };
+                Assert.IsNull(SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText));
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(EngineAssetPath);
+            }
+        }
+
+        [TestCase(SerializationMode.ForceBinary)]
+        [TestCase(SerializationMode.Mixed)]
+        public void DescribeUnscanned_BinaryOutsideForceText_Warns(SerializationMode mode)
+        {
+            var unscanned = new[] { ("Assets/Weapons/Pistol.prefab", AssetFileFormat.Binary) };
+            var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, mode);
+
+            StringAssert.Contains("Force Text", notice);
+            StringAssert.Contains(mode.ToString(), notice);
+        }
+
+        [Test]
+        public void DescribeUnscanned_LfsPointer_WarnsWithPath()
+        {
+            try
+            {
+                AssetDatabase.CreateAsset(new Mesh(), EngineAssetPath);
+
+                var unscanned = new[]
+                {
+                    (EngineAssetPath, AssetFileFormat.Binary),
+                    ("Assets/Weapons/Pistol.prefab", AssetFileFormat.LfsPointer),
+                };
+
+                var notice = SerializeReferenceGateScanner.DescribeUnscanned(unscanned, SerializationMode.ForceText);
+
+                StringAssert.Contains("1 file(s) were not checked", notice);
+                StringAssert.Contains("1 Git LFS pointer(s)", notice);
+                StringAssert.Contains("Assets/Weapons/Pistol.prefab", notice);
+                StringAssert.DoesNotContain(EngineAssetPath, notice);
+            }
+            finally
+            {
+                AssetDatabase.DeleteAsset(EngineAssetPath);
+            }
+        }
+
+        [Test]
+        public void DescribeUnscanned_Nothing_IsSilent() =>
+            Assert.IsNull(SerializeReferenceGateScanner.DescribeUnscanned(
+                Array.Empty<(string, AssetFileFormat)>(), SerializationMode.ForceBinary));
 
         [Test]
         public void ScanAssetRequiredFields_NonCandidatePath_ReturnsEmpty()
