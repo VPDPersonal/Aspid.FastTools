@@ -268,6 +268,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return required;
         }
 
+        // A required reference whose type is missing counts as set here, including one inherited from a source prefab
+        // or stored in a prefab override: the missing-type scan reports it once, from the file that holds it.
         private static void CollectRequiredViolations(string assetPath, List<GateViolation> violations)
         {
             foreach (var asset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
