@@ -1,7 +1,9 @@
 {
     "name": "Aspid.FastTools.Tests.Fixtures",
     "rootNamespace": "",
-    "references": [],
+    "references": [
+        "Aspid.FastTools"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
