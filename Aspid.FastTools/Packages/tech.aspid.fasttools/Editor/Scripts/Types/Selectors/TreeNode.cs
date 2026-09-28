@@ -23,6 +23,8 @@ namespace Aspid.FastTools.Types.Editors
 
         internal string SearchName { get; set; }
 
+        internal string QualifiedName { get; set; }
+
         internal TreeNodeKind Kind { get; set; }
 
         internal string SectionKey { get; set; }
@@ -65,10 +67,12 @@ namespace Aspid.FastTools.Types.Editors
             if (string.IsNullOrWhiteSpace(filter))
                 return true;
 
+            // Namespace.Name rather than the assembly-qualified name: the assembly, version and public key token
+            // are shared by most candidates, so a query found there would match nearly the whole list.
             return Contains(DisplayName, filter)
                 || Contains(Caption, filter)
                 || Contains(SearchName, filter)
-                || Contains(AssemblyQualifiedName, filter);
+                || Contains(QualifiedName, filter);
         }
 
         private static bool Contains(string text, string filter) =>

@@ -54,8 +54,8 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="FontStyle.BoldAndItalic"/> → <see cref="FontStyle.Italic"/>.
         /// Other values are left unchanged.
         /// Only the inline <see cref="IStyle.unityFontStyleAndWeight"/> value is read; a bold or italic
-        /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
-        /// and is therefore not preserved.
+        /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>,
+        /// so nothing is written and the USS style stays, including the bold it was meant to remove.
         /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>
@@ -104,8 +104,8 @@ namespace Aspid.FastTools.UIElements
         /// <see cref="FontStyle.BoldAndItalic"/> → <see cref="FontStyle.Bold"/>.
         /// Other values are left unchanged.
         /// Only the inline <see cref="IStyle.unityFontStyleAndWeight"/> value is read; a bold or italic
-        /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>
-        /// and is therefore not preserved.
+        /// style resolved from USS (with no inline value set) reports as <see cref="FontStyle.Normal"/>,
+        /// so nothing is written and the USS style stays, including the italic it was meant to remove.
         /// </remarks>
         /// <typeparam name="T">The style type.</typeparam>
         /// <param name="style">The style to modify.</param>

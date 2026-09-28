@@ -75,7 +75,7 @@ public sealed class ProfilerMarkerAnalyzer : DiagnosticAnalyzer
         return symbolInfo.Symbol as IMethodSymbol ?? symbolInfo.CandidateSymbols.OfType<IMethodSymbol>().FirstOrDefault(MarkerCallRules.IsMarker);
     }
 
-    // `Func<AutoScope> f = this.Marker` passes no line, so it reaches the fallback or another line's marker.
+    // `Func<int, AutoScope> f = this.Marker` passes no line, so it reaches the fallback or another line's marker.
     private static void AnalyzeMethodGroup(SyntaxNodeAnalysisContext context)
     {
         var access = (MemberAccessExpressionSyntax)context.Node;

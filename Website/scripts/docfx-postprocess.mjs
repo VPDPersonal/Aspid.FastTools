@@ -2,7 +2,7 @@
  * Adapts the Markdown that `docfx metadata` writes into `Website/api/` for Docusaurus:
  *
  * - `<xref href="uid">` tags become Markdown links (to our own pages, learn.microsoft.com or the Unity
- *   Scripting Reference), since MDX does not know the element;
+ *   Scripting Reference of the Unity project's Editor version), since MDX does not know the element;
  * - the "Inherited Members" list is dropped (dozens of `object`/`Attribute` members on every page);
  * - `{` and `}` outside code are escaped, MDX would read them as expressions;
  * - every page gets front matter with a short title for the sidebar;
@@ -14,9 +14,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { unityScriptReferenceUrl } from './unity-script-reference.mjs';
 
 const siteDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const apiDir = path.join(siteDir, 'api');
+
+/** `6000.4` from the Unity project's `6000.4.0f1`: the Editor whose assemblies the Unity API links point into. */
+const unityVersion = fs
+  .readFileSync(path.resolve(siteDir, '../Aspid.FastTools/ProjectSettings/ProjectVersion.txt'), 'utf8')
+  .match(/^m_EditorVersion: (\d+\.\d+)/m)?.[1];
 
 const files = new Set(fs.readdirSync(apiDir).filter((f) => f.endsWith('.md')));
 
@@ -58,11 +64,7 @@ function resolveXref(uid) {
     const apiPath = uid.replace(/\(.*$/, '').replace(/%60(\d+)/g, '-$1').toLowerCase();
     return { href: `https://learn.microsoft.com/dotnet/api/${apiPath}`, text: shortName(uid, false) };
   }
-  if (uid.startsWith('UnityEngine.') || uid.startsWith('UnityEditor.')) {
-    const page = uid.replace(/\(.*$/, '').replace(/%60\d+/g, '').split('.').slice(1).join('-');
-    return { href: `https://docs.unity3d.com/ScriptReference/${page}.html`, text: shortName(uid, false) };
-  }
-  return { href: null, text: shortName(uid, false) };
+  return { href: unityScriptReferenceUrl(uid, unityVersion), text: shortName(uid, false) };
 }
 
 function convertXrefs(markdown) {
