@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditorInternal;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Object = UnityEngine.Object;
 
 // ReSharper disable once CheckNamespace
 namespace Aspid.FastTools.SerializeReferences.Editors
@@ -12,7 +13,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
     /// Provides utility methods for drawing managed-reference lists with a type picker for new elements in IMGUI.
     /// </summary>
     /// <remarks>
-    /// The add button creates an independent instance; element fields retain their registered property drawers.
+    /// The add button creates an independent instance in every selected object; element fields retain their registered property drawers.
     /// </remarks>
     public static class SerializeReferenceIMGUIList
     {
@@ -37,13 +38,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         /// <summary>
         /// Draws a managed-reference list whose add button selects a type and appends an independent instance.
         /// </summary>
-        /// <param name="listProperty">The array or list of managed references; <see langword="null"/> or a non-array property draws nothing.</param>
-        /// <param name="label">The list header; <see langword="null"/> displays no label.</param>
+        /// <param name="listProperty">An array/list property whose elements are managed references.</param>
+        /// <param name="label">The list header; <see langword="null"/> uses the display name of <paramref name="listProperty"/>, <see cref="GUIContent.none"/> displays no label.</param>
         /// <param name="elementType">The declared element type constraining the picker, supplied even when the list is empty.</param>
         /// <param name="baseTypes">Additional constraints below <paramref name="elementType"/>; <see langword="null"/> or an empty array adds none.</param>
+        /// <exception cref="ArgumentNullException"><paramref name="listProperty"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="listProperty"/> is not a managed-reference array.</exception>
         public static void Draw(SerializedProperty listProperty, GUIContent label, Type elementType, params Type[] baseTypes)
         {
-            if (listProperty is null || !listProperty.isArray) return;
+            if (listProperty is null) throw new ArgumentNullException(nameof(listProperty));
+            if (!SerializeReferenceHelpers.IsManagedReferenceArray(listProperty))
+                throw new ArgumentException("Draw expects an array/list property whose elements are [SerializeReference] managed references.", nameof(listProperty));
+
+            label ??= new GUIContent(listProperty.displayName);
 
             var list = GetOrCreate(listProperty, label, elementType, baseTypes, depth: 0);
 
@@ -84,7 +91,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // The SerializedObject is part of the key: an Inspector plus a locked Inspector hold two distinct ones for
             // the same (target, path), and a shared key would rebuild the list on every alternating repaint.
             var key = $"{RuntimeHelpers.GetHashCode(serializedObject)}/" +
-                      $"{serializedObject.targetObject.GetInstanceID()}/{listProperty.propertyPath}";
+                      $"{RuntimeHelpers.GetHashCode(serializedObject.targetObject)}/{listProperty.propertyPath}";
 
             // A cached list bound to a stale SerializedObject (e.g. after a domain reload) must be rebuilt, not reused.
             if (Lists.TryGetValue(key, out var cached) && cached.serializedProperty.serializedObject == serializedObject)
@@ -94,7 +101,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // Swept on cache misses only, which are already the slow path.
             EvictDeadEntries();
 
-            var target = serializedObject.targetObject;
+            var targets = GetAppendTargets(listProperty);
             var arrayPath = listProperty.propertyPath;
 
             var list = new ReorderableList(serializedObject, listProperty,
@@ -147,12 +154,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 // right edge does not spill off screen.
                 var topLeft = GUIUtility.GUIToScreenPoint(new Vector2(buttonRect.xMax - PickerWidth, buttonRect.yMin));
                 var screenRect = new Rect(topLeft.x, topLeft.y, PickerWidth, buttonRect.height);
-                SerializeReferenceListAddBehavior.ShowAppendPicker(target, arrayPath, elementType, baseTypes, screenRect);
+                SerializeReferenceListAddBehavior.ShowAppendPicker(targets, arrayPath, elementType, baseTypes, screenRect);
             };
 
             Lists[key] = list;
             return list;
         }
+
+        // Every target, so "+" under a multi-object selection appends to each object, not only the first.
+        internal static Object[] GetAppendTargets(SerializedProperty listProperty) =>
+            listProperty.serializedObject.targetObjects;
 
         private static float ElementHeight(SerializedProperty element, int depth) =>
             SerializeReferenceNesting.DrawsOwnHeader(element, depth)

@@ -25,9 +25,19 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             var field = child.GetFieldInfo();
             if (field is null) return false;
 
-            return field.IsDefined(typeof(TypeSelectorAttribute), inherit: true) ||
-                   CustomDrawerRegistry.HasDrawerFor(field.FieldType) ||
-                   CustomDrawerRegistry.DeclaresDrawnAttribute(field);
+            if (field.IsDefined(typeof(TypeSelectorAttribute), inherit: true) ||
+                CustomDrawerRegistry.DeclaresDrawnAttribute(field, isManagedReference: true))
+                return true;
+
+            // Unity applies a type drawer to each element, never to the list, so the list keeps the picker-backed add.
+            if (child.isArray) return false;
+
+            // The declared type, not the stored one: Unity ships no picker, so a drawer of the stored type would take
+            // the dropdown away as soon as that type is picked.
+            var declaredType = child.IsArrayElement()
+                ? field.FieldType.GetCollectionElementTypeOrSelf()
+                : field.FieldType;
+            return CustomDrawerRegistry.HasDrawerFor(declaredType, isManagedReference: true);
         }
 
         internal static bool HasVisibleChildren(SerializedProperty property)

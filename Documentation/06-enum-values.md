@@ -32,7 +32,7 @@ Fire uses a multiplier of 1.5; other damage types use Default Value 1
 
 1. Expand the table and set **Default Value** — keys without a row of their own receive it.
 2. Add rows by hand, or right-click the property and choose **Populate Missing Enum Members**.
-3. Configure the values of the added rows.
+3. Pick the key of each row added by hand, and configure the values of the added rows.
 
 Only keys whose value differs from `Default Value` need a row.
 
@@ -187,8 +187,8 @@ Keys are stored by member **name**:
 | Member added | Returns `Default Value` until a row is added; **Populate Missing Enum Members** fills the gap |
 | Member renamed or deleted | Its row is no longer recognised: initialization logs an error to the Console, and lookup and enumeration skip it |
 
-> [!WARNING]
-> As soon as such a row is drawn in the Inspector, its key is silently replaced with the first enum member. Rename members before opening the asset in the Inspector, or review the rows right after.
+> [!NOTE]
+> The Inspector shows such a row with its key, for example `<Missing Frozen>`, and keeps the key until you pick a member, so renaming the member back restores the row. The same applies when `EnumValues<TValue>` is switched to another enum: switching back restores every key. A row added to an empty table has no key: it shows `<None>` and, like a renamed member's row, is skipped with an error until you pick a member.
 
 ## Package sample
 
