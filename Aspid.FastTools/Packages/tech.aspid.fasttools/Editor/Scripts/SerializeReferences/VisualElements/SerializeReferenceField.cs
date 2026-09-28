@@ -886,12 +886,22 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             if (usagesType != null)
                 evt.menu.AppendAction("Save as Template…", _ => SaveAsTemplate(usagesType));
 
+            var hasTemplates = false;
             foreach (var template in SerializeReferenceTemplates.LoadResolved())
             {
                 if (_fieldType != null && !_fieldType.IsAssignableFrom(template.Type)) continue;
                 if (!_filter(template.Type)) continue;
                 var name = template.Name;
                 evt.menu.AppendAction($"Paste Template/{name}", _ => ApplyTemplate(name));
+                hasTemplates = true;
+            }
+
+            var missingTemplates = SerializeReferenceTemplates.UnresolvedNames().Count;
+            if (missingTemplates > 0)
+            {
+                if (hasTemplates) evt.menu.AppendSeparator("Paste Template/");
+                evt.menu.AppendAction($"Paste Template/Remove Missing ({missingTemplates})…",
+                    _ => SerializeReferenceTemplates.RemoveUnresolvedConfirmed());
             }
         }
 
