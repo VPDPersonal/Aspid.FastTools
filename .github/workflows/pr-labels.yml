@@ -11,6 +11,11 @@ permissions:
   contents: read
   pull-requests: write
 
+# Runs for one PR one at a time, so a run never works from labels an earlier run is still changing.
+concurrency:
+  group: pr-labels-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
   labels:
     runs-on: ubuntu-latest
@@ -31,7 +36,11 @@ jobs:
             const WIP = 'status: work-in-progress';
             const REVIEW = 'status: needs-review';
             const { action, pull_request: pr } = context.payload;
-            const has = new Set(pr.labels.map(l => l.name));
+            const { owner, repo } = context.repo;
+            const issue_number = pr.number;
+            // Current labels, not the event payload's: it can be stale when events arrive close together.
+            const current = await github.paginate(github.rest.issues.listLabelsOnIssue, { owner, repo, issue_number });
+            const has = new Set(current.map(l => l.name));
             const add = [];
             const remove = [];
 
@@ -42,7 +51,7 @@ jobs:
                 add.push(type);
                 remove.push(...[...has].filter(l => l.startsWith('type: ') && l !== type));
               }
-              if (m?.[2]) add.push('breaking-change');
+              if (m?.[2]) add.push('breaking-change'); else if (m) remove.push('breaking-change');
             }
             if (['opened', 'reopened'].includes(action) && ![...has].some(l => l.startsWith('status: '))) {
               add.push(pr.draft ? WIP : REVIEW);
@@ -51,10 +60,12 @@ jobs:
             if (action === 'converted_to_draft') { add.push(WIP); remove.push(REVIEW); }
             if (action === 'closed') remove.push(REVIEW);
 
-            const { owner, repo } = context.repo;
-            const issue_number = pr.number;
             for (const name of remove.filter(l => has.has(l))) {
-              await github.rest.issues.removeLabel({ owner, repo, issue_number, name });
+              try {
+                await github.rest.issues.removeLabel({ owner, repo, issue_number, name });
+              } catch (e) {
+                if (e.status !== 404) throw e;
+              }
             }
             const labels = add.filter(l => !has.has(l));
             if (labels.length) await github.rest.issues.addLabels({ owner, repo, issue_number, labels });

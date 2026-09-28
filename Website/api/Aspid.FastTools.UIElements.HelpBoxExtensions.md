@@ -23,10 +23,6 @@ public static class HelpBoxExtensions
 [HelpBoxExtensions](Aspid.FastTools.UIElements.HelpBoxExtensions.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Methods
 
 ### SetMessageType\<T\>\(T, HelpBoxMessageType\) {#Aspid_FastTools_UIElements_HelpBoxExtensions_SetMessageType__1___0_UnityEngine_UIElements_HelpBoxMessageType_}

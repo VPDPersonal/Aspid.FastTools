@@ -23,10 +23,6 @@ public static class SerializeReferenceIMGUIList
 [SerializeReferenceIMGUIList](Aspid.FastTools.SerializeReferences.Editors.SerializeReferenceIMGUIList.md)
 
 
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
-
 ## Remarks
 
 The add button creates an independent instance; element fields retain their registered property drawers.

@@ -11,7 +11,7 @@ pagination_next: null
 Namespace: [Aspid.FastTools.UIElements](Aspid.FastTools.UIElements.md)  
 Assembly: Aspid.FastTools.dll  
 
-Provides [`BaseFieldGradientExtensions.SetLabel%60<T>`](Aspid.FastTools.UIElements.BaseFieldGradientExtensions.md) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Gradient`](https://docs.unity3d.com/ScriptReference/Gradient.html).
+Provides [`BaseFieldGradientExtensions.SetLabel<T>`](Aspid.FastTools.UIElements.BaseFieldGradientExtensions.md#Aspid_FastTools_UIElements_BaseFieldGradientExtensions_SetLabel__1___0_System_String_) for [`BaseField<T>`](https://docs.unity3d.com/ScriptReference/UIElements-BaseField.html) of [`Gradient`](https://docs.unity3d.com/ScriptReference/Gradient.html).
 
 ```csharp
 public static class BaseFieldGradientExtensions
@@ -22,10 +22,6 @@ public static class BaseFieldGradientExtensions
 [object](https://learn.microsoft.com/dotnet/api/system.object) ← 
 [BaseFieldGradientExtensions](Aspid.FastTools.UIElements.BaseFieldGradientExtensions.md)
 
-
-#### Extension Methods
-
-[ProfilerMarkerExtensionsForGenerator.Marker\(object\)](ProfilerMarkerExtensionsForGenerator.md#ProfilerMarkerExtensionsForGenerator_Marker_System_Object_)
 
 ## Methods
 
