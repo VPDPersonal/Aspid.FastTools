@@ -64,6 +64,21 @@ namespace Aspid.FastTools.SerializeReferences.Editors
         public static bool IsTextYamlFile(string path) =>
             SniffFileFormat(path) == AssetFileFormat.TextYaml;
 
+        // The one file read of the text scans (graph, missing types, overrides, usage index): the asset's lines, or
+        // null when the path is empty, missing or unreadable.
+        public static string[] ReadLines(string assetPath)
+        {
+            try
+            {
+                return string.IsNullOrEmpty(assetPath) || !File.Exists(assetPath) ? null : File.ReadAllLines(assetPath);
+            }
+            catch (Exception)
+            {
+                // Best effort, like the scanners: an unreadable file has nothing to scan.
+                return null;
+            }
+        }
+
         public static bool TryParseInlineType(string body, out ManagedTypeName type)
         {
             type = default;
@@ -127,6 +142,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             return match.Success
                 && match.Groups["indent"].Length == entryIndent
                 && long.TryParse(match.Groups["rid"].Value, out rid);
+        }
+
+        // Parses the rid of a "- rid: N" line at any indent, e.g. the header of an entry block captured out of its file.
+        public static bool TryParseEntryHeaderRid(string line, out long rid)
+        {
+            rid = 0;
+
+            var match = _entryHeader.Match(line);
+            return match.Success && long.TryParse(match.Groups["rid"].Value, out rid);
         }
 
         // Returns the line of rid's own RefIds entry header, or -1. A nested "- rid: N" list element in an earlier

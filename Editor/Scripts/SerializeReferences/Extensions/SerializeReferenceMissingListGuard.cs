@@ -39,6 +39,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
 
             foreach (var entry in missing)
             {
+                // An override lives in the PrefabInstance document, which has no list for a resize to drop.
+                if (entry.IsOverride) continue;
+
                 if (!SerializeReferenceYamlEditor.TryFindTopLevelArrayElementForRid(assetPath, entry.FileId, entry.Rid, out var field, out var index))
                     continue; // a single field or nested pointer is not resized, so not at risk
 

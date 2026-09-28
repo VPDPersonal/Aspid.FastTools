@@ -48,7 +48,7 @@ namespace Aspid.FastTools.Samples.EditorTools.Editors
             var search = new TextField()
                 .SetFlexGrow(1)
                 .SetPlaceholder("Search abilities…")
-                .AddValueChanged<TextField, string>(evt => ApplyFilter(evt.newValue));
+                .AddValueChanged(evt => ApplyFilter(evt.newValue));
 
             var create = new Button()
                 .SetText("Create")
