@@ -8,7 +8,7 @@
 }
 
 .aspid-fasttools-serialize-reference-window__background {
-    background-color:                                     rgb(0, 0, 0);
+    background-color:                                     var(--aspid-colors-surface-canvas);
 }
 
 .aspid-fasttools-serialize-reference-window__toolbar {
@@ -33,7 +33,7 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button {
 }
 
 Button.aspid-fasttools-serialize-reference-window__toolbar-button:hover {
-    background-color:                                     rgba(255, 255, 255, 0.05);
+    background-color:                                     var(--aspid-colors-overlay-hover);
     color:                                                var(--aspid-colors-text-light);
 }
 
@@ -43,7 +43,7 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--active {
 }
 
 Button.aspid-fasttools-serialize-reference-window__toolbar-button--active:hover {
-    background-color:                                     rgba(255, 255, 255, 0.05);
+    background-color:                                     var(--aspid-colors-overlay-hover);
     color:                                                var(--aspid-colors-text-lightness);
 }
 
@@ -140,14 +140,14 @@ Button.aspid-fasttools-serialize-reference-window__toolbar-button--square.aspid-
     width:                                                6px;
     border-width:                                         0;
     border-radius:                                        3px;
-    background-color:                                     rgba(255, 255, 255, 0.12);
+    background-color:                                     var(--aspid-colors-overlay-scrollbar);
     transition-property:                                  background-color;
     transition-duration:                                  0.25s;
     transition-timing-function:                           ease-out;
 }
 
 .aspid-fasttools-serialize-reference-window .unity-scroller--vertical:hover .unity-base-slider__dragger {
-    background-color:                                     rgba(255, 255, 255, 0.28);
+    background-color:                                     var(--aspid-colors-overlay-scrollbar-hover);
 }
 
 .aspid-fasttools-serialize-reference-window .unity-scroller--vertical .unity-base-slider__dragger-border {

@@ -65,7 +65,7 @@ The `Presets/` and `Prefabs/` folders hold assets whose stored type identities a
 
 For group repair, start with **Scan Project** before fixing individual presets. If `BrokenWeaponPreset` is already repaired, the `GhostWeapon` group contains only the remaining broken entries. To repeat the exercises, reimport the sample and overwrite its files; this also resets your changes to the imported sample.
 
-Repair rewrites the asset file, so it needs a saved asset: ScriptableObjects and prefabs selected in the Project, Prefab Mode, or a clean saved scene.
+Fix on a ScriptableObject or prefab selected in the Project rewrites its file, so it first offers to save unsaved changes. In Prefab Mode or a clean saved scene, Fix repairs the open copy in memory; save it afterwards.
 
 ## The IMGUI path
 

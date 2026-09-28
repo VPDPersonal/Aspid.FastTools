@@ -84,7 +84,7 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             // The SerializedObject is part of the key: an Inspector plus a locked Inspector hold two distinct ones for
             // the same (target, path), and a shared key would rebuild the list on every alternating repaint.
             var key = $"{RuntimeHelpers.GetHashCode(serializedObject)}/" +
-                      $"{serializedObject.targetObject.GetInstanceID()}/{listProperty.propertyPath}";
+                      $"{RuntimeHelpers.GetHashCode(serializedObject.targetObject)}/{listProperty.propertyPath}";
 
             // A cached list bound to a stale SerializedObject (e.g. after a domain reload) must be rebuilt, not reused.
             if (Lists.TryGetValue(key, out var cached) && cached.serializedProperty.serializedObject == serializedObject)
