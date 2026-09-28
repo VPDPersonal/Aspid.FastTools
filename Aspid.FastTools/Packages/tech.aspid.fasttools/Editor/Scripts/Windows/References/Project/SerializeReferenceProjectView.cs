@@ -72,7 +72,8 @@ namespace Aspid.FastTools.SerializeReferences.Editors
             _requiredIsWarm ? _requiredViolationsCache : Array.Empty<GateViolation>();
 
         private static RequiredAuditState RequiredAudit =>
-            SerializeReferenceProjectSummary.GetRequiredAuditState(_requiredIsWarm, _requiredCheckDisabled);
+            SerializeReferenceProjectSummary.GetRequiredAuditState(
+                _requiredIsWarm, _requiredCheckDisabled, SerializeReferenceSettings.BuildSeverity == GateSeverity.Off);
 
         public Action<Object> OnInspectAsset;
 
@@ -266,8 +267,9 @@ namespace Aspid.FastTools.SerializeReferences.Editors
                 requiredViolations.Count == 0
                     ? "No missing references"
                     : $"No missing references, {BuildCountText(requiredViolations.Count, "required violation")}",
-                RequiredAudit == RequiredAuditState.Checked ? StatusStyle.Type.Success : StatusStyle.Type.Info);
-            _resultsHint.text = SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAudit);
+                SerializeReferenceProjectSummary.GetMissingReferencesCleanStatus(RequiredAudit, requiredViolations.Count > 0));
+            _resultsHint.text =
+                SerializeReferenceProjectSummary.BuildMissingReferencesCleanHintText(RequiredAudit, requiredViolations.Count > 0);
             _legend.AddClass(LegendHiddenClass);
 
             if (requiredViolations.Count > 0)
