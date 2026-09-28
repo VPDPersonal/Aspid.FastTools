@@ -138,6 +138,7 @@ Right-click the **reference field's header** to open its context menu.
 | **Paste Serialize Reference** | Creates a new instance in a compatible field, respecting its type and additional constraints |
 | **Save as Template…** | Saves the current value under a name |
 | **Paste Template → name** | Creates an instance from a compatible saved template |
+| **Paste Template → Remove Missing (N)…** | Deletes saved templates whose type does not load, after confirmation; shown only when there are any |
 
 Copying an empty reference is meaningful: the next paste clears the destination. With multiple objects selected, Copy reads the first object's value; selection and Paste create an independent instance per object in one Undo group. A type switch carries data over from each object's own previous value. Check `Required`, `Missing type`, and `Shared reference` notices with a single object selected.
 
