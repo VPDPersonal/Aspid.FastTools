@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using Aspid.FastTools.Types;
 
 namespace Aspid.FastTools.SerializeReferences.Editors.Tests
 {
@@ -9,11 +10,15 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
     [Serializable]
     internal sealed class UsageHolster<T> { }
 
+    [Serializable]
+    [TypeSelectorDisplay(Name = "Side/Arm")]
+    internal sealed class UsageSidearm<T> { }
+
     /// <summary>
     /// Locks <b>Find Usages of &lt;Class&gt;</b> to the exact stored identity: the query
     /// <see cref="SerializeReferenceUsageSearchProvider.QueryFor"/> writes matches the type's own
     /// <see cref="ManagedTypeName"/> and nothing that merely shares its class name, while a free-typed <c>sr:</c>
-    /// query keeps matching class names by substring.
+    /// query keeps matching class names by substring. Its label names the type as the picker does.
     /// </summary>
     [TestFixture]
     internal sealed class SerializeReferenceUsageSearchTests
@@ -65,6 +70,16 @@ namespace Aspid.FastTools.SerializeReferences.Editors.Tests
         public void EmptyQuery_MatchesNothing() =>
             Assert.IsFalse(SerializeReferenceUsageSearchProvider.Matches(
                 SerializeReferenceUsageSearchProvider.Token("sr:  "), Pistol));
+
+        [Test]
+        public void MenuLabel_FormatsGenericArguments() =>
+            Assert.AreEqual("Find Usages of UsageHolster<Int32>",
+                SerializeReferenceHelpers.GetFindUsagesMenuLabel(typeof(UsageHolster<int>)));
+
+        [Test]
+        public void MenuLabel_KeepsDisplayNameSlashOutOfSubmenus() =>
+            Assert.AreEqual("Find Usages of Side\u2215Arm<Int32>",
+                SerializeReferenceHelpers.GetFindUsagesMenuLabel(typeof(UsageSidearm<int>)));
 
         private static bool MenuQueryMatches(Type type, ManagedTypeName storedType)
         {
